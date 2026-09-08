@@ -1039,7 +1039,7 @@ button.btn-secondary {
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h1 class="concept-title">Revise, Reflect, Refine</h1>
-        <p class="concept-deck">All 15 End-of-Chapter Exercises from NCERT Class 9 Exploration (pp. 162–184) mapped directly to core concepts with full step-by-step solutions.</p>
+        <p class="concept-deck">All 15 Exercises from NCERT Class 9 Exploration (pp. 162–184) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
       <table class="exercise-table">
         <thead>
@@ -1063,6 +1063,11 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
 <script>
 (function(){
   var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
   var state = {
     conceptIndex: 0,
     level: 0,
@@ -1077,7 +1082,7 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     simState: {}
   };
 
-  var STORAGE_KEY = (C.code || "iesc104") + "_learner_progress_v2";
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
   function initStorage(){
     try {
@@ -1101,7 +1106,8 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var total = C.lessons.length * 3;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1113,13 +1119,13 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     return cIdx + "_" + lvl;
   }
 
-  // --- Animation Loop ---
+  // --- Legacy Animation Loop for window.SIMS ---
   var lastTs = 0;
   function animLoop(ts){
     if(!lastTs) lastTs = ts;
     var dt = (ts - lastTs) / 1000;
     lastTs = ts;
-    if(dt > 0.1) dt = 0.1; // clamp delta on tab switch
+    if(dt > 0.1) dt = 0.1;
 
     if(state.playing){
       state.t += dt * state.speed;
@@ -1188,8 +1194,9 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
   }
 
   function renderActiveFrame(t){
+    if(!C.lessons) return;
     var l = C.lessons[state.conceptIndex];
-    if(window.SIMS && window.SIMS[l.sim]){
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
       window.SIMS[l.sim].draw(t);
     }
   }
@@ -1200,7 +1207,12 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
-    var l = C.lessons[idx];
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
     var navBtns = document.querySelectorAll(".concept-nav");
@@ -1210,69 +1222,102 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     });
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "04");
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + l.nav.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
 
     // Show concept view, hide revision
-    document.getElementById("concept-view").style.display = "block";
-    document.getElementById("revision-view").style.display = "none";
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
 
     var html = "";
 
     // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
     html += '<div class="concept-header">' +
-      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / 07</span><span class="time-pill">≈ ' + l.minutes + ' min · NCF pp. ' + l.print + '</span></div>' +
-      '<h1 class="concept-title">' + l.title + '</h1>' +
-      '<p class="concept-deck">' + l.deck + '</p>' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + printPage + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '</div>' +
+      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
     html += '<section class="learn-section" aria-label="Learn Concept">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
-    var quickItems = Array.isArray(l.quick) ? l.quick : (Array.isArray(l.summary) ? l.summary : [l.summary || l.deck]);
-    html += '<div class="quick-summary">' + quickItems.map(function(p){ return "<p>" + p + "</p>"; }).join("") + '</div>';
 
-    // Semantic Equations Card (Fixed P1-6 & P1-7)
-    if(l.formulas && l.formulas.length){
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
       html += '<div class="key-equations-card">' +
         '<div class="equations-heading">Key Relations for this Concept</div>' +
         '<div class="eq-grid">' +
-        l.formulas.map(function(eq){
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
           return '<div class="eq-row">' +
-            '<div class="eq-meta"><span class="eq-label">' + eq.label + '</span><span class="eq-cond">' + eq.cond + '</span></div>' +
-            '<div class="eq-math">' + eq.html + '</div>' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
             '</div>';
         }).join("") +
         '</div></div>';
     }
 
-    // Visual Derivation Accordion (Fixed P1-10)
-    if(idx === 4 || idx === 5){
-      html += '<details class="derivation"><summary>How these equations are derived geometrically from the v–t graph</summary>' +
-        '<p><b>1. First Equation (v = u + at):</b> The acceleration <i>a</i> is the slope of the v–t graph: <code>a = (v − u) / t ⟹ at = v − u ⟹ v = u + at</code>.</p>' +
-        '<p><b>2. Second Equation (s = ut + ½at²):</b> The displacement <i>s</i> is the area under the v–t curve between 0 and <i>t</i>. This region is divided into a rectangle of area <code>u × t</code> and an upper triangle of area <code>½ × t × (v − u)</code>. Substituting <code>v − u = at</code> gives <code>s = ut + ½at²</code>.</p>' +
-        '<p><b>3. Third Equation (v² = u² + 2as):</b> Treating the region as a single trapezium: <code>Area s = ½(u + v) × t</code>. From Equation 1, <code>t = (v − u) / a</code>. Substituting for <i>t</i>: <code>s = (v + u)(v − u) / (2a) = (v² − u²) / (2a) ⟹ v² = u² + 2as</code>.</p>' +
-        '</details>';
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
     }
 
-    // Deep dive
-    html += '<details class="deep-dive"><summary>Go deeper into the physical concepts</summary><p>' + l.deeper + '</p></details>';
-    var workedHtml = typeof l.worked === 'object' && l.worked !== null
-      ? '<strong>' + (l.worked.title || 'Worked Example') + '</strong><br>' + (l.worked.problem || '') +
-        (l.worked.given ? '<br><br><strong>Given:</strong> ' + l.worked.given : '') +
-        (l.worked.steps ? '<br><strong>Steps:</strong><br>' + l.worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-        (l.worked.answer ? '<br><br><strong>Answer:</strong> ' + l.worked.answer : '')
-      : (l.worked || '');
-    html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
     html += '</section>';
 
-    // 02 PREDICT FIRST BLOCK (Fixed P0-2)
-    if(l.prediction){
-      var pred = l.prediction;
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
       html += '<section class="predict-card" aria-label="Predict First">' +
         '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + pred.prompt + '</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
         '<div class="predict-options" id="predict-options">' +
         pred.options.map(function(opt, oi){
           return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
@@ -1287,85 +1332,96 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     }
 
     // 03 PLAY / LAB BLOCK
-    var simTitle = (l.simTitle || l.nav || l.title || "Interactive Simulation").toUpperCase();
-    var whatWatch = l.predict || (l.prediction ? l.prediction.prompt : "Explore the simulation controls and presets below.");
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
     html += '<section class="lab-card" aria-label="Interactive Laboratory">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
-      '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
-      '<div class="lab-legend" id="lab-legend"></div>' +
-      
-      // Standardized Timeline Toolbar (Fixed P0-1)
-      '<div class="lab-toolbar">' +
-      '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-      '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward 0.5 seconds">⏭ Step (+0.5s)</button>' +
-      '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
-      '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
-      '<div class="scrubber-wrap">' +
-      '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
-      '</div>' +
-
-      '<div class="preset-bar" id="preset-bar"></div>' +
-      '<div class="lab-controls-grid" id="lab-controls"></div>' +
-      '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
-      '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    html += '<section class="connect-section" aria-label="Real World Connections">' +
-      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-      '<div class="connect-grid">' +
-      l.connect.map(function(item){
-        var wow = /^Wow/i.test(item[0]);
-        var v = item[3] || null;
-        var links = item[2] || [];
-        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '">';
-        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-        cHtml += '<h3>' + item[0] + '</h3><p>' + item[1] + '</p>';
-        if(v && v.id){
-          cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-            '<img src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg" alt="" loading="lazy">' +
-            '<span class="play-btn">▶</span>' +
-            '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-            '</button>';
-        }
-        if(links.length){
-          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-            links.map(function(a){ return '<a href="' + a.u + '" target="_blank" rel="noopener">' + a.t + ' ↗</a>'; }).join(", ") +
-            '</p>';
-        }
-        cHtml += '</div>';
-        return cHtml;
-      }).join("") +
-      '</div></section>';
+    var connectItems = l.connect || [];
+    if(connectItems.length){
+      html += '<section class="connect-section" aria-label="Real World Connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+          var wow = /^Wow/i.test(title);
+
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '">';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
+              '<img src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg" alt="" loading="lazy">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+              '</p>';
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
 
     // 05 PRACTICE BLOCK
-    html += '<section class="practice-section" aria-label="Practice and Mastery">' +
-      '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
-      '<div class="practice-nav">' +
-      '<button class="level-tab active" data-lvl="0">Tier 1: Easy</button>' +
-      '<button class="level-tab" data-lvl="1">Tier 2: Medium</button>' +
-      '<button class="level-tab" data-lvl="2">Tier 3: Hard</button>' +
-      '</div>' +
-      '<div id="quiz-container"></div>' +
-      '</section>';
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" aria-label="Practice and Mastery">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
 
-    // REVISE CALLOUT
-    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + l.recall + '</div>';
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
 
     // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
     html += '<div class="concept-footer-nav">' +
       (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
-      (idx < C.lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + C.lessons[idx + 1].nav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
       '</div>';
 
-    document.getElementById("concept-view").innerHTML = html;
+    cView.innerHTML = html;
 
     // Attach Prediction Listeners
     var btnCheckPred = document.getElementById("btn-check-prediction");
     var btnSkipPred = document.getElementById("btn-skip-prediction");
-    if(btnCheckPred && l.prediction){
+    if(btnCheckPred && pred){
       btnCheckPred.addEventListener("click", function(){
         var sel = document.querySelector('input[name="predict_ans"]:checked');
         var fb = document.getElementById("predict-feedback-box");
@@ -1376,34 +1432,31 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
           return;
         }
         var chosen = Number(sel.value);
-        var isRight = chosen === l.prediction.answer;
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
-        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + l.prediction.explanation;
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
       });
     }
-    if(btnSkipPred && l.prediction){
+    if(btnSkipPred && pred){
       btnSkipPred.addEventListener("click", function(){
         var fb = document.getElementById("predict-feedback-box");
         fb.style.display = "block";
         fb.className = "predict-feedback revealed";
-        fb.innerHTML = "<b>Physical Principle:</b> " + l.prediction.explanation;
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
       });
     }
 
-    // Attach Timeline Controls
-    document.getElementById("btn-play-pause").addEventListener("click", function(){
-      if(state.playing) pause(); else play();
-    });
-    document.getElementById("btn-step-fwd").addEventListener("click", function(){
-      step(0.5);
-    });
-    document.getElementById("btn-reset-time").addEventListener("click", function(){
-      resetTimeline();
-    });
-    document.getElementById("time-scrubber").addEventListener("input", function(e){
-      seekTimeline(e.target.value);
-    });
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
 
     // Footer Next/Prev listeners
     var btnPrev = document.getElementById("btn-prev-concept");
@@ -1413,9 +1466,50 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
     if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
 
-    // Mount Active Simulation
-    if(window.SIMS && window.SIMS[l.sim]){
-      window.SIMS[l.sim].mount(l);
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
     }
 
     // Render Quiz for current level
@@ -1438,16 +1532,28 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
 
   // --- Render Quiz ---
   function renderQuiz(){
-    var l = C.lessons[state.conceptIndex];
-    var q = l.quizzes[state.level];
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
     var qk = qKey(state.conceptIndex, state.level);
     var old = state.answers[qk] || {};
 
     var box = document.getElementById("quiz-container");
     if(!box) return;
 
-    var html = '<div class="question-prompt">' + q.prompt + '</div>';
-    if(q.type === "mcq"){
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
       html += '<div class="quiz-options">' +
         q.options.map(function(opt, oi){
           var checked = old.value === String(oi) ? " checked" : "";
@@ -1465,64 +1571,70 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
       '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
       '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
       '</div>' +
-      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + q.hint + '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
       '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
 
     box.innerHTML = html;
 
     // Hint toggle
-    document.getElementById("btn-toggle-hint").addEventListener("click", function(){
-      var hb = document.getElementById("quiz-hint-box");
-      hb.style.display = hb.style.display === "none" ? "block" : "none";
-    });
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
 
     // Submit listener
-    document.getElementById("btn-submit-quiz").addEventListener("click", function(){
-      var fb = document.getElementById("quiz-feedback-box");
-      var isRight = false;
-      var userVal = "";
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
 
-      if(q.type === "mcq"){
-        var sel = document.querySelector('input[name="quiz_ans"]:checked');
-        if(!sel){
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
           fb.style.display = "block";
           fb.className = "quiz-feedback retry";
-          fb.textContent = "Please select an answer choice first.";
-          return;
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
         }
-        userVal = sel.value;
-        isRight = Number(userVal) === q.answer;
-      } else {
-        var inp = document.getElementById("quiz_num_ans");
-        if(!inp || inp.value.trim() === ""){
-          fb.style.display = "block";
-          fb.className = "quiz-feedback retry";
-          fb.textContent = "Please enter a numerical answer.";
-          return;
-        }
-        userVal = inp.value.trim();
-        var num = parseFloat(userVal);
-        isRight = Math.abs(num - q.answer) <= (q.tolerance || 0.05);
-      }
+        updateProgress();
+      });
+    }
 
-      state.answers[qk] = { value: userVal, checked: true };
-      if(isRight){
-        state.correct[qk] = true;
-        fb.style.display = "block";
-        fb.className = "quiz-feedback success";
-        fb.innerHTML = "<b>That’s right!</b> " + q.solution;
-      } else {
-        fb.style.display = "block";
-        fb.className = "quiz-feedback retry";
-        var wrongMsg = (q.type === "mcq" && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : q.hint;
-        fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + q.solution + "</small>";
-      }
-      updateProgress();
-    });
-
-    if(old.checked){
-      // Trigger previous feedback
-      document.getElementById("btn-submit-quiz").click();
+    if(old.checked && submitBtn){
+      submitBtn.click();
     }
   }
 
@@ -1535,19 +1647,21 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "04");
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
     if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
 
-    document.getElementById("concept-view").style.display = "none";
+    var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
-    revView.style.display = "block";
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
 
     var exList = C.exercises || [];
     if(!exList.length && C.exerciseMap){
       exList = C.exerciseMap.map(function(m){
         return {
           q: m[0],
+          number: String(m[0]),
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
@@ -1559,18 +1673,21 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
       });
     }
 
+    var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All 16 End-of-Chapter Exercises from NCERT Class 9 Exploration (pp. 68–71) mapped directly to core concepts with full verbatim questions and step-by-step worked solutions.</p>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Grade 9 with comprehensive step-by-step pedagogical solutions.</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
     html += '<div class="exercise-compendium-header">' +
       '<div class="exercise-filter-bar">' +
-      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (16)</button>' +
-      C.lessons.map(function(l, li){
-        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + l.nav + '</button>';
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
       }).join("") +
       '</div>' +
       '<div style="display:flex;gap:8px;">' +
@@ -1581,31 +1698,48 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
 
     // Exercise Cards List
     html += '<div id="exercise-cards-container">';
-    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){ return e.conceptIdx === currentExFilter; });
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
 
-    html += filtered.map(function(ex){
-      var l = C.lessons[ex.conceptIdx];
-      var stepsHtml = (ex.steps || []).map(function(st){ return '<li>' + st + '</li>'; }).join("");
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
 
-      return '<article class="exercise-card" id="exercise-q' + ex.q + '">' +
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
-        '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<span class="q-badge">QUESTION ' + ("0" + ex.q).slice(-2) + '</span>' +
-        '<span style="font-size:12px;color:var(--muted);font-weight:600;">NCERT Exploration p. ' + (ex.printPage || ex.page) + '</span>' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
         '</div>' +
-        '<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">' +
-        'Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + l.nav + ') ↗</a>' +
+        conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text">' + ex.question + '</div>' +
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
         
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
-        '<div class="exercise-solution-body">' +
-        (ex.given ? '<div class="given-data"><b>Given Data:</b> ' + ex.given + '</div>' : '') +
-        (stepsHtml ? '<ol class="solution-steps">' + stepsHtml + '</ol>' : '') +
-        (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
-        (ex.takeaway ? '<div class="takeaway-box"><b>Key Conceptual Insight:</b> ' + ex.takeaway + '</div>' : '') +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
         '</div>' +
         '</details>' +
         '</article>';
@@ -1653,10 +1787,13 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
   // --- Build Sidebar Nav ---
   function buildSidebar(){
     var navContainer = document.getElementById("sidebar-nav");
-    navContainer.innerHTML = C.lessons.map(function(l, i){
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
       return '<button class="concept-nav" data-cidx="' + i + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
-        '<span>' + l.nav + '</span>' +
+        '<span>' + nav + '</span>' +
         '</button>';
     }).join("");
 
@@ -1667,19 +1804,23 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
       });
     });
 
-    document.getElementById("nav-revision").addEventListener("click", renderRevision);
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
   }
 
   // --- Reset Progress Button ---
-  document.getElementById("btn-reset-progress").addEventListener("click", function(){
-    if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
-      state.answers = {};
-      state.correct = {};
-      saveStorage();
-      updateProgress();
-      renderQuiz();
-    }
-  });
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
 
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
@@ -1687,18 +1828,21 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     if(btn){
       var vid = btn.getAttribute("data-yt");
       var parent = btn.parentElement;
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
   // --- URL Routing ---
   function routeFromHash(){
     var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
-      if(cNum >= 1 && cNum <= C.lessons.length){
+      if(cNum >= 1 && cNum <= lessons.length){
         renderConcept(cNum - 1);
         return;
       }
@@ -1709,12 +1853,6 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
   }
   window.addEventListener("hashchange", routeFromHash);
 
-  // Initialize
-  initStorage();
-  buildSidebar();
-  updateProgress();
-  routeFromHash();
-
   window.App = {
     state: state,
     play: play,
@@ -1722,8 +1860,19 @@ window.CHAPTER = {"code": "iesc109", "chapterNumber": "09", "title": "Atomic Fou
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
-    renderConcept: renderConcept
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
   };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
 })();
 
 </script>
@@ -2514,6 +2663,9 @@ function setActivePreset(btn){
 
   window.SIMS.lab_molecular_formula_mass = { mount: mount, draw: draw };
 })();
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
 </script>
 </body>
 </html>
