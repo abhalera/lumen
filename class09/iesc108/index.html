@@ -1,0 +1,2524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 8: Journey Inside the Atom — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark">l.</span> lumen</a>
+  <span class="chapter-crumb" id="chapter-crumb">CH 08 · JOURNEY INSIDE THE ATOM</span>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises & Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
+    <div id="revision-view" class="revision-page">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h1 class="concept-title">Revise, Reflect, Refine</h1>
+        <p class="concept-deck">All 15 End-of-Chapter Exercises from NCERT Class 9 Exploration (pp. 140–162) mapped directly to core concepts with full step-by-step solutions.</p>
+      </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"code": "iesc108", "chapterNumber": "08", "title": "Journey Inside the Atom", "subtitle": "Atomic Models, Subatomic Particles, Electronic Configurations, Valency & Isotopes", "page_start": 140, "page_end": 162, "lessons": [{"id": "c1", "sim": "lab_roots_thomson", "nav": "Roots & Thomson Model", "badge": "SECTIONS 8.1 & 8.2.1 · HISTORICAL ROOTS TO CATHODE RAYS", "title": "From Parmanu to Thomson's Plum Pudding Model", "pages": [140, 143], "deck": "For millennia, matter was debated philosophically. Acharya Kanada in India (c. 600 BCE) proposed indivisible 'parmanus' forming dyads and triads, while Democritus coined 'atomos'. In 1808, John Dalton established the scientific atomic theory of indivisible solid spheres. But in 1897, J.J. Thomson discovered the electron using cathode rays, proving atoms are divisible and introducing the 'plum pudding' (or watermelon) model.", "summary": "Acharya Kanada proposed parmanus, Dalton founded modern atomic theory, and J.J. Thomson proved divisibility by discovering negatively charged electrons embedded in a uniform positively charged sphere.", "prediction": {"prompt": "Thomson passed high voltage through a low-pressure gas discharge tube. When he brought an electric field across the ray, the beam bent towards the positive plate. What fundamental property did this reveal?", "options": ["Cathode rays are uncharged electromagnetic light waves", "Cathode rays consist of negatively charged subatomic particles (electrons) with negligible mass", "The atom contains only positively charged heavy protons", "Atoms are strictly indivisible solid spheres"], "answer": 1, "explanation": "Because opposite charges attract, deflection towards the positively charged electrode proved that cathode rays consist of negatively charged particles, later named electrons. Since electrons came from inside gas atoms, atoms were proven to be divisible!"}, "formulas": [{"label": "Thomson's Charge Neutrality", "html": "&Sigma; q<sub>positive sphere</sub> + &Sigma; q<sub>electrons</sub> = 0", "cond": "Net electric charge of an isolated atom is always zero"}, {"label": "Dalton vs Thomson Paradigm", "html": "Atom = Indivisible solid sphere &rarr; Atom = Positive fluid + Embedded corpuscles (e<sup>&minus;</sup>)", "cond": "Overturned 1808 Dalton postulate of absolute indivisibility"}], "deeper": "<p>In ancient India, <strong>Acharya Kanada</strong> postulated in the <em>Vaisesika Sutras</em> that repeated subdivision of matter leads to indivisible ultimate units called <strong>parmanus</strong>. Two parmanus combine to form a dyad (<em>dvyanuka</em>), and three dyads form a triad (<em>tryanuka</em>), out of which the entire material universe is woven. Simultaneously in Greece, Leucippus and Democritus proposed <em>atomos</em> ('indivisible').</p><p>Modern atomic science began with <strong>John Dalton (1808)</strong>, who tied atomic theory directly to the quantitative Laws of Chemical Combination (Conservation of Mass, Definite Proportions). Dalton viewed atoms as hard, indivisible billiard balls.</p><p>However, <strong>J.J. Thomson (1897)</strong> discovered that cathode rays consist of subatomic particles with negative charge and a mass 1840 times lighter than a hydrogen atom: <strong>electrons</strong>. In 1904, Thomson proposed his <em>plum pudding</em> (or watermelon) model: the atom is a sphere of uniform positive charge wherein negative electrons are embedded like seeds in the red pulp of a watermelon.</p>", "worked": {"title": "NCERT Historical Analysis 8.1: Kanada vs Dalton", "problem": "Both Acharya Kanada (Vaisesika Sutras) and John Dalton (1808) proposed fundamental particles of matter. How do their concepts agree, and what key empirical advance made Dalton's theory modern science?", "given": "Philosophical parmanu concept vs Dalton's quantitative atomic postulates", "steps": ["1. Conceptual Agreement: Both posited that all matter consists of tiny, indestructible fundamental units (parmanus/atoms) that combine into compound units.", "2. Empirical Advancement: Kanada's theory was philosophical and qualitative without quantitative mass ratios. Dalton grounded his theory directly in experimental laws of mass conservation and constant proportions, defining atomic mass.", "3. Modern Revision: Both held atoms to be indivisible, which J.J. Thomson disproved in 1897 by discovering the electron."], "answer": "Dalton transformed philosophical speculation into quantitative chemistry by associating measurable atomic masses with elements."}, "connect": [["Vaisesika Philosophy & Atomic Cosmology in Varanasi", "Ancient Indian schools of philosophy at Varanasi debated the nature of matter centuries before European science. Acharya Kanada categorized the material cosmos into nine dravyas (substances) operating through paramanu interactions.", [{"t": "Vaisesika Sutras Archaeological Archive", "u": "https://ignca.gov.in"}]], ["Television Cathode Ray Tubes (Electronics Heritage)", "Before modern LED screens, all Indian television sets and radar monitors in the 20th century utilized Thomson's cathode ray tube (CRT) technology, sweeping electron beams across phosphor screens using magnetic deflection coils.", [{"t": "National Science Centre Delhi: Telecommunication History", "u": "https://sciencecentre.csir.res.in"}]]], "quizzes": [{"id": "c1_q1", "level": "Easy", "type": "mcq", "prompt": "Who was the ancient Indian sage who proposed that matter is composed of indivisible particles called 'parmanus' in the Vaisesika Sutras?", "options": ["Aryabhata", "Acharya Kanada", "Charaka", "Varahamihira"], "answer": 1, "wrong": ["Aryabhata was an ancient Indian astronomer and mathematician.", "", "Charaka was an ancient pioneer of Ayurveda and medicine.", "Varahamihira was an astronomer and polymath."], "hint": "His name reflects the Sanskrit word 'kana' meaning grain or minute particle.", "solution": "Acharya Kanada proposed in the Vaisesika Sutras that dividing matter repeatedly leads to smallest indivisible particles called parmanus."}, {"id": "c1_q2", "level": "Medium", "type": "mcq", "prompt": "In J.J. Thomson's plum pudding model of the atom, how is the positive charge distributed?", "options": ["Concentrated in a tiny central nucleus with electrons orbiting at large distances", "Spread uniformly throughout a sphere, with electrons embedded inside like seeds in a watermelon", "Arranged in concentric spherical shells with positive protons on the outside", "Confined entirely to free-floating alpha particles"], "answer": 1, "wrong": ["A tiny central nucleus was Rutherford's model, not Thomson's.", "", "Concentric shells were introduced later by Niels Bohr.", "Alpha particles are helium nuclei used as probes, not part of Thomson's model."], "hint": "Think of the red edible flesh of a watermelon.", "solution": "Thomson visualized the atom as a sphere of uniform positive charge with negatively charged electrons embedded like seeds in a watermelon."}, {"id": "c1_q3", "level": "Hard", "type": "mcq", "prompt": "Which crucial experimental observation conclusively disproved Thomson's plum pudding model?", "options": ["The cathode ray tube glowing green under ultraviolet radiation", "Alpha particles rebounding backwards (>90°) from thin gold foil in Rutherford's experiment", "The discovery of continuous spectrum from incandescent tungsten bulbs", "Measuring identical chemical reactivity for different isotopes of chlorine"], "answer": 1, "wrong": ["Fluorescence confirms particle arrival, not model invalidation.", "", "Continuous spectra arise from blackbody radiation.", "Isotopes relate to neutrons, discovered much later in 1932."], "hint": "If positive charge was diffuse like a pudding, heavy alpha particles could never bounce straight backwards.", "solution": "If positive charge were thinly diffused as Thomson modeled, massive alpha particles would suffer deflections < 1°. Rebounding backwards required an immensely dense, concentrated positive core."}]}, {"id": "c2", "sim": "lab_rutherford", "nav": "Rutherford Gold Foil", "badge": "SECTION 8.2.2 · ALPHA SCATTERING EXPERIMENT", "title": "Rutherford's Gold Foil Experiment & Nuclear Model", "pages": [143, 146], "deck": "In 1911, Ernest Rutherford, Hans Geiger, and Ernest Marsden bombarded an ultra-thin gold foil (~1000 atoms thick) with fast-moving alpha (α) particles (doubly ionized helium ions, He²⁺). Most particles passed straight through undeflected, a few suffered small deflections, and roughly 1 in 20,000 rebounded backwards (>90°). Rutherford concluded: most of the atom is empty space, and all positive charge and nearly all mass is concentrated in a tiny central core called the nucleus.", "summary": "Rutherford discovered the atomic nucleus: most of the atom is empty space; a tiny, heavy, positively charged nucleus sits at the center, with electrons revolving around it like planets around the Sun.", "prediction": {"prompt": "If Thomson's plum pudding model had been correct, what should Rutherford have observed when firing high-energy alpha particles at the thin gold foil?", "options": ["All alpha particles would be deflected backwards at 180 degrees", "Alpha particles would pass straight through with only tiny deflections (< 1°), since positive charge was uniformly diffused over a large volume", "Alpha particles would be converted into electrons", "The gold foil would instantly vaporize into plasma"], "answer": 1, "explanation": "In Thomson's model, positive charge and mass were spread evenly across the ~10⁻¹⁰ m sphere. The electric field would be far too weak to turn back high-speed, massive He²⁺ particles; they should have passed straight through with negligible deflections."}, "formulas": [{"label": "Nuclear vs Atomic Dimension Ratio", "html": "r<sub>nucleus</sub> &approx; 10<sup>&minus;15</sup> m, &nbsp; r<sub>atom</sub> &approx; 10<sup>&minus;10</sup> m &implies; <span class=\"frac\"><span class=\"num\">r<sub>atom</sub></span><span class=\"den\">r<sub>nucleus</sub></span></span> &approx; 10<sup>5</sup>", "cond": "The nucleus is ~100,000 times smaller than the atom, yet holds >99.9% of its mass"}, {"label": "Alpha Particle Composition", "html": "&alpha; = <sup>4</sup><sub>2</sub>He<sup>2+</sup> &nbsp; (Mass = 4 u, Charge = +2e)", "cond": "High kinetic energy doubly ionized helium core"}], "deeper": "<p>Rutherford selected <strong>gold foil</strong> because gold is the most malleable metal, permitting sheets only ~1000 atoms (~100 nm) thick. As high-speed alpha particles (⁴₂He²⁺, mass = 4 u, charge = +2e) struck the foil surrounded by a circular fluorescent zinc sulphide (ZnS) screen, three striking observations were recorded:</p><ol><li><strong>Most alpha particles (&gt;99%) passed straight through</strong> without any deflection &rarr; Most of the space inside an atom is completely empty!</li><li><strong>A small fraction deflected through small angles</strong> &rarr; Positive charge is not spread everywhere, but concentrated.</li><li><strong>Approximately 1 in 20,000 particles rebounded backwards (&gt;90°)</strong> &rarr; Rutherford famously described this: <em>'It was quite the most incredible event that has ever happened to me in my life. It was almost as incredible as if you fired a 15-inch shell at a piece of tissue paper and it came back and hit you.'</em></li></ol><p><strong>Fatal Limitation of Rutherford's Model:</strong> According to Maxwell's electromagnetic theory, any accelerating charged particle must continuously radiate electromagnetic waves. An electron revolving in circular orbit undergoes continuous centripetal acceleration. Therefore, it should continuously radiate energy, lose speed, spiral inward, and crash into the nucleus in ~10⁻¹¹ seconds. Rutherford's model could not explain why matter is stable!</p>", "worked": {"title": "Conceptual Scale Example 8.2: The Cricket Ball Nucleus", "problem": "The radius of an atomic nucleus is roughly 10⁻¹⁵ m, whereas the radius of the atom is about 10⁻¹⁰ m. If the nucleus were enlarged to the size of a cricket ball (radius = 5 cm), how large would the whole atom be?", "given": "r_nucleus = 10⁻¹⁵ m, r_atom = 10⁻¹⁰ m, scaled cricket ball radius = 5 cm", "steps": ["1. Calculate the scale magnification factor: r_atom / r_nucleus = 10⁻¹⁰ m / 10⁻¹⁵ m = 10⁵ = 100,000.", "2. Scale the cricket ball radius (5 cm): R_scaled = 5 cm &times; 100,000 = 500,000 cm = 5,000 metres = 5 kilometres!", "3. Physical interpretation: If the nucleus were a cricket ball resting in the center of a cricket pitch, the nearest revolving electrons would be tiny specks buzzing 5 kilometres away in distant suburbs, with pure vacuum in between!"], "answer": "The atom would have a radius of 5 kilometres (diameter of 10 km)."}, "connect": [["IUAC Particle Accelerator & Rutherford Backscattering (New Delhi)", "The Inter-University Accelerator Centre (IUAC) in New Delhi uses 15UD Pelletron accelerators to perform Rutherford Backscattering Spectrometry (RBS), shooting high-energy helium ions at semiconductor thin films to measure atomic composition non-destructively.", [{"t": "Inter-University Accelerator Centre (IUAC)", "u": "https://www.iuac.res.in"}]], ["KGF (Kolar Gold Fields) & Ultra-Pure Gold Foil Malleability", "India's historic Kolar Gold Fields in Karnataka produced some of the purest gold in the world (99.99%). One single gram of pure gold can be beaten into a gossamer-thin sheet covering nearly 1 square metre, matching Rutherford's 100-nanometre requirement.", [{"t": "Geological Survey of India: KGF Gold Deposits", "u": "https://www.gsi.gov.in"}]]], "quizzes": [{"id": "c2_q1", "level": "Easy", "type": "mcq", "prompt": "What metal did Rutherford select for his alpha-particle scattering experiment because of its extraordinary malleability?", "options": ["Silver", "Copper", "Gold", "Platinum"], "answer": 2, "wrong": ["Silver is malleable but cannot be beaten as thin as gold.", "Copper foils remain much thicker than gold.", "", "Platinum is less malleable and far more rigid than gold."], "hint": "It is the most malleable metal known to human metallurgy.", "solution": "Gold was selected because it can be hammered into sheets only ~1000 atoms (~100 nm) thick."}, {"id": "c2_q2", "level": "Medium", "type": "mcq", "prompt": "What did Rutherford conclude from the observation that 1 in ~20,000 alpha particles rebounded backwards at angles greater than 90°?", "options": ["Electrons carry a positive charge", "Virtually all the mass and positive charge of the atom is packed into a tiny central nucleus", "The atom consists mostly of solid gold throughout", "Neutrons attract alpha particles with immense nuclear force"], "answer": 1, "wrong": ["Electrons are negatively charged.", "", "If the atom were solid throughout, all particles would bounce back.", "Neutrons carry zero charge and were undiscovered in 1911."], "hint": "Only an intensely dense, concentrated positive core could exert enough Coulomb repulsion to reverse a fast alpha particle.", "solution": "Rebounding backwards proved that positive charge and mass are concentrated in an immensely small, dense central core named the nucleus."}, {"id": "c2_q3", "level": "Hard", "type": "mcq", "prompt": "According to classical electrodynamics (Maxwell's theory), why was Rutherford's planetary model unstable?", "options": ["Orbiting electrons would continuously radiate electromagnetic energy, spiral inward, and collapse into the nucleus in ~10⁻¹¹ seconds", "The electrostatic force between protons and electrons is repulsive at small distances", "The nucleus would rapidly lose protons through nuclear fission", "Electrons would exceed the speed of light in circular orbit"], "answer": 0, "wrong": ["", "Opposite electrical charges always attract, never repel.", "Nuclear fission does not occur spontaneously in stable light nuclei.", "Orbital speeds of electrons (~10⁶ m/s) are far below light speed."], "hint": "Any accelerated charged particle must continuously radiate electromagnetic energy.", "solution": "An accelerating electron must continuously emit energy, causing its orbit to shrink until it spirals into the nucleus in ~10⁻¹¹ s, which contradicts the stability of matter."}]}, {"id": "c3", "sim": "lab_bohr", "nav": "Bohr's Quantized Model", "badge": "SECTION 8.2.3 · ATOMIC STABILITY & ENERGY LEVELS", "title": "Bohr's Revolutionary Quantized Shell Model", "pages": [146, 148], "deck": "To resolve Rutherford's stability paradox, Danish physicist Niels Bohr (1913) postulated that electrons revolve only in certain special non-radiating 'discrete orbits' or energy levels. While moving in these allowed stationary orbits, electrons do NOT emit energy. Energy is absorbed or emitted only when an electron jumps between discrete shells. Shells are designated by letters K, L, M, N... or principal quantum numbers n = 1, 2, 3, 4...", "summary": "Bohr established that electrons occupy fixed, non-radiating discrete energy shells (K, L, M, N / n = 1, 2, 3, 4). Transitions between shells absorb or emit exact quanta of light (photons), explaining atomic spectra and stability.", "prediction": {"prompt": "According to Bohr's model, if an electron remains inside the K-shell (n = 1), does it radiate energy over time?", "options": ["Yes, it radiates energy continuously and falls into the nucleus", "No, while revolving in an allowed discrete orbit, the electron possesses fixed energy and radiates zero electromagnetic energy", "Yes, but only during nighttime when temperatures drop", "It radiates energy only if an external magnetic field is applied"], "answer": 1, "explanation": "Bohr's primary postulate is that electrons in discrete stationary orbits do NOT radiate energy. This explains why atoms do not collapse and why elements possess stable, sharp line spectra."}, "formulas": [{"label": "Discrete Energy Levels", "html": "Shell Labels: K (n=1), &nbsp; L (n=2), &nbsp; M (n=3), &nbsp; N (n=4) &hellip; (E<sub>1</sub> &lt; E<sub>2</sub> &lt; E<sub>3</sub> &lt; E<sub>4</sub>)", "cond": "Energy increases with distance from the central nucleus"}, {"label": "Quantum Jump Energy Condition", "html": "&Delta;E = E<sub>final</sub> &minus; E<sub>initial</sub> = h &times; &nu; = <span class=\"frac\"><span class=\"num\">h &times; c</span><span class=\"den\">&lambda;</span></span>", "cond": "Energy absorbed during excitation; emitted as a photon during de-excitation"}], "deeper": "<p>Niels Bohr bridged classical mechanics and early quantum theory through three foundational postulates:</p><ol><li><strong>Discrete Stationary Orbits:</strong> Only certain special orbits known as discrete orbits of electrons are permissible inside the atom.</li><li><strong>Radiationless Motion:</strong> While revolving in discrete orbits, electrons do <em>not</em> radiate energy. This resolved the collapse paradox of Rutherford's model.</li><li><strong>Quantized Transitions:</strong> These orbits or shells are represented by letters <strong>K, L, M, N,...</strong> or the numbers <strong>n = 1, 2, 3, 4,...</strong> (energy levels). The K-shell (n=1) is closest to the nucleus and has the lowest energy (ground state). The energy of shells increases outward: E_K &lt; E_L &lt; E_M &lt; E_N.</li></ol><p>When an atom absorbs energy, an electron jumps from a lower shell to a higher shell. When it returns to a lower shell, it emits a single photon of light having exact energy: <code>&Delta;E = E₂ − E₁ = h&nu;</code>. This explains why heated elemental gases produce sharp spectral lines (like sodium's golden D-lines) rather than continuous rainbows!</p>", "worked": {"title": "Bohr Shell Transition Example 8.3: Spectral Quanta", "problem": "An electron in a hydrogen atom jumps from the M-shell (n = 3) down to the K-shell (n = 1). (i) Does the atom absorb or emit energy? (ii) What happens if an electron in the K-shell is hit by a photon whose energy is less than the difference between K and L shells?", "given": "Initial shell n = 3 (M-shell), final shell n = 1 (K-shell)", "steps": ["1. Shell energy comparison: Energy increases outward from the nucleus (E₃ > E₁).", "2. Transition direction: When dropping from n=3 down to n=1, the electron moves to a lower energy state. The difference &Delta;E = E₃ − E₁ is EMITTED as a photon of light.", "3. Quantization condition: Electrons cannot exist in between discrete shells. If an incoming photon has energy less than &Delta;E(K &rarr; L), it cannot trigger a jump and passes straight through without interaction."], "answer": "(i) Emits energy as a photon; (ii) The photon is not absorbed because atomic energy levels are quantized."}, "connect": [["Sodium Vapour Highway Lights & Indian Night Roadways", "The vivid golden-yellow glow lining Indian national highways originates from Bohr transitions in vaporized sodium atoms: excited valence electrons drop from the 3p orbital to the 3s ground state, emitting photons at exactly 589.0 nm and 589.6 nm.", [{"t": "National Highway Authority of India (NHAI)", "u": "https://nhai.gov.in"}]], ["C.V. Raman's Inelastic Light Scattering (Kolkata, 1928)", "Sir C.V. Raman won the 1930 Nobel Prize in Physics at the Indian Association for the Cultivation of Science (IACS) in Kolkata by demonstrating how photons exchange discrete energy quanta with molecular vibrational and electronic energy levels.", [{"t": "Indian Association for the Cultivation of Science (IACS)", "u": "https://www.iacs.res.in"}]]], "quizzes": [{"id": "c3_q1", "level": "Easy", "type": "mcq", "prompt": "Which electron shell is closest to the nucleus and possesses the lowest energy in Bohr's model?", "options": ["M-shell (n = 3)", "L-shell (n = 2)", "K-shell (n = 1)", "N-shell (n = 4)"], "answer": 2, "wrong": ["The M-shell is the third shell from the nucleus.", "The L-shell is the second shell from the nucleus.", "", "The N-shell is the fourth shell from the nucleus."], "hint": "It is named with the first letter in Barkla and Bohr's alphabetical shell notation.", "solution": "The K-shell corresponds to the first principal quantum level n = 1, closest to the nucleus with lowest energy."}, {"id": "c3_q2", "level": "Medium", "type": "mcq", "prompt": "What happens to the energy of an electron shell as we move progressively further outward from the nucleus?", "options": ["It decreases to zero", "It remains strictly constant across all shells", "It increases because the electron is held less tightly and has higher potential energy", "It oscillates unpredictably between positive and negative values"], "answer": 2, "wrong": ["Energy increases (becomes less negative), rather than decreasing.", "Shells have distinct discrete energy values, not constant.", "", "Quantum energy levels increase monotonically with principal quantum number n."], "hint": "Work must be done against the positive nuclear attraction to pull an electron further out.", "solution": "Energy increases as we move away from the nucleus: E_K < E_L < E_M < E_N."}, {"id": "c3_q3", "level": "Hard", "type": "mcq", "prompt": "How did Bohr's model explain the sharp, discrete line emission spectra observed from glowing gases like hydrogen?", "options": ["Electrons collide with the glass tube walls at high frequencies", "Electrons emit light continuously across a broad spectrum as they accelerate", "Electrons radiate a single photon of precise wavelength only when dropping between discrete fixed energy levels: ΔE = hν", "Protons vibrate inside the nucleus like tuning forks"], "answer": 2, "wrong": ["Collisions with container walls do not produce element-specific atomic spectra.", "Continuous emission would produce an unbroken rainbow, not sharp lines.", "", "Nuclear vibrational transitions produce gamma rays, not visible optical lines."], "hint": "Energy differences between fixed shells are exact, producing exact frequencies ν = ΔE/h.", "solution": "Because energy levels are discrete, transitions between them emit exact photon packets (ΔE = E₂ - E₁ = hc/λ), producing sharp characteristic spectral lines."}]}, {"id": "c4", "sim": "lab_subatomic", "nav": "Subatomic Particles & BARC", "badge": "SECTIONS 8.3 & 8.3.1 · SUBATOMIC PARTICLES & BARC", "title": "The Subatomic Trio: Electron, Proton, and Chadwick's Neutron", "pages": [148, 150], "deck": "An atom consists of three fundamental subatomic particles: electrons (e⁻, negative charge -1, mass ~1/1840 u, discovered by Thomson), protons (p⁺, positive charge +1, mass ~1 u, identified by Goldstein/Rutherford), and neutrons (n⁰, zero charge, mass ~1 u, discovered in 1932 by James Chadwick). Protons and neutrons reside in the nucleus and are collectively called nucleons. India's premier Bhabha Atomic Research Centre (BARC) at Trombay, Mumbai uses research reactors like Dhruva to harness neutron scattering for cutting-edge materials and medical science.", "summary": "Atoms contain three subatomic particles: electrons (-1e, 1/1840 u), protons (+1e, 1 u), and neutrons (0 charge, 1 u). Protons and neutrons reside in the nucleus (nucleons), while electrons orbit outside. BARC Mumbai harnesses neutron beams to investigate materials.", "prediction": {"prompt": "If a beryllium target is bombarded with alpha particles, neutral penetrating radiation is emitted that knocks protons out of paraffin wax. What particle constitutes this radiation?", "options": ["High energy ultraviolet light rays", "Neutrons, discovered by James Chadwick in 1932, having mass approximately equal to a proton and zero electric charge", "Positrons with positive charge and negligible mass", "Free electrons moving at the speed of light"], "answer": 1, "explanation": "Chadwick demonstrated that this uncharged penetrating radiation consisted of neutral subatomic particles with mass ~1 u (slightly heavier than a proton), which he named neutrons."}, "formulas": [{"label": "Subatomic Particle Properties", "html": "e<sup>&minus;</sup>: q = &minus;1.602&times;10<sup>&minus;19</sup> C, m &approx; <span class=\"frac\"><span class=\"num\">1</span><span class=\"den\">1840</span></span> u<br>p<sup>+</sup>: q = +1.602&times;10<sup>&minus;19</sup> C, m &approx; 1 u<br>n<sup>0</sup>: q = 0 C, m &approx; 1 u", "cond": "Relative charges: e<sup>&minus;</sup> = &minus;1, p<sup>+</sup> = +1, n<sup>0</sup> = 0"}, {"label": "Nucleon Definition", "html": "Nucleons = Protons (p) + Neutrons (n)", "cond": "Subatomic particles confined within the atomic nucleus"}], "deeper": "<p>By the early 1930s, the mass of atoms presented a baffling mystery: helium has 2 protons (mass ~2 u) yet its actual atomic mass was 4 u! Where was the missing mass coming from?</p><p>In 1932, <strong>James Chadwick</strong> bombarded beryllium with alpha particles and discovered a new subatomic particle having no electrical charge and a mass nearly equal to that of a proton: the <strong>neutron (n⁰)</strong>.</p><p>Summary of Subatomic Particles:</p><ul><li><strong>Electron (e⁻):</strong> Discovered by J.J. Thomson (1897); relative charge = −1; mass = 9.109×10⁻³¹ kg (~1/1840 u); resides outside the nucleus.</li><li><strong>Proton (p⁺):</strong> Observed by E. Goldstein (canal rays, 1886), characterized by Rutherford (1919); relative charge = +1; mass = 1.673×10⁻²⁷ kg (~1 u); resides in the nucleus.</li><li><strong>Neutron (n⁰):</strong> Discovered by James Chadwick (1932); relative charge = 0; mass = 1.675×10⁻²⁷ kg (~1 u); resides in the nucleus.</li></ul><p><em>Important exception:</em> Ordinary hydrogen (protium, ¹₁H) is the ONLY atom in nature that contains NO neutrons in its nucleus (1 proton and 1 electron only)!</p>", "worked": {"title": "Subatomic Comparison 8.4: Property Matrix", "problem": "Construct a comparative analysis of the three subatomic particles with respect to: (a) symbol, (b) absolute and relative electrical charge, (c) mass relative to a proton, (d) location in an atom, and (e) discovering scientist.", "given": "Subatomic trio properties", "steps": ["1. Electron: Symbol e⁻; Charge −1.602×10⁻¹⁹ C (−1); Mass 1/1840 u (~9.11×10⁻³¹ kg); Location: Extra-nuclear shells; Discovered by J.J. Thomson (1897).", "2. Proton: Symbol p⁺; Charge +1.602×10⁻¹⁹ C (+1); Mass ~1 u (~1.673×10⁻²⁷ kg); Location: Inside nucleus; Discovered/named by E. Goldstein (1886) & E. Rutherford (1919).", "3. Neutron: Symbol n⁰; Charge 0 (neutral); Mass ~1 u (~1.675×10⁻²⁷ kg); Location: Inside nucleus; Discovered by James Chadwick (1932).", "4. Nuclear balance: In any neutral atom, protons = electrons, producing net zero charge."], "answer": "Protons and neutrons supply 99.9% of mass in the nucleus; electrons provide volume and govern chemistry."}, "connect": [["Bhabha Atomic Research Centre (BARC) & Dhruva Reactor (Mumbai)", "At Trombay, Mumbai, BARC operates the Dhruva 100 MW research reactor, generating intense thermal neutron beams. Scientists use neutron scattering to decipher the structure of superconducting materials, aircraft alloys, and pharmaceutical enzymes.", [{"t": "Bhabha Atomic Research Centre (BARC)", "u": "https://www.barc.gov.in"}]], ["Homi Jehangir Bhabha: Father of the Indian Nuclear Programme", "Dr. Homi Bhabha envisioned India's unique three-stage nuclear power program in the 1950s, utilizing India's vast thorium reserves in the coastal sands of Kerala and Odisha to ensure national energy independence.", [{"t": "Department of Atomic Energy (DAE), India", "u": "https://dae.gov.in"}]]], "quizzes": [{"id": "c4_q1", "level": "Easy", "type": "mcq", "prompt": "Which subatomic particle has no electrical charge (is electrically neutral)?", "options": ["Electron", "Proton", "Neutron", "Alpha particle"], "answer": 2, "wrong": ["Electrons carry a relative charge of -1.", "Protons carry a relative charge of +1.", "", "Alpha particles carry a charge of +2."], "hint": "Its name comes from the word 'neutral'.", "solution": "Neutrons carry zero electrical charge and have a mass approximately equal to that of a proton (~1 u)."}, {"id": "c4_q2", "level": "Medium", "type": "mcq", "prompt": "Which Indian research reactor located at BARC, Mumbai is extensively utilized for neutron beam scattering research?", "options": ["Apsara-U", "Dhruva", "Kamini", "Cirus"], "answer": 1, "wrong": ["Apsara-U is a swimming pool research reactor.", "", "Kamini is a U-233 reactor located at IGCAR Kalpakkam, not Mumbai.", "Cirus was permanently shut down in 2010."], "hint": "Named after the pole star in Indian astronomy.", "solution": "The Dhruva research reactor at BARC Trombay provides high neutron flux for advanced neutron diffraction experiments."}, {"id": "c4_q3", "level": "Hard", "type": "mcq", "prompt": "Which naturally occurring element has an atom whose nucleus contains NO neutrons at all in its most abundant isotope?", "options": ["Helium", "Ordinary Hydrogen (Protium)", "Lithium", "Carbon"], "answer": 1, "wrong": ["Helium-4 has 2 neutrons in its nucleus.", "", "Lithium-7 has 4 neutrons in its nucleus.", "Carbon-12 has 6 neutrons in its nucleus."], "hint": "Its atomic notation is ¹₁H.", "solution": "Ordinary hydrogen (protium, ¹₁H) consists of 1 proton in its nucleus and 1 revolving electron, with exactly zero neutrons."}]}, {"id": "c5", "sim": "lab_atomic_mass_number", "nav": "Atomic & Mass Numbers", "badge": "SECTIONS 8.4, 8.5 & 8.6 · ATOMIC NOTATION & IDENTIFIERS", "title": "Atomic Number (Z), Mass Number (A) & Nuclide Notation", "pages": [150, 153], "deck": "The atomic number (Z) is the number of protons present in the nucleus of an atom. Since an element is defined by its nuclear charge, Z uniquely identifies the element. The mass number (A) is the total sum of protons and neutrons (nucleons) in the nucleus: A = Z + n. An atomic species is represented by standard nuclide notation: ᴬ_Z X, with mass number A as superscript and atomic number Z as subscript to the left of the chemical symbol X.", "summary": "Atomic number Z = number of protons (and electrons in neutral atom). Mass number A = protons + neutrons. Number of neutrons n = A - Z. Standard notation is ᴬ_Z X.", "prediction": {"prompt": "An electrically neutral atom of aluminium has 13 protons and 14 neutrons. What is its standard atomic notation, atomic number Z, and mass number A?", "options": ["²⁷₁₄Al, Z = 14, A = 27", "²⁷₁₃Al, Z = 13, A = 27", "¹³₂₇Al, Z = 27, A = 13", "¹⁴₁₃Al, Z = 13, A = 14"], "answer": 1, "explanation": "Atomic number Z = protons = 13 (subscript). Mass number A = protons + neutrons = 13 + 14 = 27 (superscript). The standard notation is ²⁷₁₃Al."}, "formulas": [{"label": "Atomic Number (Z)", "html": "Z = Number of Protons (p) = Number of Electrons (e) &nbsp; [in a neutral atom]", "cond": "Fundamental identity of an element on the periodic table"}, {"label": "Mass Number (A)", "html": "A = p + n = Z + n &implies; n = A &minus; Z", "cond": "A is always an integer; n is the number of neutrons"}, {"label": "Standard Nuclide Symbol", "html": "<sup>A</sup><sub>Z</sub>X &nbsp; (e.g. <sup>12</sup><sub>6</sub>C, <sup>23</sup><sub>11</sub>Na, <sup>35</sup><sub>17</sub>Cl)", "cond": "Superscript = Mass Number A, Subscript = Atomic Number Z"}], "deeper": "<p>The chemical identity of an atom is dictated solely by its nuclear charge—the number of protons inside its nucleus. This count is termed the <strong>atomic number (Z)</strong>:</p><p><code>Atomic number (Z) = Number of protons in the nucleus</code></p><p>Because an isolated atom is electrically neutral, it must contain an identical number of negative electrons: <code>p = e = Z</code>.</p><p>Since electrons contribute negligible mass (each ~1/1840 u), practically 100% of atomic mass resides in the nucleus. The protons and neutrons present in the nucleus are collectively termed <strong>nucleons</strong>. The total number of nucleons gives the <strong>mass number (A)</strong>:</p><p><code>Mass number (A) = Number of protons (p) + Number of neutrons (n)</code></p><p>To calculate the number of neutrons in any nuclide:</p><p><code>Number of neutrons (n) = Mass number (A) − Atomic number (Z)</code></p><p>In standard scientific notation: <strong>ᴬ_Z X</strong> (e.g., ¹⁴₇N means Nitrogen with 7 protons, 7 electrons, and 14 − 7 = 7 neutrons).</p>", "worked": {"title": "Textbook Worked Example 8.5: Subatomic Inventory", "problem": "An atom has 79 protons and a mass number of 197. (i) Calculate the number of neutrons in the nucleus. (ii) How many electrons does this neutral atom possess? (iii) Identify the element and write its full nuclide symbol.", "given": "p = 79, A = 197", "steps": ["1. Calculate neutrons: n = A − Z = 197 − 79 = 118 neutrons.", "2. Determine electrons: In a neutral atom, electrons = protons = 79 electrons.", "3. Identify element: Z = 79 corresponds to Gold (symbol Au). Full notation: ¹⁹⁷₇₉Au."], "answer": "(i) 118 neutrons; (ii) 79 electrons; (iii) Gold (¹⁹⁷₇₉Au)."}, "connect": [["Uranium Mines at Jaduguda (Jharkhand)", "India's Uranium Corporation of India Limited (UCIL) operates underground mines at Jaduguda, mining uraninite ore containing uranium isotopes ²³⁸₉₂U and ²³⁵₉₂U for fuel bundles in pressurized heavy water reactors (PHWRs).", [{"t": "Uranium Corporation of India Limited (UCIL)", "u": "https://www.ucil.gov.in"}]], ["Monazite Thorium Sands of Alappuzha (Kerala)", "The coastal black sands of Chavara in Kerala are world-renowned for monazite mineral deposits rich in Thorium-232 (²³²₉₀Th), containing 90 protons and 142 neutrons, crucial for India's stage-three breeder nuclear future.", [{"t": "Indian Rare Earths Limited (IREL)", "u": "https://www.irel.co.in"}]]], "quizzes": [{"id": "c5_q1", "level": "Easy", "type": "mcq", "prompt": "What fundamental property uniquely determines the chemical identity of an element?", "options": ["The number of neutrons in the nucleus", "The mass number (A)", "The atomic number (Z), representing the number of protons", "The physical state of matter at room temperature"], "answer": 2, "wrong": ["Neutron counts can vary among isotopes of the same element.", "Different elements can have the same mass number (isobars).", "", "Physical state depends on temperature and pressure."], "hint": "Every element on the periodic table is ordered strictly by this number.", "solution": "Every atom of an element has the exact same number of protons (atomic number Z). Changing proton count transforms it into an entirely different element."}, {"id": "c5_q2", "level": "Medium", "type": "numerical", "prompt": "NCERT Exercise 11: An atom ⁷⁰₃₁Ga has 31 electrons. Calculate the number of neutrons present in its nucleus.", "answer": 39, "tolerance": 0.1, "unit": "neutrons", "hint": "Neutrons n = Mass number (A) - Atomic number (Z) = 70 - 31.", "solution": "Number of neutrons = 70 − 31 = 39 neutrons."}, {"id": "c5_q3", "level": "Hard", "type": "mcq", "prompt": "A divalent cation M²⁺ has 10 electrons and 12 neutrons. What is the atomic number Z and mass number A of the neutral element M?", "options": ["Z = 10, A = 22", "Z = 12, A = 24 (Magnesium)", "Z = 8, A = 20", "Z = 12, A = 22"], "answer": 1, "wrong": ["Z=10 is neon; M²⁺ lost 2 electrons, so neutral had 12.", "", "Z=8 is oxygen, which forms an anion O²⁻, not a cation.", "Mass number must be protons + neutrons = 12 + 12 = 24."], "hint": "A +2 cation lost 2 electrons. Neutral atom had 10 + 2 = 12 electrons.", "solution": "Neutral atom had 10 + 2 = 12 electrons, so protons Z = 12 (Magnesium). Mass number A = 12 + 12 = 24."}]}, {"id": "c6", "sim": "lab_bohr_bury", "nav": "Bohr-Bury Scheme & Valency", "badge": "SECTIONS 8.7 & 8.8 · ELECTRON ARCHITECTURE & VALENCY", "title": "Bohr-Bury Rules, Electron Shell Filling & Valency", "pages": [153, 156], "deck": "The arrangement of electrons across various shells is called electronic configuration. The Bohr-Bury scheme specifies three fundamental rules: (1) The maximum capacity of any shell is 2n² (K=2, L=8, M=18, N=32); (2) The outermost shell cannot accommodate more than 8 electrons (octet rule); (3) Electrons do not enter a new shell until inner shells are filled. The electrons in the outermost shell are valence electrons, which dictate the combining capacity or valency of the element.", "summary": "Shell electron capacity is 2n² (K:2, L:8, M:18). Outermost shell holds max 8 electrons. Valency is the combining capacity: for valence electrons v ≤ 4, Valency = v; for v > 4, Valency = 8 - v.", "prediction": {"prompt": "An atom has 17 electrons (Chlorine). Its electronic configuration is 2, 8, 7. What is the number of valence electrons and the valency of chlorine?", "options": ["Valence electrons = 7, Valency = 7", "Valence electrons = 7, Valency = 1, because it needs 1 electron to complete a stable octet (8 - 7 = 1)", "Valence electrons = 2, Valency = 8", "Valence electrons = 8, Valency = 0"], "answer": 1, "explanation": "Chlorine has 7 valence electrons in its outermost M-shell. To achieve noble gas stability (octet of 8), it readily gains 1 electron. Hence, its valency is 8 - 7 = 1."}, "formulas": [{"label": "Bohr-Bury Shell Maximum Capacity", "html": "Capacity = 2n<sup>2</sup> &implies; K (n=1): 2, &nbsp; L (n=2): 8, &nbsp; M (n=3): 18, &nbsp; N (n=4): 32", "cond": "n is the principal energy level index"}, {"label": "Valency Calculation Rules", "html": "Valency = v &nbsp; (if valence electrons v &le; 4)<br>Valency = 8 &minus; v &nbsp; (if valence electrons v &gt; 4)", "cond": "Noble gases (He has duplet 2; Ne, Ar have octet 8) have valency = 0"}], "deeper": "<p>The distribution of electrons among various shells is guided by three principles formulated by <strong>Bohr and Bury</strong>:</p><ol><li><strong>Maximum Capacity (2n²):</strong> The maximum number of electrons in shell <em>n</em> is 2n²:<ul><li>K-shell (n=1): 2 &times; 1² = 2 electrons</li><li>L-shell (n=2): 2 &times; 2² = 8 electrons</li><li>M-shell (n=3): 2 &times; 3² = 18 electrons</li><li>N-shell (n=4): 2 &times; 4² = 32 electrons</li></ul></li><li><strong>Octet Rule:</strong> The maximum number of electrons that can be accommodated in the outermost shell is <strong>8</strong> (even if the shell capacity is higher).</li><li><strong>Stepwise Filling:</strong> Electrons do not occupy a new shell until the inner shells are fully filled.</li></ol><p><strong>Valency Mechanics:</strong> The electrons present in the outermost shell are called <strong>valence electrons</strong>. Atoms react chemically to attain a stable completely filled outermost shell (a duplet of 2 for He, or an octet of 8 for other noble gases):</p><ul><li>For elements with 1, 2, 3, or 4 valence electrons: <code>Valency = Valence electrons (v)</code> (e.g. Na has 1, Mg has 2, Al has 3, C has 4).</li><li>For elements with 5, 6, 7, or 8 valence electrons: <code>Valency = 8 − Valence electrons</code> (e.g. N has 8−5=3, O has 8−6=2, Cl has 8−7=1, Ne/Ar have 8−8=0).</li></ul>", "worked": {"title": "NCERT Exercise 8 & 9: Electronic Configurations of First 18 Elements", "problem": "Determine the electronic configuration, valence electrons, and valency for: (a) Magnesium (Z = 12), (b) Silicon (Z = 14), and (c) Oxygen (Z = 8).", "given": "Z_Mg = 12, Z_Si = 14, Z_O = 8", "steps": ["1. Magnesium (Z = 12): K=2, L=8, M=2. Configuration: 2, 8, 2. Valence electrons = 2. Valency = 2 (loses 2 e⁻).", "2. Silicon (Z = 14): K=2, L=8, M=4. Configuration: 2, 8, 4. Valence electrons = 4. Valency = 4 (shares 4 e⁻).", "3. Oxygen (Z = 8): K=2, L=6. Configuration: 2, 6. Valence electrons = 6. Valency = 8 − 6 = 2 (gains 2 e⁻)."], "answer": "Mg: 2,8,2 (valency 2); Si: 2,8,4 (valency 4); O: 2,6 (valency 2)."}, "connect": [["Semiconductor Silicon Valley of Bengaluru (Karnataka)", "Silicon (Z=14, configuration 2, 8, 4) has 4 valence electrons forming tetrahedral covalent crystal lattices. Doped with tiny amounts of phosphorus (valency 5) or boron (valency 3), it powers India's semiconductor design fabs across Bengaluru and Noida.", [{"t": "India Semiconductor Mission (ISM)", "u": "https://ism.gov.in"}]], ["Salt Works of Sambhar Lake (Rajasthan)", "Sodium chloride (NaCl) forms via ionic transfer: Sodium (2, 8, 1) transfers its 1 valence electron to Chlorine (2, 8, 7), giving both atoms complete stable noble gas octets (Na⁺ 2, 8 and Cl⁻ 2, 8, 8).", [{"t": "Hindustan Salts Limited (Sambhar Lake)", "u": "https://hindsalts.gov.in"}]]], "quizzes": [{"id": "c6_q1", "level": "Easy", "type": "mcq", "prompt": "What is the maximum number of electrons that can be accommodated in the L-shell (n = 2) according to the 2n² rule?", "options": ["2", "8", "18", "32"], "answer": 1, "wrong": ["2 is the capacity of the K-shell (n=1).", "", "18 is the capacity of the M-shell (n=3).", "32 is the capacity of the N-shell (n=4)."], "hint": "Apply formula 2n² where n = 2.", "solution": "Capacity = 2 × (2)² = 2 × 4 = 8 electrons."}, {"id": "c6_q2", "level": "Medium", "type": "mcq", "prompt": "An element has an atomic number of 16 (Sulphur). What is its electronic configuration and valency?", "options": ["Configuration: 2, 8, 6; Valency = 2", "Configuration: 2, 6, 8; Valency = 6", "Configuration: 2, 8, 6; Valency = 6", "Configuration: 2, 14; Valency = 4"], "answer": 0, "wrong": ["", "Shells fill in order: K=2, L=8, M=6.", "Valency for 6 valence electrons is 8 - 6 = 2, not 6.", "The L-shell cannot hold 14 electrons."], "hint": "Sulphur has 6 valence electrons, so it gains 2 electrons to attain an octet.", "solution": "Electronic configuration: 2, 8, 6. Valency = 8 − 6 = 2."}, {"id": "c6_q3", "level": "Hard", "type": "mcq", "prompt": "Why do noble gases like Helium (Z=2) and Neon (Z=10) have zero combining capacity (valency = 0)?", "options": ["Because their nuclei lack protons", "Because their outermost valence shells are completely full (duplet for He, octet for Ne), giving maximum thermodynamic stability", "Because their electrons travel faster than light", "Because they are radioactive and disintegrate immediately"], "answer": 1, "wrong": ["Helium has 2 protons; Neon has 10 protons.", "", "Electron velocities never exceed light speed.", "Helium and Neon are exceptionally stable non-radioactive elements."], "hint": "Atoms combine only to achieve full shells.", "solution": "With a complete duplet (He) and octet (Ne), they have zero tendency to gain, lose, or share electrons, hence valency = 0."}]}, {"id": "c7", "sim": "lab_isotopes_isobars", "nav": "Isotopes, Isobars & Tech", "badge": "SECTION 8.9 · ISOTOPES, ISOBARS & APPLICATIONS", "title": "Isotopes, Isobars & Real-World Nuclear Applications", "pages": [156, 160], "deck": "Isotopes are atoms of the same element having identical atomic number (Z) but different mass numbers (A), due to different numbers of neutrons (e.g. Protium ¹₁H, Deuterium ²₁H, Tritium ³₁H; Carbon-12, 13, 14). Isotopes have identical chemical properties but slightly different physical properties. Fractional atomic masses arise from weighted isotopic abundance (e.g. Chlorine is 35.5 u). Isobars are atoms of different elements having different atomic numbers but the same mass number (e.g. ⁴⁰₁₈Ar and ⁴⁰₂₀Ca). Isotopes play vital roles in medicine, energy, and archaeology.", "summary": "Isotopes: same Z, different A (same element, different neutrons). Isobars: different Z, same A (different elements, same total nucleons). Radioisotopes are used in cancer therapy (Co-60), nuclear fuel (U-235), thyroid treatment (I-131), and carbon dating (C-14).", "prediction": {"prompt": "Natural chlorine gas consists of 75% ³⁵Cl (mass 35 u) and 25% ³⁷Cl (mass 37 u). What is the average atomic mass of naturally occurring chlorine?", "options": ["36.0 u (simple average of 35 and 37)", "35.5 u (weighted average: 35 × 0.75 + 37 × 0.25)", "35.0 u", "72.0 u"], "answer": 1, "explanation": "Average atomic mass is the weighted sum based on natural isotopic abundance: (35 × 75/100) + (37 × 25/100) = 26.25 + 9.25 = 35.5 u."}, "formulas": [{"label": "Average Atomic Mass Formula", "html": "Average Mass = &sum; <span class=\"frac\"><span class=\"num\">Mass<sub>i</sub> &times; Abundance<sub>i</sub>%</span><span class=\"den\">100</span></span>", "cond": "Explains fractional atomic masses on the periodic table (e.g. Cl = 35.5 u)"}, {"label": "Isotopes vs Isobars Definition", "html": "Isotopes: Same Z, Different A &nbsp; (e.g. <sup>1</sup><sub>1</sub>H, <sup>2</sup><sub>1</sub>H, <sup>3</sup><sub>1</sub>H)<br>Isobars: Different Z, Same A &nbsp; (e.g. <sup>40</sup><sub>18</sub>Ar, <sup>40</sup><sub>20</sub>Ca)", "cond": "Isotopes share chemical properties; Isobars differ in chemical properties"}], "deeper": "<p><strong>Isotopes:</strong> Atoms of the same element that have the same atomic number (Z) but different mass numbers (A). Examples:</p><ul><li><strong>Hydrogen:</strong> Protium (¹₁H, 1p, 0n), Deuterium (²₁H, 1p, 1n), Tritium (³₁H, 1p, 2n).</li><li><strong>Carbon:</strong> Carbon-12 (¹²₆C, 6n), Carbon-13 (¹³₆C, 7n), Carbon-14 (¹⁴₆C, 8n).</li><li><strong>Chlorine:</strong> Chlorine-35 (³⁵₁₇Cl, 18n) and Chlorine-37 (³⁷₁₇Cl, 20n) occurring in a 3:1 (75%:25%) ratio.</li></ul><p><em>Why do isotopes have identical chemical properties?</em> Chemical properties depend entirely on the number and arrangement of valence electrons. Since all isotopes of an element have identical proton and electron configurations, they form identical chemical bonds!</p><p><strong>Isobars:</strong> Atoms of different chemical elements having different atomic numbers (Z) but the same mass number (A). For example, Argon (⁴⁰₁₈Ar, 18p, 22n) and Calcium (⁴⁰₂₀Ca, 20p, 20n) both have 40 nucleons, but their chemical properties are completely different because their electron configurations differ (2, 8, 8 vs 2, 8, 8, 2).</p><p><strong>Essential Real-World Applications of Isotopes:</strong></p><ul><li><strong>Uranium-235 (²³⁵₉₂U):</strong> Used as nuclear fuel in atomic power plants.</li><li><strong>Cobalt-60 (⁶⁰₂₇Co):</strong> Emits high-energy gamma rays for cancer radiation therapy.</li><li><strong>Iodine-131 (¹³¹₅₃I):</strong> Used to diagnose and treat goitre and thyroid disorders.</li><li><strong>Carbon-14 (¹⁴₆C):</strong> Used in archaeology to determine the age of ancient fossils and artefacts via radiocarbon dating.</li></ul>", "worked": {"title": "Isotope Calculation Example 8.7: Fractional Atomic Mass", "problem": "Bromine occurs in nature as two isotopes: ⁷⁹₃₅Br (49.7%) and ⁸¹₃₅Br (50.3%). Calculate the average atomic mass of naturally occurring bromine.", "given": "⁷⁹Br = 79 u (49.7%), ⁸¹Br = 81 u (50.3%)", "steps": ["1. Formula: Avg Mass = (79 &times; 49.7 / 100) + (81 &times; 50.3 / 100).", "2. First term: 79 &times; 0.497 = 39.263 u.", "3. Second term: 81 &times; 0.503 = 40.743 u.", "4. Sum: 39.263 + 40.743 = 80.006 u &approx; 80.0 u."], "answer": "The average atomic mass of bromine is 80.0 u."}, "connect": [["Tata Memorial Hospital & Cobalt-60 Teletherapy (Mumbai)", "Tata Memorial Centre in Parel, Mumbai, one of Asia's largest cancer treatment centers, utilizes Cobalt-60 Bhabhatron teletherapy units developed indigenously by BARC to provide affordable radiation therapy to thousands of patients across India.", [{"t": "Tata Memorial Centre (TMC)", "u": "https://tmc.gov.in"}]], ["Kudankulam Nuclear Power Plant (Tamil Nadu)", "Operating with enriched Uranium-235 fuel, the Kudankulam Nuclear Power Plant generates 2,000 MW of low-carbon electricity for the southern Indian grid, utilizing controlled nuclear fission chain reactions.", [{"t": "Nuclear Power Corporation of India Limited (NPCIL)", "u": "https://www.npcil.nic.in"}]]], "quizzes": [{"id": "c7_q1", "level": "Easy", "type": "mcq", "prompt": "Which radioisotope is widely used in hospital oncology departments for the radiation treatment of cancer?", "options": ["Carbon-14", "Cobalt-60", "Uranium-235", "Iodine-131"], "answer": 1, "wrong": ["Carbon-14 is used for radiocarbon dating of archaeological specimens.", "", "Uranium-235 is used as fuel in nuclear reactors.", "Iodine-131 is used specifically for thyroid gland treatments."], "hint": "Used in the Indian indigenously built Bhabhatron teletherapy unit.", "solution": "Cobalt-60 emits penetrating gamma rays used to destroy cancerous tumor cells."}, {"id": "c7_q2", "level": "Medium", "type": "mcq", "prompt": "Argon (⁴⁰₁₈Ar) and Calcium (⁴⁰₂₀Ca) have the same mass number (40) but different atomic numbers (18 and 20). What is the term for such pairs of atoms?", "options": ["Isotopes", "Isobars", "Isotones", "Allotropes"], "answer": 1, "wrong": ["Isotopes have the SAME atomic number.", "", "Isotones have the same number of neutrons.", "Allotropes are different physical structural forms of the same element (like diamond and graphite)."], "hint": "Iso-bars: 'bar' denotes mass / weight.", "solution": "Isobars are atoms of different chemical elements having different atomic numbers (Z) but identical mass numbers (A)."}, {"id": "c7_q3", "level": "Hard", "type": "mcq", "prompt": "Why do isotopes of an element (such as ¹²₆C and ¹⁴₆C) display identical chemical reactions despite having different physical masses?", "options": ["Because chemical reactivity depends strictly on valence electron configuration, which is identical in all isotopes of an element", "Because neutrons participate directly in ionic bonds", "Because the nucleus repels outer electrons uniformly", "Because all isotopes possess the same mass number"], "answer": 0, "wrong": ["", "Neutrons are neutral and uncharged; they do not participate in chemical bonding.", "The nucleus attracts electrons via Coulomb force, never repels them.", "Isotopes have different mass numbers by definition."], "hint": "Chemical bonds involve sharing or transferring valence electrons.", "solution": "Chemical properties depend on valence electrons. Since all isotopes have the same atomic number Z, their electron configurations are identical, yielding identical chemistry."}]}], "exerciseMap": [[1, "Rutherford Gold Foil Options & Rationale", 1], [2, "Bohr's Atomic Model Statements & Reasons", 2], [3, "Nuclear Species Relations (X, Y, Z)", 6], [4, "Rutherford's Conclusion on Positively Charged Part", 1], [5, "Chronological Evolution of Atomic Models", 0], [6, "Why Orbiting Electrons Do Not Fly Away", 2], [7, "Assertion & Reason on Subatomic Particles", 3], [8, "Magnesium Subatomic Counts & Electron Arrangement", 5], [9, "Analysis of Atomic Schematics (Fig. 8.17)", 5], [10, "Atomic Stability: Rutherford vs Bohr Models", 2], [11, "Neutron Count in ⁷⁰X with 31 Electrons", 4], [12, "Subatomic Composition of Gold (79 Protons, A = 197)", 4], [13, "Completing Table 8.5 (Nuclide Data)", 4], [14, "Comprehensive Analysis of Element X (A=35, n=18)", 6], [15, "Hypothetical Particle Thought Experiment", 4]], "exercises": [{"q": 1, "title": "Rutherford Gold Foil Options & Rationale", "page": 158, "lessonIndex": 1, "question": "Choose the correct options and explain the reason for the correct and incorrect options in the context of Ernest Rutherford’s gold foil experiment:\n(i) The experiment clearly showed the existence of neutrons in the nucleus.\n(ii) The results disproved the plum pudding model and led to the idea of a nucleus at the centre of the atom.\n(iii) The large deflection of a few alpha particles indicated that most of the mass of the atom and positive charge are packed into a tiny centre.\n(iv) The way alpha particles were deflected showed that electrons move around the nucleus.", "given": "Four evaluation statements on Rutherford's alpha scattering experiment", "steps": ["Statement (i) is INCORRECT: The gold foil experiment discovered the atomic nucleus and positively charged protons. Neutrons were discovered 21 years later by James Chadwick in 1932.", "Statement (ii) is CORRECT: Rutherford observed particles rebounding backwards (>90°), which directly disproved Thomson's diffuse plum pudding model and established the concept of a concentrated central nucleus.", "Statement (iii) is CORRECT: Large deflections and backward rebounds (1 in 20,000) could only be produced by a very heavy, intensely concentrated positive core exerting strong electrostatic Coulomb repulsion.", "Statement (iv) is INCORRECT: Deflection patterns were governed by repulsion from the heavy positive nucleus, not by electrons. Electrons are ~7,300 times lighter than alpha particles and had negligible influence on alpha trajectories."], "answer": "Statements (ii) and (iii) are correct; Statements (i) and (iv) are incorrect.", "takeaway": "Alpha scattering proved the existence of a tiny, dense, positive nucleus, disproving Thomson's plum pudding model."}, {"q": 2, "title": "Bohr's Atomic Model Statements & Reasons", "page": 158, "lessonIndex": 2, "question": "Which of the following statements are correct or incorrect according to the Bohr’s atomic model? Give a reason for each statement.\n(i) Electrons lose energy while moving in fixed orbits and slowly fall into the nucleus.\n(ii) Electrons can exist anywhere around the nucleus with no fixed energy.\n(iii) Electrons revolve around the nucleus in orbits of fixed energy without losing energy.\n(iv) Electrons can be found between energy levels as they move around the nucleus.", "given": "Four statements on Bohr's postulates", "steps": ["Statement (i) is INCORRECT: Bohr postulated that electrons revolving in permissible stationary orbits do NOT radiate energy; hence they never spiral or fall into the nucleus.", "Statement (ii) is INCORRECT: Electrons can only occupy specific discrete allowed orbits (quantized energy levels K, L, M, N) with definite fixed energies.", "Statement (iii) is CORRECT: This is Bohr's fundamental postulate of discrete non-radiating stationary states that guarantees atomic stability.", "Statement (iv) is INCORRECT: Energy states are quantized. Electrons cannot exist between discrete energy levels (analogous to standing on the rungs of a ladder, never in between rungs)."], "answer": "Statement (iii) is correct; Statements (i), (ii), and (iv) are incorrect.", "takeaway": "Bohr introduced quantized, non-radiating stationary orbits to explain atomic stability."}, {"q": 3, "title": "Nuclear Species Relations (X, Y, Z)", "page": 158, "lessonIndex": 6, "question": "The composition of the nuclei of three atomic species X, Y, and Z are given as follows:\n• X: Number of protons = 18, Number of neutrons = 19\n• Y: Number of protons = 17, Number of neutrons = 18\n• Z: Number of protons = 17, Number of neutrons = 20\nExplain the relation between the following:\n(i) Y and Z\n(ii) Z and X", "given": "Species X (18p, 19n), Y (17p, 18n), Z (17p, 20n)", "steps": ["Calculate mass numbers (A = p + n):", "Species X: Z = 18, n = 19 &rarr; Mass number A = 18 + 19 = 37 (Argon-37).", "Species Y: Z = 17, n = 18 &rarr; Mass number A = 17 + 18 = 35 (Chlorine-35).", "Species Z: Z = 17, n = 20 &rarr; Mass number A = 17 + 20 = 37 (Chlorine-37).", "Part (i): Relation between Y and Z: Both have the identical atomic number Z = 17 (Chlorine) but different mass numbers (35 and 37). Therefore, Y and Z are ISOTOPES of Chlorine.", "Part (ii): Relation between Z and X: Both have different atomic numbers (Z = 17 for Z, Z = 18 for X) but identical mass number A = 37. Therefore, Z and X are ISOBARS of each other."], "answer": "(i) Y and Z are Isotopes (same Z=17, different A); (ii) Z and X are Isobars (same A=37, different Z).", "takeaway": "Isotopes share atomic number Z; Isobars share mass number A."}, {"q": 4, "title": "Rutherford's Conclusion on Positively Charged Part", "page": 158, "lessonIndex": 1, "question": "What conclusion did Rutherford draw about the position and characteristics of the atom’s positively charged part based on the few alpha particles that bounced back or were deflected at large angles in the gold foil experiment?", "given": "Alpha particles rebounding backwards (>90°)", "steps": ["1. Position: The positively charged part is located at the center of the atom in an extremely concentrated region named the 'nucleus'.", "2. Dimensions: The nucleus occupies an exceptionally tiny volume—its radius (~10⁻¹⁵ m) is roughly 100,000 times smaller than the atom's radius (~10⁻¹⁰ m).", "3. Mass & Density: Virtually all the mass of the atom is concentrated in this positive nucleus, generating the immense electrostatic repulsive field required to reverse high-speed alpha particles."], "answer": "The positive charge and mass are concentrated in a tiny, immensely dense central core called the nucleus.", "takeaway": "The atomic nucleus contains virtually all mass and positive charge in 1/100,000th the atomic radius."}, {"q": 5, "title": "Chronological Evolution of Atomic Models", "page": 159, "lessonIndex": 0, "question": "Explain and arrange the following statements in the correct chronological order to show how atomic models have evolved over time.\n(i) Bohr’s model proposed that electrons move in fixed orbits around the nucleus, each with a definite energy.\n(ii) Thomson’s model depicted the atom as a ʻplum puddingʼ with electrons embedded in a sphere of positive charge.\n(iii) Rutherford’s model proposed that atoms have a dense central nucleus.\n(iv) Dalton’s model described atoms as indivisible particles.", "given": "Four historical milestones in atomic theory", "steps": ["1. (iv) Dalton's Model (1808): Proposed that matter consists of indivisible, indestructible hard spheres.", "2. (ii) Thomson's Plum Pudding Model (1897-1904): Disproved indivisibility by discovering the electron, picturing negative corpuscles embedded in a positive sphere.", "3. (iii) Rutherford's Nuclear Model (1911): Disproved plum pudding model via gold foil scattering, showing a central dense nucleus with orbiting electrons.", "4. (i) Bohr's Quantized Model (1913): Overcame Rutherford's orbital collapse dilemma by postulating discrete non-radiating energy levels."], "answer": "Correct chronological order: (iv) &rarr; (ii) &rarr; (iii) &rarr; (i).", "takeaway": "Dalton (1808) &rarr; Thomson (1904) &rarr; Rutherford (1911) &rarr; Bohr (1913)."}, {"q": 6, "title": "Why Orbiting Electrons Do Not Fly Away", "page": 159, "lessonIndex": 2, "question": "Electrons move around the nucleus in orbits. Why do they not fly away from the atom? Explain what keeps them attracted to the nucleus.", "given": "Orbiting negative electrons around positive nucleus", "steps": ["1. Electrons possess negative electrical charge (−e) while the nucleus contains protons with positive electrical charge (+Ze).", "2. According to Coulomb's Law of Electrostatics, opposite charges attract with force F = k·(q₁·q₂)/r².", "3. This attractive electrostatic force acts as the indispensable centripetal force (F_c = m·v²/r) that continually bends the electron's velocity vector, keeping it bound in stable orbital motion."], "answer": "The electrostatic attraction (Coulomb force) between positive protons in the nucleus and negative electrons provides the centripetal force holding them in orbit.", "takeaway": "Electrostatic attraction serves as the centripetal tether preventing orbital escape."}, {"q": 7, "title": "Assertion & Reason on Subatomic Particles", "page": 159, "lessonIndex": 3, "question": "Assertion (A): The discovery of subatomic particles helped in understanding the atomic structure.\nReason (R): The number of electrons is equal to the number of protons in an atom.\nChoose the correct option:\n(i) Both A and R are true, and R is the correct explanation of A.\n(ii) Both A and R are true, but R is not the correct explanation of A.\n(iii) A is true, but R is false.\n(iv) A is false, but R is true.", "given": "Assertion A and Reason R", "steps": ["1. Evaluate Assertion (A): Discovering electrons, protons, and neutrons demystified atomic structure and chemistry. A is TRUE.", "2. Evaluate Reason (R): In any electrically neutral atom, the number of negative electrons equals the number of positive protons. R is TRUE.", "3. Evaluate explanation: While R explains electrical neutrality, it does not explain the architectural arrangement of the atom (nucleus, shells, orbitals). Therefore, R is not the correct explanation of A."], "answer": "Option (ii) is correct: Both A and R are true, but R is not the correct explanation of A.", "takeaway": "Proton-electron equality explains electrical neutrality, while quantum experiments explain structural architecture."}, {"q": 8, "title": "Magnesium Subatomic Counts & Electron Arrangement", "page": 159, "lessonIndex": 5, "question": "Magnesium is essential for many biological processes, including muscle contraction. For an atom of magnesium with a mass number of 24 and atomic number 12, determine the number of (i) protons, (ii) neutrons, (iii) electrons, and also illustrate the arrangement of electrons in a magnesium atom.", "given": "Magnesium nuclide: ²⁴₁₂Mg", "steps": ["1. Number of protons = Atomic number Z = 12.", "2. Number of neutrons = Mass number A − Atomic number Z = 24 − 12 = 12.", "3. Number of electrons = Protons (neutral atom) = 12.", "4. Electron distribution by Bohr-Bury rules (2n²):", "   • K-shell (n=1): 2 electrons", "   • L-shell (n=2): 8 electrons", "   • M-shell (n=3): 2 valence electrons", "5. Electronic configuration is 2, 8, 2.", "6. Diagram: Central nucleus containing 12p⁺ and 12n⁰, surrounded by three concentric circular shells: K-ring with 2 dots, L-ring with 8 dots, and outermost M-ring with 2 dots."], "answer": "(i) 12 protons; (ii) 12 neutrons; (iii) 12 electrons. Electronic configuration: 2, 8, 2 (K=2, L=8, M=2).", "takeaway": "Magnesium has configuration 2, 8, 2 with 2 valence electrons in the outermost M-shell."}, {"q": 9, "title": "Analysis of Atomic Schematics (Fig. 8.17)", "page": 159, "lessonIndex": 5, "question": "Find the following information for the elements shown in Fig. 8.17 [(a), (b), (c), (d)]:\n(i) Name of the element\n(ii) Symbol\n(iii) Total number of electrons\n(iv) Number of valence electrons\n(v) Valency of the element\n(vi) Number of protons\n(vii) Atomic number", "given": "Fig. 8.17 diagrams showing electron shell distributions", "steps": ["• Diagram (a) [2, 1]: (i) Lithium; (ii) Li; (iii) Total electrons = 3; (iv) Valence electrons = 1; (v) Valency = 1; (vi) Protons = 3; (vii) Atomic number = 3.", "• Diagram (b) [2, 4]: (i) Carbon; (ii) C; (iii) Total electrons = 6; (iv) Valence electrons = 4; (v) Valency = 4; (vi) Protons = 6; (vii) Atomic number = 6.", "• Diagram (c) [2, 8, 1]: (i) Sodium; (ii) Na; (iii) Total electrons = 11; (iv) Valence electrons = 1; (v) Valency = 1; (vi) Protons = 11; (vii) Atomic number = 11.", "• Diagram (d) [2, 6]: (i) Oxygen; (ii) O; (iii) Total electrons = 8; (iv) Valence electrons = 6; (v) Valency = 8 − 6 = 2; (vi) Protons = 8; (vii) Atomic number = 8."], "answer": "(a) Lithium (Li, Z=3, valency 1); (b) Carbon (C, Z=6, valency 4); (c) Sodium (Na, Z=11, valency 1); (d) Oxygen (O, Z=8, valency 2).", "takeaway": "Valency is directly calculated from outermost valence electrons: v (if ≤4) or 8 − v (if >4)."}, {"q": 10, "title": "Atomic Stability: Rutherford vs Bohr Models", "page": 160, "lessonIndex": 2, "question": "Both Rutherford’s and Bohr’s models have electrons orbiting the nucleus. Why did Rutherford’s model fail to explain atomic stability, while Bohr’s model succeeded?", "given": "Orbital acceleration in Rutherford vs discrete stationary shells in Bohr", "steps": ["1. Failure of Rutherford's Model: In classical electrodynamics, any accelerated charged particle radiates energy. An electron orbiting in a circle is in continuous acceleration, so it must radiate electromagnetic waves, lose kinetic energy, spiral inward, and crash into the nucleus within ~10⁻¹¹ seconds. Hence, Rutherford's model predicted that stable atoms could not exist.", "2. Success of Bohr's Model: Niels Bohr introduced quantum postulates: electrons can revolve ONLY in certain discrete non-radiating orbits (stationary states). While moving in these allowed energy levels, electrons do NOT radiate energy. Radiation is emitted only when an electron makes an instantaneous quantum jump between discrete levels. This revolutionary postulate accounted for the absolute stability of atoms."], "answer": "Rutherford failed because classical accelerating charges radiate and spiral into the nucleus; Bohr succeeded by postulating discrete non-radiating stationary energy shells.", "takeaway": "Quantized stationary orbits prevented classical electromagnetic collapse."}, {"q": 11, "title": "Neutron Count in ⁷⁰X with 31 Electrons", "page": 160, "lessonIndex": 4, "question": "An atom ⁷⁰X has 31 electrons. How many neutrons are there in its nucleus?", "given": "Neutral atom with mass number A = 70 and 31 electrons", "steps": ["1. In a neutral atom, number of protons = number of electrons = 31.", "2. Therefore, atomic number Z = 31 (Gallium, Ga).", "3. Mass number A = 70.", "4. Number of neutrons n = Mass number (A) − Atomic number (Z) = 70 − 31 = 39 neutrons."], "answer": "There are 39 neutrons in its nucleus.", "takeaway": "Neutron count is always Mass number A minus Atomic number Z (70 − 31 = 39)."}, {"q": 12, "title": "Subatomic Composition of Gold (79 Protons, A = 197)", "page": 160, "lessonIndex": 4, "question": "An atom has 79 protons and a mass number of 197. Calculate (i) the number of neutrons, and (ii) the number of electrons.", "given": "Protons p = 79, Mass number A = 197", "steps": ["1. Atomic number Z = protons = 79.", "2. Number of neutrons n = Mass number (A) − Protons (p) = 197 − 79 = 118 neutrons.", "3. In a neutral atom, number of electrons = number of protons = 79 electrons."], "answer": "(i) 118 neutrons; (ii) 79 electrons (Nuclide: ¹⁹⁷₇₉Au).", "takeaway": "Gold has 79 protons, 79 electrons, and 118 neutrons."}, {"q": 13, "title": "Completing Table 8.5 (Nuclide Data)", "page": 160, "lessonIndex": 4, "question": "Complete Table 8.5:\n• Row 1: Atomic number 5, Mass number —, Neutrons 6, Protons —, Electrons —, Name of element —\n• Row 2: Atomic number —, Mass number 14, Neutrons —, Protons —, Electrons 7, Name of element Nitrogen\n• Row 3: Atomic number —, Mass number 24, Neutrons —, Protons 12, Electrons —, Name of element —\n• Row 4: Atomic number 15, Mass number —, Neutrons 16, Protons —, Electrons —, Name of element —\n• Row 5: Atomic number —, Mass number 1, Neutrons 0, Protons —, Electrons —, Name of element —", "given": "Table 8.5 with missing values for five elements", "steps": ["Row 1: Z = 5 &rarr; p = 5, e = 5. A = p + n = 5 + 6 = 11. Element with Z = 5 is Boron.", "Row 2: Nitrogen, e = 7 &rarr; Z = 7, p = 7. n = A − p = 14 − 7 = 7.", "Row 3: p = 12 &rarr; Z = 12, e = 12. n = A − p = 24 − 12 = 12. Element with Z = 12 is Magnesium.", "Row 4: Z = 15 &rarr; p = 15, e = 15. A = p + n = 15 + 16 = 31. Element with Z = 15 is Phosphorus.", "Row 5: A = 1, n = 0 &rarr; p = A − n = 1 − 0 = 1, Z = 1, e = 1. Element with Z = 1 is Hydrogen."], "answer": "Row 1: Boron (A=11, p=5, e=5); Row 2: Nitrogen (Z=7, p=7, n=7); Row 3: Magnesium (Z=12, e=12, n=12); Row 4: Phosphorus (A=31, p=15, e=15); Row 5: Hydrogen (Z=1, p=1, e=1).", "takeaway": "Using p = e = Z and A = p + n fully determines all nuclear parameters."}, {"q": 14, "title": "Comprehensive Analysis of Element X (A=35, n=18)", "page": 160, "lessonIndex": 6, "question": "Aman was discussing the structure of atom with his classmates. During the discussion, he learnt that an element X has a mass number of 35 and contains 18 neutrons. Based on this information, answer the following questions:\n(i) How many electrons and protons does element X have?\n(ii) What is its atomic number?\n(iii) Identify the element X.\n(iv) Write its electronic configuration.\n(v) How many valence electrons does it have?\n(vi) What will be the mass number if two neutrons are added to its nucleus?\n(vii) What will be the relation of X with the new atom?", "given": "Element X: Mass number A = 35, neutrons n = 18", "steps": ["Part (i): Protons p = A − n = 35 − 18 = 17 protons. Neutral atom has 17 electrons.", "Part (ii): Atomic number Z = protons = 17.", "Part (iii): Element with Z = 17 is Chlorine (Cl).", "Part (iv): Electronic configuration of 17 electrons: 2, 8, 7 (K=2, L=8, M=7).", "Part (v): Valence electrons = 7 (in the outermost M-shell).", "Part (vi): If two neutrons are added, new neutron count = 18 + 2 = 20. New mass number A = 17 + 20 = 37.", "Part (vii): The new atom (³⁷₁₇Cl) and element X (³⁵₁₇Cl) have the same atomic number (17) but different mass numbers (35 and 37). Therefore, they are ISOTOPES."], "answer": "(i) 17 protons, 17 electrons; (ii) Z = 17; (iii) Chlorine; (iv) 2, 8, 7; (v) 7 valence electrons; (vi) Mass number = 37; (vii) They are Isotopes.", "takeaway": "Chlorine-35 and Chlorine-37 are isotopes sharing identical electron configuration 2, 8, 7."}, {"q": 15, "title": "Hypothetical Particle Thought Experiment", "page": 160, "lessonIndex": 4, "question": "In an atom, there are 12 protons and 12 neutrons in the nucleus. Now, imagine that all the electrons are replaced with some hypothetical particles that have the same charge as electrons but are 500 times heavier. What effect will this replacement have on the atom’s:\n(i) Atomic number\n(ii) Atomic mass\n(iii) Mass number\n(iv) Overall charge", "given": "Magnesium atom (12p, 12n, 12 electrons replaced by particles with charge -1 and mass 500 × m_e)", "steps": ["Part (i) Atomic number: UNCHANGED (remains 12). Atomic number is defined solely by the number of protons in the nucleus.", "Part (ii) Atomic mass: INCREASES SLIGHTLY. Standard electron mass is ~1/1840 u (~0.00054 u). A particle 500 times heavier has mass ~500/1840 u ≈ 0.272 u. For 12 such particles, mass contribution = 12 × 0.272 ≈ 3.26 u. Thus, the actual atomic mass increases from ~24.006 u to ~27.27 u.", "Part (iii) Mass number: UNCHANGED (remains 24). Mass number is strictly defined as the integer count of nucleons (protons + neutrons = 12 + 12 = 24). Extra-nuclear particles are not nucleons.", "Part (iv) Overall charge: REMAINS NEUTRAL (0). Each hypothetical particle carries the exact same charge (−1) as an electron. 12 negative charges balance the 12 positive protons (+12 − 12 = 0)."], "answer": "(i) Atomic number: Unchanged (12); (ii) Atomic mass: Increases slightly by ~3.26 u; (iii) Mass number: Unchanged (24); (iv) Overall charge: Neutral (0).", "takeaway": "Atomic number and mass number are purely nuclear properties invariant to extra-nuclear particle mass."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "iesc104") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var total = C.lessons.length * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Animation Loop ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1; // clamp delta on tab switch
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    var l = C.lessons[state.conceptIndex];
+    if(window.SIMS && window.SIMS[l.sim]){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+    var l = C.lessons[idx];
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "04");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + l.nav.toUpperCase();
+
+    // Show concept view, hide revision
+    document.getElementById("concept-view").style.display = "block";
+    document.getElementById("revision-view").style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / 07</span><span class="time-pill">≈ ' + l.minutes + ' min · NCF pp. ' + l.print + '</span></div>' +
+      '<h1 class="concept-title">' + l.title + '</h1>' +
+      '<p class="concept-deck">' + l.deck + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" aria-label="Learn Concept">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+    var quickItems = Array.isArray(l.quick) ? l.quick : (Array.isArray(l.summary) ? l.summary : [l.summary || l.deck]);
+    html += '<div class="quick-summary">' + quickItems.map(function(p){ return "<p>" + p + "</p>"; }).join("") + '</div>';
+
+    // Semantic Equations Card (Fixed P1-6 & P1-7)
+    if(l.formulas && l.formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        l.formulas.map(function(eq){
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + eq.label + '</span><span class="eq-cond">' + eq.cond + '</span></div>' +
+            '<div class="eq-math">' + eq.html + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Visual Derivation Accordion (Fixed P1-10)
+    if(idx === 4 || idx === 5){
+      html += '<details class="derivation"><summary>How these equations are derived geometrically from the v–t graph</summary>' +
+        '<p><b>1. First Equation (v = u + at):</b> The acceleration <i>a</i> is the slope of the v–t graph: <code>a = (v − u) / t ⟹ at = v − u ⟹ v = u + at</code>.</p>' +
+        '<p><b>2. Second Equation (s = ut + ½at²):</b> The displacement <i>s</i> is the area under the v–t curve between 0 and <i>t</i>. This region is divided into a rectangle of area <code>u × t</code> and an upper triangle of area <code>½ × t × (v − u)</code>. Substituting <code>v − u = at</code> gives <code>s = ut + ½at²</code>.</p>' +
+        '<p><b>3. Third Equation (v² = u² + 2as):</b> Treating the region as a single trapezium: <code>Area s = ½(u + v) × t</code>. From Equation 1, <code>t = (v − u) / a</code>. Substituting for <i>t</i>: <code>s = (v + u)(v − u) / (2a) = (v² − u²) / (2a) ⟹ v² = u² + 2as</code>.</p>' +
+        '</details>';
+    }
+
+    // Deep dive
+    html += '<details class="deep-dive"><summary>Go deeper into the physical concepts</summary><p>' + l.deeper + '</p></details>';
+    var workedHtml = typeof l.worked === 'object' && l.worked !== null
+      ? '<strong>' + (l.worked.title || 'Worked Example') + '</strong><br>' + (l.worked.problem || '') +
+        (l.worked.given ? '<br><br><strong>Given:</strong> ' + l.worked.given : '') +
+        (l.worked.steps ? '<br><strong>Steps:</strong><br>' + l.worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+        (l.worked.answer ? '<br><br><strong>Answer:</strong> ' + l.worked.answer : '')
+      : (l.worked || '');
+    html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK (Fixed P0-2)
+    if(l.prediction){
+      var pred = l.prediction;
+      html += '<section class="predict-card" aria-label="Predict First">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + pred.prompt + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || l.nav || l.title || "Interactive Simulation").toUpperCase();
+    var whatWatch = l.predict || (l.prediction ? l.prediction.prompt : "Explore the simulation controls and presets below.");
+    html += '<section class="lab-card" aria-label="Interactive Laboratory">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+      '<div class="lab-legend" id="lab-legend"></div>' +
+      
+      // Standardized Timeline Toolbar (Fixed P0-1)
+      '<div class="lab-toolbar">' +
+      '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+      '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward 0.5 seconds">⏭ Step (+0.5s)</button>' +
+      '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+      '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+      '<div class="scrubber-wrap">' +
+      '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+      '</div>' +
+      '</div>' +
+
+      '<div class="preset-bar" id="preset-bar"></div>' +
+      '<div class="lab-controls-grid" id="lab-controls"></div>' +
+      '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+      '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    html += '<section class="connect-section" aria-label="Real World Connections">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      l.connect.map(function(item){
+        var wow = /^Wow/i.test(item[0]);
+        var v = item[3] || null;
+        var links = item[2] || [];
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '">';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + item[0] + '</h3><p>' + item[1] + '</p>';
+        if(v && v.id){
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
+            '<img src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg" alt="" loading="lazy">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
+            '</button>';
+        }
+        if(links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + a.u + '" target="_blank" rel="noopener">' + a.t + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
+
+    // 05 PRACTICE BLOCK
+    html += '<section class="practice-section" aria-label="Practice and Mastery">' +
+      '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+      '<div class="practice-nav">' +
+      '<button class="level-tab active" data-lvl="0">Tier 1: Easy</button>' +
+      '<button class="level-tab" data-lvl="1">Tier 2: Medium</button>' +
+      '<button class="level-tab" data-lvl="2">Tier 3: Hard</button>' +
+      '</div>' +
+      '<div id="quiz-container"></div>' +
+      '</section>';
+
+    // REVISE CALLOUT
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + l.recall + '</div>';
+
+    // Footer Navigation
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < C.lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + C.lessons[idx + 1].nav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    document.getElementById("concept-view").innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && l.prediction){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var isRight = chosen === l.prediction.answer;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + l.prediction.explanation;
+      });
+    }
+    if(btnSkipPred && l.prediction){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Physical Principle:</b> " + l.prediction.explanation;
+      });
+    }
+
+    // Attach Timeline Controls
+    document.getElementById("btn-play-pause").addEventListener("click", function(){
+      if(state.playing) pause(); else play();
+    });
+    document.getElementById("btn-step-fwd").addEventListener("click", function(){
+      step(0.5);
+    });
+    document.getElementById("btn-reset-time").addEventListener("click", function(){
+      resetTimeline();
+    });
+    document.getElementById("time-scrubber").addEventListener("input", function(e){
+      seekTimeline(e.target.value);
+    });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation
+    if(window.SIMS && window.SIMS[l.sim]){
+      window.SIMS[l.sim].mount(l);
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var l = C.lessons[state.conceptIndex];
+    var q = l.quizzes[state.level];
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var html = '<div class="question-prompt">' + q.prompt + '</div>';
+    if(q.type === "mcq"){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + q.hint + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    document.getElementById("btn-toggle-hint").addEventListener("click", function(){
+      var hb = document.getElementById("quiz-hint-box");
+      hb.style.display = hb.style.display === "none" ? "block" : "none";
+    });
+
+    // Submit listener
+    document.getElementById("btn-submit-quiz").addEventListener("click", function(){
+      var fb = document.getElementById("quiz-feedback-box");
+      var isRight = false;
+      var userVal = "";
+
+      if(q.type === "mcq"){
+        var sel = document.querySelector('input[name="quiz_ans"]:checked');
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          fb.textContent = "Please select an answer choice first.";
+          return;
+        }
+        userVal = sel.value;
+        isRight = Number(userVal) === q.answer;
+      } else {
+        var inp = document.getElementById("quiz_num_ans");
+        if(!inp || inp.value.trim() === ""){
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          fb.textContent = "Please enter a numerical answer.";
+          return;
+        }
+        userVal = inp.value.trim();
+        var num = parseFloat(userVal);
+        isRight = Math.abs(num - q.answer) <= (q.tolerance || 0.05);
+      }
+
+      state.answers[qk] = { value: userVal, checked: true };
+      if(isRight){
+        state.correct[qk] = true;
+        fb.style.display = "block";
+        fb.className = "quiz-feedback success";
+        fb.innerHTML = "<b>That’s right!</b> " + q.solution;
+      } else {
+        fb.style.display = "block";
+        fb.className = "quiz-feedback retry";
+        var wrongMsg = (q.type === "mcq" && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : q.hint;
+        fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + q.solution + "</small>";
+      }
+      updateProgress();
+    });
+
+    if(old.checked){
+      // Trigger previous feedback
+      document.getElementById("btn-submit-quiz").click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "04");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    document.getElementById("concept-view").style.display = "none";
+    var revView = document.getElementById("revision-view");
+    revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
+      '<p class="concept-deck">All 16 End-of-Chapter Exercises from NCERT Class 9 Exploration (pp. 68–71) mapped directly to core concepts with full verbatim questions and step-by-step worked solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (16)</button>' +
+      C.lessons.map(function(l, li){
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + l.nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){ return e.conceptIdx === currentExFilter; });
+
+    html += filtered.map(function(ex){
+      var l = C.lessons[ex.conceptIdx];
+      var stepsHtml = (ex.steps || []).map(function(st){ return '<li>' + st + '</li>'; }).join("");
+
+      return '<article class="exercise-card" id="exercise-q' + ex.q + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span class="q-badge">QUESTION ' + ("0" + ex.q).slice(-2) + '</span>' +
+        '<span style="font-size:12px;color:var(--muted);font-weight:600;">NCERT Exploration p. ' + (ex.printPage || ex.page) + '</span>' +
+        '</div>' +
+        '<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">' +
+        'Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + l.nav + ') ↗</a>' +
+        '</div>' +
+        
+        '<div class="exercise-question-text">' + ex.question + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body">' +
+        (ex.given ? '<div class="given-data"><b>Given Data:</b> ' + ex.given + '</div>' : '') +
+        (stepsHtml ? '<ol class="solution-steps">' + stepsHtml + '</ol>' : '') +
+        (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+        (ex.takeaway ? '<div class="takeaway-box"><b>Key Conceptual Insight:</b> ' + ex.takeaway + '</div>' : '') +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    navContainer.innerHTML = C.lessons.map(function(l, i){
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + l.nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    document.getElementById("nav-revision").addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  document.getElementById("btn-reset-progress").addEventListener("click", function(){
+    if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+      state.answers = {};
+      state.correct = {};
+      saveStorage();
+      updateProgress();
+      renderQuiz();
+    }
+  });
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= C.lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept
+  };
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+
+// =========================================================================
+// 1. SIMULATION 1: Thomson Plum Pudding & Cathode Ray Tube (lab_roots_thomson)
+// =========================================================================
+(function(){
+  var simState = {
+    mode: "thomson", // "thomson", "crt_pos", "crt_neg", "crt_off"
+    eField: 0
+  };
+
+  function mount(lesson){
+    simState.mode = "thomson";
+    simState.eField = 0;
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#f43f5e;"></span><span>Positive Sphere (+Q)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Negative Electrons (&minus;)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Phosphor Screen Deflection</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p1-thomson">Watermelon Model (Thomson 1904)</button>' +
+      '<button class="preset-btn" id="p1-crt-pos">Cathode Ray: Top Plate (+)</button>' +
+      '<button class="preset-btn" id="p1-crt-neg">Cathode Ray: Top Plate (&minus;)</button>';
+
+    document.getElementById("p1-thomson").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.mode = "thomson";
+      simState.eField = 0;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Thomson watermelon model: Negative electrons embedded like seeds in a continuous uniform sphere of positive charge.";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p1-crt-pos").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.mode = "crt_pos";
+      simState.eField = 1;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Cathode ray deflects toward positive plate (+), proving rays consist of negatively charged subatomic particles (electrons)!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p1-crt-neg").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.mode = "crt_neg";
+      simState.eField = -1;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Negative plate repels cathode rays downward, reinforcing negative electrical charge.";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
+
+    if(simState.mode === "thomson"){
+      // Watermelon Sphere
+      svg += '<defs><radialGradient id="thGrad" cx="40%" cy="40%" r="60%">' +
+             '<stop offset="0%" stop-color="#fda4af"/>' +
+             '<stop offset="60%" stop-color="#f43f5e"/>' +
+             '<stop offset="100%" stop-color="#be123c"/>' +
+             '</radialGradient></defs>';
+      svg += '<circle cx="360" cy="135" r="95" fill="url(#thGrad)" stroke="#e11d48" stroke-width="3"/>';
+      svg += '<text x="360" y="35" text-anchor="middle" fill="#f43f5e" font-size="14" font-weight="bold">Sphere of Positive Charge (+Q)</text>';
+
+      // Embedded electrons
+      var seeds = [
+        {x: 320, y: 105}, {x: 400, y: 100}, {x: 295, y: 145},
+        {x: 360, y: 135}, {x: 430, y: 150}, {x: 330, y: 175},
+        {x: 390, y: 180}, {x: 350, y: 85},  {x: 370, y: 165},
+        {x: 300, y: 115}, {x: 420, y: 125}, {x: 360, y: 105}
+      ];
+      seeds.forEach(function(s){
+        svg += '<circle cx="' + s.x + '" cy="' + s.y + '" r="9" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>';
+        svg += '<text x="' + s.x + '" y="' + (s.y + 4) + '" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">&minus;</text>';
+      });
+
+      svg += '<text x="360" y="255" text-anchor="middle" fill="#94a3b8" font-size="12">J.J. Thomson (1904): Atom is electrically neutral overall: Total Positive Charge = Total Negative Charge</text>';
+
+      document.getElementById("diagram").innerHTML = svg + '</svg>';
+      document.getElementById("lab-readout").innerHTML = 
+        '<span>Model: <strong>Watermelon / Plum Pudding</strong></span>' +
+        '<span>Net Charge: <strong style="color:#10b981;">0 C (Neutral)</strong></span>' +
+        '<span>Electrons Embedded: <strong>12</strong></span>';
+      document.getElementById("lab-verdict").innerHTML = 
+        'Thomson model proved atoms are divisible and established electrical neutrality, but lacked a central nucleus.';
+    } else {
+      // Cathode Ray Tube
+      var deflY = simState.eField === 1 ? 85 : (simState.eField === -1 ? 185 : 135);
+      var pTopColor = simState.eField === 1 ? '#ef4444' : '#3b82f6';
+      var pBotColor = simState.eField === 1 ? '#3b82f6' : '#ef4444';
+
+      svg += '<rect x="80" y="60" width="560" height="150" rx="30" fill="none" stroke="#475569" stroke-width="3"/>';
+      svg += '<text x="110" y="50" fill="#94a3b8" font-size="12">Cathode Ray Tube (Discharge Tube at 0.001 mmHg)</text>';
+
+      // Cathode & Anode
+      svg += '<rect x="105" y="95" width="10" height="80" fill="#64748b"/>';
+      svg += '<text x="110" y="195" fill="#f87171" font-size="11" text-anchor="middle">Cathode (&minus;)</text>';
+
+      svg += '<rect x="175" y="95" width="10" height="80" fill="#64748b"/>';
+      svg += '<line x1="180" y1="130" x2="180" y2="140" stroke="#0f172a" stroke-width="4"/>';
+      svg += '<text x="180" y="195" fill="#38bdf8" font-size="11" text-anchor="middle">Anode (+)</text>';
+
+      // Deflection Plates
+      svg += '<rect x="310" y="70" width="120" height="10" rx="2" fill="' + pTopColor + '"/>';
+      svg += '<text x="370" y="65" fill="' + pTopColor + '" font-size="11" font-weight="bold" text-anchor="middle">' + 
+             (simState.eField === 1 ? '+ + + Top Plate (+1000 V)' : '&minus; &minus; &minus; Top Plate (&minus;1000 V)') + '</text>';
+
+      svg += '<rect x="310" y="190" width="120" height="10" rx="2" fill="' + pBotColor + '"/>';
+      svg += '<text x="370" y="215" fill="' + pBotColor + '" font-size="11" font-weight="bold" text-anchor="middle">' + 
+             (simState.eField === 1 ? '&minus; &minus; &minus; Bottom Plate (&minus;1000 V)' : '+ + + Bottom Plate (+1000 V)') + '</text>';
+
+      // Screen
+      svg += '<line x1="620" y1="80" x2="620" y2="190" stroke="#22c55e" stroke-width="5"/>';
+      svg += '<text x="620" y="205" fill="#22c55e" font-size="10" text-anchor="middle">ZnS Screen</text>';
+
+      // Beam Path
+      svg += '<path d="M 115 135 L 310 135 Q 430 135 620 ' + deflY + '" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-dasharray="8,4"/>';
+      svg += '<circle cx="620" cy="' + deflY + '" r="7" fill="#4ade80"/>';
+
+      document.getElementById("diagram").innerHTML = svg + '</svg>';
+      document.getElementById("lab-readout").innerHTML = 
+        '<span>Beam Type: <strong>Cathode Rays (Electrons)</strong></span>' +
+        '<span>Deflection: <strong style="color:#38bdf8;">' + (simState.eField === 1 ? 'Upward toward (+)' : 'Downward toward (-)') + '</strong></span>' +
+        '<span>Particle Charge: <strong>&minus;1.602 &times; 10⁻¹⁹ C</strong></span>';
+      document.getElementById("lab-verdict").innerHTML = 
+        simState.eField === 1 ? 
+        'Attraction toward the positive electrode conclusively proved cathode rays are streams of negatively charged subatomic particles!' :
+        'Electrostatic repulsion from the negative plate confirms like charges repel.';
+    }
+  }
+
+  window.SIMS.lab_roots_thomson = { mount: mount, draw: draw };
+})();
+
+// =========================================================================
+// 2. SIMULATION 2: Rutherford Gold Foil Alpha Scattering (lab_rutherford)
+// =========================================================================
+(function(){
+  var simState = {
+    layer: 1 // 1: thin, 2: thick
+  };
+
+  function mount(lesson){
+    simState.layer = 1;
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Heavy Gold Nucleus (+79e)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Alpha Trajectory (He²⁺)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Circular ZnS Detector Screen</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p2-thin">Thin Gold Foil (~1000 Atoms)</button>' +
+      '<button class="preset-btn" id="p2-thick">Thick Gold Foil (Multiple Deflections)</button>';
+
+    document.getElementById("p2-thin").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.layer = 1;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Over 99% of alpha particles pass undeflected through atomic empty space; only 1 in 20,000 rebounds from the tiny dense nucleus!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p2-thick").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.layer = 2;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Thicker gold foil increases cumulative scattering angles as alpha particles encounter more consecutive nuclei.";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
+
+    // Circular Scintillation Screen
+    svg += '<path d="M 360 25 A 220 220 0 1 1 360 255" fill="none" stroke="#22c55e" stroke-width="4" stroke-dasharray="6,4" opacity="0.8"/>';
+    svg += '<text x="680" y="260" fill="#22c55e" font-size="11" text-anchor="end">Circular Scintillation Screen (ZnS)</text>';
+
+    // Alpha Source Collimator
+    svg += '<rect x="30" y="115" width="40" height="50" rx="4" fill="#334155" stroke="#64748b"/>';
+    svg += '<text x="50" y="110" fill="#94a3b8" font-size="10" text-anchor="middle">α Emitter (²¹⁴Bi)</text>';
+
+    // Gold Nuclei
+    var nuclei = simState.layer === 1 ? 
+      [{x: 360, y: 65}, {x: 360, y: 140}, {x: 360, y: 215}] :
+      [{x: 350, y: 65}, {x: 350, y: 140}, {x: 350, y: 215}, {x: 380, y: 80}, {x: 380, y: 160}, {x: 380, y: 230}];
+
+    nuclei.forEach(function(n){
+      svg += '<circle cx="' + n.x + '" cy="' + n.y + '" r="50" fill="none" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3" opacity="0.3"/>';
+      svg += '<circle cx="' + n.x + '" cy="' + n.y + '" r="7" fill="#ef4444" stroke="#fca5a5" stroke-width="1.5"/>';
+      svg += '<text x="' + n.x + '" y="' + (n.y + 3) + '" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">+79</text>';
+    });
+
+    // Foil boundary
+    svg += '<line x1="360" y1="20" x2="360" y2="260" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6"/>';
+    svg += '<text x="360" y="15" fill="#f59e0b" font-size="11" font-weight="bold" text-anchor="middle">Gold Foil Sheet (~100 nm)</text>';
+
+    // Animated Alpha Particle Beams
+    // Path 1: Straight through top empty space
+    svg += '<path d="M 70 85 L 630 85" fill="none" stroke="#38bdf8" stroke-width="2.5"/>';
+    svg += '<circle cx="630" cy="85" r="4" fill="#4ade80"/>';
+
+    // Path 2: Slight deflection near nucleus
+    svg += '<path d="M 70 120 L 330 120 Q 360 115 580 40" fill="none" stroke="#fbbf24" stroke-width="2.5"/>';
+    svg += '<circle cx="580" cy="40" r="4" fill="#4ade80"/>';
+
+    // Path 3: Direct hit -> Rebounds backwards (>90°)
+    svg += '<path d="M 70 140 L 340 140 Q 355 140 310 180 L 140 230" fill="none" stroke="#ef4444" stroke-width="3"/>';
+    svg += '<circle cx="140" cy="230" r="5" fill="#f87171"/>';
+    svg += '<text x="140" y="250" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">1 in 20,000 Rebound (&gt;90&deg;)!</text>';
+
+    // Path 4: Straight through bottom
+    svg += '<path d="M 70 175 L 620 175" fill="none" stroke="#38bdf8" stroke-width="2.5"/>';
+    svg += '<circle cx="620" cy="175" r="4" fill="#4ade80"/>';
+
+    document.getElementById("diagram").innerHTML = svg + '</svg>';
+    document.getElementById("lab-readout").innerHTML = 
+      '<span>Alpha Incident: <strong>20,000 / sec</strong></span>' +
+      '<span>Undeflected (&lt;1&deg;): <strong style="color:#38bdf8;">99.9%</strong></span>' +
+      '<span>Rebounded (&gt;90&deg;): <strong style="color:#ef4444;">1 in 20,000</strong></span>';
+    document.getElementById("lab-verdict").innerHTML = 
+      'Rutherford deduced: Most of the atom is empty space; all positive charge and mass is packed into a tiny central nucleus!';
+  }
+
+  window.SIMS.lab_rutherford = { mount: mount, draw: draw };
+})();
+
+// =========================================================================
+// 3. SIMULATION 3: Bohr Quantized Shells & Photons (lab_bohr)
+// =========================================================================
+(function(){
+  var simState = {
+    shell: 1, // 1 (K), 2 (L), 3 (M)
+    transition: null
+  };
+
+  function mount(lesson){
+    simState.shell = 1;
+    simState.transition = null;
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Positive Nucleus (+Ze)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Quantized Orbit (K, L, M)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#a855f7;"></span><span>Emitted Photon Wavepacket</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p3-k">K-Shell Ground State (n=1, &minus;13.6 eV)</button>' +
+      '<button class="preset-btn" id="p3-l">L-Shell Excited (n=2, &minus;3.4 eV)</button>' +
+      '<button class="preset-btn" id="p3-balmer">Balmer Drop (n=3 &rarr; n=2, Red 656 nm)</button>';
+
+    document.getElementById("p3-k").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.shell = 1;
+      simState.transition = null;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Electron in lowest energy ground state (K-shell). Zero electromagnetic radiation emitted in stationary orbit.";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p3-l").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.shell = 2;
+      simState.transition = "1->2";
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Electron absorbed quantum energy packet ΔE = 10.2 eV to jump from K to L shell.";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p3-balmer").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.shell = 2;
+      simState.transition = "3->2";
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Quantum de-excitation: Electron drops from M (n=3) to L (n=2), emitting a red photon (Balmer H-α, 656 nm)!";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
+
+    var cx = 360, cy = 140;
+    var radii = {1: 45, 2: 85, 3: 125};
+
+    // Concentric Orbits
+    [1, 2, 3].forEach(function(n){
+      var r = radii[n];
+      var isCurrent = n === simState.shell;
+      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + (isCurrent ? '#38bdf8' : '#334155') + '" stroke-width="' + (isCurrent ? 2.5 : 1) + '" stroke-dasharray="' + (isCurrent ? 'none' : '4,4') + '"/>';
+      svg += '<text x="' + (cx + r + 6) + '" y="' + (cy - 6) + '" fill="#64748b" font-size="11">' + (n===1?'K (n=1)':(n===2?'L (n=2)':'M (n=3)')) + '</text>';
+    });
+
+    // Central Nucleus
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="16" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>';
+    svg += '<text x="' + cx + '" y="' + (cy + 5) + '" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">+Ze</text>';
+
+    // Revolving Electron
+    var angle = t * 2.5;
+    var curR = radii[simState.shell];
+    var ex = cx + curR * Math.cos(angle);
+    var ey = cy + curR * Math.sin(angle);
+
+    svg += '<circle cx="' + ex + '" cy="' + ey + '" r="7" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>';
+    svg += '<text x="' + ex + '" y="' + (ey - 10) + '" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">e&minus;</text>';
+
+    // Photon Wavepacket if transition active
+    if(simState.transition === "3->2"){
+      var px = cx + 80 + t * 40;
+      svg += '<path d="M ' + px + ' 90 q 8 -10 16 0 q 8 10 16 0 q 8 -10 16 0" fill="none" stroke="#ef4444" stroke-width="3"/>';
+      svg += '<text x="' + (px + 20) + '" y="75" fill="#ef4444" font-size="11" font-weight="bold">Emitted Red Photon (656 nm)</text>';
+    } else if(simState.transition === "1->2"){
+      svg += '<text x="100" y="50" fill="#fbbf24" font-size="12" font-weight="bold">Absorbed UV Quanta: &Delta;E = 10.2 eV</text>';
+    }
+
+    document.getElementById("diagram").innerHTML = svg + '</svg>';
+    document.getElementById("lab-readout").innerHTML = 
+      '<span>Active Orbit: <strong>' + (simState.shell===1?'K (n=1)':(simState.shell===2?'L (n=2)':'M (n=3)')) + '</strong></span>' +
+      '<span>Energy Level: <strong>' + (simState.shell===1?'&minus;13.6 eV':(simState.shell===2?'&minus;3.4 eV':'&minus;1.51 eV')) + '</strong></span>' +
+      '<span>Radiation: <strong style="color:#10b981;">0 in stationary state</strong></span>';
+    document.getElementById("lab-verdict").innerHTML = 
+      simState.transition === "3->2" ? 
+      'Electron drops from n=3 to n=2, releasing energy as a characteristic red photon! Explains line emission spectra.' :
+      'Bohr resolved atomic collapse: Electrons revolve in non-radiating discrete orbits of definite energy!';
+  }
+
+  window.SIMS.lab_bohr = { mount: mount, draw: draw };
+})();
+
+// =========================================================================
+// 4. SIMULATION 4: Subatomic Trio & BARC Dhruva Reactor (lab_subatomic)
+// =========================================================================
+(function(){
+  var simState = {
+    view: "balance" // "balance", "barc"
+  };
+
+  function mount(lesson){
+    simState.view = "balance";
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span><span>Electron (e⁻, 1/1840 u)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Proton (p⁺, 1 u)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Neutron (n⁰, 1 u)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p4-balance">Subatomic Mass & Charge Matrix</button>' +
+      '<button class="preset-btn" id="p4-barc">BARC Dhruva Reactor Neutron Beam (Mumbai)</button>';
+
+    document.getElementById("p4-balance").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.view = "balance";
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Compare mass and charge: 1 Proton ≈ 1 Neutron ≈ 1 u, while an electron is 1840 times lighter (~0.00054 u)!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p4-barc").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.view = "barc";
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> BARC Trombay Dhruva reactor harnesses neutral thermal neutrons to probe atomic crystal structures without electric deflection!";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
+
+    if(simState.view === "balance"){
+      // Three comparison cards in SVG
+      // Electron Card
+      svg += '<g transform="translate(60, 40)">' +
+             '<rect width="170" height="190" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>' +
+             '<circle cx="85" cy="50" r="22" fill="#3b82f6"/>' +
+             '<text x="85" y="57" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">&minus;</text>' +
+             '<text x="85" y="95" fill="#93c5fd" font-size="15" font-weight="bold" text-anchor="middle">Electron (e&minus;)</text>' +
+             '<text x="85" y="125" fill="#cbd5e1" font-size="12" text-anchor="middle">Charge: &minus;1 (&minus;e)</text>' +
+             '<text x="85" y="145" fill="#cbd5e1" font-size="12" text-anchor="middle">Mass: 1/1840 u</text>' +
+             '<text x="85" y="170" fill="#64748b" font-size="11" text-anchor="middle">J.J. Thomson (1897)</text>' +
+             '</g>';
+
+      // Proton Card
+      svg += '<g transform="translate(275, 40)">' +
+             '<rect width="170" height="190" rx="10" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>' +
+             '<circle cx="85" cy="50" r="22" fill="#ef4444"/>' +
+             '<text x="85" y="57" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">+</text>' +
+             '<text x="85" y="95" fill="#fca5a5" font-size="15" font-weight="bold" text-anchor="middle">Proton (p+)</text>' +
+             '<text x="85" y="125" fill="#cbd5e1" font-size="12" text-anchor="middle">Charge: +1 (+e)</text>' +
+             '<text x="85" y="145" fill="#cbd5e1" font-size="12" text-anchor="middle">Mass: 1 u (1.67&times;10⁻²⁷ kg)</text>' +
+             '<text x="85" y="170" fill="#64748b" font-size="11" text-anchor="middle">Goldstein / Rutherford</text>' +
+             '</g>';
+
+      // Neutron Card
+      svg += '<g transform="translate(490, 40)">' +
+             '<rect width="170" height="190" rx="10" fill="#1e293b" stroke="#10b981" stroke-width="2"/>' +
+             '<circle cx="85" cy="50" r="22" fill="#10b981"/>' +
+             '<text x="85" y="57" fill="#fff" font-size="18" font-weight="bold" text-anchor="middle">0</text>' +
+             '<text x="85" y="95" fill="#6ee7b7" font-size="15" font-weight="bold" text-anchor="middle">Neutron (n0)</text>' +
+             '<text x="85" y="125" fill="#cbd5e1" font-size="12" text-anchor="middle">Charge: 0 (Neutral)</text>' +
+             '<text x="85" y="145" fill="#cbd5e1" font-size="12" text-anchor="middle">Mass: 1 u (1.67&times;10⁻²⁷ kg)</text>' +
+             '<text x="85" y="170" fill="#64748b" font-size="11" text-anchor="middle">James Chadwick (1932)</text>' +
+             '</g>';
+
+      document.getElementById("diagram").innerHTML = svg + '</svg>';
+      document.getElementById("lab-readout").innerHTML = 
+        '<span>Nucleon Mass: <strong>99.95% in nucleus</strong></span>' +
+        '<span>Electron Mass: <strong>0.05%</strong></span>' +
+        '<span>Charge Neutrality: <strong>p = e</strong></span>';
+      document.getElementById("lab-verdict").innerHTML = 
+        'Protons and neutrons form the dense central nucleus (nucleons), while electrons orbit outside providing atomic volume.';
+    } else {
+      // BARC Dhruva Reactor Scene
+      svg += '<rect x="60" y="50" width="160" height="170" rx="12" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>';
+      svg += '<text x="140" y="80" fill="#f59e0b" font-size="15" font-weight="bold" text-anchor="middle">Dhruva Reactor</text>';
+      svg += '<text x="140" y="100" fill="#94a3b8" font-size="11" text-anchor="middle">BARC Trombay, Mumbai</text>';
+      svg += '<circle cx="140" cy="150" r="30" fill="#f59e0b" opacity="0.25"/>';
+      svg += '<circle cx="140" cy="150" r="16" fill="#fbbf24"/>';
+
+      // Shutter & Beam
+      svg += '<rect x="220" y="140" width="40" height="20" fill="#475569"/>';
+      svg += '<line x1="260" y1="150" x2="450" y2="150" stroke="#10b981" stroke-width="3.5" stroke-dasharray="8,4"/>';
+      svg += '<text x="350" y="135" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">Thermal Neutron Beam (n⁰)</text>';
+
+      // Target crystal
+      svg += '<polygon points="450,130 500,110 530,160 480,180" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>';
+      svg += '<text x="490" y="205" fill="#38bdf8" font-size="12" text-anchor="middle">Superconductor Sample</text>';
+
+      // Scattered rays
+      svg += '<path d="M 500 135 L 610 75" stroke="#34d399" stroke-width="2.5" stroke-dasharray="4,2"/>';
+      svg += '<path d="M 500 135 L 620 145" stroke="#34d399" stroke-width="2.5" stroke-dasharray="4,2"/>';
+      svg += '<path d="M 500 135 L 610 215" stroke="#34d399" stroke-width="2.5" stroke-dasharray="4,2"/>';
+      svg += '<rect x="610" y="60" width="45" height="170" rx="8" fill="#334155" stroke="#64748b"/>';
+      svg += '<text x="632" y="150" fill="#94a3b8" font-size="11" transform="rotate(90, 632, 150)" text-anchor="middle">Diffraction Detector</text>';
+
+      document.getElementById("diagram").innerHTML = svg + '</svg>';
+      document.getElementById("lab-readout").innerHTML = 
+        '<span>Facility: <strong>Dhruva 100 MW (BARC)</strong></span>' +
+        '<span>Probe: <strong>Thermal Neutrons</strong></span>' +
+        '<span>Application: <strong>Materials & Medicine</strong></span>';
+      document.getElementById("lab-verdict").innerHTML = 
+        'Because neutrons carry zero charge, they penetrate deep into electron clouds to map nuclear crystal positions directly!';
+    }
+  }
+
+  window.SIMS.lab_subatomic = { mount: mount, draw: draw };
+})();
+
+// =========================================================================
+// 5. SIMULATION 5: Atomic & Mass Numbers Builder (lab_atomic_mass_number)
+// =========================================================================
+(function(){
+  var simState = {
+    p: 6, n: 6, e: 6, sym: 'C', name: 'Carbon'
+  };
+
+  function mount(lesson){
+    simState.p = 6; simState.n = 6; simState.e = 6; simState.sym = 'C'; simState.name = 'Carbon';
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Mass Number A (p+n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Atomic Number Z (p)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Net Ionic Charge</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p5-c">Carbon-12 (¹²₆C)</button>' +
+      '<button class="preset-btn" id="p5-mg">Magnesium-24 (²⁴₁₂Mg - Ex 8)</button>' +
+      '<button class="preset-btn" id="p5-ga">Gallium-70 (⁷⁰₃₁Ga - Ex 11)</button>' +
+      '<button class="preset-btn" id="p5-cl">Chlorine-35 (³⁵₁₇Cl)</button>';
+
+    document.getElementById("p5-c").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.p = 6; simState.n = 6; simState.e = 6; simState.sym = 'C'; simState.name = 'Carbon';
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Carbon-12 standard: Z = 6, A = 12, exactly 6 neutrons in the nucleus.";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p5-mg").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.p = 12; simState.n = 12; simState.e = 12; simState.sym = 'Mg'; simState.name = 'Magnesium';
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Magnesium-24 (NCERT Ex 8): 12 protons, 12 neutrons, and 12 electrons in 2, 8, 2 configuration.";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p5-ga").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.p = 31; simState.n = 39; simState.e = 31; simState.sym = 'Ga'; simState.name = 'Gallium';
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Gallium-70 (NCERT Ex 11): 31 protons and 70 − 31 = 39 neutrons!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p5-cl").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.p = 17; simState.n = 18; simState.e = 17; simState.sym = 'Cl'; simState.name = 'Chlorine';
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Chlorine-35 (NCERT Ex 14): Z = 17, A = 35, containing 18 neutrons.";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
+
+    var massA = simState.p + simState.n;
+    var netQ = simState.p - simState.e;
+
+    // Big Nuclide Tile
+    svg += '<g transform="translate(100, 40)">' +
+           '<rect width="220" height="200" rx="16" fill="#1e293b" stroke="#64748b" stroke-width="2.5"/>' +
+           '<text x="55" y="75" fill="#f59e0b" font-size="36" font-weight="bold" text-anchor="end">' + massA + '</text>' +
+           '<text x="55" y="145" fill="#ef4444" font-size="36" font-weight="bold" text-anchor="end">' + simState.p + '</text>' +
+           '<text x="75" y="130" fill="#f8fafc" font-size="80" font-weight="bold">' + simState.sym + '</text>' +
+           '<text x="110" y="185" fill="#94a3b8" font-size="15" text-anchor="middle">' + simState.name + '</text>' +
+           '</g>';
+
+    // Nuclear Ledger Breakdown
+    svg += '<g transform="translate(370, 40)">' +
+           '<rect width="250" height="200" rx="16" fill="#0f172a" stroke="#334155" stroke-width="2"/>' +
+           '<text x="125" y="32" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Nuclear Ledger Composition</text>' +
+           '<text x="25" y="70" fill="#ef4444" font-size="13">Atomic Number (Z = p):</text>' +
+           '<text x="225" y="70" fill="#ef4444" font-size="14" font-weight="bold" text-anchor="end">' + simState.p + '</text>' +
+           '<text x="25" y="105" fill="#10b981" font-size="13">Neutrons (n = A &minus; Z):</text>' +
+           '<text x="225" y="105" fill="#10b981" font-size="14" font-weight="bold" text-anchor="end">' + simState.n + '</text>' +
+           '<text x="25" y="140" fill="#f59e0b" font-size="13">Mass Number (A = p + n):</text>' +
+           '<text x="225" y="140" fill="#f59e0b" font-size="16" font-weight="bold" text-anchor="end">' + massA + ' u</text>' +
+           '<text x="25" y="175" fill="#38bdf8" font-size="13">Electrons (Neutral e = p):</text>' +
+           '<text x="225" y="175" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="end">' + simState.e + '</text>' +
+           '</g>';
+
+    document.getElementById("diagram").innerHTML = svg + '</svg>';
+    document.getElementById("lab-readout").innerHTML = 
+      '<span>Nuclide: <strong>' + massA + '/' + simState.p + ' ' + simState.sym + '</strong></span>' +
+      '<span>Neutrons: <strong style="color:#10b981;">' + simState.n + '</strong></span>' +
+      '<span>Net Charge: <strong style="color:#38bdf8;">0 (Neutral)</strong></span>';
+    document.getElementById("lab-verdict").innerHTML = 
+      'Atomic number (Z = ' + simState.p + ') dictates element identity, while neutrons (n = ' + simState.n + ') determine the isotopic mass number (A = ' + massA + ')!';
+  }
+
+  window.SIMS.lab_atomic_mass_number = { mount: mount, draw: draw };
+})();
+
+// =========================================================================
+// 6. SIMULATION 6: Bohr-Bury Shell Architect & Valency (lab_bohr_bury)
+// =========================================================================
+(function(){
+  var simState = {
+    z: 11, sym: 'Na', name: 'Sodium', k: 2, l: 8, m: 1
+  };
+
+  function mount(lesson){
+    simState.z = 11; simState.sym = 'Na'; simState.name = 'Sodium'; simState.k = 2; simState.l = 8; simState.m = 1;
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Nucleus (Z Protons)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Paired Inner Electrons</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Valence Electrons (Outermost)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p6-na">Sodium (Z=11: 2, 8, 1 &rarr; Valency 1)</button>' +
+      '<button class="preset-btn" id="p6-cl">Chlorine (Z=17: 2, 8, 7 &rarr; Valency 1)</button>' +
+      '<button class="preset-btn" id="p6-ar">Argon (Z=18: 2, 8, 8 &rarr; Valency 0 Octet)</button>' +
+      '<button class="preset-btn" id="p6-c">Carbon (Z=6: 2, 4 &rarr; Valency 4)</button>';
+
+    document.getElementById("p6-na").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.z = 11; simState.sym = 'Na'; simState.name = 'Sodium'; simState.k = 2; simState.l = 8; simState.m = 1;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Sodium: 1 valence electron in M-shell. Readily loses 1 e⁻ to achieve stable neon octet: Valency = 1!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p6-cl").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.z = 17; simState.sym = 'Cl'; simState.name = 'Chlorine'; simState.k = 2; simState.l = 8; simState.m = 7;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Chlorine: 7 valence electrons in M-shell. Gains 1 e⁻ to complete octet: Valency = 8 − 7 = 1!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p6-ar").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.z = 18; simState.sym = 'Ar'; simState.name = 'Argon'; simState.k = 2; simState.l = 8; simState.m = 8;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Argon: Complete stable octet of 8 electrons in outermost M-shell. Inert noble gas: Valency = 0!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p6-c").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.z = 6; simState.sym = 'C'; simState.name = 'Carbon'; simState.k = 2; simState.l = 4; simState.m = 0;
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Carbon: 4 valence electrons in L-shell. Shares 4 electrons: Valency = 4 (tetravalent)!";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
+
+    var cx = 360, cy = 140;
+    var config = [simState.k, simState.l, simState.m].filter(function(n){ return n > 0; });
+    var valence = config[config.length - 1];
+    var valency = valence <= 4 ? valence : (8 - valence);
+    if(simState.z === 2) valency = 0; // helium duplet
+
+    // Shell Radii
+    var sData = [
+      {r: 45, count: simState.k, name: 'K'},
+      {r: 85, count: simState.l, name: 'L'},
+      {r: 125, count: simState.m, name: 'M'}
+    ];
+
+    sData.forEach(function(s, idx){
+      if(s.count === 0 && idx > config.length - 1) return;
+      var isOutermost = idx === config.length - 1;
+      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + s.r + '" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="3,3"/>';
+
+      for(var i = 0; i < s.count; i++){
+        var theta = (i / s.count) * 2 * Math.PI - Math.PI / 2 + (t * 0.4 / (idx + 1));
+        var ex = cx + s.r * Math.cos(theta);
+        var ey = cy + s.r * Math.sin(theta);
+        var color = isOutermost ? '#fbbf24' : '#38bdf8';
+        svg += '<circle cx="' + ex + '" cy="' + ey + '" r="6" fill="' + color + '" stroke="#fff" stroke-width="1.5"/>';
+      }
+    });
+
+    // Nucleus
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="22" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>';
+    svg += '<text x="' + cx + '" y="' + (cy - 3) + '" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">' + simState.sym + '</text>';
+    svg += '<text x="' + cx + '" y="' + (cy + 11) + '" fill="#fecaca" font-size="10" text-anchor="middle">' + simState.z + 'p⁺</text>';
+
+    // Legend info top-left
+    svg += '<text x="30" y="35" fill="#f8fafc" font-size="16" font-weight="bold">' + simState.name + ' (Z = ' + simState.z + ')</text>';
+    svg += '<text x="30" y="58" fill="#94a3b8" font-size="12">Electronic Configuration: ' + config.join(', ') + '</text>';
+    svg += '<text x="30" y="80" fill="#fbbf24" font-size="12">Valence Electrons: ' + valence + ' (Outermost Shell)</text>';
+    svg += '<text x="30" y="102" fill="#10b981" font-size="13" font-weight="bold">Valency = ' + valency + '</text>';
+
+    document.getElementById("diagram").innerHTML = svg + '</svg>';
+    document.getElementById("lab-readout").innerHTML = 
+      '<span>Configuration: <strong style="color:#38bdf8;">' + config.join(', ') + '</strong></span>' +
+      '<span>Valence e⁻: <strong style="color:#fbbf24;">' + valence + '</strong></span>' +
+      '<span>Valency: <strong style="color:#10b981;">' + valency + '</strong></span>';
+    document.getElementById("lab-verdict").innerHTML = 
+      valency === 0 ? 
+      'Noble gas configuration! Filled shell confers complete chemical inertness.' :
+      'Valency = ' + valency + ': Governs chemical bonding to achieve stable noble gas octet!';
+  }
+
+  window.SIMS.lab_bohr_bury = { mount: mount, draw: draw };
+})();
+
+// =========================================================================
+// 7. SIMULATION 7: Isotopes, Isobars & Mass Spectrometer (lab_isotopes_isobars)
+// =========================================================================
+(function(){
+  var simState = {
+    view: "spectrometer" // "spectrometer", "decay"
+  };
+
+  function mount(lesson){
+    simState.view = "spectrometer";
+    App.state.maxT = 5.0;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
+
+    document.getElementById("lab-legend").innerHTML = 
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chlorine-35 (75% Abundance)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#c084fc;"></span><span>Chlorine-37 (25% Abundance)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Weighted Average: 35.5 u</span></div>';
+
+    document.getElementById("preset-bar").innerHTML = 
+      '<button class="preset-btn active" id="p7-spec">Chlorine Mass Spectrometry (35.5 u)</button>' +
+      '<button class="preset-btn" id="p7-c14">Carbon-14 Archaeological Decay (5,730 yr)</button>';
+
+    document.getElementById("p7-spec").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.view = "spectrometer";
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Mass spectrometer separates ³⁵Cl and ³⁷Cl in magnetic field. 75%:25% abundance yields average mass = 35.5 u!";
+      App.resetTimeline(); App.play();
+    });
+
+    document.getElementById("p7-c14").addEventListener("click", function(){
+      setActivePreset(this);
+      simState.view = "decay";
+      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Radiocarbon dating: Carbon-14 decays with 5,730-year half-life to determine ancient fossil ages.";
+      App.resetTimeline(); App.play();
+    });
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
+
+    if(simState.view === "spectrometer"){
+      // Spectrometer Chamber
+      svg += '<path d="M 60 140 L 220 140 Q 380 140 430 70 L 640 70" fill="none" stroke="#38bdf8" stroke-width="4"/>';
+      svg += '<path d="M 60 140 L 220 140 Q 380 140 430 210 L 640 210" fill="none" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="6,4"/>';
+
+      // Ion Source
+      svg += '<rect x="30" y="105" width="80" height="70" rx="8" fill="#1e293b" stroke="#64748b"/>';
+      svg += '<text x="70" y="138" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">Cl⁺ Gas</text>';
+      svg += '<text x="70" y="156" fill="#94a3b8" font-size="10" text-anchor="middle">Ion Source</text>';
+
+      // Magnetic Bending Sector
+      svg += '<rect x="250" y="45" width="140" height="190" rx="12" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" stroke-dasharray="4,4"/>';
+      svg += '<text x="320" y="35" fill="#60a5fa" font-size="12" font-weight="bold" text-anchor="middle">Magnetic Deflection Field (B)</text>';
+
+      // Detectors
+      svg += '<g transform="translate(500, 45)">' +
+             '<rect width="180" height="55" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>' +
+             '<text x="15" y="24" fill="#38bdf8" font-size="14" font-weight="bold">³⁵₁₇Cl (75% Abundance)</text>' +
+             '<text x="15" y="44" fill="#cbd5e1" font-size="11">17 Protons, 18 Neutrons</text>' +
+             '</g>';
+
+      svg += '<g transform="translate(500, 185)">' +
+             '<rect width="180" height="55" rx="8" fill="#1e293b" stroke="#c084fc" stroke-width="2"/>' +
+             '<text x="15" y="24" fill="#c084fc" font-size="14" font-weight="bold">³⁷₁₇Cl (25% Abundance)</text>' +
+             '<text x="15" y="44" fill="#cbd5e1" font-size="11">17 Protons, 20 Neutrons</text>' +
+             '</g>';
+
+      document.getElementById("diagram").innerHTML = svg + '</svg>';
+      document.getElementById("lab-readout").innerHTML = 
+        '<span>Isotopes: <strong>³⁵Cl (75%), ³⁷Cl (25%)</strong></span>' +
+        '<span>Average Mass: <strong style="color:#10b981;">35.5 u</strong></span>' +
+        '<span>Ratio: <strong>3 : 1</strong></span>';
+      document.getElementById("lab-verdict").innerHTML = 
+        'Calculation: (35 &times; 0.75) + (37 &times; 0.25) = 26.25 + 9.25 = 35.5 u! Fractional atomic mass reflects isotopic abundance.';
+    } else {
+      // Carbon-14 Decay Graph
+      svg += '<line x1="100" y1="220" x2="620" y2="220" stroke="#64748b" stroke-width="2"/>';
+      svg += '<line x1="100" y1="220" x2="100" y2="40" stroke="#64748b" stroke-width="2"/>';
+      svg += '<text x="620" y="240" fill="#94a3b8" font-size="11">Time Elapsed (Years)</text>';
+      svg += '<text x="90" y="35" fill="#94a3b8" font-size="11" text-anchor="end">% ¹⁴C Remaining</text>';
+
+      // Exponential Curve
+      svg += '<path d="M 100 60 Q 220 140 300 180 T 500 215 T 600 218" fill="none" stroke="#ef4444" stroke-width="3.5"/>';
+
+      // Milestones
+      svg += '<circle cx="100" cy="60" r="5" fill="#ef4444"/>';
+      svg += '<text x="115" y="65" fill="#fca5a5" font-size="11">100% (Death)</text>';
+
+      svg += '<circle cx="240" cy="140" r="5" fill="#fbbf24"/>';
+      svg += '<line x1="240" y1="140" x2="240" y2="220" stroke="#fbbf24" stroke-dasharray="3,3"/>';
+      svg += '<text x="240" y="238" fill="#fbbf24" font-size="11" text-anchor="middle">5,730 yr (50%)</text>';
+
+      svg += '<circle cx="380" cy="180" r="5" fill="#38bdf8"/>';
+      svg += '<line x1="380" y1="180" x2="380" y2="220" stroke="#38bdf8" stroke-dasharray="3,3"/>';
+      svg += '<text x="380" y="238" fill="#38bdf8" font-size="11" text-anchor="middle">11,460 yr (25%)</text>';
+
+      document.getElementById("diagram").innerHTML = svg + '</svg>';
+      document.getElementById("lab-readout").innerHTML = 
+        '<span>Radioisotope: <strong>Carbon-14 (¹⁴₆C)</strong></span>' +
+        '<span>Half-Life: <strong>5,730 Years</strong></span>' +
+        '<span>Decay Product: <strong>Nitrogen-14 (¹⁴₇N)</strong></span>';
+      document.getElementById("lab-verdict").innerHTML = 
+        'Radiocarbon dating measures the remaining ratio of unstable Carbon-14 to stable Carbon-12 to date organic fossils up to 50,000 years!';
+    }
+  }
+
+  window.SIMS.lab_isotopes_isobars = { mount: mount, draw: draw };
+})();
+</script>
+</body>
+</html>
