@@ -1,0 +1,2782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 5: Chapter 5 — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.video-facade .thumb{display:block;width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#173b56,#0b1c2b 65%)}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}@media(max-width:430px){.topbar,.top-actions{flex-wrap:wrap;row-gap:6px}.top-actions,.progress-pill{max-width:100%;min-width:0}.topbar{height:auto;padding:8px 12px}}@media(max-width:430px){.concept-header{flex-wrap:wrap;max-width:100%;min-width:0}.concept-header>*{min-width:0;max-width:100%}main,main *{min-width:0}.concept-title,.concept-header{overflow-wrap:anywhere}}@media(max-width:430px){select{max-width:100%;width:100%;box-sizing:border-box}}@media(max-width:430px){.revise-callout,.concept-footer-nav{max-width:100%;min-width:0;flex-wrap:wrap;box-sizing:border-box}main{max-width:100vw;box-sizing:border-box;overflow-wrap:anywhere}pre,code,table{max-width:100%;overflow-x:auto;display:block}}</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+  <span class="chapter-crumb" id="chapter-crumb">CH 05 · CHAPTER 5</span>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+<a class="class-pill" href="../index.html">CLASS 11 <span>·</span> CHEMISTRY</a></header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 22 Exercises from NCERT Class 11 Chemistry Part I () mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"chapter_meta": {"id": "kech105", "number": 5, "title": "Chemical Thermodynamics", "book": "Chemistry Part I", "class": 11, "reprint": "2026-27", "tagline": "From the First Law and Hess's thermochemical cycles to entropy dispersion, Gibbs free energy, and chemical equilibrium criteria.", "total_concepts": 7, "total_practice_questions": 21, "total_exercises": 22}, "concepts": [{"id": "thermo-systems-state", "nav": "01 · Systems & State", "title": "Thermodynamic Systems, Boundaries, State Functions & Properties", "deck": "Establish the macroscopic language of thermodynamics: open, closed, and isolated systems, state functions independent of history, and extensive vs intensive properties.", "minutes": 15, "section": "5.1", "pages": "1–5", "print": "PDF pp. 1–5 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "systemtypes", "simTitle": "Interactive System & Boundary Simulator", "quick": "Thermodynamics studies macroscopic energy transformations. A thermodynamic system is separated from the surroundings by a real or imaginary boundary. Systems are classified by mass and energy exchange. State functions depend solely on the current state.", "formulas": [{"label": "State Function Invariance", "formula": "\\Delta X = X_{\\text{final}} - X_{\\text{initial}}"}, {"label": "Extensive to Intensive Ratio", "formula": "\\text{Property}_{\\text{molar}} = \\frac{X_{\\text{extensive}}}{n}"}], "deeper": "Why do state functions allow us to predict chemical feasibility without knowing reaction kinetics? Because state functions like $U, H, S, G$ are exact mathematical differentials whose line integrals over closed cyclic paths vanish strictly: $\\oint dX = 0$. Consequently, net changes depend solely on initial and final coordinates, freeing thermodynamic analysis from the intricate microscopic collision pathways and catalytic mechanisms.", "worked": [{"title": "Classifying Intensive vs Extensive Properties", "problem": "Categorize the following properties as either extensive or intensive: Volume, Temperature, Density, Internal Energy, Molar Heat Capacity, Surface Tension, Mass.", "solution": "<p><strong>Extensive properties</strong> depend directly on the quantity or mass of matter present in the system, whereas <strong>intensive properties</strong> are independent of sample size:</p><ul><li><strong>Extensive:</strong> Volume ($V$), Internal Energy ($U$), Mass ($m$) — dividing the system into two equal halves halves each of these values.</li><li><strong>Intensive:</strong> Temperature ($T$), Density ($\\rho = m/V$), Molar Heat Capacity ($C_m = C/n$), Surface Tension ($\\gamma$) — dividing the system leaves these local intensive ratios completely unchanged.</li></ul>"}], "prediction": {"scenario": "A sample of water at 25 °C is placed inside a sealed, completely rigid vessel with thermally insulated (adiabatic) walls. A paddle wheel stirs the water, doing 500 J of shaft work.", "question": "How will the temperature and internal energy of this isolated/closed system change?", "options": ["Temperature and internal energy both remain strictly constant because the walls are adiabatic.", "Work done on the water is converted into thermal molecular motion, increasing both internal energy and temperature.", "Temperature decreases because mechanical stirring dissipates energy into the rigid walls.", "Internal energy increases but temperature drops due to localized cavitation."], "answer": 1, "reveal": "Even though heat cannot cross adiabatic walls ($q = 0$), mechanical work is transferred across the boundary ($w = +500\\text{ J}$). By the First Law, $\\Delta U = q + w = +500\\text{ J}$. The viscous shear forces dissipate the macroscopic stirring into microscopic kinetic energy of water molecules, causing temperature to rise."}, "connect": "Engineers designing spacecraft thermal insulation must balance closed systems (radiators rejecting heat) with isolated cryo-tanks, where zero mass and minimum heat leak protect liquid hydrogen fuel.", "recall": ["An open system exchanges both matter and energy with surroundings.", "A closed system exchanges energy (heat/work) but NOT matter.", "An isolated system exchanges NEITHER matter NOR energy ($q = 0, w = 0$).", "State functions ($U, H, S, G, P, V, T$) depend only on initial and final states, not path.", "Path functions ($q, w$) depend directly on the specific path taken between states."], "quizzes": [{"prompt": "Which of the following is a path-dependent quantity rather than a state function?", "options": ["Work done ($w$)", "Enthalpy ($H$)", "Entropy ($S$)", "Internal energy ($U$)"], "answer": 0, "hint": "State functions have unique values at each equilibrium state; path functions represent energy transferred during a transition.", "explain": "Work ($w$) and heat ($q$) depend explicitly on the trajectory or mechanical path taken between initial and final states; hence they are path functions, whereas $H, S, U$ are state functions."}, {"prompt": "If an extensive property $X$ is divided by another extensive property $Y$, what is the nature of the resulting quotient $Z = X / Y$?", "options": ["Always an intensive property", "Always an extensive property", "A path function", "A dimensionless constant"], "answer": 0, "hint": "Consider density = mass / volume or molar volume = volume / moles.", "explain": "The ratio of two extensive properties is always an intensive property (e.g., density = mass/volume, concentration = moles/volume, molar mass = mass/moles)."}, {"prompt": "In an adiabatic container with rigid non-movable boundaries, what type of thermodynamic system is enclosed?", "options": ["Isolated system", "Closed system", "Open system", "Isothermal system"], "answer": 0, "hint": "No mass can leave (rigid/closed), no work can be done ($dV = 0$), and no heat can cross (adiabatic).", "explain": "Because the boundary is sealed (no mass transfer), rigid ($dV = 0 \\implies w = 0$), and adiabatic ($q = 0$), neither matter nor energy can be exchanged with the surroundings, defining an isolated system."}]}, {"id": "first-law-work", "nav": "02 · First Law & PV Work", "title": "First Law of Thermodynamics, PV-Work & Reversible Expansion", "deck": "Formulate the conservation of energy principle ΔU = q + w, define mechanical pressure-volume work, and contrast irreversible sudden expansion against maximum reversible work.", "minutes": 18, "section": "5.2, 5.3", "pages": "5–10", "print": "PDF pp. 5–10 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "pvworklab", "simTitle": "Piston Compression & PV Indicator Lab", "quick": "The First Law states energy cannot be created or destroyed: ΔU = q + w. Expansion work against external pressure is w = -P_ext ΔV. Reversible isothermal expansion delivers maximum work: w_rev = -2.303 nRT log(V2/V1).", "formulas": [{"label": "First Law of Thermodynamics", "formula": "\\Delta U = q + w"}, {"label": "Irreversible PV-Work", "formula": "w = -P_{\\text{ext}} \\Delta V = -P_{\\text{ext}}(V_2 - V_1)"}, {"label": "Isothermal Reversible Work", "formula": "w_{\\text{rev}} = -nRT \\ln\\left(\\frac{V_2}{V_1}\\right) = -2.303\\, nRT \\log_{10}\\left(\\frac{V_2}{V_1}\\right)"}, {"label": "Free Expansion in Vacuum", "formula": "P_{\\text{ext}} = 0 \\implies w = 0"}], "deeper": "Why does a reversible expansion yield more work than an irreversible expansion between the exact same initial and final states? In a reversible process, the driving internal pressure $P_{int}$ exceeds external opposition $P_{ext}$ by only an infinitesimal increment $dP$ at every stage ($P_{ext} = P_{int} - dP$), keeping the system in continuous thermodynamic equilibrium and capturing the entire area under the $PV$ isotherm. In a single-stage sudden irreversible expansion against constant final pressure, the pressure drops instantly, and the work produced is merely $P_{final}(V_2 - V_1)$, losing the excess potential energy to irreversible frictional dissipation.", "worked": [{"title": "Reversible vs Irreversible Work Calculation", "problem": "Two moles of an ideal gas at 300 K expand isothermally from 10 L to 20 L. Calculate (a) work done in an isothermal reversible expansion, and (b) work done against a constant external pressure of 1.0 bar.", "solution": "<p><strong>(a) Isothermal Reversible Expansion:</strong></p>$$w_{\\text{rev}} = -2.303\\, nRT \\log_{10}\\left(\\frac{V_2}{V_1}\\right)$$$$w_{\\text{rev}} = -2.303 \\times 2 \\times 8.314 \\times 300 \\times \\log_{10}\\left(\\frac{20}{10}\\right) = -11488 \\times 0.3010 = -3458\\text{ J} = -3.46\\text{ kJ}$$<p><strong>(b) Irreversible Expansion against constant $P_{\\text{ext}} = 1.0\\text{ bar} = 10^5\\text{ Pa}$:</strong></p>$$\\Delta V = 20\\text{ L} - 10\\text{ L} = 10\\text{ L} = 10 \\times 10^{-3}\\text{ m}^3 = 0.010\\text{ m}^3$$$$w_{\\text{irrev}} = -P_{\\text{ext}} \\Delta V = -(1.0 \\times 10^5\\text{ Pa}) \\times (0.010\\text{ m}^3) = -1000\\text{ J} = -1.00\\text{ kJ}$$<p><em>Conclusion:</em> The reversible process extracts $|-3.46\\text{ kJ}|$ of useful work compared to only $|-1.00\\text{ kJ}|$ in the single-stage irreversible drop.</p>"}], "prediction": {"scenario": "An ideal gas expands isothermally from 5 L to 15 L into an evacuated chamber (vacuum, P_ext = 0).", "question": "What are the values of work done (w), heat absorbed (q), and change in internal energy (ΔU)?", "options": ["w = 0, q = 0, and ΔU = 0", "w < 0, q > 0, and ΔU = 0", "w < 0, q = 0, and ΔU < 0", "w = 0, q > 0, and ΔU > 0"], "answer": 0, "reveal": "Because expansion occurs into a vacuum, external opposing pressure $P_{\\text{ext}} = 0$, so $w = -P_{\\text{ext}}\\Delta V = 0$ (free expansion). For an ideal gas undergoing an isothermal process ($T = \\text{constant}$), internal energy depends solely on temperature, so $\\Delta U = 0$. By the First Law: $q = \\Delta U - w = 0 - 0 = 0$. Hence $w = 0, q = 0, \\Delta U = 0$."}, "connect": "Internal combustion engine cylinders compress fuel-air mixtures along near-adiabatic paths: compressing rapidly allows little time for heat loss, spiking gas temperature to trigger auto-ignition in diesel cycles.", "recall": ["IUPAC sign convention: $q > 0$ when heat is absorbed by system; $q < 0$ when released.", "$w > 0$ when work is done ON the system (compression); $w < 0$ when work is done BY the system (expansion).", "Internal energy $U$ of an ideal gas depends strictly on temperature ($U = f(T)$).", "Free expansion into a vacuum produces zero work ($w = 0$).", "Maximum mechanical work is extracted under reversible conditions."], "quizzes": [{"prompt": "A system absorbs 701 J of heat from the surroundings and performs 394 J of expansion work. What is the net change in its internal energy?", "options": ["+307 J", "-307 J", "+1095 J", "-1095 J"], "answer": 0, "hint": "Apply the First Law: ΔU = q + w, noting that work done BY the system has a negative sign.", "explain": "Here, heat absorbed by system $q = +701\\text{ J}$; work done by system $w = -394\\text{ J}$. Therefore, $\\Delta U = q + w = 701 + (-394) = +307\\text{ J}$."}, {"prompt": "During the isothermal free expansion of an ideal gas into a vacuum, which set of thermodynamic variables is strictly zero?", "options": ["w = 0, q = 0, and ΔU = 0", "w = 0, q > 0, and ΔU = 0", "w < 0, q = 0, and ΔU < 0", "w = 0, q = 0, and ΔU > 0"], "answer": 0, "hint": "P_ext = 0 implies no work; isothermal ideal gas implies no internal energy change.", "explain": "Because $P_{ext} = 0$, work $w = 0$. Since temperature is constant and $U$ depends only on $T$ for ideal gases, $\\Delta U = 0$. Thus $q = \\Delta U - w = 0$."}, {"prompt": "How does the magnitude of work done during a reversible isothermal expansion compare to an irreversible expansion between identical volume limits?", "options": ["|w_rev| > |w_irrev|", "|w_rev| < |w_irrev|", "|w_rev| = |w_irrev|", "Depends on molecular weight of the gas"], "answer": 0, "hint": "Reversible paths operate at infinitesimally balanced driving pressure throughout the stroke.", "explain": "Reversible isothermal expansion maintains continuous equilibrium between internal and external pressure, enveloping the maximum possible area under the PV curve: $|w_{\\text{rev}}| > |w_{\\text{irrev}}|$."}]}, {"id": "enthalpy-calorimetry", "nav": "03 · Enthalpy & Calorimetry", "title": "Enthalpy, Heat Capacities (Cp − Cv = R) & Calorimetry", "deck": "Define enthalpy as heat transferred at constant pressure (H = U + PV), derive the relation ΔH = ΔU + Δng RT for chemical reactions, and explore bomb vs coffee-cup calorimetry.", "minutes": 18, "section": "5.4, 5.5", "pages": "10–16", "print": "PDF pp. 10–16 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "calorimeter", "simTitle": "Bomb vs Coffee-Cup Calorimeter Simulator", "quick": "Most chemical reactions occur in open vessels under constant atmospheric pressure. Enthalpy H = U + PV measures constant pressure heat flow: q_p = ΔH. For gas reactions, ΔH = ΔU + Δng RT. Heat capacity at constant P exceeds constant V by R: Cp - Cv = R.", "formulas": [{"label": "Enthalpy Definition", "formula": "H = U + PV \\implies \\Delta H = \\Delta U + P\\Delta V"}, {"label": "Gas Reaction Enthalpy Relation", "formula": "\\Delta H = \\Delta U + \\Delta n_g RT"}, {"label": "Molar Heat Capacity Relation", "formula": "C_p - C_v = R \\quad (\\text{for 1 mol of ideal gas})"}, {"label": "Calorimetric Heat Equation", "formula": "q = m \\cdot c \\cdot \\Delta T = n \\cdot C_m \\cdot \\Delta T"}], "deeper": "Why is $C_p$ strictly greater than $C_v$ for an ideal gas? At constant volume, heat added to a gas goes entirely into raising internal kinetic energy ($q_v = \\Delta U = n C_v \\Delta T$) because the rigid walls prevent expansion work ($w = 0$). At constant pressure, however, the gas expands against the atmosphere as its temperature rises. Therefore, the heat supplied at constant pressure must simultaneously raise internal energy AND provide the mechanical expansion work ($P\\Delta V = nR\\Delta T$) done on the atmosphere. Consequently, $C_p = C_v + R$.", "worked": [{"title": "Relating ΔH and ΔU in a Combustion Reaction", "problem": "The combustion of benzene, C₆H₆(l) + 15/2 O₂(g) → 6 CO₂(g) + 3 H₂O(l), carried out in a bomb calorimeter yields ΔU = −3263.9 kJ/mol at 298 K. Calculate the standard enthalpy of combustion (ΔH) at 298 K.", "solution": "<p><strong>1. Calculate change in gaseous moles ($\\Delta n_g$):</strong></p>$$\\Delta n_g = n_{\\text{gaseous products}} - n_{\\text{gaseous reactants}} = 6 - \\frac{15}{2} = 6 - 7.5 = -1.5\\text{ mol}$$<p>(Note: $C_6H_6(l)$ and $H_2O(l)$ are liquids and excluded from $\\Delta n_g$).</p><p><strong>2. Apply the enthalpy-internal energy formula:</strong></p>$$\\Delta H = \\Delta U + \\Delta n_g RT$$$$\\Delta n_g RT = (-1.5\\text{ mol}) \\times (8.314 \\times 10^{-3}\\text{ kJ}\\cdot\\text{mol}^{-1}\\cdot\\text{K}^{-1}) \\times (298\\text{ K}) = -3.72\\text{ kJ/mol}$$$$\\Delta H = -3263.9\\text{ kJ/mol} + (-3.72\\text{ kJ/mol}) = -3267.62\\text{ kJ/mol}$$<p><em>Interpretation:</em> Because the reaction consumes more moles of gas than it produces (contraction), the atmosphere does work on the system, making $\\Delta H$ slightly more exothermic than $\\Delta U$.</p>"}], "prediction": {"scenario": "Consider the combustion of methane gas: CH₄(g) + 2 O₂(g) → CO₂(g) + 2 H₂O(l) at 298 K. The heat released in a rigid constant-volume bomb calorimeter is measured as q_v.", "question": "How does the constant-pressure heat of combustion (q_p = ΔH) compare to the bomb calorimeter measurement (q_v = ΔU)?", "options": ["ΔH < ΔU (more negative / more heat released at constant pressure)", "ΔH > ΔU (less negative / less heat released at constant pressure)", "ΔH = ΔU (strictly equal for hydrocarbon combustion)", "ΔH is positive while ΔU is negative"], "answer": 0, "reveal": "Calculate gaseous mole change: $\\Delta n_g = 1\\text{ (CO}_2\\text{)} - [1\\text{ (CH}_4\\text{)} + 2\\text{ (O}_2\\text{)}] = 1 - 3 = -2\\text{ mol}$. Because $\\Delta H = \\Delta U + \\Delta n_g RT = \\Delta U - 2RT$, and $2RT > 0$, $\\Delta H$ is more negative than $\\Delta U$ (i.e. $\\Delta H < \\Delta U$)."}, "connect": "Bomb calorimeters are used in food science to measure nutritional calories: burning a dried food sample in pressurized pure oxygen yields its precise gross chemical combustion energy.", "recall": ["At constant volume, $w = 0 \\implies q_v = \\Delta U$ (measured in rigid bomb calorimeters).", "At constant pressure, $q_p = \\Delta H$ (measured in coffee-cup calorimeters).", "$\\Delta H = \\Delta U + \\Delta n_g RT$, where $\\Delta n_g$ counts ONLY gaseous species.", "For solids and liquids, $\\Delta V \\approx 0$, so $\\Delta H \\approx \\Delta U$.", "$C_p - C_v = R$ for an ideal gas due to work done during isobaric expansion."], "quizzes": [{"prompt": "Under what condition are the enthalpy change (ΔH) and internal energy change (ΔU) of a chemical reaction strictly equal?", "options": ["When the change in number of moles of gaseous species is zero (Δn_g = 0)", "When the reaction is carried out at absolute zero only", "When the reaction is highly exothermic", "When all reactants and products are ideal gases"], "answer": 0, "hint": "Recall the relation ΔH = ΔU + Δng RT.", "explain": "Since $\\Delta H = \\Delta U + \\Delta n_g RT$, when $\\Delta n_g = 0$ (no net change in moles of gas, e.g. $H_2(g) + Cl_2(g) \\rightarrow 2HCl(g)$), the product $\\Delta n_g RT$ vanishes, making $\\Delta H = \\Delta U$."}, {"prompt": "Why is the molar heat capacity at constant pressure (C_p) always greater than that at constant volume (C_v) for an ideal gas?", "options": ["Heat at constant pressure must raise temperature AND perform expansion work on surroundings", "Molecules move faster at constant pressure than at constant volume", "Intermolecular forces are stronger at constant pressure", "The gas decomposes upon heating at constant pressure"], "answer": 0, "hint": "Consider where energy goes: internal temperature rise vs mechanical pushing.", "explain": "At constant volume no work is done ($w=0$). At constant pressure, the gas expands against the atmosphere, requiring extra energy equal to $P\\Delta V = R\\Delta T$ per mole to do expansion work: $C_p = C_v + R$."}, {"prompt": "The reaction NH₂CN(s) + 3/2 O₂(g) → N₂(g) + CO₂(g) + H₂O(l) has ΔU = −742.7 kJ/mol at 298 K. What is the value of Δn_g for this reaction?", "options": ["+0.5 mol", "-0.5 mol", "+1.5 mol", "-1.0 mol"], "answer": 0, "hint": "Count gaseous moles only: products (N2 + CO2) minus reactants (O2).", "explain": "Products have $1\\text{ mol N}_2(g) + 1\\text{ mol CO}_2(g) = 2\\text{ mol gas}$. Reactants have $1.5\\text{ mol O}_2(g)$ (cyanamide is solid). Thus $\\Delta n_g = 2 - 1.5 = +0.5\\text{ mol}$."}]}, {"id": "thermochemistry-hess", "nav": "04 · Thermochemistry & Hess's Law", "title": "Thermochemical Equations, Hess's Law & Bond Enthalpies", "deck": "Master Hess's Law of constant heat summation as a direct consequence of enthalpy being a state function, and calculate reaction enthalpies from formation and bond enthalpies.", "minutes": 18, "section": "5.6, 5.7", "pages": "16–22", "print": "PDF pp. 16–22 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "hesscycle", "simTitle": "Interactive Thermochemical Cycle & Hess Builder", "quick": "Hess's Law states that the total enthalpy change for a chemical process is independent of the number of steps. Standard enthalpies of formation allow calculating Δ_r H° = Σ Δ_f H°(products) - Σ Δ_f H°(reactants). Bond enthalpies estimate gas-phase enthalpies.", "formulas": [{"label": "Hess's Law of Constant Heat Summation", "formula": "\\Delta_r H^\\circ = \\Delta H_1 + \\Delta H_2 + \\Delta H_3 + \\dots"}, {"label": "Reaction Enthalpy from Formation Enthalpies", "formula": "\\Delta_r H^\\circ = \\sum a_i \\Delta_f H^\\circ(\\text{products}) - \\sum b_j \\Delta_f H^\\circ(\\text{reactants})"}, {"label": "Reaction Enthalpy from Bond Enthalpies", "formula": "\\Delta_r H^\\circ = \\sum \\text{Bond Enthalpy}(\\text{broken}) - \\sum \\text{Bond Enthalpy}(\\text{formed})"}, {"label": "Standard State of Elements", "formula": "\\Delta_f H^\\circ(\\text{element in reference state}) = 0"}], "deeper": "Why can standard enthalpies of formation be defined as zero for elements in their most stable reference state, yet bond enthalpies are always positive? The zero point of enthalpy is an arbitrary convention because absolute enthalpy cannot be measured—only changes ($\\Delta H$) can. By defining $\\Delta_f H^\\circ = 0$ for graphite, $O_2(g)$, $N_2(g)$, and $H_2(g)$ at 298 K, every compound's formation enthalpy is referenced to a universal benchmark. In contrast, bond enthalpy measures the homolytic cleavage of a chemical bond in the gaseous state, which invariably requires energy input to overcome electrostatic attraction, making bond dissociation enthalpy strictly positive ($> 0$).", "worked": [{"title": "Calculating Standard Enthalpy of Formation via Hess's Law", "problem": "Calculate the standard enthalpy of formation of methanol, CH₃OH(l), given:\n(1) CH₃OH(l) + 3/2 O₂(g) → CO₂(g) + 2 H₂O(l); Δ_r H° = −726 kJ/mol\n(2) C(graphite) + O₂(g) → CO₂(g); Δ_c H° = −393 kJ/mol\n(3) H₂(g) + 1/2 O₂(g) → H₂O(l); Δ_f H° = −286 kJ/mol", "solution": "<p><strong>Target Formation Reaction:</strong></p>$$\\text{C(graphite)} + 2\\,\\text{H}_2(g) + \\frac{1}{2}\\,\\text{O}_2(g) \\longrightarrow \\text{CH}_3\\text{OH}(l) \\quad [\\Delta_f H^\\circ = ?]$$<p><strong>Linear Combination of Given Equations:</strong></p><ul><li>Keep Eq. (2) as is: $\\text{C} + \\text{O}_2 \\rightarrow \\text{CO}_2\\quad (\\Delta H = -393\\text{ kJ})$</li><li>Multiply Eq. (3) by 2: $2\\,\\text{H}_2 + \\text{O}_2 \\rightarrow 2\\,\\text{H}_2\\text{O}\\quad (\\Delta H = 2 \\times (-286) = -572\\text{ kJ})$</li><li>Reverse Eq. (1): $\\text{CO}_2 + 2\\,\\text{H}_2\\text{O} \\rightarrow \\text{CH}_3\\text{OH} + \\frac{3}{2}\\,\\text{O}_2\\quad (\\Delta H = +726\\text{ kJ})$</li></ul><p><strong>Summing the Equations:</strong></p>$$\\Delta_f H^\\circ(\\text{CH}_3\\text{OH}) = (-393) + (-572) + (+726) = -965 + 726 = \\mathbf{-239\\text{ kJ/mol}}$$"}], "prediction": {"scenario": "Consider the formation of gaseous carbon tetrachloride: C(graphite) + 2 Cl₂(g) → CCl₄(g). To convert C(graphite) into separated gas atoms, one needs sublimation energy (715 kJ/mol); to dissociate Cl₂ requires 242 kJ/mol.", "question": "If four C–Cl bonds are formed each releasing ~326 kJ/mol, what dictates whether the net reaction is exothermic or endothermic?", "options": ["The energy released during four C–Cl bond formations exceeds the sum of graphite atomization and Cl₂ dissociation energies", "The reaction must always be endothermic because graphite atomization requires massive heat (715 kJ/mol)", "Hess's law prevents predicting the sign without experimental bomb calorimetry", "Enthalpy of formation is zero because chlorine is in its standard elemental state"], "answer": 0, "reveal": "Energy required to atomize reactants = $715\\text{ (C)} + 2 \\times 242\\text{ (Cl}_2\\text{)} = 715 + 484 = 1199\\text{ kJ}$. Energy released upon forming 4 $C-Cl$ bonds = $4 \\times 326 = 1304\\text{ kJ}$. Because bond formation releases MORE energy ($1304\\text{ kJ}$) than atomization consumes ($1199\\text{ kJ}$), the net formation reaction is exothermic: $\\Delta_f H^\\circ \\approx 1199 - 1304 = -105\\text{ kJ/mol}$."}, "connect": "Chemical rocket propellants (like liquid hydrogen and liquid oxygen) are engineered using Hess cycles to maximize combustion enthalpy release per unit launch mass, delivering maximum specific impulse.", "recall": ["Hess's Law: Enthalpy change is identical whether a reaction occurs in one step or ten steps.", "Reversing a thermochemical equation changes the sign of $\\Delta H$.", "Multiplying stoichiometric coefficients by $n$ multiplies $\\Delta H$ by $n$.", "$\\Delta_f H^\\circ$ of all elements in their standard states (graphite, $O_2$, $N_2$, $H_2$, $Br_2(l)$) is zero.", "$\\Delta_r H^\\circ = \\sum \\text{Bond Energy}(\\text{broken}) - \\sum \\text{Bond Energy}(\\text{formed})$ applies strictly to gas-phase species."], "quizzes": [{"prompt": "Given that N₂(g) + 3 H₂(g) → 2 NH₃(g) has Δ_r H° = −92.4 kJ/mol, what is the standard enthalpy of formation of gaseous ammonia, Δ_f H°(NH₃)?", "options": ["−46.2 kJ/mol", "−92.4 kJ/mol", "+46.2 kJ/mol", "−184.8 kJ/mol"], "answer": 0, "hint": "Standard enthalpy of formation is defined for the synthesis of ONE mole of compound from constituent elements.", "explain": "The thermochemical equation produces 2 moles of $NH_3(g)$. By definition, $\\Delta_f H^\\circ$ is per mole of substance formed: $\\Delta_f H^\\circ = \\frac{-92.4\\text{ kJ}}{2\\text{ mol}} = -46.2\\text{ kJ/mol}$."}, {"prompt": "Why is the standard enthalpy of formation (Δ_f H°) of diamond NOT zero, even though it consists of pure elemental carbon?", "options": ["Graphite is the thermodynamically most stable allotrope of carbon at 298 K and 1 bar, chosen as reference", "Diamond contains trace nitrogen impurities that release heat", "Diamond is a gas at high temperatures", "Diamond has no covalent bonds"], "answer": 0, "hint": "Standard state reference is assigned to the most stable allotrope at 298 K and 1 bar.", "explain": "The convention assigns $\\Delta_f H^\\circ = 0$ to the most stable allotrope under standard conditions ($298\\text{ K}, 1\\text{ bar}$). For carbon, graphite is more stable than diamond by $1.89\\text{ kJ/mol}$; hence $\\Delta_f H^\\circ(\\text{diamond}) = +1.89\\text{ kJ/mol}$."}, {"prompt": "Which equation correctly calculates the reaction enthalpy from bond enthalpies for a gas-phase reaction?", "options": ["Δ_r H° = Σ Bond Enthalpies(broken) − Σ Bond Enthalpies(formed)", "Δ_r H° = Σ Bond Enthalpies(formed) − Σ Bond Enthalpies(broken)", "Δ_r H° = Σ Δ_f H°(reactants) − Σ Δ_f H°(products)", "Δ_r H° = Σ Bond Enthalpies(broken) + Σ Bond Enthalpies(formed)"], "answer": 0, "hint": "Breaking bonds requires energy (+), while forming bonds releases energy (-).", "explain": "Bond breaking is an endothermic process ($+\\Delta H$) while bond formation is exothermic ($-\\Delta H$). Thus, $\\Delta_r H^\\circ = \\sum BE(\\text{reactants broken}) - \\sum BE(\\text{products formed})$."}]}, {"id": "entropy-second-law", "nav": "05 · Entropy & the Second Law", "title": "Spontaneity, Entropy & the Second Law of Thermodynamics", "deck": "Investigate why enthalpy minimization alone cannot explain endothermic spontaneous processes, define entropy as a microscopic measure of dispersion, and formulate the Second Law: ΔS_total ≥ 0.", "minutes": 18, "section": "5.8", "pages": "22–27", "print": "PDF pp. 22–27 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "entropylab", "simTitle": "Molecular Disorder & Free Expansion Microstate Lab", "quick": "A spontaneous process proceeds without external assistance. Enthalpy decrease is not the sole driving force (ice melts spontaneously at 25 °C). Entropy S measures molecular randomness and energy dispersal: ΔS = q_rev / T. The universe's entropy continuously increases.", "formulas": [{"label": "Thermodynamic Entropy Definition", "formula": "\\Delta S = \\frac{q_{\\text{rev}}}{T}"}, {"label": "Second Law of Thermodynamics", "formula": "\\Delta S_{\\text{total}} = \\Delta S_{\\text{system}} + \\Delta S_{\\text{surroundings}} \\ge 0"}, {"label": "Surroundings Entropy Change", "formula": "\\Delta S_{\\text{surroundings}} = -\\frac{\\Delta H_{\\text{system}}}{T}"}, {"label": "Phase Transition Entropy", "formula": "\\Delta_{\\text{trans}} S = \\frac{\\Delta_{\\text{trans}} H}{T_{\\text{trans}}}"}], "deeper": "How does Boltzmann's microscopic statistical definition $S = k_B \\ln W$ unite with Clausius's macroscopic heat ratio $\\Delta S = q_{rev}/T$? In statistical mechanics, $W$ represents the number of microscopic quantum microstates corresponding to a given macroscopic state. When heat $q_{rev}$ is transferred into a substance at absolute temperature $T$, thermal energy populates higher quantized energy levels, multiplying the accessible permutations of molecular positions and momenta. At lower temperatures, introducing thermal packets produces a dramatically larger fractional increase in accessible microstates than at high temperatures, explaining why the entropy surge is inversely proportional to $T$ ($dS = dq/T$).", "worked": [{"title": "Entropy Change of the Surroundings during Water Formation", "problem": "Calculate the entropy change in the surroundings when 1.00 mol of H₂O(l) is formed under standard conditions at 298 K, given Δ_f H° = −286 kJ/mol.", "solution": "<p><strong>1. Heat transferred to surroundings:</strong></p><p>Because the formation reaction is exothermic, heat released by the system is absorbed reversibly by the vast thermal reservoir of the surroundings at constant temperature $T = 298\\text{ K}$:</p>$$q_{\\text{surroundings}} = -\\Delta H_{\\text{system}} = -(-286\\text{ kJ}) = +286\\text{ kJ} = +286000\\text{ J}$$<p><strong>2. Calculate $\\Delta S_{\\text{surroundings}}$:</strong></p>$$\\Delta S_{\\text{surroundings}} = \\frac{q_{\\text{surroundings}}}{T} = \\frac{+286000\\text{ J}}{298\\text{ K}} = \\mathbf{+959.7\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}}$$<p><em>Insight:</em> The large positive entropy generated in the surrounding environment overwhelmingly overcomes the modest entropy reduction of condensing gas into liquid water ($\\Delta S_{\\text{system}} = -163\\text{ J/K}$), driving net $\\Delta S_{\\text{total}} > 0$.</p>"}], "prediction": {"scenario": "Two chlorine free radicals combine in the gas phase to form a stable chlorine molecule: 2 Cl(g) → Cl₂(g).", "question": "What are the algebraic signs of ΔH and ΔS for this association reaction?", "options": ["ΔH < 0 (negative) and ΔS < 0 (negative)", "ΔH > 0 (positive) and ΔS > 0 (positive)", "ΔH < 0 (negative) and ΔS > 0 (positive)", "ΔH > 0 (positive) and ΔS < 0 (negative)"], "answer": 0, "reveal": "Forming a covalent $Cl-Cl$ bond releases potential energy, so heat is released $\\implies \\Delta H < 0$ (exothermic). Combining two independent gaseous atoms into a single diatomic molecule reduces translational degrees of freedom and spatial disorder $\\implies \\Delta S < 0$ (entropy decreases)."}, "connect": "Atmospheric weather systems and hurricanes are planetary heat engines driven by the second law: warm equatorial waters release latent heat of condensation, producing intense localized entropy dispersal toward cold upper atmospheric sinks.", "recall": ["Entropy ($S$) is a thermodynamic state function measuring molecular disorder and dispersal.", "Units of entropy: $\\text{J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}$.", "For a spontaneous process in an isolated system, $\\Delta S > 0$.", "Entropy increases during: melting, vaporization, gas expansion, and reactions where $\\Delta n_g > 0$.", "At equilibrium, the entropy of an isolated system reaches a maximum ($\\,\\Delta S = 0$)."], "quizzes": [{"prompt": "For an isolated thermodynamic system (ΔU = 0), what is the criterion for a spontaneous irreversible change according to the Second Law?", "options": ["ΔS > 0", "ΔS < 0", "ΔS = 0", "ΔS = ΔU / T"], "answer": 0, "hint": "In an isolated system, no heat or work enters from surroundings.", "explain": "For an isolated system, no energy exchange with surroundings is possible. The Second Law dictates that any natural spontaneous process within an isolated system must increase total entropy until equilibrium is reached, where $\\Delta S = 0$. Thus $\\Delta S > 0$ for spontaneous change."}, {"prompt": "Which of the following processes is accompanied by an INCREASE in entropy (ΔS > 0)?", "options": ["Sublimation of solid iodine into violet vapor: I₂(s) → I₂(g)", "Freezing of liquid water into solid ice: H₂O(l) → H₂O(s)", "Condensation of steam into water: H₂O(g) → H₂O(l)", "Haber synthesis of ammonia: N₂(g) + 3 H₂(g) → 2 NH₃(g)"], "answer": 0, "hint": "Look for transitions that increase molecular freedom, volume, or gaseous particles.", "explain": "Sublimation converts a rigid crystalline solid with fixed lattice sites into widely dispersed, freely moving gas molecules, causing a dramatic increase in spatial and velocity disorder ($\\Delta S \\gg 0$)."}, {"prompt": "If a chemical reaction is endothermic (ΔH > 0) yet proceeds spontaneously at room temperature, what MUST be true about its entropy change?", "options": ["ΔS must be positive and T·ΔS must exceed ΔH", "ΔS must be negative", "ΔS must equal zero", "Surroundings entropy must be negative and larger in magnitude than system entropy"], "answer": 0, "hint": "Recall that ΔG = ΔH − T·ΔS must be negative for spontaneity.", "explain": "If $\\Delta H > 0$, the only way $\\Delta G = \\Delta H - T\\Delta S$ can be negative ($< 0$) is if $\\Delta S > 0$ and the temperature is high enough that $T\\Delta S > \\Delta H$."}]}, {"id": "gibbs-spontaneity", "nav": "06 · Gibbs Free Energy", "title": "Gibbs Free Energy & Temperature-Dependent Spontaneity", "deck": "Unite the First and Second Laws into the Gibbs Helmholtz relation ΔG = ΔH − TΔS, establishing the master criterion for chemical spontaneity at constant temperature and pressure.", "minutes": 18, "section": "5.9", "pages": "27–31", "print": "PDF pp. 27–31 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "gibbslab", "simTitle": "Gibbs Free Energy & Temperature Spontaneity Phase Explorer", "quick": "J. Willard Gibbs combined enthalpy and entropy into Gibbs Energy: G = H - TS. At constant T and P, spontaneity requires ΔG < 0. The four cases of ΔH and ΔS dictate whether a reaction is spontaneous at all temperatures, high temperatures, low temperatures, or never.", "formulas": [{"label": "Gibbs Energy Definition", "formula": "G = H - TS"}, {"label": "Gibbs Helmholtz Equation", "formula": "\\Delta G = \\Delta H - T \\Delta S \\quad (\\text{at constant } T, P)"}, {"label": "Spontaneity Master Criteria", "formula": "\\Delta G < 0 \\;(\\text{Spontaneous}), \\quad \\Delta G = 0 \\;(\\text{Equilibrium}), \\quad \\Delta G > 0 \\;(\\text{Non-spontaneous})"}, {"label": "Threshold Temperature", "formula": "T_{\\text{switch}} = \\frac{\\Delta H}{\\Delta S} \\quad (\\text{when } \\Delta G = 0)"}], "deeper": "Why is Gibbs free energy called 'free' energy? In any isobaric-isothermal process, the total energy released as enthalpy is $\\Delta H$. However, the Second Law demands that an amount equal to $T\\Delta S$ must be dispersed into thermal disorder to prevent the universe's entropy from decreasing. Therefore, only the remaining portion, $-\\Delta G = -(\\Delta H - T\\Delta S)$, is 'free' and thermodynamically available to perform non-expansion mechanical, chemical, or electrical work (such as generating current in a galvanic Daniell cell: $w_{\\text{non-PV, max}} = -\\Delta G = nFE_{\\text{cell}}$).", "worked": [{"title": "Finding the Threshold Temperature for Spontaneity", "problem": "For the endothermic reaction 2 A + B → C, ΔH = +400 kJ/mol and ΔS = +0.2 kJ·K⁻¹·mol⁻¹ (+200 J·K⁻¹·mol⁻¹). At what temperature will this reaction become spontaneous?", "solution": "<p><strong>1. Condition for spontaneity:</strong></p>$$\\Delta G = \\Delta H - T\\Delta S < 0 \\implies T\\Delta S > \\Delta H \\implies T > \\frac{\\Delta H}{\\Delta S}$$<p><strong>2. Calculate the crossover temperature ($T_{\\text{switch}}$):</strong></p>$$T_{\\text{switch}} = \\frac{400\\text{ kJ}\\cdot\\text{mol}^{-1}}{0.2\\text{ kJ}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}} = \\mathbf{2000\\text{ K}}$$<p><strong>Conclusion:</strong></p><ul><li>At $T < 2000\\text{ K}$, $\\Delta G > 0$ (non-spontaneous, enthalpy-opposed).</li><li>At $T = 2000\\text{ K}$, $\\Delta G = 0$ (dynamic equilibrium).</li><li>At $T > 2000\\text{ K}$, $\\Delta G < 0$ (the favorable entropy term $-T\\Delta S$ overpowers $+\\Delta H$, driving the reaction spontaneously).</li></ul>"}], "prediction": {"scenario": "A reaction has ΔH = −10.5 kJ and ΔS = −44.1 J/K at 298 K.", "question": "Will this reaction occur spontaneously at 298 K, and how will heating affect its spontaneity?", "options": ["It is non-spontaneous at 298 K (ΔG = +0.16 kJ), and heating makes it even less spontaneous", "It is spontaneous at 298 K, and heating increases spontaneity", "It is spontaneous at all temperatures because ΔH is exothermic", "It is at dynamic equilibrium at 298 K"], "answer": 0, "reveal": "Calculate $\\Delta G = \\Delta H - T\\Delta S = -10.5\\text{ kJ} - [298 \\times (-0.0441\\text{ kJ/K})] = -10.5 + 13.14 = +0.16\\text{ kJ} > 0$. Because $\\Delta G > 0$, the reaction is non-spontaneous at 298 K. Because $\\Delta S < 0$, the unfavorable term $+T|\\Delta S|$ grows larger upon heating, driving $\\Delta G$ even more positive."}, "connect": "Biological ATP hydrolysis ($\\Delta G^\\circ = -30.5\text{ kJ/mol}$) acts as the universal free energy currency of living cells, coupling its exergonic energy release to power non-spontaneous endergonic reactions like protein synthesis and muscle contraction.", "recall": ["$\\Delta G = \\Delta H - T\\Delta S$ at constant $T$ and $P$.", "If $\\Delta H < 0$ and $\\Delta S > 0$: $\\Delta G < 0$ at ALL temperatures (always spontaneous).", "If $\\Delta H > 0$ and $\\Delta S < 0$: $\\Delta G > 0$ at ALL temperatures (never spontaneous).", "If $\\Delta H > 0$ and $\\Delta S > 0$: spontaneous ONLY at HIGH temperatures ($T > \\Delta H / \\Delta S$).", "If $\\Delta H < 0$ and $\\Delta S < 0$: spontaneous ONLY at LOW temperatures ($T < \\Delta H / \\Delta S$)."], "quizzes": [{"prompt": "Under what thermodynamic conditions is a chemical reaction guaranteed to be spontaneous at all temperatures?", "options": ["ΔH < 0 (exothermic) and ΔS > 0 (entropy increases)", "ΔH > 0 and ΔS > 0", "ΔH < 0 and ΔS < 0", "ΔH > 0 and ΔS < 0"], "answer": 0, "hint": "Check the signs in ΔG = ΔH − T·ΔS: both terms must be negative.", "explain": "When $\\Delta H$ is negative and $\\Delta S$ is positive, both $\\Delta H$ and the $-T\\Delta S$ term are negative regardless of temperature $T$. Consequently, $\\Delta G$ is unconditionally negative at all temperatures."}, {"prompt": "At the normal boiling point of a liquid at 1 atm, what is the value of the Gibbs free energy of vaporization (Δ_vap G)?", "options": ["Δ_vap G = 0", "Δ_vap G < 0", "Δ_vap G > 0", "Δ_vap G = Δ_vap H"], "answer": 0, "hint": "At a phase transition temperature, the two phases coexist in dynamic equilibrium.", "explain": "At the normal boiling point, liquid and vapor phases coexist in dynamic thermodynamic equilibrium at 1 atm. At equilibrium, $\\Delta G = 0$, which yields Trouton's rule relation: $T_b = \\Delta_{vap} H / \\Delta_{vap} S$."}, {"prompt": "What is the maximum non-expansion (useful electrical or chemical) work obtainable from a system at constant temperature and pressure?", "options": ["Equal to −ΔG", "Equal to −ΔH", "Equal to −T·ΔS", "Equal to −ΔU"], "answer": 0, "hint": "Recall the thermodynamic definition of Gibbs free energy.", "explain": "The maximum net non-expansion work (electrical, shaft, biochemical) that can be extracted from a closed system at constant $T$ and $P$ is precisely equal to the decrease in Gibbs free energy: $w_{\\text{non-PV, max}} = -\\Delta G$."}]}, {"id": "free-energy-equilibrium", "nav": "07 · Equilibrium & Third Law", "title": "Free Energy, Equilibrium Constant (ΔG° = −RT ln K) & Third Law", "deck": "Connect thermodynamics to chemical equilibrium through ΔG° = −RT ln K, explore absolute entropy via the Third Law, and understand thermodynamic vs kinetic stability.", "minutes": 18, "section": "5.10, 5.11", "pages": "31–36", "print": "PDF pp. 31–36 (NCERT Class 11 Chemistry Part I, Chapter 5)", "sim": "thirdlawsim", "simTitle": "Equilibrium K vs ΔG° & Absolute Zero Crystal Lab", "quick": "Chemical equilibrium occurs when G reaches a minimum: Δ_r G = 0. The standard free energy dictates the equilibrium constant: Δ_r G° = -RT ln K = -2.303 RT log K. The Third Law states that the entropy of a perfectly crystalline solid is zero at 0 K.", "formulas": [{"label": "Reaction Quotient Gibbs Energy", "formula": "\\Delta_r G = \\Delta_r G^\\circ + RT \\ln Q"}, {"label": "Standard Free Energy & Equilibrium Constant", "formula": "\\Delta_r G^\\circ = -RT \\ln K = -2.303\\, RT \\log_{10} K"}, {"label": "Third Law of Thermodynamics", "formula": "\\lim_{T \\to 0\\text{ K}} S = 0 \\quad (\\text{for a perfect crystal})"}, {"label": "Standard Absolute Entropy", "formula": "S^\\circ(T) = \\int_0^T \\frac{C_p}{T}\\, dT"}], "deeper": "Why does the Third Law permit the determination of absolute molar entropies ($S^\\circ$) whereas absolute enthalpies ($H$) remain inaccessible? Because absolute enthalpy includes rest-mass binding energies and nuclear forces whose ultimate baseline is unquantified. In contrast, Boltzmann's formula $S = k_B \\ln W$ establishes an absolute physical baseline: at $0\\text{ K}$, thermal motion ceases and every atom in a perfect crystal occupies a unique, ground-state configuration ($W = 1$). Since $\\ln(1) = 0$, entropy at absolute zero is zero. Integrating experimental heat capacity data $\\int_0^T (C_p/T) dT$ from $0\\text{ K}$ yields the absolute entropy $S^\\circ(T)$.", "worked": [{"title": "Calculating Standard Free Energy from the Equilibrium Constant", "problem": "The equilibrium constant for a chemical reaction is K = 10 at T = 300 K. Calculate the standard Gibbs free energy change (Δ_r G°) in kJ/mol. (R = 8.314 J·K⁻¹·mol⁻¹).", "solution": "<p><strong>1. Apply the equilibrium-free energy relation:</strong></p>$$\\Delta_r G^\\circ = -2.303\\, RT \\log_{10} K$$<p><strong>2. Substitute known values:</strong></p>$$\\Delta_r G^\\circ = -2.303 \\times (8.314\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}) \\times (300\\text{ K}) \\times \\log_{10}(10)$$$$\\Delta_r G^\\circ = -2.303 \\times 2494.2 \\times 1 = -5744.14\\text{ J/mol} = \\mathbf{-5.74\\text{ kJ/mol}}$$<p><em>Interpretation:</em> Because $K > 1$, $\\Delta_r G^\\circ$ is negative, meaning that at standard state ($1\\text{ bar}$ all species), the forward reaction has a thermodynamic driving force to form products until equilibrium is reached.</p>"}], "prediction": {"scenario": "For the formation of nitric oxide: 1/2 N₂(g) + 1/2 O₂(g) → NO(g), Δ_r H° = +90 kJ/mol (endothermic).", "question": "What does this positive enthalpy of formation imply about the thermodynamic stability of NO gas at room temperature?", "options": ["NO(g) is thermodynamically unstable with respect to decomposition into N₂ and O₂", "NO(g) is thermodynamically inert and cannot react with oxygen", "NO(g) will spontaneously form from air at room temperature without energy input", "NO(g) has zero entropy at room temperature"], "answer": 0, "reveal": "Because $\\Delta_f H^\\circ = +90\\text{ kJ/mol} > 0$ and $\\Delta_f G^\\circ = +86.6\\text{ kJ/mol} > 0$, nitric oxide is thermodynamically unstable relative to its constituent elements $N_2$ and $O_2$. The reverse reaction (decomposition $NO \\rightarrow 1/2 N_2 + 1/2 O_2$) is exergonic ($\\Delta G < 0$). It persists in atmosphere only because the activation energy barrier for decomposition is high (kinetic stability)."}, "connect": "Industrial chemical syntheses (like the Haber-Bosch ammonia process) operate in the delicate interplay between thermodynamic yield ($\\Delta G^\\circ = -RT \\ln K$) and kinetic reaction rate (Arrhenius law $k = A e^{-E_a/RT}$), requiring high pressures and catalysts to achieve rapid throughput.", "recall": ["$\\Delta_r G = \\Delta_r G^\\circ + RT \\ln Q$. At equilibrium, $\\Delta_r G = 0$ and $Q = K$.", "$\\Delta_r G^\\circ = -RT \\ln K = -2.303 RT \\log_{10} K$.", "If $K > 1 \\implies \\Delta_r G^\\circ < 0$ (products favored at equilibrium).", "If $K < 1 \\implies \\Delta_r G^\\circ > 0$ (reactants favored at equilibrium).", "Third Law: A perfectly crystalline solid at $0\\text{ K}$ has zero entropy ($S = 0$)."], "quizzes": [{"prompt": "If a chemical reaction has a standard Gibbs free energy change Δ_r G° = 0, what is its equilibrium constant (K)?", "options": ["K = 1", "K = 0", "K = 10", "K = ∞"], "answer": 0, "hint": "Substitute ΔG° = 0 into ΔG° = −RT ln K.", "explain": "From $\\Delta_r G^\\circ = -RT \\ln K$, when $\\Delta_r G^\\circ = 0$, $\\ln K = 0$, which means $K = e^0 = 1$."}, {"prompt": "According to the Third Law of Thermodynamics, what happens to the entropy of a pure, perfectly ordered crystal as temperature approaches 0 K?", "options": ["Entropy approaches strictly zero", "Entropy approaches negative infinity", "Entropy approaches positive infinity", "Entropy approaches the gas constant R"], "answer": 0, "hint": "At absolute zero, all thermal vibrations cease, yielding a single quantum microstate (W = 1).", "explain": "At absolute zero ($0\\text{ K}$), all thermal vibrations freeze and atoms settle into a single ground-state crystalline arrangement ($W = 1$). By Boltzmann's equation $S = k_B \\ln(1) = 0$, the entropy is zero."}, {"prompt": "If the equilibrium constant K for a reaction is 100 at 300 K, what is the sign and character of Δ_r G°?", "options": ["Negative (forward reaction favored at standard states)", "Positive (reactants favored at standard states)", "Zero (system in frozen equilibrium)", "Unpredictable without knowing activation energy"], "answer": 0, "hint": "Consider the sign of ln(100) where K > 1.", "explain": "Because $K = 100 > 1$, $\\ln K = \\ln(100) > 0$. Therefore, $\\Delta_r G^\\circ = -RT \\ln K$ is negative, indicating that products are favored under standard conditions."}]}], "exercises": [{"num": "5.1", "title": "Definition of a thermodynamic state function", "question": "Choose the correct answer. A thermodynamic state function is a quantity\n(i) used to determine heat changes\n(ii) whose value is independent of path\n(iii) used to determine pressure volume work\n(iv) whose value depends on temperature only.", "approach": "Recall the fundamental distinction between state functions (path-independent) and path functions (heat, work).", "solution": "<p><strong>Correct Answer: (ii) whose value is independent of path.</strong></p><p><strong>Explanation:</strong></p><p>A <strong>state function</strong> (or state variable) is a thermodynamic property of a system whose value depends exclusively on the current state of the system (defined by macroscopic parameters such as temperature $T$, pressure $P$, volume $V$, and amount $n$), and is <strong>completely independent of the path or history</strong> by which that state was reached.</p><p>When a system undergoes a transition from State 1 to State 2, the change in a state function $X$ is simply:$$\\Delta X = X_2 - X_1$$Examples of state functions include internal energy ($U$), enthalpy ($H$), entropy ($S$), Gibbs free energy ($G$), pressure ($P$), volume ($V$), and temperature ($T$). In contrast, heat ($q$) and work ($w$) depend on the specific path taken and are <em>path functions</em>.</p>", "verified": "(ii) whose value is independent of path"}, {"num": "5.2", "title": "Thermodynamic condition for an adiabatic process", "question": "For the process to occur under adiabatic conditions, the correct condition is:\n(i) ΔT = 0\n(ii) Δp = 0\n(iii) q = 0\n(iv) w = 0", "approach": "Define adiabatic boundary and condition for zero heat exchange across system boundaries.", "solution": "<p><strong>Correct Answer: (iii) q = 0.</strong></p><p><strong>Explanation:</strong></p><p>An <strong>adiabatic process</strong> is defined as a thermodynamic process in which <strong>no heat enters or leaves the system</strong> across its boundary during the entire course of the change:$$q = 0$$Key comparisons:</p><ul><li>$\\Delta T = 0$ corresponds to an <em>isothermal</em> process. (In an adiabatic process, temperature generally changes: adiabatic expansion causes cooling, while adiabatic compression causes heating).</li><li>$\\Delta p = 0$ corresponds to an <em>isobaric</em> process.</li><li>$w = 0$ corresponds to an <em>isochoric</em> process with zero non-expansion work, or free expansion in vacuum.</li></ul>", "verified": "(iii) q = 0"}, {"num": "5.3", "title": "Standard enthalpies of elements in reference states", "question": "The enthalpies of all elements in their standard states are:\n(i) unity\n(ii) zero\n(iii) < 0\n(iv) different for each element", "approach": "Recall IUPAC convention for standard enthalpy of formation of pure elements in their most stable allotropic reference state.", "solution": "<p><strong>Correct Answer: (ii) zero.</strong></p><p><strong>Explanation:</strong></p><p>By international IUPAC thermodynamic convention, the <strong>standard enthalpy of formation ($\\Delta_f H^\\circ$) of every pure chemical element in its most stable physical and allotropic state of aggregation at 298.15 K and 1 bar pressure is assigned an arbitrary reference value of ZERO</strong>.</p><p>Examples:</p><ul><li>$\\Delta_f H^\\circ[\\text{C(graphite)}] = 0\\text{ kJ/mol}$ (whereas diamond is $+1.89\\text{ kJ/mol}$).</li><li>$\\Delta_f H^\\circ[\\text{O}_2(g)] = 0\\text{ kJ/mol}$ (whereas ozone $O_3(g)$ is $+142.7\\text{ kJ/mol}$).</li><li>$\\Delta_f H^\\circ[\\text{H}_2(g)] = 0\\text{ kJ/mol}$, $\\Delta_f H^\\circ[\\text{Cl}_2(g)] = 0\\text{ kJ/mol}$, $\\Delta_f H^\\circ[\\text{Br}_2(l)] = 0\\text{ kJ/mol}$, $\\Delta_f H^\\circ[\\text{I}_2(s)] = 0\\text{ kJ/mol}$.</li></ul>", "verified": "(ii) zero"}, {"num": "5.4", "title": "Relation between ΔH° and ΔU° for methane combustion", "question": "ΔU° of combustion of methane is – X kJ mol–1. The value of ΔH° is:\n(i) = ΔU°\n(ii) > ΔU°\n(iii) < ΔU°\n(iv) = 0", "approach": "Write balanced combustion equation, calculate Δn_g, and evaluate ΔH° = ΔU° + Δn_g RT.", "solution": "<p><strong>Correct Answer: (iii) &lt; ΔU°.</strong></p><p><strong>Step-by-Step Derivation:</strong></p><ol><li>Write the balanced thermochemical equation for the combustion of methane at 298 K:$$\\text{CH}_4(g) + 2\\,\\text{O}_2(g) \\longrightarrow \\text{CO}_2(g) + 2\\,\\text{H}_2\\text{O}(l)$$</li><li>Calculate the change in number of moles of gaseous species ($\\Delta n_g$):$$\\Delta n_g = n_g(\\text{products}) - n_g(\\text{reactants}) = 1\\text{ (from CO}_2) - [1\\text{ (from CH}_4) + 2\\text{ (from O}_2)] = 1 - 3 = -2$$<em>(Note: Water is in the liquid state at 298 K, so it does not contribute to gaseous moles).</em></li><li>Apply the fundamental thermodynamic relation:$$\\Delta H^\\circ = \\Delta U^\\circ + \\Delta n_g RT$$$$\\Delta H^\\circ = -X + (-2RT) = -X - 2RT$$</li><li>Because absolute temperature $T > 0$ and gas constant $R > 0$, the term $2RT$ is positive. Subtracting a positive quantity makes $\\Delta H^\\circ$ more negative than $-X$:$$\\Delta H^\\circ < -X \\implies \\Delta H^\\circ < \\Delta U^\\circ$$</li></ol>", "verified": "(iii) < ΔU°"}, {"num": "5.5", "title": "Enthalpy of formation of methane from combustion data", "question": "The enthalpy of combustion of methane, graphite and dihydrogen at 298 K are, –890.3 kJ mol–1, –393.5 kJ mol–1, and –285.8 kJ mol–1 respectively. Enthalpy of formation of CH₄(g) will be:\n(i) –74.8 kJ mol–1\n(ii) –52.27 kJ mol–1\n(iii) +74.8 kJ mol–1\n(iv) +52.26 kJ mol–1", "approach": "Apply Hess's Law: Δ_f H°(CH4) = Δ_c H°(C) + 2·Δ_c H°(H2) − Δ_c H°(CH4).", "solution": "<p><strong>Correct Answer: (i) –74.8 kJ mol–1.</strong></p><p><strong>Step-by-Step Calculation:</strong></p><ol><li><strong>Target Formation Reaction:</strong>$$\\text{C(graphite)} + 2\\,\\text{H}_2(g) \\longrightarrow \\text{CH}_4(g) \\quad [\\Delta_f H^\\circ = ?]$$</li><li><strong>Given Combustion Equations:</strong><ul><li>(1) $\\text{CH}_4(g) + 2\\,\\text{O}_2(g) \\rightarrow \\text{CO}_2(g) + 2\\,\\text{H}_2\\text{O}(l); \\quad \\Delta H_1 = -890.3\\text{ kJ/mol}$</li><li>(2) $\\text{C(graphite)} + \\text{O}_2(g) \\rightarrow \\text{CO}_2(g); \\quad \\Delta H_2 = -393.5\\text{ kJ/mol}$</li><li>(3) $\\text{H}_2(g) + \\frac{1}{2}\\,\\text{O}_2(g) \\rightarrow \\text{H}_2\\text{O}(l); \\quad \\Delta H_3 = -285.8\\text{ kJ/mol}$</li></ul></li><li><strong>Linear Combination of Equations:</strong>$$\\text{Target} = \\text{Eq (2)} + 2 \\times \\text{Eq (3)} - \\text{Eq (1)}$$$$\\Delta_f H^\\circ(\\text{CH}_4) = \\Delta H_2 + 2\\,\\Delta H_3 - \\Delta H_1$$$$\\Delta_f H^\\circ = (-393.5) + 2(-285.8) - (-890.3)$$$$\\Delta_f H^\\circ = -393.5 - 571.6 + 890.3 = -965.1 + 890.3 = \\mathbf{-74.8\\text{ kJ/mol}}$$</li></ol>", "verified": "(i) –74.8 kJ mol–1"}, {"num": "5.6", "title": "Spontaneity of an exothermic reaction with positive entropy", "question": "A reaction, A + B → C + D + q is found to have a positive entropy change. The reaction will be:\n(i) possible at high temperature\n(ii) possible only at low temperature\n(iii) not possible at any temperature\n(iv) possible at any temperature", "approach": "Evaluate ΔG = ΔH − TΔS where ΔH < 0 (heat released +q) and ΔS > 0.", "solution": "<p><strong>Correct Answer: (iv) possible at any temperature.</strong></p><p><strong>Explanation:</strong></p><ol><li>The reaction releases heat ($+q$ on the product side), which means it is <strong>exothermic</strong>:$$\\Delta H < 0\\quad (\\text{negative})$$</li><li>The problem states that there is a <strong>positive entropy change</strong>:$$\\Delta S > 0\\quad (\\text{positive})$$</li><li>Applying the Gibbs-Helmholtz criterion for spontaneity at constant $T$ and $P$:$$\\Delta G = \\Delta H - T\\Delta S$$<ul><li>Since $\\Delta H$ is negative ($-$) and $\\Delta S$ is positive ($+$), the term $-T\\Delta S$ is also strictly negative for all absolute temperatures ($T > 0\\text{ K}$).</li><li>Therefore, $\\Delta G = (\\text{negative}) + (\\text{negative}) < 0$ at <strong>all temperatures</strong>.</li></ul></li></ol><p>Because $\\Delta G$ is unconditionally negative, the reaction is thermodynamically spontaneous and possible at any temperature.</p>", "verified": "(iv) possible at any temperature"}, {"num": "5.7", "title": "Internal energy change from First Law parameters", "question": "In a process, 701 J of heat is absorbed by a system and 394 J of work is done by the system. What is the change in internal energy for the process?", "approach": "Apply First Law of Thermodynamics ΔU = q + w with IUPAC sign conventions.", "solution": "<p>According to the First Law of Thermodynamics:$$\\Delta U = q + w$$where:</p><ul><li>$q$ is the heat absorbed by the system. Since heat is absorbed by the system:$$q = +701\\text{ J}$$</li><li>$w$ is the work. According to IUPAC sign convention, work done <em>by</em> the system (expansion) is negative:$$w = -394\\text{ J}$$</li></ul><p>Substituting into the First Law equation:$$\\Delta U = (+701\\text{ J}) + (-394\\text{ J}) = \\mathbf{+307\\text{ J}}$$</p><p><strong>Conclusion:</strong> The internal energy of the system increases by <strong>307 J</strong>.</p>", "verified": "ΔU = +307 J"}, {"num": "5.8", "title": "Enthalpy change of cyanamide reaction in bomb calorimeter", "question": "The reaction of cyanamide, NH₂CN (s), with dioxygen was carried out in a bomb calorimeter, and ΔU was found to be –742.7 kJ mol–1 at 298 K. Calculate enthalpy change for the reaction at 298 K.\nNH₂CN(s) + 3/2 O₂(g) → N₂(g) + CO₂(g) + H₂O(l)", "approach": "Find Δn_g from gaseous coefficients, then use ΔH = ΔU + Δn_g RT.", "solution": "<p><strong>Given reaction:</strong>$$\\text{NH}_2\\text{CN}(s) + \\frac{3}{2}\\,\\text{O}_2(g) \\longrightarrow \\text{N}_2(g) + \\text{CO}_2(g) + \\text{H}_2\\text{O}(l)$$$$\\Delta U = -742.7\\text{ kJ}\\cdot\\text{mol}^{-1}, \\quad T = 298\\text{ K}, \\quad R = 8.314 \\times 10^{-3}\\text{ kJ}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}$$</p><p><strong>1. Calculate change in gaseous moles ($\\Delta n_g$):</strong></p><ul><li>Moles of gaseous products = $1\\text{ mol N}_2(g) + 1\\text{ mol CO}_2(g) = 2\\text{ mol}$</li><li>Moles of gaseous reactants = $\\frac{3}{2}\\text{ mol O}_2(g) = 1.5\\text{ mol}$</li><li><em>(Note: $\\text{NH}_2\\text{CN}$ is solid and $\\text{H}_2\\text{O}$ is liquid, so neither is counted in $\\Delta n_g$).</em></li><li>$$\\Delta n_g = 2 - 1.5 = \\mathbf{+0.5\\text{ mol}}$$</li></ul><p><strong>2. Calculate $\\Delta n_g RT$:</strong></p>$$\\Delta n_g RT = (+0.5\\text{ mol}) \\times (8.314 \\times 10^{-3}\\text{ kJ}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}) \\times (298\\text{ K}) = +1.239\\text{ kJ/mol}$$<p><strong>3. Calculate Enthalpy Change ($\\Delta H$):</strong></p>$$\\Delta H = \\Delta U + \\Delta n_g RT = -742.7\\text{ kJ/mol} + 1.239\\text{ kJ/mol} = \\mathbf{-741.46\\text{ kJ/mol} \\approx -741.5\\text{ kJ/mol}}$$</p>", "verified": "ΔH = −741.5 kJ/mol"}, {"num": "5.9", "title": "Heat required to raise temperature using molar heat capacity", "question": "Calculate the number of kJ of heat necessary to raise the temperature of 60.0 g of aluminium from 35°C to 55°C. Molar heat capacity of Al is 24 J mol–1 K–1.", "approach": "Convert mass to moles of Al (molar mass = 27 g/mol), then use q = n · C_m · ΔT.", "solution": "<p><strong>Given parameters:</strong></p><ul><li>Mass of aluminium ($m$) = $60.0\\text{ g}$</li><li>Molar mass of aluminium ($M$) = $27.0\\text{ g/mol}$</li><li>Initial temperature ($T_1$) = $35^\\circ\\text{C}$</li><li>Final temperature ($T_2$) = $55^\\circ\\text{C}$</li><li>Temperature change ($\\Delta T$) = $55 - 35 = 20^\\circ\\text{C} = 20\\text{ K}$</li><li>Molar heat capacity ($C_m$) = $24\\text{ J}\\cdot\\text{mol}^{-1}\\cdot\\text{K}^{-1}$</li></ul><p><strong>1. Calculate moles of aluminium ($n$):</strong></p>$$n = \\frac{m}{M} = \\frac{60.0\\text{ g}}{27.0\\text{ g/mol}} = 2.222\\text{ mol}$$<p><strong>2. Calculate heat required ($q$):</strong></p>$$q = n \\times C_m \\times \\Delta T$$$$q = (2.222\\text{ mol}) \\times (24\\text{ J}\\cdot\\text{mol}^{-1}\\cdot\\text{K}^{-1}) \\times (20\\text{ K}) = 1066.67\\text{ J}$$<p><strong>3. Convert Joules to kiloJoules:</strong></p>$$q = \\frac{1066.67}{1000} = \\mathbf{1.067\\text{ kJ}}$$</p>", "verified": "q = 1.067 kJ (or 1.07 kJ)"}, {"num": "5.10", "title": "Enthalpy change on freezing supercooled water", "question": "Calculate the enthalpy change on freezing of 1.0 mol of water at 10.0°C to ice at –10.0°C. Δ_fus H = 6.03 kJ mol–1 at 0°C.\nC_p [H₂O(l)] = 75.3 J mol–1 K–1\nC_p [H₂O(s)] = 36.8 J mol–1 K–1", "approach": "Break the cooling and phase change process into a three-step thermochemical path at constant pressure.", "solution": "<p>The process $\\text{H}_2\\text{O}(l, 10^\\circ\\text{C}) \\rightarrow \\text{H}_2\\text{O}(s, -10^\\circ\\text{C})$ can be carried out in three reversible steps:</p><ol><li><strong>Step 1: Cool liquid water from 10.0 °C to 0.0 °C:</strong>$$\\Delta H_1 = n \\times C_p[\\text{H}_2\\text{O}(l)] \\times \\Delta T_1 = (1.0\\text{ mol}) \\times (75.3\\text{ J}\\cdot\\text{mol}^{-1}\\cdot\\text{K}^{-1}) \\times (0 - 10\\text{ K})$$$$\\Delta H_1 = -753\\text{ J} = -0.753\\text{ kJ}$$</li><li><strong>Step 2: Freeze liquid water to ice at 0.0 °C:</strong>$$\\Delta H_2 = -\\Delta_{\\text{fus}} H = -(1.0\\text{ mol}) \\times (6.03\\text{ kJ/mol}) = -6.03\\text{ kJ}$$</li><li><strong>Step 3: Cool solid ice from 0.0 °C to –10.0 °C:</strong>$$\\Delta H_3 = n \\times C_p[\\text{H}_2\\text{O}(s)] \\times \\Delta T_3 = (1.0\\text{ mol}) \\times (36.8\\text{ J}\\cdot\\text{mol}^{-1}\\cdot\\text{K}^{-1}) \\times (-10 - 0\\text{ K})$$$$\\Delta H_3 = -368\\text{ J} = -0.368\\text{ kJ}$$</li></ol><p><strong>Total Enthalpy Change ($\\Delta H$):</strong></p>$$\\Delta H = \\Delta H_1 + \\Delta H_2 + \\Delta H_3 = (-0.753) + (-6.03) + (-0.368) = \\mathbf{-7.151\\text{ kJ/mol}}$$</p><p><strong>Conclusion:</strong> The enthalpy change on freezing 1 mol of water under these conditions is <strong>–7.15 kJ</strong> (7.15 kJ of heat released).</p>", "verified": "ΔH = −7.151 kJ/mol"}, {"num": "5.11", "title": "Heat released upon forming 35.2 g of CO₂ from carbon combustion", "question": "Enthalpy of combustion of carbon to CO₂ is –393.5 kJ mol–1. Calculate the heat released upon formation of 35.2 g of CO₂ from carbon and dioxygen gas.", "approach": "Find moles of CO2 formed (molar mass = 44 g/mol) and multiply by molar enthalpy of combustion.", "solution": "<p><strong>Thermochemical reaction:</strong>$$\\text{C}(s) + \\text{O}_2(g) \\longrightarrow \\text{CO}_2(g); \\quad \\Delta_c H^\\circ = -393.5\\text{ kJ}\\cdot\\text{mol}^{-1}$$</p><p>This indicates that the formation of $1\\text{ mole}$ of $CO_2$ ($44.0\\text{ g}$) releases $393.5\\text{ kJ}$ of heat.</p><p><strong>1. Calculate moles of CO₂ in 35.2 g:</strong></p>$$n(\\text{CO}_2) = \\frac{\\text{mass}}{\\text{molar mass}} = \\frac{35.2\\text{ g}}{44.0\\text{ g/mol}} = 0.80\\text{ mol}$$<p><strong>2. Calculate heat released ($q$):</strong></p>$$q = 0.80\\text{ mol} \\times 393.5\\text{ kJ/mol} = \\mathbf{314.8\\text{ kJ}}$$<p><strong>Conclusion:</strong> The heat released upon formation of 35.2 g of CO₂ is <strong>314.8 kJ</strong> (or $\\Delta H = -314.8\\text{ kJ}$).</p>", "verified": "Heat released = 314.8 kJ (ΔH = −314.8 kJ)"}, {"num": "5.12", "title": "Enthalpy of reaction from standard formation enthalpies", "question": "Enthalpies of formation of CO(g), CO₂(g), N₂O(g) and N₂O₄(g) are –110, –393, 81 and 9.7 kJ mol–1 respectively. Find the value of Δ_r H for the reaction:\nN₂O₄(g) + 3 CO(g) → N₂O(g) + 3 CO₂(g)", "approach": "Apply Δ_r H° = Σ Δ_f H°(products) − Σ Δ_f H°(reactants).", "solution": "<p><strong>Reaction:</strong>$$\\text{N}_2\\text{O}_4(g) + 3\\,\\text{CO}(g) \\longrightarrow \\text{N}_2\\text{O}(g) + 3\\,\\text{CO}_2(g)$$</p><p><strong>Given standard enthalpies of formation:</strong></p><ul><li>$\\Delta_f H^\\circ[\\text{N}_2\\text{O}_4(g)] = +9.7\\text{ kJ/mol}$</li><li>$\\Delta_f H^\\circ[\\text{CO}(g)] = -110\\text{ kJ/mol}$</li><li>$\\Delta_f H^\\circ[\\text{N}_2\\text{O}(g)] = +81\\text{ kJ/mol}$</li><li>$\\Delta_f H^\\circ[\\text{CO}_2(g)] = -393\\text{ kJ/mol}$</li></ul><p><strong>Formula:</strong>$$\\Delta_r H = \\sum \\Delta_f H^\\circ(\\text{products}) - \\sum \\Delta_f H^\\circ(\\text{reactants})$$$$\\Delta_r H = [\\Delta_f H^\\circ(\\text{N}_2\\text{O}) + 3\\,\\Delta_f H^\\circ(\\text{CO}_2)] - [\\Delta_f H^\\circ(\\text{N}_2\\text{O}_4) + 3\\,\\Delta_f H^\\circ(\\text{CO})]$$$$\\Delta_r H = [81 + 3(-393)] - [9.7 + 3(-110)]$$$$\\Delta_r H = [81 - 1179] - [9.7 - 330] = [-1098] - [-320.3]$$$$\\Delta_r H = -1098 + 320.3 = \\mathbf{-777.7\\text{ kJ/mol}}$$</p>", "verified": "Δ_r H = −777.7 kJ/mol"}, {"num": "5.13", "title": "Standard enthalpy of formation of ammonia from reaction enthalpy", "question": "Given:\nN₂(g) + 3 H₂(g) → 2 NH₃(g); Δ_r H° = –92.4 kJ mol–1\nWhat is the standard enthalpy of formation of NH₃ gas?", "approach": "Recall that standard enthalpy of formation is defined for ONE mole of compound formed from elements in standard states.", "solution": "<p><strong>Definition:</strong> The <strong>standard enthalpy of formation ($\\Delta_f H^\\circ$)</strong> is defined as the enthalpy change accompanying the formation of <strong>one mole</strong> of a compound from its constituent elements in their standard reference states.</p><p>The given reaction represents the synthesis of <strong>2 moles</strong> of gaseous ammonia:$$\\text{N}_2(g) + 3\\,\\text{H}_2(g) \\longrightarrow 2\\,\\text{NH}_3(g); \\quad \\Delta_r H^\\circ = -92.4\\text{ kJ/mol}$$</p><p>Therefore, the enthalpy change for the formation of 1 mole of $NH_3(g)$ is:$$\\Delta_f H^\\circ[\\text{NH}_3(g)] = \\frac{\\Delta_r H^\\circ}{2} = \\frac{-92.4\\text{ kJ/mol}}{2} = \\mathbf{-46.2\\text{ kJ/mol}}$$</p>", "verified": "Δ_f H°(NH3) = −46.2 kJ/mol"}, {"num": "5.14", "title": "Standard enthalpy of formation of liquid methanol", "question": "Calculate the standard enthalpy of formation of CH₃OH(l) from the following data:\n(1) CH₃OH(l) + 3/2 O₂(g) → CO₂(g) + 2 H₂O(l); Δ_r H° = –726 kJ mol–1\n(2) C(graphite) + O₂(g) → CO₂(g); Δ_c H° = –393 kJ mol–1\n(3) H₂(g) + 1/2 O₂(g) → H₂O(l); Δ_f H° = –286 kJ mol–1", "approach": "Set up target reaction C + 2 H2 + 1/2 O2 -> CH3OH and combine given combustion reactions via Hess's Law.", "solution": "<p><strong>Target Reaction:</strong>$$\\text{C(graphite)} + 2\\,\\text{H}_2(g) + \\frac{1}{2}\\,\\text{O}_2(g) \\longrightarrow \\text{CH}_3\\text{OH}(l) \\quad [\\Delta_f H^\\circ = ?]$$</p><p><strong>Using Hess's Law:</strong></p><ul><li>$\\text{Equation (2)}: \\text{C} + \\text{O}_2 \\rightarrow \\text{CO}_2 \\quad (\\Delta H = -393\\text{ kJ})$</li><li>$2 \\times \\text{Equation (3)}: 2\\,\\text{H}_2 + \\text{O}_2 \\rightarrow 2\\,\\text{H}_2\\text{O} \\quad (\\Delta H = 2 \\times (-286) = -572\\text{ kJ})$</li><li>$\\text{Reverse Equation (1)}: \\text{CO}_2 + 2\\,\\text{H}_2\\text{O} \\rightarrow \\text{CH}_3\\text{OH} + \\frac{3}{2}\\,\\text{O}_2 \\quad (\\Delta H = +726\\text{ kJ})$</li></ul><p><strong>Summing the reactions:</strong>$$\\Delta_f H^\\circ[\\text{CH}_3\\text{OH}(l)] = (-393) + (-572) + (+726) = -965 + 726 = \\mathbf{-239\\text{ kJ/mol}}$$</p>", "verified": "Δ_f H°(CH3OH(l)) = −239 kJ/mol"}, {"num": "5.15", "title": "Atomization enthalpy and mean C–Cl bond enthalpy in CCl₄", "question": "Calculate the enthalpy change for the process:\nCCl₄(g) → C(g) + 4 Cl(g)\nand calculate bond enthalpy of C – Cl in CCl₄(g).\nΔ_vap H°(CCl₄) = 30.5 kJ mol–1\nΔ_f H°(CCl₄) = –135.5 kJ mol–1\nΔ_a H°(C) = 715.0 kJ mol–1\nΔ_a H°(Cl₂) = 242 kJ mol–1", "approach": "Construct a thermochemical cycle for atomization of CCl4(g) from elements in standard states and divide by 4 for mean bond enthalpy.", "solution": "<p><strong>1. Find standard enthalpy of formation of gaseous CCl₄:</strong></p>$$\\text{C}(s) + 2\\,\\text{Cl}_2(g) \\longrightarrow \\text{CCl}_4(l); \\quad \\Delta_f H^\\circ(\\text{liquid}) = -135.5\\text{ kJ/mol}$$$$\\text{CCl}_4(l) \\longrightarrow \\text{CCl}_4(g); \\quad \\Delta_{\\text{vap}} H^\\circ = +30.5\\text{ kJ/mol}$$$$\\Delta_f H^\\circ[\\text{CCl}_4(g)] = -135.5 + 30.5 = -105.0\\text{ kJ/mol}$$</p><p><strong>2. Enthalpy required to atomize constituent elements into gas atoms:</strong></p><ul><li>Atomization of carbon: $\\text{C}(s) \\rightarrow \\text{C}(g); \\quad \\Delta_a H^\\circ = 715.0\\text{ kJ/mol}$</li><li>Atomization of chlorine: $2\\,\\text{Cl}_2(g) \\rightarrow 4\\,\\text{Cl}(g); \\quad 2 \\times 242 = 484.0\\text{ kJ/mol}$</li><li>Total energy to form gaseous atoms from elements = $715.0 + 484.0 = 1199.0\\text{ kJ/mol}$</li></ul><p><strong>3. Calculate enthalpy of atomization for CCl₄(g) → C(g) + 4 Cl(g):</strong></p>$$\\Delta_a H[\\text{CCl}_4(g)] = [\\Delta_a H(\\text{C}) + 2\\,\\Delta_a H(\\text{Cl}_2)] - \\Delta_f H^\\circ[\\text{CCl}_4(g)]$$$$\\Delta_a H[\\text{CCl}_4(g)] = 1199.0 - (-105.0) = \\mathbf{1304.0\\text{ kJ/mol}}$$</p><p><strong>4. Calculate the mean C–Cl bond enthalpy:</strong></p><p>In $CCl_4$, there are four identical $C-Cl$ single bonds:$$\\text{Bond Enthalpy}(C-Cl) = \\frac{\\Delta_a H[\\text{CCl}_4(g)]}{4} = \\frac{1304.0\\text{ kJ/mol}}{4} = \\mathbf{326.0\\text{ kJ/mol}}$$</p>", "verified": "Δ_a H = 1304.0 kJ/mol; C-Cl bond enthalpy = 326.0 kJ/mol"}, {"num": "5.16", "title": "Entropy change for an isolated system", "question": "For an isolated system, ΔU = 0, what will be ΔS ?", "approach": "Apply the Second Law of Thermodynamics to an isolated system undergoing irreversible spontaneous change.", "solution": "<p>In an <strong>isolated system</strong>, there is no exchange of either matter or energy (neither heat nor work) with the surroundings ($q = 0, w = 0$), so by the First Law:$$\\Delta U = q + w = 0$$</p><p>According to the <strong>Second Law of Thermodynamics</strong>:</p><ul><li>For any <strong>spontaneous (irreversible) process</strong> occurring in an isolated system, the entropy must increase:$$\\Delta S > 0$$</li><li>When the isolated system reaches <strong>dynamic thermodynamic equilibrium</strong>, the entropy reaches its maximum value, and no further change occurs:$$\\Delta S = 0$$</li><li>For an impossible (non-spontaneous) process: $\\Delta S < 0$.</li></ul><p><strong>Conclusion:</strong> For an isolated system, <strong>ΔS &gt; 0 for any spontaneous process</strong>, and <strong>ΔS = 0 at equilibrium</strong> (overall: $\\mathbf{\\Delta S \\ge 0}$).</p>", "verified": "ΔS > 0 for spontaneous process; ΔS = 0 at equilibrium (ΔS ≥ 0)"}, {"num": "5.17", "title": "Temperature threshold for reaction spontaneity", "question": "For the reaction at 298 K,\n2 A + B → C\nΔH = 400 kJ mol–1 and ΔS = 0.2 kJ K–1 mol–1\nAt what temperature will the reaction become spontaneous considering ΔH and ΔS to be constant over the temperature range.", "approach": "Set ΔG = ΔH − TΔS < 0 and solve for T.", "solution": "<p><strong>Given:</strong>$$\\Delta H = 400\\text{ kJ}\\cdot\\text{mol}^{-1}$$$$\\Delta S = 0.2\\text{ kJ}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1} = 200\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}$$</p><p>According to the Gibbs-Helmholtz equation, a reaction is spontaneous when the Gibbs free energy change is negative:$$\\Delta G = \\Delta H - T\\Delta S < 0$$</p><p>At the point of transition between non-spontaneous and spontaneous behavior (equilibrium point):$$\\Delta G = 0 \\implies \\Delta H - T\\Delta S = 0 \\implies T = \\frac{\\Delta H}{\\Delta S}$$$$T = \\frac{400\\text{ kJ}\\cdot\\text{mol}^{-1}}{0.2\\text{ kJ}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}} = \\mathbf{2000\\text{ K}}$$</p><p><strong>Conclusion:</strong> For $\\Delta G$ to be negative, $T\\Delta S$ must exceed $\\Delta H$. Therefore, the reaction will become spontaneous at temperatures <strong>above 2000 K</strong> ($T > 2000\\text{ K}$).</p>", "verified": "T > 2000 K"}, {"num": "5.18", "title": "Signs of ΔH and ΔS for chlorine atom dimerization", "question": "For the reaction,\n2 Cl(g) → Cl₂(g), what are the signs of ΔH and ΔS ?", "approach": "Analyze energetics of bond formation vs spatial degree of freedom loss.", "solution": "<p><strong>Reaction:</strong>$$2\\,\\text{Cl}(g) \\longrightarrow \\text{Cl}_2(g)$$</p><ol><li><strong>Sign of ΔH:</strong> In this reaction, a covalent bond ($Cl-Cl$) is formed between two free, isolated gaseous chlorine atoms. Bond formation is always accompanied by release of potential energy (exothermic process). Therefore:$$\\mathbf{\\Delta H < 0 \\quad (\\text{negative})}$$</li><li><strong>Sign of ΔS:</strong> On the reactant side, there are 2 moles of independent gaseous chlorine atoms possessing high translational and spatial disorder. On the product side, they are combined into 1 mole of diatomic chlorine molecules. Combining particles reduces the number of independent microstates and molecular randomness:$$\\mathbf{\\Delta S < 0 \\quad (\\text{negative})}$$</li></ol><p><strong>Summary:</strong> Both <strong>ΔH is negative</strong> and <strong>ΔS is negative</strong>.</p>", "verified": "ΔH < 0 (negative) and ΔS < 0 (negative)"}, {"num": "5.19", "title": "Standard Gibbs free energy change and spontaneity test", "question": "For the reaction\n2 A(g) + B(g) → 2 D(g)\nΔU° = –10.5 kJ and ΔS° = –44.1 J K–1 at 298 K.\nCalculate ΔG° for the reaction, and predict whether the reaction may occur spontaneously.", "approach": "Calculate Δn_g, find ΔH° = ΔU° + Δn_g RT, then evaluate ΔG° = ΔH° − TΔS°.", "solution": "<p><strong>Reaction:</strong>$$2\\,\\text{A}(g) + \\text{B}(g) \\longrightarrow 2\\,\\text{D}(g)$$$$\\Delta U^\\circ = -10.5\\text{ kJ}, \\quad \\Delta S^\\circ = -44.1\\text{ J}\\cdot\\text{K}^{-1} = -0.0441\\text{ kJ}\\cdot\\text{K}^{-1}, \\quad T = 298\\text{ K}$$</p><p><strong>1. Calculate change in gaseous moles ($\\Delta n_g$):</strong></p>$$\\Delta n_g = n_g(\\text{products}) - n_g(\\text{reactants}) = 2 - (2 + 1) = 2 - 3 = -1$$</p><p><strong>2. Calculate $\\Delta H^\\circ$:</strong></p>$$\\Delta H^\\circ = \\Delta U^\\circ + \\Delta n_g RT$$$$\\Delta H^\\circ = -10.5\\text{ kJ} + [(-1) \\times (8.314 \\times 10^{-3}\\text{ kJ}\\cdot\\text{K}^{-1}) \\times (298\\text{ K})]$$$$\\Delta H^\\circ = -10.5\\text{ kJ} - 2.478\\text{ kJ} = \\mathbf{-12.978\\text{ kJ}}$$</p><p><strong>3. Calculate $\\Delta G^\\circ$:</strong></p>$$\\Delta G^\\circ = \\Delta H^\\circ - T\\Delta S^\\circ$$$$\\Delta G^\\circ = -12.978\\text{ kJ} - [298\\text{ K} \\times (-0.0441\\text{ kJ}\\cdot\\text{K}^{-1})]$$$$\\Delta G^\\circ = -12.978\\text{ kJ} + 13.142\\text{ kJ} = \\mathbf{+0.164\\text{ kJ} = +164\\text{ J}}$$</p><p><strong>Prediction of Spontaneity:</strong></p><p>Since $\\Delta G^\\circ > 0$ (positive), the reaction <strong>will NOT occur spontaneously</strong> under standard conditions at 298 K.</p>", "verified": "ΔG° = +0.164 kJ (+164 J); reaction is non-spontaneous"}, {"num": "5.20", "title": "Standard Gibbs free energy from equilibrium constant", "question": "The equilibrium constant for a reaction is 10. What will be the value of ΔG° ? R = 8.314 J K–1 mol–1, T = 300 K.", "approach": "Apply ΔG° = −2.303 RT log10(K).", "solution": "<p><strong>Given:</strong>$$K = 10, \\quad R = 8.314\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}, \\quad T = 300\\text{ K}$$</p><p>The relation between standard Gibbs free energy and the equilibrium constant is:$$\\Delta G^\\circ = -RT \\ln K = -2.303\\, RT \\log_{10} K$$</p><p>Substitute the given values:$$\\Delta G^\\circ = -2.303 \\times (8.314\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}) \\times (300\\text{ K}) \\times \\log_{10}(10)$$$$\\Delta G^\\circ = -2.303 \\times 2494.2 \\times 1 = -5744.14\\text{ J}\\cdot\\text{mol}^{-1} = \\mathbf{-5.744\\text{ kJ}\\cdot\\text{mol}^{-1}}$$</p><p><strong>Conclusion:</strong> The value of $\\Delta G^\\circ$ is <strong>–5.74 kJ/mol</strong>.</p>", "verified": "ΔG° = −5.744 kJ/mol"}, {"num": "5.21", "title": "Thermodynamic stability of nitric oxide (NO gas)", "question": "Comment on the thermodynamic stability of NO(g), given:\n1/2 N₂(g) + 1/2 O₂(g) → NO(g); Δ_r H° = 90 kJ mol–1\nNO(g) + 1/2 O₂(g) → NO₂(g); Δ_r H° = –74 kJ mol–1", "approach": "Evaluate standard enthalpy of formation sign: positive Δ_f H° implies thermodynamic instability relative to elements.", "solution": "<p><strong>Analysis:</strong></p><ol><li>For the reaction:$$\\frac{1}{2}\\,\\text{N}_2(g) + \\frac{1}{2}\\,\\text{O}_2(g) \\longrightarrow \\text{NO}(g); \\quad \\Delta_f H^\\circ = +90\\text{ kJ}\\cdot\\text{mol}^{-1}$$Because $\\Delta_f H^\\circ$ is <strong>positive (endothermic formation)</strong>, nitric oxide possesses higher enthalpy than its constituent elements in their standard states. This signifies that $NO(g)$ is <strong>thermodynamically UNSTABLE with respect to decomposition into N₂ and O₂</strong>:$$\\text{NO}(g) \\longrightarrow \\frac{1}{2}\\,\\text{N}_2(g) + \\frac{1}{2}\\,\\text{O}_2(g); \\quad \\Delta_r H^\\circ = -90\\text{ kJ}\\cdot\\text{mol}^{-1}\\quad (\\text{exothermic})$$</li><li>For the reaction:$$\\text{NO}(g) + \\frac{1}{2}\\,\\text{O}_2(g) \\longrightarrow \\text{NO}_2(g); \\quad \\Delta_r H^\\circ = -74\\text{ kJ}\\cdot\\text{mol}^{-1}$$Because oxidation to nitrogen dioxide is <strong>exothermic</strong>, $NO(g)$ readily combines with oxygen to form the more stable $NO_2(g)$.</li></ol><p><strong>Conclusion:</strong> $NO(g)$ is thermodynamically unstable relative to $N_2$ and $O_2$, and is easily oxidized to $NO_2$. It persists at room temperature only because its uncatalyzed decomposition has a high kinetic activation energy barrier.</p>", "verified": "NO(g) is thermodynamically unstable due to positive formation enthalpy (+90 kJ/mol)"}, {"num": "5.22", "title": "Surroundings entropy change during water synthesis", "question": "Calculate the entropy change in surroundings when 1.00 mol of H₂O(l) is formed under standard conditions. Δ_f H° = –286 kJ mol–1.", "approach": "Apply ΔS_surr = q_surr / T = −ΔH_sys / T at standard temperature 298 K.", "solution": "<p><strong>Given:</strong>$$\\Delta_f H^\\circ = -286\\text{ kJ}\\cdot\\text{mol}^{-1} = -286000\\text{ J}\\cdot\\text{mol}^{-1}, \\quad T = 298\\text{ K}$$</p><p><strong>1. Heat absorbed by surroundings ($q_{\\text{surr}}$):</strong></p><p>Because the formation reaction is exothermic, the heat released by the system is transferred into the surroundings at constant pressure:$$q_{\\text{surr}} = -\\Delta_f H^\\circ = -(-286000\\text{ J}) = +286000\\text{ J}$$</p><p><strong>2. Calculate $\\Delta S_{\\text{surroundings}}$:</strong></p>$$\\Delta S_{\\text{surr}} = \\frac{q_{\\text{surr}}}{T} = \\frac{+286000\\text{ J}\\cdot\\text{mol}^{-1}}{298\\text{ K}} = \\mathbf{+959.73\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1} \\approx +960\\text{ J}\\cdot\\text{K}^{-1}\\cdot\\text{mol}^{-1}}$$</p><p><strong>Conclusion:</strong> The entropy change in the surroundings is <strong>+959.7 J K⁻¹ mol⁻¹</strong>.</p>", "verified": "ΔS_surr = +959.7 J K⁻¹ mol⁻¹"}], "revision_summary": {"key_laws": [{"name": "First Law of Thermodynamics", "formula": "ΔU = q + w", "context": "Conservation of energy; q > 0 (heat absorbed), w > 0 (work done on system)."}, {"name": "PV-Expansion Work", "formula": "w_irrev = −P_ext ΔV; w_rev = −2.303 nRT log(V2/V1)", "context": "Reversible isothermal expansion yields maximum work; free expansion into vacuum gives w = 0."}, {"name": "Enthalpy & Internal Energy", "formula": "ΔH = ΔU + Δn_g RT", "context": "Relates constant-pressure heat (q_p) to constant-volume heat (q_v) via gaseous mole change Δn_g."}, {"name": "Ideal Gas Heat Capacities", "formula": "C_p − C_v = R", "context": "Constant pressure requires additional heat to perform isobaric expansion work."}, {"name": "Hess's Law of Heat Summation", "formula": "Δ_r H° = Σ Δ_f H°(products) − Σ Δ_f H°(reactants)", "context": "Enthalpy is a state function; reaction enthalpy depends only on initial and final states."}, {"name": "Second Law & Entropy", "formula": "ΔS = q_rev / T; ΔS_univ = ΔS_sys + ΔS_surr ≥ 0", "context": "Spontaneous processes increase universe entropy; for isolated systems, ΔS > 0."}, {"name": "Gibbs-Helmholtz Equation", "formula": "ΔG = ΔH − T ΔS", "context": "Master spontaneity criterion at constant T, P: ΔG < 0 (spontaneous), ΔG = 0 (equilibrium), ΔG > 0 (non-spontaneous)."}, {"name": "Free Energy & Equilibrium", "formula": "Δ_r G° = −RT ln K = −2.303 RT log₁₀ K", "context": "Direct quantitative bridge between thermodynamic driving force and chemical equilibrium composition."}, {"name": "Third Law of Thermodynamics", "formula": "lim_{T→0 K} S = 0 (for a perfect crystal)", "context": "Defines absolute zero entropy baseline, enabling calculation of absolute standard molar entropies."}], "common_pitfalls": ["Counting liquids or solids in Δn_g — only gaseous species contribute to Δn_g = n_g(products) − n_g(reactants) in ΔH = ΔU + Δn_g RT.", "Assuming endothermic reactions (ΔH > 0) can never be spontaneous — if ΔS > 0, the reaction becomes spontaneous at high temperatures where T·ΔS > ΔH.", "Confusing ΔG with ΔG° — ΔG° is the standard free energy change at standard states (1 bar), while ΔG governs spontaneity at actual non-standard concentrations (ΔG = ΔG° + RT ln Q).", "Assigning non-zero formation enthalpy to elemental reference states — Δ_f H° is strictly ZERO for elements in their reference standard states (graphite, O2, N2, H2).", "Believing an adiabatic process is isothermal — adiabatic means zero heat exchange (q = 0), but temperature changes significantly during expansion or compression."]}};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + printPage + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '</div>' +
+      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? (links[0] && links[0].u ? ' data-wow data-source="' + links[0].u + '"' : ' data-wow') : '') + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
+              '<span class="thumb" aria-hidden="true"></span>' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+              '</p>';
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Physics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+// -------------------------------------------------------------------------
+// 1. SIMULATION 1: Thermodynamic Systems & Boundaries (systemtypes)
+// -------------------------------------------------------------------------
+window.SIMS.systemtypes = (function(){
+  var currentType = "open"; // "open", "closed", "isolated", "adiabatic"
+
+  var types = {
+    "open": {
+      name: "Open System (Boiling Beaker)",
+      matter: "Permitted (Δm ≠ 0)",
+      energy: "Permitted (q ≠ 0, w ≠ 0)",
+      boundary: "Permeable & Diathermic",
+      desc: "Exchanges both matter (steam escapes) and energy (heat absorbed from flame) with surroundings.",
+      color: "#38bdf8"
+    },
+    "closed": {
+      name: "Closed System (Sealed Piston Vessel)",
+      matter: "Forbidden (Δm = 0)",
+      energy: "Permitted (Heat q & Work w)",
+      boundary: "Impermeable & Diathermic / Movable",
+      desc: "Mass remains strictly constant inside, but heat can cross walls and mechanical work can move the piston.",
+      color: "#10b981"
+    },
+    "isolated": {
+      name: "Isolated System (Ideal Dewar / Thermos)",
+      matter: "Forbidden (Δm = 0)",
+      energy: "Forbidden (q = 0, w = 0)",
+      boundary: "Impermeable, Rigid & Adiabatic",
+      desc: "Neither matter nor energy (heat or work) can cross the boundary. Total internal energy is conserved: ΔU = 0.",
+      color: "#f59e0b"
+    },
+    "adiabatic": {
+      name: "Adiabatic Rigid Tank (q = 0, w = 0)",
+      matter: "Forbidden (Δm = 0)",
+      energy: "Work possible if boundary moves; q = 0",
+      boundary: "Adiabatic (Insulated)",
+      desc: "Thermal insulation prevents heat flow (q = 0). If work is done (e.g. by stirrer), ΔU = w.",
+      color: "#ec4899"
+    }
+  };
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Matter Exchange</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Heat Transfer (q)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Work Boundary (w)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-open">Open System (Beaker)</button>' +
+      '<button class="preset-btn" id="p-closed">Closed System (Piston)</button>' +
+      '<button class="preset-btn" id="p-isolated">Isolated System (Dewar)</button>' +
+      '<button class="preset-btn" id="p-adiabatic">Adiabatic Boundary</button>';
+
+    document.getElementById("p-open").onclick = function(){ setActivePreset(this); currentType = "open"; draw(0); };
+    document.getElementById("p-closed").onclick = function(){ setActivePreset(this); currentType = "closed"; draw(0); };
+    document.getElementById("p-isolated").onclick = function(){ setActivePreset(this); currentType = "isolated"; draw(0); };
+    document.getElementById("p-adiabatic").onclick = function(){ setActivePreset(this); currentType = "adiabatic"; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Thermodynamic Boundary Classification:</label>' +
+        '<div style="padding:10px;background:#1e293b;border-radius:8px;color:#f8fafc;font-size:14px;">' +
+          'A system is the part of universe under thermodynamic investigation. Everything else is surroundings. The boundary determines allowable flux.' +
+        '</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var st = types[currentType];
+
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+    out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">' + st.name + '</text>';
+    out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">Boundary Type: ' + st.boundary + ' | ' + st.desc + '</text>';
+
+    out += '<g transform="translate(450, 260)">';
+
+    // Vessel walls
+    if(currentType === "isolated" || currentType === "adiabatic"){
+      // Thick double insulated walls
+      out += '<rect x="-180" y="-140" width="360" height="260" rx="14" fill="#1e293b" stroke="#f59e0b" stroke-width="8"/>';
+      out += '<rect x="-165" y="-125" width="330" height="230" rx="8" fill="#0f172a" stroke="#475569" stroke-width="2"/>';
+      out += '<text x="0" y="-150" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">Adiabatic Insulating Jacket (q = 0)</text>';
+    } else {
+      // Normal diathermic wall
+      out += '<rect x="-160" y="-120" width="320" height="240" rx="10" fill="#0f172a" stroke="#64748b" stroke-width="4"/>';
+      out += '<text x="0" y="-132" fill="#64748b" font-size="13" font-weight="bold" text-anchor="middle">Diathermic Wall (Heat permeable)</text>';
+    }
+
+    // Interior System Content
+    out += '<rect x="-140" y="-20" width="280" height="120" fill="rgba(56, 189, 248, 0.25)" stroke="#38bdf8" stroke-width="2"/>';
+    out += '<text x="0" y="45" fill="#38bdf8" font-size="18" font-weight="bold" text-anchor="middle">THERMODYNAMIC SYSTEM</text>';
+    out += '<text x="0" y="70" fill="#94a3b8" font-size="12" text-anchor="middle">T, P, V, U, H, S, G</text>';
+
+    // Top Boundary / Matter flux
+    if(currentType === "open"){
+      out += '<path d="M -80 -120 L -80 -80 M 0 -120 L 0 -80 M 80 -120 L 80 -80" stroke="#38bdf8" stroke-width="3" stroke-dasharray="4 4"/>';
+      out += '<polygon points="-80,-70 -85,-82 -75,-82" fill="#38bdf8"/>';
+      out += '<polygon points="0,-70 -5,-82 5,-82" fill="#38bdf8"/>';
+      out += '<polygon points="80,-70 75,-82 85,-82" fill="#38bdf8"/>';
+      out += '<text x="0" y="-95" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">Open Top: Matter Free to Enter/Leave (Δm ≠ 0)</text>';
+    } else if(currentType === "closed"){
+      // Movable piston
+      out += '<rect x="-150" y="-90" width="300" height="24" fill="#475569" stroke="#94a3b8" stroke-width="3"/>';
+      out += '<rect x="-16" y="-150" width="32" height="60" fill="#64748b"/>';
+      out += '<text x="0" y="-73" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">Movable Piston (Work w = −P_ext ΔV)</text>';
+      out += '<text x="0" y="-105" fill="#ef4444" font-size="13" font-weight="bold" text-anchor="middle">Sealed: No Matter Transfer (Δm = 0)</text>';
+    } else {
+      out += '<rect x="-160" y="-125" width="320" height="20" fill="#f59e0b"/>';
+      out += '<text x="0" y="-110" fill="#0f172a" font-size="12" font-weight="bold" text-anchor="middle">Hermetically Sealed & Rigid (Δm = 0, w = 0)</text>';
+    }
+
+    // Heat transfer arrows (bottom)
+    if(currentType === "open" || currentType === "closed"){
+      out += '<line x1="-80" y1="170" x2="-80" y2="130" stroke="#ef4444" stroke-width="4"/>';
+      out += '<polygon points="-80,120 -86,132 -74,132" fill="#ef4444"/>';
+      out += '<line x1="80" y1="170" x2="80" y2="130" stroke="#ef4444" stroke-width="4"/>';
+      out += '<polygon points="80,120 74,132 86,132" fill="#ef4444"/>';
+      out += '<text x="0" y="165" fill="#ef4444" font-size="14" font-weight="bold" text-anchor="middle">Heat Flux Across Diathermic Boundary (q ≠ 0)</text>';
+    } else {
+      out += '<text x="0" y="165" fill="#f59e0b" font-size="14" font-weight="bold" text-anchor="middle">Adiabatic Boundary Blocks Heat Flow (q = 0)</text>';
+    }
+
+    out += '</g>';
+    svg.innerHTML = out;
+
+    readout(
+      cell("System Type", st.name.split("(")[0], st.color) +
+      cell("Matter Exchange (Δm)", st.matter, st.matter.includes("Permitted") ? "#38bdf8" : "#94a3b8") +
+      cell("Energy Exchange", st.energy, st.energy.includes("Permitted") ? "#ef4444" : "#f59e0b") +
+      cell("Boundary Nature", st.boundary, "#f8fafc")
+    );
+
+    verdict(
+      '<div class="callout" style="background:#0f172a;border-left:4px solid ' + st.color + ';padding:12px;border-radius:6px;">' +
+        '<strong>System Axiom:</strong> ' + st.desc + ' In an isolated system, both mass and total energy are conserved. In an adiabatic system, only heat flow is forbidden (q = 0), allowing mechanical work to change internal energy: ΔU = w.' +
+      '</div>'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 2. SIMULATION 2: PV-Work & Isothermal Reversible Expansion (pvworklab)
+// -------------------------------------------------------------------------
+window.SIMS.pvworklab = (function(){
+  var mode = "rev"; // "rev", "irrev", "free"
+  var v2 = 20; // L (from v1 = 10 L)
+  var v1 = 10;
+  var n = 2.0; // mol
+  var T = 300; // K
+  var R = 8.314;
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Reversible PV Work (Area under curve)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Irreversible Work against P_ext</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Isothermal Curve (P = nRT/V)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-pv-rev">Reversible Isothermal (Max Work)</button>' +
+      '<button class="preset-btn" id="p-pv-irrev">Irreversible Single-Stage (P_ext = 1 bar)</button>' +
+      '<button class="preset-btn" id="p-pv-free">Free Expansion (Vacuum P_ext = 0)</button>';
+
+    document.getElementById("p-pv-rev").onclick = function(){ setActivePreset(this); mode = "rev"; draw(0); };
+    document.getElementById("p-pv-irrev").onclick = function(){ setActivePreset(this); mode = "irrev"; draw(0); };
+    document.getElementById("p-pv-free").onclick = function(){ setActivePreset(this); mode = "free"; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Final Expansion Volume V₂ (10 L to 30 L):</label>' +
+        '<input type="range" id="v2-range" min="11" max="30" value="' + v2 + '" step="1">' +
+      '</div>';
+
+    var rng = document.getElementById("v2-range");
+    if(rng) rng.oninput = function(){ v2 = parseFloat(this.value); draw(0); };
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+
+    // Calculations
+    var wRev = -2.303 * n * R * T * Math.log10(v2 / v1); // Joules
+    var pExtBar = 1.0; // bar for irrev
+    var wIrrev = mode === "free" ? 0 : -(pExtBar * 1e5 * (v2 - v1) * 1e-3); // J
+
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+    out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">Isothermal Expansion PV Work Indicator Diagram</text>';
+    out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">Initial Volume V₁ = 10 L | Final Volume V₂ = ' + v2 + ' L | n = 2 mol ideal gas at T = 300 K</text>';
+
+    // Axes
+    out += '<g transform="translate(160, 420)">';
+    out += '<line x1="0" y1="0" x2="650" y2="0" stroke="#94a3b8" stroke-width="3"/>';
+    out += '<line x1="0" y1="0" x2="0" y2="-340" stroke="#94a3b8" stroke-width="3"/>';
+    out += '<text x="650" y="35" fill="#94a3b8" font-size="14" text-anchor="end">Volume V (Litres) →</text>';
+    out += '<text x="-30" y="-340" fill="#94a3b8" font-size="14" text-anchor="end">Pressure P (bar) ↑</text>';
+
+    // Map volume 0..35 L to x: 0..600 px
+    // Map pressure 0..6 bar to y: 0..-320 px
+    function mapX(v){ return (v / 35) * 600; }
+    function mapY(p){ return -(p / 6) * 320; }
+
+    var p1 = (n * R * T) / (v1 * 1e-3) / 1e5; // bar
+    var p2 = (n * R * T) / (v2 * 1e-3) / 1e5; // bar
+
+    // Plot isotherm P = nRT / V
+    var pathD = "";
+    var shadeD = "";
+    for(var v = 6; v <= 32; v += 0.5){
+      var pVal = (n * R * T) / (v * 1e-3) / 1e5;
+      var px = mapX(v);
+      var py = mapY(pVal);
+      if(v === 6) pathD += "M " + px + " " + py;
+      else pathD += " L " + px + " " + py;
+    }
+    out += '<path d="' + pathD + '" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+
+    // Work Shading
+    if(mode === "rev"){
+      // Full integral under isotherm between v1 and v2
+      shadeD = "M " + mapX(v1) + " 0";
+      for(var sv = v1; sv <= v2; sv += 0.5){
+        var spVal = (n * R * T) / (sv * 1e-3) / 1e5;
+        shadeD += " L " + mapX(sv) + " " + mapY(spVal);
+      }
+      shadeD += " L " + mapX(v2) + " 0 Z";
+      out += '<path d="' + shadeD + '" fill="rgba(16, 185, 129, 0.35)" stroke="#10b981" stroke-width="2"/>';
+      out += '<text x="' + (mapX((v1+v2)/2)) + '" y="' + (mapY(p2)/2) + '" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">Area = |w_rev| = ' + Math.abs(wRev/1000).toFixed(2) + ' kJ</text>';
+    } else if(mode === "irrev"){
+      // Single stage rectangle: P_ext * (V2 - V1)
+      var pExtY = mapY(pExtBar);
+      shadeD = "M " + mapX(v1) + " 0 L " + mapX(v1) + " " + pExtY + " L " + mapX(v2) + " " + pExtY + " L " + mapX(v2) + " 0 Z";
+      out += '<path d="' + shadeD + '" fill="rgba(239, 68, 68, 0.35)" stroke="#ef4444" stroke-width="2"/>';
+      out += '<text x="' + (mapX((v1+v2)/2)) + '" y="' + (pExtY / 2) + '" fill="#ef4444" font-size="15" font-weight="bold" text-anchor="middle">Irreversible Area = |w| = ' + Math.abs(wIrrev/1000).toFixed(2) + ' kJ</text>';
+    } else {
+      out += '<text x="' + (mapX((v1+v2)/2)) + '" y="-100" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">Free Expansion: P_ext = 0 ⇒ Shaded Area = 0 (w = 0)</text>';
+    }
+
+    // Mark states A and B
+    out += '<circle cx="' + mapX(v1) + '" cy="' + mapY(p1) + '" r="6" fill="#f59e0b"/>';
+    out += '<text x="' + (mapX(v1) - 10) + '" y="' + (mapY(p1) - 10) + '" fill="#f59e0b" font-size="13" font-weight="bold">State 1 (10 L, ' + p1.toFixed(1) + ' bar)</text>';
+
+    out += '<circle cx="' + mapX(v2) + '" cy="' + mapY(p2) + '" r="6" fill="#10b981"/>';
+    out += '<text x="' + (mapX(v2) + 10) + '" y="' + (mapY(p2) - 10) + '" fill="#10b981" font-size="13" font-weight="bold">State 2 (' + v2 + ' L, ' + p2.toFixed(1) + ' bar)</text>';
+
+    out += '</g>';
+    svg.innerHTML = out;
+
+    readout(
+      cell("Expansion Mode", mode === "rev" ? "Reversible Isothermal" : (mode === "irrev" ? "Single-Stage Irrev" : "Free Expansion"), "#38bdf8") +
+      cell("Work Done (w)", (mode === "rev" ? (wRev/1000).toFixed(2) : (wIrrev/1000).toFixed(2)) + " kJ", mode === "rev" ? "#10b981" : "#ef4444") +
+      cell("Heat Absorbed (q)", (mode === "rev" ? (-wRev/1000).toFixed(2) : (-wIrrev/1000).toFixed(2)) + " kJ", "#f59e0b") +
+      cell("ΔU (Isothermal)", "0.00 kJ", "#94a3b8")
+    );
+
+    verdict(
+      '<div class="callout" style="background:#0f172a;border-left:4px solid #10b981;padding:12px;border-radius:6px;">' +
+        '<strong>Maximum Work Theorem:</strong> A reversible isothermal expansion extracts the absolute maximum possible work (|w_rev| > |w_irrev|) because the internal driving pressure is balanced at every infinitesimal step against external pressure, capturing the entire continuous area under the curve.' +
+      '</div>'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 3. SIMULATION 3: Calorimetry & Enthalpy Lab (calorimeter)
+// -------------------------------------------------------------------------
+window.SIMS.calorimeter = (function(){
+  var calType = "bomb"; // "bomb", "coffee"
+  var sampleMass = 1.0; // grams
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Bomb Calorimeter (Constant V, q_v = ΔU)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Coffee-Cup (Constant P, q_p = ΔH)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Thermometer Sensor</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-bomb">Bomb Calorimeter (Rigid Steel Bomb, q_v = ΔU)</button>' +
+      '<button class="preset-btn" id="p-coffee">Coffee-Cup Calorimeter (Polystyrene, q_p = ΔH)</button>';
+
+    document.getElementById("p-bomb").onclick = function(){ setActivePreset(this); calType = "bomb"; draw(0); };
+    document.getElementById("p-coffee").onclick = function(){ setActivePreset(this); calType = "coffee"; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Combustible Sample Mass (0.5 g to 3.0 g):</label>' +
+        '<input type="range" id="mass-range" min="0.5" max="3.0" value="' + sampleMass + '" step="0.1">' +
+      '</div>';
+
+    var rng = document.getElementById("mass-range");
+    if(rng) rng.oninput = function(){ sampleMass = parseFloat(this.value); draw(0); };
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+
+    var cCal = 10.5; // kJ/K
+    // Benzoic acid heat of combustion = -26.4 kJ/g
+    var heatReleased = sampleMass * 26.4; // kJ
+    var deltaT = (heatReleased / cCal).toFixed(2);
+
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+
+    if(calType === "bomb"){
+      out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">Bomb Calorimeter — Constant Volume (q_v = ΔU)</text>';
+      out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">Rigid sealed steel bomb: ΔV = 0 ⇒ w = 0 ⇒ q_v = ΔU (Measures gross internal energy change)</text>';
+
+      out += '<g transform="translate(450, 260)">';
+      // Water jacket
+      out += '<rect x="-180" y="-130" width="360" height="240" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="4"/>';
+      out += '<rect x="-170" y="-120" width="340" height="220" fill="rgba(56, 189, 248, 0.2)"/>';
+      out += '<text x="-160" y="-100" fill="#38bdf8" font-size="12" font-weight="bold">Water Bath (C_cal = 10.5 kJ/K)</text>';
+
+      // Inner Steel Bomb
+      out += '<rect x="-80" y="-70" width="160" height="150" rx="8" fill="#1e293b" stroke="#94a3b8" stroke-width="5"/>';
+      out += '<text x="0" y="-45" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">Heavy Steel Bomb</text>';
+      out += '<text x="0" y="-28" fill="#ec4899" font-size="11" text-anchor="middle">High-pressure O₂ (30 atm)</text>';
+
+      // Sample crucible & combustion flame
+      out += '<path d="M -30 35 L 30 35 L 20 55 L -20 55 Z" fill="#64748b"/>';
+      out += '<circle cx="0" cy="20" r="14" fill="#f59e0b"/>';
+      out += '<text x="0" y="25" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">FLAME</text>';
+
+      // Ignition wires
+      out += '<line x1="-15" y1="-70" x2="-15" y2="15" stroke="#ef4444" stroke-width="2"/>';
+      out += '<line x1="15" y1="-70" x2="15" y2="15" stroke="#ef4444" stroke-width="2"/>';
+
+      // Thermometer
+      out += '<rect x="120" y="-150" width="16" height="210" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>';
+      out += '<rect x="124" y="' + (-150 + 190 - deltaT*15) + '" width="8" height="' + (deltaT*15 + 10) + '" fill="#ef4444"/>';
+      out += '<text x="145" y="-130" fill="#ef4444" font-size="14" font-weight="bold">ΔT = +' + deltaT + ' K</text>';
+
+      // Stirrer
+      out += '<line x1="-120" y1="-150" x2="-120" y2="60" stroke="#94a3b8" stroke-width="3"/>';
+      out += '<ellipse cx="-120" cy="60" rx="18" ry="6" fill="#94a3b8"/>';
+      out += '<text x="-120" y="-160" fill="#94a3b8" font-size="11" text-anchor="middle">Motor Stirrer</text>';
+
+      out += '</g>';
+
+      readout(
+        cell("Calorimeter Type", "Constant Volume Bomb", "#38bdf8") +
+        cell("Sample Mass", sampleMass.toFixed(1) + " g", "#f8fafc") +
+        cell("Heat Released (q_v)", heatReleased.toFixed(1) + " kJ", "#ef4444") +
+        cell("Temperature Rise (ΔT)", "+" + deltaT + " K", "#10b981") +
+        cell("Internal Energy ΔU", "-" + heatReleased.toFixed(1) + " kJ", "#38bdf8")
+      );
+    } else {
+      // Coffee-cup calorimeter
+      out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">Coffee-Cup Calorimeter — Constant Pressure (q_p = ΔH)</text>';
+      out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">Open to atmosphere: P = 1 atm constant ⇒ q_p = ΔH (Measures enthalpy of solution/neutralization)</text>';
+
+      out += '<g transform="translate(450, 260)">';
+      // Polystyrene cup
+      out += '<path d="M -110 -110 L -90 100 L 90 100 L 110 -110 Z" fill="#0f172a" stroke="#f59e0b" stroke-width="5"/>';
+      out += '<path d="M -95 -80 L -80 90 L 80 90 L 95 -80 Z" fill="rgba(56, 189, 248, 0.3)"/>';
+      out += '<text x="0" y="0" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">Aqueous Reaction Mixture</text>';
+      out += '<text x="0" y="25" fill="#f8fafc" font-size="12" text-anchor="middle">HCl(aq) + NaOH(aq) → NaCl(aq) + H₂O(l)</text>';
+
+      // Cork lid
+      out += '<rect x="-120" y="-125" width="240" height="20" rx="4" fill="#64748b"/>';
+      out += '<text x="0" y="-132" fill="#94a3b8" font-size="12" text-anchor="middle">Porous Cork Stopper (P = 1 atm)</text>';
+
+      // Thermometer
+      out += '<rect x="40" y="-160" width="14" height="200" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>';
+      out += '<rect x="44" y="-70" width="6" height="100" fill="#ef4444"/>';
+      out += '<text x="65" y="-140" fill="#ef4444" font-size="14" font-weight="bold">ΔT = +5.4 K</text>';
+      out += '</g>';
+
+      readout(
+        cell("Calorimeter Type", "Constant Pressure Coffee-Cup", "#f59e0b") +
+        cell("Reaction", "Neutralization (HCl + NaOH)", "#38bdf8") +
+        cell("Enthalpy of Neutralization", "−57.1 kJ/mol", "#10b981") +
+        cell("Measured Heat Flow", "q_p = ΔH", "#ef4444")
+      );
+    }
+
+    svg.innerHTML = out;
+
+    verdict(
+      '<div class="callout" style="background:#0f172a;border-left:4px solid #38bdf8;padding:12px;border-radius:6px;">' +
+        '<strong>Calorimetry Law:</strong> A bomb calorimeter measures heat at constant volume with zero work (q_v = ΔU). In contrast, open coffee-cup calorimeters measure heat under constant atmospheric pressure (q_p = ΔH). They are converted via ΔH = ΔU + Δn_g RT.' +
+      '</div>'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 4. SIMULATION 4: Thermochemical Cycle & Hess Builder (hesscycle)
+// -------------------------------------------------------------------------
+window.SIMS.hesscycle = (function(){
+  var currentTarget = "ch4"; // "ch4", "ccl4", "ch3oh"
+
+  var cycles = {
+    "ch4": {
+      name: "Formation of Methane: C(graphite) + 2 H₂(g) → CH₄(g)",
+      target_val: -74.8,
+      steps: [
+        { label: "C(graphite) + O₂(g) → CO₂(g)", dH: -393.5, mult: 1 },
+        { label: "2 [H₂(g) + ½O₂(g) → H₂O(l)]", dH: -571.6, mult: 2 },
+        { label: "Reverse: CO₂(g) + 2 H₂O(l) → CH₄(g) + 2 O₂(g)", dH: +890.3, mult: -1 }
+      ],
+      insight: "Sum = (-393.5) + (-571.6) + (+890.3) = -74.8 kJ/mol"
+    },
+    "ch3oh": {
+      name: "Formation of Methanol: C(s) + 2 H₂(g) + ½O₂(g) → CH₃OH(l)",
+      target_val: -239.0,
+      steps: [
+        { label: "C(graphite) + O₂(g) → CO₂(g)", dH: -393.0, mult: 1 },
+        { label: "2 [H₂(g) + ½O₂(g) → H₂O(l)]", dH: -572.0, mult: 2 },
+        { label: "Reverse: CO₂(g) + 2 H₂O(l) → CH₃OH(l) + 1.5 O₂(g)", dH: +726.0, mult: -1 }
+      ],
+      insight: "Sum = (-393.0) + (-572.0) + (+726.0) = -239.0 kJ/mol"
+    },
+    "ccl4": {
+      name: "Bond Dissociation of CCl₄(g) → C(g) + 4 Cl(g)",
+      target_val: +1304.0,
+      steps: [
+        { label: "Atomization of C(s) → C(g)", dH: +715.0, mult: 1 },
+        { label: "2 × Dissociation of Cl₂(g) → 4 Cl(g)", dH: +484.0, mult: 2 },
+        { label: "Reverse Formation: CCl₄(g) → C(s) + 2 Cl₂(g)", dH: +105.0, mult: -1 }
+      ],
+      insight: "Total Δ_a H = 715 + 484 + 105 = 1304 kJ/mol ⇒ Mean C-Cl Bond Enthalpy = 1304/4 = 326 kJ/mol"
+    }
+  };
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Exothermic Step (−ΔH)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Endothermic Step (+ΔH)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Net Hess Summation Result</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ch4">Methane CH₄ (Δ_f H° = −74.8 kJ)</button>' +
+      '<button class="preset-btn" id="p-ch3oh">Methanol CH₃OH (Δ_f H° = −239 kJ)</button>' +
+      '<button class="preset-btn" id="p-ccl4">CCl₄ Bond Enthalpy (326 kJ/mol)</button>';
+
+    document.getElementById("p-ch4").onclick = function(){ setActivePreset(this); currentTarget = "ch4"; draw(0); };
+    document.getElementById("p-ch3oh").onclick = function(){ setActivePreset(this); currentTarget = "ch3oh"; draw(0); };
+    document.getElementById("p-ccl4").onclick = function(){ setActivePreset(this); currentTarget = "ccl4"; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Hess&#39;s Law of Constant Heat Summation Principle:</label>' +
+        '<div style="padding:10px;background:#1e293b;border-radius:8px;color:#f8fafc;font-size:14px;">' +
+          'Enthalpy is a state function: whether a reaction occurs in a single step or a series of stages, total ΔH is strictly identical.' +
+        '</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var cy = cycles[currentTarget];
+
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+    out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">' + cy.name + '</text>';
+    out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">' + cy.insight + '</text>';
+
+    // Energy ladder diagram
+    out += '<g transform="translate(150, 100)">';
+
+    var y = 30;
+    cy.steps.forEach(function(st, idx){
+      var isExo = st.dH < 0;
+      var col = isExo ? "#10b981" : "#ef4444";
+      out += '<rect x="0" y="' + y + '" width="600" height="55" rx="8" fill="#1e293b" stroke="' + col + '" stroke-width="2"/>';
+      out += '<text x="20" y="' + (y + 33) + '" fill="#f8fafc" font-size="14" font-weight="bold">Step ' + (idx + 1) + ': ' + st.label + '</text>';
+      out += '<text x="580" y="' + (y + 33) + '" fill="' + col + '" font-size="16" font-weight="900" text-anchor="end">' + (st.dH > 0 ? "+" + st.dH : st.dH) + ' kJ</text>';
+      y += 75;
+    });
+
+    // Net summation bar
+    out += '<rect x="0" y="' + (y + 10) + '" width="600" height="65" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>';
+    out += '<text x="20" y="' + (y + 48) + '" fill="#38bdf8" font-size="16" font-weight="bold">Net Overall Reaction Enthalpy (Δ_r H°):</text>';
+    out += '<text x="580" y="' + (y + 48) + '" fill="#38bdf8" font-size="20" font-weight="900" text-anchor="end">' + (cy.target_val > 0 ? "+" + cy.target_val : cy.target_val) + ' kJ/mol</text>';
+
+    out += '</g>';
+    svg.innerHTML = out;
+
+    readout(
+      cell("Target Process", cy.name.split(":")[0], "#38bdf8") +
+      cell("Total Steps Combined", cy.steps.length.toString(), "#f8fafc") +
+      cell("Calculated Enthalpy", (cy.target_val > 0 ? "+" + cy.target_val : cy.target_val) + " kJ/mol", "#10b981") +
+      cell("State Function Rule", "Path-Independent ΣΔH", "#f59e0b")
+    );
+
+    verdict(
+      '<div class="callout" style="background:#0f172a;border-left:4px solid #10b981;padding:12px;border-radius:6px;">' +
+        '<strong>Hess&#39;s Law in Practice:</strong> Reactions that cannot be conducted directly in a laboratory calorimeter (such as the slow soot-forming formation of methane from carbon and hydrogen) can be determined with extreme precision by combining combustion and dissociation enthalpies.' +
+      '</div>'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 5. SIMULATION 5: Entropy & Free Expansion Microstate Lab (entropylab)
+// -------------------------------------------------------------------------
+window.SIMS.entropylab = (function(){
+  var expanded = false;
+  var tempK = 298;
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Gas Microstate Particles</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Partition Stopcock</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Entropy Surge (ΔS > 0)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-stopcock-closed">Bulb Partition Closed (W₁)</button>' +
+      '<button class="preset-btn" id="p-stopcock-open">Stopcock Open (Free Expansion, W₂ &gt;&gt; W₁)</button>';
+
+    document.getElementById("p-stopcock-closed").onclick = function(){ setActivePreset(this); expanded = false; draw(0); };
+    document.getElementById("p-stopcock-open").onclick = function(){ setActivePreset(this); expanded = true; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Temperature (100 K to 600 K):</label>' +
+        '<input type="range" id="t-range" min="100" max="600" value="' + tempK + '" step="10">' +
+      '</div>';
+
+    var rng = document.getElementById("t-range");
+    if(rng) rng.oninput = function(){ tempK = parseInt(this.value, 10); draw(0); };
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+
+    var nMol = 1.0;
+    var deltaS = expanded ? (nMol * 8.314 * Math.log(2)).toFixed(2) : "0.00";
+
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+    out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">Entropy & Boltzmann Microstates (S = k_B ln W)</text>';
+    out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">Two-bulb expansion: Opening stopcock doubles accessible volume, multiplying microstates by 2^N and driving ΔS > 0</text>';
+
+    out += '<g transform="translate(450, 250)">';
+
+    // Left Bulb
+    out += '<circle cx="-140" cy="0" r="110" fill="#0f172a" stroke="#64748b" stroke-width="4"/>';
+    out += '<text x="-140" y="-125" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">Bulb 1 (Volume V)</text>';
+
+    // Right Bulb
+    out += '<circle cx="140" cy="0" r="110" fill="#0f172a" stroke="#64748b" stroke-width="4"/>';
+    out += '<text x="140" y="-125" fill="#94a3b8" font-size="15" font-weight="bold" text-anchor="middle">Bulb 2 (Volume V)</text>';
+
+    // Connecting tube
+    out += '<rect x="-40" y="-18" width="80" height="36" fill="#1e293b" stroke="#64748b" stroke-width="2"/>';
+
+    // Stopcock
+    if(!expanded){
+      out += '<rect x="-8" y="-40" width="16" height="80" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>';
+      out += '<text x="0" y="55" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">STOPCOCK CLOSED</text>';
+    } else {
+      out += '<rect x="-25" y="-8" width="50" height="16" fill="#10b981"/>';
+      out += '<text x="0" y="55" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">STOPCOCK OPEN (Free Expansion)</text>';
+    }
+
+    // Render particles
+    var pCount = 36;
+    for(var i = 0; i < pCount; i++){
+      var px, py;
+      if(!expanded){
+        // All in left bulb
+        var ang = (i * 2.39996) % (2 * Math.PI);
+        var rad = 25 + ((i * 17) % 70);
+        px = -140 + rad * Math.cos(ang);
+        py = rad * Math.sin(ang);
+      } else {
+        // Dispersed in both bulbs
+        var inRight = (i % 2 === 0);
+        var cX = inRight ? 140 : -140;
+        var ang2 = (i * 2.39996) % (2 * Math.PI);
+        var rad2 = 25 + ((i * 17) % 70);
+        px = cX + rad2 * Math.cos(ang2);
+        py = rad2 * Math.sin(ang2);
+      }
+      out += '<circle cx="' + px + '" cy="' + py + '" r="5" fill="#38bdf8"/>';
+    }
+
+    out += '</g>';
+    svg.innerHTML = out;
+
+    readout(
+      cell("Stopcock Status", expanded ? "OPEN (Expanded)" : "CLOSED", expanded ? "#10b981" : "#f59e0b") +
+      cell("Volume", expanded ? "2 V" : "1 V", "#f8fafc") +
+      cell("Entropy Change ΔS", "+" + deltaS + " J/K/mol", expanded ? "#10b981" : "#94a3b8") +
+      cell("Temperature", tempK + " K", "#38bdf8") +
+      cell("Spontaneity Reason", expanded ? "Disorder Maximization" : "Constrained", "#10b981")
+    );
+
+    verdict(
+      '<div class="callout" style="background:#0f172a;border-left:4px solid #10b981;padding:12px;border-radius:6px;">' +
+        '<strong>Second Law in Isolated Systems:</strong> During free expansion into a vacuum, no heat is absorbed (q = 0) and no work is done (w = 0), so ΔU = 0 and ΔT = 0. The gas expands spontaneously solely because molecular dispersal increases the accessible microstates: ΔS = nR ln(V2/V1) = +5.76 J/K/mol.' +
+      '</div>'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 6. SIMULATION 6: Gibbs Free Energy & Temperature Spontaneity (gibbslab)
+// -------------------------------------------------------------------------
+window.SIMS.gibbslab = (function(){
+  var currentCase = "high-t"; // "all-t", "never", "high-t", "low-t"
+  var userTemp = 1500; // K
+
+  var cases = {
+    "all-t": {
+      name: "Case 1: ΔH < 0, ΔS > 0 (Combustion)",
+      dH: -200, dS: +0.1,
+      desc: "Both enthalpy and entropy favor the reaction. ΔG is strictly negative at all temperatures.",
+      switchT: "Always Spontaneous"
+    },
+    "never": {
+      name: "Case 2: ΔH > 0, ΔS < 0 (3 O₂ → 2 O₃)",
+      dH: +285, dS: -0.07,
+      desc: "Both enthalpy and entropy oppose the reaction. ΔG is strictly positive at all temperatures.",
+      switchT: "Never Spontaneous"
+    },
+    "high-t": {
+      name: "Case 3: ΔH > 0, ΔS > 0 (Endothermic Dissociation)",
+      dH: +400, dS: +0.2,
+      desc: "Enthalpy opposes (+400 kJ), but entropy favors (+0.2 kJ/K). Becomes spontaneous when T > 2000 K.",
+      switchT: "2000 K (Exercise 5.17)"
+    },
+    "low-t": {
+      name: "Case 4: ΔH < 0, ΔS < 0 (Freezing / 2 Cl → Cl₂)",
+      dH: -180, dS: -0.15,
+      desc: "Enthalpy favors (-180 kJ), but entropy opposes (-0.15 kJ/K). Spontaneous only at low T (T < 1200 K).",
+      switchT: "1200 K"
+    }
+  };
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Spontaneous Zone (ΔG < 0)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Non-Spontaneous Zone (ΔG > 0)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Equilibrium Point (ΔG = 0)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn" id="p-case1">Case 1: ΔH&lt;0, ΔS&gt;0 (Always)</button>' +
+      '<button class="preset-btn" id="p-case2">Case 2: ΔH&gt;0, ΔS&lt;0 (Never)</button>' +
+      '<button class="preset-btn active" id="p-case3">Case 3: ΔH&gt;0, ΔS&gt;0 (High T)</button>' +
+      '<button class="preset-btn" id="p-case4">Case 4: ΔH&lt;0, ΔS&lt;0 (Low T)</button>';
+
+    document.getElementById("p-case1").onclick = function(){ setActivePreset(this); currentCase = "all-t"; draw(0); };
+    document.getElementById("p-case2").onclick = function(){ setActivePreset(this); currentCase = "never"; draw(0); };
+    document.getElementById("p-case3").onclick = function(){ setActivePreset(this); currentCase = "high-t"; draw(0); };
+    document.getElementById("p-case4").onclick = function(){ setActivePreset(this); currentCase = "low-t"; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Temperature Explorer (0 K to 3000 K):</label>' +
+        '<input type="range" id="temp-k-range" min="10" max="3000" value="' + userTemp + '" step="20">' +
+      '</div>';
+
+    var rng = document.getElementById("temp-k-range");
+    if(rng) rng.oninput = function(){ userTemp = parseInt(this.value, 10); draw(0); };
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var cs = cases[currentCase];
+
+    var dG = cs.dH - (userTemp * cs.dS); // kJ
+    var isSpon = dG < 0;
+
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+    out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">' + cs.name + '</text>';
+    out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">' + cs.desc + '</text>';
+
+    // Graph plotting ΔG vs T (T from 0 to 3000 K)
+    // x: 150 to 800 (T: 0 to 3000 K)
+    // y: 250 is ΔG = 0; y: 100 is +300 kJ; y: 400 is -300 kJ
+    out += '<g transform="translate(150, 250)">';
+
+    // Zero line (ΔG = 0)
+    out += '<line x1="0" y1="0" x2="650" y2="0" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 4"/>';
+    out += '<text x="655" y="5" fill="#f59e0b" font-size="12" font-weight="bold">ΔG = 0 (Equilibrium)</text>';
+
+    // Axes
+    out += '<line x1="0" y1="-170" x2="0" y2="170" stroke="#94a3b8" stroke-width="2"/>';
+    out += '<text x="-15" y="-170" fill="#94a3b8" font-size="13" text-anchor="end">+ΔG (Non-spon) ↑</text>';
+    out += '<text x="-15" y="170" fill="#94a3b8" font-size="13" text-anchor="end">−ΔG (Spon) ↓</text>';
+    out += '<text x="650" y="35" fill="#94a3b8" font-size="13" text-anchor="end">Temperature T (Kelvin) →</text>';
+
+    function mapT(temp){ return (temp / 3000) * 600; }
+    function mapG(g){ return -(g / 500) * 150; }
+
+    var g0 = cs.dH;
+    var g3000 = cs.dH - (3000 * cs.dS);
+
+    var xStart = mapT(0);
+    var yStart = mapG(g0);
+    var xEnd = mapT(3000);
+    var yEnd = mapG(g3000);
+
+    out += '<line x1="' + xStart + '" y1="' + yStart + '" x2="' + xEnd + '" y2="' + yEnd + '" stroke="#38bdf8" stroke-width="4"/>';
+
+    // Current point
+    var curX = mapT(userTemp);
+    var curY = mapG(dG);
+    var ptCol = isSpon ? "#10b981" : "#ef4444";
+    out += '<circle cx="' + curX + '" cy="' + curY + '" r="8" fill="' + ptCol + '" stroke="#fff" stroke-width="2"/>';
+    out += '<text x="' + curX + '" y="' + (curY - 14) + '" fill="' + ptCol + '" font-size="15" font-weight="bold" text-anchor="middle">T = ' + userTemp + ' K (ΔG = ' + (dG > 0 ? "+" + dG.toFixed(1) : dG.toFixed(1)) + ' kJ)</text>';
+
+    out += '</g>';
+    svg.innerHTML = out;
+
+    readout(
+      cell("Condition Case", cs.name.split(":")[0], "#38bdf8") +
+      cell("Temperature", userTemp + " K", "#f8fafc") +
+      cell("ΔH", (cs.dH > 0 ? "+" + cs.dH : cs.dH) + " kJ", "#ec4899") +
+      cell("T·ΔS", (userTemp * cs.dS).toFixed(1) + " kJ", "#f59e0b") +
+      cell("Gibbs ΔG", (dG > 0 ? "+" + dG.toFixed(1) : dG.toFixed(1)) + " kJ", isSpon ? "#10b981" : "#ef4444") +
+      cell("Spontaneous?", isSpon ? "YES (Spontaneous)" : "NO (Non-spontaneous)", isSpon ? "#10b981" : "#ef4444")
+    );
+
+    verdict(
+      '<div class="callout" style="background:#0f172a;border-left:4px solid ' + (isSpon ? "#10b981" : "#ef4444") + ';padding:12px;border-radius:6px;">' +
+        '<strong>Gibbs Criterion:</strong> At constant T and P, a process can proceed spontaneously only if ΔG = ΔH − TΔS &lt; 0. ' +
+        'Crossover occurs at T_switch = ΔH / ΔS = ' + cs.switchT + '.' +
+      '</div>'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 7. SIMULATION 7: Equilibrium Constant & Third Law Crystal Lab (thirdlawsim)
+// -------------------------------------------------------------------------
+window.SIMS.thirdlawsim = (function(){
+  var mode = "eq"; // "eq", "thirdlaw"
+  var kVal = 10; // equilibrium constant
+
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Products Favored (K > 1, ΔG° < 0)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Reactants Favored (K < 1, ΔG° > 0)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Third Law Absolute Zero Crystal</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-eq10">K = 10 (Δ_r G° = −5.74 kJ/mol)</button>' +
+      '<button class="preset-btn" id="p-eq1">K = 1 (Δ_r G° = 0 kJ/mol)</button>' +
+      '<button class="preset-btn" id="p-eq001">K = 0.01 (Δ_r G° = +11.49 kJ/mol)</button>' +
+      '<button class="preset-btn" id="p-thirdlaw">Third Law Crystal (0 K, S = 0)</button>';
+
+    document.getElementById("p-eq10").onclick = function(){ setActivePreset(this); mode = "eq"; kVal = 10; draw(0); };
+    document.getElementById("p-eq1").onclick = function(){ setActivePreset(this); mode = "eq"; kVal = 1; draw(0); };
+    document.getElementById("p-eq001").onclick = function(){ setActivePreset(this); mode = "eq"; kVal = 0.01; draw(0); };
+    document.getElementById("p-thirdlaw").onclick = function(){ setActivePreset(this); mode = "thirdlaw"; draw(0); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Standard Free Energy & Equilibrium Relation:</label>' +
+        '<div style="padding:10px;background:#1e293b;border-radius:8px;font-family:monospace;color:#10b981;font-size:15px;font-weight:bold;text-align:center;">' +
+          'Δ_r G° = −RT ln K = −2.303 RT log₁₀ K' +
+        '</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var out = '<rect width="900" height="500" fill="#0b1120"/>';
+
+    if(mode === "eq"){
+      var T = 300; // K
+      var R = 8.314;
+      var dG = (-2.303 * R * T * Math.log10(kVal) / 1000).toFixed(2); // kJ/mol
+
+      out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">Standard Free Energy vs Equilibrium Constant K (at 300 K)</text>';
+      out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">Δ_r G° = −2.303 · R · T · log₁₀(K) | When K &gt; 1, ΔG° &lt; 0 | When K = 1, ΔG° = 0 | When K &lt; 1, ΔG° &gt; 0</text>';
+
+      out += '<g transform="translate(450, 240)">';
+
+      // Balance beam representing equilibrium
+      out += '<polygon points="0,50 -25,100 25,100" fill="#475569"/>';
+      var tilt = kVal === 1 ? 0 : (kVal > 1 ? -15 : 15);
+      out += '<g transform="rotate(' + tilt + ' 0 50)">';
+      out += '<rect x="-180" y="44" width="360" height="12" rx="4" fill="#94a3b8"/>';
+
+      // Left pan: Reactants
+      out += '<line x1="-150" y1="50" x2="-150" y2="100" stroke="#64748b" stroke-width="2"/>';
+      out += '<circle cx="-150" cy="110" r="28" fill="#ef4444"/><text x="-150" y="115" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">Reactants</text>';
+
+      // Right pan: Products
+      out += '<line x1="150" y1="50" x2="150" y2="100" stroke="#64748b" stroke-width="2"/>';
+      out += '<circle cx="150" cy="110" r="28" fill="#10b981"/><text x="150" y="115" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">Products</text>';
+      out += '</g>';
+
+      // Calculation card
+      out += '<rect x="-240" y="-120" width="480" height="85" rx="10" fill="#1e293b" stroke="#334155"/>';
+      out += '<text x="0" y="-95" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">Selected: K = ' + kVal + ' at T = 300 K</text>';
+      out += '<text x="0" y="-68" fill="#f8fafc" font-size="14" text-anchor="middle">Δ_r G° = −2.303 × 8.314 × 300 × log₁₀(' + kVal + ') J/mol</text>';
+      out += '<text x="0" y="-45" fill="' + (dG < 0 ? "#10b981" : (dG == 0 ? "#f59e0b" : "#ef4444")) + '" font-size="17" font-weight="900" text-anchor="middle">Δ_r G° = ' + dG + ' kJ/mol</text>';
+
+      out += '</g>';
+
+      readout(
+        cell("Equilibrium Constant K", kVal.toString(), kVal >= 1 ? "#10b981" : "#ef4444") +
+        cell("Temperature", "300 K", "#f8fafc") +
+        cell("Standard Free Energy", dG + " kJ/mol", dG < 0 ? "#10b981" : "#ef4444") +
+        cell("Favored at Equilibrium", kVal > 1 ? "Products (K > 1)" : (kVal === 1 ? "Equal (K = 1)" : "Reactants (K < 1)"), "#38bdf8")
+      );
+
+      verdict(
+        '<div class="callout" style="background:#0f172a;border-left:4px solid #10b981;padding:12px;border-radius:6px;">' +
+          '<strong>Equilibrium Link:</strong> When Δ_r G° is negative, K &gt; 1, driving the reaction to produce high equilibrium yields of products. When Δ_r G° is positive, K &lt; 1, indicating negligible product formation at standard states.' +
+        '</div>'
+      );
+    } else {
+      // Third Law Crystal Lab
+      out += '<text x="450" y="38" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">Third Law of Thermodynamics: Absolute Zero Crystal</text>';
+      out += '<text x="450" y="64" fill="#94a3b8" font-size="13" text-anchor="middle">"The entropy of any perfectly crystalline substance approaches zero as temperature approaches absolute zero (0 K)"</text>';
+
+      out += '<g transform="translate(450, 260)">';
+      // 5x5 perfectly ordered crystalline lattice
+      var spacing = 45;
+      for(var r = -2; r <= 2; r++){
+        for(var c = -2; c <= 2; c++){
+          var cx = c * spacing;
+          var cy = r * spacing;
+          out += '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/>';
+          if(c < 2) out += '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + spacing) + '" y2="' + cy + '" stroke="#334155" stroke-width="2"/>';
+          if(r < 2) out += '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + (cy + spacing) + '" stroke="#334155" stroke-width="2"/>';
+        }
+      }
+      out += '<text x="0" y="145" fill="#10b981" font-size="16" font-weight="bold" text-anchor="middle">T = 0 K ⇒ Zero Thermal Vibration ⇒ W = 1 Microstate ⇒ S = k_B ln(1) = 0</text>';
+      out += '</g>';
+
+      readout(
+        cell("Lattice State", "Perfect Crystalline Solid", "#38bdf8") +
+        cell("Absolute Temperature", "0 Kelvin (−273.15 °C)", "#f59e0b") +
+        cell("Microstate Count (W)", "W = 1", "#10b981") +
+        cell("Absolute Entropy (S)", "0.00 J·K⁻¹·mol⁻¹", "#10b981")
+      );
+
+      verdict(
+        '<div class="callout" style="background:#0f172a;border-left:4px solid #10b981;padding:12px;border-radius:6px;">' +
+          '<strong>Third Law Significance:</strong> Unlike enthalpy where only ΔH can be measured, the Third Law provides an absolute baseline (S = 0 at 0 K) for a perfect crystal. This allows absolute molar entropies (S°) of all chemical elements and compounds to be determined by integrating heat capacity data.' +
+        '</div>'
+      );
+    }
+
+    svg.innerHTML = out;
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 9: Straight Lines — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 09 · STRAIGHT LINES</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 70 Exercises from NCERT Class 11 Mathematics (pp. 151–175) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kemh109", "chapterNumber": 9, "book_name": "Mathematics", "title": "Straight Lines", "subtitle": "Slope, the five algebraic forms of a line, and the perpendicular distance formula — Descartes’ simplest curve.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh109.pdf", "page_start": 151, "page_end": 175, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "recall-coord", "nav": "Recall: distance, section, area", "title": "Descartes’ plane: distance, section and the collinearity test", "deck": "Coordinate geometry is algebra doing geometry’s work. Distance, internal division and the shoelace area are the three tools this chapter leans on — and area zero means a straight line.", "minutes": 8, "section": "9.1", "pages": [1, 2], "print": "151–152", "sim": "coordrecall", "simTitle": "Fig 9.1 recall lab — distance, 1:3 section, shoelace area", "quick": ["<strong>Analytical geometry</strong> (Descartes, <em>La Géométrie</em>, 1637) studies curves by their equations. Class 10 already gave us axes, plotting, distance, the section formula and the area of a triangle. This chapter uses those tools to write the equation of the simplest curve: a straight line.", "The point (6, −4) is 6 units right of the y-axis and 4 units below the x-axis; (3, 0) sits on the x-axis. Distance between them is √[(3−6)²+(0+4)²] = √(9+16) = <strong>5</strong> (zoom p.2).", "Internal division of A(x₁,y₁) B(x₂,y₂) in the ratio m:n is ((mx₂+nx₁)/(m+n), (my₂+ny₁)/(m+n)). Mid-point is the m=n case. The triangle with vertices (xᵢ,yᵢ) has area ½ |x₁(y₂−y₃)+x₂(y₃−y₁)+x₃(y₁−y₂)|. Area zero ⇔ collinear."], "formulas": [{"label": "Distance PQ", "html": "PQ = √[(x₂ − x₁)² + (y₂ − y₁)²]", "cond": "P(x₁,y₁), Q(x₂,y₂); zoom p.2"}, {"label": "Internal section m:n", "html": "((m x₂ + n x₁)/(m+n), (m y₂ + n y₁)/(m+n))", "cond": "Joining (x₁,y₁) to (x₂,y₂)"}, {"label": "Mid-point", "html": "((x₁+x₂)/2, (y₁+y₂)/2)", "cond": "m = n"}, {"label": "Triangle area", "html": "½ |x₁(y₂−y₃)+x₂(y₃−y₁)+x₃(y₁−y₂)|", "cond": "Zero ⇔ collinear"}], "deeper": "The section formula is a weighted average: mass m at B and mass n at A pull the fulcrum to (mx₂+nx₁)/(m+n). The shoelace formula is twice the signed sum of trapezoids under the edges; the absolute value forgets orientation. If three points give area 0, the signed trapezoids cancel — they lie on one line. That remark is the collinearity test this chapter uses again and again (Ex 9.2 Q19, slope test in §9.2).", "worked": "Zoom p.2. Distance (6,−4) to (3,0): √(9+16)=5. Point dividing A(1,−3) and B(−3,9) internally 1:3: x=[1(−3)+3(1)]/(1+3)=0, y=[1·9+3(−3)]/4=0. Area of (4,4),(3,−2),(−3,16): ½|4(−2−16)+3(16−4)+(−3)(4+2)| = ½|−72+36−18|=½·54=27.", "prediction": {"prompt": "The area of triangle ABC is computed as 0. What must be true of A, B and C?", "options": ["They are collinear — they lie on a single straight line.", "They form an equilateral triangle of side 0.", "The triangle is right-angled at B."], "answer": 0, "explanation": "Remark after the area formula (zoom p.2): area zero ⇔ the three points lie on a line."}, "connect": [["NH-48 milestones as coordinates", "A kilometre stone on NH-48 is a point (chainage, offset). Distance between two stones is the 2-D formula; the ‘section’ that splits a 40 km stretch 1:3 is exactly the m:n formula used for A(1,−3), B(−3,9)."], ["Wow — a vanishing area is a line", "Surveyors reject a ‘triangle’ of three GPS pins whose shoelace area is ~0: those pins are collinear, so they do not determine a unique plane plot. NCERT’s remark is the first quality-check in a cadastral survey.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "Write the distance, section and area formulae, and state the collinearity test in one sentence.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Distance between (6, −4) and (3, 0) is", "options": ["5", "√13", "7"], "answer": 0, "hint": "√[(3−6)²+(0+4)²].", "solution": "√(9+16)=√25=5 (zoom p.2).", "wrong": ["", "That would be √(4+9) with the signs dropped.", "That is |6−(−1)|, not these points."]}, {"level": "Medium", "type": "number", "map": "§9.1 example", "prompt": "Area of the triangle with vertices (4,4), (3,−2) and (−3,16) is", "answer": 27, "unit": "sq. units", "tolerance": 0.05, "hint": "½|4(−2−16)+3(16−4)+(−3)(4+2)|.", "solution": "½|4(−18)+3(12)+(−3)(6)|=½|−72+36−18|=27."}, {"level": "Hard", "type": "mcq", "prompt": "The point dividing A(1,−3) and B(−3,9) internally in 1:3 is", "options": ["(0, 0)", "(−1, 3)", "(2, −6)"], "answer": 0, "hint": "((mx₂+nx₁)/(m+n), …).", "solution": "x=(1·(−3)+3·1)/4=0, y=(1·9+3·(−3))/4=0.", "wrong": ["", "That is closer to the 1:1 mid-point.", "External division would go the other way."]}]}, {"id": "slope-inclination", "nav": "Slope and inclination", "title": "Inclination θ is an angle; slope m = tan θ is a number", "deck": "A non-vertical line makes an inclination 0° ≤ θ ≤ 180° with the positive x-axis. Its slope is m = tan θ (undefined at 90°). In coordinates, m = (y₂−y₁)/(x₂−x₁).", "minutes": 9, "section": "9.2, 9.2.1", "pages": [2, 6], "print": "152–156", "sim": "slopeline", "simTitle": "Inclination θ lab — m = tan θ, including the vertical trap", "quick": ["A line forms two supplementary angles with the x-axis. The <strong>inclination</strong> θ is the angle with the <em>positive</em> x-axis, measured anticlockwise: 0° ≤ θ ≤ 180°. Lines parallel to (or coinciding with) the x-axis have θ = 0°; a vertical line has θ = 90°.", "<strong>Definition 1.</strong> If θ is the inclination of ℓ, then tan θ is the <strong>slope</strong> (gradient) m of ℓ. Slope of a line with θ = 90° is <em>not defined</em>. Slope of the x-axis is 0; slope of the y-axis is undefined.", "For a non-vertical line through P(x₁,y₁) and Q(x₂,y₂) one has x₁ ≠ x₂, and whether θ is acute or obtuse the same algebra gives m = (y₂−y₁)/(x₂−x₁) (Figs 9.3(i)–(ii), zoom p.3–4)."], "formulas": [{"label": "Slope from inclination", "html": "m = tan θ, &nbsp; θ ≠ 90°", "cond": "Definition 1; 0° ≤ θ ≤ 180°"}, {"label": "Slope from two points", "html": "m = (y₂ − y₁)/(x₂ − x₁)", "cond": "x₁ ≠ x₂; vertical ⇒ undefined"}], "deeper": "The obtuse case looks different in the figure (∠MPQ = 180°−θ) but tan(180°−α) = −tan α restores the same ratio (y₂−y₁)/(x₂−x₁). So one formula covers both. A horizontal line (Example 1b: (3,−2) and (7,−2)) has m=0; a vertical line (Example 1c: (3,−2) and (3,4)) has denominator 0, so m is undefined — never write m=∞.", "worked": "Example 1 (zoom p.5–6). (a) Through (3,−2) and (−1,4): m=(4−(−2))/(−1−3)=6/(−4)=−3/2. (b) (3,−2),(7,−2): m=0. (c) (3,−2),(3,4): m undefined. (d) Inclination 60°: m=tan 60°=√3.", "prediction": {"prompt": "A line through (3, −2) and (3, 4) has slope", "options": ["Undefined — the line is vertical, θ = 90°.", "0, because the x-coordinates match.", "6/0 = ∞, which we treat as the number infinity."], "answer": 0, "explanation": "Example 1(c): denominator 3−3=0. Slope of a vertical line is not defined; ∞ is not a real slope in this chapter."}, "connect": [["Ramp slope vs inclination", "A wheelchair ramp of 1:12 has m=1/12, so θ=arctan(1/12)≈4.8°. Civil drawings quote both the gradient m and the angle θ; NCERT’s m=tan θ is that conversion."], ["Wow — Himalayan roads and tan θ", "A 6% grade on NH-5 (Shimla side) means m=0.06. At θ=90° the formula collapses: a sheer cliff has undefined slope, which is why contour maps refuse to assign a single m to a vertical face.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "Define inclination and slope. Write m in terms of two points and state when it is undefined.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Slope of the x-axis is", "options": ["0", "1", "undefined"], "answer": 0, "hint": "θ=0°, tan 0°=?", "solution": "Inclination 0°, m=tan 0°=0.", "wrong": ["", "That is tan 45°.", "That is the y-axis."]}, {"level": "Medium", "type": "mcq", "map": "Example 1a", "prompt": "Slope of the line through (3, −2) and (−1, 4) is", "options": ["−3/2", "3/2", "−2/3"], "answer": 0, "hint": "(4−(−2))/(−1−3).", "solution": "6/(−4)=−3/2.", "wrong": ["", "Sign of the run is negative.", "Reciprocal, and the wrong sign."]}, {"level": "Hard", "type": "mcq", "prompt": "A line making 30° with the positive y-axis, measured anticlockwise, has slope", "options": ["−√3", "1/√3", "√3"], "answer": 0, "hint": "Positive y-axis is 90°; add 30°. Ex 9.1 Q7.", "solution": "Inclination = 90°+30°=120°, m=tan 120°=−√3.", "wrong": ["", "That is tan 30°, as if measured from the x-axis.", "That is tan 60°."]}]}, {"id": "parallel-perp-angle", "nav": "Parallel, perpendicular, angle", "title": "Equal slopes are parallel; negative-reciprocal slopes are perpendicular", "deck": "Non-vertical ℓ₁ ∥ ℓ₂ ⇔ m₁=m₂. They are perpendicular ⇔ m₁m₂=−1. The acute angle between them satisfies tan θ = |(m₂−m₁)/(1+m₁m₂)|.", "minutes": 10, "section": "9.2.2, 9.2.3", "pages": [4, 8], "print": "154–158", "sim": "parperp", "simTitle": "Two-slope lab — parallel, perpendicular, and Example 2’s two answers", "quick": ["If non-vertical ℓ₁, ℓ₂ have inclinations α, β then m₁=tan α, m₂=tan β. Parallel ⇔ α=β ⇔ <strong>m₁=m₂</strong>. Conversely equal slopes force equal inclinations in (0°,180°), so the lines are parallel.", "Perpendicular ⇔ β=α+90° ⇔ tan β = −cot α ⇔ <strong>m₂=−1/m₁</strong>, i.e. <strong>m₁ m₂ = −1</strong>. Two non-vertical lines are perpendicular iff their slopes are negative reciprocals.", "When two lines meet they form two pairs of vertically opposite angles. The acute angle θ between slopes m₁, m₂ is given by tan θ = |(m₂−m₁)/(1+m₁m₂)|, provided 1+m₁m₂ ≠ 0 (that proviso is exactly ‘not perpendicular’). The obtuse partner is 180°−θ."], "formulas": [{"label": "Parallel", "html": "m₁ = m₂", "cond": "Non-vertical lines"}, {"label": "Perpendicular", "html": "m₁ m₂ = −1 &nbsp; (m₂ = −1/m₁)", "cond": "Non-vertical; negative reciprocals"}, {"label": "Acute angle", "html": "tan θ = |(m₂ − m₁)/(1 + m₁ m₂)|", "cond": "1 + m₁m₂ ≠ 0; Eq. (1) of §9.2.3"}], "deeper": "The formula for tan θ comes from tan(α₂−α₁)=(tan α₂−tan α₁)/(1+tan α₁ tan α₂). The two adjacent angles θ and φ=180°−θ have tangents of opposite sign; we pick the one whose tan is positive to name the acute angle. If 1+m₁m₂=0 the lines are already perpendicular and the angle formula is not needed — θ=90°, tan undefined. Example 2 produces two answers because a line of slope ½ makes π/4 with both a slope-3 line and a slope-(−1/3) line (Fig 9.7).", "worked": "Example 2: θ=π/4, m₁=½, m₂=m. |m−½|/(1+m/2)=1. This splits into (m−½)/(1+m/2)=1 ⇒ m=3, or =−1 ⇒ m=−1/3. Example 3: line through (−2,6),(4,8) has m₁=(8−6)/(4+2)=1/3. Line through (8,12),(x,24) has m₂=12/(x−8). Perpendicular: (1/3)·12/(x−8)=−1 ⇒ 4/(x−8)=−1 ⇒ x=4.", "prediction": {"prompt": "Angle between two lines is π/4 and one slope is ½. The other slope is", "options": ["3 or −1/3 — two lines make π/4 with a given line.", "Only 3, because slope must be positive.", "2, the sum of ½ and 3/2."], "answer": 0, "explanation": "Example 2 (zoom p.7–8). The tan-θ equation is quadratic in m, so two geometric partners exist (Fig 9.7)."}, "connect": [["Railway crossing diamonds", "A level-crossing’s acute angle is exactly θ from the slope formula. If one rail is modelled as y=½x, a 45° diamond forces the other rail to slope 3 or −1/3 — Example 2 in steel."], ["Wow — perpendicular streets in Jaipur’s pink grid", "A street of slope 2 meets a street of slope −1/2 at 90° because 2·(−1/2)=−1. Planned grids (Jaipur, Chandigarh Sector 17) are slope-reciprocal by design.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "State the parallel and perpendicular tests and the tan θ formula, including the condition 1+m₁m₂≠0.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Two non-vertical lines are perpendicular iff", "options": ["m₁ m₂ = −1", "m₁ = m₂", "m₁ + m₂ = 0"], "answer": 0, "hint": "Negative reciprocals.", "solution": "m₂=−1/m₁ ⇔ m₁m₂=−1.", "wrong": ["", "That is parallel.", "That would be slopes equal in magnitude, opposite in sign, not necessarily perp (unless |m|=1)."]}, {"level": "Medium", "type": "number", "map": "Example 3", "prompt": "Line through (−2,6) and (4,8) is perpendicular to the line through (8,12) and (x,24). Then x =", "answer": 4, "unit": "", "tolerance": 0.05, "hint": "m₁=1/3, m₂=12/(x−8), product −1.", "solution": "(1/3)·12/(x−8)=−1 ⇒ x−8=−4 ⇒ x=4."}, {"level": "Hard", "type": "mcq", "map": "Example 2", "prompt": "If tan θ = |(m−½)/(1+m/2)| = 1, the possible m are", "options": ["3 and −1/3", "only 3", "½ and 2"], "answer": 0, "hint": "Two cases: the fraction equals +1 or −1.", "solution": "m−½=1+m/2 ⇒ m=3; or m−½=−(1+m/2) ⇒ m=−1/3.", "wrong": ["", "Fig 9.7 shows both.", "Those are not the roots."]}]}, {"id": "point-slope-twopoint", "nav": "Point-slope and two-point forms", "title": "A line is y − y₀ = m(x − x₀), or the two-point collinearity of slopes", "deck": "Horizontal y=±a, vertical x=±b. Through (x₀,y₀) with slope m: y−y₀=m(x−x₀). Through two points: (y−y₁)/(x−x₁)=(y₂−y₁)/(x₂−x₁).", "minutes": 9, "section": "9.3.1–9.3.3", "pages": [9, 11], "print": "159–161", "sim": "pointslope", "simTitle": "Point-slope plotter — Example 5 and two-point Example 6", "quick": ["A horizontal line at distance a from the x-axis is y=a or y=−a; a vertical line at distance b from the y-axis is x=b or x=−b (Fig 9.8). Example 4: through (−2,3), the axis-parallels are y=3 and x=−2.", "<strong>Point-slope form.</strong> Non-vertical L through the fixed point P₀(x₀,y₀) with slope m: every other point P(x,y) on L satisfies (y−y₀)/(x−x₀)=m, i.e. <strong>y − y₀ = m(x − x₀)</strong>. No other point of the plane satisfies it.", "<strong>Two-point form.</strong> Through (x₁,y₁) and (x₂,y₂), slope equality of P₁P and P₁P₂ gives (y−y₁)/(x−x₁)=(y₂−y₁)/(x₂−x₁)."], "formulas": [{"label": "Horizontal / vertical", "html": "y = ± a, &nbsp; x = ± b", "cond": "Fig 9.8"}, {"label": "Point-slope", "html": "y − y₀ = m (x − x₀)", "cond": "Non-vertical; through (x₀,y₀)"}, {"label": "Two-point", "html": "(y − y₁)/(x − x₁) = (y₂ − y₁)/(x₂ − x₁)", "cond": "Eq. (2), §9.3.3"}], "deeper": "Point-slope is the definition of slope, rearranged. Two-point form is point-slope with m substituted. The general linear equation Ax+By+C=0 (announced after Example 8) contains both: if B≠0 then y=−(A/B)x−C/B is slope-intercept; if B=0 the line is vertical. So every line, including vertical, is one linear equation.", "worked": "Example 5: through (−2,3), m=−4. y−3=−4(x+2) ⇒ 4x+y+5=0. Example 6: through (1,−1) and (3,5). (y+1)/(x−1)=(5+1)/(3−1)=3 ⇒ y+1=3x−3 ⇒ −3x+y+4=0.", "prediction": {"prompt": "Equation of the line through (−2, 3) with slope −4 is", "options": ["4x + y + 5 = 0", "y − 3 = −4(x − 2)", "x + 4y − 5 = 0"], "answer": 0, "explanation": "Example 5: y−3=−4(x−(−2))=−4(x+2) ⇒ y−3=−4x−8 ⇒ 4x+y+5=0. The second option uses (x−2) instead of (x+2)."}, "connect": [["Metro alignment from one peg and a bearing", "A DMRC surveyor fixes a peg (x₀,y₀) and a bearing whose tan is m. The alignment is literally y−y₀=m(x−x₀) — Example 5 as a construction drawing."], ["Wow — two GPS pins determine a runway centreline", "Two-point form is how a runway is declared: two threshold coordinates, one line. Collinear extra pins (area 0) confirm the paint is true.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "Write point-slope and two-point forms. Give the axis-parallel equations through (−2,3).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Lines through (−2, 3) parallel to the axes are", "options": ["x=−2 and y=3", "x=3 and y=−2", "x=2 and y=−3"], "answer": 0, "hint": "Example 4, Fig 9.9.", "solution": "Vertical through the point is x=−2; horizontal is y=3.", "wrong": ["", "Coordinates swapped.", "Signs flipped."]}, {"level": "Medium", "type": "mcq", "map": "Example 6", "prompt": "The two-point line through (1,−1) and (3,5) simplifies to", "options": ["−3x + y + 4 = 0", "3x + y + 4 = 0", "y−5=3(x−1)"], "answer": 0, "hint": "(y+1)/(x−1)=3.", "solution": "y+1=3(x−1)=3x−3 ⇒ −3x+y+4=0.", "wrong": ["", "Sign of 3x.", "That still uses (3,5) as the fixed point; it is equivalent to y−5=3(x−3), not (x−1)."]}, {"level": "Hard", "type": "mcq", "prompt": "Point-slope form cannot represent", "options": ["a vertical line", "a horizontal line", "a line through the origin"], "answer": 0, "hint": "m would be undefined.", "solution": "Vertical lines have undefined slope, so y−y₀=m(x−x₀) is unavailable; use x=b.", "wrong": ["", "Horizontal is y=y₀ (m=0).", "y=mx covers the origin."]}]}, {"id": "slope-intercept", "nav": "Slope-intercept and intercept form", "title": "y = mx + c and x/a + y/b = 1 are the same line in two costumes", "deck": "Slope m and y-intercept c give y=mx+c. Intercepts a, b on the axes give x/a + y/b = 1. Both sit inside the general equation Ax+By+C=0.", "minutes": 9, "section": "9.3.4, 9.3.5", "pages": [11, 14], "print": "161–164", "sim": "slopeint", "simTitle": "y = mx + c slider — intercepts live on the axes", "quick": ["<strong>Slope-intercept.</strong> A line of slope m meeting the y-axis at (0,c) is, by point-slope, y−c=m(x−0), i.e. <strong>y = mx + c</strong>. The sign of c matches the side of the y-axis. If instead it meets the x-axis at (d,0), then y=m(x−d).", "<strong>Intercept form.</strong> Meeting the axes at (a,0) and (0,b), two-point form collapses to <strong>x/a + y/b = 1</strong>.", "Any Ax+By+C=0 with A, B not both zero is the <strong>general equation of a line</strong>. If B≠0 it reduces to slope-intercept; if C≠0 and A,B≠0 it reduces to intercept form."], "formulas": [{"label": "Slope-intercept", "html": "y = m x + c", "cond": "y-intercept c; Eq. (3)"}, {"label": "x-intercept version", "html": "y = m (x − d)", "cond": "x-intercept d; Eq. (4)"}, {"label": "Intercept form", "html": "x/a + y/b = 1", "cond": "Intercepts a, b; Eq. (5)"}, {"label": "General linear equation", "html": "A x + B y + C = 0", "cond": "A, B not both zero"}], "deeper": "Intercept form fails for lines through the origin (a=b=0, no intercepts to divide by) and for axis-parallels that miss one axis. Slope-intercept fails for vertical lines. The general equation never fails. Reducing Ax+By+C=0 to y=mx+c is Exercise 9.3 Q1; reducing it to intercept form is Q2.", "worked": "Example 7: tan θ=½. (i) c=−3/2 ⇒ y=(1/2)x−3/2 ⇒ x−2y−3=0. (ii) d=4 ⇒ y=(1/2)(x−4) ⇒ x−2y−4=0. Example 8: intercepts −3 and 2 ⇒ x/(−3)+y/2=1 ⇒ −2x+3y=6, or 2x−3y+6=0.", "prediction": {"prompt": "The line with intercepts a=−3 and b=2 has equation", "options": ["x/(−3) + y/2 = 1, i.e. 2x − 3y + 6 = 0", "x/3 + y/2 = 1", "y = −3x + 2"], "answer": 0, "explanation": "Example 8 (zoom p.13). Intercept form uses the signed intercepts; a is negative."}, "connect": [["Milk-price demand is a straight line", "Ex 9.2 Q16: 980 L at ₹14 and 1220 L at ₹16. The demand line is slope-intercept in (price, litres); at ₹17 it predicts 1340 L. Linear interpolation in a kirana ledger is y=mx+c."], ["Wow — thermal expansion of a copper rod", "Ex 9.2 Q15: L=124.942 cm at 20°C and 125.134 cm at 110°C. L is linear in C, so L = 0.00213 C + 124.899. Every mercury thermometer assumes intercept form in disguise.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "Write y=mx+c, y=m(x−d) and x/a+y/b=1. When does each fail?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In y = mx + c, the number c is", "options": ["the y-intercept", "the x-intercept", "the inclination in degrees"], "answer": 0, "hint": "The line meets the y-axis at (0,c).", "solution": "Put x=0: y=c.", "wrong": ["", "That would be d in y=m(x−d).", "Inclination is θ with m=tan θ."]}, {"level": "Medium", "type": "mcq", "map": "Example 8", "prompt": "Intercepts −3 and 2 on the axes give", "options": ["2x − 3y + 6 = 0", "x/3 + y/2 = 1", "x − 3y + 2 = 0"], "answer": 0, "hint": "x/(−3)+y/2=1.", "solution": "2x − 3y = −6, or 2x−3y+6=0.", "wrong": ["", "a is −3, not +3.", "Not the intercept form."]}, {"level": "Hard", "type": "number", "map": "Ex 9.2 Q16", "prompt": "Milk demand is linear: 980 L at ₹14 and 1220 L at ₹16. Litres that can be sold at ₹17 =", "answer": 1340, "unit": "L", "tolerance": 0.5, "hint": "Slope = (1220−980)/(16−14)=120 L per rupee.", "solution": "1220+120=1340 litres."}]}, {"id": "distance-point-line", "nav": "Distance of a point from a line", "title": "The drop from P to Ax+By+C=0 has length |Ax₁+By₁+C|/√(A²+B²)", "deck": "Distance means the perpendicular. Deriving it from the area of triangle PQR (the intercepts) produces the standard formula used in every later exercise.", "minutes": 10, "section": "9.4", "pages": [14, 17], "print": "164–167", "sim": "distptline", "simTitle": "Perpendicular-distance lab — Example 9 on 3x−4y−26=0", "quick": ["The distance of P(x₁,y₁) from the line L: Ax+By+C=0 is the length of the perpendicular PM. Let L meet the axes at Q(−C/A, 0) and R(0, −C/B). Then PM = 2·area(ΔPQR) / QR.", "Computing the shoelace area of P,Q,R and the length QR = |C|√(A²+B²)/|AB| yields <strong>d = |A x₁ + B y₁ + C| / √(A²+B²)</strong> (zoom p.16).", "Example 9: (3,−5) from 3x−4y−26=0 gives |9+20−26|/5 = 3/5."], "formulas": [{"label": "Distance from (x₁,y₁) to Ax+By+C=0", "html": "d = |A x₁ + B y₁ + C| / √(A² + B²)", "cond": "Zoom p.16; perpendicular length"}], "deeper": "The formula is independent of how you scale A,B,C: multiply the equation by 2 and both numerator and denominator double. Signed distance (dropping the absolute value) tells you which side of the line the point lies on — useful for ‘image in a line’ (Example 13) where the mid-point of P and its image Q must sit on the mirror and PQ must be perpendicular to it.", "worked": "Example 9 (zoom p.17): A=3, B=−4, C=−26, (x₁,y₁)=(3,−5). d=|9+(−4)(−5)−26|/√(9+16)=|9+20−26|/5=3/5. Example 12: distance of P(4,1) from 4x−y=0 measured along a 135° line. That 135° line through P is x+y−5=0; it meets 4x−y=0 at Q(1,4); PQ=√[(4−1)²+(1−4)²]=3√2. Distance along a given direction is not the perpendicular unless the direction is normal to the line.", "prediction": {"prompt": "Distance of (3, −5) from 3x − 4y − 26 = 0 is", "options": ["3/5", "3", "35/5 = 7"], "answer": 0, "explanation": "Example 9: |9+20−26|/5=3/5. Forgetting the absolute-value algebra and using 9−20−26 is a common slip."}, "connect": [["How far is a house from the highway?", "A house at map-coordinates (x₁,y₁) and an NH centreline Ax+By+C=0: the shortest access road is the perpendicular of length d. NHAI’s ‘building line’ is a parallel at fixed d."], ["Wow — a cricket pitch is a distance-from-a-line problem", "The popping crease is a line; the stumps are a point. Whether a delivery pitches in line is |Ax₁+By₁+C|/√(A²+B²) compared with the crease width — Example 9 with bails.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "Write the perpendicular-distance formula and compute Example 9 from memory.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Distance of (x₁,y₁) from Ax+By+C=0 is", "options": ["|Ax₁+By₁+C|/√(A²+B²)", "|Ax₁+By₁|/C", "√(A²+B²)/|C|"], "answer": 0, "hint": "Zoom p.16.", "solution": "The standard formula.", "wrong": ["", "Missing C and the normalisation.", "That is distance of the line from the origin only if the constant is arranged as the intercept."]}, {"level": "Medium", "type": "number", "map": "Example 9", "prompt": "Distance of (3, −5) from 3x − 4y − 26 = 0 equals", "answer": 0.6, "unit": "", "tolerance": 0.01, "hint": "|9+20−26|/5.", "solution": "3/5=0.6."}, {"level": "Hard", "type": "number", "map": "Ex 9.3 Q3", "prompt": "Distance of (−1, 1) from 12(x+6)=5(y−2) is", "answer": 5, "unit": "", "tolerance": 0.05, "hint": "Rewrite 12x−5y+82=0; divide by 13.", "solution": "12x+72=5y−10 ⇒ 12x−5y+82=0. |−12−5+82|/13=65/13=5."}]}, {"id": "parallel-distance-apps", "nav": "Parallel-line distance & applications", "title": "Two parallel lines sit a distance |C₁−C₂|/√(A²+B²) apart", "deck": "For y=mx+c₁ and y=mx+c₂, d=|c₁−c₂|/√(1+m²). In general form the same idea is |C₁−C₂|/√(A²+B²). Images, concurrency and paths of moving points are the same formula in costume.", "minutes": 10, "section": "9.4.1 + Miscellaneous", "pages": [16, 25], "print": "166–175", "sim": "parldist", "simTitle": "Parallel-line gap — Example 10 on 3x−4y+7=0 and +5=0", "quick": ["Parallel lines share a slope. Write them as y=mx+c₁ and y=mx+c₂. The perpendicular from the x-intercept of the first onto the second has length <strong>d = |c₁−c₂|/√(1+m²)</strong>.", "In general form Ax+By+C₁=0 and Ax+By+C₂=0 (same A,B ⇔ parallel), <strong>d = |C₁−C₂|/√(A²+B²)</strong>. Example 10: |7−5|/5=2/5.", "Applications in this reprint: concurrent lines (Example 11, k=−2), distance along a given direction (Example 12, 3√2), image of a point in a line (Example 13: image of (1,2) in x−3y+4=0 is (6/5, 7/5)), area of the triangle formed by two slope-intercept lines and the y-axis (Example 14), and the path of a point equidistant from two lines (Example 16) — which is itself a straight line."], "formulas": [{"label": "Parallel, slope form", "html": "d = |c₁ − c₂| / √(1 + m²)", "cond": "y = mx + c₁ and y = mx + c₂"}, {"label": "Parallel, general form", "html": "d = |C₁ − C₂| / √(A² + B²)", "cond": "Ax+By+C₁=0 and Ax+By+C₂=0"}], "deeper": "Image of P in a line ℓ: the line is the perpendicular bisector of P and P′. That is two equations — matching slopes (product −1) and mid-point on ℓ — exactly Example 13. Concurrency of three lines: the intersection of any two must satisfy the third (Example 11). A point equidistant from two given lines traces the angle bisectors, which in Example 16 happen to be the coordinate-parallel lines y=0 and x=5/3.", "worked": "Example 10: 3x−4y+7=0 and 3x−4y+5=0. d=|7−5|/√(9+16)=2/5. Example 11: 2x+y−3=0, 5x+ky−3=0, 3x−y−2=0 concurrent. Intersection of first and third is (1,1); plug into second: 5+k−3=0 ⇒ k=−2. Example 13: image of (1,2) in x−3y+4=0 is (6/5, 7/5).", "prediction": {"prompt": "Distance between 3x − 4y + 7 = 0 and 3x − 4y + 5 = 0 is", "options": ["2/5", "2", "12/5"], "answer": 0, "explanation": "Example 10 (zoom p.17): |7−5|/5=2/5. Do not forget to divide by √(A²+B²)=5."}, "connect": [["Dual carriageway median width", "Two parallel kerb-lines 3x−4y+7=0 and 3x−4y+5=0 are 2/5 of a unit apart. Scaling the constants is how a CAD operator offsets a centreline to paint a 2.5 m median."], ["Wow — a plane-mirror image is two linear conditions", "Example 13 treats a line as a mirror: PQ ⟂ the mirror and the mid-point lies on it. Every kaleidoscope and every billiard-bank shot is that pair of equations.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh109.pdf"}]]], "recall": "Write both parallel-distance formulae. Outline how to find the image of a point in a line.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Distance between Ax+By+C₁=0 and Ax+By+C₂=0 is", "options": ["|C₁−C₂|/√(A²+B²)", "|C₁+C₂|/(A+B)", "|c₁−c₂|"], "answer": 0, "hint": "Zoom p.16.", "solution": "Same A,B (parallel); d=|C₁−C₂|/√(A²+B²).", "wrong": ["", "Not normalised.", "That is the slope-form numerator only."]}, {"level": "Medium", "type": "number", "map": "Example 10", "prompt": "Distance between 3x−4y+7=0 and 3x−4y+5=0 equals", "answer": 0.4, "unit": "", "tolerance": 0.01, "hint": "|7−5|/5.", "solution": "2/5=0.4."}, {"level": "Hard", "type": "number", "map": "Example 11", "prompt": "If 2x+y−3=0, 5x+ky−3=0 and 3x−y−2=0 are concurrent, k =", "answer": -2, "unit": "", "tolerance": 0.05, "hint": "Intersection of 1st and 3rd is (1,1).", "solution": "Solve 2x+y=3 and 3x−y=2 ⇒ x=1,y=1. Then 5+k−3=0 ⇒ k=−2."}]}], "exercises": [{"number": "9.1.1", "conceptIdx": 0, "page": 8, "printPage": 158, "question": "Draw a quadrilateral in the Cartesian plane, whose vertices are (−4, 5), (0, 7), (5, −5) and (−4, −2). Also, find its area.", "steps": ["Plot A(−4,5), B(0,7), C(5,−5), D(−4,−2) in cyclic order A–B–C–D.", "Shoelace: ½ |(−4)(7)+0(−5)+5(−2)+(−4)(5) − [5·0+7·5+(−5)(−4)+(−2)(−4)]| = ½ |−28+0−10−20 − (0+35+20+8)| = ½ |−58−63| = ½·121 = 60.5.", "Split ABC+ACD: area ABC=29, area ACD=31.5, total 60.5."], "answer": "60.5 square units", "section": "9.1"}, {"number": "9.1.2", "conceptIdx": 0, "page": 8, "printPage": 158, "question": "The base of an equilateral triangle with side 2a lies along the y-axis such that the mid-point of the base is at the origin. Find vertices of the triangle.", "steps": ["Base along y-axis, mid-point origin, side 2a ⇒ base ends (0,a) and (0,−a).", "Height of an equilateral triangle of side 2a is √3 a.", "Third vertex is (√3 a, 0) or (−√3 a, 0), two possible orientations."], "answer": "(0, a), (0, −a) and (√3 a, 0) or (0, a), (0, −a) and (−√3 a, 0)", "section": "9.1"}, {"number": "9.1.3", "conceptIdx": 0, "page": 9, "printPage": 159, "question": "Find the distance between P(x₁,y₁) and Q(x₂,y₂) when: (i) PQ is parallel to the y-axis, (ii) PQ is parallel to the x-axis.", "steps": ["(i) PQ ∥ y-axis ⇒ x₁=x₂, so PQ=|y₂−y₁|.", "(ii) PQ ∥ x-axis ⇒ y₁=y₂, so PQ=|x₂−x₁|."], "answer": "(i) |y₂ − y₁|; (ii) |x₂ − x₁|", "section": "9.1"}, {"number": "9.1.4", "conceptIdx": 0, "page": 9, "printPage": 159, "question": "Find a point on the x-axis, which is equidistant from the points (7, 6) and (3, 4).", "steps": ["Let the point be (x,0). Then (x−7)²+36=(x−3)²+16.", "x²−14x+49+36=x²−6x+9+16 ⇒ −14x+85=−6x+25 ⇒ −8x=−60 ⇒ x=15/2.", "Point is (15/2, 0)."], "answer": "(15/2, 0)", "section": "9.1"}, {"number": "9.1.5", "conceptIdx": 1, "page": 9, "printPage": 159, "question": "Find the slope of a line, which passes through the origin, and the mid-point of the line segment joining the points P(0, −4) and B(8, 0).", "steps": ["Mid-point of P and B: ((0+8)/2, (−4+0)/2)=(4, −2).", "Slope through (0,0) and (4,−2): m=−2/4=−1/2."], "answer": "−1/2", "section": "9.1"}, {"number": "9.1.6", "conceptIdx": 2, "page": 9, "printPage": 159, "question": "Without using the Pythagoras theorem, show that the points (4, 4), (3, 5) and (−1, −1) are the vertices of a right angled triangle.", "steps": ["m_AB for A(4,4), B(3,5): (5−4)/(3−4)=1/(−1)=−1.", "m_AC for A(4,4), C(−1,−1): (−1−4)/(−1−4)=(−5)/(−5)=1.", "m_AB · m_AC = −1, so ∠A=90°. The triangle is right-angled at (4,4)."], "answer": "Right-angled at (4, 4), since product of slopes −1", "section": "9.1"}, {"number": "9.1.7", "conceptIdx": 1, "page": 9, "printPage": 159, "question": "Find the slope of the line, which makes an angle of 30° with the positive direction of y-axis measured anticlockwise.", "steps": ["Positive y-axis has inclination 90°.", "Anticlockwise 30° from it ⇒ inclination θ=120°.", "m=tan 120°=tan(180°−60°)=−√3."], "answer": "−√3", "section": "9.1"}, {"number": "9.1.8", "conceptIdx": 2, "page": 9, "printPage": 159, "question": "Without using distance formula, show that points (−2, −1), (4, 0), (3, 3) and (−3, 2) are the vertices of a parallelogram.", "steps": ["A(−2,−1), B(4,0), C(3,3), D(−3,2).", "m_AB=(0+1)/(4+2)=1/6, m_DC=(2−3)/(−3−3)=(−1)/(−6)=1/6 ⇒ AB ∥ DC.", "m_AD=(2+1)/(−3+2)=3/(−1)=−3, m_BC=(3−0)/(3−4)=3/(−1)=−3 ⇒ AD ∥ BC.", "Both pairs of opposite sides parallel ⇒ parallelogram. (Diagonals AC, BD also share mid-point (1/2, 1).)"], "answer": "AB ∥ DC and AD ∥ BC (equal slopes), hence a parallelogram", "section": "9.1"}, {"number": "9.1.9", "conceptIdx": 1, "page": 9, "printPage": 159, "question": "Find the angle between the x-axis and the line joining the points (3, −1) and (4, −2).", "steps": ["m=(−2+1)/(4−3)=−1.", "tan θ = −1 with 0°≤θ≤180° ⇒ θ=135°."], "answer": "135°", "section": "9.1"}, {"number": "9.1.10", "conceptIdx": 2, "page": 9, "printPage": 159, "question": "The slope of a line is double of the slope of another line. If tangent of the angle between them is 1/3, find the slopes of the lines.", "steps": ["Let slopes be m and 2m. Then |(2m−m)/(1+2m·m)|=1/3 ⇒ |m|/(1+2m²)=1/3.", "3|m|=|1+2m²|. Case 2m²−3m+1=0 ⇒ (2m−1)(m−1)=0 ⇒ (m,2m)=(1,2) or (1/2,1).", "Case 2m²+3m+1=0 ⇒ (2m+1)(m+1)=0 ⇒ (m,2m)=(−1,−2) or (−1/2,−1)."], "answer": "Pairs: (1, 2), (1/2, 1), (−1, −2), (−1/2, −1)", "section": "9.1"}, {"number": "9.1.11", "conceptIdx": 1, "page": 9, "printPage": 159, "question": "A line passes through (x₁, y₁) and (h, k). If slope of the line is m, show that k − y₁ = m (h − x₁).", "steps": ["By definition m=(k−y₁)/(h−x₁) provided h≠x₁.", "Cross-multiply: k−y₁=m(h−x₁). If h=x₁ the line is vertical and m is undefined, excluded."], "answer": "k − y₁ = m(h − x₁)  (definition of slope)", "section": "9.1"}, {"number": "9.2.1", "conceptIdx": 3, "page": 13, "printPage": 163, "question": "Write the equations for the x- and y-axes.", "steps": ["Every point on the x-axis has y=0; on the y-axis, x=0."], "answer": "x-axis: y=0; y-axis: x=0", "section": "9.2"}, {"number": "9.2.2", "conceptIdx": 3, "page": 13, "printPage": 163, "question": "Find the equation of the line passing through (−4, 3) with slope 1/2.", "steps": ["y−3=(1/2)(x+4) ⇒ 2y−6=x+4 ⇒ x−2y+10=0."], "answer": "x − 2y + 10 = 0", "section": "9.2"}, {"number": "9.2.3", "conceptIdx": 4, "page": 13, "printPage": 163, "question": "Find the equation of the line passing through (0, 0) with slope m.", "steps": ["y−0=m(x−0) ⇒ y=mx."], "answer": "y = mx", "section": "9.2"}, {"number": "9.2.4", "conceptIdx": 3, "page": 13, "printPage": 163, "question": "Find the equation of the line passing through (2, 2√3) and inclined with the x-axis at 75°.", "steps": ["Zoom p.13: the point is (2, 2√3), slope m=tan 75°=2+√3.", "Point-slope: y − 2√3 = (2+√3)(x − 2).", "Expand: y − 2√3 = (2+√3)x − 4 − 2√3 ⇒ y = (2+√3)x − 4 ⇒ (2+√3)x − y − 4 = 0."], "answer": "y − 2√3 = (2+√3)(x − 2), or (2+√3)x − y − 4 = 0", "section": "9.2"}, {"number": "9.2.5", "conceptIdx": 4, "page": 13, "printPage": 163, "question": "Find the equation of the line intersecting the x-axis at a distance of 3 units to the left of origin with slope −2.", "steps": ["x-intercept d=−3, m=−2: y=−2(x−(−3))=−2(x+3).", "2x+y+6=0."], "answer": "y = −2(x + 3)  or  2x + y + 6 = 0", "section": "9.2"}, {"number": "9.2.6", "conceptIdx": 4, "page": 13, "printPage": 163, "question": "Find the equation of the line intersecting the y-axis at a distance of 2 units above the origin and making an angle of 30° with the positive x-axis.", "steps": ["c=2, m=tan 30°=1/√3.", "y=(1/√3)x + 2, or x − √3 y + 2√3 = 0."], "answer": "y = x/√3 + 2", "section": "9.2"}, {"number": "9.2.7", "conceptIdx": 3, "page": 14, "printPage": 164, "question": "Find the equation of the line passing through (−1, 1) and (2, −4).", "steps": ["m=(−4−1)/(2+1)=−5/3.", "y−1=(−5/3)(x+1) ⇒ 3y−3=−5x−5 ⇒ 5x+3y+2=0."], "answer": "5x + 3y + 2 = 0", "section": "9.2"}, {"number": "9.2.8", "conceptIdx": 3, "page": 14, "printPage": 164, "question": "The vertices of ΔPQR are P(2,1), Q(−2,3) and R(4,5). Find equation of the median through the vertex R.", "steps": ["Mid-point of PQ: ((2−2)/2,(1+3)/2)=(0,2).", "Line through R(4,5) and (0,2): m=(2−5)/(0−4)=(−3)/(−4)=3/4.", "y−5=(3/4)(x−4) ⇒ 4y−20=3x−12 ⇒ 3x−4y+8=0."], "answer": "3x − 4y + 8 = 0", "section": "9.2"}, {"number": "9.2.9", "conceptIdx": 2, "page": 14, "printPage": 164, "question": "Find the equation of the line passing through (−3, 5) and perpendicular to the line through (2, 5) and (−3, 6).", "steps": ["Slope of given segment: (6−5)/(−3−2)=1/(−5)=−1/5. Required slope=5.", "y−5=5(x+3) ⇒ y−5=5x+15 ⇒ 5x−y+20=0."], "answer": "5x − y + 20 = 0", "section": "9.2"}, {"number": "9.2.10", "conceptIdx": 3, "page": 14, "printPage": 164, "question": "A line perpendicular to the segment joining (1, 0) and (2, 3) divides it in the ratio 1:n. Find the equation of the line.", "steps": ["Segment slope=3/1=3, so required slope=−1/3.", "Point dividing (1,0) and (2,3) in 1:n: ((n·1+1·2)/(1+n), (n·0+1·3)/(1+n))=((n+2)/(n+1), 3/(n+1)).", "y − 3/(n+1) = (−1/3)(x − (n+2)/(n+1)). Multiply by 3(n+1): 3(n+1)y − 9 = −(n+1)x + (n+2), i.e. (n+1)x + 3(n+1)y = n+11."], "answer": "(n+1)x + 3(n+1)y = n + 11  (equivalently y − 3/(n+1) = (−1/3)[x − (n+2)/(n+1)])", "section": "9.2"}, {"number": "9.2.11", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "Find the equation of a line that cuts off equal intercepts on the coordinate axes and passes through (2, 3).", "steps": ["Equal intercepts: x/a + y/a = 1 ⇒ x+y=a.", "Through (2,3): 2+3=a=5. So x+y=5."], "answer": "x + y = 5", "section": "9.2"}, {"number": "9.2.12", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "Find equation of the line passing through (2, 2) and cutting off intercepts on the axes whose sum is 9.", "steps": ["x/a + y/b = 1, a+b=9, and 2/a+2/b=1 ⇒ 2(a+b)=ab ⇒ ab=18.", "t²−9t+18=0 ⇒ (t−6)(t−3)=0. So (a,b)=(6,3) or (3,6).", "x/6+y/3=1 ⇒ x+2y=6; or 2x+y=6."], "answer": "x + 2y = 6  or  2x + y = 6", "section": "9.2"}, {"number": "9.2.13", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "Find equation of the line through (0, 2) making an angle 2π/3 with the positive x-axis. Also, find the equation of the line parallel to it and crossing the y-axis at a distance of 2 units below the origin.", "steps": ["m=tan(2π/3)=tan 120°=−√3. Through (0,2): y=−√3 x + 2.", "Parallel, y-intercept −2: y=−√3 x − 2."], "answer": "y = −√3 x + 2;  parallel: y = −√3 x − 2", "section": "9.2"}, {"number": "9.2.14", "conceptIdx": 3, "page": 14, "printPage": 164, "question": "The perpendicular from the origin to a line meets it at (−2, 9). Find the equation of the line.", "steps": ["OP has slope 9/(−2)=−9/2, so the given line (perpendicular to OP) has slope 2/9.", "Through (−2,9): y−9=(2/9)(x+2) ⇒ 9y−81=2x+4 ⇒ 2x−9y+85=0."], "answer": "2x − 9y + 85 = 0", "section": "9.2"}, {"number": "9.2.15", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "The length L (in centimetre) of a copper rod is a linear function of its Celsius temperature C. In an experiment, if L=124.942 when C=20 and L=125.134 when C=110, express L in terms of C.", "steps": ["Slope m=(125.134−124.942)/(110−20)=0.192/90=0.002133… ≈0.00213.", "L−124.942=0.00213(C−20) ⇒ L=0.00213 C + 124.899."], "answer": "L = 0.00213 C + 124.899  (cm)", "section": "9.2"}, {"number": "9.2.16", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "The owner of a milk store finds that he can sell 980 litres of milk each week at Rs 14/litre and 1220 litres each week at Rs 16/litre. Assuming a linear relationship between selling price and demand, how many litres could he sell weekly at Rs 17/litre?", "steps": ["Points (14,980) and (16,1220). Slope=(1220−980)/(2)=120 litres per rupee.", "At ₹17: 1220+120=1340 litres."], "answer": "1340 litres", "section": "9.2"}, {"number": "9.2.17", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "P(a, b) is the mid-point of a line segment between axes. Show that equation of the line is x/a + y/b = 2.", "steps": ["Intercepts (A,0) and (0,B). Mid-point ((A/2),(B/2))=(a,b) ⇒ A=2a, B=2b.", "Intercept form: x/(2a)+y/(2b)=1 ⇒ x/a + y/b = 2."], "answer": "x/a + y/b = 2", "section": "9.2"}, {"number": "9.2.18", "conceptIdx": 4, "page": 14, "printPage": 164, "question": "Point R(h, k) divides a line segment between the axes in the ratio 1:2. Find equation of the line.", "steps": ["Segment from (a,0) to (0,b), divided 1:2: h=(2a+0)/3=2a/3, k=(0+b)/3=b/3.", "So a=3h/2, b=3k. Intercept form: x/(3h/2)+y/(3k)=1 ⇒ 2x/(3h)+y/(3k)=1.", "Or 2kx + hy = 3hk."], "answer": "x/(3h/2) + y/(3k) = 1, i.e. 2kx + hy = 3hk", "section": "9.2"}, {"number": "9.2.19", "conceptIdx": 0, "page": 14, "printPage": 164, "question": "By using the concept of equation of a line, prove that the three points (3, 0), (−2, −2) and (8, 2) are collinear.", "steps": ["Slope AB: (−2−0)/(−2−3)=(−2)/(−5)=2/5.", "Slope BC: (2+2)/(8+2)=4/10=2/5.", "m_AB=m_BC ⇒ A,B,C collinear. (The line is y−0=(2/5)(x−3), and (8,2) satisfies it: 2=(2/5)(5).)"], "answer": "Collinear, since m_AB = m_BC = 2/5", "section": "9.2"}, {"number": "9.3.1", "conceptIdx": 4, "page": 17, "printPage": 167, "question": "Reduce the following equations into slope-intercept form and find their slopes and the y-intercepts. (i) x+7y=0 (ii) 6x+3y−5=0 (iii) y=0.", "steps": ["(i) y=−x/7, m=−1/7, c=0.", "(ii) 3y=−6x+5 ⇒ y=−2x+5/3, m=−2, c=5/3.", "(iii) y=0, m=0, c=0 (the x-axis)."], "answer": "(i) m=−1/7, c=0; (ii) m=−2, c=5/3; (iii) m=0, c=0", "section": "9.3"}, {"number": "9.3.2", "conceptIdx": 4, "page": 17, "printPage": 167, "question": "Reduce the following equations into intercept form and find their intercepts on the axes. (i) 3x+2y−12=0 (ii) 4x−3y=6 (iii) 3y+2=0.", "steps": ["(i) 3x+2y=12 ⇒ x/4 + y/6 = 1; intercepts 4 and 6.", "(ii) 4x−3y=6 ⇒ x/(3/2) + y/(−2)=1; intercepts 3/2 and −2.", "(iii) y=−2/3: parallel to x-axis, no x-intercept; y-intercept −2/3."], "answer": "(i) 4 and 6; (ii) 3/2 and −2; (iii) no x-intercept, y-intercept −2/3", "section": "9.3"}, {"number": "9.3.3", "conceptIdx": 5, "page": 17, "printPage": 167, "question": "Find the distance of the point (−1, 1) from the line 12(x+6)=5(y−2).", "steps": ["12x+72=5y−10 ⇒ 12x−5y+82=0.", "d=|−12−5+82|/√(144+25)=65/13=5."], "answer": "5", "section": "9.3"}, {"number": "9.3.4", "conceptIdx": 5, "page": 17, "printPage": 167, "question": "Find the points on the x-axis, whose distances from the line x/4 + y/3 = 1 are 4 units.", "steps": ["3x+4y−12=0. Point (a,0): |3a−12|/5=4 ⇒ |3a−12|=20.", "3a−12=20 ⇒ a=32/3; 3a−12=−20 ⇒ a=−8/3.", "Points (32/3, 0) and (−8/3, 0)."], "answer": "(32/3, 0) and (−8/3, 0)", "section": "9.3"}, {"number": "9.3.5", "conceptIdx": 6, "page": 17, "printPage": 167, "question": "Find the distance between parallel lines (i) 15x+8y−34=0 and 15x+8y+31=0 (ii) l(x+y)+p=0 and l(x+y)−r=0.", "steps": ["(i) |−34−31|/√(225+64)=65/17.", "(ii) Rewrite lx+ly+p=0 and lx+ly−r=0. d=|p−(−r)|/√(2l²)=|p+r|/(|l|√2)."], "answer": "(i) 65/17; (ii) |p+r| / (|l|√2)", "section": "9.3"}, {"number": "9.3.6", "conceptIdx": 6, "page": 17, "printPage": 167, "question": "Find equation of the line parallel to the line 3x−4y+2=0 and passing through (−2, 3).", "steps": ["Slope of given line=3/4. Parallel through (−2,3): y−3=(3/4)(x+2).", "4y−12=3x+6 ⇒ 3x−4y+18=0.", "Equivalently 3(x+2)−4(y−3)=0."], "answer": "3x − 4y + 18 = 0", "section": "9.3"}, {"number": "9.3.7", "conceptIdx": 2, "page": 17, "printPage": 167, "question": "Find equation of the line perpendicular to the line x−7y+5=0 and having x intercept 3.", "steps": ["Given slope=1/7, required slope=−7. x-intercept 3 ⇒ through (3,0).", "y−0=−7(x−3) ⇒ 7x+y−21=0."], "answer": "7x + y − 21 = 0", "section": "9.3"}, {"number": "9.3.8", "conceptIdx": 2, "page": 17, "printPage": 167, "question": "Find angles between the lines x/√3 + y = 1 and x + y/√3 = 1.", "steps": ["First: y=−x/√3+1, m₁=−1/√3. Second: y=√3−√3 x, m₂=−√3.", "tan θ=|(m₂−m₁)/(1+m₁m₂)|=|(−√3+1/√3)/(1+1)|=(2/√3)/2=1/√3.", "Acute angle=30°; obtuse=150°."], "answer": "30° (and 150°)", "section": "9.3"}, {"number": "9.3.9", "conceptIdx": 2, "page": 17, "printPage": 167, "question": "The line through (h, 3) and (4, 1) intersects the line 7x−y−19=0 at right angle. Find the value of h.", "steps": ["m₁=(1−3)/(4−h)=−2/(4−h). Given line has slope 7.", "Perp: 7·(−2)/(4−h)=−1 ⇒ −14=−(4−h) ⇒ h=4−14=−10."], "answer": "h = −10", "section": "9.3"}, {"number": "9.3.10", "conceptIdx": 6, "page": 18, "printPage": 168, "question": "Prove that the line through (x₁,y₁) and parallel to Ax+By+C=0 is A(x−x₁)+B(y−y₁)=0.", "steps": ["Given line has slope −A/B (B≠0). Parallel line through (x₁,y₁): y−y₁=(−A/B)(x−x₁).", "A(x−x₁)+B(y−y₁)=0. If B=0 the given line is vertical, and A(x−x₁)=0 is the vertical through x₁."], "answer": "A(x − x₁) + B(y − y₁) = 0", "section": "9.3"}, {"number": "9.3.11", "conceptIdx": 2, "page": 18, "printPage": 168, "question": "Two lines passing through (2, 3) intersect each other at an angle of 60°. If slope of one line is 2, find equation of the other line.", "steps": ["tan 60°=√3=|(m−2)/(1+2m)|.", "Case (m−2)/(1+2m)=√3 ⇒ m−2=√3+2√3 m ⇒ m(1−2√3)=2+√3 ⇒ m=(2+√3)/(1−2√3).", "Case (m−2)/(1+2m)=−√3 ⇒ m=(2−√3)/(1+2√3).", "Equations: y−3=m(x−2) for these two m. Rationalised forms: (2+√3)x − (1−2√3)(y−3 wait) — leave as y−3=m(x−2)."], "answer": "y−3 = m(x−2) with m = (2+√3)/(1−2√3) or m = (2−√3)/(1+2√3)", "section": "9.3"}, {"number": "9.3.12", "conceptIdx": 3, "page": 18, "printPage": 168, "question": "Find the equation of the right bisector of the line segment joining (3, 4) and (−1, 2).", "steps": ["Mid-point (1, 3). Segment slope=(2−4)/(−1−3)=(−2)/(−4)=1/2, so bisector slope=−2.", "y−3=−2(x−1) ⇒ y−3=−2x+2 ⇒ 2x+y−5=0."], "answer": "2x + y − 5 = 0", "section": "9.3"}, {"number": "9.3.13", "conceptIdx": 5, "page": 18, "printPage": 168, "question": "Find the coordinates of the foot of perpendicular from (−1, 3) to the line 3x−4y−16=0.", "steps": ["(x+1)/3 = (y−3)/(−4) = −(3(−1)−4(3)−16)/(9+16) = −(−3−12−16)/25 = 31/25.", "x=−1+93/25=68/25, y=3−124/25=−49/25."], "answer": "(68/25, −49/25)", "section": "9.3"}, {"number": "9.3.14", "conceptIdx": 5, "page": 18, "printPage": 168, "question": "The perpendicular from the origin to the line y=mx+c meets it at (−1, 2). Find the values of m and c.", "steps": ["(−1,2) lies on the line: 2=−m+c ⇒ c−m=2.", "OP has slope 2/(−1)=−2 and is perpendicular to the given line, so m·(−2)=−1 ⇒ m=1/2.", "Then c=2+m=5/2."], "answer": "m = 1/2, c = 5/2", "section": "9.3"}, {"number": "9.3.15", "conceptIdx": 5, "page": 18, "printPage": 168, "question": "If p and q are the lengths of perpendiculars from the origin to the lines x cos θ − y sin θ = k cos 2θ and x sec θ + y cosec θ = k, respectively, prove that p² + 4q² = k².", "steps": ["p=|k cos 2θ|/√(cos²θ+sin²θ)=|k cos 2θ|.", "Second line: x/cos θ + y/sin θ = k, or x sin θ + y cos θ = k sin θ cos θ. Distance q=|0−k|/√(sec²θ+csc²θ).", "q=|k|/√(sec²θ+csc²θ)=|k sin θ cos θ|. Then 4q²=4k² sin²θ cos²θ=k² sin² 2θ, and p²=k² cos² 2θ, so p²+4q²=k²."], "answer": "p² + 4q² = k²  (proved)", "section": "9.3"}, {"number": "9.3.16", "conceptIdx": 5, "page": 18, "printPage": 168, "question": "In the triangle ABC with vertices A(2,3), B(4,−1) and C(1,2), find the equation and length of altitude from the vertex A.", "steps": ["BC: (y+1)/(x−4)=(2+1)/(1−4)=−1 ⇒ y+1=−(x−4) ⇒ x+y−3=0.", "Altitude from A ⟂ BC, slope of BC=−1 so altitude slope=1: y−3=x−2 ⇒ x−y+1=0.", "Length = dist(A, BC)=|2+3−3|/√2=2/√2=√2."], "answer": "Altitude: x − y + 1 = 0; length √2", "section": "9.3"}, {"number": "9.3.17", "conceptIdx": 5, "page": 18, "printPage": 168, "question": "If p is the length of perpendicular from the origin to the line whose intercepts on the axes are a and b, then show that 1/p² = 1/a² + 1/b².", "steps": ["Line: x/a + y/b = 1 ⇒ bx + ay − ab = 0.", "p=|−ab|/√(a²+b²)=|ab|/√(a²+b²).", "1/p²=(a²+b²)/a²b²=1/b²+1/a²."], "answer": "1/p² = 1/a² + 1/b²", "section": "9.3"}, {"number": "9.M.1", "conceptIdx": 4, "page": 22, "printPage": 172, "question": "Find the values of k for which the line (k−3)x − (4−k²)y + k²−7k+6=0 is (a) parallel to the x-axis, (b) parallel to the y-axis, (c) passing through the origin.", "steps": ["(a) Coeff of x =0 and coeff of y ≠0: k−3=0 ⇒ k=3 (then 4−9=−5≠0).", "(b) Coeff of y=0 and coeff of x≠0: 4−k²=0 ⇒ k=±2 (then k−3≠0).", "(c) Constant term 0: k²−7k+6=0 ⇒ (k−1)(k−6)=0 ⇒ k=1 or 6."], "answer": "(a) k=3; (b) k=±2; (c) k=1 or 6", "section": "Misc."}, {"number": "9.M.2", "conceptIdx": 4, "page": 22, "printPage": 172, "question": "Find the equations of the lines, which cut-off intercepts on the axes whose sum and product are 1 and −6, respectively.", "steps": ["a+b=1, ab=−6 ⇒ t²−t−6=0 ⇒ (t−3)(t+2)=0. So {a,b}={3,−2}.", "x/3 + y/(−2)=1 ⇒ 2x−3y=6; and x/(−2)+y/3=1 ⇒ −3x+2y=6."], "answer": "2x − 3y = 6  and  −3x + 2y = 6", "section": "Misc."}, {"number": "9.M.3", "conceptIdx": 5, "page": 23, "printPage": 173, "question": "What are the points on the y-axis whose distance from the line x/4 + y/3 = 1 is 4 units.", "steps": ["3x+4y−12=0. Point (0,b): |4b−12|/5=4 ⇒ |4b−12|=20.", "4b−12=20 ⇒ b=8; 4b−12=−20 ⇒ b=−2. Points (0,8) and (0,−2)."], "answer": "(0, 8) and (0, −2)", "section": "Misc."}, {"number": "9.M.4", "conceptIdx": 5, "page": 23, "printPage": 173, "question": "Find perpendicular distance from the origin to the line joining the points (cos θ, sin θ) and (cos φ, sin φ).", "steps": ["Distance from (0,0) to the chord: |cos θ sin φ − cos φ sin θ| / √[(cos θ−cos φ)²+(sin θ−sin φ)²].", "Numerator |sin(φ−θ)|. Denominator √[2−2cos(θ−φ)]=2|sin((θ−φ)/2)|.", "d = |cos((θ−φ)/2)|."], "answer": "|cos((θ − φ)/2)|", "section": "Misc."}, {"number": "9.M.5", "conceptIdx": 3, "page": 23, "printPage": 173, "question": "Find the equation of the line parallel to y-axis and drawn through the point of intersection of the lines x−7y+5=0 and 3x+y=0.", "steps": ["Solve: from 3x+y=0, y=−3x. Then x−7(−3x)+5=0 ⇒ 22x=−5 ⇒ x=−5/22, y=15/22.", "Vertical through this point: x=−5/22."], "answer": "x = −5/22", "section": "Misc."}, {"number": "9.M.6", "conceptIdx": 4, "page": 23, "printPage": 173, "question": "Find the equation of a line drawn perpendicular to the line x/4 + y/6 = 1 through the point where it meets the y-axis.", "steps": ["Given: 3x+2y−12=0, slope −3/2, so perp slope 2/3.", "Meets y-axis at (0,6). y−6=(2/3)x ⇒ 2x−3y+18=0."], "answer": "2x − 3y + 18 = 0", "section": "Misc."}, {"number": "9.M.7", "conceptIdx": 0, "page": 23, "printPage": 173, "question": "Find the area of the triangle formed by the lines y−x=0, x+y=0 and x−k=0.", "steps": ["Vertices: y=x and y=−x meet at (0,0); x=k meets y=x at (k,k) and y=−x at (k,−k).", "Area ½|k−(−k)|·|k−0| wait: base 2|k| (from (k,k) to (k,−k)) and height |k|.", "Area = ½·2|k|·|k| = k²."], "answer": "k²", "section": "Misc."}, {"number": "9.M.8", "conceptIdx": 6, "page": 23, "printPage": 173, "question": "Find the value of p so that the three lines 3x+y−2=0, px+2y−3=0 and 2x−y−3=0 may intersect at one point.", "steps": ["Intersection of 1st and 3rd: add, 5x−5=0 ⇒ x=1; y=2−3=−1.", "Point (1,−1) on second: p−2−3=0 ⇒ p=5."], "answer": "p = 5", "section": "Misc."}, {"number": "9.M.9", "conceptIdx": 6, "page": 23, "printPage": 173, "question": "If three lines y=m₁x+c₁, y=m₂x+c₂ and y=m₃x+c₃ are concurrent, then show that m₁(c₂−c₃)+m₂(c₃−c₁)+m₃(c₁−c₂)=0.", "steps": ["Intersection of first two: x=(c₂−c₁)/(m₁−m₂), y=m₁x+c₁.", "This lies on the third: m₁x+c₁=m₃x+c₃ ⇒ x(m₁−m₃)=c₃−c₁.", "Substitute x and rearrange to the required identity."], "answer": "m₁(c₂−c₃)+m₂(c₃−c₁)+m₃(c₁−c₂)=0", "section": "Misc."}, {"number": "9.M.10", "conceptIdx": 2, "page": 23, "printPage": 173, "question": "Find the equation of the lines through (3, 2) which make an angle of 45° with the line x−2y=3.", "steps": ["Given m₁=1/2. tan 45°=1=|(m−1/2)/(1+m/2)|.", "(m−1/2)/(1+m/2)=1 ⇒ m−1/2=1+m/2 ⇒ m/2=3/2 ⇒ m=3.", "(m−1/2)/(1+m/2)=−1 ⇒ m−1/2=−1−m/2 ⇒ 3m/2=−1/2 ⇒ m=−1/3.", "y−2=3(x−3) ⇒ 3x−y−7=0; and y−2=(−1/3)(x−3) ⇒ x+3y−9=0."], "answer": "3x − y − 7 = 0  and  x + 3y − 9 = 0", "section": "Misc."}, {"number": "9.M.11", "conceptIdx": 4, "page": 23, "printPage": 173, "question": "Find the equation of the line passing through the point of intersection of 4x+7y−3=0 and 2x−3y+1=0 that has equal intercepts on the axes.", "steps": ["Solve: multiply 2nd by 2: 4x−6y+2=0, subtract from 1st: 13y−5=0 ⇒ y=5/13, then 2x−15/13+1=0 ⇒ 2x=2/13 ⇒ x=1/13.", "Equal intercepts through (1/13,5/13): x+y=1/13+5/13=6/13.", "13x+13y=6."], "answer": "x + y = 6/13  (or 13x + 13y − 6 = 0)", "section": "Misc."}, {"number": "9.M.12", "conceptIdx": 2, "page": 23, "printPage": 173, "question": "Show that the equation of the line passing through the origin and making an angle θ with the line y=mx+c is y = [m ± tan θ]/[1 ∓ m tan θ]  x.", "steps": ["Required slope M satisfies tan θ=|(M−m)/(1+Mm)|, so (M−m)/(1+Mm)=± tan θ.", "M−m = ± tan θ ± m M tan θ. Collect M: M(1 ∓ m tan θ)= m ± tan θ.", "Through origin: y=Mx with that M."], "answer": "y = [(m ± tan θ)/(1 ∓ m tan θ)] x", "section": "Misc."}, {"number": "9.M.13", "conceptIdx": 0, "page": 23, "printPage": 173, "question": "In what ratio is the line joining (−1, 1) and (5, 7) divided by the line x+y=4?", "steps": ["Point dividing in λ:1: ((5λ−1)/(λ+1), (7λ+1)/(λ+1)) lies on x+y=4.", "(5λ−1+7λ+1)/(λ+1)=4 ⇒ 12λ=4λ+4 ⇒ 8λ=4 ⇒ λ=1/2.", "Ratio 1:2 internally."], "answer": "1 : 2 internally", "section": "Misc."}, {"number": "9.M.14", "conceptIdx": 5, "page": 23, "printPage": 173, "question": "Find the distance of the line 4x+7y+5=0 from the point (1, 2) along the line 2x−y=0.", "steps": ["Line through (1,2) along 2x−y=0 is y=2x (already contains (1,2)).", "Intersection with 4x+7y+5=0: 4x+14x+5=0 ⇒ 18x=−5 ⇒ x=−5/18, y=−5/9.", "Distance from (1,2) to (−5/18, −5/9)= √[(1+5/18)²+(2+5/9)²]=√[(23/18)²+(23/9)²]=√[(23/18)²(1+4)]=(23/18)√5."], "answer": "(23√5)/18", "section": "Misc."}, {"number": "9.M.15", "conceptIdx": 3, "page": 23, "printPage": 173, "question": "Find the direction in which a straight line must be drawn through (−1, 2) so that its point of intersection with x+y=4 may be at a distance of 3 units from this point.", "steps": ["A point on x+y=4 at distance 3 from (−1,2): (x,4−x) with (x+1)²+(4−x−2)²=9.", "(x+1)²+(2−x)²=9 ⇒ 2(x+1)²=9? (x+1)²+(2−x)²=9 ⇒ 2x²−2x+5=9 ⇒ 2x²−2x−4=0 ⇒ x²−x−2=0 ⇒ (x−2)(x+1)=0.", "x=2, y=2 or x=−1, y=5. Slopes from (−1,2): to (2,2) is 0 (horizontal); to (−1,5) is undefined (vertical).", "So the line is parallel to the x-axis or to the y-axis."], "answer": "Parallel to the x-axis (y=2) or to the y-axis (x=−1)", "section": "Misc."}, {"number": "9.M.16", "conceptIdx": 3, "page": 23, "printPage": 173, "question": "The hypotenuse of a right-angled triangle has its ends at (1, 3) and (−4, 1). Find an equation of the legs (perpendicular sides) of the triangle which are parallel to the axes.", "steps": ["Legs ∥ axes ⇒ the right angle is at (1,1) or (−4,3).", "Through (1,3) horizontal and through (−4,1) vertical: y=3 and x=−4.", "The other pair: x=1 and y=1."], "answer": "x=1, y=1  or  x=−4, y=3", "section": "Misc."}, {"number": "9.M.17", "conceptIdx": 6, "page": 23, "printPage": 173, "question": "Find the image of the point (3, 8) with respect to the line x+3y=7, assuming the line to be a plane mirror.", "steps": ["Let image (h,k). Mid-point ((3+h)/2,(8+k)/2) on the line: (3+h)/2 + 3(8+k)/2 =7 ⇒ 3+h+24+3k=14 ⇒ h+3k=−13.", "Slope of join: (k−8)/(h−3); given line slope −1/3, so product −1: (k−8)/(h−3)=3 ⇒ k−8=3h−9 ⇒ k=3h−1.", "h+3(3h−1)=−13 ⇒ 10h=−10 ⇒ h=−1, k=−4. Image (−1, −4)."], "answer": "(−1, −4)", "section": "Misc."}, {"number": "9.M.18", "conceptIdx": 2, "page": 23, "printPage": 173, "question": "If the lines y=3x+1 and 2y=x+3 are equally inclined to the line y=mx+4, find the value of m.", "steps": ["m₁=3, m₂=1/2. Equal inclination to y=mx+4 means |(m−3)/(1+3m)| = |(m−1/2)/(1+m/2)|.", "The ratio (m−1/2)/(1+m/2) simplifies to (2m−1)/(m+2). So |m−3| |m+2| = |2m−1| |1+3m|.", "(m−3)(m+2)=−(2m−1)(3m+1) (the plus case yields m²=−1, discarded).", "m²−m−6=−6m²+m+1 ⇒ 7m²−2m−7=0 ⇒ m=[1±5√2]/7."], "answer": "m = [1 ± 5√2]/7", "section": "Misc."}, {"number": "9.M.19", "conceptIdx": 6, "page": 23, "printPage": 173, "question": "If sum of the perpendicular distances of a variable point P(x,y) from the lines x+y−5=0 and 3x−2y+7=0 is always 10, show that P must move on a line.", "steps": ["|x+y−5|/√2 + |3x−2y+7|/√13 = 10.", "On a region where signs are constant this is a linear equation, hence a straight line (an offset of one of the four angle-bisector-type combinations).", "Thus the locus is a straight line (piecewise, one line in each wedge)."], "answer": "The locus is a straight line (linear after dropping absolute values in a given wedge)", "section": "Misc."}, {"number": "9.M.20", "conceptIdx": 6, "page": 24, "printPage": 174, "question": "Find equation of the line which is equidistant from parallel lines 9x+6y−7=0 and 3x+2y+6=0.", "steps": ["Second×3: 9x+6y+18=0. Mid-parallel has constant the average: 9x+6y+(−7+18)/2=0? Distance-equal parallel is C = (C₁+C₂)/2 after matching A,B.", "C₁=−7, C₂=18, mid C=(−7+18)/2=11/2. So 9x+6y+11/2=0 ⇒ 18x+12y+11=0.", "Equivalently 9x+6y + 11/2=0."], "answer": "18x + 12y + 11 = 0", "section": "Misc."}, {"number": "9.M.21", "conceptIdx": 3, "page": 24, "printPage": 174, "question": "A ray of light passing through (1, 2) reflects on the x-axis at point A and the reflected ray passes through (5, 3). Find the coordinates of A.", "steps": ["Let A(a,0). Incidence angle = reflection angle ⇒ the x-axis is a mirror, so the image of (1,2) is (1,−2), and A lies on the line joining (1,−2) to (5,3).", "Slope (3+2)/(5−1)=5/4. Line: y+2=(5/4)(x−1). At y=0: 2=(5/4)(x−1) ⇒ 8/5=x−1 ⇒ x=13/5.", "A is (13/5, 0)."], "answer": "(13/5, 0)", "section": "Misc."}, {"number": "9.M.22", "conceptIdx": 5, "page": 24, "printPage": 174, "question": "Prove that the product of the lengths of the perpendiculars drawn from the points (√(a²−b²), 0) and (−√(a²−b²), 0) to the line (x/a) cos θ + (y/b) sin θ = 1 is b².", "steps": ["Line: bx cos θ + ay sin θ − ab = 0.", "d₁=|b√(a²−b²) cos θ − ab|/√(b² cos²θ + a² sin²θ), d₂=|−b√(a²−b²) cos θ − ab|/same.", "Product of numerators: | (b c √(a²−b²) − ab)(−b c √(a²−b²) − ab) | = |ab − b²(a²−b²)cos²θ wait| actually = a²b² − b²(a²−b²)cos²θ = a²b² sin²θ + b⁴ cos²θ = b²(a² sin²θ + b² cos²θ).", "Denominator is that same quadratic, so d₁ d₂ = b²."], "answer": "Product = b²  (proved)", "section": "Misc."}, {"number": "9.M.23", "conceptIdx": 5, "page": 24, "printPage": 174, "question": "A person standing at the junction of two straight paths 2x−3y+4=0 and 3x+4y−5=0 wants to reach the path 6x−7y+8=0 in the least time. Find the equation of the path that he should follow.", "steps": ["Least time (straight, uniform speed) = shortest path = perpendicular from the intersection point to 6x−7y+8=0.", "Intersection of first two: solve 2x−3y=−4 and 3x+4y=5. 8x−12y=−16, 9x+12y=15 ⇒ 17x=−1 ⇒ x=−1/17, y=(5−3x)/4= (5+3/17)/4=88/68=22/17.", "Required line through (−1/17, 22/17) perpendicular to 6x−7y+8=0, so slope of given is 6/7, perp slope −7/6.", "y−22/17=(−7/6)(x+1/17). Multiply: 6(17y−22)=−7(17x+1) ⇒ 102y−132=−119x−7 ⇒ 119x+102y−125=0."], "answer": "119x + 102y − 125 = 0", "section": "Misc."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var connectItems = l.connect || [];
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+function rng(id){ var n = document.getElementById(id); return n ? Number(n.value) : 0; }
+function setTxt(id, t){ var n = document.getElementById(id); if(n) n.textContent = t; }
+
+function axes(ox, oy, scale){
+  var m = '<rect width="720" height="300" fill="#09131d"/>';
+  m += '<line x1="20" y1="'+oy+'" x2="700" y2="'+oy+'" stroke="#334155" stroke-width="1.5"/>';
+  m += '<line x1="'+ox+'" y1="20" x2="'+ox+'" y2="280" stroke="#334155" stroke-width="1.5"/>';
+  m += '<polygon points="700,'+oy+' 688,'+(oy-5)+' 688,'+(oy+5)+'" fill="#64748b"/>';
+  m += '<polygon points="'+ox+',20 '+(ox-5)+',32 '+(ox+5)+',32" fill="#64748b"/>';
+  m += '<text x="688" y="'+(oy+16)+'" fill="#94a3b8" font-size="11">x</text>';
+  m += '<text x="'+(ox+8)+'" y="28" fill="#94a3b8" font-size="11">y</text>';
+  var k, X, Y;
+  for(k = -12; k <= 12; k++){
+    if(k===0) continue;
+    X = ox + k*scale; Y = oy - k*scale;
+    if(X>28 && X<692){
+      m += '<line x1="'+X+'" y1="'+(oy-3)+'" x2="'+X+'" y2="'+(oy+3)+'" stroke="#475569"/>';
+    }
+    if(Y>28 && Y<272){
+      m += '<line x1="'+(ox-3)+'" y1="'+Y+'" x2="'+(ox+3)+'" y2="'+Y+'" stroke="#475569"/>';
+    }
+  }
+  m += '<circle cx="'+ox+'" cy="'+oy+'" r="2.5" fill="#94a3b8"/>';
+  return m;
+}
+function toX(ox, scale, x){ return ox + x*scale; }
+function toY(oy, scale, y){ return oy - y*scale; }
+
+window.SIMS.coordrecall = (function(){
+  var mode = "dist";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>P, Q</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Segment / triangle</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-dist">Distance (6,−4)→(3,0)</button>' +
+      '<button class="preset-btn" id="p-sec">Section 1:3 of A(1,−3) B(−3,9)</button>' +
+      '<button class="preset-btn" id="p-area">Area (4,4),(3,−2),(−3,16)</button>';
+    document.getElementById("p-dist").onclick = function(){ setActivePreset(this); mode="dist"; draw(0); };
+    document.getElementById("p-sec").onclick = function(){ setActivePreset(this); mode="sec"; draw(0); };
+    document.getElementById("p-area").onclick = function(){ setActivePreset(this); mode="area"; draw(0); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var ox=360, oy=160, sc=12;
+    var m = axes(ox, oy, sc);
+    if(mode==="dist"){
+      var p1=[6,-4], p2=[3,0];
+      m += '<line x1="'+toX(ox,sc,p1[0])+'" y1="'+toY(oy,sc,p1[1])+'" x2="'+toX(ox,sc,p2[0])+'" y2="'+toY(oy,sc,p2[1])+'" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<circle cx="'+toX(ox,sc,p1[0])+'" cy="'+toY(oy,sc,p1[1])+'" r="5" fill="#38bdf8"/>';
+      m += '<circle cx="'+toX(ox,sc,p2[0])+'" cy="'+toY(oy,sc,p2[1])+'" r="5" fill="#34d399"/>';
+      m += '<text x="'+toX(ox,sc,p1[0])+'" y="'+(toY(oy,sc,p1[1])+16)+'" fill="#e2e8f0" font-size="11">(6,−4)</text>';
+      m += '<text x="'+(toX(ox,sc,p2[0])+6)+'" y="'+(toY(oy,sc,p2[1])-8)+'" fill="#e2e8f0" font-size="11">(3,0)</text>';
+      readout(cell("PQ","√[(3−6)²+(0+4)²]","#f59e0b") + cell("Value","5 units","#34d399"));
+      verdict("<b>Zoom p.2:</b> PQ = √(9+16) = <b>5</b>. Descartes’ plane turns geometry into algebra.");
+    } else if(mode==="sec"){
+      var A=[1,-3], B=[-3,9], r=1, n=3;
+      var x=(r*B[0]+n*A[0])/(r+n), y=(r*B[1]+n*A[1])/(r+n);
+      m += '<line x1="'+toX(ox,sc,A[0])+'" y1="'+toY(oy,sc,A[1])+'" x2="'+toX(ox,sc,B[0])+'" y2="'+toY(oy,sc,B[1])+'" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<circle cx="'+toX(ox,sc,A[0])+'" cy="'+toY(oy,sc,A[1])+'" r="5" fill="#38bdf8"/>';
+      m += '<circle cx="'+toX(ox,sc,B[0])+'" cy="'+toY(oy,sc,B[1])+'" r="5" fill="#38bdf8"/>';
+      m += '<circle cx="'+toX(ox,sc,x)+'" cy="'+toY(oy,sc,y)+'" r="6" fill="#f472b6"/>';
+      m += '<text x="'+(toX(ox,sc,x)+8)+'" y="'+(toY(oy,sc,y))+'" fill="#f9a8d4" font-size="12">(0,0)</text>';
+      readout(cell("Ratio m:n","1 : 3") + cell("Section point","(0, 0)","#f472b6"));
+      verdict("<b>Internal division:</b> ((mx₂+nx₁)/(m+n), (my₂+ny₁)/(m+n)) = (0, 0). Mid-point is the m=n case.");
+    } else {
+      var A=[4,4], B=[3,-2], C=[-3,16];
+      sc=8; ox=380; oy=170;
+      m = axes(ox, oy, sc);
+      m += '<polygon points="'+toX(ox,sc,A[0])+','+toY(oy,sc,A[1])+' '+toX(ox,sc,B[0])+','+toY(oy,sc,B[1])+' '+toX(ox,sc,C[0])+','+toY(oy,sc,C[1])+'" fill="rgba(56,189,248,0.18)" stroke="#38bdf8" stroke-width="2"/>';
+      readout(cell("Shoelace","½ |4(−2−16)+3(16−4)+(−3)(4+2)|") + cell("Area","27","#34d399"));
+      verdict("<b>Area = 27.</b> If the shoelace vanishes, A, B, C are collinear — a line in disguise.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.slopeline = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Line ℓ</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Inclination θ</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn" id="p-0">θ = 0° (x-axis)</button>' +
+      '<button class="preset-btn active" id="p-60">θ = 60° (Ex 1d)</button>' +
+      '<button class="preset-btn" id="p-90">θ = 90° (undefined)</button>' +
+      '<button class="preset-btn" id="p-135">θ = 135°</button>';
+    document.getElementById("p-0").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=0; draw(0); };
+    document.getElementById("p-60").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=60; draw(0); };
+    document.getElementById("p-90").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=90; draw(0); };
+    document.getElementById("p-135").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=135; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Inclination θ</span><span class="val" id="th-val">60°</span></div>' +
+      '<input type="range" id="ctrl-th" min="0" max="180" step="1" value="60"></div>';
+    document.getElementById("ctrl-th").oninput = function(){ draw(0); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var th = rng("ctrl-th");
+    setTxt("th-val", th+"°");
+    var ox=360, oy=160, sc=28;
+    var m = axes(ox, oy, sc);
+    var rad = th * Math.PI / 180;
+    var L = 11;
+    if(Math.abs(th-90)>0.5){
+      var dx = L * Math.cos(rad), dy = L * Math.sin(rad);
+      m += '<line x1="'+toX(ox,sc,-dx)+'" y1="'+toY(oy,sc,-dy)+'" x2="'+toX(ox,sc,dx)+'" y2="'+toY(oy,sc,dy)+'" stroke="#38bdf8" stroke-width="3"/>';
+    } else {
+      m += '<line x1="'+ox+'" y1="30" x2="'+ox+'" y2="270" stroke="#f87171" stroke-width="3"/>';
+    }
+    var r = 48;
+    m += '<path d="M '+(ox+r)+' '+oy+' A '+r+' '+r+' 0 '+(th>180?1:0)+' 0 '+(ox+r*Math.cos(rad))+' '+(oy-r*Math.sin(rad))+'" fill="none" stroke="#f59e0b" stroke-width="2"/>';
+    m += '<text x="'+(ox+56)+'" y="'+(oy-18)+'" fill="#fbbf24" font-size="13">θ = '+th+'°</text>';
+    var slopeStr, note;
+    if(Math.abs(th-90)<0.5){ slopeStr = "undefined"; note = "Vertical line: tan 90° is not defined. Slope of the y-axis is undefined."; }
+    else {
+      var sl = Math.tan(rad);
+      slopeStr = (Math.abs(sl)<1e-10 ? "0" : sl.toFixed(3));
+      note = "m = tan θ. Horizontal (θ=0°) has m=0. Obtuse θ gives negative slope.";
+    }
+    readout(cell("θ", th+"°", "#f59e0b") + cell("m = tan θ", slopeStr, "#38bdf8"));
+    verdict("<b>Definition 1:</b> "+note);
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.parperp = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>ℓ₁ slope m₁</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>ℓ₂ slope m₂</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn" id="pp-par">Parallel m₁=m₂</button>' +
+      '<button class="preset-btn active" id="pp-per">Perpendicular m₁m₂=−1</button>' +
+      '<button class="preset-btn" id="pp-ex2">Ex 2: θ=π/4, m₁=½</button>';
+    document.getElementById("pp-par").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m1").value=1; document.getElementById("ctrl-m2").value=1; draw(0); };
+    document.getElementById("pp-per").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m1").value=0.5; document.getElementById("ctrl-m2").value=-2; draw(0); };
+    document.getElementById("pp-ex2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m1").value=0.5; document.getElementById("ctrl-m2").value=3; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>m₁</span><span class="val" id="m1-val">0.5</span></div>' +
+      '<input type="range" id="ctrl-m1" min="-4" max="4" step="0.1" value="0.5"></div>' +
+      '<div class="control-item"><div class="control-label"><span>m₂</span><span class="val" id="m2-val">−2</span></div>' +
+      '<input type="range" id="ctrl-m2" min="-4" max="4" step="0.1" value="-2"></div>';
+    document.getElementById("ctrl-m1").oninput = function(){ draw(0); };
+    document.getElementById("ctrl-m2").oninput = function(){ draw(0); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m1 = rng("ctrl-m1"), m2 = rng("ctrl-m2");
+    setTxt("m1-val", m1.toFixed(2)); setTxt("m2-val", m2.toFixed(2));
+    var ox=360, oy=160, sc=28;
+    var m = axes(ox, oy, sc);
+    function line(slope, color){
+      var x1=-11, x2=11;
+      return '<line x1="'+toX(ox,sc,x1)+'" y1="'+toY(oy,sc,slope*x1)+'" x2="'+toX(ox,sc,x2)+'" y2="'+toY(oy,sc,slope*x2)+'" stroke="'+color+'" stroke-width="2.5"/>';
+    }
+    m += line(m1,"#38bdf8");
+    m += line(m2,"#f472b6");
+    var prod = m1*m2;
+    var den = 1+prod;
+    var ang = "—";
+    if(Math.abs(den)>1e-6){
+      var t = Math.abs((m2-m1)/den);
+      ang = (Math.atan(t)*180/Math.PI).toFixed(1)+"°";
+    }
+    var rel = Math.abs(m1-m2)<0.05 ? "PARALLEL (m₁=m₂)" : (Math.abs(prod+1)<0.08 ? "PERPENDICULAR (m₁m₂=−1)" : "intersecting");
+    readout(cell("m₁m₂", prod.toFixed(2), "#fbbf24") + cell("acute θ", ang, "#34d399") + cell("relation", rel));
+    verdict("<b>tan θ = |(m₂−m₁)/(1+m₁m₂)|</b> provided 1+m₁m₂ ≠ 0. Parallel ⇔ equal slopes; perpendicular ⇔ product −1. Example 2: m = 3 or −1/3.");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.pointslope = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Line</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fixed point (x₀,y₀)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="ps-ex5">Ex 5: (−2,3), m=−4</button>' +
+      '<button class="preset-btn" id="ps-ex6">Ex 6 two-point (1,−1),(3,5)</button>' +
+      '<button class="preset-btn" id="ps-axes">Ex 4: axes through (−2,3)</button>';
+    document.getElementById("ps-ex5").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x0").value=-2; document.getElementById("ctrl-y0").value=3; document.getElementById("ctrl-m").value=-4; draw(0); };
+    document.getElementById("ps-ex6").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x0").value=1; document.getElementById("ctrl-y0").value=-1; document.getElementById("ctrl-m").value=3; draw(0); };
+    document.getElementById("ps-axes").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x0").value=-2; document.getElementById("ctrl-y0").value=3; document.getElementById("ctrl-m").value=0; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>x₀</span><span class="val" id="x0-val">−2</span></div><input type="range" id="ctrl-x0" min="-6" max="6" step="0.5" value="-2"></div>' +
+      '<div class="control-item"><div class="control-label"><span>y₀</span><span class="val" id="y0-val">3</span></div><input type="range" id="ctrl-y0" min="-6" max="6" step="0.5" value="3"></div>' +
+      '<div class="control-item"><div class="control-label"><span>m</span><span class="val" id="m-val">−4</span></div><input type="range" id="ctrl-m" min="-6" max="6" step="0.1" value="-4"></div>';
+    ["ctrl-x0","ctrl-y0","ctrl-m"].forEach(function(id){ document.getElementById(id).oninput = function(){ draw(0); }; });
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var x0=rng("ctrl-x0"), y0=rng("ctrl-y0"), mm=rng("ctrl-m");
+    setTxt("x0-val", x0.toFixed(1)); setTxt("y0-val", y0.toFixed(1)); setTxt("m-val", mm.toFixed(1));
+    var ox=360, oy=160, sc=24;
+    var m = axes(ox, oy, sc);
+    var x1=-10, x2=10;
+    m += '<line x1="'+toX(ox,sc,x1)+'" y1="'+toY(oy,sc,y0+mm*(x1-x0))+'" x2="'+toX(ox,sc,x2)+'" y2="'+toY(oy,sc,y0+mm*(x2-x0))+'" stroke="#38bdf8" stroke-width="2.5"/>';
+    m += '<circle cx="'+toX(ox,sc,x0)+'" cy="'+toY(oy,sc,y0)+'" r="6" fill="#f59e0b"/>';
+    var A=mm, B=-1, C=y0-mm*x0;
+    readout(cell("Point-slope","y − "+y0.toFixed(1)+" = "+mm.toFixed(1)+"(x − "+x0.toFixed(1)+")") +
+      cell("General", A.toFixed(1)+"x + ("+B+")y + ("+C.toFixed(1)+") = 0","#34d399"));
+    verdict("<b>y − y₀ = m(x − x₀).</b> Two-point form is the same with m = (y₂−y₁)/(x₂−x₁). Horizontal: y=a; vertical: x=b.");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.slopeint = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = mx + c</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>y-intercept c</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>x-intercept</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="si-ex7">Ex 7: m=½, c=−3/2</button>' +
+      '<button class="preset-btn" id="si-int">Intercept form a=−3, b=2</button>' +
+      '<button class="preset-btn" id="si-eq">Equal intercepts through (2,3)</button>';
+    document.getElementById("si-ex7").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m").value=0.5; document.getElementById("ctrl-c").value=-1.5; draw(0); };
+    document.getElementById("si-int").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m").value=2/3; document.getElementById("ctrl-c").value=2; draw(0); };
+    document.getElementById("si-eq").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m").value=-1; document.getElementById("ctrl-c").value=5; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>slope m</span><span class="val" id="m-val">0.5</span></div><input type="range" id="ctrl-m" min="-3" max="3" step="0.05" value="0.5"></div>' +
+      '<div class="control-item"><div class="control-label"><span>y-intercept c</span><span class="val" id="c-val">−1.5</span></div><input type="range" id="ctrl-c" min="-6" max="6" step="0.1" value="-1.5"></div>';
+    document.getElementById("ctrl-m").oninput = function(){ draw(0); };
+    document.getElementById("ctrl-c").oninput = function(){ draw(0); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var mm=rng("ctrl-m"), c=rng("ctrl-c");
+    setTxt("m-val", mm.toFixed(2)); setTxt("c-val", c.toFixed(2));
+    var ox=360, oy=160, sc=26;
+    var m = axes(ox, oy, sc);
+    m += '<line x1="'+toX(ox,sc,-12)+'" y1="'+toY(oy,sc,mm*(-12)+c)+'" x2="'+toX(ox,sc,12)+'" y2="'+toY(oy,sc,mm*12+c)+'" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<circle cx="'+ox+'" cy="'+toY(oy,sc,c)+'" r="6" fill="#34d399"/>';
+    var xint = Math.abs(mm)>1e-6 ? -c/mm : null;
+    if(xint!==null && isFinite(xint)){
+      m += '<circle cx="'+toX(ox,sc,xint)+'" cy="'+oy+'" r="6" fill="#f59e0b"/>';
+    }
+    var aStr = xint===null ? "none (horizontal)" : xint.toFixed(2);
+    var interceptForm = (xint && Math.abs(xint)>1e-6 && Math.abs(c)>1e-6) ? ("x/("+aStr+") + y/("+c.toFixed(2)+") = 1") : "—";
+    readout(cell("y = mx + c", "y = "+mm.toFixed(2)+"x + ("+c.toFixed(2)+")","#38bdf8") +
+      cell("x-intercept a", aStr, "#f59e0b") + cell("intercept form", interceptForm));
+    verdict("<b>Slope-intercept:</b> y = mx + c. <b>Intercept form:</b> x/a + y/b = 1. Drag m and c — the blue line is every non-vertical straight line.");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.distptline = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Line Ax+By+C=0</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Point P</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Perpendicular d</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="d-ex9">Ex 9: (3,−5) from 3x−4y−26=0</button>' +
+      '<button class="preset-btn" id="d-ex3">Ex 9.3 Q3: (−1,1) from 12x−5y+82=0</button>';
+    document.getElementById("d-ex9").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=3; document.getElementById("ctrl-B").value=-4; document.getElementById("ctrl-C").value=-26; document.getElementById("ctrl-px").value=3; document.getElementById("ctrl-py").value=-5; draw(0); };
+    document.getElementById("d-ex3").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=12; document.getElementById("ctrl-B").value=-5; document.getElementById("ctrl-C").value=82; document.getElementById("ctrl-px").value=-1; document.getElementById("ctrl-py").value=1; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>A</span><span class="val" id="A-val">3</span></div><input type="range" id="ctrl-A" min="-8" max="8" step="1" value="3"></div>' +
+      '<div class="control-item"><div class="control-label"><span>B</span><span class="val" id="B-val">−4</span></div><input type="range" id="ctrl-B" min="-8" max="8" step="1" value="-4"></div>' +
+      '<div class="control-item"><div class="control-label"><span>C</span><span class="val" id="C-val">−26</span></div><input type="range" id="ctrl-C" min="-40" max="40" step="1" value="-26"></div>' +
+      '<div class="control-item"><div class="control-label"><span>x₁</span><span class="val" id="px-val">3</span></div><input type="range" id="ctrl-px" min="-8" max="8" step="0.5" value="3"></div>' +
+      '<div class="control-item"><div class="control-label"><span>y₁</span><span class="val" id="py-val">−5</span></div><input type="range" id="ctrl-py" min="-8" max="8" step="0.5" value="-5"></div>';
+    ["ctrl-A","ctrl-B","ctrl-C","ctrl-px","ctrl-py"].forEach(function(id){ document.getElementById(id).oninput = function(){ draw(0); }; });
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var A=rng("ctrl-A"), B=rng("ctrl-B"), C=rng("ctrl-C"), px=rng("ctrl-px"), py=rng("ctrl-py");
+    setTxt("A-val", A); setTxt("B-val", B); setTxt("C-val", C); setTxt("px-val", px.toFixed(1)); setTxt("py-val", py.toFixed(1));
+    var ox=360, oy=150, sc=16;
+    var m = axes(ox, oy, sc);
+    var pts=[];
+    var x, y, i;
+    if(Math.abs(B)>1e-8){
+      for(i=-20;i<=20;i++){ x=i; y=-(A*x+C)/B; pts.push([x,y]); }
+    } else if(Math.abs(A)>1e-8){
+      x=-C/A;
+      pts.push([x,-12],[x,12]);
+    }
+    if(pts.length>=2){
+      m += '<line x1="'+toX(ox,sc,pts[0][0])+'" y1="'+toY(oy,sc,pts[0][1])+'" x2="'+toX(ox,sc,pts[pts.length-1][0])+'" y2="'+toY(oy,sc,pts[pts.length-1][1])+'" stroke="#38bdf8" stroke-width="2.5"/>';
+    }
+    var den = Math.sqrt(A*A+B*B) || 1;
+    var signed = (A*px+B*py+C)/den;
+    var d = Math.abs(signed);
+    var fx = px - A*signed/den;
+    var fy = py - B*signed/den;
+    m += '<line x1="'+toX(ox,sc,px)+'" y1="'+toY(oy,sc,py)+'" x2="'+toX(ox,sc,fx)+'" y2="'+toY(oy,sc,fy)+'" stroke="#34d399" stroke-width="2" stroke-dasharray="5 4"/>';
+    m += '<circle cx="'+toX(ox,sc,px)+'" cy="'+toY(oy,sc,py)+'" r="6" fill="#f59e0b"/>';
+    m += '<circle cx="'+toX(ox,sc,fx)+'" cy="'+toY(oy,sc,fy)+'" r="4" fill="#34d399"/>';
+    readout(cell("d", d.toFixed(3), "#34d399") + cell("|Ax₁+By₁+C|", Math.abs(A*px+B*py+C).toFixed(1)) + cell("√(A²+B²)", den.toFixed(3)));
+    verdict("<b>d = |Ax₁+By₁+C|/√(A²+B²)</b> (zoom p.16). Example 9: |9+20−26|/5 = 3/5.");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.parldist = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Ax+By+C₁=0</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Ax+By+C₂=0</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="pd-ex10">Ex 10: 3x−4y+7=0 and +5=0</button>' +
+      '<button class="preset-btn" id="pd-q5">Ex 9.3 Q5: 15x+8y−34, +31</button>';
+    document.getElementById("pd-ex10").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=3; document.getElementById("ctrl-B").value=-4; document.getElementById("ctrl-C1").value=7; document.getElementById("ctrl-C2").value=5; draw(0); };
+    document.getElementById("pd-q5").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=15; document.getElementById("ctrl-B").value=8; document.getElementById("ctrl-C1").value=-34; document.getElementById("ctrl-C2").value=31; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>A</span><span class="val" id="A-val">3</span></div><input type="range" id="ctrl-A" min="-10" max="16" step="1" value="3"></div>' +
+      '<div class="control-item"><div class="control-label"><span>B</span><span class="val" id="B-val">−4</span></div><input type="range" id="ctrl-B" min="-10" max="10" step="1" value="-4"></div>' +
+      '<div class="control-item"><div class="control-label"><span>C₁</span><span class="val" id="C1-val">7</span></div><input type="range" id="ctrl-C1" min="-40" max="40" step="1" value="7"></div>' +
+      '<div class="control-item"><div class="control-label"><span>C₂</span><span class="val" id="C2-val">5</span></div><input type="range" id="ctrl-C2" min="-40" max="40" step="1" value="5"></div>';
+    ["ctrl-A","ctrl-B","ctrl-C1","ctrl-C2"].forEach(function(id){ document.getElementById(id).oninput = function(){ draw(0); }; });
+    draw(0);
+  }
+  function strokeLine(A,B,C,ox,oy,sc,color){
+    var x1=-18, x2=18, y1, y2;
+    if(Math.abs(B)>1e-8){ y1=-(A*x1+C)/B; y2=-(A*x2+C)/B; }
+    else { x1=x2= Math.abs(A)>1e-8 ? -C/A : 0; y1=-12; y2=12; }
+    return '<line x1="'+toX(ox,sc,x1)+'" y1="'+toY(oy,sc,y1)+'" x2="'+toX(ox,sc,x2)+'" y2="'+toY(oy,sc,y2)+'" stroke="'+color+'" stroke-width="2.5"/>';
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var A=rng("ctrl-A"), B=rng("ctrl-B"), C1=rng("ctrl-C1"), C2=rng("ctrl-C2");
+    setTxt("A-val", A); setTxt("B-val", B); setTxt("C1-val", C1); setTxt("C2-val", C2);
+    var ox=360, oy=150, sc=14;
+    var m = axes(ox, oy, sc);
+    m += strokeLine(A,B,C1,ox,oy,sc,"#38bdf8");
+    m += strokeLine(A,B,C2,ox,oy,sc,"#f472b6");
+    var den = Math.sqrt(A*A+B*B) || 1;
+    var d = Math.abs(C1-C2)/den;
+    readout(cell("|C₁−C₂|", Math.abs(C1-C2).toFixed(1)) + cell("√(A²+B²)", den.toFixed(3)) + cell("d", d.toFixed(3), "#34d399"));
+    verdict("<b>Parallel-line distance:</b> d = |C₁−C₂|/√(A²+B²). Example 10: |7−5|/5 = 2/5. For y=mx+c₁ and y=mx+c₂, d = |c₁−c₂|/√(1+m²).");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

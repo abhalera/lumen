@@ -1,0 +1,2333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 14: Probability — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 14 · PROBABILITY</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="24"></progress>
+      <span id="progress-text">0 / 24</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 37 Exercises from NCERT Class 11 Mathematics (pp. 289–312) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kemh114", "chapterNumber": 14, "book_name": "Mathematics", "title": "Probability", "subtitle": "Events as subsets, algebra of events, the three axioms, equally likely outcomes, the addition rule via Venn, and complements — with cards, dice and counting.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh114.pdf", "page_start": 289, "page_end": 312, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "events", "nav": "Events as subsets", "title": "An event is a subset of the sample space.", "deck": "Two coins: S = {HH, HT, TH, TT}. ‘Exactly one head’ is E = {HT, TH}. The sure event is S; the impossible event is empty.", "minutes": 8, "section": "14.1–14.1.1", "pages": [1, 2], "print": "289–290", "sim": "eventsubset", "simTitle": "Coin-twice sample space: light up an event", "quick": ["A random experiment has a <strong>sample space</strong> S of outcomes. Any subset E ⊆ S is called an <strong>event</strong> (Definition, zoom p.1). The event occurs when the outcome is a point of E.", "Two coins: S = {HH, HT, TH, TT}. Exactly two tails ↔ A = {TT}. At least one tail ↔ B = {HT, TH, TT}. At most two tails ↔ S (sure). More than two tails ↔ ∅ (impossible).", "§14.1.1: we say the event E <em>occurs</em> if the outcome ω of the experiment lies in E. Otherwise E does not occur."], "formulas": [{"label": "Event", "html": "E ⊆ S", "cond": "Definition, zoom p.1"}, {"label": "Sure / impossible", "html": "sure event = S, &nbsp; impossible event = ∅", "cond": ""}], "deeper": "The correspondence ‘description of an event ↔ subset of S’ is the whole language of this chapter. Once events are sets, union, intersection and complement from Chapter 1 become ‘or’, ‘and’, ‘not’.", "worked": "From the table on p.1: ‘second toss is not head’ = {HT, TT}. ‘Number of heads is at most one’ = {TT, HT, TH}.", "prediction": {"prompt": "Two coins. The event ‘more than two tails’ is", "options": ["the empty set — impossible, because S has only two tosses", "{TT}, because TT is two tails", "S, because every outcome has some tails"], "answer": 0, "explanation": "The book’s last row: more than two tails ↔ ∅. Two tosses cannot produce three tails."}, "connect": [["IPL toss", "S = {Team-A-calls-heads-and-wins, …} has four named points if you track call and result. ‘The side that called heads bats first’ is a two-point subset."], ["Wow — ‘nothing happened’ is a set", "The impossible event is not ‘we forgot to define it’. It is the empty subset, and later P(∅) = 0 by the axioms.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Define an event. Give the sure and impossible events for two coin tosses.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "An event is", "options": ["any subset of the sample space", "any number between 0 and 1", "a single outcome only"], "answer": 0, "hint": "Zoom p.1 definition.", "solution": "Subsets. Singletons are the simple events.", "wrong": ["", "That is a probability.", "Those are simple events, a special case."]}, {"level": "Medium", "type": "mcq", "prompt": "Two coins. The event ‘at most two tails’ is", "options": ["S, the sure event", "∅", "{TT}"], "answer": 0, "hint": "Table on p.1.", "solution": "Every outcome has 0, 1 or 2 tails.", "wrong": ["", "That would be more than two.", "That is exactly two."]}, {"level": "Hard", "type": "mcq", "prompt": "The experiment is ‘roll a die’. The event ‘shows 7’ is", "options": ["∅, hence impossible", "{6}, rounding up", "S, because something shows"], "answer": 0, "hint": "7 is not a sample point.", "solution": "S = {1,2,3,4,5,6}. 7 ∉ S.", "wrong": ["", "No rounding.", "Sure would be ‘shows a number 1–6’."]}]}, {"id": "types-algebra", "nav": "Types and algebra of events", "title": "Simple vs compound; union is ‘or’, intersection is ‘and’.", "deck": "A singleton is simple; more than one point is compound. A ∪ B = ‘A or B’, A ∩ B = ‘A and B’, A′ = ‘not A’, A − B = ‘A but not B’.", "minutes": 9, "section": "14.1.2–14.1.3", "pages": [2, 4], "print": "290–292", "sim": "types", "simTitle": "Simple, compound, sure, impossible", "quick": ["<strong>Simple event:</strong> a singleton {ω}. <strong>Compound event:</strong> more than one sample point. Sure event = S; impossible = ∅.", "§14.1.3 algebra (from Chapter 1): A ∪ B = ‘A or B’ (inclusive), A ∩ B = ‘A and B’, A′ = S − A = ‘not A’, A − B = A ∩ B′ = ‘A but not B’. Equal events: A = B as sets.", "Example 1 (die): A = ‘even’ = {2,4,6}, B = ‘multiple of 3’ = {3,6}. Then A ∪ B = {2,3,4,6}, A ∩ B = {6}, A′ = {1,3,5}."], "formulas": [{"label": "Or / and / not", "html": "A or B = A ∪ B, &nbsp; A and B = A ∩ B, &nbsp; not A = A′ = S − A", "cond": ""}, {"label": "A but not B", "html": "A − B = A ∩ B′", "cond": ""}], "deeper": "Inclusive or is the default: ‘A or B’ includes the overlap. If you mean exclusive or you must write (A − B) ∪ (B − A) = (A ∪ B) − (A ∩ B).", "worked": "Example 1 continued: A − B = {2,4} (even but not a multiple of 3). B − A = {3}.", "prediction": {"prompt": "Die. A = even, B = multiple of 3. A ∩ B is", "options": ["{6}", "{2,3,4,6}", "{3}"], "answer": 0, "explanation": "Only 6 is even and a multiple of 3."}, "connect": [["Exam result ‘pass Maths or Physics’", "The union includes students who passed both — that overlap is A ∩ B, and it is why the addition rule later subtracts P(A ∩ B)."], ["Wow — set-minus is a cricket appeal", "‘LBW but not given’ is A − B: the event that the ball was hitting, minus the event that the umpire raised the finger.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Define simple and compound events. Translate A ∪ B, A ∩ B, A′ into English.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A simple event contains", "options": ["exactly one sample point", "every sample point", "no sample point"], "answer": 0, "hint": "§14.1.2.", "solution": "A singleton.", "wrong": ["", "That is sure.", "That is impossible."]}, {"level": "Medium", "type": "mcq", "prompt": "‘A but not B’ is the set", "options": ["A − B = A ∩ B′", "A ∪ B", "B − A"], "answer": 0, "hint": "§14.1.3.", "solution": "Remove B from A.", "wrong": ["", "That is or.", "That is B but not A."]}, {"level": "Hard", "type": "mcq", "prompt": "Die. A = even, B = multiple of 3. A ∪ B has how many outcomes?", "options": ["4", "3", "6"], "answer": 0, "hint": "Example 1: {2,3,4,6}.", "solution": "Four faces.", "wrong": ["", "That is forgetting 2 or 4.", "That is S."]}]}, {"id": "exclusive-exhaustive", "nav": "Mutually exclusive and exhaustive", "title": "Disjoint events cannot happen together; exhaustive events cover S.", "deck": "A, B mutually exclusive ⇔ A ∩ B = ∅. Exhaustive ⇔ union is S. Example 3: no head / exactly one head / at least two heads partition the eight outcomes of three coins.", "minutes": 10, "section": "14.1.4–14.1.5", "pages": [4, 7], "print": "292–295", "sim": "exclusive", "simTitle": "Example 2 and 3: overlap vs a partition", "quick": ["<strong>Mutually exclusive:</strong> A ∩ B = ∅ — they have no outcome in common, so they cannot occur together (§14.1.4). A collection is pairwise disjoint if every pair is mutually exclusive.", "<strong>Exhaustive:</strong> E₁ ∪ E₂ ∪ … ∪ Eₙ = S — at least one of them must occur (§14.1.5). A pairwise-disjoint exhaustive collection is a <strong>partition</strong> of S.", "Example 2 (two dice): C = {(1,1),(2,1),(1,2)} and D = {(6,6)} are exclusive; A (odd sum) and B (a 2 or 5 on a specified pattern in the book) are not, because A ∩ B ≠ ∅. Example 3: A = {TTT}, B = {HTT, THT, TTH}, C = {HHT, HTH, THH, HHH} are exclusive and exhaustive."], "formulas": [{"label": "Mutually exclusive", "html": "A ∩ B = ∅", "cond": "cannot occur together"}, {"label": "Exhaustive", "html": "E₁ ∪ … ∪ Eₙ = S", "cond": "one of them must occur"}], "deeper": "A and A′ are always mutually exclusive and exhaustive: that pair is the prototype of a partition, and it is why P(A′)=1−P(A) will drop out of the axioms later.", "worked": "Ex 14.1 Q1: E = {4}, F = {2,4,6}. E ∩ F = {4} ≠ ∅, so not mutually exclusive — ‘4’ is even.", "prediction": {"prompt": "Three coins. A = no head, B = exactly one head, C = at least two heads. Then", "options": ["A, B, C are mutually exclusive and exhaustive — they partition S", "they overlap, because a toss can be two things at once", "they are exhaustive but A ∩ C ≠ ∅"], "answer": 0, "explanation": "Example 3 (zoom p.6): eight points, split 1 + 3 + 4, pairwise empty intersections, union = S."}, "connect": [["Traffic-light states", "Red / amber / green are exclusive and exhaustive for a working signal. ‘Red and green’ is the impossible event — and a failed signal."], ["Wow — a partition is a complete story", "Once you have a partition, listing probabilities on the blocks and adding is legal (Axiom iii). That is why Example 3 is the template for every ‘exactly k heads’ problem.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Write the set criteria for mutually exclusive and for exhaustive events. Quote Example 3.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A and B are mutually exclusive when", "options": ["A ∩ B = ∅", "A ∪ B = S", "A = B"], "answer": 0, "hint": "§14.1.4.", "solution": "Disjoint sets.", "wrong": ["", "That is exhaustive (together they cover S).", "Equal events overlap completely."]}, {"level": "Medium", "type": "mcq", "prompt": "A die. E = {4}, F = even. Mutually exclusive?", "options": ["No — 4 is even, so E ⊂ F", "Yes — 4 is a single number", "Yes — a die cannot show two faces"], "answer": 0, "hint": "Ex 14.1 Q1.", "solution": "E ∩ F = {4}.", "wrong": ["", "Simple does not imply disjoint from a larger set that contains it.", "The two events are about one roll; they can still share that outcome."]}, {"level": "Hard", "type": "mcq", "prompt": "If A ∪ B = S and A ∩ B = ∅ then B equals", "options": ["A′", "A", "∅"], "answer": 0, "hint": "A and B partition S.", "solution": "B is the complement of A.", "wrong": ["", "Then they would not be disjoint unless A is empty.", "Then A = S."]}]}, {"id": "axioms", "nav": "Axiomatic probability", "title": "Three axioms: non-negative, P(S)=1, additivity on disjoint events.", "deck": "P maps events to [0,1]. Fairness is optional: P(H)=1/4, P(T)=3/4 is legal. Exercise 14.2 Q1 hunts illegal assignments (negatives, sums ≠ 1).", "minutes": 9, "section": "14.2", "pages": [7, 10], "print": "295–298", "sim": "axioms", "simTitle": "Legal vs illegal probability assignments", "quick": ["The axiomatic approach assigns a number P(E) ∈ [0,1] to each event. Three axioms (zoom p.8): (i) P(E) ≥ 0, (ii) P(S) = 1, (iii) if E ∩ F = ∅ then P(E ∪ F) = P(E) + P(F).", "From (iii) with F = ∅: P(E) = P(E) + P(∅) ⇒ P(∅) = 0. For a finite S = {ω₁,…,ωₙ}, 0 ≤ P(ωᵢ) ≤ 1 and Σ P(ωᵢ) = 1, and P(A) = Σ_{ω∈A} P(ω).", "A fair coin is the special assignment P(H)=P(T)=1/2. The assignment P(H)=1/4, P(T)=3/4 is equally legal — it just describes a biased coin. Exercise 14.2 Q1 (c) sums to 2.8; (d) has negatives; (e) sums to 36/14 > 1."], "formulas": [{"label": "Axioms", "html": "P(E) ≥ 0, &nbsp; P(S) = 1, &nbsp; P(E ∪ F) = P(E)+P(F) if E ∩ F = ∅", "cond": "zoom p.8"}, {"label": "Empty set", "html": "P(∅) = 0", "cond": "from (iii)"}], "deeper": "Axiom (iii) extends by induction to any finite collection of pairwise disjoint events. That is the engine behind ‘add the probabilities of the elementary outcomes in A’.", "worked": "Example 4: six-point S. An assignment with a negative or with sum ≠ 1 is rejected; one with six equal 1/6 is accepted; one with 0.1, 0.2, … that overshoots 1 is rejected.", "prediction": {"prompt": "P(H)=1/4 and P(T)=3/4 on {H,T}. Is this a valid probability?", "options": ["Yes — non-negative and they sum to 1. Fairness is not an axiom.", "No — a coin must be 1/2, 1/2.", "No — 3/4 is greater than 1/2."], "answer": 0, "explanation": "Zoom p.8 assignment (2). The axioms do not mention symmetry."}, "connect": [["Election forecast vs a fair coin", "A poll that puts P(win) = 0.6, P(lose) = 0.4 is an axiomatically valid assignment. It is not ‘wrong’ for failing to be 50–50; it encodes information."], ["Wow — P(∅)=0 is a theorem, not an axiom", "You never list it as (iv). It drops out the moment you take F empty in (iii).", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "State the three axioms and deduce P(∅)=0.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "P(S) equals", "options": ["1", "0", "n(S)"], "answer": 0, "hint": "Axiom (ii).", "solution": "The sure event has probability 1.", "wrong": ["", "That is P(∅).", "n(S) is a count, not a probability."]}, {"level": "Medium", "type": "mcq", "prompt": "Which assignment on seven points is illegal?", "options": ["one that includes −0.1", "seven equal 1/7", "any non-negative seven-tuple summing to 1"], "answer": 0, "hint": "Ex 14.2 Q1(d).", "solution": "Axiom (i).", "wrong": ["", "Q1(b) is legal.", "That is the general legal form."]}, {"level": "Hard", "type": "number", "prompt": "P(H)=1/4, P(T)=3/4. P({H,T}) equals", "answer": 1, "unit": "", "tolerance": 0.01, "hint": "They partition S.", "solution": "Axiom (iii): 1/4 + 3/4 = 1."}]}, {"id": "equally-likely", "nav": "Equally likely outcomes", "title": "When every ω has the same weight, P(E) = n(E)/n(S).", "deck": "np = 1 ⇒ p = 1/n. Cards, dice, discs, coins — Example 5 a diamond is 13/52 = 1/4; Example 6 a red disc is 4/9.", "minutes": 9, "section": "14.2.1–14.2.2", "pages": [10, 11], "print": "298–299", "sim": "equally", "simTitle": "m/n lab: die, deck, bag of discs", "quick": ["§14.2.1: P(A) = Σ_{ω∈A} P(ω). §14.2.2: if every one of n outcomes is equally likely then each has p = 1/n, and P(E) = m/n = n(E)/n(S).", "Example 5 (zoom p.14): one card from 52. P(diamond) = 13/52 = 1/4, P(not an ace) = 48/52 = 12/13, P(black) = 26/52 = 1/2, P(not a diamond) = 3/4, P(not black) = 1/2.", "Example 6: 4 red, 3 blue, 2 yellow discs. P(red) = 4/9, P(yellow) = 2/9, P(not yellow) = 7/9."], "formulas": [{"label": "Equally likely", "html": "P(E) = n(E) / n(S) = m / n", "cond": "finite S, uniform P"}, {"label": "Elementary", "html": "P(ωᵢ) = 1/n", "cond": "for each i"}], "deeper": "‘Equally likely’ is an extra modelling hypothesis, not an axiom. A loaded die still has a probability, just not 1/6 each. The m/n rule is the classical (Laplace) special case of the axioms.", "worked": "Ex 14.2 Q3: one die. (i) prime {2,3,5} ⇒ 3/6 = 1/2. (ii) ≥ 3 ⇒ 4/6 = 2/3. (iii) ≤ 1 ⇒ 1/6. (iv) > 6 ⇒ 0. (v) < 6 ⇒ 5/6.", "prediction": {"prompt": "A well-shuffled deck. P(the card is an ace of spades) is", "options": ["1/52", "1/4", "1/13"], "answer": 0, "explanation": "Ex 14.2 Q4(b): one favourable card out of 52. 1/4 would be ‘a spade’; 1/13 would be ‘an ace’."}, "connect": [["Housie / tambola ticket", "A ticket with 15 numbers out of 90: if the first ball is random, P(it is on your ticket) = 15/90 = 1/6. Same m/n rule."], ["Wow — 1/52 is smaller than you feel", "Magicians force a card; mathematicians count. Example 5’s 1/52 for the ace of spades is why ‘pick a card, any card’ is a surprise when it works.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Write P(E)=m/n and compute P(diamond) and P(not ace).", "quizzes": [{"level": "Easy", "type": "number", "prompt": "P(prime face) on a fair die is m/n. As a decimal 3/6 equals", "answer": 0.5, "unit": "", "tolerance": 0.001, "hint": "Q3(i).", "solution": "1/2."}, {"level": "Medium", "type": "number", "prompt": "P(ace) from 52 cards, as a reduced fraction a/b with b=13. Then a/b = 1/13. The numerator a is", "answer": 1, "unit": "", "tolerance": 0.01, "hint": "4/52 = 1/13.", "solution": "4 aces."}, {"level": "Hard", "type": "number", "prompt": "Example 6: 9 discs, 2 yellow. P(not yellow) as a decimal 7/9 is", "answer": 0.7778, "unit": "", "tolerance": 0.01, "hint": "7/9.", "solution": "7/9 ≈ 0.778."}]}, {"id": "addition-or", "nav": "The addition rule", "title": "P(A or B) = P(A) + P(B) − P(A and B).", "deck": "Fig. 14.1: the overlap is counted twice if you just add. Subtract P(A ∩ B). If A, B are exclusive the overlap is 0 and Axiom (iii) returns.", "minutes": 11, "section": "14.2.3", "pages": [11, 13], "print": "299–301", "sim": "addition", "simTitle": "Fig. 14.1 Venn: three slices make the union", "quick": ["A ∪ B = (A − B) ∪ (A ∩ B) ∪ (B − A), pairwise disjoint. Adding probabilities of the three slices and rewriting gives <strong>P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</strong> (zoom p.12–13, Fig. 14.1).", "If A ∩ B = ∅ then P(A ∩ B) = 0 and we recover Axiom (iii): P(A ∪ B) = P(A) + P(B).", "Example 7 (Anil, Ashima): P(E)=0.05, P(F)=0.10, P(E ∩ F)=0.02. P(both fail to qualify) wait — P(only one qualifies) = P(E∩F′) + P(E′∩F) = 0.05−0.02 + 0.10−0.02 = 0.11. P(E ∪ F) = 0.13."], "formulas": [{"label": "Addition rule", "html": "P(A ∪ B) = P(A) + P(B) − P(A ∩ B)", "cond": "Fig. 14.1"}, {"label": "Exclusive case", "html": "P(A ∪ B) = P(A) + P(B)  if A ∩ B = ∅", "cond": "Axiom (iii)"}], "deeper": "Consistency of a pair P(A), P(B), P(A ∩ B): we need P(A ∩ B) ≤ min(P(A),P(B)) and P(A)+P(B)−P(A ∩ B) ≤ 1. Ex 14.2 Q12(i) has 0.5+0.7−0.6 = 0.6 ≤ 1 and 0.6 ≤ 0.5? Wait P(A∩B)=0.6 > P(A)=0.5, inconsistent. Q12(ii) 0.5+0.4−0.8 = 0.1, and 0? The book gives P(A∪B)=0.8, P(A∩B) not given in (ii)... Q12(ii): P(A)=0.5, P(B)=0.4, P(A∪B)=0.8 ⇒ P(A∩B)=0.1, all inequalities hold.", "worked": "Ex 14.2 Q17: P(A)=0.42, P(B)=0.48, P(A∩B)=0.16. P(A′)=0.58, P(B′)=0.52, P(A∪B)=0.74.", "prediction": {"prompt": "P(A)=0.42, P(B)=0.48, P(A ∩ B)=0.16. P(A ∪ B) is", "options": ["0.74", "0.90", "0.16"], "answer": 0, "explanation": "0.42 + 0.48 − 0.16 = 0.74. Adding without subtracting the overlap double-counts the 0.16."}, "connect": [["Class XI subject overlap", "Ex 14.2 Q18: 40% Maths, 30% Biology, 10% both. P(M or B) = 0.4+0.3−0.1 = 0.6. The Venn lab is this word problem."], ["Wow — the middle slice is why ‘or’ is not plus", "Students who add 40% + 30% and report 70% have counted the 10% twice. Fig. 14.1 is the picture of that mistake.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Write the addition rule and the exclusive special case. Evaluate 0.42+0.48−0.16.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If A and B are mutually exclusive, P(A ∪ B) equals", "options": ["P(A)+P(B)", "P(A)+P(B)−1", "P(A)P(B)"], "answer": 0, "hint": "Axiom (iii).", "solution": "The overlap term is 0.", "wrong": ["", "That would be a complement mix-up.", "That is independence, Class 12."]}, {"level": "Medium", "type": "number", "prompt": "P(A)=3/5, P(B)=1/5, mutually exclusive. P(A or B) is", "answer": 0.8, "unit": "", "tolerance": 0.01, "hint": "Ex 14.2 Q14.", "solution": "4/5 = 0.8."}, {"level": "Hard", "type": "number", "prompt": "P(E)=1/4, P(F)=1/2, P(E ∩ F)=1/8. P(E ∪ F) is", "answer": 0.625, "unit": "", "tolerance": 0.01, "hint": "Ex 14.2 Q15.", "solution": "1/4+1/2−1/8 = 5/8 = 0.625."}]}, {"id": "complement", "nav": "Complement ‘not A’", "title": "P(not A) = 1 − P(A), because A and A′ partition S.", "deck": "Ten cards 1–10, A = {2,4,6,8} has P = 2/5, so P(A′) = 3/5. Example 5: P(not an ace) = 12/13.", "minutes": 8, "section": "14.2.4", "pages": [13, 17], "print": "301–305", "sim": "complement", "simTitle": "A and A′ fill the rectangle S", "quick": ["A ∩ A′ = ∅ and A ∪ A′ = S, so Axiom (ii)+(iii) give P(A) + P(A′) = 1, hence <strong>P(not A) = 1 − P(A)</strong> (zoom p.14).", "Ten-card illustration: A = {2,4,6,8}, P(A) = 4/10 = 2/5, A′ = {1,3,5,7,9,10}, P(A′) = 6/10 = 3/5 = 1 − 2/5.", "Example 8 (zoom p.17): committee of 2 from 2 men + 2 women. ⁴C₂ = 6. P(no man) = ²C₂/6 = 1/6, P(one man) = (²C₁·²C₁)/6 = 4/6 = 2/3, P(two men) = 1/6. These three events partition S, so 1/6+2/3+1/6 = 1."], "formulas": [{"label": "Complement", "html": "P(A′) = 1 − P(A)", "cond": "A and A′ exclusive and exhaustive"}, {"label": "Neither", "html": "P(A′ ∩ B′) = 1 − P(A ∪ B)", "cond": "De Morgan"}], "deeper": "Ex 14.2 Q15(ii): P(not E and not F) = P(E′ ∩ F′) = 1 − P(E ∪ F) = 1 − 5/8 = 3/8. De Morgan converts ‘neither’ into a complement of a union.", "worked": "Ex 14.2 Q9: P(A)=2/11, P(A′)=9/11. Q16: P(E′ ∪ F′)=0.25 ⇒ P(E ∩ F)=1−0.25=0.75. If they were exclusive, P(E ∩ F) would be 0, so they are not exclusive.", "prediction": {"prompt": "P(A) = 2/11. P(not A) is", "options": ["9/11", "2/9", "11/2"], "answer": 0, "explanation": "Ex 14.2 Q9: 1 − 2/11 = 9/11."}, "connect": [["Vaccine efficacy headlines", "If P(infection | vaccinated) = 0.05, then P(no infection | vaccinated) = 0.95. Complements are the ‘99% effective’ rewrite of a 1% failure probability."], ["Wow — ‘at least one’ is 1 minus ‘none’", "Misc Q1(ii) P(at least one green marble) = 1 − P(no green). The complement turns a messy union into one counting problem.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Write P(A′)=1−P(A) and P(A′ ∩ B′)=1−P(A ∪ B). Compute 1−2/11.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "P(A)=2/11. P(A′) equals 9/11 ≈", "answer": 0.8182, "unit": "", "tolerance": 0.01, "hint": "Ex 14.2 Q9.", "solution": "9/11."}, {"level": "Medium", "type": "number", "prompt": "P(E ∪ F)=5/8. P(neither E nor F) is", "answer": 0.375, "unit": "", "tolerance": 0.01, "hint": "1 − 5/8 = 3/8.", "solution": "0.375."}, {"level": "Hard", "type": "mcq", "prompt": "P(E′ ∪ F′)=0.25. Then P(E ∩ F) is 0.75, so E and F", "options": ["are not mutually exclusive", "must be mutually exclusive", "are independent"], "answer": 0, "hint": "Ex 14.2 Q16.", "solution": "Exclusive would force P(E ∩ F)=0, not 0.75.", "wrong": ["", "Opposite.", "Independence is not in this chapter."]}]}, {"id": "applications", "nav": "Counting and mixed problems", "title": "Cards, marbles, letters, locks — still m/n, plus the addition rule.", "deck": "Example 8 committees, Example 12 relay ⁵P₃, Miscellaneous: marbles, 3 diamonds and a spade, derangements of 3 letters, suitcase lock 1/¹⁰P₄.", "minutes": 11, "section": "Examples 8–12 + Misc. Ex.", "pages": [17, 24], "print": "305–312", "sim": "cards", "simTitle": "Combinatorial probability: committees, marbles, hands", "quick": ["When outcomes are equally likely but numerous, count with ⁿCᵣ and ⁿPᵣ (Chapter 6–7). Example 8: ⁴C₂ = 6 equally likely committees. Example 12: five teams, first three places: ⁵P₃ = 60, P(A,B,C in that order)=1/60, P(A,B,C in some order)=3!/60=1/10.", "Misc 1: 10 red + 20 blue + 30 green, draw 5. P(all blue) = ²⁰C₅ / ⁶⁰C₅. P(at least one green) = 1 − ³⁰C₅ / ⁶⁰C₅.", "Misc 6: 3 letters, 3 envelopes: P(at least one fixed point) = 1 − !3 / 3! = 1 − 2/6 = 2/3. Misc 10: suitcase lock, 4 distinct digits, P(correct) = 1 / ¹⁰P₄ = 1/5040."], "formulas": [{"label": "Combinatorial", "html": "P(E) = n(E)/n(S) with n counted by ⁿCᵣ or ⁿPᵣ", "cond": "order matters → P; not → C"}, {"label": "At least one", "html": "P(at least one) = 1 − P(none)", "cond": "complement"}], "deeper": "Example 11 is the three-event inclusion-exclusion P(A∪B∪C)=P(A)+P(B)+P(C)−P(A∩B)−P(B∩C)−P(A∩C)+P(A∩B∩C), the natural extension of Fig. 14.1.", "worked": "Misc 2: 4 cards from 52. P(3 diamonds and 1 spade) = (¹³C₃ · ¹³C₁) / ⁵²C₄.", "prediction": {"prompt": "Five teams A–E, all finishing orders equally likely. P(A, B, C are the first three, in some order) is", "options": ["1/10", "1/60", "3/5"], "answer": 0, "explanation": "Example 12: ⁵P₃ = 60 ordered triples for the podium; 3! of them are permutations of {A,B,C}. 6/60 = 1/10."}, "connect": [["Railway-reservation PNR", "Four-digit PINs with no repetition: ¹⁰P₄ = 5040 possibilities, Misc 10’s suitcase. A 4-digit OTP that allows repeats is 10⁴ = 10000 — repetition policy changes the denominator."], ["Wow — derangements of three letters", "Everyone’s first guess at Misc 6 is 1/3 or 1/2. The exact count !3 = 2, so P(at least one correct envelope) = 2/3. Inclusion-exclusion is counting in disguise.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh114.pdf"}]]], "recall": "Write P = ⁿCᵣ / ⁿCₙ-style and the complement form for ‘at least one’. Quote Example 12’s 1/60 and 1/10.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 8: P(no man on a 2-person committee from 2M+2W) is 1/6 ≈", "answer": 0.1667, "unit": "", "tolerance": 0.01, "hint": "²C₂ / ⁴C₂.", "solution": "1/6."}, {"level": "Medium", "type": "number", "prompt": "Example 12(a): P(A, B, C finish 1-2-3 in that order) as a decimal 1/60 is", "answer": 0.01667, "unit": "", "tolerance": 0.001, "hint": "1 / ⁵P₃.", "solution": "1/60."}, {"level": "Hard", "type": "number", "prompt": "Suitcase lock, 4 distinct digits 0–9. Number of possible sequences is ¹⁰P₄ =", "answer": 5040, "unit": "", "tolerance": 0.5, "hint": "Misc 10: 10×9×8×7.", "solution": "5040, so P(correct) = 1/5040."}]}], "exercises": [{"number": "14.1.1", "conceptIdx": 2, "page": 6, "printPage": 294, "question": "A die is rolled. E = ‘shows 4’, F = ‘even’. Are E and F mutually exclusive?", "steps": ["E = {4}, F = {2,4,6}.", "E ∩ F = {4} ≠ ∅.", "Not mutually exclusive."], "answer": "No — 4 is even.", "section": "14.1"}, {"number": "14.1.2", "conceptIdx": 1, "page": 6, "printPage": 294, "question": "Die. Describe A: <7; B: >7; C: multiple of 3; D: <4; E: even and >4; F: not less than 3. Also find A∪B, A∩B, B∪C, E∩F, D∩E, A−C, D−E, E∩F′, F′.", "steps": ["S = {1,2,3,4,5,6}. A = S, B = ∅, C = {3,6}, D = {1,2,3}, E = {6}, F = {3,4,5,6}.", "A∪B = S, A∩B = ∅, B∪C = C, E∩F = {6}, D∩E = ∅, A−C = {1,2,4,5}, D−E = {1,2,3}, F′ = {1,2}, E∩F′ = ∅."], "answer": "A=S, B=∅, C={3,6}, D={1,2,3}, E={6}, F={3,4,5,6}; A∪B=S, A∩B=∅, B∪C=C, E∩F={6}, D∩E=∅, A−C={1,2,4,5}, D−E=D, E∩F′=∅, F′={1,2}", "section": "14.1"}, {"number": "14.1.3", "conceptIdx": 2, "page": 7, "printPage": 295, "question": "Two dice. A: sum > 8; B: 2 occurs on either die; C: sum ≥ 7 and a multiple of 3. Which pairs are mutually exclusive?", "steps": ["A = sums 9,10,11,12. A point of B has a face 2, so the max sum with a 2 is 8. Hence A ∩ B = ∅.", "C = sums 9 or 12 (6 is < 7). A 2 cannot make 9 or 12, so B ∩ C = ∅.", "A ∩ C contains (3,6),(4,5),(5,4),(6,3),(6,6),… ≠ ∅.", "Exclusive pairs: (A,B) and (B,C). Not (A,C)."], "answer": "(A,B) and (B,C) only", "section": "14.1"}, {"number": "14.1.4", "conceptIdx": 2, "page": 7, "printPage": 295, "question": "Three coins. A = three heads, B = two heads one tail, C = three tails, D = head on first coin. Which are (i) mutually exclusive (ii) simple (iii) compound?", "steps": ["A = {HHH}, B = {HHT,HTH,THH}, C = {TTT}, D = {HHH,HHT,HTH,HTT}.", "(i) Pairwise among A,B,C; also A∩C, B∩C, A∩B empty. D overlaps A and B, so D is not exclusive from A or B. C ∩ D = ∅.", "(ii) Simple: A and C.", "(iii) Compound: B and D."], "answer": "(i) A,B,C pairwise (and C,D); (ii) A,C; (iii) B,D", "section": "14.1"}, {"number": "14.1.5", "conceptIdx": 2, "page": 7, "printPage": 295, "question": "Three coins. Give (i) two mutually exclusive events (ii) three exclusive and exhaustive (iii) two that are not exclusive (iv) two exclusive but not exhaustive (v) three exclusive but not exhaustive.", "steps": ["S has 8 points.", "(i) e.g. {HHH} and {TTT}.", "(ii) Example 3: 0 heads, 1 head, ≥2 heads.", "(iii) ‘first is H’ and ‘second is H’ (share HHH, HHT).", "(iv) {HHH} and {TTT} — union is not S.", "(v) {HHH}, {HHT}, {TTT} — pairwise disjoint, union ≠ S."], "answer": "Many valid answers; sample: (i) {HHH},{TTT} (ii) 0 / 1 / ≥2 heads (iii) first H and second H (iv) {HHH},{TTT} (v) {HHH},{HHT},{TTT}", "section": "14.1"}, {"number": "14.1.6", "conceptIdx": 1, "page": 7, "printPage": 295, "question": "Two dice. A: even on first; B: odd on first; C: sum ≤ 5. Describe (i) A′ (ii) not B (iii) A or B (iv) A and B (v) A but not C (vi) B or C (vii) B and C (viii) A ∩ B′ ∩ C′.", "steps": ["36 outcomes. A = first ∈ {2,4,6} (18 points); B = first ∈ {1,3,5} (18); C = sums 2,3,4,5.", "(i) A′ = B.", "(ii) B′ = A.", "(iii) A ∪ B = S.", "(iv) A ∩ B = ∅.", "(v) A − C = even first and sum ≥ 6.", "(vi) B ∪ C = odd first, or even first with sum ≤ 5.", "(vii) B ∩ C = odd first and sum ≤ 5, e.g. (1,1),(1,2),(1,3),(1,4),(3,1),(3,2).", "(viii) A ∩ B′ ∩ C′ = A ∩ A ∩ C′ = A − C (since B′=A)."], "answer": "(i) B (ii) A (iii) S (iv) ∅ (v) A−C (vi) B∪C (vii) B∩C (viii) A−C", "section": "14.1"}, {"number": "14.1.7", "conceptIdx": 2, "page": 7, "printPage": 295, "question": "Refer to Q6. True or false: (i) A,B exclusive (ii) A,B exclusive and exhaustive (iii) A = B′ (iv) A,C exclusive (v) A, B′ exclusive (vi) A′,B′,C exclusive and exhaustive.", "steps": ["(i) True: even/odd on first, disjoint.", "(ii) True: they partition S.", "(iii) True: B′ = even first = A.", "(iv) False: (2,1) ∈ A ∩ C.", "(v) False: B′ = A, so A ∩ B′ = A ≠ ∅.", "(vi) False: A′ = B, B′ = A, so {A′,B′,C} = {B,A,C}; C overlaps both, and A∪B is already S."], "answer": "(i) T (ii) T (iii) T (iv) F (v) F (vi) F", "section": "14.1"}, {"number": "14.2.1", "conceptIdx": 3, "page": 17, "printPage": 305, "question": "Which assignments of probabilities on S = {ω₁,…,ω₇} are invalid? (a) 0.1,0.01,0.05,0.03,0.01,0.2,0.6 (b) seven 1/7 (c) 0.1 to 0.7 (d) −0.1,0.2,0.3,0.4,−0.2,0.1,0.3 (e) 1/14,…,6/14,15/14.", "steps": ["(a) all ≥ 0, sum = 1.00. Valid.", "(b) valid (uniform).", "(c) sum = 2.8 ≠ 1. Invalid.", "(d) negatives. Invalid.", "(e) 15/14 > 1, and sum = 36/14 > 1. Invalid."], "answer": "invalid: (c), (d), (e)", "section": "14.2"}, {"number": "14.2.2", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "A coin is tossed twice. P(at least one tail)?", "steps": ["S = {HH,HT,TH,TT}, equally likely.", "Favourable 3, P = 3/4."], "answer": "3/4", "section": "14.2"}, {"number": "14.2.3", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "A die. P: (i) prime (ii) ≥ 3 (iii) ≤ 1 (iv) > 6 (v) < 6.", "steps": ["(i) {2,3,5} = 3/6 = 1/2.", "(ii) {3,4,5,6} = 4/6 = 2/3.", "(iii) {1} = 1/6.", "(iv) ∅ = 0.", "(v) {1,2,3,4,5} = 5/6."], "answer": "(i) 1/2 (ii) 2/3 (iii) 1/6 (iv) 0 (v) 5/6", "section": "14.2"}, {"number": "14.2.4", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "A card from 52. (a) |S|? (b) P(ace of spades) (c) P(an ace), P(black).", "steps": ["(a) 52.", "(b) 1/52.", "(c) 4/52 = 1/13; 26/52 = 1/2."], "answer": "(a) 52 (b) 1/52 (c) 1/13 and 1/2", "section": "14.2"}, {"number": "14.2.5", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "A coin with faces 1 and 6, and a die, both fair. P(sum is (i) 3 (ii) 12).", "steps": ["S has 2×6 = 12 equally likely points.", "(i) 1+2 only: P = 1/12.", "(ii) 6+6 only: P = 1/12."], "answer": "(i) 1/12 (ii) 1/12", "section": "14.2"}, {"number": "14.2.6", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "4 men and 6 women on a council; one selected. P(it is a woman)?", "steps": ["10 people equally likely, 6 women: 6/10 = 3/5."], "answer": "3/5", "section": "14.2"}, {"number": "14.2.7", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "Fair coin four times; +₹1 per head, −₹1.50 per tail. Possible net amounts and their probabilities.", "steps": ["Net = 1·H − 1.5(4−H) = 2.5 H − 6, H = 0,1,2,3,4.", "Amounts: −6, −3.5, −1, 1.5, 4.", "P(H=k) = C(4,k)/16 = 1/16, 4/16, 6/16, 4/16, 1/16."], "answer": "−6 (1/16), −3.5 (1/4), −1 (3/8), 1.5 (1/4), 4 (1/16)", "section": "14.2"}, {"number": "14.2.8", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "Three coins. P of (i) 3H (ii) 2H (iii) ≥2H (iv) ≤2H (v) 0H (vi) 3T (vii) exactly 2T (viii) 0T (ix) ≤2T.", "steps": ["8 equally likely outcomes.", "(i) 1/8 (ii) 3/8 (iii) 4/8=1/2 (iv) 7/8 (v) 1/8 (vi) 1/8 (same as 0H) (vii) 3/8 (exactly 1H) (viii) 1/8 (3H) (ix) 7/8 (not 3 tails)."], "answer": "(i)1/8 (ii)3/8 (iii)1/2 (iv)7/8 (v)1/8 (vi)1/8 (vii)3/8 (viii)1/8 (ix)7/8", "section": "14.2"}, {"number": "14.2.9", "conceptIdx": 6, "page": 18, "printPage": 306, "question": "P(A)=2/11. P(not A)?", "steps": ["1 − 2/11 = 9/11."], "answer": "9/11", "section": "14.2"}, {"number": "14.2.10", "conceptIdx": 4, "page": 18, "printPage": 306, "question": "A letter from ‘ASSASSINATION’. P(vowel), P(consonant).", "steps": ["13 letters; vowels A,A,A,I,A,I,O = A×4, I×2, O×1 → 7 vowels? A,S,S,A,S,S,I,N,A,T,I,O,N.", "A,A,A,I,I,O = 6 vowels, 7 consonants.", "P(vowel)=6/13, P(consonant)=7/13."], "answer": "6/13 and 7/13", "section": "14.2"}, {"number": "14.2.11", "conceptIdx": 7, "page": 19, "printPage": 307, "question": "Lottery: 6 distinct numbers from 1 to 20. P(win) if order does not matter.", "steps": ["n(S) = ²⁰C₆ = 38760.", "One winning combination: P = 1/38760."], "answer": "1 / ²⁰C₆ = 1/38760", "section": "14.2"}, {"number": "14.2.12", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "Are these consistent? (i) P(A)=0.5, P(B)=0.7, P(A∩B)=0.6 (ii) P(A)=0.5, P(B)=0.4, P(A∪B)=0.8.", "steps": ["Need 0 ≤ P(A∩B) ≤ min(P(A),P(B)) and P(A∪B)=P(A)+P(B)−P(A∩B) ≤ 1.", "(i) 0.6 > 0.5 = P(A), inconsistent.", "(ii) P(A∩B)=0.5+0.4−0.8=0.1, 0.1 ≤ 0.4, union 0.8 ≤ 1. Consistent."], "answer": "(i) no  (ii) yes", "section": "14.2"}, {"number": "14.2.13", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "Fill P(A), P(B), P(A∩B), P(A∪B): (i) 1/3, 1/5, 1/15, ? (ii) 0.35, ?, 0.25, 0.6 (iii) 0.5, 0.35, ?, 0.7.", "steps": ["Use P(A∪B)=P(A)+P(B)−P(A∩B).", "(i) 1/3+1/5−1/15 = 5/15+3/15−1/15 = 7/15.", "(ii) 0.6 = 0.35 + P(B) − 0.25 ⇒ P(B)=0.5.", "(iii) 0.7 = 0.5+0.35 − P(A∩B) ⇒ P(A∩B)=0.15."], "answer": "(i) 7/15  (ii) P(B)=0.5  (iii) P(A∩B)=0.15", "section": "14.2"}, {"number": "14.2.14", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "P(A)=3/5, P(B)=1/5, mutually exclusive. P(A or B)?", "steps": ["3/5+1/5=4/5."], "answer": "4/5", "section": "14.2"}, {"number": "14.2.15", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "P(E)=1/4, P(F)=1/2, P(E∩F)=1/8. Find (i) P(E∪F) (ii) P(not E and not F).", "steps": ["(i) 1/4+1/2−1/8=5/8.", "(ii) 1 − 5/8 = 3/8."], "answer": "(i) 5/8  (ii) 3/8", "section": "14.2"}, {"number": "14.2.16", "conceptIdx": 6, "page": 19, "printPage": 307, "question": "P(not E or not F)=0.25. Are E and F mutually exclusive?", "steps": ["P(E′ ∪ F′)=0.25 = 1 − P(E ∩ F) ⇒ P(E ∩ F)=0.75 ≠ 0.", "Not exclusive."], "answer": "No (P(E ∩ F)=0.75)", "section": "14.2"}, {"number": "14.2.17", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "P(A)=0.42, P(B)=0.48, P(A∩B)=0.16. Find P(A′), P(B′), P(A∪B).", "steps": ["P(A′)=0.58, P(B′)=0.52, P(A∪B)=0.42+0.48−0.16=0.74."], "answer": "0.58, 0.52, 0.74", "section": "14.2"}, {"number": "14.2.18", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "40% Maths, 30% Biology, 10% both. P(Maths or Biology)?", "steps": ["0.40+0.30−0.10=0.60."], "answer": "0.6", "section": "14.2"}, {"number": "14.2.19", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "P(pass first)=0.8, P(pass second)=0.7, P(at least one)=0.95. P(pass both)?", "steps": ["P(A∪B)=P(A)+P(B)−P(A∩B) ⇒ 0.95=0.8+0.7−P(both) ⇒ P(both)=0.55."], "answer": "0.55", "section": "14.2"}, {"number": "14.2.20", "conceptIdx": 5, "page": 19, "printPage": 307, "question": "P(English and Hindi)=0.5, P(neither)=0.1, P(English)=0.75. P(Hindi)?", "steps": ["P(E ∪ H)=1−0.1=0.9.", "0.9=0.75+P(H)−0.5 ⇒ P(H)=0.65."], "answer": "0.65", "section": "14.2"}, {"number": "14.Misc.1", "conceptIdx": 7, "page": 22, "printPage": 310, "question": "10 red, 20 blue, 30 green marbles. 5 drawn. P(all blue)? P(at least one green)?", "steps": ["n(S)=⁶⁰C₅.", "(i) ²⁰C₅ / ⁶⁰C₅.", "(ii) 1 − P(no green)= 1 − ³⁰C₅ / ⁶⁰C₅."], "answer": "(i) ²⁰C₅/⁶⁰C₅  (ii) 1 − ³⁰C₅/⁶⁰C₅", "section": "Misc. 14"}, {"number": "14.Misc.2", "conceptIdx": 7, "page": 22, "printPage": 310, "question": "4 cards from 52. P(3 diamonds and 1 spade)?", "steps": ["(¹³C₃ · ¹³C₁) / ⁵²C₄."], "answer": "(¹³C₃ · ¹³C₁) / ⁵²C₄", "section": "Misc. 14"}, {"number": "14.Misc.3", "conceptIdx": 4, "page": 23, "printPage": 311, "question": "A die with two faces 1, three faces 2, one face 3. P(2), P(1 or 3), P(not 3).", "steps": ["6 faces, not equally labelled but equally likely as faces.", "P(2)=3/6=1/2, P(1 or 3)=3/6=1/2, P(not 3)=5/6."], "answer": "1/2, 1/2, 5/6", "section": "Misc. 14"}, {"number": "14.Misc.4", "conceptIdx": 6, "page": 23, "printPage": 311, "question": "10,000 tickets, 10 prizes. P(not winning) with (a) 1 ticket (b) 2 tickets (c) 10 tickets.", "steps": ["(a) 9990/10000 = 999/1000.", "(b) ⁹⁹⁹⁰C₂ / ¹⁰⁰⁰⁰C₂.", "(c) ⁹⁹⁹⁰C₁₀ / ¹⁰⁰⁰⁰C₁₀."], "answer": "(a) 999/1000  (b) ⁹⁹⁹⁰C₂/¹⁰⁰⁰⁰C₂  (c) ⁹⁹⁹⁰C₁₀/¹⁰⁰⁰⁰C₁₀", "section": "Misc. 14"}, {"number": "14.Misc.5", "conceptIdx": 4, "page": 23, "printPage": 311, "question": "100 students, sections of 40 and 60. You and a friend. P(same section)? P(different sections)?", "steps": ["After you are placed, 99 seats remain.", "P(same)= (39/99) if you are in 40, plus (59/99) if you are in 60, weighted: (40·39 + 60·59)/(100·99) = 5100/9900 = 17/33.", "P(different)= 1 − 17/33 = 16/33."], "answer": "17/33 and 16/33", "section": "Misc. 14"}, {"number": "14.Misc.6", "conceptIdx": 7, "page": 23, "printPage": 311, "question": "3 letters, 3 envelopes, random permutation. P(at least one letter in the correct envelope)?", "steps": ["3! = 6 permutations, !3 = 2 derangements.", "P(none correct)=2/6=1/3, P(at least one)=2/3."], "answer": "2/3", "section": "Misc. 14"}, {"number": "14.Misc.7", "conceptIdx": 5, "page": 23, "printPage": 311, "question": "P(A)=0.54, P(B)=0.69, P(A∩B)=0.35. Find P(A∪B), P(A′∩B′), P(A∩B′), P(B∩A′).", "steps": ["P(A∪B)=0.54+0.69−0.35=0.88.", "P(A′∩B′)=1−0.88=0.12.", "P(A∩B′)=0.54−0.35=0.19.", "P(B∩A′)=0.69−0.35=0.34."], "answer": "0.88, 0.12, 0.19, 0.34", "section": "Misc. 14"}, {"number": "14.Misc.8", "conceptIdx": 4, "page": 23, "printPage": 311, "question": "Five people: 3 men (30,33,41), 2 women (46,28). One spokesperson. P(male or over 35)?", "steps": ["Male: Harish, Rohan, Salim. Over 35: Sheetal 46, Salim 41.", "Union: 3 men + Sheetal = 4 people (Alis 28 is neither).", "P = 4/5."], "answer": "4/5", "section": "Misc. 14"}, {"number": "14.Misc.9", "conceptIdx": 7, "page": 23, "printPage": 311, "question": "4-digit numbers > 5000 from digits 0,1,3,5,7. P(divisible by 5) (i) with repetition (ii) without.", "steps": ["(i) First digit 5 or 7 (2 choices), rest 5 each: 2·5³ = 250 such numbers.", "Div by 5: last digit 0 or 5. Last 0: 2·5·5=50; last 5: 2·5·5=50; total 100. P=100/250=2/5.", "(ii) No repetition, first 5 or 7: 2·P(4,3)=48.", "Last 0: first 2 choices, then P(3,2)=6, 12 numbers. Last 5: first must be 7, then P(3,2)=6. Favourable 18. P=18/48=3/8."], "answer": "(i) 2/5  (ii) 3/8", "section": "Misc. 14"}, {"number": "14.Misc.10", "conceptIdx": 7, "page": 23, "printPage": 311, "question": "Suitcase lock, 4 wheels 0–9, no repeats. P(the right sequence)?", "steps": ["n(S)=¹⁰P₄=10·9·8·7=5040.", "One correct sequence: 1/5040."], "answer": "1/5040", "section": "Misc. 14"}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var connectItems = l.connect || [];
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+/* 14.1 Event as a subset of S */
+window.SIMS.eventsubset = (function(){
+  var which = "oneH";
+  var S = ["HH","HT","TH","TT"];
+  function setOf(key){
+    if(key === "oneH") return ["HT","TH"];
+    if(key === "twoT") return ["TT"];
+    if(key === "atLeastT") return ["HT","TH","TT"];
+    if(key === "secondNotH") return ["HT","TT"];
+    if(key === "sure") return S.slice();
+    return []; // more than two tails
+  }
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sample point in E</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#1e293b;"></span><span>sample point not in E</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-1">Exactly one head  E={HT,TH}</button>' +
+      '<button class="preset-btn" id="p-2">Exactly two tails  A={TT}</button>' +
+      '<button class="preset-btn" id="p-3">At least one tail  B</button>' +
+      '<button class="preset-btn" id="p-4">Impossible: more than two tails</button>';
+    document.getElementById("p-1").onclick = function(){ setActivePreset(this); which="oneH"; draw(); };
+    document.getElementById("p-2").onclick = function(){ setActivePreset(this); which="twoT"; draw(); };
+    document.getElementById("p-3").onclick = function(){ setActivePreset(this); which="atLeastT"; draw(); };
+    document.getElementById("p-4").onclick = function(){ setActivePreset(this); which="imp"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var E = setOf(which);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="80" y="40" width="560" height="220" rx="16" fill="none" stroke="#64748b" stroke-width="2"/>';
+    m += '<text x="100" y="64" fill="#94a3b8" font-size="14">S = {HH, HT, TH, TT}</text>';
+    S.forEach(function(pt, i){
+      var x = 160 + (i % 4) * 120, y = 150;
+      var on = E.indexOf(pt) >= 0;
+      m += '<circle cx="'+x+'" cy="'+y+'" r="28" fill="'+(on?"#0ea5e9":"#1e293b")+'" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="'+x+'" y="'+(y+5)+'" fill="#f8fafc" font-size="14" text-anchor="middle">'+pt+'</text>';
+    });
+    svg.innerHTML = m;
+    readout(cell("|S|", "4") + cell("|E|", String(E.length)) + cell("E", E.length ? "{"+E.join(", ")+"}" : "∅"));
+    verdict("<b>Definition (zoom p.1):</b> any subset E of the sample space S is an event. The impossible event is ∅; the sure event is S itself. Tossing a coin twice is the running example of this section.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* types: simple / compound / sure / impossible */
+window.SIMS.types = (function(){
+  var mode = "simple";
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>simple (one sample point)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>compound (more than one)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-s">Simple: {TT}</button>' +
+      '<button class="preset-btn" id="p-c">Compound: at least one head</button>' +
+      '<button class="preset-btn" id="p-sure">Sure: at most two tails</button>' +
+      '<button class="preset-btn" id="p-imp">Impossible: more than two tails</button>';
+    document.getElementById("p-s").onclick = function(){ setActivePreset(this); mode="simple"; draw(); };
+    document.getElementById("p-c").onclick = function(){ setActivePreset(this); mode="comp"; draw(); };
+    document.getElementById("p-sure").onclick = function(){ setActivePreset(this); mode="sure"; draw(); };
+    document.getElementById("p-imp").onclick = function(){ setActivePreset(this); mode="imp"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var S = ["HH","HT","TH","TT"];
+    var E;
+    if(mode === "simple") E = ["TT"];
+    else if(mode === "comp") E = ["HH","HT","TH"];
+    else if(mode === "sure") E = S.slice();
+    else E = [];
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="90" y="50" width="540" height="200" rx="12" fill="#0b1220" stroke="#64748b"/>';
+    S.forEach(function(pt,i){
+      var x = 170 + i*120, y = 150;
+      var on = E.indexOf(pt) >= 0;
+      m += '<rect x="'+(x-40)+'" y="'+(y-28)+'" width="80" height="56" rx="8" fill="'+(on?"#b45309":"#1e293b")+'" stroke="#f59e0b"/>';
+      m += '<text x="'+x+'" y="'+(y+5)+'" fill="#f8fafc" font-size="16" text-anchor="middle">'+pt+'</text>';
+    });
+    svg.innerHTML = m;
+    var kind = mode === "simple" ? "simple" : (mode === "imp" ? "impossible ∅" : (mode === "sure" ? "sure = S" : "compound"));
+    readout(cell("type", kind) + cell("|E|", String(E.length)));
+    verdict("<b>§14.1.2:</b> a simple event is a singleton; a compound event has more than one sample point. The sure event is S; the impossible event is empty. Play the four presets from the coin-twice table on p.1.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* mutually exclusive / exhaustive */
+window.SIMS.exclusive = (function(){
+  var pair = "CD";
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>A ∩ B</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-cd">Example 2: C and D (exclusive)</button>' +
+      '<button class="preset-btn" id="p-ab">A and B (not exclusive)</button>' +
+      '<button class="preset-btn" id="p-ex3">Example 3: A,B,C exclusive and exhaustive</button>';
+    document.getElementById("p-cd").onclick = function(){ setActivePreset(this); pair="CD"; draw(); };
+    document.getElementById("p-ab").onclick = function(){ setActivePreset(this); pair="AB"; draw(); };
+    document.getElementById("p-ex3").onclick = function(){ setActivePreset(this); pair="EX3"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(pair === "EX3"){
+      // three disjoint events covering S of 8 points
+      var cols = [["TTT","A"],["HTT","B"],["THT","B"],["TTH","B"],["HHT","C"],["HTH","C"],["THH","C"],["HHH","C"]];
+      cols.forEach(function(row,i){
+        var x = 70 + (i%4)*160, y = i<4 ? 90 : 190;
+        var col = row[1]==="A"?"#f59e0b":(row[1]==="B"?"#38bdf8":"#34d399");
+        m += '<rect x="'+x+'" y="'+y+'" width="140" height="70" rx="8" fill="'+col+'"/>';
+        m += '<text x="'+(x+70)+'" y="'+(y+42)+'" fill="#0f172a" font-size="16" text-anchor="middle">'+row[0]+' ∈ '+row[1]+'</text>';
+      });
+      svg.innerHTML = m;
+      readout(cell("A∩B", "∅") + cell("A∪B∪C", "S") + cell("status", "exclusive AND exhaustive", "#34d399"));
+      verdict("<b>Example 3 (zoom p.6):</b> A = no head, B = exactly one head, C = at least two heads. Pairwise disjoint and union = S, so they partition the eight outcomes of three coin tosses.");
+      return;
+    }
+    // two circles
+    var overlap = pair === "AB";
+    m += '<rect x="80" y="30" width="560" height="240" rx="8" fill="none" stroke="#64748b"/>';
+    m += '<text x="100" y="52" fill="#94a3b8">S</text>';
+    var cx1 = overlap ? 280 : 230, cx2 = overlap ? 430 : 500;
+    m += '<circle cx="'+cx1+'" cy="160" r="90" fill="#0ea5e933" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<circle cx="'+cx2+'" cy="160" r="90" fill="#f59e0b33" stroke="#f59e0b" stroke-width="3"/>';
+    m += '<text x="'+cx1+'" y="164" fill="#38bdf8" font-size="18" text-anchor="middle">'+(pair==="AB"?"A":"C")+'</text>';
+    m += '<text x="'+cx2+'" y="164" fill="#f59e0b" font-size="18" text-anchor="middle">'+(pair==="AB"?"B":"D")+'</text>';
+    svg.innerHTML = m;
+    if(pair === "AB"){
+      readout(cell("A∩B", "≠ ∅", "#f87171") + cell("mutually exclusive?", "NO"));
+      verdict("<b>Example 2:</b> A (odd sum) and B (exactly one 2 or 5, etc.) share outcomes such as (1,5). They are not mutually exclusive. C = {(1,1),(2,1),(1,2)} and D = {(6,6)} satisfy C ∩ D = ∅.");
+    } else {
+      readout(cell("C∩D", "∅", "#34d399") + cell("mutually exclusive?", "YES"));
+      verdict("<b>Definition:</b> A and B are mutually exclusive (disjoint) iff A ∩ B = ∅ — they cannot occur together.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* axioms */
+window.SIMS.axioms = (function(){
+  var asg = "fair";
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>valid assignment</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>violates an axiom</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-f">Fair coin P(H)=P(T)=1/2</button>' +
+      '<button class="preset-btn" id="p-b">Biased P(H)=1/4, P(T)=3/4</button>' +
+      '<button class="preset-btn" id="p-bad">Ex 14.2 Q1 (c): sums to 2.8</button>' +
+      '<button class="preset-btn" id="p-neg">Q1 (d): a negative probability</button>';
+    document.getElementById("p-f").onclick = function(){ setActivePreset(this); asg="fair"; draw(); };
+    document.getElementById("p-b").onclick = function(){ setActivePreset(this); asg="bias"; draw(); };
+    document.getElementById("p-bad").onclick = function(){ setActivePreset(this); asg="sum"; draw(); };
+    document.getElementById("p-neg").onclick = function(){ setActivePreset(this); asg="neg"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var labels, vals, ok, why;
+    if(asg === "fair"){ labels=["H","T"]; vals=[0.5,0.5]; ok=true; why="Axioms (i)–(iii): each ≥ 0, sum 1, disjoint union adds."; }
+    else if(asg === "bias"){ labels=["H","T"]; vals=[0.25,0.75]; ok=true; why="Still a legal probability — fairness is extra, not an axiom. Zoom p.8 assignment (2)."; }
+    else if(asg === "sum"){ labels=["ω1","ω2","ω3","ω4","ω5","ω6","ω7"]; vals=[0.1,0.2,0.3,0.4,0.5,0.6,0.7]; ok=false; why="Σ = 2.8 > 1, violates P(S) = 1."; }
+    else { labels=["ω1","ω2","ω3","ω4","ω5","ω6","ω7"]; vals=[-0.1,0.2,0.3,0.4,-0.2,0.1,0.3]; ok=false; why="Negative entries violate P(E) ≥ 0."; }
+    var sum = vals.reduce(function(a,b){ return a+b; },0);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var max = Math.max.apply(null, vals.map(Math.abs).concat([1]));
+    vals.forEach(function(v,i){
+      var x = 40 + i * (640/vals.length);
+      var h = Math.abs(v) / max * 180;
+      var y = v >= 0 ? 230 - h : 230;
+      var col = v < 0 || !ok ? "#f87171" : "#34d399";
+      m += '<rect x="'+x+'" y="'+y+'" width="50" height="'+h+'" fill="'+col+'"/>';
+      m += '<text x="'+(x+25)+'" y="255" fill="#94a3b8" font-size="11" text-anchor="middle">'+labels[i]+'</text>';
+    });
+    m += '<line x1="30" y1="50" x2="700" y2="50" stroke="#64748b" stroke-dasharray="4 4"/>';
+    svg.innerHTML = m;
+    readout(cell("Σ P(ω)", sum.toFixed(2), ok?"#34d399":"#f87171") + cell("valid?", ok?"YES":"NO", ok?"#34d399":"#f87171"));
+    verdict("<b>Axioms (zoom p.8):</b> (i) P(E) ≥ 0  (ii) P(S) = 1  (iii) P(E ∪ F) = P(E)+P(F) when E ∩ F = ∅. Consequence: P(∅) = 0. "+why);
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* equally likely dice / coins */
+window.SIMS.equally = (function(){
+  var exp = "die";
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>favourable</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#1e293b;"></span><span>not favourable</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-d">Die: P(prime)</button>' +
+      '<button class="preset-btn" id="p-c">Example 5: a diamond from 52</button>' +
+      '<button class="preset-btn" id="p-bag">Example 6: 9 discs, 4 red</button>';
+    document.getElementById("p-d").onclick = function(){ setActivePreset(this); exp="die"; draw(); };
+    document.getElementById("p-c").onclick = function(){ setActivePreset(this); exp="card"; draw(); };
+    document.getElementById("p-bag").onclick = function(){ setActivePreset(this); exp="bag"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var fav, n, title, expl;
+    if(exp === "die"){
+      n = 6; fav = [2,3,5]; title = "die faces"; expl = "P(prime) = 3/6 = 1/2. Ex 14.2 Q3(i).";
+      for(var i=1;i<=6;i++){
+        var on = fav.indexOf(i)>=0;
+        var x = 80 + (i-1)*100, y = 120;
+        m += '<rect x="'+x+'" y="'+y+'" width="80" height="80" rx="12" fill="'+(on?"#0ea5e9":"#1e293b")+'" stroke="#38bdf8"/>';
+        m += '<text x="'+(x+40)+'" y="'+(y+48)+'" fill="#f8fafc" font-size="28" text-anchor="middle">'+i+'</text>';
+      }
+    } else if(exp === "card"){
+      n = 52; fav = 13; title = "deck"; expl = "Example 5: P(diamond) = 13/52 = 1/4. P(not ace) = 48/52 = 12/13. P(black) = 1/2.";
+      for(var s=0;s<4;s++){
+        var names=["♠","♥","♦","♣"], cols=["#e2e8f0","#f87171","#f87171","#e2e8f0"];
+        m += '<rect x="'+(90+s*150)+'" y="80" width="130" height="140" rx="10" fill="#0b1220" stroke="'+cols[s]+'"/>';
+        m += '<text x="'+(155+s*150)+'" y="160" fill="'+cols[s]+'" font-size="40" text-anchor="middle">'+names[s]+'</text>';
+        m += '<text x="'+(155+s*150)+'" y="200" fill="#94a3b8" font-size="12" text-anchor="middle">13 cards</text>';
+      }
+    } else {
+      n = 9; fav = 4; title = "discs"; expl = "Example 6: 4 red, 3 blue, 2 yellow. P(red) = 4/9, P(not yellow) = 7/9.";
+      var cols = ["#f87171","#f87171","#f87171","#f87171","#38bdf8","#38bdf8","#38bdf8","#facc15","#facc15"];
+      cols.forEach(function(c,i){
+        var x = 80 + (i%9)*70, y = 140;
+        m += '<circle cx="'+x+'" cy="'+y+'" r="24" fill="'+c+'"/>';
+      });
+    }
+    svg.innerHTML = m;
+    var p = (exp==="die"?3:fav)/n;
+    readout(cell("n(S)", String(n)) + cell("n(E)", exp==="die"?"3":String(fav)) + cell("P(E)=m/n", p.toFixed(4), "#34d399"));
+    verdict("<b>§14.2.2 (zoom p.11):</b> if all n outcomes are equally likely, P(E) = n(E)/n(S). "+expl);
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* FLAGSHIP: addition rule Venn — P(A∪B)=P(A)+P(B)−P(A∩B) */
+window.SIMS.addition = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A − B</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>A ∩ B</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B − A</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-fig">Fig. 14.1 addition rule</button>' +
+      '<button class="preset-btn" id="p-me">Mutually exclusive: intersection 0</button>' +
+      '<button class="preset-btn" id="p-ex7">Example 7: Anil and Ashima</button>';
+    var mode = "fig";
+    document.getElementById("p-fig").onclick = function(){ setActivePreset(this); mode="fig"; sync(); draw(); };
+    document.getElementById("p-me").onclick = function(){ setActivePreset(this); mode="me"; document.getElementById("ctrl-i-range").value = 0; draw(); };
+    document.getElementById("p-ex7").onclick = function(){
+      setActivePreset(this); mode="ex7";
+      document.getElementById("ctrl-a-range").value = 0.05;
+      document.getElementById("ctrl-b-range").value = 0.10;
+      document.getElementById("ctrl-i-range").value = 0.02;
+      draw();
+    };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>P(A)</span><span class="val" id="ctrl-a">0.42</span></div>' +
+      '<input type="range" id="ctrl-a-range" min="0" max="1" step="0.01" value="0.42"></div>' +
+      '<div class="control-item"><div class="control-label"><span>P(B)</span><span class="val" id="ctrl-b">0.48</span></div>' +
+      '<input type="range" id="ctrl-b-range" min="0" max="1" step="0.01" value="0.48"></div>' +
+      '<div class="control-item"><div class="control-label"><span>P(A ∩ B)</span><span class="val" id="ctrl-i">0.16</span></div>' +
+      '<input type="range" id="ctrl-i-range" min="0" max="1" step="0.01" value="0.16"></div>';
+    ["ctrl-a-range","ctrl-b-range","ctrl-i-range"].forEach(function(id){
+      document.getElementById(id).oninput = function(){ draw(); };
+    });
+    function sync(){ /* mode captured */ }
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var a = Number(document.getElementById("ctrl-a-range").value);
+    var b = Number(document.getElementById("ctrl-b-range").value);
+    var i = Number(document.getElementById("ctrl-i-range").value);
+    // intersection cannot exceed either
+    if(i > a) i = a;
+    if(i > b) i = b;
+    document.getElementById("ctrl-a").textContent = a.toFixed(2);
+    document.getElementById("ctrl-b").textContent = b.toFixed(2);
+    document.getElementById("ctrl-i").textContent = i.toFixed(2);
+    var union = a + b - i;
+    var onlyA = a - i, onlyB = b - i;
+    var valid = union <= 1 + 1e-9 && i <= a && i <= b;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="60" y="24" width="600" height="250" rx="10" fill="none" stroke="#64748b"/>';
+    m += '<text x="80" y="48" fill="#94a3b8">S</text>';
+    // Circle centres: 200 px apart ≈ disjoint; 90 px ≈ heavy overlap. The subtracted P(A∩B) is the lens.
+    var overlapFrac = i / Math.max(0.02, Math.min(a, b, 1));
+    var dist = 200 - 110 * overlapFrac;
+    var cx1 = 330 - dist / 2, cx2 = 330 + dist / 2, r = 100, cy = 150;
+    m += '<circle cx="'+cx1+'" cy="'+cy+'" r="'+r+'" fill="#0ea5e944" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<circle cx="'+cx2+'" cy="'+cy+'" r="'+r+'" fill="#f59e0b44" stroke="#f59e0b" stroke-width="3"/>';
+    m += '<text x="'+(cx1-40)+'" y="154" fill="#38bdf8" font-size="16" text-anchor="middle">A−B</text>';
+    m += '<text x="330" y="154" fill="#34d399" font-size="16" text-anchor="middle">A∩B</text>';
+    m += '<text x="'+(cx2+40)+'" y="154" fill="#f59e0b" font-size="16" text-anchor="middle">B−A</text>';
+    m += '<text x="'+(cx1-40)+'" y="176" fill="#e2e8f0" font-size="13" text-anchor="middle">'+onlyA.toFixed(2)+'</text>';
+    m += '<text x="330" y="176" fill="#e2e8f0" font-size="13" text-anchor="middle">'+i.toFixed(2)+'</text>';
+    m += '<text x="'+(cx2+40)+'" y="176" fill="#e2e8f0" font-size="13" text-anchor="middle">'+onlyB.toFixed(2)+'</text>';
+    svg.innerHTML = m;
+    readout(cell("P(A−B)", onlyA.toFixed(2), "#38bdf8") + cell("P(A∩B)", i.toFixed(2), "#34d399") + cell("P(B−A)", onlyB.toFixed(2), "#f59e0b") + cell("P(A∪B)", union.toFixed(2), valid?"#34d399":"#f87171"));
+    verdict("<b>Fig. 14.1 / §14.2.3 (zoom p.12–13):</b> A ∪ B = (A−B) ∪ (A∩B) ∪ (B−A), pairwise disjoint, so P(A∪B) = P(A)+P(B)−P(A∩B). If mutually exclusive, P(A∩B)=0 and the middle slice vanishes — Axiom (iii). Ex 14.2 Q17: 0.42+0.48−0.16 = 0.74.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* complement */
+window.SIMS.complement = (function(){
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>A′ = S − A</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ten">10 cards, A = {2,4,6,8}</button>' +
+      '<button class="preset-btn" id="p-ace">Example 5(ii): not an ace</button>';
+    document.getElementById("p-ten").onclick = function(){ setActivePreset(this); draw(); };
+    document.getElementById("p-ace").onclick = function(){ setActivePreset(this); draw(); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>P(A)</span><span class="val" id="ctrl-p">0.40</span></div>' +
+      '<input type="range" id="ctrl-p-range" min="0" max="1" step="0.01" value="0.4"></div>';
+    document.getElementById("ctrl-p-range").oninput = function(){ draw(); };
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var p = Number(document.getElementById("ctrl-p-range").value);
+    document.getElementById("ctrl-p").textContent = p.toFixed(2);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="70" y="40" width="580" height="220" rx="12" fill="#7c2d12" stroke="#f59e0b" stroke-width="2"/>';
+    var w = 80 + p * 400;
+    m += '<circle cx="280" cy="150" r="'+ (50+p*60) +'" fill="#0ea5e9" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<text x="280" y="154" fill="#0f172a" font-size="18" text-anchor="middle">A</text>';
+    m += '<text x="520" y="154" fill="#fde68a" font-size="18" text-anchor="middle">A′</text>';
+    svg.innerHTML = m;
+    readout(cell("P(A)", p.toFixed(2), "#38bdf8") + cell("P(A′)", (1-p).toFixed(2), "#f59e0b") + cell("P(A)+P(A′)", "1.00", "#34d399"));
+    verdict("<b>§14.2.4 (zoom p.13–14):</b> A and A′ are mutually exclusive and exhaustive, so P(A)+P(A′)=P(S)=1, hence P(not A)=1−P(A). Ten-card example: P(A)=4/10=2/5, P(A′)=3/5. Example 5: P(not ace)=1−4/52=12/13.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+/* cards / combinatorics applications */
+window.SIMS.cards = (function(){
+  var scene = "ex8";
+  function C(n,k){
+    if(k<0||k>n) return 0;
+    var r=1; for(var i=1;i<=k;i++) r = r * (n-k+i)/i; return r;
+  }
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>favourable committees / hands</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ex8">Example 8: 2 men + 2 women, committee of 2</button>' +
+      '<button class="preset-btn" id="p-misc1">Misc 1: 5 marbles from 60</button>' +
+      '<button class="preset-btn" id="p-misc2">Misc 2: 3 diamonds and 1 spade</button>';
+    document.getElementById("p-ex8").onclick = function(){ setActivePreset(this); scene="ex8"; draw(); };
+    document.getElementById("p-misc1").onclick = function(){ setActivePreset(this); scene="m1"; draw(); };
+    document.getElementById("p-misc2").onclick = function(){ setActivePreset(this); scene="m2"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var note, p1, p2, p3;
+    if(scene === "ex8"){
+      var tot = C(4,2);
+      p1 = C(2,2)/tot; p2 = (C(2,1)*C(2,1))/tot; p3 = C(2,2)/tot;
+      note = "Example 8: ⁴C₂ = 6 committees. P(no man)=²C₂/⁶=1/6, P(one man)=4/6=2/3, P(two men)=1/6.";
+      ["WW  1/6","MW  2/3","MM  1/6"].forEach(function(lab,i){
+        m += '<rect x="'+(80+i*200)+'" y="80" width="180" height="140" rx="12" fill="#1e3a5f" stroke="#38bdf8"/>';
+        m += '<text x="'+(170+i*200)+'" y="160" fill="#e2e8f0" font-size="18" text-anchor="middle">'+lab+'</text>';
+      });
+    } else if(scene === "m1"){
+      p1 = C(20,5)/C(60,5); p2 = 1 - C(30,5)/C(60,5);
+      note = "Misc 1: 10R+20B+30G, draw 5. P(all blue)=²⁰C₅/⁶⁰C₅. P(at least one green)=1 − ³⁰C₅/⁶⁰C₅ (the 30 non-green).";
+      m += '<text x="360" y="140" fill="#e2e8f0" font-size="16" text-anchor="middle">P(all blue) = '+p1.toExponential(3)+'</text>';
+      m += '<text x="360" y="180" fill="#34d399" font-size="16" text-anchor="middle">P(≥1 green) = '+p2.toFixed(4)+'</text>';
+    } else {
+      p1 = C(13,3)*C(13,1)/C(52,4);
+      note = "Misc 2: ⁴C(hands) = ⁵²C₄. Favourable ¹³C₃ · ¹³C₁.";
+      m += '<text x="360" y="150" fill="#e2e8f0" font-size="18" text-anchor="middle">P(3♦ + 1♠) = (¹³C₃ · ¹³C₁) / ⁵²C₄ = '+p1.toFixed(5)+'</text>';
+    }
+    svg.innerHTML = m;
+    readout(cell("combinatorial P", "n(E)/n(S)") + (scene==="ex8"? cell("P(one man)", "2/3"): cell("value", (p1||0).toFixed(5))));
+    verdict("<b>"+note+"</b> Equally likely outcomes plus counting — the same m/n rule of §14.2.2, with ⁿCᵣ from Chapter 6.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

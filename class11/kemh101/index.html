@@ -1,0 +1,2241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 1: Sets — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 01 · SETS</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 49 Exercises from NCERT Class 11 Mathematics (pp. 1–23) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kemh101", "chapterNumber": 1, "book_name": "Mathematics", "title": "Sets", "subtitle": "Well-defined collections, roster and set-builder, empty/finite/infinite, subsets and intervals, Venn diagrams, ∪ ∩ −, and complements with De Morgan’s laws.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh101.pdf", "page_start": 1, "page_end": 23, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "sets-rep", "nav": "Sets & representations", "title": "A set is a well-defined collection — roster versus set-builder.", "deck": "Cantor’s language: objects, ∈ / ∉, roster form and set-builder form. The collection of ‘ten most talented writers of India’ is not a set.", "minutes": 8, "section": "1.1–1.2", "pages": [1, 5], "print": "1–5", "sim": "roster", "simTitle": "Roster ↔ set-builder lab", "quick": ["A <strong>set</strong> is a well-defined collection of objects (Cantor). We can decide, for any candidate, whether it belongs or not. The rivers of India form a set (Ganga ∈, Nile ∉). The collection of the ten most talented writers of India does not: the criterion is not well-defined (Ex 1.1).", "Standard number sets used throughout the book: <strong>N</strong> natural numbers, <strong>Z</strong> integers, <strong>Q</strong> rationals, <strong>R</strong> reals, and the positive versions Z⁺, Q⁺, R⁺. Sets are denoted by capitals; elements by small letters. <em>a</em> ∈ A means ‘belongs to’; <em>b</em> ∉ A means ‘does not’.", "Two writings: <strong>roster</strong> (list inside braces, order immaterial, no repeats — SCHOOL = {S,C,H,O,L}) and <strong>set-builder</strong> {x : property of x}. Example 4 (zoom p.4): {1/2, 2/3, 3/4, 4/5, 5/6, 6/7} = {x : x = n/(n+1), n ∈ N, 1 ≤ n ≤ 6}."], "formulas": [{"label": "Membership", "html": "a ∈ A &nbsp;|&nbsp; b ∉ A", "cond": "epsilon: ‘belongs to’"}, {"label": "Set-builder (Ex. 4)", "html": "{ x : x = n/(n+1), n ∈ N, 1 ≤ n ≤ 6 }", "cond": "stacked fractions 1/2 … 6/7, zoom p.4"}], "deeper": "Roster form hides the generating rule; set-builder hides the list. Infinite sets that follow a pattern may still be rostered with dots ({1,3,5,…}); R cannot, because there is no listing pattern (note after §1.4). Repeating an element does not enlarge a set: {1,2,3} = {2,2,1,3,3}.", "worked": "Example 1 (zoom p.3): x² + x − 2 = 0 ⇒ (x−1)(x+2)=0 ⇒ roster {1, −2}. Example 2: {x : x positive integer, x² < 40} = {1,2,3,4,5,6} because 6²=36<40 and 7²=49>40.", "prediction": {"prompt": "Is ‘the collection of ten most talented writers of India’ a set?", "options": ["No — ‘most talented’ is not a well-defined criterion.", "Yes — there are exactly ten of them, so it is finite.", "Yes — any collection of people is a set."], "answer": 0, "explanation": "Ex 1.1(ii): a set requires a criterion that decides membership unambiguously. Talent ranking is person-dependent, so this collection is not a set. Finiteness is irrelevant if the collection is not well-defined."}, "connect": [["Munshi Premchand’s novels", "Ex 1.1(vi) is a set: the bibliography of Premchand is a definite list. ‘Most dangerous animals of the world’ (Ex 1.1(ix)) is not — danger is not a well-defined cut."], ["Wow — Ganga ∈ rivers of India, Nile ∉", "NCERT’s first membership test is geographic. The Nile is a river, but it is not an element of the set of Indian rivers. Belonging is about the defining property, not about being ‘the same kind of object’."], ["TRIGONOMETRY letters", "Ex 1.1.3(v): the word TRIGONOMETRY as a set of letters drops repeats — {T,R,I,G,O,N,M,E,Y}. Roster never lists T twice.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "State the definition of a set, write SCHOOL in roster form, and convert {1/2,…,6/7} to set-builder (Example 4).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which of these is a set?", "options": ["The collection of all natural numbers less than 100", "The collection of ten most talented writers of India", "A collection of most dangerous animals of the world"], "answer": 0, "hint": "Ex 1.1: well-defined ⇔ we can decide membership.", "solution": "Natural numbers < 100 is unambiguous. Talent and danger are not well-defined criteria.", "wrong": ["", "Ex 1.1(ii): not well-defined.", "Ex 1.1(ix): not well-defined."]}, {"level": "Medium", "type": "mcq", "map": "Example 1", "prompt": "The solution set of x² + x − 2 = 0 in roster form is", "options": ["{1, −2}", "{1, 2}", "{−1, 2}"], "answer": 0, "hint": "Factor (x−1)(x+2).", "solution": "(x−1)(x+2)=0 ⇒ x=1 or x=−2. Roster {1, −2}.", "wrong": ["", "x=2 is not a root: 4+2−2=4≠0.", "x=−1: 1−1−2=−2≠0."]}, {"level": "Hard", "type": "mcq", "prompt": "The set {1/2, 2/3, 3/4, 4/5, 5/6, 6/7} in set-builder form is", "options": ["{ x : x = n/(n+1), n ∈ N, 1 ≤ n ≤ 6 }", "{ x : x = n/n+1, n ∈ N }", "{ x : x = (n+1)/n, n ∈ N, 1 ≤ n ≤ 6 }"], "answer": 0, "hint": "Example 4, zoom p.4 — stacked fractions, no slash in the PDF.", "solution": "Numerator one less than denominator; n from 1 to 6. The PDF writes n over (n+1), not a linear slash.", "wrong": ["", "Unbound n and a linear reading that mangles the stacked fraction.", "That would be {2/1, 3/2, …}."]}]}, {"id": "empty-finite", "nav": "Empty, finite, infinite", "title": "The empty set is finite; primes are infinite; a student cannot be in Class X and XI.", "deck": "φ = { } has no elements and is finite. n(S) is the number of distinct elements. Infinite sets may use dots in roster form — but R cannot.", "minutes": 8, "section": "1.3–1.4", "pages": [5, 7], "print": "5–7", "sim": "finiteinf", "simTitle": "Finite / infinite / empty classifier", "quick": ["A student cannot study in Class X and Class XI at once, so B = {x : x is presently in both} is the <strong>empty set</strong> φ (also { }). Definition 1: a set with no element. There is no natural number between 1 and 2; no even prime greater than 2; x²=4 has no odd solution — all empty.", "Definition 2: a set is <strong>finite</strong> if it is empty or has a definite number of elements; otherwise <strong>infinite</strong>. n(S) counts distinct elements. Days of the week are finite; points on a line are infinite. {1,2,3,…} is N; R cannot be rostered because its elements follow no listing pattern."], "formulas": [{"label": "Empty set", "html": "φ = { }", "cond": "also called null / void; finite"}, {"label": "Cardinality", "html": "n(S) = number of distinct elements", "cond": "finite ⇔ n(S) is a natural number, or S=φ"}], "deeper": "Empty is finite: n(φ)=0 is definite. ‘Animals living on the earth’ (Ex 1.2.3) is finite — a huge but definite head-count at a frozen instant — while ‘lines parallel to the x-axis’ is infinite. The even-prime set {2} is a singleton, hence not empty (Ex 1.2.1(ii)).", "worked": "Example 6: (i) {x∈N : (x−1)(x−2)=0}={1,2} finite. (ii) {x∈N : x²=4}={2} finite. (iii) {x∈N : 2x−1=0}=φ finite. (iv) primes: infinite. (v) odd naturals: infinite.", "prediction": {"prompt": "The set of even prime numbers is…", "options": ["finite and non-empty: {2}", "empty, because ‘even prime’ is a contradiction", "infinite, because there are infinitely many evens"], "answer": 0, "explanation": "2 is the unique even prime. Ex 1.2.1(ii) is not a null set. The set of even primes greater than 2 is empty (§1.3(iii))."}, "connect": [["Class X and Class XI", "NCERT’s empty-set story is a school timetable: nobody is presently enrolled in both classes. The same student can belong to ‘Class XI last year’ and ‘Class XI this year’ across time — the word presently is doing the work."], ["Wow — the set of animals on Earth is finite", "Ex 1.2.3(iv). At a frozen instant the head-count is some natural number (unknown, huge). Contrast: multiples of 5, or circles through the origin, which can be listed without end."], ["Census vs N", "India’s census is a finite set of residents on the reference night. The set of natural numbers is the template of ‘no last element’.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "Give one empty set, one finite non-empty set, and one infinite set from Example 6. Why is φ finite?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The empty set is", "options": ["finite", "infinite", "neither, because it has no elements to count"], "answer": 0, "hint": "Definition 2 includes empty as finite.", "solution": "A set is finite if empty or of definite size. n(φ)=0 is definite.", "wrong": ["", "Infinite means ‘not a definite number’.", "Having zero elements is a definite count."]}, {"level": "Medium", "type": "mcq", "map": "Ex 1.2.1", "prompt": "Which is a null set?", "options": ["Odd natural numbers divisible by 2", "Even prime numbers", "Prime numbers less than 99"], "answer": 0, "hint": "Odd and divisible by 2 cannot happen.", "solution": "No odd multiple of 2 exists in N. {2} is a non-empty even-prime set. Primes < 99 are a finite non-empty list.", "wrong": ["", "{2} is a singleton.", "Finite, not empty."]}, {"level": "Hard", "type": "mcq", "prompt": "{x ∈ N : 2x − 1 = 0} is", "options": ["φ, hence finite", "{1/2}, hence finite", "infinite"], "answer": 0, "hint": "Example 6(iii): 2x=1 has no natural solution.", "solution": "x=1/2 ∉ N, so the set is empty, and empty ⇒ finite.", "wrong": ["", "1/2 is not a natural number.", "Empty is finite."]}]}, {"id": "equal-sets", "nav": "Equal sets", "title": "Equal sets have exactly the same elements — order and repeats do not count.", "deck": "A = B iff every element of A is in B and vice versa. ALLOY and LOYAL give the same letter-set. {n ∈ Z : n² ≤ 4} ≠ {1,2}.", "minutes": 7, "section": "1.5", "pages": [7, 8], "print": "7–8", "sim": "equalsets", "simTitle": "Equal-set tester (order, repeats, builder)", "quick": ["Definition 3: A = B if they have exactly the same elements; otherwise A ≠ B. Order is irrelevant: {1,2,3,4}={3,1,4,2}. Repeats do not change a set: {1,2,3}={2,2,1,3,3}.", "Example 8: letters of ALLOY and LOYAL are both {A,L,O,Y} — equal. A={n∈Z : n²≤4}={−2,−1,0,1,2} and B={x∈R : x²−3x+2=0}={1,2} are not equal, because 0 ∈ A and 0 ∉ B."], "formulas": [{"label": "Equality", "html": "A = B  ⇔  (x ∈ A ⇔ x ∈ B)", "cond": "Definition 3; order/repeats ignored"}], "deeper": "Example 7: A={0}, B=φ (no real is both >15 and <5), C={5}, D={−5,5}, E={5} (positive integral root of x²−2x−15=0). The only equal pair is C=E. Equality is not ‘same size’ and not ‘same description’ — only same members.", "worked": "Ex 1.2.5(i): A={2,3}, B={x : x²+5x+6=0}. Roots of (x+2)(x+3)=0 are −2,−3, not 2,3. So A ≠ B. (ii) FOLLOW and WOLF both give {F,O,L,W} — equal.", "prediction": {"prompt": "X = letters of ALLOY, B = letters of LOYAL. Then", "options": ["X = B = {A,L,O,Y}", "X ≠ B because ALLOY has two L’s and LOYAL rearranges them", "X = B = {A,L,L,O,Y} with two L’s kept"], "answer": 0, "explanation": "Example 8(i): repetition does not change a set. Roster writes each letter once."}, "connect": [["LOYAL / ALLOY / FOLLOW / WOLF", "Anagrams are the textbook’s equality engine. Two words are equal as letter-sets precisely when they use the same alphabet of distinct letters, not when they are anagrams of equal length (SCHOOL vs LOCHS)."], ["Wow — {0} ≠ φ", "Example 7: A={0} contains an object, the number zero. B={x : x>15 and x<5}=φ contains nothing. Zero is an element; it is not ‘nothing’."], ["Aadhaar as a set of residents", "Two UIDAI extracts are equal sets of residents iff they contain the same Aadhaar numbers, regardless of sort order or duplicate rows in a spreadsheet.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "Write Definition 3 and decide whether {n∈Z : n²≤4} equals {1,2}.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "{1,2,3} and {2,2,1,3,3} are", "options": ["equal", "unequal because the second has five listings", "unequal because order differs"], "answer": 0, "hint": "Note after Definition 3.", "solution": "Repeats and order do not change a set.", "wrong": ["", "n(S) counts distinct elements.", "Order is immaterial in roster form."]}, {"level": "Medium", "type": "mcq", "map": "Ex 1.2.5", "prompt": "A={2,3}, B={x : x²+5x+6=0}. Then", "options": ["A ≠ B, because B={−2,−3}", "A = B", "B = φ"], "answer": 0, "hint": "Factor x²+5x+6=(x+2)(x+3).", "solution": "Roots −2,−3, not 2 and 3.", "wrong": ["", "Sign error on the roots.", "Two roots exist."]}, {"level": "Hard", "type": "mcq", "prompt": "From Example 7, the only equal pair among A={0}, B=φ, C={5}, D={−5,5}, E={5} is", "options": ["C = E", "A = B", "C = D"], "answer": 0, "hint": "E is the positive integral root of x²−2x−15=0.", "solution": "x²−2x−15=(x−5)(x+3); positive integral root 5. C=E={5}. A≠φ; D has −5.", "wrong": ["", "{0} is not empty.", "D also contains −5."]}]}, {"id": "subsets-intervals", "nav": "Subsets & intervals", "title": "A ⊂ B means every element of A is in B; intervals are infinite subsets of R.", "deck": "φ ⊂ every set; A ⊂ A; A ⊂ B and B ⊂ A ⇔ A=B. Open (a,b), closed [a,b], half-open, and rays [0,∞), (−∞,0).", "minutes": 9, "section": "1.6–1.7", "pages": [9, 12], "print": "9–12", "sim": "intervals", "simTitle": "Interval painter on the number line", "quick": ["Definition 4: A ⊂ B if a ∈ A ⇒ a ∈ B. Every set is a subset of itself; φ is a subset of every set. If A ⊂ B and A ≠ B then A is a <strong>proper</strong> subset and B a superset. A singleton has one element.", "Important chain: N ⊂ Z ⊂ Q ⊂ R and T ⊂ R (irrationals), with N ⊄ T. Intervals: (a,b)={y : a<y<b}, [a,b]={x : a≤x≤b}, [a,b), (a,b]. Length of any of these is b−a. [0,∞) is the non-negative reals; (−∞,∞)=R.", "Universal set U is the ambient basic set of a discussion (integers inside Q or R; all people on Earth in a population study). Every set we then write is a subset of U."], "formulas": [{"label": "Subset", "html": "A ⊂ B  ⇔  (a ∈ A ⇒ a ∈ B)", "cond": "A ⊂ B and B ⊂ A ⇔ A = B"}, {"label": "Open / closed interval", "html": "(a,b) = {y : a < y < b}, &nbsp; [a,b] = {x : a ≤ x ≤ b}", "cond": "length = b − a"}, {"label": "Number subsets", "html": "N ⊂ Z ⊂ Q ⊂ R, &nbsp; T ⊂ R, &nbsp; N ⊄ T", "cond": "T = R − Q, irrationals"}], "deeper": "Element vs subset is the classic trap (Example 11, Ex 1.3.3): if A={1}, B={{1},2}, C={{1},2,3}, then A ∈ B and B ⊂ C but A ⊄ C, because 1 ∈ A while 1 ∉ C. An element of a set is never a subset of itself. {a} ⊂ {a,b,c} is true; {a} ∈ {a,b,c} is false.", "worked": "Example 9: φ ⊂ B always; {1,3} ⊄ {1,5,9} because 3 is missing; {1,3} ⊂ {1,3,5,7,9}; {1,5,9} ⊂ {1,3,5,7,9}. Ex 1.3.5: {x∈R : −4<x≤6}=(−4,6].", "prediction": {"prompt": "Let A={1}, B={{1}, 2}, C={{1}, 2, 3}. Which is true?", "options": ["A ∈ B, B ⊂ C, but A ⊄ C", "A ⊂ C because A ∈ B and B ⊂ C", "φ ∈ A"], "answer": 0, "explanation": "Example 11. Membership is not transitive through ∈. 1 is an element of A, not of C. C’s elements are the set {1} and the numbers 2, 3."}, "connect": [["Your class ⊂ your school ⊂ India", "§1.6’s opening picture: every student of your class is a student of your school. That is ⊂, not ∈. You (a person) are an element of the class set; the class set is a subset of the school set."], ["Wow — (a,b) has no endpoints but infinite length-many points", "An open interval contains infinitely many reals (length b−a) yet contains neither a nor b. Finite length ≠ finite set."], ["GST slabs as intervals", "A 5% slab written [₹0, ₹10000) is a half-open interval of invoice values — the right endpoint jumps to the next slab. Interval notation is how a finance rule becomes a subset of R.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "Write the four interval notations and the chain N ⊂ Z ⊂ Q ⊂ R. Give one true and one false statement from Ex 1.3.2.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "φ ⊂ B is", "options": ["always true", "true only when B is empty", "never true"], "answer": 0, "hint": "Example 9(i).", "solution": "The empty set is a subset of every set, by vacuous implication.", "wrong": ["", "φ ⊂ φ is also true.", "Definition 4 plus ‘no counter-element’."]}, {"level": "Medium", "type": "mcq", "map": "Ex 1.3.5", "prompt": "{x ∈ R : −4 < x ≤ 6} as an interval is", "options": ["(−4, 6]", "[−4, 6]", "(−4, 6)"], "answer": 0, "hint": "Left open, right closed.", "solution": "Strict inequality on −4, inclusive on 6.", "wrong": ["", "−4 is not included.", "6 is included."]}, {"level": "Hard", "type": "mcq", "map": "Ex 1.3.3", "prompt": "A = {1, 2, {3,4}, 5}. Which is correct?", "options": ["{3,4} ∈ A and {{3,4}} ⊂ A", "{3,4} ⊂ A", "1 ⊂ A"], "answer": 0, "hint": "{3,4} is an element, not a subset; wrapping it in braces makes a subset.", "solution": "{3,4} is one object sitting inside A, so ∈. The singleton {{3,4}} is a subset. 1 is an element, so 1 ⊂ A is a type error (a number is not a set of A’s elements in this writing).", "wrong": ["", "3 and 4 are not elements of A; the pair is.", "1 ∈ A, not 1 ⊂ A."]}]}, {"id": "venn-ops", "nav": "Venn, union, intersection", "title": "Venn diagrams: ∪ paints either circle, ∩ paints the overlap, − paints ‘in A not in B’.", "deck": "A ∪ B = {x : x∈A or x∈B}, A ∩ B = {x : x∈A and x∈B}, A − B = {x : x∈A and x∉B}. Disjoint ⇔ A ∩ B = φ.", "minutes": 9, "section": "1.8–1.9", "pages": [13, 17], "print": "13–17", "sim": "vennops", "simTitle": "Venn operations lab (union / intersection / difference)", "quick": ["John Venn’s diagrams: a rectangle for U, circles for subsets. Fig 1.2–1.3: U={1,…,10}, A=evens, B={4,6} ⊂ A.", "<strong>Union</strong> A ∪ B takes every element of A or B, commons once (Def. 5). If B ⊂ A then A ∪ B = A. Hockey ∪ football in Class XI is ‘in at least one team’ (Example 14). Laws: commutative, associative, A ∪ φ = A, A ∪ A = A, U ∪ A = U.", "<strong>Intersection</strong> A ∩ B is the common part (Def. 6). If B ⊂ A then A ∩ B = B. A ∩ B = φ means <strong>disjoint</strong> (Fig 1.6). Distributive: A ∩ (B ∪ C)=(A ∩ B) ∪ (A ∩ C). <strong>Difference</strong> A − B = {x : x∈A and x∉B}; A − B ≠ B − A in general. A − B, A ∩ B, B − A are pairwise disjoint (Fig 1.9)."], "formulas": [{"label": "Union", "html": "A ∪ B = { x : x ∈ A or x ∈ B }", "cond": "B ⊂ A ⇒ A ∪ B = A"}, {"label": "Intersection", "html": "A ∩ B = { x : x ∈ A and x ∈ B }", "cond": "disjoint ⇔ A ∩ B = φ"}, {"label": "Difference", "html": "A − B = { x : x ∈ A and x ∉ B }", "cond": "A − B ≠ B − A in general"}], "deeper": "The shaded Venn for A ∪ B is the whole two-lobe; for A ∩ B the lens; for A − B the crescent of A. Common-element-once is why roster of A ∪ B never lists 6 twice when 6 ∈ A and 6 ∈ B (Example 12). R − Q is exactly the irrationals T (Ex 1.4.11).", "worked": "Example 12: A={2,4,6,8}, B={6,8,10,12} ⇒ A ∪ B={2,4,6,8,10,12}, A ∩ B={6,8}. Example 18: A={1,2,3,4,5,6}, B={2,4,6,8} ⇒ A − B={1,3,5}, B − A={8}.", "prediction": {"prompt": "A={1,2,3,4,5,6}, B={2,4,6,8}. Then A − B and B − A are", "options": ["{1,3,5} and {8}, and they are not equal", "equal, because difference is commutative", "both empty, because A and B overlap"], "answer": 0, "explanation": "Example 18 / Fig 1.8. Difference is ordered: ‘in A not in B’ is not ‘in B not in A’."}, "connect": [["Hockey and football in Class XI", "Example 14: X ∪ Y is anyone in hockey or football or both; X ∩ Y is Geeta, the only dual-sport name in the example. Indian school annual-day lists are union/intersection problems."], ["Wow — even ∩ odd = φ, even ∪ odd = Z (almost)", "Ex 1.4.8(iii): even integers and odd integers are disjoint. Their union is all of Z. That is the prototype of a partition of a universal set."], ["UPI ∩ credit-card users", "NPCI and RBI reports ask for people who use UPI, cards, or both. The Venn lens is the dual-instrument population; the crescents are exclusive users — exactly A − B and B − A.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "Write the three set-builder definitions ∪, ∩, − and one Venn picture of each. When is A ∪ B = A?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If B ⊂ A then A ∪ B equals", "options": ["A", "B", "φ"], "answer": 0, "hint": "Example 13.", "solution": "Every element of B is already in A, so the union does not grow.", "wrong": ["", "That is A ∩ B.", "Union with a subset is the larger set."]}, {"level": "Medium", "type": "mcq", "map": "Ex 1.4.1", "prompt": "X={1,3,5}, Y={1,2,3}. Then X ∪ Y =", "options": ["{1,2,3,5}", "{1,3}", "{1,2,3,4,5}"], "answer": 0, "hint": "Commons once.", "solution": "1 and 3 are listed once; 2 from Y; 5 from X.", "wrong": ["", "That is the intersection.", "4 is in neither."]}, {"level": "Hard", "type": "mcq", "prompt": "A − B, A ∩ B and B − A are", "options": ["pairwise disjoint, and their union is A ∪ B", "always equal", "empty whenever A and B overlap"], "answer": 0, "hint": "Fig 1.9 remark.", "solution": "The three regions of a two-circle Venn partition A ∪ B.", "wrong": ["", "Difference is not commutative.", "Overlap is exactly A ∩ B, the middle piece."]}]}, {"id": "complement", "nav": "Complement & De Morgan", "title": "A′ = U − A; De Morgan: (A ∪ B)′ = A′ ∩ B′ and (A ∩ B)′ = A′ ∪ B′.", "deck": "Complement is difference from the universal set. Double complement returns A. φ′ = U, U′ = φ.", "minutes": 8, "section": "1.10", "pages": [18, 20], "print": "18–20", "sim": "demorgan", "simTitle": "De Morgan Venn lab", "quick": ["Definition 7: if A ⊂ U then A′ = {x : x ∈ U and x ∉ A} = U − A. Example 20: U={1,…,10}, A=odds ⇒ A′=evens. Example 21: A = girls in co-ed Class XI ⇒ A′ = boys. Always (A′)′ = A.", "De Morgan (Example 22 and the two laws): (A ∪ B)′ = A′ ∩ B′ and (A ∩ B)′ = A′ ∪ B′. Complement laws: A ∪ A′ = U, A ∩ A′ = φ. Empty/universal: φ′ = U, U′ = φ. These are the last algebraic tools of the chapter — this reprint has no §1.11 on counting n(A ∪ B)."], "formulas": [{"label": "Complement", "html": "A′ = U − A = { x : x ∈ U, x ∉ A }", "cond": "(A′)′ = A"}, {"label": "De Morgan", "html": "(A ∪ B)′ = A′ ∩ B′, &nbsp; (A ∩ B)′ = A′ ∪ B′", "cond": "named after Augustus De Morgan"}, {"label": "Complement laws", "html": "A ∪ A′ = U, &nbsp; A ∩ A′ = φ, &nbsp; φ′ = U, &nbsp; U′ = φ", "cond": "§1.10 list"}], "deeper": "Shaded complement (Fig 1.10) is the rectangle minus the circle. De Morgan is the observation that the unshaded two-lobe equals the overlap of the two unshaded crescents. Verify on a 9-element U (Ex 1.5.4) by listing, not by drawing alone.", "worked": "Example 22: U={1,2,3,4,5,6}, A={2,3}, B={3,4,5}. A′={1,4,5,6}, B′={1,2,6}, A′ ∩ B′={1,6}. A ∪ B={2,3,4,5}, (A ∪ B)′={1,6}. Equal, as De Morgan claims.", "prediction": {"prompt": "U={1,…,9}, A={1,2,3,4}, C={3,4,5,6}. Then (A ∪ C)′ is", "options": ["{7,8,9}", "{1,2,5,6,7,8,9}", "{3,4}"], "answer": 0, "explanation": "Ex 1.5.1(iii): A ∪ C={1,2,3,4,5,6}, complement in U is {7,8,9}."}, "connect": [["Girls′ = boys in a co-ed Class XI", "Example 21: once U is ‘all students of that class’, complement is the other gender. Change U to ‘all students in the school’ and A′ becomes everyone who is not a Class-XI girl — a different set. Complement is always relative to U."], ["Wow — De Morgan is why ‘not (A or B)’ = ‘not A and not B’", "The English of a CBSE true/false item and the Venn of Fig 1.10 are the same law. Circuit designers (NAND/NOR) meet it as Boolean algebra; this chapter meets it as shaded rectangles."], ["Equilateral triangles as a complement", "Ex 1.5.6: U = all triangles in a plane, A = triangles with at least one angle ≠ 60°. Then A′ is the set of equilateral triangles (all angles 60°).", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "Write A′ = U − A, both De Morgan laws, and (A′)′ = A. Compute A′ for Example 20.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A ∪ A′ equals", "options": ["U", "φ", "A"], "answer": 0, "hint": "Complement laws, Ex 1.5.7.", "solution": "Everything in U is either in A or in A′.", "wrong": ["", "That is A ∩ A′.", "Union with the complement fills U."]}, {"level": "Medium", "type": "mcq", "map": "Ex 1.5.1", "prompt": "U={1..9}, A={1,2,3,4}, B={2,4,6,8}. (A ∪ B)′ =", "options": ["{5,7,9}", "{1,3,5,7,9}", "{6,8}"], "answer": 0, "hint": "A ∪ B = {1,2,3,4,6,8}.", "solution": "Missing from U: 5,7,9. Equals A′ ∩ B′ by De Morgan.", "wrong": ["", "That forgot to remove 1 and 3.", "Those are in B, hence in the union."]}, {"level": "Hard", "type": "mcq", "prompt": "This 2026–27 reprint of Chapter 1 ends complement with De Morgan. The practical-problems counting formula n(A ∪ B)=n(A)+n(B)−n(A ∩ B) is", "options": ["not a numbered section in this 23-page PDF", "§1.11, fully written with three-set examples", "Exercise 1.6 in this edition"], "answer": 0, "hint": "COVERAGE / contents vs pages 21–23.", "solution": "Honest edition map: sections run 1.1–1.10 then Miscellaneous Examples, Miscellaneous Exercise, Summary. No Exercise 1.6 and no n(A ∪ B) practical-problems section.", "wrong": ["", "That older material is not in this file.", "Exercises stop at 1.5 plus miscellaneous."]}]}, {"id": "set-algebra", "nav": "Set algebra (miscellaneous)", "title": "Absorption, disjoint witnesses, and ‘∈ is not ⊂’ — the miscellaneous drill.", "deck": "A ∪ (A ∩ B)=A, A ∩ (A ∪ B)=A. A ∩ B = A ∩ C need not give B=C. Four equivalent writings of A ⊂ B.", "minutes": 8, "section": "Misc.", "pages": [21, 23], "print": "21–23", "sim": "algebra", "simTitle": "Absorption & counterexample lab", "quick": ["Miscellaneous examples close the chapter without a new definition. Example 23: CATARACT and TRACT have the same letter-set {C,A,T,R}. Example 24: all 8 subsets of {−1,0,1}. Example 25: A ∪ B = A ∩ B forces A=B.", "The miscellaneous exercise is proof-and-counterexample: ∈ does not chain like ⊂ (Q2); four equivalent conditions for A ⊂ B (Q4); absorption A ∪ (A ∩ B)=A (Q7); a witness that A ∩ B = A ∩ C ⇏ B=C (Q8); three sets with pairwise non-empty intersections but empty triple intersection (Q10)."], "formulas": [{"label": "Absorption", "html": "A ∪ (A ∩ B) = A = A ∩ (A ∪ B)", "cond": "Misc. Ex 7"}, {"label": "Subset equivalents", "html": "A ⊂ B  ⇔  A − B = φ  ⇔  A ∪ B = B  ⇔  A ∩ B = A", "cond": "Misc. Ex 4"}, {"label": "Power set size", "html": "A finite with n elements has 2<sup>n</sup> subsets", "cond": "Example 24: n=3 ⇒ 8 subsets"}], "deeper": "Q8 witness: A={1,2}, B={1,3}, C={1,4} gives A ∩ B={1}=A ∩ C but B≠C. Q10 witness: A={1,2}, B={2,3}, C={3,1} — each pair shares one element, the triple is empty. These are the pictures that Venn-with-three-circles is for; this reprint never writes the three-set counting formula, but the witness still lives in the miscellaneous exercise.", "worked": "Example 25: if A ∪ B = A ∩ B and a ∈ A, then a ∈ A ∪ B = A ∩ B so a ∈ B, hence A ⊂ B; symmetrically B ⊂ A, so A=B.", "prediction": {"prompt": "A={1,2}, B={1,3}, C={1,4}. Then A ∩ B = A ∩ C, and", "options": ["B ≠ C, so equal intersections do not force B=C", "B must equal C", "A, B, C are pairwise disjoint"], "answer": 0, "explanation": "Misc. Ex 8. Intersection with a fixed A can hide the parts of B and C that live outside A."}, "connect": [["CATARACT = TRACT as letter-sets", "Example 23 is a spelling-bee: extra letters that already occurred do not enlarge the set. Indian number plates that reuse letters still have a small letter-set."], ["Wow — 2ⁿ subsets from n elements", "Each element is in or out: n independent yes/no choices. {−1,0,1} has 8 subsets (Example 24), including φ and the set itself. That count is why computer science calls the power set 2^A."], ["Three exam papers, pairwise overlap", "Misc. Ex 10 is the ‘some students take any two papers, nobody takes all three’ seating chart — a standard CBSE word problem, here asked only as a set-existence task.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh101.pdf"}]]], "recall": "State the four equivalent conditions for A ⊂ B and give the Q8 counterexample that A ∩ B = A ∩ C ⇏ B=C.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Number of subsets of {−1,0,1} is", "options": ["8", "6", "3"], "answer": 0, "hint": "Example 24; 2³.", "solution": "φ, three singletons, three doubletons, and the set itself.", "wrong": ["", "Forgot φ and the full set, or double-counted.", "That is n(A), not n(power set)."]}, {"level": "Medium", "type": "mcq", "map": "Misc. Ex 4", "prompt": "Which is equivalent to A ⊂ B?", "options": ["A ∪ B = B", "A ∩ B = B", "A − B = A"], "answer": 0, "hint": "Four equivalent writings.", "solution": "Union with a subset does not grow B. A ∩ B = B would mean B ⊂ A. A − B = A would mean A and B are disjoint.", "wrong": ["", "That is B ⊂ A.", "That is A ∩ B = φ."]}, {"level": "Hard", "type": "mcq", "prompt": "If x ∈ A and A ∈ B, then x ∈ B is", "options": ["false in general (A={1}, B={{1},2} is a counterexample)", "always true, because ∈ is transitive", "true precisely when A ⊂ B"], "answer": 0, "hint": "Misc. Ex 2(i); Example 11.", "solution": "1 ∈ {1} and {1} ∈ {{1},2}, but 1 ∉ {{1},2}. Membership is not subset.", "wrong": ["", "∈ is not ⊂.", "A ∈ B is a different statement from A ⊂ B."]}]}], "exercises": [{"number": "1.1.1", "conceptIdx": 0, "page": 4, "printPage": 4, "question": "Which of the following are sets? Justify your answer.\n(i) The collection of all the months of a year beginning with the letter J.\n(ii) The collection of ten most talented writers of India.\n(iii) A team of eleven best-cricket batsmen of the world.\n(iv) The collection of all boys in your class.\n(v) The collection of all natural numbers less than 100.\n(vi) A collection of novels written by the writer Munshi Prem Chand.\n(vii) The collection of all even integers.\n(viii) The collection of questions in this Chapter.\n(ix) A collection of most dangerous animals of the world.", "steps": ["A set ⇔ well-defined membership test.", "(i) Yes — January, June, July.", "(ii) No — ‘most talented’ is not well-defined.", "(iii) No — ‘best’ is not well-defined.", "(iv) Yes — the boys in a given class form a definite list.", "(v) Yes — N ∩ {n : n<100}.", "(vi) Yes — Premchand’s bibliography is definite.", "(vii) Yes — {…,−4,−2,0,2,4,…}.", "(viii) Yes — the chapter’s question list is definite.", "(ix) No — ‘most dangerous’ is not well-defined."], "answer": "Sets: (i),(iv),(v),(vi),(vii),(viii). Not sets: (ii),(iii),(ix).", "section": "1.1"}, {"number": "1.1.2", "conceptIdx": 0, "page": 5, "printPage": 5, "question": "Let A = {1, 2, 3, 4, 5, 6}. Insert the appropriate symbol ∈ or ∉ in the blank spaces:\n(i) 5 . . . A   (ii) 8 . . . A   (iii) 0 . . . A   (iv) 4 . . . A   (v) 2 . . . A   (vi) 10 . . . A", "steps": ["List A = {1,2,3,4,5,6} and test each candidate."], "answer": "(i) 5 ∈ A; (ii) 8 ∉ A; (iii) 0 ∉ A; (iv) 4 ∈ A; (v) 2 ∈ A; (vi) 10 ∉ A.", "section": "1.1"}, {"number": "1.1.3", "conceptIdx": 0, "page": 5, "printPage": 5, "question": "Write the following sets in roster form:\n(i) A = {x : x is an integer and −3 ≤ x < 7}\n(ii) B = {x : x is a natural number less than 6}\n(iii) C = {x : x is a two-digit natural number such that the sum of its digits is 8}\n(iv) D = {x : x is a prime number which is divisor of 60}\n(v) E = The set of all letters in the word TRIGONOMETRY\n(vi) F = The set of all letters in the word BETTER", "steps": ["(i) Integers from −3 to 6 inclusive of −3, exclusive of 7.", "(ii) N = {1,2,3,…} so less than 6 is {1,2,3,4,5}.", "(iii) 17,26,35,44,53,62,71,80; also 08 is not two-digit. 44 allowed (repeats of a number are still one element).", "(iv) 60=2²·3·5, primes {2,3,5}.", "(v) Distinct letters of TRIGONOMETRY.", "(vi) Distinct letters of BETTER."], "answer": "(i) {−3,−2,−1,0,1,2,3,4,5,6}\n(ii) {1,2,3,4,5}\n(iii) {17,26,35,44,53,62,71,80}\n(iv) {2,3,5}\n(v) {T,R,I,G,O,N,M,E,Y}\n(vi) {B,E,T,R}", "section": "1.1"}, {"number": "1.1.4", "conceptIdx": 0, "page": 5, "printPage": 5, "question": "Write the following sets in the set-builder form:\n(i) {3, 6, 9, 12}\n(ii) {2, 4, 8, 16, 32}\n(iii) {5, 25, 125, 625}\n(iv) {2, 4, 6, …}\n(v) {1, 4, 9, …, 100}", "steps": ["Name the common property. (i) first four positive multiples of 3. (ii) powers of 2 from 2¹ to 2⁵. (iii) 5¹ through 5⁴. (iv) even naturals. (v) squares of 1 through 10, since 10²=100."], "answer": "(i) {x : x=3n, n∈N, 1≤n≤4}\n(ii) {x : x=2ⁿ, n∈N, 1≤n≤5}\n(iii) {x : x=5ⁿ, n∈N, 1≤n≤4}\n(iv) {x : x is an even natural number}\n(v) {x : x=n², n∈N, 1≤n≤10}", "section": "1.1"}, {"number": "1.1.5", "conceptIdx": 0, "page": 5, "printPage": 5, "question": "List all the elements of the following sets:\n(i) A = {x : x is an odd natural number}\n(ii) B = {x : x is an integer, −1/2 < x < 9/2}\n(iii) C = {x : x is an integer, x² ≤ 4}\n(iv) D = {x : x is a letter in the word “LOYAL”}\n(v) E = {x : x is a month of a year not having 31 days}\n(vi) F = {x : x is a consonant in the English alphabet which precedes k}", "steps": ["(ii) −0.5 < x < 4.5, x∈Z ⇒ {0,1,2,3,4} (zoom-style stacked −1/2 and 9/2 on p.5).", "(iii) |x|≤2, x∈Z ⇒ {−2,−1,0,1,2}.", "(v) February, April, June, September, November.", "(vi) b,c,d,f,g,h,j (consonants before k)."], "answer": "(i) {1,3,5,…}\n(ii) {0,1,2,3,4}\n(iii) {−2,−1,0,1,2}\n(iv) {L,O,Y,A}\n(v) {February, April, June, September, November}\n(vi) {b,c,d,f,g,h,j}", "section": "1.1"}, {"number": "1.1.6", "conceptIdx": 0, "page": 5, "printPage": 5, "question": "Match each of the set on the left in the roster form with the same set on the right described in set-builder form:\n(i) {1,2,3,6}     (a) {x : x is a prime number and a divisor of 6}\n(ii) {2,3}        (b) {x : x is an odd natural number less than 10}\n(iii) {M,A,T,H,E,I,C,S}  (c) {x : x is natural number and divisor of 6}\n(iv) {1,3,5,7,9}  (d) {x : x is a letter of the word MATHEMATICS}", "steps": ["Divisors of 6: 1,2,3,6. Prime divisors of 6: 2,3. Odd naturals <10: 1,3,5,7,9. Letters of MATHEMATICS with repeats dropped match (iii)."], "answer": "(i)–(c), (ii)–(a), (iii)–(d), (iv)–(b).", "section": "1.1"}, {"number": "1.2.1", "conceptIdx": 1, "page": 8, "printPage": 8, "question": "Which of the following are examples of the null set\n(i) Set of odd natural numbers divisible by 2\n(ii) Set of even prime numbers\n(iii) { x : x is a natural numbers, x < 5 and x > 7 }\n(iv) { y : y is a point common to any two parallel lines}", "steps": ["(i) Impossible — null. (ii) {2} — not null. (iii) no natural is both <5 and >7 — null. (iv) parallel lines do not meet — null."], "answer": "Null: (i), (iii), (iv). Not null: (ii) = {2}.", "section": "1.2"}, {"number": "1.2.2", "conceptIdx": 1, "page": 8, "printPage": 8, "question": "Which of the following sets are finite or infinite\n(i) The set of months of a year\n(ii) {1, 2, 3, . . .}\n(iii) {1, 2, 3, . . .99, 100}\n(iv) The set of positive integers greater than 100\n(v) The set of prime numbers less than 99", "steps": ["Months: 12, finite. (ii) N, infinite. (iii) 100 elements, finite. (iv) {101,102,…}, infinite. (v) primes <99, a definite list, finite."], "answer": "Finite: (i),(iii),(v). Infinite: (ii),(iv).", "section": "1.2"}, {"number": "1.2.3", "conceptIdx": 1, "page": 8, "printPage": 8, "question": "State whether each of the following set is finite or infinite:\n(i) The set of lines which are parallel to the x-axis\n(ii) The set of letters in the English alphabet\n(iii) The set of numbers which are multiple of 5\n(iv) The set of animals living on the earth\n(v) The set of circles passing through the origin (0,0)", "steps": ["(i) Infinite (one through each y). (ii) 26, finite. (iii) Infinite. (iv) Finite at a frozen instant. (v) Infinite (any radius, any centre on a circle through O is more than enough; already all radii about O)."], "answer": "Finite: (ii),(iv). Infinite: (i),(iii),(v).", "section": "1.2"}, {"number": "1.2.4", "conceptIdx": 2, "page": 9, "printPage": 9, "question": "In the following, state whether A = B or not:\n(i) A = {a,b,c,d}, B = {d,c,b,a}\n(ii) A = {4,8,12,16}, B = {8,4,16,18}\n(iii) A = {2,4,6,8,10}, B = {x : x is positive even integer and x ≤ 10}\n(iv) A = {x : x is a multiple of 10}, B = {10,15,20,25,30,…}", "steps": ["(i) Same four letters, equal. (ii) 12∈A, 12∉B and 18∈B, 18∉A. (iii) B={2,4,6,8,10}=A. (iv) 15∈B but 15 is not a multiple of 10."], "answer": "(i) A=B; (ii) A≠B; (iii) A=B; (iv) A≠B.", "section": "1.2"}, {"number": "1.2.5", "conceptIdx": 2, "page": 9, "printPage": 9, "question": "Are the following pair of sets equal? Give reasons.\n(i) A = {2, 3}, B = {x : x is solution of x² + 5x + 6 = 0}\n(ii) A = {x : x is a letter in the word FOLLOW}, B = {y : y is a letter in the word WOLF}", "steps": ["(i) x²+5x+6=(x+2)(x+3)=0 ⇒ B={−2,−3} ≠ {2,3}.", "(ii) FOLLOW → {F,O,L,W}; WOLF → {W,O,L,F}; equal."], "answer": "(i) No, B={−2,−3}. (ii) Yes, both {F,O,L,W}.", "section": "1.2"}, {"number": "1.2.6", "conceptIdx": 2, "page": 9, "printPage": 9, "question": "From the sets given below, select equal sets:\nA={2,4,8,12}, B={1,2,3,4}, C={4,8,12,14}, D={3,1,4,2}, E={−1,1}, F={0,a}, G={1,−1}, H={0,1}", "steps": ["Compare members: B={1,2,3,4}=D; E={−1,1}=G. Others each have a unique extra element (12 vs 14 vs 0 vs a)."], "answer": "B = D and E = G. (A, C, F, H are equal to none of the others.)", "section": "1.2"}, {"number": "1.3.1", "conceptIdx": 3, "page": 12, "printPage": 12, "question": "Make correct statements by filling in the symbols ⊂ or ⊄ in the blank spaces:\n(i) {2,3,4} . . . {1,2,3,4,5}\n(ii) {a,b,c} . . . {b,c,d}\n(iii) {x : x is a student of Class XI of your school} . . . {x : x student of your school}\n(iv) {x : x is a circle in the plane} . . . {x : x is a circle in the same plane with radius 1 unit}\n(v) {x : x is a triangle in a plane} . . . {x : x is a rectangle in the plane}\n(vi) {x : x is an equilateral triangle in a plane} . . . {x : x is a triangle in the same plane}\n(vii) {x : x is an even natural number} . . . {x : x is an integer}", "steps": ["(i) each of 2,3,4 sits in the right-hand set. (ii) a is missing on the right. (iii) Class XI ⊂ school. (iv) a circle of radius 2 is a counter-element. (v) a triangle is not a rectangle. (vi) every equilateral triangle is a triangle. (vii) even naturals are integers."], "answer": "(i) ⊂  (ii) ⊄  (iii) ⊂  (iv) ⊄  (v) ⊄  (vi) ⊂  (vii) ⊂", "section": "1.3"}, {"number": "1.3.2", "conceptIdx": 3, "page": 12, "printPage": 12, "question": "Examine whether the following statements are true or false:\n(i) {a,b} ⊄ {b,c,a}\n(ii) {a,e} ⊂ {x : x is a vowel in the English alphabet}\n(iii) {1,2,3} ⊂ {1,3,5}\n(iv) {a} ⊂ {a,b,c}\n(v) {a} ∈ {a,b,c}\n(vi) {x : x is an even natural number less than 6} ⊂ {x : x is a natural number which divides 36}", "steps": ["(i) {a,b} is a subset, so ⊄ is false. (ii) a,e are vowels — true. (iii) 2∉{1,3,5} — false. (iv) true. (v) the elements are a,b,c not the set {a} — false. (vi) left={2,4}; 2|36 and 4 does not divide 36 — false."], "answer": "(i) F  (ii) T  (iii) F  (iv) T  (v) F  (vi) F  (4 does not divide 36).", "section": "1.3"}, {"number": "1.3.3", "conceptIdx": 3, "page": 12, "printPage": 12, "question": "Let A = {1, 2, {3,4}, 5}. Which of the following statements are incorrect and why?\n(i) {3,4} ⊂ A   (ii) {3,4} ∈ A   (iii) {{3,4}} ⊂ A\n(iv) 1 ∈ A   (v) 1 ⊂ A   (vi) {1,2,5} ⊂ A\n(vii) {1,2,5} ∈ A   (viii) {1,2,3} ⊂ A\n(ix) φ ∈ A   (x) φ ⊂ A   (xi) {φ} ⊂ A", "steps": ["Elements of A are 1, 2, the object {3,4}, and 5.", "⊂ needs every element of the left to be an element of A.", "φ ⊂ A always; φ is not listed as an element, so φ ∉ A and {φ} ⊄ A."], "answer": "Incorrect: (i) {3,4}⊂A (3,4 are not elements of A); (v) 1⊂A; (vii) {1,2,5}∈A; (viii) {1,2,3}⊂A; (ix) φ∈A; (xi) {φ}⊂A.\nCorrect: (ii),(iii),(iv),(vi),(x).", "section": "1.3"}, {"number": "1.3.4", "conceptIdx": 3, "page": 13, "printPage": 13, "question": "Write down all the subsets of the following sets\n(i) {a}   (ii) {a,b}   (iii) {1,2,3}   (iv) φ", "steps": ["2ⁿ subsets including φ and the set itself."], "answer": "(i) φ, {a}\n(ii) φ, {a}, {b}, {a,b}\n(iii) φ, {1}, {2}, {3}, {1,2}, {1,3}, {2,3}, {1,2,3}\n(iv) φ", "section": "1.3"}, {"number": "1.3.5", "conceptIdx": 3, "page": 13, "printPage": 13, "question": "Write the following as intervals:\n(i) {x : x∈R, −4 < x ≤ 6}\n(ii) {x : x∈R, −12 < x < −10}\n(iii) {x : x∈R, 0 ≤ x < 7}\n(iv) {x : x∈R, 3 ≤ x ≤ 4}", "steps": ["Translate each inequality pair into a bracket."], "answer": "(i) (−4, 6]   (ii) (−12, −10)   (iii) [0, 7)   (iv) [3, 4]", "section": "1.3"}, {"number": "1.3.6", "conceptIdx": 3, "page": 13, "printPage": 13, "question": "Write the following intervals in set-builder form:\n(i) (−3, 0)   (ii) [6, 12]   (iii) (6, 12]   (iv) [−23, 5)", "steps": ["Open/closed endpoints become < or ≤."], "answer": "(i) {x : x∈R, −3 < x < 0}\n(ii) {x : x∈R, 6 ≤ x ≤ 12}\n(iii) {x : x∈R, 6 < x ≤ 12}\n(iv) {x : x∈R, −23 ≤ x < 5}", "section": "1.3"}, {"number": "1.3.7", "conceptIdx": 3, "page": 13, "printPage": 13, "question": "What universal set(s) would you propose for each of the following:\n(i) The set of right triangles.\n(ii) The set of isosceles triangles.", "steps": ["Any superset of the named family works; the natural choices are all triangles in the plane, or all polygons, or all subsets of the plane."], "answer": "(i) The set of all triangles (or all polygons) in the plane.\n(ii) The set of all triangles in the plane. (Isosceles includes equilateral.)", "section": "1.3"}, {"number": "1.3.8", "conceptIdx": 3, "page": 13, "printPage": 13, "question": "Given the sets A={1,3,5}, B={2,4,6} and C={0,2,4,6,8}, which of the following may be considered as universal set(s) for all the three sets A, B and C\n(i) {0,1,2,3,4,5,6}\n(ii) φ\n(iii) {0,1,2,3,4,5,6,7,8,9,10}\n(iv) {1,2,3,4,5,6,7,8}", "steps": ["U must contain A ∪ B ∪ C = {0,1,2,3,4,5,6,8}. (i) misses 8. (ii) empty. (iii) contains them. (iv) misses 0."], "answer": "Only (iii).", "section": "1.3"}, {"number": "1.4.1", "conceptIdx": 4, "page": 17, "printPage": 17, "question": "Find the union of each of the following pairs of sets:\n(i) X={1,3,5}, Y={1,2,3}\n(ii) A={a,e,i,o,u}, B={a,b,c}\n(iii) A={x : x is a natural number and multiple of 3}, B={x : x is a natural number less than 6}\n(iv) A={x : x is a natural number and 1 < x ≤ 6}, B={x : x is a natural number and 6 < x < 10}\n(v) A={1,2,3}, B=φ", "steps": ["Union = elements in either, commons once.", "(iii) {1,2,3,4,5} ∪ {3,6,9,…} = {x ∈ N : x ≤ 5 or 3|x}.", "(iv) A={2,3,4,5,6}, B={7,8,9}, disjoint union {2,3,4,5,6,7,8,9}.", "(v) A ∪ φ = A."], "answer": "(i) {1,2,3,5}\n(ii) {a,b,c,e,i,o,u}\n(iii) {x ∈ N : x<6 or 3|x} = {1,2,3,4,5,6,9,12,…}\n(iv) {2,3,4,5,6,7,8,9}\n(v) {1,2,3}", "section": "1.4"}, {"number": "1.4.2", "conceptIdx": 4, "page": 17, "printPage": 17, "question": "Let A={a,b}, B={a,b,c}. Is A ⊂ B? What is A ∪ B?", "steps": ["a,b ∈ B so A ⊂ B; then A ∪ B = B."], "answer": "Yes, A ⊂ B. A ∪ B = {a,b,c} = B.", "section": "1.4"}, {"number": "1.4.3", "conceptIdx": 4, "page": 17, "printPage": 17, "question": "If A and B are two sets such that A ⊂ B, then what is A ∪ B?", "steps": ["Every element of A is already in B."], "answer": "A ∪ B = B.", "section": "1.4"}, {"number": "1.4.4", "conceptIdx": 4, "page": 17, "printPage": 17, "question": "If A={1,2,3,4}, B={3,4,5,6}, C={5,6,7,8} and D={7,8,9,10}; find\n(i) A ∪ B  (ii) A ∪ C  (iii) B ∪ C  (iv) B ∪ D\n(v) A ∪ B ∪ C  (vi) A ∪ B ∪ D  (vii) B ∪ C ∪ D", "steps": ["List each union, commons once."], "answer": "(i) {1,2,3,4,5,6}\n(ii) {1,2,3,4,5,6,7,8}\n(iii) {3,4,5,6,7,8}\n(iv) {3,4,5,6,7,8,9,10}\n(v) {1,2,3,4,5,6,7,8}\n(vi) {1,2,3,4,5,6,7,8,9,10}\n(vii) {3,4,5,6,7,8,9,10}", "section": "1.4"}, {"number": "1.4.5", "conceptIdx": 4, "page": 17, "printPage": 17, "question": "Find the intersection of each pair of sets of question 1 above.", "steps": ["(i) {1,3}. (ii) {a}. (iii) {3}. (iv) φ (A stops at 6, B starts after 6). (v) φ."], "answer": "(i) {1,3}  (ii) {a}  (iii) {3}  (iv) φ  (v) φ", "section": "1.4"}, {"number": "1.4.6", "conceptIdx": 4, "page": 17, "printPage": 17, "question": "If A={3,5,7,9,11}, B={7,9,11,13}, C={11,13,15} and D={15,17}; find\n(i) A ∩ B  (ii) B ∩ C  (iii) A ∩ C ∩ D  (iv) A ∩ C\n(v) B ∩ D  (vi) A ∩ (B ∪ C)  (vii) A ∩ D\n(viii) A ∩ (B ∪ D)  (ix) (A ∩ B) ∩ (B ∪ C)  (x) (A ∪ D) ∩ (B ∪ C)", "steps": ["B ∪ C={7,9,11,13,15}; B ∪ D={7,9,11,13,15,17}; A ∪ D={3,5,7,9,11,15,17}.", "(vi) A ∩ {7,9,11,13,15}={7,9,11}.", "(ix) A ∩ B={7,9,11}, intersect B ∪ C stays {7,9,11}.", "(x) {3,5,7,9,11,15,17} ∩ {7,9,11,13,15}={7,9,11,15}."], "answer": "(i) {7,9,11}  (ii) {11,13}  (iii) φ  (iv) {11}\n(v) φ  (vi) {7,9,11}  (vii) φ  (viii) {7,9,11}\n(ix) {7,9,11}  (x) {7,9,11,15}", "section": "1.4"}, {"number": "1.4.7", "conceptIdx": 4, "page": 18, "printPage": 18, "question": "If A={x : x is a natural number}, B={x : x is an even natural number}, C={x : x is an odd natural number} and D={x : x is a prime number}, find\n(i) A ∩ B  (ii) A ∩ C  (iii) A ∩ D  (iv) B ∩ C  (v) B ∩ D  (vi) C ∩ D", "steps": ["A=N. B=even N. C=odd N. D=primes (in N, as usual here).", "(iv) even ∩ odd = φ. (v) the only even prime is 2. (vi) odd primes."], "answer": "(i) B  (ii) C  (iii) D  (iv) φ  (v) {2}  (vi) {x : x is an odd prime}", "section": "1.4"}, {"number": "1.4.8", "conceptIdx": 4, "page": 18, "printPage": 18, "question": "Which of the following pairs of sets are disjoint\n(i) {1,2,3,4} and {x : x is a natural number and 4 ≤ x ≤ 6}\n(ii) {a,e,i,o,u} and {c,d,e,f}\n(iii) {x : x is an even integer} and {x : x is an odd integer}", "steps": ["(i) right-hand = {4,5,6}, share 4. (ii) share e. (iii) no integer is both even and odd."], "answer": "Only (iii) is disjoint. (i) share 4; (ii) share e.", "section": "1.4"}, {"number": "1.4.9", "conceptIdx": 4, "page": 18, "printPage": 18, "question": "If A={3,6,9,12,15,18,21}, B={4,8,12,16,20}, C={2,4,6,8,10,12,14,16}, D={5,10,15,20}; find\n(i) A−B (ii) A−C (iii) A−D (iv) B−A (v) C−A (vi) D−A\n(vii) B−C (viii) B−D (ix) C−B (x) D−B (xi) C−D (xii) D−C", "steps": ["Subtract memberwise. A−B drops 12; A−C drops 6,12; A−D drops 15; etc."], "answer": "(i) {3,6,9,15,18,21}\n(ii) {3,9,15,18,21}\n(iii) {3,6,9,12,18,21}\n(iv) {4,8,16,20}\n(v) {2,4,8,10,14,16}\n(vi) {5,10,20}\n(vii) {20}\n(viii) {4,8,12,16}\n(ix) {2,6,10,14}\n(x) {5,10,15}\n(xi) {2,4,6,8,12,14,16}\n(xii) {5,15,20}", "section": "1.4"}, {"number": "1.4.10", "conceptIdx": 4, "page": 18, "printPage": 18, "question": "If X={a,b,c,d} and Y={f,b,d,g}, find\n(i) X − Y   (ii) Y − X   (iii) X ∩ Y", "steps": ["Commons {b,d}."], "answer": "(i) {a,c}  (ii) {f,g}  (iii) {b,d}", "section": "1.4"}, {"number": "1.4.11", "conceptIdx": 4, "page": 18, "printPage": 18, "question": "If R is the set of real numbers and Q is the set of rational numbers, then what is R − Q?", "steps": ["R − Q = {x ∈ R : x ∉ Q} = T, the irrationals (§1.6.1)."], "answer": "The set T of irrational numbers.", "section": "1.4"}, {"number": "1.4.12", "conceptIdx": 4, "page": 18, "printPage": 18, "question": "State whether each of the following statement is true or false. Justify your answer.\n(i) {2,3,4,5} and {3,6} are disjoint sets.\n(ii) {a,e,i,o,u} and {a,b,c,d} are disjoint sets.\n(iii) {2,6,10,14} and {3,7,11,15} are disjoint sets.\n(iv) {2,6,10} and {3,7,11} are disjoint sets.", "steps": ["Disjoint ⇔ empty intersection. (i) share 3. (ii) share a. (iii) no common element. (iv) no common element."], "answer": "(i) F (share 3)  (ii) F (share a)  (iii) T  (iv) T", "section": "1.4"}, {"number": "1.5.1", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "Let U={1,2,3,4,5,6,7,8,9}, A={1,2,3,4}, B={2,4,6,8} and C={3,4,5,6}. Find (i) A′ (ii) B′ (iii) (A ∪ C)′ (iv) (A ∪ B)′ (v) (A′)′ (vi) (B − C)′", "steps": ["A′=U−A. A ∪ C={1,2,3,4,5,6}, A ∪ B={1,2,3,4,6,8}, B−C={2,8}."], "answer": "(i) {5,6,7,8,9}\n(ii) {1,3,5,7,9}\n(iii) {7,8,9}\n(iv) {5,7,9}\n(v) A={1,2,3,4}\n(vi) {1,3,4,5,6,7,9}", "section": "1.5"}, {"number": "1.5.2", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "If U={a,b,c,d,e,f,g,h}, find the complements of the following sets:\n(i) A={a,b,c}  (ii) B={d,e,f,g}  (iii) C={a,c,e,g}  (iv) D={f,g,h,a}", "steps": ["Complement = U minus the named set."], "answer": "(i) {d,e,f,g,h}  (ii) {a,b,c,h}  (iii) {b,d,f,h}  (iv) {b,c,d,e}", "section": "1.5"}, {"number": "1.5.3", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "Taking the set of natural numbers as the universal set, write down the complements of the following sets:\n(i) {x : x is an even natural number}\n(ii) {x : x is an odd natural number}\n(iii) {x : x is a positive multiple of 3}\n(iv) {x : x is a prime number}\n(v) {x : x is a natural number divisible by 3 and 5}\n(vi) {x : x is a perfect square}\n(vii) {x : x is a perfect cube}\n(viii) {x : x+5=8}\n(ix) {x : 2x+5=9}\n(x) {x : x ≥ 7}\n(xi) {x : x ∈ N and 2x+1 > 10}", "steps": ["U=N. (i) odds. (ii) evens. (iii) not multiples of 3. (iv) 1 and composites. (v) not multiples of 15. (viii) {3}′ = N−{3}. (ix) 2x=4 ⇒ {2}′. (x) {1,2,3,4,5,6}. (xi) 2x>9 ⇒ x≥5, so complement {1,2,3,4}."], "answer": "(i) odd naturals\n(ii) even naturals\n(iii) {x∈N : 3∤x}\n(iv) {1} ∪ {composites}\n(v) {x∈N : 15∤x}\n(vi) {x∈N : x is not a perfect square}\n(vii) {x∈N : x is not a perfect cube}\n(viii) N−{3}\n(ix) N−{2}\n(x) {1,2,3,4,5,6}\n(xi) {1,2,3,4}", "section": "1.5"}, {"number": "1.5.4", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "If U={1,2,3,4,5,6,7,8,9}, A={2,4,6,8} and B={2,3,5,7}. Verify that\n(i) (A ∪ B)′ = A′ ∩ B′\n(ii) (A ∩ B)′ = A′ ∪ B′", "steps": ["A ∪ B={2,3,4,5,6,7,8}, (A ∪ B)′={1,9}. A′={1,3,5,7,9}, B′={1,4,6,8,9}, A′ ∩ B′={1,9}.", "A ∩ B={2}, (A ∩ B)′={1,3,4,5,6,7,8,9}. A′ ∪ B′={1,3,4,5,6,7,8,9}."], "answer": "Both De Morgan identities hold on this U.", "section": "1.5"}, {"number": "1.5.5", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "Draw appropriate Venn diagram for each of the following:\n(i) (A ∪ B)′   (ii) A′ ∩ B′   (iii) (A ∩ B)′   (iv) A′ ∪ B′", "steps": ["(i) and (ii) are the same shading (outside both circles) by De Morgan.", "(iii) and (iv) are the same shading (everything except the lens)."], "answer": "(i)=(ii): rectangle minus both disks. (iii)=(iv): rectangle minus the lens. (Draw Fig 1.10-style; U is the rectangle.)", "section": "1.5"}, {"number": "1.5.6", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "Let U be the set of all triangles in a plane. If A is the set of all triangles with at least one angle different from 60°, what is A′?", "steps": ["A′ = triangles with no angle different from 60° = all angles 60° = equilateral triangles."], "answer": "The set of all equilateral triangles in the plane.", "section": "1.5"}, {"number": "1.5.7", "conceptIdx": 5, "page": 20, "printPage": 20, "question": "Fill in the blanks to make each of the following a true statement:\n(i) A ∪ A′ = . . .\n(ii) φ′ ∩ A = . . .\n(iii) A ∩ A′ = . . .\n(iv) U′ ∩ A = . . .", "steps": ["Complement laws: A ∪ A′=U, A ∩ A′=φ, φ′=U so φ′ ∩ A=A, U′=φ so U′ ∩ A=φ."], "answer": "(i) U   (ii) A   (iii) φ   (iv) φ", "section": "1.5"}, {"number": "1.Misc.1", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "Decide, among the following sets, which sets are subsets of one and another:\nA = {x : x∈R and x satisfy x² − 8x + 12 = 0},\nB = {2,4,6},\nC = {2,4,6,8,…}, D={6}.", "steps": ["A: (x−6)(x−2)=0 ⇒ A={2,6}. Then D ⊂ A ⊂ B ⊂ C, and D ⊂ B, D ⊂ C, A ⊂ C."], "answer": "D ⊂ A ⊂ B ⊂ C (hence also D ⊂ B, D ⊂ C, A ⊂ C).", "section": "Misc."}, {"number": "1.Misc.2", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "In each of the following, determine whether the statement is true or false. If it is true, prove it. If it is false, give an example.\n(i) If x ∈ A and A ∈ B, then x ∈ B\n(ii) If A ⊂ B and B ∈ C, then A ∈ C\n(iii) If A ⊂ B and B ⊂ C, then A ⊂ C\n(iv) If A ⊄ B and B ⊄ C, then A ⊄ C\n(v) If x ∈ A and A ⊄ B, then x ∈ B\n(vi) If A ⊂ B and x ∉ B, then x ∉ A", "steps": ["(i) Counterexample Example 11: x=1, A={1}, B={{1},2}.", "(ii) A={1}, B={1,2}, C={{1,2},3}: B∈C but A∉C.", "(iii) True: a∈A⇒a∈B⇒a∈C.", "(iv) False: A={1}, B={2}, C={1,3} — A⊂C even though the two ⊄ hold.", "(v) False: x=1, A={1}, B={2}.", "(vi) True: if x∈A then x∈B, contradicting x∉B."], "answer": "(i) F  (ii) F  (iii) T  (iv) F  (v) F  (vi) T", "section": "Misc."}, {"number": "1.Misc.3", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "Let A, B, and C be the sets such that A ∪ B = A ∪ C and A ∩ B = A ∩ C. Show that B = C.", "steps": ["B = B ∩ (A ∪ B) = B ∩ (A ∪ C) = (B ∩ A) ∪ (B ∩ C) = (A ∩ C) ∪ (B ∩ C) = (A ∪ B) ∩ C = (A ∪ C) ∩ C = C.", "Symmetric writing: an element of B is either in A (then it is in A ∩ B = A ∩ C, hence in C) or not in A (then it still sits in A ∪ B = A ∪ C, hence in C)."], "answer": "B = C. (Proved from the two hypotheses.)", "section": "Misc."}, {"number": "1.Misc.4", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "Show that the following four conditions are equivalent:\n(i) A ⊂ B   (ii) A − B = φ   (iii) A ∪ B = B   (iv) A ∩ B = A", "steps": ["(i)⇒(ii): if A ⊂ B there is no element of A outside B.", "(ii)⇒(iii): A ∪ B = (A − B) ∪ B = φ ∪ B = B.", "(iii)⇒(iv): A ∩ B = A ∩ (A ∪ B) wait: from A ∪ B = B, intersect A: A ∩ (A ∪ B)=A ∩ B ⇒ A=A ∩ B.", "(iv)⇒(i): A = A ∩ B ⊂ B."], "answer": "(i) ⇔ (ii) ⇔ (iii) ⇔ (iv).", "section": "Misc."}, {"number": "1.Misc.5", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "Show that if A ⊂ B, then C − B ⊂ C − A.", "steps": ["Take x ∈ C − B. Then x∈C and x∉B. A ⊂ B ⇒ x∉A. Hence x ∈ C − A."], "answer": "C − B ⊂ C − A (difference reverses ⊂).", "section": "Misc."}, {"number": "1.Misc.6", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "Show that for any sets A and B,\nA = (A ∩ B) ∪ (A − B) and A ∪ (B − A) = A ∪ B.", "steps": ["A splits into ‘also in B’ and ‘not in B’, which are disjoint and cover A.", "A ∪ (B − A) = A ∪ (B ∩ A′) = (A ∪ B) ∩ (A ∪ A′) = (A ∪ B) ∩ U = A ∪ B."], "answer": "Both identities hold for all A, B.", "section": "Misc."}, {"number": "1.Misc.7", "conceptIdx": 6, "page": 21, "printPage": 21, "question": "Using properties of sets, show that\n(i) A ∪ (A ∩ B) = A     (ii) A ∩ (A ∪ B) = A.", "steps": ["(i) A ∩ B ⊂ A ⇒ union with A is A (absorption).", "(ii) A ⊂ A ∪ B ⇒ intersection with A is A."], "answer": "Absorption laws: both equal A.", "section": "Misc."}, {"number": "1.Misc.8", "conceptIdx": 6, "page": 22, "printPage": 22, "question": "Show that A ∩ B = A ∩ C need not imply B = C.", "steps": ["Witness: A={1,2}, B={1,3}, C={1,4}. Then A ∩ B={1}=A ∩ C but B≠C."], "answer": "Counterexample A={1,2}, B={1,3}, C={1,4}.", "section": "Misc."}, {"number": "1.Misc.9", "conceptIdx": 6, "page": 22, "printPage": 22, "question": "Let A and B be sets. If A ∩ X = B ∩ X = φ and A ∪ X = B ∪ X for some set X, show that A = B.\n(Hints: A = A ∩ (A ∪ X), B = B ∩ (B ∪ X) and use Distributive law)", "steps": ["A = A ∩ (A ∪ X) = A ∩ (B ∪ X) = (A ∩ B) ∪ (A ∩ X) = (A ∩ B) ∪ φ = A ∩ B.", "Likewise B = A ∩ B. Hence A=B."], "answer": "A = B.", "section": "Misc."}, {"number": "1.Misc.10", "conceptIdx": 6, "page": 22, "printPage": 22, "question": "Find sets A, B and C such that A ∩ B, B ∩ C and A ∩ C are non-empty sets and A ∩ B ∩ C = φ.", "steps": ["Need pairwise overlap without a common triple point. Take a 3-cycle of shared elements."], "answer": "One witness: A={1,2}, B={2,3}, C={3,1}. Pairwise intersections {2},{3},{1}; triple empty.", "section": "Misc."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var connectItems = l.connect || [];
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.roster = (function(){
+  var mode = "school";
+  var sets = {
+    school: {name:"SCHOOL", roster:"{S, C, H, O, L}", builder:"{x : x is a letter of SCHOOL}", n:5, note:"Repeats of O dropped (note after roster form)."},
+    loyal: {name:"LOYAL / ALLOY", roster:"{A, L, O, Y}", builder:"{x : x is a letter of LOYAL} = {x : x is a letter of ALLOY}", n:4, note:"Example 8: anagrams, same letter-set."},
+    frac: {name:"Example 4", roster:"{1/2, 2/3, 3/4, 4/5, 5/6, 6/7}", builder:"{x : x = n/(n+1), n ∈ N, 1 ≤ n ≤ 6}", n:6, note:"Stacked fractions, zoom p.4 — no slash in the PDF."}
+  };
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Roster braces</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Set-builder rule</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-school">SCHOOL</button>' +
+      '<button class="preset-btn" id="p-loyal">LOYAL = ALLOY</button>' +
+      '<button class="preset-btn" id="p-frac">Example 4 fractions</button>';
+    document.getElementById("p-school").onclick = function(){ setActivePreset(this); mode="school"; App.resetTimeline(); };
+    document.getElementById("p-loyal").onclick = function(){ setActivePreset(this); mode="loyal"; App.resetTimeline(); };
+    document.getElementById("p-frac").onclick = function(){ setActivePreset(this); mode="frac"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var z = sets[mode];
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="40" y="70" width="300" height="160" rx="12" fill="#0f2744" stroke="#38bdf8"/>';
+    m += '<rect x="380" y="70" width="300" height="160" rx="12" fill="#1a1408" stroke="#f59e0b"/>';
+    m += '<text x="190" y="100" fill="#38bdf8" font-size="14" text-anchor="middle">Roster</text>';
+    m += '<text x="530" y="100" fill="#f59e0b" font-size="14" text-anchor="middle">Set-builder</text>';
+    m += '<text x="190" y="155" fill="#f8fafc" font-size="16" text-anchor="middle">' + z.roster + '</text>';
+    m += '<text x="530" y="150" fill="#f8fafc" font-size="13" text-anchor="middle">'+ z.builder.slice(0,38) + '</text>';
+    m += '<text x="530" y="172" fill="#f8fafc" font-size="13" text-anchor="middle">'+ z.builder.slice(38) + '</text>';
+    m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Two writings of the same set · n = ' + z.n + '</text>';
+    svg.innerHTML = m;
+    readout(cell("Word / example", z.name) + cell("n(S)", String(z.n), "#34d399") + cell("t", (t||0).toFixed(1)+" s"));
+    verdict("<b>" + z.name + ":</b> " + z.note);
+  }
+  return {mount:mount, draw:draw};
+})();
+
+window.SIMS.finiteinf = (function(){
+  var mode = "empty";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Finite</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Infinite</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-empty">Empty: Class X∩XI</button>' +
+      '<button class="preset-btn" id="p-evenp">Even primes {2}</button>' +
+      '<button class="preset-btn" id="p-primes">All primes</button>' +
+      '<button class="preset-btn" id="p-animals">Animals on Earth</button>';
+    document.getElementById("p-empty").onclick = function(){ setActivePreset(this); mode="empty"; App.resetTimeline(); };
+    document.getElementById("p-evenp").onclick = function(){ setActivePreset(this); mode="evenp"; App.resetTimeline(); };
+    document.getElementById("p-primes").onclick = function(){ setActivePreset(this); mode="primes"; App.resetTimeline(); };
+    document.getElementById("p-animals").onclick = function(){ setActivePreset(this); mode="animals"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var info = {
+      empty: {title:"B = students in Class X and XI now", roster:"φ = { }", tag:"FINITE (empty)", col:"#34d399", note:"Definition 1 + 2: empty is finite. Nobody is enrolled in both classes presently."},
+      evenp: {title:"Even prime numbers", roster:"{ 2 }", tag:"FINITE (singleton)", col:"#34d399", note:"Ex 1.2.1(ii) is NOT null. The set of even primes > 2 is empty."},
+      primes: {title:"{x ∈ N : x is prime}", roster:"{2, 3, 5, 7, …}", tag:"INFINITE", col:"#f87171", note:"Example 6(iv). Euclid: no last prime. Dots in roster are allowed because the pattern is clear."},
+      animals: {title:"Animals living on the Earth", roster:"a huge definite list", tag:"FINITE", col:"#34d399", note:"Ex 1.2.3(iv): unknown n(S), but n(S) is some natural number at a frozen instant."}
+    }[mode];
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="160" y="80" width="400" height="140" rx="16" fill="#0f2744" stroke="' + info.col + '" stroke-width="3"/>';
+    m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">' + info.title + '</text>';
+    m += '<text x="360" y="140" fill="#f8fafc" font-size="22" text-anchor="middle">' + info.roster + '</text>';
+    m += '<text x="360" y="200" fill="' + info.col + '" font-size="16" text-anchor="middle">' + info.tag + '</text>';
+    svg.innerHTML = m;
+    readout(cell("Classifier", info.tag, info.col) + cell("Empty?", mode==="empty"?"YES":"NO"));
+    verdict("<b>Verdict:</b> " + info.note);
+  }
+  return {mount:mount, draw:draw};
+})();
+
+window.SIMS.equalsets = (function(){
+  var mode = "alloy";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Equal</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Unequal</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-alloy">ALLOY vs LOYAL</button>' +
+      '<button class="preset-btn" id="p-quad">n² ≤ 4 vs x²−3x+2=0</button>' +
+      '<button class="preset-btn" id="p-follow">FOLLOW vs WOLF</button>';
+    document.getElementById("p-alloy").onclick = function(){ setActivePreset(this); mode="alloy"; App.resetTimeline(); };
+    document.getElementById("p-quad").onclick = function(){ setActivePreset(this); mode="quad"; App.resetTimeline(); };
+    document.getElementById("p-follow").onclick = function(){ setActivePreset(this); mode="follow"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var P = {
+      alloy: {A:"{A, L, O, Y}", B:"{A, L, O, Y}", eq:true, note:"Example 8(i): repeats of L dropped. Equal letter-sets."},
+      quad: {A:"{−2, −1, 0, 1, 2}", B:"{1, 2}", eq:false, note:"Example 8(ii): 0 ∈ A but 0 ∉ B. Same-looking builders can hide extra integers."},
+      follow: {A:"{F, O, L, W}", B:"{W, O, L, F}", eq:true, note:"Ex 1.2.5(ii): order does not matter."}
+    }[mode];
+    var col = P.eq ? "#34d399" : "#f87171";
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<circle cx="240" cy="150" r="90" fill="#38bdf822" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<circle cx="480" cy="150" r="90" fill="#f59e0b22" stroke="#f59e0b" stroke-width="2"/>';
+    m += '<text x="240" y="150" fill="#f8fafc" font-size="14" text-anchor="middle">A = '+P.A+'</text>';
+    m += '<text x="480" y="150" fill="#f8fafc" font-size="14" text-anchor="middle">B = '+P.B+'</text>';
+    m += '<text x="360" y="40" fill="'+col+'" font-size="18" text-anchor="middle">'+(P.eq?"A = B":"A ≠ B")+'</text>';
+    svg.innerHTML = m;
+    readout(cell("A", P.A) + cell("B", P.B) + cell("Equal?", P.eq?"YES":"NO", col));
+    verdict("<b>Definition 3:</b> " + P.note);
+  }
+  return {mount:mount, draw:draw};
+})();
+
+window.SIMS.intervals = (function(){
+  var mode = "open";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Included endpoint (filled)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#09131d;border:2px solid #f59e0b;"></span><span>Excluded endpoint (open)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-open">(−4, 6]  Ex 1.3.5(i)</button>' +
+      '<button class="preset-btn" id="p-closed">[6, 12]</button>' +
+      '<button class="preset-btn" id="p-ray">[0, ∞)</button>';
+    document.getElementById("p-open").onclick = function(){ setActivePreset(this); mode="open"; App.resetTimeline(); };
+    document.getElementById("p-closed").onclick = function(){ setActivePreset(this); mode="closed"; App.resetTimeline(); };
+    document.getElementById("p-ray").onclick = function(){ setActivePreset(this); mode="ray"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function X(x){ return 80 + (x+8)*30; }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="160" x2="680" y2="160" stroke="#475569" stroke-width="3"/>';
+    for(var k=-6;k<=12;k++){
+      m += '<line x1="'+X(k)+'" y1="154" x2="'+X(k)+'" y2="166" stroke="#64748b"/>';
+      if(k%2===0) m += '<text x="'+X(k)+'" y="186" fill="#94a3b8" font-size="11" text-anchor="middle">'+k+'</text>';
+    }
+    var a,b,la,lb,len,label;
+    if(mode==="open"){ a=-4; b=6; la=false; lb=true; len=10; label="(−4, 6] = {x ∈ R : −4 < x ≤ 6}"; }
+    else if(mode==="closed"){ a=6; b=12; la=true; lb=true; len=6; label="[6, 12] = {x ∈ R : 6 ≤ x ≤ 12}"; }
+    else { a=0; b=14; la=true; lb=false; len="∞"; label="[0, ∞) non-negative reals"; }
+    var x1=X(a), x2=X(Math.min(b,14));
+    m += '<line x1="'+x1+'" y1="160" x2="'+x2+'" y2="160" stroke="#38bdf8" stroke-width="8"/>';
+    m += '<circle cx="'+x1+'" cy="160" r="8" fill="'+(la?"#38bdf8":"#09131d")+'" stroke="#f59e0b" stroke-width="3"/>';
+    m += '<circle cx="'+x2+'" cy="160" r="8" fill="'+(lb?"#38bdf8":"#09131d")+'" stroke="#f59e0b" stroke-width="3"/>';
+    var pulse = 8+4*Math.sin((t||0)*2);
+    m += '<circle cx="'+ (x1 + (x2-x1)*0.4) +'" cy="160" r="'+pulse+'" fill="#34d399"/>';
+    m += '<text x="360" y="40" fill="#94a3b8" font-size="15" text-anchor="middle">'+label+'</text>';
+    m += '<text x="360" y="64" fill="#64748b" font-size="12" text-anchor="middle">length = b − a'+(mode==="ray"?"":" = "+len)+' · infinitely many points</text>';
+    svg.innerHTML = m;
+    readout(cell("Interval", label.split("=")[0].trim()) + cell("Length", String(len)) + cell("Finite set?", "NO — infinite", "#f59e0b"));
+    verdict("<b>§1.6.2:</b> finite length is not a finite set. Endpoints: filled = included, hollow = excluded. Fig 1.1.");
+  }
+  return {mount:mount, draw:draw};
+})();
+
+window.SIMS.vennops = (function(){
+  var mode = "union";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A = {2,4,6,8}</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B = {6,8,10,12}</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-u">A ∪ B (Fig 1.4)</button>' +
+      '<button class="preset-btn" id="p-i">A ∩ B (Fig 1.5)</button>' +
+      '<button class="preset-btn" id="p-d">A − B (Fig 1.8)</button>' +
+      '<button class="preset-btn" id="p-dj">Disjoint (Fig 1.6)</button>';
+    document.getElementById("p-u").onclick = function(){ setActivePreset(this); mode="union"; App.resetTimeline(); };
+    document.getElementById("p-i").onclick = function(){ setActivePreset(this); mode="inter"; App.resetTimeline(); };
+    document.getElementById("p-d").onclick = function(){ setActivePreset(this); mode="diff"; App.resetTimeline(); };
+    document.getElementById("p-dj").onclick = function(){ setActivePreset(this); mode="disj"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="none" stroke="#475569"/>';
+    m += '<text x="60" y="52" fill="#94a3b8" font-size="12">U</text>';
+    var ax=300, ay=150, bx=420, by=150, r=80;
+    if(mode==="disj"){ ax=260; bx=470; }
+    var fillA = (mode==="union"||mode==="diff"||mode==="disj") ? "#38bdf844" : "#38bdf811";
+    var fillB = (mode==="union"||mode==="disj") ? "#f59e0b44" : "#f59e0b11";
+    m += '<circle cx="'+ax+'" cy="'+ay+'" r="'+r+'" fill="'+fillA+'" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<circle cx="'+bx+'" cy="'+by+'" r="'+r+'" fill="'+fillB+'" stroke="#f59e0b" stroke-width="2"/>';
+    if(mode==="inter"){
+      m += '<text x="360" y="155" fill="#34d399" font-size="14" text-anchor="middle">6, 8</text>';
+    }
+    m += '<text x="'+ (ax-40) +'" y="100" fill="#38bdf8" font-size="14">A</text>';
+    m += '<text x="'+ (bx+28) +'" y="100" fill="#f59e0b" font-size="14">B</text>';
+    var notes = {
+      union: "Example 12: A ∪ B = {2,4,6,8,10,12}. Commons 6,8 listed once.",
+      inter: "Example 15: A ∩ B = {6,8}. B ⊂ A would force A ∩ B = B.",
+      diff: "Example 18 style: A − B = {2,4}. Crescent of A. Not equal to B − A.",
+      disj: "Fig 1.6: A ∩ B = φ. Even and odd integers (Ex 1.4.8(iii))."
+    };
+    var val = {union:"{2,4,6,8,10,12}", inter:"{6,8}", diff:"{2,4}", disj:"φ"}[mode];
+    svg.innerHTML = m;
+    readout(cell("Operation", mode) + cell("Result", val, "#34d399"));
+    verdict("<b>Venn:</b> " + notes[mode]);
+  }
+  return {mount:mount, draw:draw};
+})();
+
+window.SIMS.demorgan = (function(){
+  var mode = "unioncomp";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Shaded = the named set</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-uc">(A ∪ B)′</button>' +
+      '<button class="preset-btn" id="p-ai">A′ ∩ B′</button>' +
+      '<button class="preset-btn" id="p-ic">(A ∩ B)′</button>' +
+      '<button class="preset-btn" id="p-au">A′ ∪ B′</button>';
+    document.getElementById("p-uc").onclick = function(){ setActivePreset(this); mode="unioncomp"; App.resetTimeline(); };
+    document.getElementById("p-ai").onclick = function(){ setActivePreset(this); mode="ainter"; App.resetTimeline(); };
+    document.getElementById("p-ic").onclick = function(){ setActivePreset(this); mode="intercomp"; App.resetTimeline(); };
+    document.getElementById("p-au").onclick = function(){ setActivePreset(this); mode="aunion"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var pair = (mode==="unioncomp"||mode==="ainter");
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="80" y="40" width="560" height="220" rx="6" fill="'+(pair?"#34d39933":"#34d39922")+'" stroke="#475569"/>';
+    m += '<text x="100" y="62" fill="#94a3b8" font-size="12">U</text>';
+    var ax=300, bx=420, ay=150, r=78;
+    if(pair){
+      m += '<circle cx="'+ax+'" cy="'+ay+'" r="'+r+'" fill="#09131d" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<circle cx="'+bx+'" cy="'+ay+'" r="'+r+'" fill="#09131d" stroke="#f59e0b" stroke-width="2"/>';
+    } else {
+      m += '<circle cx="'+ax+'" cy="'+ay+'" r="'+r+'" fill="#34d39944" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<circle cx="'+bx+'" cy="'+ay+'" r="'+r+'" fill="#34d39944" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<circle cx="360" cy="150" r="40" fill="#09131d" stroke="none"/>';
+    }
+    m += '<text x="240" y="100" fill="#38bdf8" font-size="14">A</text>';
+    m += '<text x="470" y="100" fill="#f59e0b" font-size="14">B</text>';
+    var title = {unioncomp:"(A ∪ B)′", ainter:"A′ ∩ B′", intercomp:"(A ∩ B)′", aunion:"A′ ∪ B′"}[mode];
+    svg.innerHTML = m;
+    readout(cell("Law", title) + cell("De Morgan pair", pair ? "(A ∪ B)′ = A′ ∩ B′" : "(A ∩ B)′ = A′ ∪ B′", "#34d399"));
+    verdict("<b>Example 22 / Ex 1.5.4:</b> the two left presets shade the same region; the two right presets shade the same region. Switch presets and watch the shading agree.");
+  }
+  return {mount:mount, draw:draw};
+})();
+
+window.SIMS.algebra = (function(){
+  var mode = "abs";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B or C</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-abs">Absorption A ∪ (A ∩ B)</button>' +
+      '<button class="preset-btn" id="p-q8">Misc 8: A∩B=A∩C ⇏ B=C</button>' +
+      '<button class="preset-btn" id="p-q10">Misc 10: pairwise ≠ triple</button>';
+    document.getElementById("p-abs").onclick = function(){ setActivePreset(this); mode="abs"; App.resetTimeline(); };
+    document.getElementById("p-q8").onclick = function(){ setActivePreset(this); mode="q8"; App.resetTimeline(); };
+    document.getElementById("p-q10").onclick = function(){ setActivePreset(this); mode="q10"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="abs"){
+      m += '<circle cx="300" cy="150" r="90" fill="#38bdf844" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<circle cx="400" cy="150" r="70" fill="#f59e0b33" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<text x="250" y="80" fill="#38bdf8">A</text><text x="450" y="90" fill="#f59e0b">B</text>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">A ∪ (A ∩ B) paints exactly A</text>';
+      readout(cell("Identity", "A ∪ (A ∩ B) = A") + cell("Also", "A ∩ (A ∪ B) = A"));
+      verdict("<b>Misc. Ex 7:</b> A ∩ B sits inside A, so union with A cannot grow. Absorption.");
+    } else if(mode==="q8"){
+      m += '<text x="360" y="50" fill="#94a3b8" font-size="14" text-anchor="middle">A={1,2}  B={1,3}  C={1,4}</text>';
+      m += '<rect x="80" y="90" width="160" height="120" rx="8" fill="#38bdf822" stroke="#38bdf8"/>';
+      m += '<rect x="280" y="90" width="160" height="120" rx="8" fill="#f59e0b22" stroke="#f59e0b"/>';
+      m += '<rect x="480" y="90" width="160" height="120" rx="8" fill="#34d39922" stroke="#34d399"/>';
+      m += '<text x="160" y="155" fill="#f8fafc" text-anchor="middle">A {1,2}</text>';
+      m += '<text x="360" y="155" fill="#f8fafc" text-anchor="middle">B {1,3}</text>';
+      m += '<text x="560" y="155" fill="#f8fafc" text-anchor="middle">C {1,4}</text>';
+      readout(cell("A ∩ B", "{1}") + cell("A ∩ C", "{1}") + cell("B = C?", "NO", "#f87171"));
+      verdict("<b>Misc. Ex 8:</b> equal intersections with a fixed A hide the parts of B and C that live outside A.");
+    } else {
+      m += '<circle cx="300" cy="140" r="70" fill="#38bdf833" stroke="#38bdf8"/>';
+      m += '<circle cx="420" cy="140" r="70" fill="#f59e0b33" stroke="#f59e0b"/>';
+      m += '<circle cx="360" cy="210" r="70" fill="#34d39933" stroke="#34d399"/>';
+      m += '<text x="250" y="100" fill="#38bdf8">A</text><text x="460" y="100" fill="#f59e0b">B</text><text x="400" y="255" fill="#34d399">C</text>';
+      m += '<text x="360" y="36" fill="#94a3b8" font-size="13" text-anchor="middle">A={1,2} B={2,3} C={3,1} — lenses non-empty, centre empty</text>';
+      readout(cell("A ∩ B", "{2}") + cell("B ∩ C", "{3}") + cell("A ∩ C", "{1}") + cell("A ∩ B ∩ C", "φ", "#f87171"));
+      verdict("<b>Misc. Ex 10:</b> pairwise overlap without a common triple. This reprint has no n(A∪B∪C) section; the witness still lives here.");
+    }
+    svg.innerHTML = m;
+  }
+  return {mount:mount, draw:draw};
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

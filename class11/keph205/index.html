@@ -1,0 +1,2235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 12: Kinetic Theory — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 12 · KINETIC THEORY</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 10 Exercises from NCERT Class 11 Physics (pp. 244–258) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics", "title": "Kinetic Theory", "subtitle": "Ideal gas, pressure from molecular impacts, rms speed, equipartition, specific heats, mean free path.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph205.pdf", "page_start": 244, "page_end": 258, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "molecular-nature", "nav": "Molecular nature of matter", "title": "Matter is atoms in perpetual motion — Kanada said so; Dalton made it quantitative.", "deck": "Atomic hypothesis: little particles that attract at a few ångströms and repel when squeezed. Solids and liquids pack at ~2 Å; gases have mean free paths of thousands of ångströms. This chapter is the gas as a swarm of those particles.", "minutes": 7, "section": "12.1–12.2", "pages": [1, 3], "print": "244–246", "sim": "atoms", "simTitle": "Solid pack vs gas swarm (ångströms)", "quick": ["Boyle (1661) already treated gases as tiny particles. Kinetic theory, built by Maxwell, Boltzmann and others, gives a molecular reading of pressure and temperature, recovers the gas laws and Avogadro’s hypothesis, and estimates molecular sizes from viscosity and diffusion.", "Feynman’s atomic hypothesis: all things are made of atoms — little particles that move around in perpetual motion, attracting when a little apart, repelling when squeezed. Kanada (Vaiśeṣika) and Democritus guessed the picture; Dalton explained the laws of definite and multiple proportions. Avogadro: equal volumes of gases at the same T, P contain equal numbers of molecules.", "Atomic size ~ 1 Å = 10<sup>−10</sup> m. In solids and liquids, neighbours sit a few Å apart. In gases the typical gap is tens of Å, and the <strong>mean free path</strong> is thousands of Å. A gas in a closed flask looks still; the equilibrium is dynamic."], "formulas": [{"label": "Atomic size", "html": "1 Å = 10<sup>−10</sup> m", "cond": "solids/liquids packed at ~2 Å"}, {"label": "Avogadro", "html": "equal V, T, P  ⇒  equal N", "cond": "explains Gay-Lussac once Dalton is molecular"}], "deeper": "Atoms are not elementary: nucleus + electrons, protons and neutrons, quarks, perhaps strings. This chapter stops at molecules of a gas. Lalitavistara (2nd century BCE) already guessed an atomic size of order 10<sup>−10</sup> m — a coincidence of conjecture, not a measurement.", "worked": "Example 12.1 (zoom p.4): density of water 1000 kg m⁻³, of steam at 100 °C and 1 atm 0.6 kg m⁻³. The vapour occupies 1000/0.6 ≈ 1.67×10³ times the liquid volume, so the molecular-volume fraction in the vapour is 6×10⁻⁴.", "prediction": {"prompt": "Steam at 100 °C, 1 atm has density 0.6 kg m⁻³; liquid water is 1000 kg m⁻³. The fraction of space actually filled by molecules in the steam is about", "options": ["6×10⁻⁴ — the liquid is essentially close-packed, so the fraction scales as the density ratio", "1, because a gas fills its container", "0, because molecules are points"], "answer": 0, "explanation": "Example 12.1. ‘Fills the container’ is the volume the swarm occupies, not the volume of the molecules themselves."}, "connect": [["Mustard seed vs Meru", "Kanada’s argument: if matter could be subdivided without end, a mustard seed and the Meru mountain would not differ. That is the same instinct as a modern mole of 6×10²³ molecules — a finite graininess."], ["Wow — we can see atoms now", "Electron microscopes and scanning tunnelling microscopes image atoms. Kinetic theory was accepted before that, on the strength of gas laws, Brownian motion and specific heats — not pictures.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "State the atomic hypothesis in Feynman’s words and quote the steam molecular-volume fraction 6×10⁻⁴.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Avogadro’s law says that equal volumes of all gases at the same T and P have", "options": ["the same number of molecules", "the same mass", "the same rms speed"], "answer": 0, "hint": "§12.2.", "solution": "N is common. Mass depends on molar mass; rms speed depends on m and T.", "wrong": ["", "Mass = μM, and M differs.", "v_rms = √(3kT/m)."]}, {"level": "Medium", "type": "number", "map": "Example 12.1", "prompt": "Molecular-volume fraction in steam at 100 °C, 1 atm (densities 0.6 and 1000 kg m⁻³) is 6×10^{?}", "answer": -4, "unit": "exponent", "tolerance": 0.1, "hint": "0.6/1000 = 6×10⁻⁴.", "solution": "Density ratio 0.6/1000 = 6×10⁻⁴."}, {"level": "Hard", "type": "mcq", "prompt": "Mean free path in a gas is of order", "options": ["thousands of ångströms, ~1000 molecular diameters", "one ångström, the molecular size itself", "metres, the size of the room"], "answer": 0, "hint": "§12.2 and Points to Ponder 2.", "solution": "Intermolecular distance is only ~10× the solid spacing; what is large is the free path between collisions.", "wrong": ["", "That is the size, not the path.", "Only in a high vacuum."]}]}, {"id": "gas-laws", "nav": "Behaviour of gases", "title": "PV = μRT is the equation of an ideal gas — a limit of real gases at low P, high T.", "deck": "Boyle P ∝ 1/V at fixed T, Charles V ∝ T at fixed P, and Avogadro combine into PV = μRT = N k_B T. Dalton: the total pressure is the sum of partial pressures.", "minutes": 8, "section": "12.3", "pages": [3, 5], "print": "246–248", "sim": "idealgas", "simTitle": "Boyle and Charles slides; departures from ideal", "quick": ["A given sample of gas at low pressure and high temperature obeys PV = KT, with K ∝ N. The same constant per molecule for all gases is Boltzmann’s k<sub>B</sub>, so <strong>PV = N k<sub>B</sub> T = μ R T</strong> with R = N<sub>A</sub> k<sub>B</sub> = 8.314 J mol⁻¹ K⁻¹ and k<sub>B</sub> = 1.38×10⁻²³ J K⁻¹.", "Fixed μ, T: Boyle, PV = const. Fixed P: Charles, V ∝ T. Real gases (Fig. 12.1–12.3) hug these laws at low P and high T and peel away near liquefaction. Dalton: for a non-reacting mixture, P = Σ P<sub>i</sub> with each P<sub>i</sub> = μ<sub>i</sub> RT/V.", "Molar volume at STP (0 °C, 1 atm) is 22.4 L for any ideal gas (Example 12.8 / Ex 12.2)."], "formulas": [{"label": "Ideal gas law", "html": "PV = μ R T = N k<sub>B</sub> T", "cond": "Eqs. (12.3), (12.4); R = 8.314 J mol⁻¹ K⁻¹"}, {"label": "Boyle", "html": "PV = const  (T, μ fixed)", "cond": "Eq. (12.6)"}, {"label": "Dalton partial pressures", "html": "P = P₁ + P₂ + …", "cond": "non-reactive mixture of ideal gases"}], "deeper": "An ideal gas is the equation, not a substance: the limit in which molecular volume and intermolecular potential energy are negligible. CO₂ on Fig. 12.3 follows Charles (dotted) far above the liquefaction region and bends as it approaches it.", "worked": "Example 12.4 (zoom p.5): Ne and O₂, partial-pressure ratio 3:2. Then μ_Ne/μ_O₂ = 3/2 so N_Ne/N_O₂ = 3/2. Mass-density ratio ρ_Ne/ρ_O₂ = (μ₁/μ₂)×(M₁/M₂) = (3/2)×(20.2/32.0) = 0.947.", "prediction": {"prompt": "A 22.4 L flask at 0 °C and 1 atm holds helium. How many moles?", "options": ["1 mol — that is the molar volume of any ideal gas at STP", "4 mol, because M_He = 4", "22.4 mol"], "answer": 0, "explanation": "Ex 12.2 / Example 12.8. Molar volume is universal; the mass in the flask would be 4 g, not the mole count."}, "connect": [["Hospital oxygen cylinder (Ex 12.4)", "A 30 L cylinder, gauge 15 atm at 27 °C, later 11 atm at 17 °C, has lost about 0.14 kg of O₂. Gauge pressure is P − 1 atm; the ideal-gas law uses absolute P and T."], ["Wow — 22.4 L is a coincidence of our STP choice", "R T/P at 273 K and 1.01×10⁵ Pa is 0.0224 m³. Change the standard and the number changes; the law does not.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write PV = μRT and state Boyle, Charles and Dalton in one line each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Boltzmann’s constant k_B equals", "options": ["R / N_A", "R N_A", "P V"], "answer": 0, "hint": "R = N_A k_B.", "solution": "k_B = 1.38×10⁻²³ J K⁻¹ = R/N_A.", "wrong": ["", "That is huge.", "PV = N k_B T, not k_B itself."]}, {"level": "Medium", "type": "number", "map": "Ex 12.2", "prompt": "Molar volume of an ideal gas at STP, in litres, is", "answer": 22.4, "unit": "L", "tolerance": 0.05, "hint": "RT/P at 273 K, 1 atm.", "solution": "8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."}, {"level": "Hard", "type": "number", "map": "Example 12.4", "prompt": "Ne:O₂ partial-pressure ratio 3:2. Mass-density ratio ρ_Ne/ρ_O₂ (M = 20.2, 32.0) is", "answer": 0.947, "unit": "", "tolerance": 0.005, "hint": "(3/2)×(20.2/32).", "solution": "1.5 × 0.63125 = 0.947."}]}, {"id": "kinetic-pressure", "nav": "Pressure from molecular impacts", "title": "P = (1/3) n m ⟨v²⟩ — pressure is momentum dumped on the wall per second per area.", "deck": "Elastic collision with a wall reverses v_x and delivers 2 m v_x. Counting hits gives P = n m ⟨v_x²⟩ = (1/3) n m ⟨v²⟩. The container shape does not matter; collisions among molecules do not spoil the average.", "minutes": 9, "section": "12.4.1", "pages": [6, 7], "print": "249–250", "sim": "pressure", "simTitle": "Fig. 12.4 wall collision ledger", "quick": ["Ideal-gas kinetic theory: many molecules, random motion, elastic collisions, molecular size ≪ mean gap, no long-range forces. A molecule hitting a wall parallel to the yz-plane rebounds with v_x → −v_x and imparts momentum 2mv_x (Fig. 12.4).", "In time Δt, molecules in a slab of volume A v_x Δt can hit; half of them are inbound. Momentum per unit time per unit area from one speed class is n m v_x². Summing classes and using isotropy ⟨v_x²⟩ = ⟨v²⟩/3 yields <strong>P = (1/3) n m ⟨v²⟩</strong> (Eq. 12.14).", "Shape of the vessel drops out (Pascal). Molecule–molecule collisions reshuffle who has velocity (v_x, v_y, v_z) but do not change the average if the distribution is steady."], "formulas": [{"label": "Momentum to wall", "html": "Δp<sub>x</sub> = 2 m v<sub>x</sub>", "cond": "elastic hit on a massive wall"}, {"label": "Pressure", "html": "P = (1/3) n m ⟨v²⟩", "cond": "Eq. (12.14); n = N/V"}], "deeper": "‘There is a distribution in velocities’ (NCERT) — this reprint does not write the Maxwell speed-distribution formula as a numbered equation, but it uses that distribution’s second moment ⟨v²⟩. The rms speed is defined from that moment. Visualising the distribution is a way of seeing why a single speed would be a lie.", "worked": "Combine P = (1/3) n m ⟨v²⟩ with PV = N k_B T: (1/3) N m ⟨v²⟩ = N k_B T so (1/2) m ⟨v²⟩ = (3/2) k_B T. Translational KE of the whole gas E = (3/2) N k_B T, and PV = (2/3) E.", "prediction": {"prompt": "If every molecular speed in a flask doubled at fixed volume and number, the pressure would", "options": ["quadruple, because P ∝ ⟨v²⟩", "double, because P ∝ v", "stay the same, because n is fixed"], "answer": 0, "explanation": "Eq. (12.14). Doubling speeds multiplies every 2mv_x and the hit rate by 2, so P × 4. That is also T × 4, since T ∝ ⟨v²⟩."}, "connect": [["Tyre wall as a momentum dump", "Each air molecule that bounces off the inner rubber donates 2mv_n. A denser fill (larger n) or a hotter tyre (larger ⟨v²⟩) both raise P — the two handles in Eq. (12.14)."], ["Wow — a fluid has pressure in its interior, not only on the wall", "Points to Ponder 1: any layer inside the gas is in equilibrium because the two sides push equally. The wall derivation is a convenient book-keeping, not a claim that pressure ‘lives’ only at surfaces.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Derive P = (1/3)nm⟨v²⟩ in three lines: momentum per hit, hit rate, isotropy.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In an elastic collision with a massive wall, the molecule’s v_x", "options": ["reverses, imparting 2m v_x to the wall", "becomes zero", "is unchanged"], "answer": 0, "hint": "Fig. 12.4.", "solution": "v_x → −v_x; Δp_molecule = −2m v_x; wall receives +2m v_x.", "wrong": ["", "That would be perfectly inelastic.", "Then no pressure."]}, {"level": "Medium", "type": "mcq", "prompt": "Isotropy is used to replace ⟨v_x²⟩ by", "options": ["⟨v²⟩/3", "⟨v²⟩", "⟨v⟩²"], "answer": 0, "hint": "Eq. (12.13).", "solution": "No preferred axis, so the three mean-square components share ⟨v²⟩ equally.", "wrong": ["", "That would triple the pressure.", "Points to Ponder 5: ⟨v²⟩ ≠ ⟨v⟩²."]}, {"level": "Hard", "type": "mcq", "prompt": "Molecule–molecule collisions are ignored in the wall-hit count because", "options": ["the distribution is steady: a collision that removes one (v_x, v_y, v_z) supplies another", "molecules never collide in an ideal gas", "collisions are inelastic so they do not affect momentum"], "answer": 0, "hint": "§12.4.1 remarks.", "solution": "Ideal-gas collisions are elastic and rare compared with free flight. The average is what enters P.", "wrong": ["", "They collide; the mean free path is finite.", "Elastic is the assumption."]}]}, {"id": "kinetic-temp-rms", "nav": "Temperature and rms speed", "title": "Temperature is (2/3k_B) times the average translational KE per molecule.", "deck": "½ m ⟨v²⟩ = (3/2) k_B T. Then v_rms = √(3k_B T/m) = √(3RT/M). At 300 K, nitrogen’s v_rms is 516 m s⁻¹ — the order of the speed of sound. Lighter molecules run faster at the same T.", "minutes": 9, "section": "12.4.2", "pages": [7, 8], "print": "250–251", "sim": "maxwell", "simTitle": "Maxwell-style speeds: v_rms of N₂, He, Ar", "quick": ["Matching the kinetic pressure to the ideal-gas law gives <strong>½ m ⟨v²⟩ = (3/2) k<sub>B</sub> T</strong> (Eq. 12.19). Temperature is a measure of average translational KE per molecule, independent of what the molecule is. Total translational energy E = (3/2) N k<sub>B</sub> T (Eq. 12.18), so PV = (2/3) E.", "Root-mean-square speed <strong>v<sub>rms</sub> = √⟨v²⟩ = √(3k<sub>B</sub> T/m) = √(3RT/M)</strong>. For N₂ at 300 K, m = 4.65×10⁻²⁶ kg and v_rms = 516 m s⁻¹ (zoom p.7). In a mixture at one T, the heavier species has the smaller v_rms (Example 12.5: Ar vs Cl₂, ratio 1.33).", "Uranium hexafluoride effusion (Example 12.6): ²³⁵UF₆ vs ²³⁸UF₆, mass 349 vs 352, speed ratio 1.0044 — a 0.44 % difference, exploited (inefficiently) by porous-wall enrichment."], "formulas": [{"label": "Kinetic temperature", "html": "½ m ⟨v²⟩ = (3/2) k<sub>B</sub> T", "cond": "Eq. (12.19); translational KE only"}, {"label": "rms speed", "html": "v<sub>rms</sub> = √(3k<sub>B</sub> T/m) = √(3 R T/M)", "cond": "N₂ at 300 K: 516 m s⁻¹"}, {"label": "Mixture", "html": "v<sub>rms,1</sub> / v<sub>rms,2</sub> = √(M₂/M₁)  at the same T", "cond": "Example 12.5"}], "deeper": "⟨v²⟩ is not ⟨v⟩² (Points to Ponder 5). The Maxwell speed distribution is asymmetric: most probable < mean < rms. This reprint never writes f(v) dv as a numbered law, but the three speeds are the natural language of ⟨v⟩, ⟨v²⟩ and the peak. Gravity does not pile all the air on the floor because ½mv² ≫ mgh for room heights (Points to Ponder 4).", "worked": "Example 12.5 (zoom p.7–8): Ar and Cl₂ at 27 °C. (i) Average KE per molecule is (3/2)k_B T for both, ratio 1:1. (ii) v_rms(Ar)/v_rms(Cl₂) = √(70.9/39.9) = 1.33. The 2:1 mass composition never enters.", "prediction": {"prompt": "Argon atoms and chlorine molecules share a flask at 27 °C. The ratio of average translational KE per molecule is", "options": ["1 : 1 — it depends only on T", "39.9 : 70.9 — proportional to mass", "2 : 1 — the mass composition of the flask"], "answer": 0, "explanation": "Example 12.5(i). Equipartition of translational KE is species-blind."}, "connect": [["BARC and porous-wall enrichment", "Example 12.6 is the physics of gaseous diffusion: the 0.44 % speed edge of ²³⁵UF₆ over ²³⁸UF₆, compounded over many stages. India used heavy-water and centrifuge routes; the textbook point is Graham’s law from v_rms."], ["Wow — 516 m s⁻¹ in the air of this room", "Nitrogen molecules at 27 °C outrun a cricket ball and match the order of the speed of sound. They do not empty the room because they collide ~10⁹ times a second (mean free path, §12.7).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write ½m⟨v²⟩ = (3/2)k_B T and v_rms for N₂ at 300 K.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "v_rms at a given T is larger for", "options": ["lighter molecules", "heavier molecules", "molecules with more atoms, regardless of mass"], "answer": 0, "hint": "v_rms = √(3kT/m).", "solution": "Helium outruns argon at the same T (Ex 12.8, 12.9).", "wrong": ["", "Heavier means slower.", "Atom count enters mass, not a separate factor."]}, {"level": "Medium", "type": "number", "map": "N₂ at 300 K", "prompt": "v_rms of nitrogen at 300 K, as quoted in the chapter (m s⁻¹), is", "answer": 516, "unit": "m s⁻¹", "tolerance": 2, "hint": "√(3kT/m) with m = 28 u.", "solution": "NCERT evaluates 516 m s⁻¹. Order of the speed of sound."}, {"level": "Hard", "type": "number", "map": "Ex 12.9", "prompt": "T (K) at which argon atoms have the same v_rms as helium at −20 °C (M_Ar = 39.9, M_He = 4.0) is", "answer": 2524, "unit": "K", "tolerance": 5, "hint": "T_Ar / T_He = M_Ar / M_He.", "solution": "T_He = 253 K; T_Ar = 253 × 39.9/4 = 2524 K."}]}, {"id": "equipartition", "nav": "Law of equipartition", "title": "Each quadratic energy term gets ½ k_B T — translation, rotation, and two for each vibration.", "deck": "Maxwell proved that in equilibrium every squared term in the energy shares equally. A monatomic gas has 3 translational degrees; a rigid diatomic has 5; each vibrational mode adds 2 (KE + PE).", "minutes": 8, "section": "12.5", "pages": [9, 10], "print": "252–253", "sim": "equipart", "simTitle": "Degrees of freedom: mono, di, poly", "quick": ["The law of equipartition (Maxwell): if a system is in equilibrium at T, the energy is distributed equally among the modes of absorption, <strong>½ k<sub>B</sub> T per quadratic term</strong>. Each translational or rotational degree of freedom is one such term. Each vibrational frequency contributes two (kinetic and potential), hence k<sub>B</sub> T.", "Monatomic: 3 translational. Diatomic (rigid rotator, no vibration): 3 translational + 2 rotational = 5. A linear molecule’s rotation about its axis is frozen (tiny moment of inertia, quantum). Vibration of a diatomic is one frequency, two terms, but is often frozen at room temperature (end of §12.6).", "Polyatomic: 3 translational + 3 rotational + vibrational modes. Fig. 12.6 sketches the motions."], "formulas": [{"label": "Equipartition", "html": "⟨ε⟩ = ½ k<sub>B</sub> T per quadratic term", "cond": "Eq. (12.22) family; Points to Ponder 3"}, {"label": "Diatomic (room T)", "html": "f = 5  (3 trans + 2 rot)", "cond": "vibration usually frozen"}, {"label": "Vibrational mode", "html": "2 × ½ k<sub>B</sub> T = k<sub>B</sub> T", "cond": "KE + PE"}], "deeper": "Quantum mechanics, not this chapter, explains why some modes are frozen: the energy step ħω or ħ²/2I may be ≫ k_B T. Equipartition is the high-T limit. NCERT is honest that vibration of H₂ is off at room temperature and that carbon’s solid C is an exception to 3R.", "worked": "A diatomic at room T: U_trans = (3/2)μRT, U_rot = μRT, U_vib ≈ 0, so U = (5/2)μRT. That is why C_v = 5R/2 in the next section, not 7R/2.", "prediction": {"prompt": "A vibrational mode is said to have two degrees of freedom. Why two, not one?", "options": ["The energy has two squared terms, ½k q² + ½μ q̇², and each takes ½ k_B T", "The molecule can vibrate along x and along y", "One for each atom"], "answer": 0, "explanation": "Points to Ponder 3 and Eq. (12.26). Count quadratic terms, not ‘ways of moving’ naively."}, "connect": [["Why H₂ at 300 K is ‘diatomic rigid’", "A hydrogen molecule rotates freely (rotational spacing small) but its bond is a stiff spring (vibrational spacing large). Room-temperature C_v sits at 5R/2, and only climbs toward 7R/2 when the gas is hot."], ["Wow — gravity does not win against k_B T", "mgh for 10 m is ~10⁻²² J; ½ m v² ~ 10⁻²¹ J. Air molecules bounce many times their own ‘fall’ between collisions, so they do not settle on the floor (Points to Ponder 4).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "State equipartition, count f for monatomic and room-T diatomic, and say why vibration is two terms.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Each translational degree of freedom carries, on average", "options": ["½ k_B T", "k_B T", "3/2 k_B T"], "answer": 0, "hint": "Equipartition.", "solution": "One quadratic term. The 3/2 k_B T is the sum of three of them.", "wrong": ["", "That is one vibrational mode.", "That is all three translations."]}, {"level": "Medium", "type": "mcq", "prompt": "A rigid diatomic molecule has f =", "options": ["5", "3", "6"], "answer": 0, "hint": "3 trans + 2 rot.", "solution": "Rotation about the bond axis is frozen. Vibration is a separate, often frozen, pair of terms.", "wrong": ["", "That is monatomic.", "That would be a non-linear polyatomic rotator."]}, {"level": "Hard", "type": "mcq", "prompt": "In a mixture of Ne, Cl₂ and UF₆ at the same T and P, v_rms is largest for", "options": ["neon — lightest molecules", "chlorine", "uranium hexafluoride"], "answer": 0, "hint": "Ex 12.8.", "solution": "Equal N (Avogadro). v_rms ∝ 1/√M. Neon wins. Translational KE per molecule is the same for all three.", "wrong": ["", "Heavier than Ne.", "Heaviest, slowest."]}]}, {"id": "gas-specific-heats", "nav": "Specific heats of gases", "title": "C_v = (f/2) R and C_p = C_v + R — predicted, then compared with Table 12.2.", "deck": "Monatomic: C_v = 3R/2, γ = 5/3. Diatomic (no vibration): C_v = 5R/2, γ = 7/5. Polyatomic: C_v = (f/2)R with f > 6 once vibration joins. Solids: C ≈ 3R (Dulong–Petit), carbon excepted.", "minutes": 8, "section": "12.6", "pages": [10, 12], "print": "253–255", "sim": "cvgas", "simTitle": "Heat a flask: helium vs nitrogen vs a solid", "quick": ["From U = (f/2) μ R T, <strong>C<sub>v</sub> = (f/2) R</strong> and C<sub>p</sub> = C<sub>v</sub> + R, so γ = 1 + 2/f. Monatomic (He, Ar): C<sub>v</sub> = 3R/2, C<sub>p</sub> = 5R/2, γ = 5/3. Diatomic at room T: 5R/2, 7R/2, γ = 7/5. Table 12.1 vs 12.2: the match is good for translation+rotation and improves when vibration is included at high T.", "Example 12.8: 44.8 L of He at STP is 2 mol; cylinder of fixed volume, ΔT = 15 K. Q = μ C_v ΔT = 2 × (3/2)R × 15 = 45 R = 374 J.", "Solids: each atom is a 3-D oscillator, U = 3 R T per mole, C = 3R (Eq. 12.37, Table 12.3). Carbon is the stubborn exception at room T."], "formulas": [{"label": "Molar C_v", "html": "C<sub>v</sub> = (f/2) R", "cond": "ideal gas; f degrees of freedom"}, {"label": "γ", "html": "γ = C<sub>p</sub>/C<sub>v</sub> = 1 + 2/f", "cond": "monatomic 5/3, diatomic 7/5"}, {"label": "Solid", "html": "C = 3 R", "cond": "Eq. (12.37); ordinary T"}], "deeper": "The ‘failure’ of equipartition at low T is a victory of quantum theory, not a failure of kinetic theory’s bookkeeping. This reprint does not develop that quantum theory; it records the experimental table and notes where vibration is missing.", "worked": "Example 12.8 (zoom p.11): 44.8 L He at STP ⇒ 2 mol (molar volume 22.4 L). Fixed V so C_v = 3R/2. Q = 2 × 1.5 × 8.31 × 15 = 374 J.", "prediction": {"prompt": "A rigid 44.8 L cylinder of helium at STP is warmed 15 °C. The heat needed is set by", "options": ["C_v, not C_p, because the volume is fixed — 374 J", "C_p, because the cylinder is ‘at constant atmospheric pressure’", "3R per mole of a solid, because helium freezes"], "answer": 0, "explanation": "Example 12.8. ‘Fixed capacity’ is isochoric. Helium is still a monatomic gas."}, "connect": [["Helium in a Bangalore MRI magnet", "Boil-off heat load is computed with C_p of He gas once it has vaporised, and with the latent heat of the liquid. The 3R/2 of the monatomic vapour is why helium is a light, ‘cheap-per-degree’ gas to warm — and why it escapes so fast (large v_rms)."], ["Wow — 374 J for 2 mol of He, 15 K", "That is a handful of calories. The same ΔT for 2 mol of a room-temperature diatomic would be 5/3 times larger (C_v = 5R/2). Degrees of freedom are a heat-capacity multiplier.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write C_v for mono and diatomic gases and compute Example 12.8.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a monatomic ideal gas, γ is", "options": ["5/3", "7/5", "4/3"], "answer": 0, "hint": "C_p = 5R/2, C_v = 3R/2.", "solution": "γ = 5/3. 7/5 is room-T diatomic; 4/3 is a polyatomic with f = 6.", "wrong": ["", "Diatomic.", "f = 6 rotator."]}, {"level": "Medium", "type": "number", "map": "Example 12.8", "prompt": "Heat (J) to raise 44.8 L of He at STP by 15 K at fixed volume (R = 8.31) is", "answer": 374, "unit": "J", "tolerance": 2, "hint": "2 mol × (3/2)R × 15.", "solution": "45 × 8.31 = 374 J."}, {"level": "Hard", "type": "mcq", "prompt": "Dulong–Petit C = 3R for solids fails at low T because", "options": ["vibrational modes freeze out (quantum); this reprint records the fact, it does not derive ħω", "solids are not made of atoms", "R changes with temperature"], "answer": 0, "hint": "§12.6.4; carbon exception at room T.", "solution": "Equipartition is a high-T law. Carbon’s stiff lattice is still frozen at 300 K.", "wrong": ["", "They are.", "R is a constant."]}]}, {"id": "mean-free-path", "nav": "Mean free path", "title": "ℓ = 1 / (√2 π n d²) — why a 500 m s⁻¹ molecule takes minutes to cross a room.", "deck": "A molecule of diameter d sweeps a collision cylinder π d² ⟨v⟩ Δt. With partners also moving, the exact mean free path is 1/(√2 π n d²). At STP, ℓ ~ 10⁻⁷ m ≈ 1500 d, and the time between collisions is ~ 10⁻¹⁰ s.", "minutes": 8, "section": "12.7", "pages": [12, 13], "print": "255–256", "sim": "mfp", "simTitle": "Collision cylinder and a kitchen gas leak", "quick": ["Molecules are fast, yet a kitchen LPG leak does not fill the house in a millisecond. Finite size ⇒ collisions. A sphere of diameter d sweeping at ⟨v⟩ has collision rate n π d² ⟨v⟩, so a first estimate ℓ = 1/(n π d²) (Eq. 12.39).", "Partners move too; replace ⟨v⟩ by the mean relative speed. The exact result is <strong>ℓ = 1/(√2 π n d²)</strong> (Eq. 12.40). At STP, n = 2.7×10²⁵ m⁻³, d ≈ 2×10⁻¹⁰ m, ℓ ≈ 2.9×10⁻⁷ m ≈ 1500 d, τ ≈ 6.1×10⁻¹⁰ s (Eq. 12.41).", "Example 12.9: water vapour at 373 K, n scales as 1/T, ℓ ≈ 4×10⁻⁷ m. Mean free path is ~100× the interatomic distance and ~1000× the molecular size (Points to Ponder 2)."], "formulas": [{"label": "Mean free path", "html": "ℓ = 1 / (√2 π n d²)", "cond": "Eq. (12.40)"}, {"label": "Collision time", "html": "τ = ℓ / ⟨v⟩", "cond": "STP air: τ ≈ 6.1×10⁻¹⁰ s"}], "deeper": "In a highly evacuated tube, n is small and ℓ can be as large as the apparatus — that is the Knudsen regime, where molecules hit walls more than each other. Diffusion then is not a random walk of steps ℓ but a wall-to-wall flight.", "worked": "Ex 12.10 (zoom p.15): N₂ at 2.0 atm, 17 °C, radius 1.0 Å. n = P/(k_B T) ≈ 5.06×10²⁵ m⁻³, d = 2.0×10⁻¹⁰ m, ℓ = 1/(√2 π n d²) ≈ 1.0×10⁻⁷ m. v_rms ≈ 493 m s⁻¹, collision frequency v/ℓ ≈ 5×10⁹ s⁻¹. Collision duration ~ d/v is ~1000 times shorter than the free-flight time.", "prediction": {"prompt": "A nitrogen molecule at STP has v_rms ~ 500 m s⁻¹. Why does a smell take seconds to cross a room?", "options": ["It random-walks in steps of ℓ ~ 10⁻⁷ m, ~10⁹ collisions per second, so net progress is slow", "Molecules are actually slow; 500 m s⁻¹ is a misprint", "They travel in straight lines at the speed of sound and the room is huge"], "answer": 0, "explanation": "§12.7 opening: smoke holds together for hours because paths are incessantly deflected. Diffusion distance ~ √(ℓ v t), not v t."}, "connect": [["LPG leak in a kitchen", "You smell it at the door after seconds to minutes, not microseconds. That delay is the mean-free-path random walk, plus convection. Opening a window raises ℓ only slightly; it mostly adds a bulk air current."], ["Wow — 1500 molecular diameters of empty flight", "Between collisions a nitrogen molecule flies ~0.3 μm — short for us, enormous for it. Kinetic theory’s ideal-gas ‘no size’ is that statement: the molecules occupy a tiny fraction of the volume, yet they still collide.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write ℓ = 1/(√2 π n d²) and the STP numbers ℓ ≈ 2.9×10⁻⁷ m, τ ≈ 6.1×10⁻¹⁰ s.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Mean free path ℓ is the average distance a molecule travels", "options": ["between two successive collisions", "from wall to wall", "in one second"], "answer": 0, "hint": "§12.7.", "solution": "Definition. Wall-to-wall equals ℓ only in high vacuum.", "wrong": ["", "Only in the Knudsen regime.", "That is ⟨v⟩."]}, {"level": "Medium", "type": "mcq", "prompt": "ℓ depends on n and d as", "options": ["1/(n d²)", "1/(n d)", "n d²"], "answer": 0, "hint": "Eq. (12.40).", "solution": "Collision cylinder area ~ d², target density n.", "wrong": ["", "Missing a power of d.", "That is a rate, not a path."]}, {"level": "Hard", "type": "number", "map": "Eq. 12.41", "prompt": "At STP, n ≈ 2.7×10²⁵ m⁻³ and d ≈ 2×10⁻¹⁰ m. ℓ in metres, to one significant figure as 3×10^{?}", "answer": -7, "unit": "exponent of 10", "tolerance": 0.2, "hint": "NCERT: 2.9×10⁻⁷ m ≈ 1500 d.", "solution": "ℓ = 1/(√2 π n d²) ≈ 2.9×10⁻⁷ m."}]}], "exercises": [{"number": "12.1", "section": "Exercises", "conceptIdx": 0, "page": 14, "printPage": 257, "question": "Estimate the fraction of molecular volume to the actual volume occupied by oxygen gas at STP. Take the diameter of an oxygen molecule to be 3 Å.", "steps": ["Radius r = 1.5×10⁻¹⁰ m. Volume of one molecule = (4/3)π r³ ≈ 1.41×10⁻²⁹ m³.", "One mole: N_A × that volume ≈ 8.5×10⁻⁶ m³.", "Molar volume at STP = 22.4×10⁻³ m³.", "Fraction ≈ 8.5×10⁻⁶ / 22.4×10⁻³ ≈ 3.8×10⁻⁴."], "answer": "≈ 3.8 × 10⁻⁴"}, {"number": "12.2", "section": "Exercises", "conceptIdx": 1, "page": 14, "printPage": 257, "question": "Molar volume is the volume occupied by 1 mol of any (ideal) gas at standard temperature and pressure (STP: 1 atmospheric pressure, 0 °C). Show that it is 22.4 litres.", "steps": ["V = RT/P with T = 273 K, P = 1.013×10⁵ Pa, R = 8.31 J mol⁻¹ K⁻¹.", "V = 8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."], "answer": "22.4 L"}, {"number": "12.3", "section": "Exercises", "conceptIdx": 1, "page": 14, "printPage": 257, "question": "Figure 12.8 shows plot of PV/T versus P for 1.00×10⁻³ kg of oxygen gas at two different temperatures. (a) What does the dotted plot signify? (b) Which is true: T₁ > T₂ or T₁ < T₂? (c) What is the value of PV/T where the curves meet on the y-axis? (d) If we obtained similar plots for 1.00×10⁻³ kg of hydrogen, would we get the same value of PV/T at the intercept? If not, what mass of hydrogen yields the same intercept? (M_O₂ = 32.0 u, M_H₂ = 2.02 u, R = 8.31 J mol⁻¹ K⁻¹.)", "steps": ["(a) Dotted line: ideal-gas behaviour, PV/T = μR, independent of P.", "(b) T₁ > T₂: the higher-T curve stays ideal to larger P (Fig. 12.8).", "(c) μ = 0.001/0.032 = 1/32 mol; μR = 8.31/32 = 0.260 J K⁻¹.", "(d) No. Need the same μ, so m_H₂ = (2.02/32)×1.00×10⁻³ kg = 6.31×10⁻⁵ kg."], "answer": "(a) ideal gas (b) T₁ > T₂ (c) 0.26 J K⁻¹ (d) 6.31×10⁻⁵ kg of H₂"}, {"number": "12.4", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "An oxygen cylinder of volume 30 litre has an initial gauge pressure of 15 atm and a temperature of 27 °C. After some oxygen is withdrawn from the cylinder, the gauge pressure drops to 11 atm and its temperature drops to 17 °C. Estimate the mass of oxygen taken out of the cylinder (R = 8.31 J mol⁻¹ K⁻¹, molecular mass of O₂ = 32 u).", "given": "V = 30 L = 0.030 m³; P_gauge,i = 15 atm ⇒ P_i = 16 atm; P_f = 12 atm; T_i = 300 K; T_f = 290 K", "steps": ["Use absolute pressures. μ_i = P_i V / (RT_i) = 16×1.013×10⁵×0.030 / (8.31×300) = 19.48 mol.", "μ_f = 12×1.013×10⁵×0.030 / (8.31×290) = 15.12 mol.", "Δm = (19.48 − 15.12)×32 g = 0.140 kg."], "answer": "0.14 kg"}, {"number": "12.5", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "An air bubble of volume 1.0 cm³ rises from the bottom of a lake 40 m deep at a temperature of 12 °C. To what volume does it grow when it reaches the surface, which is at a temperature of 35 °C?", "steps": ["P_bottom = 1.013×10⁵ + 10³×9.8×40 = 4.933×10⁵ Pa; P_top = 1.013×10⁵ Pa.", "V₂ = V₁ (P₁/P₂)(T₂/T₁) = 1.0 × (4.933/1.013) × (308/285) ≈ 5.26 cm³."], "answer": "5.3 cm³ (≈ 5.26 cm³)"}, {"number": "12.6", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "Estimate the total number of air molecules (inclusive of oxygen, nitrogen, water vapour and other constituents) in a room of capacity 25.0 m³ at a temperature of 27 °C and 1 atm pressure.", "steps": ["N = PV / k_B T = 1.013×10⁵ × 25 / (1.38×10⁻²³ × 300) = 6.11×10²⁶."], "answer": "6.1 × 10²⁶"}, {"number": "12.7", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "Estimate the average thermal energy of a helium atom at (i) room temperature (27 °C), (ii) the temperature on the surface of the Sun (6000 K), (iii) the temperature of 10 million kelvin (the typical core temperature in the case of a star).", "steps": ["Average translational KE = (3/2) k_B T.", "(i) (3/2)×1.38×10⁻²³×300 = 6.21×10⁻²¹ J.", "(ii) (3/2)×1.38×10⁻²³×6000 = 1.24×10⁻¹⁹ J.", "(iii) (3/2)×1.38×10⁻²³×10⁷ = 2.07×10⁻¹⁶ J."], "answer": "(i) 6.21×10⁻²¹ J  (ii) 1.24×10⁻¹⁹ J  (iii) 2.07×10⁻¹⁶ J"}, {"number": "12.8", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "Three vessels of equal capacity have gases at the same temperature and pressure. The first vessel contains neon (monatomic), the second contains chlorine (diatomic), and the third contains uranium hexafluoride (polyatomic). Do the vessels contain equal number of respective molecules ? Is the root mean square speed of molecules the same in the three cases? If not, in which case is vrms the largest ?", "steps": ["Avogadro: equal V, T, P ⇒ equal N. Yes.", "v_rms = √(3kT/m) is not the same; largest for the lightest (neon)."], "answer": "Equal N; v_rms largest for neon"}, {"number": "12.9", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "At what temperature is the root mean square speed of an atom in an argon gas cylinder equal to the rms speed of a helium gas atom at – 20 °C ? (atomic mass of Ar = 39.9 u, of He = 4.0 u).", "steps": ["v_rms equal ⇒ T/M equal.", "T_Ar = T_He × (M_Ar/M_He) = 253 × 39.9/4.0 = 2524 K."], "answer": "2.52 × 10³ K"}, {"number": "12.10", "section": "Exercises", "conceptIdx": 6, "page": 15, "printPage": 258, "question": "Estimate the mean free path and collision frequency of a nitrogen molecule in a cylinder containing nitrogen at 2.0 atm and temperature 17 0C. Take the radius of a nitrogen molecule to be roughly 1.0 Å. Compare the collision time with the time the molecule moves freely between two successive collisions (Molecular mass of N2 = 28.0 u).", "steps": ["n = P/kT = 2×1.013×10⁵ / (1.38×10⁻²³×290) = 5.06×10²⁵ m⁻³.", "d = 2.0×10⁻¹⁰ m; ℓ = 1/(√2 π n d²) ≈ 1.0×10⁻⁷ m.", "v_rms = √(3RT/M) = √(3×8.31×290 / 0.028) ≈ 493 m s⁻¹.", "Collision frequency v/ℓ ≈ 4.9×10⁹ s⁻¹.", "Collision duration ~ d/v vs free time ℓ/v: ratio ~ d/ℓ ~ 2×10⁻³. Free flight lasts ~500× longer than a collision."], "answer": "ℓ ≈ 1.0×10⁻⁷ m; frequency ≈ 4.9×10⁹ s⁻¹; collision time ≪ free time (~1/500)"}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.atoms = (function(){
+  var mode = "solid";
+  var rng = 1;
+  function rnd(){ rng = (rng * 16807) % 2147483647; return rng / 2147483647; }
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Atom / molecule</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="a-s">Solid ~2 Å packing</button>' +
+      '<button class="preset-btn" id="a-g">Gas: swarm + large free path</button>';
+    document.getElementById("a-s").onclick = function(){ setActivePreset(this); mode="solid"; App.resetTimeline(); App.play(); };
+    document.getElementById("a-g").onclick = function(){ setActivePreset(this); mode="gas"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    rng = 1234567;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode === "solid"){
+      for(var i=0;i<8;i++) for(var j=0;j<4;j++){
+        var x = 120 + i*60 + 4*Math.sin(t*3+i), y = 70 + j*50 + 4*Math.cos(t*3+j);
+        m += '<circle cx="'+x+'" cy="'+y+'" r="14" fill="#38bdf8" opacity="0.85"/>';
+      }
+      readout(cell("spacing","~2 Å") + cell("motion","vibrate about sites") + cell("mean free path","~spacing"));
+      verdict("<b>§12.2:</b> solids (and liquids) pack at a few ångströms. Neighbours rattle; they do not fly.");
+    } else {
+      for(var k=0;k<18;k++){
+        var x = 40 + (rnd()*640 + t*80*(rnd()-0.3)*8)%640;
+        var y = 40 + (rnd()*220 + t*40*(rnd()-0.5)*8)%220;
+        m += '<circle cx="'+x+'" cy="'+y+'" r="5" fill="#f59e0b"/>';
+      }
+      readout(cell("gap","tens of Å") + cell("mean free path","thousands of Å") + cell("equilibrium","dynamic"));
+      verdict("<b>§12.2:</b> a gas looks still. Molecules fly, collide, and reshuffle speeds. Only averages sit still.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.idealgas = (function(){
+  var law = "boyle";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Ideal PV = μRT</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Real-gas peel-off</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="g-b">Boyle: P vs 1/V</button>' +
+      '<button class="preset-btn" id="g-c">Charles: V vs T</button>' +
+      '<button class="preset-btn" id="g-s">STP molar volume 22.4 L</button>';
+    document.getElementById("g-b").onclick = function(){ setActivePreset(this); law="boyle"; App.resetTimeline(); App.play(); };
+    document.getElementById("g-c").onclick = function(){ setActivePreset(this); law="charles"; App.resetTimeline(); App.play(); };
+    document.getElementById("g-s").onclick = function(){ setActivePreset(this); law="stp"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/6,1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="70" y1="250" x2="680" y2="250" stroke="#475569"/><line x1="70" y1="250" x2="70" y2="30" stroke="#475569"/>';
+    if(law === "boyle"){
+      var d="";
+      for(var i=0;i<=30;i++){ var V=1.2+i*0.15; d += (i?"L":"M")+" "+(70+V*80)+" "+(250-180/V); }
+      m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+      var V = 1.5 + 3*f;
+      m += '<circle cx="'+(70+V*80)+'" cy="'+(250-180/V)+'" r="6" fill="#f8fafc"/>';
+      readout(cell("law","Boyle") + cell("PV","const at fixed T") + cell("V", V.toFixed(2)));
+      verdict("<b>Eq. 12.6:</b> isotherms are rectangular hyperbolas. Real gases (Fig. 12.2) hug this at low P.");
+    } else if(law === "charles"){
+      m += '<line x1="70" y1="250" x2="620" y2="60" stroke="#38bdf8" stroke-width="3"/>';
+      m += '<line x1="70" y1="250" x2="620" y2="90" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4"/>';
+      var x = 70 + 550*f;
+      m += '<circle cx="'+x+'" cy="'+(250 - 190*f)+'" r="6" fill="#f8fafc"/>';
+      readout(cell("law","Charles") + cell("V","∝ T at fixed P") + cell("dotted","ideal"));
+      verdict("<b>Fig. 12.3:</b> CO₂ follows the dotted Charles line far from liquefaction and peels away near it.");
+    } else {
+      var V = 22.4*f;
+      m += '<rect x="120" y="80" width="'+Math.max(8,V*12)+'" height="140" fill="#1e3a5f" stroke="#38bdf8"/>';
+      m += '<text x="360" y="50" fill="#94a3b8" font-size="14" text-anchor="middle">1 mol of any ideal gas at 0 °C, 1 atm</text>';
+      readout(cell("T","273 K") + cell("P","1 atm") + cell("V","22.4 L","#34d399"));
+      verdict("<b>Ex 12.2:</b> V = RT/P = 8.31×273 / 1.013×10⁵ = 0.0224 m³ = 22.4 litres. Universal molar volume.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.pressure = (function(){
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Inbound molecule</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Wall</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="pr1">Fig 12.4 elastic bounce</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var cycle = (t % 1.6);
+    var x = cycle < 0.8 ? 80 + cycle/0.8*430 : 510 - (cycle-0.8)/0.8*430;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="540" y="40" width="28" height="220" fill="#38bdf8"/>';
+    m += '<text x="554" y="30" fill="#94a3b8" font-size="12" text-anchor="middle">wall</text>';
+    m += '<circle cx="'+x+'" cy="150" r="12" fill="#f59e0b"/>';
+    m += '<text x="x" y="0"></text>';
+    var vx = cycle < 0.8 ? "+v_x" : "−v_x";
+    m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Δp on wall = 2 m v_x per hit</text>';
+    svg.innerHTML = m;
+    readout(cell("v_x", vx) + cell("P","(1/3) n m ⟨v²⟩","#34d399"));
+    verdict("<b>Eq. 12.14:</b> hit rate ∝ n A v_x, momentum per hit 2m v_x, isotropy ⟨v_x²⟩ = ⟨v²⟩/3. Shape of the box drops out.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.maxwell = (function(){
+  var gas = "n2";
+  function params(){
+    if(gas==="he") return {M:4.0, name:"He", T:300};
+    if(gas==="ar") return {M:39.9, name:"Ar", T:300};
+    if(gas==="hot") return {M:28.0, name:"N₂ at 600 K", T:600};
+    return {M:28.0, name:"N₂", T:300};
+  }
+  function vrms(p){ return Math.sqrt(3*8.314*p.T/(p.M*1e-3)); }
+  function f(v, p){
+    var a = p.M*1e-3/(2*8.314*p.T);
+    return v*v*Math.exp(-a*v*v);
+  }
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Speed distribution (shape)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v_rms</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="m-n2">N₂ 300 K · 516 m/s</button>' +
+      '<button class="preset-btn" id="m-he">He 300 K (lighter, faster)</button>' +
+      '<button class="preset-btn" id="m-ar">Ar 300 K (heavier, slower)</button>' +
+      '<button class="preset-btn" id="m-hot">N₂ 600 K (hotter, faster)</button>';
+    document.getElementById("m-n2").onclick = function(){ setActivePreset(this); gas="n2"; App.resetTimeline(); };
+    document.getElementById("m-he").onclick = function(){ setActivePreset(this); gas="he"; App.resetTimeline(); };
+    document.getElementById("m-ar").onclick = function(){ setActivePreset(this); gas="ar"; App.resetTimeline(); };
+    document.getElementById("m-hot").onclick = function(){ setActivePreset(this); gas="hot"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var p = params();
+    var vr = vrms(p);
+    var vmax = 2000;
+    var d="", peak=0, vs=[];
+    for(var i=0;i<=80;i++){
+      var v = i*vmax/80;
+      var y = f(v,p);
+      vs.push(y); if(y>peak) peak=y;
+    }
+    for(var i=0;i<=80;i++){
+      var v = i*vmax/80;
+      var X = 70 + (v/vmax)*620;
+      var Y = 250 - (vs[i]/(peak||1))*200;
+      d += (i?"L":"M")+" "+X+" "+Y;
+    }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="70" y1="250" x2="700" y2="250" stroke="#475569"/><line x1="70" y1="250" x2="70" y2="30" stroke="#475569"/>';
+    m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+    var xr = 70 + (vr/vmax)*620;
+    m += '<line x1="'+xr+'" y1="250" x2="'+xr+'" y2="40" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4"/>';
+    m += '<text x="'+xr+'" y="32" fill="#f59e0b" font-size="12" text-anchor="middle">v_rms</text>';
+    m += '<text x="360" y="280" fill="#94a3b8" font-size="12" text-anchor="middle">speed (m/s) — this reprint uses ⟨v²⟩, not a numbered f(v)</text>';
+    svg.innerHTML = m;
+    readout(cell("gas", p.name) + cell("T", p.T+" K") + cell("v_rms", vr.toFixed(0)+" m/s","#f59e0b"));
+    verdict("<b>Eq. 12.19:</b> v_rms = √(3RT/M). N₂ at 300 K is <b>516 m s⁻¹</b> in the text. Lighter or hotter shifts the curve right. Most-probable &lt; mean &lt; rms.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.equipart = (function(){
+  var kind = "mono";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Translation</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Rotation</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Vibration (often frozen)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="e-m">Monatomic f = 3</button>' +
+      '<button class="preset-btn" id="e-d">Diatomic room T f = 5</button>' +
+      '<button class="preset-btn" id="e-v">Diatomic hot f = 7</button>';
+    document.getElementById("e-m").onclick = function(){ setActivePreset(this); kind="mono"; App.resetTimeline(); };
+    document.getElementById("e-d").onclick = function(){ setActivePreset(this); kind="di"; App.resetTimeline(); };
+    document.getElementById("e-v").onclick = function(){ setActivePreset(this); kind="vib"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = kind==="mono"?3: kind==="di"?5:7;
+    var Cv = f/2, Cp = Cv+1, g = Cp/Cv;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    function chip(x,y,label,color){
+      return '<rect x="'+x+'" y="'+y+'" width="90" height="36" rx="6" fill="'+color+'"/><text x="'+(x+45)+'" y="'+(y+23)+'" fill="#0f172a" font-size="12" text-anchor="middle">'+label+'</text>';
+    }
+    m += chip(40,40,"v_x","#38bdf8")+chip(140,40,"v_y","#38bdf8")+chip(240,40,"v_z","#38bdf8");
+    if(f>=5) m += chip(40,100,"ω_1","#f59e0b")+chip(140,100,"ω_2","#f59e0b");
+    if(f>=7) m += chip(40,160,"½k q²","#34d399")+chip(140,160,"½μ q̇²","#34d399");
+    m += '<text x="500" y="80" fill="#e2e8f0" font-size="16">f = '+f+'</text>';
+    m += '<text x="500" y="120" fill="#94a3b8" font-size="14">C_v = '+(Cv)+' R</text>';
+    m += '<text x="500" y="150" fill="#94a3b8" font-size="14">γ = '+g.toFixed(3)+'</text>';
+    svg.innerHTML = m;
+    readout(cell("f", String(f)) + cell("C_v", Cv+" R") + cell("γ", g.toFixed(3)));
+    verdict("<b>Equipartition:</b> ½ k_B T per quadratic term. Vibration is two terms and is often frozen at room T — that is why air’s γ is 1.4, not 9/7.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.cvgas = (function(){
+  var gas = "he";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Heat in at fixed V</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c-he">Ex 12.8 helium 374 J</button>' +
+      '<button class="preset-btn" id="c-n2">Same flask of N₂ (diatomic)</button>';
+    document.getElementById("c-he").onclick = function(){ setActivePreset(this); gas="he"; App.resetTimeline(); App.play(); };
+    document.getElementById("c-n2").onclick = function(){ setActivePreset(this); gas="n2"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/4,1);
+    var Cv = gas==="he" ? 1.5 : 2.5;
+    var Q = 2 * Cv * 8.31 * 15 * f;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="240" y="70" width="240" height="140" rx="8" fill="#1e3a5f" stroke="#38bdf8"/>';
+    m += '<text x="360" y="140" fill="#e2e8f0" font-size="16" text-anchor="middle">44.8 L · 2 mol · ΔT = 15 K</text>';
+    m += '<text x="360" y="50" fill="#94a3b8" font-size="14" text-anchor="middle">'+(gas==="he"?"He · C_v = 3R/2":"N₂ · C_v = 5R/2")+'</text>';
+    svg.innerHTML = m;
+    readout(cell("Q", Q.toFixed(0)+" J") + cell("full", (2*Cv*8.31*15).toFixed(0)+" J","#34d399"));
+    verdict(gas==="he"
+      ? "<b>Example 12.8:</b> Q = 2 × (3/2)R × 15 = 45 R = <b>374 J</b> at fixed volume."
+      : "<b>Same μ, ΔT, V:</b> diatomic needs 5/3 times more heat (C_v = 5R/2) → 623 J.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.mfp = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Tagged molecule</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Collision cylinder</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="mf1">STP air ℓ ≈ 2.9×10⁻⁷ m</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var x = 80;
+    var pts = [[80,150]];
+    var rng = 7;
+    function rnd(){ rng = (rng*1103515245+12345)%2147483648; return rng/2147483648; }
+    var n = Math.floor(t*8)+1;
+    for(var i=0;i<n;i++){
+      x += 40;
+      pts.push([80+40*(i+1), 60+180*rnd()]);
+    }
+    var d="M "+pts[0][0]+" "+pts[0][1];
+    for(var i=1;i<pts.length;i++) d += " L "+pts[i][0]+" "+pts[i][1];
+    m += '<path d="'+d+'" fill="none" stroke="#f59e0b" stroke-width="2"/>';
+    m += '<circle cx="'+pts[pts.length-1][0]+'" cy="'+pts[pts.length-1][1]+'" r="6" fill="#f8fafc"/>';
+    m += '<ellipse cx="200" cy="150" rx="70" ry="18" fill="none" stroke="#38bdf8" stroke-dasharray="4 3"/>';
+    svg.innerHTML = m;
+    readout(cell("ℓ STP","2.9×10⁻⁷ m") + cell("τ","6.1×10⁻¹⁰ s") + cell("ℓ / d","~1500"));
+    verdict("<b>Eq. 12.40–12.41:</b> ℓ = 1/(√2 π n d²). Fast molecules, tiny steps: a smell random-walks across a kitchen.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

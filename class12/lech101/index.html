@@ -1,0 +1,2312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 1: Solutions — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 01 · SOLUTIONS</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 41 Exercises from NCERT Class 12 Chemistry Part I (pp. 1–30) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry Part I", "title": "Solutions", "subtitle": "Types of solutions, concentration units, Henry’s and Raoult’s laws, ideal and non-ideal behaviour, colligative properties and the van’t Hoff factor.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech101.pdf", "page_start": 1, "page_end": 30, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "types-concentration", "nav": "Types & concentration units", "title": "Binary solutions: from types of mixture to mole fraction, molarity and molality", "deck": "A solution is a homogeneous mixture. Solvent sets the physical state; concentration may be mass %, ppm, mole fraction, molarity or molality — only some of these are temperature-independent.", "minutes": 9, "section": "1.1, 1.2", "pages": [1, 5], "print": "1–5", "sim": "concunits", "simTitle": "Concentration converter: mole fraction · molarity · molality", "quick": ["<strong>Solutions</strong> are homogeneous mixtures of two or more components. The component present in the largest quantity is the <strong>solvent</strong>; it determines the physical state of the solution. Other components are <strong>solutes</strong>. This Unit treats mostly binary liquid solutions.", "Table 1.1 classifies solutions by the physical state of solute and solvent: gaseous (O₂ + N₂), liquid (glucose in water, ethanol in water) and solid (Cu in Au, H₂ in Pd, amalgams).", "<strong>Mass %</strong> = (mass of component / total mass) × 100 (Eq. 1.1). <strong>Volume %</strong> uses volumes (Eq. 1.2). <strong>ppm</strong> = (mass of component / total mass) × 10⁶ (Eq. 1.3) — 1 ppm fluoride prevents tooth decay; 1.5 ppm mottles enamel.", "<strong>Mole fraction</strong> x<sub>A</sub> = n<sub>A</sub> / (n<sub>A</sub> + n<sub>B</sub>) (Eqs. 1.4–1.5); Σ x<sub>i</sub> = 1. <strong>Molarity</strong> M = moles of solute / litre of solution (Eq. 1.8) depends on T because volume does. <strong>Molality</strong> m = moles of solute / kg of solvent (Eq. 1.9) is independent of temperature."], "formulas": [{"label": "Mole fraction", "html": "x<sub>A</sub> = n<sub>A</sub> / (n<sub>A</sub> + n<sub>B</sub>)", "cond": "Eqs. 1.4–1.7; Σ x<sub>i</sub> = 1"}, {"label": "Molarity", "html": "M = n<sub>solute</sub> / V<sub>solution</sub> (L)", "cond": "Eq. 1.8; temperature-dependent"}, {"label": "Molality", "html": "m = n<sub>solute</sub> / mass<sub>solvent</sub> (kg)", "cond": "Eq. 1.9; independent of T"}], "deeper": "Example 1.1 (zoom p.4): 20% C₂H₆O₂ by mass. In 100 g: 20 g glycol (0.322 mol, M = 62) and 80 g water (4.444 mol). x_glycol = 0.322/4.766 = 0.068; x_water = 0.932. Example 1.2: 5 g NaOH in 450 mL → 0.125 mol / 0.450 L = 0.278 M. Example 1.3: 2.5 g CH₃COOH in 75 g benzene → 0.0417 mol / 0.075 kg = 0.556 mol kg⁻¹.", "worked": "Intext 1.4: mass of urea needed for 2.5 kg of 0.25 molal aqueous solution. Let solvent mass be w kg; n₂ = 0.25 w; mass of urea = 0.25w × 60 g = 15w g = 0.015w kg. Then w + 0.015w = 2.5 ⇒ w = 2.463 kg; mass urea = 36.95 g (NCERT 36.946 g).", "prediction": {"prompt": "A 20% by mass aqueous ethylene glycol solution (Example 1.1) has how many moles of water per mole of glycol, and what is x_glycol?", "options": ["About 13.8 mol water per mol glycol; x_glycol = 0.068", "Equal moles of each; x_glycol = 0.50", "x_glycol = 0.20 because the solution is 20% by mass"], "answer": 0, "explanation": "20 g / 62 g mol⁻¹ = 0.322 mol glycol; 80 g / 18 = 4.444 mol water; 4.444/0.322 ≈ 13.8. Mole fraction is moles, not mass percent."}, "connect": [["IV saline matches plasma", "Intravenous injections are dissolved in water containing salts at ionic concentrations that match blood plasma (Unit opener). A 0.9% (w/v) NaCl drip is ~0.15 M — isotonic with plasma, so red cells neither burst nor crenate."], ["Wow — 1 ppm fluoride vs rat poison", "1 ppm F⁻ in drinking water prevents tooth decay; 1.5 ppm mottles teeth; high concentrations (NaF) are used as rat poison. Concentration units are a public-health language, not just a laboratory habit.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write Eqs. 1.8 and 1.9 and state which concentration unit changes when a volumetric flask is taken from 25 °C to 40 °C.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which concentration unit is independent of temperature?", "options": ["Molality", "Molarity", "Volume percentage"], "answer": 0, "hint": "Which quantities in the definition do not involve volume?", "solution": "Molality uses moles and mass of solvent. Mass does not change with T; volume (hence molarity and volume %) does.", "wrong": ["Molarity uses solution volume, which expands on heating.", "Volume % uses volumes of both components."]}, {"level": "Medium", "type": "number", "map": "Example 1.2", "prompt": "Molarity of 5 g NaOH in 450 mL solution (M_NaOH = 40 g mol⁻¹) is", "answer": 0.278, "unit": "mol L⁻¹", "tolerance": 0.005, "hint": "n = 5/40; V = 0.450 L.", "solution": "n = 0.125 mol; M = 0.125/0.450 = 0.278 mol L⁻¹ (Example 1.2, zoom p.4)."}, {"level": "Hard", "type": "number", "map": "Intext 1.5", "prompt": "Molality of 20% (m/m) aqueous KI (M = 166 g mol⁻¹) is", "answer": 1.506, "unit": "mol kg⁻¹", "tolerance": 0.02, "hint": "20 g KI in 80 g water.", "solution": "n = 20/166 = 0.1205 mol; m = 0.1205/0.080 = 1.51 mol kg⁻¹ (NCERT 1.5 mol kg⁻¹)."}]}, {"id": "solubility-henry", "nav": "Solubility & Henry’s law", "title": "Like dissolves like — and p = K_H x for gases", "deck": "Solid solubility follows ‘like dissolves like’. For gases, Henry’s law p = K_H x: larger K_H means lower solubility. K_H rises with temperature, so cold water holds more O₂.", "minutes": 9, "section": "1.3", "pages": [5, 9], "print": "5–9", "sim": "henrylaw", "simTitle": "Henry’s law lab: soda, scuba tanks and anoxia", "quick": ["A solute dissolves if intermolecular interactions are similar — <em>like dissolves like</em>. Polar NaCl and sugar dissolve in water; naphthalene and anthracene dissolve in benzene. Dissolution and crystallisation reach dynamic equilibrium in a <strong>saturated</strong> solution (Eq. 1.10).", "<strong>Henry’s law</strong> (Eq. 1.11): the partial pressure of a gas in the vapour phase is proportional to its mole fraction in solution, <em>p = K<sub>H</sub> x</em>. Higher K<sub>H</sub> ⇒ lower solubility. Table 1.2: at 293 K, K<sub>H</sub>(He) = 144.97 kbar, K<sub>H</sub>(N₂) = 76.48 kbar, K<sub>H</sub>(O₂) = 34.86 kbar; K<sub>H</sub> of N₂ and O₂ both increase from 293 to 303 K.", "Applications: soda bottles sealed under high CO₂ pressure; scuba tanks diluted with He (11.7% He, 56.2% N₂, 32.1% O₂) to avoid bends; anoxia at high altitude from low p(O₂)."], "formulas": [{"label": "Henry’s law", "html": "p = K<sub>H</sub> x", "cond": "Eq. 1.11; x = mole fraction of dissolved gas"}, {"label": "Temperature trend", "html": "K<sub>H</sub> increases with T ⇒ solubility of gases falls", "cond": "Dissolution of gases is exothermic (Le Chatelier)"}], "deeper": "Example 1.4 (zoom p.8): N₂ at 0.987 bar, K_H = 76.48 kbar = 76480 bar, 293 K. x = 0.987/76480 = 1.29 × 10⁻⁵. In 1 L water (55.5 mol), n(N₂) = 1.29 × 10⁻⁵ × 55.5 = 7.16 × 10⁻⁴ mol = 0.716 mmol.", "worked": "Intext 1.7: K_H(CO₂) = 1.67 × 10⁸ Pa at 298 K; soda packed under 2.5 atm CO₂; 500 mL water. p = 2.5 × 1.01325 × 10⁵ Pa = 2.533 × 10⁵ Pa. x = p/K_H = 1.517 × 10⁻³. n(H₂O) = 500/18 = 27.78 mol; n(CO₂) = 0.0421 mol; mass = 1.85 g.", "prediction": {"prompt": "A lake warms from 293 K to 303 K. Table 1.2: K_H(O₂) goes 34.86 → 46.82 kbar. What happens to dissolved oxygen, and why are fish less comfortable?", "options": ["x(O₂) falls because p = K_H x at fixed p(O₂); less O₂ is dissolved", "Solubility of O₂ increases because molecules move faster", "K_H has no effect; only pressure matters"], "answer": 0, "explanation": "At fixed atmospheric p(O₂), x = p/K_H. Larger K_H means smaller x. Aquatic species are more comfortable in cold water (text after Table 1.2)."}, "connect": [["Soft-drink bottling in India", "A 300 mL soda sealed at ~2.5 atm CO₂ (Intext 1.7 numbers) holds ~1.1 g CO₂. Opening the cap drops p, so x must fall — the familiar fizz is Henry’s law run backwards."], ["Wow — bends and helium mix", "NCERT specifies the scuba mix 11.7% He / 56.2% N₂ / 32.1% O₂. Helium’s high K_H (144.97 kbar) keeps its dissolved mole fraction tiny, so fewer bubbles form on ascent.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "State Henry’s law as Eq. 1.11 and give one industrial and one biological application from the text.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Henry’s law in the form used in this Unit is", "options": ["p = K_H x", "x = K_H p²", "p V = n R T"], "answer": 0, "hint": "Equation 1.11.", "solution": "The partial pressure of the gas is proportional to its mole fraction in solution.", "wrong": ["That is not Henry’s law.", "Ideal-gas law, not solubility."]}, {"level": "Medium", "type": "number", "map": "Example 1.4", "prompt": "Millimoles of N₂ dissolving in 1 L water at 293 K if p = 0.987 bar and K_H = 76.48 kbar", "answer": 0.716, "unit": "mmol", "tolerance": 0.02, "hint": "x = p/K_H; n = x × 55.5.", "solution": "x = 1.29 × 10⁻⁵; n = 7.16 × 10⁻⁴ mol = 0.716 mmol."}, {"level": "Hard", "type": "number", "map": "Intext 1.6", "prompt": "Henry’s law constant (bar) for H₂S if solubility at STP is 0.195 m (p = 0.987 bar)", "answer": 282, "unit": "bar", "tolerance": 5, "hint": "x ≈ 0.195/(0.195 + 55.5); K_H = p/x.", "solution": "x = 0.00350; K_H = 0.987/0.00350 = 282 bar."}]}, {"id": "raoult-vapour", "nav": "Raoult’s law", "title": "Two volatile liquids: p_i = x_i p_i° and the straight p_total line", "deck": "Raoult: each partial pressure equals mole fraction times the pure-liquid vapour pressure. Total pressure is linear in x₂. Vapour is richer in the more volatile component.", "minutes": 9, "section": "1.4", "pages": [9, 14], "print": "9–14", "sim": "raoult", "simTitle": "Raoult two-component p–x diagram (heptane–octane / A–B)", "quick": ["For a binary solution of volatile liquids, <strong>Raoult’s law</strong>: p₁ = x₁ p₁° (Eq. 1.12) and p₂ = x₂ p₂° (Eq. 1.13). Dalton: p_total = p₁ + p₂ = x₁ p₁° + x₂ p₂° = p₁° + (p₂° − p₁°) x₂ (Eqs. 1.14–1.16).", "p_total varies linearly with mole fraction. The vapour mole fraction y₁ = p₁ / p_total is not equal to x₁: vapour is richer in the more volatile component.", "For a non-volatile solute, p₁ = x₁ p₁° and the vapour is pure solvent. Relative lowering (p₁° − p₁)/p₁° = x₂ (Eq. 1.25)."], "formulas": [{"label": "Raoult (component i)", "html": "p<sub>i</sub> = x<sub>i</sub> p<sub>i</sub>°", "cond": "Eqs. 1.12–1.13"}, {"label": "Total pressure", "html": "p<sub>total</sub> = p₁° + (p₂° − p₁°) x₂", "cond": "Eq. 1.16; linear in x₂"}, {"label": "Relative lowering", "html": "(p₁° − p₁)/p₁° = x₂", "cond": "Eq. 1.25; non-volatile solute"}], "deeper": "Intext 1.8: p_A° = 450 mm Hg, p_B° = 700 mm Hg, p_total = 600 mm Hg at 350 K. 600 = 450 x_A + 700 (1 − x_A) ⇒ x_A = 0.40, x_B = 0.60. y_A = (450 × 0.40)/600 = 0.30; y_B = 0.70. Example 1.6: benzene p° = 0.850 bar → 0.845 bar with 0.5 g solute in 39.0 g benzene ⇒ M₂ = 170 g mol⁻¹.", "worked": "Exercise 1.16 (ideal heptane–octane at 373 K): 26.0 g heptane (C₇H₁₆, 100 g mol⁻¹) + 35 g octane (C₈H₁₈, 114 g mol⁻¹). n_H = 0.260, n_O = 0.307; x_H = 0.459. p = 0.459 × 105.2 + 0.541 × 46.8 = 73.6 kPa.", "prediction": {"prompt": "Liquids A and B have p_A° = 450 mm Hg and p_B° = 700 mm Hg. At x_A = 0.40 the total pressure is 600 mm Hg. What is the mole fraction of A in the vapour?", "options": ["y_A = 0.30 — vapour is poorer in A than the liquid", "y_A = 0.40 — vapour matches the liquid", "y_A = 0.70 — vapour is richer in the less volatile liquid"], "answer": 0, "explanation": "p_A = 0.40 × 450 = 180 mm Hg; y_A = 180/600 = 0.30. B is more volatile, so vapour is richer in B (Intext 1.8)."}, "connect": [["Fractional distillation of petroleum", "Indian refineries (Jamnagar, Panipat) separate naphtha from kerosene because vapour is always richer in the more volatile cut — the same y ≠ x that Intext 1.8 computes for A + B."], ["Wow — a straight line is the whole law", "Eq. 1.16 says p_total vs x₂ is a straight line between p₁° and p₂°. Any bulge up or down is a confession that the solution is not ideal (Section 1.5).", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write p_total in terms of x₂ (Eq. 1.16) and state how vapour composition y_i is obtained from partial pressures.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Raoult’s law for a volatile component is", "options": ["p_i = x_i p_i°", "p_i = K_H x_i with K_H independent of identity", "p_i = p_i° / x_i"], "answer": 0, "hint": "Equations 1.12–1.13.", "solution": "Partial vapour pressure equals mole fraction times the pure-component vapour pressure.", "wrong": ["That is Henry’s law (different constant, different regime).", "Inverse mole fraction would raise pressure on dilution."]}, {"level": "Medium", "type": "number", "map": "Intext 1.8", "prompt": "Mole fraction of A in the liquid if p_A° = 450, p_B° = 700, p_total = 600 mm Hg", "answer": 0.4, "unit": "", "tolerance": 0.01, "hint": "p = p_A° x_A + p_B° (1 − x_A).", "solution": "600 = 450 x_A + 700 − 700 x_A ⇒ 250 x_A = 100 ⇒ x_A = 0.40."}, {"level": "Hard", "type": "number", "map": "Example 1.6", "prompt": "Molar mass (g mol⁻¹) of a non-volatile solid if 0.5 g in 39.0 g benzene lowers p from 0.850 to 0.845 bar", "answer": 170, "unit": "g mol⁻¹", "tolerance": 2, "hint": "(p° − p)/p° = (w₂ M₁)/(M₂ w₁).", "solution": "0.005/0.850 = 0.5 × 78 / (M₂ × 39) ⇒ M₂ = 170 g mol⁻¹."}]}, {"id": "ideal-nonideal", "nav": "Ideal & non-ideal solutions", "title": "Δ_mix H = 0 and Δ_mix V = 0, or a bulge in the p–x curve", "deck": "Ideal solutions obey Raoult over the whole range (benzene–toluene, hexane–heptane). Positive deviation: A–B weaker than A–A/B–B (acetone–CS₂). Negative: A–B stronger (acetone–chloroform, HNO₃–water).", "minutes": 8, "section": "1.5", "pages": [14, 15], "print": "14–15", "sim": "deviation", "simTitle": "Ideal vs ± deviation: acetone–chloroform p–x plot", "quick": ["An <strong>ideal solution</strong> obeys Raoult’s law over the entire composition range. Enthalpy of mixing Δ_mix H = 0 and volume of mixing Δ_mix V = 0: A–A, B–B and A–B interactions are alike. Examples: n-hexane + n-heptane, benzene + toluene, bromoethane + chloroethane.", "<strong>Positive deviation</strong>: A–B attractions weaker than A–A and B–B, so molecules escape more easily; p_total is higher than Raoult predicts; Δ_mix H > 0. Ethanol–acetone, acetone–CS₂, ethanol–water (over much of the range).", "<strong>Negative deviation</strong>: A–B attractions stronger (often H-bonding); p_total lower than ideal; Δ_mix H < 0. Acetone–chloroform, phenol–aniline, HNO₃–water, CHCl₃–CH₃COCH₃ (Exercise 1.37 data)."], "formulas": [{"label": "Ideal mixing", "html": "Δ<sub>mix</sub> H = 0,  Δ<sub>mix</sub> V = 0,  p<sub>i</sub> = x<sub>i</sub> p<sub>i</sub>°", "cond": "Section 1.5.1"}, {"label": "Sign of deviation", "html": "+ deviation ⇔ Δ<sub>mix</sub> H > 0;  − deviation ⇔ Δ<sub>mix</sub> H < 0", "cond": "Exercise 1.14"}], "deeper": "Exercise 1.37 (zoom p.30): pure acetone 741.8 mm Hg, chloroform 632.8 mm Hg at 328 K. Experimental p_acetone at x_acetone = 0.508 is 322.7 mm Hg, below the ideal 741.8 × 0.508 = 377 mm Hg — negative deviation, consistent with H-bonding between acetone carbonyl and chloroform hydrogen.", "worked": "Exercise 1.38: 80 g benzene + 100 g toluene, ideal at 300 K, p_b° = 50.71 mm Hg, p_t° = 32.06 mm Hg. n_b = 80/78 = 1.026, n_t = 100/92 = 1.087, x_b = 0.486. p_b = 24.64, p_t = 16.48, p_total = 41.12 mm Hg; y_benzene = 24.64/41.12 = 0.599.", "prediction": {"prompt": "Acetone–chloroform mixtures show experimental total pressures below the Raoult straight line (Exercise 1.37). What is Δ_mix H?", "options": ["Negative — A–B H-bonding is stronger than A–A / B–B", "Positive — molecules escape more easily than in the pure liquids", "Zero — the solution is ideal"], "answer": 0, "explanation": "Negative deviation from Raoult’s law accompanies Δ_mix H < 0 (Section 1.5.2 and Exercise 1.14)."}, "connect": [["Azeotropic rectified spirit", "Ethanol–water has a minimum-boiling azeotrope (~95.6% ethanol). Indian distilleries cannot dry spirit past this by simple distillation — a positive-deviation fingerprint."], ["Wow — chloroform + acetone contracts", "Mixing chloroform and acetone (negative deviation) can shrink the volume: Δ_mix V < 0. The H-bond C=O···H–CCl₃ is visible in the p–x sag of Exercise 1.37.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Give one example each of ideal, positive-deviation and negative-deviation pairs, and the sign of Δ_mix H in each case.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which pair is expected to form an ideal solution?", "options": ["Benzene + toluene", "Acetone + chloroform", "Ethanol + acetone"], "answer": 0, "hint": "Similar intermolecular forces.", "solution": "Benzene and toluene are both non-polar aromatics; A–A, B–B and A–B interactions are alike.", "wrong": ["Negative deviation (H-bonding).", "Positive deviation."]}, {"level": "Medium", "type": "mcq", "prompt": "Positive deviation from Raoult’s law means", "options": ["p_total is higher than ideal and Δ_mix H > 0", "p_total is lower than ideal and Δ_mix H < 0", "Δ_mix V = 0 necessarily"], "answer": 0, "hint": "Exercise 1.14.", "solution": "Weaker A–B forces let molecules escape more easily (higher p) and mixing is endothermic.", "wrong": ["That is negative deviation.", "Ideal solutions have Δ_mix V = 0; positive-deviation solutions generally expand."]}, {"level": "Hard", "type": "number", "map": "Exercise 1.38", "prompt": "Mole fraction of benzene in the vapour if 80 g benzene is mixed with 100 g toluene (ideal, 300 K; p_b° = 50.71, p_t° = 32.06 mm Hg)", "answer": 0.599, "unit": "", "tolerance": 0.01, "hint": "y_b = p_b / p_total.", "solution": "x_b = 0.486; p_b = 24.64; p_t = 16.48; y_b = 0.599."}]}, {"id": "colligative-tb", "nav": "Colligative: Δp and ΔT_b", "title": "Relative lowering and elevation of boiling point measure n_solute, not its identity", "deck": "Colligative properties depend on the number of solute particles. Relative lowering equals x₂. ΔT_b = K_b m; K_b(water) = 0.52 K kg mol⁻¹. A 1 molal aqueous sucrose solution boils at 373.52 K.", "minutes": 9, "section": "1.6.1, 1.6.2", "pages": [15, 18], "print": "15–18", "sim": "deltatb", "simTitle": "Boiling-point elevation: sucrose kettle vs glucose kettle", "quick": ["<strong>Colligative properties</strong> depend on the number of solute particles, not their identity: relative lowering of vapour pressure, elevation of boiling point, depression of freezing point, osmotic pressure.", "Relative lowering (p₁° − p₁)/p₁° = x₂ (Eq. 1.25). For dilute solutions, (p₁° − p₁)/p₁° = n₂/n₁ = (w₂ M₁)/(M₂ w₁) (Eqs. 1.27–1.28), which gives the molar mass of the solute.", "A solution boils when its vapour pressure equals atmospheric pressure. Because p is lowered, T_b rises: ΔT_b = K_b m (Eq. 1.31). For water K_b = 0.52 K kg mol⁻¹; 1 mol sucrose in 1 kg water boils at 373.52 K."], "formulas": [{"label": "Relative lowering", "html": "(p° − p)/p° = x₂ ≈ (w₂ M₁)/(M₂ w₁)", "cond": "Eqs. 1.25, 1.28; non-volatile solute"}, {"label": "Elevation of boiling point", "html": "ΔT<sub>b</sub> = K<sub>b</sub> m", "cond": "Eq. 1.31; K_b(water) = 0.52 K kg mol⁻¹"}], "deeper": "Example 1.7 (zoom p.17): 18 g glucose (0.1 mol) in 1 kg water. m = 0.1 mol kg⁻¹; ΔT_b = 0.52 × 0.1 = 0.052 K; T_b = 373.15 + 0.052 = 373.20 K at 1.013 bar. Intext 1.9: 50 g urea in 850 g water, p° = 23.8 mm Hg at 298 K → p = 23.4 mm Hg.", "worked": "Intext 1.10: water boils at 99.63 °C at 750 mm Hg; want 100 °C. ΔT_b = 0.37 K; m = 0.37/0.52 = 0.712 mol kg⁻¹; in 500 g water, n = 0.356 mol sucrose (M = 342) → 121.7 g (NCERT 121.67 g).", "prediction": {"prompt": "18 g glucose in 1 kg water (Example 1.7). What is ΔT_b at 1.013 bar (K_b = 0.52 K kg mol⁻¹)?", "options": ["0.052 K — one-tenth of a molal unit times K_b", "0.52 K — any 18 g of solute is 1 molal", "18 K — temperature rise equals the mass of solute"], "answer": 0, "explanation": "n = 18/180 = 0.1 mol; m = 0.1 mol kg⁻¹; ΔT_b = 0.52 × 0.1 = 0.052 K."}, "connect": [["Radiator antifreeze is also ‘anti-boil’", "Ethylene glycol in a truck radiator raises T_b as well as lowering T_f. 222.6 g glycol in 200 g water (Exercise 1.8) is 17.95 molal — a huge colligative punch."], ["Wow — 1 molal sucrose boils only 0.52 K higher", "You cannot cook rice faster by dissolving a spoon of sugar. Colligative shifts are kelvins, not tens of kelvins, unless the solution is extremely concentrated.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write ΔT_b = K_b m and compute T_b of 1 molal aqueous sucrose at 1 atm.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Relative lowering of vapour pressure of a dilute solution equals", "options": ["mole fraction of the solute", "molarity of the solute", "mass fraction of the solvent"], "answer": 0, "hint": "Equation 1.25.", "solution": "(p° − p)/p° = x₂.", "wrong": ["Molarity is T-dependent and is not the Raoult identity.", "Mass fraction is not mole fraction."]}, {"level": "Medium", "type": "number", "map": "Example 1.7", "prompt": "Boiling-point elevation (K) for 18 g glucose in 1 kg water (K_b = 0.52 K kg mol⁻¹)", "answer": 0.052, "unit": "K", "tolerance": 0.002, "hint": "m = 0.1 mol kg⁻¹.", "solution": "ΔT_b = 0.52 × 0.1 = 0.052 K."}, {"level": "Hard", "type": "number", "map": "Intext 1.10", "prompt": "Mass of sucrose (g) to add to 500 g water so that it boils at 100 °C if T_b° at 750 mm Hg is 99.63 °C (K_b = 0.52)", "answer": 121.67, "unit": "g", "tolerance": 0.5, "hint": "ΔT_b = 0.37 K; M_sucrose = 342.", "solution": "m = 0.37/0.52 = 0.712 mol kg⁻¹; n = 0.356 mol in 0.500 kg; mass = 121.67 g."}]}, {"id": "freezing-osmosis", "nav": "ΔT_f, osmosis & RO", "title": "Freezing-point depression, osmotic pressure and reverse osmosis", "deck": "ΔT_f = K_f m, K_f(water) = 1.86 K kg mol⁻¹. Osmotic pressure π = C R T is the colligative property of choice for polymers. Reverse osmosis desalinates seawater.", "minutes": 9, "section": "1.6.3, 1.6.4, 1.6.5", "pages": [18, 23], "print": "18–23", "sim": "osmosis", "simTitle": "Osmosis / reverse-osmosis membrane lab", "quick": ["A solution freezes when its vapour pressure equals that of the pure solid solvent. ΔT_f = K_f m (Eq. 1.34). K_f(water) = 1.86 K kg mol⁻¹; K_f(benzene) = 5.12 K kg mol⁻¹. Molar mass M₂ = (K_f w₂ × 1000)/(ΔT_f w₁).", "<strong>Osmosis</strong> is flow of solvent through a semipermeable membrane into the solution. The extra pressure that stops the flow is the <strong>osmotic pressure</strong> π = n₂ R T / V = C R T (Eq. 1.39). Because π is measurable at room temperature, it is preferred for macromolecules.", "<strong>Reverse osmosis</strong>: a pressure greater than π applied on the solution side drives solvent out. Cellulose-acetate membranes desalinate seawater; many countries use RO plants for potable water."], "formulas": [{"label": "Depression of freezing point", "html": "ΔT<sub>f</sub> = K<sub>f</sub> m", "cond": "Eq. 1.34; K_f(H₂O) = 1.86 K kg mol⁻¹"}, {"label": "Osmotic pressure", "html": "π = C R T = n₂ R T / V", "cond": "Eq. 1.39; R = 0.083 L bar K⁻¹ mol⁻¹"}, {"label": "Reverse osmosis", "html": "P<sub>applied</sub> > π  ⇒  solvent flows out of the solution", "cond": "Section 1.6.5"}], "deeper": "Example 1.9: 45 g ethylene glycol in 600 g water. m = (45/62)/0.600 = 1.21 mol kg⁻¹; ΔT_f = 1.86 × 1.2 = 2.2 K; T_f = 270.95 K. Example 1.10: 1.00 g non-electrolyte in 50 g benzene, ΔT_f = 0.40 K, K_f = 5.12 ⇒ M₂ = 256 g mol⁻¹.", "worked": "Intext 1.12: 1.0 g polymer (M = 185000) in 450 mL water at 37 °C. C = (1/185000)/0.450 = 1.201 × 10⁻⁵ mol L⁻¹; π = C R T = 1.201 × 10⁻⁵ × 0.083 × 310 = 3.09 × 10⁻⁴ bar = 30.9 Pa (NCERT 30.96 Pa).", "prediction": {"prompt": "45 g ethylene glycol in 600 g water (Example 1.9). What is T_f of the solution (K_f = 1.86 K kg mol⁻¹)?", "options": ["270.95 K — ΔT_f = 2.2 K below 273.15 K", "273.15 K — glycol does not freeze water", "265 K — any antifreeze drops T_f by 8 K"], "answer": 0, "explanation": "m = 1.2 mol kg⁻¹; ΔT_f = 1.86 × 1.2 = 2.2 K; T_f = 273.15 − 2.2 = 270.95 K."}, "connect": [["Pickles, wilted flowers and blood cells", "Raw mangoes shrivel in brine; wilted flowers revive in fresh water; blood cells collapse in saline — all osmosis across a membrane (Section 1.6.4 opener)."], ["Wow — RO drinking water", "A working RO membrane is cellulose acetate over a support, permeable to water but not to sea-salt ions. Applied pressure must exceed π of seawater (~30 bar) — that is why household RO pumps hum.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write ΔT_f = K_f m and π = C R T. Why is osmotic pressure preferred for polymer molar masses?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "K_f for water is", "options": ["1.86 K kg mol⁻¹", "0.52 K kg mol⁻¹", "5.12 K kg mol⁻¹"], "answer": 0, "hint": "0.52 is K_b(water); 5.12 is K_f(benzene).", "solution": "Cryoscopic constant of water is 1.86 K kg mol⁻¹.", "wrong": ["That is K_b of water.", "That is K_f of benzene (Example 1.10)."]}, {"level": "Medium", "type": "number", "map": "Example 1.10", "prompt": "Molar mass (g mol⁻¹) of a non-electrolyte if 1.00 g in 50 g benzene lowers T_f by 0.40 K (K_f = 5.12)", "answer": 256, "unit": "g mol⁻¹", "tolerance": 2, "hint": "M₂ = K_f w₂ 1000 / (ΔT_f w₁).", "solution": "M₂ = 5.12 × 1.00 × 1000 / (0.40 × 50) = 256 g mol⁻¹."}, {"level": "Hard", "type": "number", "map": "Intext 1.12", "prompt": "Osmotic pressure in Pa of 1.0 g polymer (M = 185000) in 450 mL water at 37 °C (R = 0.083 L bar K⁻¹ mol⁻¹)", "answer": 30.96, "unit": "Pa", "tolerance": 0.5, "hint": "π = C R T; 1 bar = 10⁵ Pa.", "solution": "C = 1.201 × 10⁻⁵ mol L⁻¹; π = 3.096 × 10⁻⁴ bar = 30.96 Pa."}]}, {"id": "vant-hoff", "nav": "van’t Hoff factor", "title": "Abnormal molar masses: i = 1 + (n − 1)α", "deck": "Electrolytes give more particles (i > 1); association gives fewer (i < 1). Observed colligative property = i × calculated. 1 mol KCl in 1 kg water should raise T_b by 1.04 K if fully dissociated.", "minutes": 8, "section": "1.7", "pages": [23, 27], "print": "23–27", "sim": "vanthoff", "simTitle": "van’t Hoff factor: KCl vs acetic acid vs dimerising benzoic acid", "quick": ["Ionic solutes dissociate: 1 mol KCl ⇌ K⁺ + Cl⁻, two moles of particles, so colligative effects roughly double. Association (benzoic acid dimer in benzene) does the opposite. The experimentally determined molar mass is then ‘abnormal’.", "van’t Hoff factor <strong>i</strong> = (normal molar mass)/(observed molar mass) = (observed colligative property)/(calculated colligative property). For dissociation into n ions with degree α: i = 1 + (n − 1)α. For association of n molecules: i = 1 − (1 − 1/n)α.", "Modified laws: ΔT_b = i K_b m, ΔT_f = i K_f m, π = i C R T. Observed i for electrolytes is less than the integer n because of interionic attraction."], "formulas": [{"label": "van’t Hoff factor", "html": "i = ΔT<sub>f</sub>(obs) / ΔT<sub>f</sub>(calc) = M_normal / M_obs", "cond": "Section 1.7"}, {"label": "Dissociation", "html": "i = 1 + (n − 1)α", "cond": "n = number of ions per formula unit"}, {"label": "Colligative with i", "html": "ΔT<sub>f</sub> = i K<sub>f</sub> m;  π = i C R T", "cond": "Exercises 1.32, 1.40, 1.41"}], "deeper": "Exercise 1.33: 19.5 g CH₂FCOOH (M = 78) in 500 g water, ΔT_f = 1.0 °C. m = 0.50 mol kg⁻¹; i = 1.00/(1.86 × 0.50) = 1.075; α = 0.075; K_a = c α²/(1 − α) = 3.07 × 10⁻³. Exercise 1.32: 10 g CH₃CH₂CHClCOOH in 250 g water, K_a = 1.4 × 10⁻³, K_f = 1.86 → ΔT_f = 0.65 K.", "worked": "Exercise 1.40: CaCl₂ (i = 2.47) in 2.5 L water, π = 0.75 atm at 27 °C. C = π/(i R T) = 0.75/(2.47 × 0.0821 × 300) = 0.0123 mol L⁻¹; n = 0.0308 mol; mass = 3.42 g (M = 111 g mol⁻¹).", "prediction": {"prompt": "If 1 mol KCl is dissolved in 1 kg water and fully ionised with no interionic drag, by how much should T_b rise (K_b = 0.52 K kg mol⁻¹)?", "options": ["1.04 K — i = 2, so twice the non-electrolyte value 0.52 K", "0.52 K — boiling point does not care about ions", "0 K — ions do not affect vapour pressure"], "answer": 0, "explanation": "Text of Section 1.7: 2 × 0.52 K = 1.04 K if we ignore interionic attractions."}, "connect": [["Road salt vs organic antifreeze", "CaCl₂ (i ≈ 2.5, Exercise 1.40) is used to de-ice Indian highways because each formula unit yields ~2.5 particles. Ethylene glycol (i = 1) must be used at much higher molality for the same ΔT_f."], ["Wow — i tells you the hidden equilibrium", "A measured i = 1.075 for fluoroacetic acid (Exercise 1.33) is a direct count of extra particles from HA ⇌ H⁺ + A⁻, and therefore a route to K_a without a pH meter.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Define i two ways and write i = 1 + (n − 1)α for dissociation.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For complete dissociation of KCl, the expected van’t Hoff factor is", "options": ["2", "1", "0.5"], "answer": 0, "hint": "KCl → K⁺ + Cl⁻.", "solution": "Two particles per formula unit, so i = 2 in the ideal-ion limit.", "wrong": ["That would be a non-electrolyte.", "That would be association into dimers."]}, {"level": "Medium", "type": "number", "map": "Exercise 1.33", "prompt": "van’t Hoff factor of CH₂FCOOH if 19.5 g in 500 g water gives ΔT_f = 1.00 °C (K_f = 1.86)", "answer": 1.075, "unit": "", "tolerance": 0.01, "hint": "m = 0.50 mol kg⁻¹; i = ΔT_f /(K_f m).", "solution": "i = 1.00/(1.86 × 0.50) = 1.075."}, {"level": "Hard", "type": "number", "map": "Exercise 1.40", "prompt": "Mass of CaCl₂ (g, i = 2.47) to dissolve in 2.5 L water for π = 0.75 atm at 27 °C (R = 0.0821 L atm K⁻¹ mol⁻¹, M = 111)", "answer": 3.42, "unit": "g", "tolerance": 0.08, "hint": "π = i C R T; n = C V.", "solution": "C = 0.0123 M; n = 0.0308 mol; mass = 3.42 g."}]}], "exercises": [{"number": "1.1", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Define the term solution. How many types of solutions are formed? Write briefly about each type with an example.", "steps": ["A solution is a homogeneous mixture of two or more components whose composition and properties are uniform throughout.", "Nine types arise from solute/solvent each being gas, liquid or solid (Table 1.1).", "Gaseous: O₂ + N₂; chloroform in N₂; camphor in N₂. Liquid: O₂ in water; ethanol in water; glucose in water. Solid: H₂ in Pd; Na amalgam; Cu in Au."], "answer": "Homogeneous mixture; nine gas/liquid/solid combinations as in Table 1.1."}, {"number": "1.2", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Give an example of a solid solution in which the solute is a gas.", "steps": ["Table 1.1: gas dissolved in a solid solvent.", "Solution of hydrogen in palladium (also: interstitial H in some metals)."], "answer": "Hydrogen dissolved in palladium."}, {"number": "1.3", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Define the following terms: (i) Mole fraction (ii) Molality (iii) Molarity (iv) Mass percentage.", "steps": ["(i) Mole fraction of A: x_A = n_A / Σ n_i (Eqs. 1.4–1.5).", "(ii) Molality m = moles of solute / mass of solvent in kg (Eq. 1.9).", "(iii) Molarity M = moles of solute / volume of solution in litres (Eq. 1.8).", "(iv) Mass % = (mass of component / total mass of solution) × 100 (Eq. 1.1)."], "answer": "See Eqs. 1.1, 1.4, 1.8, 1.9."}, {"number": "1.4", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Concentrated nitric acid used in laboratory work is 68% nitric acid by mass in aqueous solution. What should be the molarity of such a sample of the acid if the density of the solution is 1.504 g mL⁻¹?", "steps": ["1 L of solution has mass 1504 g.", "Mass of HNO₃ = 0.68 × 1504 = 1022.72 g.", "Moles of HNO₃ = 1022.72 / 63 = 16.23 mol.", "Molarity = 16.23 mol L⁻¹."], "answer": "16.23 M."}, {"number": "1.5", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A solution of glucose in water is labelled as 10% w/w, what would be the molality and mole fraction of each component in the solution? If the density of solution is 1.2 g mL⁻¹, then what shall be the molarity of the solution?", "steps": ["100 g solution: 10 g glucose (0.05556 mol), 90 g water (5.000 mol).", "Molality = 0.05556 / 0.090 = 0.617 mol kg⁻¹.", "x_glucose = 0.05556 / 5.05556 = 0.0110; x_water = 0.989.", "Volume = 100 / 1.2 = 83.33 mL; M = 0.05556 / 0.08333 = 0.667 mol L⁻¹."], "answer": "m = 0.617 mol kg⁻¹; x_glu = 0.011; x_water = 0.989; M = 0.67 M."}, {"number": "1.6", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "How many mL of 0.1 M HCl are required to react completely with 1 g mixture of Na₂CO₃ and NaHCO₃ containing equimolar amounts of both?", "steps": ["Let n = moles of each salt. 106n + 84n = 1 ⇒ n = 1/190 mol.", "Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂; NaHCO₃ + HCl → NaCl + H₂O + CO₂.", "HCl required = 2n + n = 3/190 = 0.01579 mol.", "V = 0.01579 / 0.1 = 0.1579 L = 157.9 mL."], "answer": "157.8 mL of 0.1 M HCl."}, {"number": "1.7", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A solution is obtained by mixing 300 g of 25% solution and 400 g of 40% solution by mass. Calculate the mass percentage of the resulting solution.", "steps": ["Solute from first = 0.25 × 300 = 75 g; from second = 0.40 × 400 = 160 g.", "Total solute = 235 g; total solution = 700 g.", "Mass % = 235/700 × 100 = 33.57%."], "answer": "33.57%."}, {"number": "1.8", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "An antifreeze solution is prepared from 222.6 g of ethylene glycol (C₂H₆O₂) and 200 g of water. Calculate the molality of the solution. If the density of the solution is 1.072 g mL⁻¹, then what shall be the molarity of the solution?", "steps": ["n_glycol = 222.6 / 62 = 3.590 mol.", "m = 3.590 / 0.200 = 17.95 mol kg⁻¹.", "V = 422.6 g / 1.072 g mL⁻¹ = 394.2 mL = 0.3942 L.", "M = 3.590 / 0.3942 = 9.11 mol L⁻¹."], "answer": "17.95 m; 9.11 M."}, {"number": "1.9", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A sample of drinking water was found to be severely contaminated with chloroform (CHCl₃) supposed to be a carcinogen. The level of contamination was 15 ppm (by mass): (i) express this in percent by mass (ii) determine the molality of chloroform in the water sample.", "steps": ["15 ppm = 15 g in 10⁶ g solution.", "(i) Mass % = 15/10⁶ × 100 = 1.5 × 10⁻³ %.", "(ii) n = 15 / 119.5 ≈ 0.1255 mol in ≈ 1000 kg water; m = 1.255 × 10⁻⁴ mol kg⁻¹."], "answer": "(i) 1.5 × 10⁻³ %; (ii) 1.26 × 10⁻⁴ m."}, {"number": "1.10", "conceptIdx": 3, "page": 28, "printPage": 28, "question": "What role does the molecular interaction play in a solution of alcohol and water?", "steps": ["Both liquids are hydrogen-bonded. Mixing yields A–B H-bonds of different strength from A–A and B–B.", "The solution shows deviation from Raoult’s law (and a volume contraction) because of these interactions."], "answer": "H-bonding between alcohol and water causes non-ideal behaviour (typically negative Δ_mix V and deviation from Raoult)."}, {"number": "1.11", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "Why do gases always tend to be less soluble in liquids as the temperature is raised?", "steps": ["Dissolution of a gas is exothermic (akin to condensation).", "By Le Chatelier’s principle, raising T shifts the equilibrium Solute(g) ⇌ Solute(aq) to the left.", "Table 1.2: K_H of N₂ and O₂ increases with T, so x = p/K_H falls."], "answer": "Exothermic dissolution; K_H rises with T, solubility falls."}, {"number": "1.12", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "State Henry’s law and mention some important applications.", "steps": ["p = K_H x (Eq. 1.11): partial pressure of a gas is proportional to its mole fraction in solution.", "Applications: carbonation of soft drinks under high p(CO₂); scuba-gas mix to avoid bends; anoxia at high altitude from low p(O₂)."], "answer": "p = K_H x; soda, scuba/bends, anoxia."}, {"number": "1.13", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "The partial pressure of ethane over a solution containing 6.56 × 10⁻³ g of ethane is 1 bar. If the solution contains 5.00 × 10⁻² g of ethane, then what shall be the partial pressure of the gas?", "steps": ["Henry: p ∝ x ∝ mass of ethane (dilute, same solvent).", "p₂ = 1 bar × (5.00 × 10⁻²) / (6.56 × 10⁻³) = 7.62 bar."], "answer": "7.62 bar."}, {"number": "1.14", "conceptIdx": 3, "page": 28, "printPage": 28, "question": "What is meant by positive and negative deviations from Raoult's law and how is the sign of ΔmixH related to positive and negative deviations from Raoult's law?", "steps": ["Positive deviation: p_i > x_i p_i°; A–B attractions weaker; Δ_mix H > 0.", "Negative deviation: p_i < x_i p_i°; A–B attractions stronger; Δ_mix H < 0."], "answer": "+ deviation ⇔ Δ_mix H > 0; − deviation ⇔ Δ_mix H < 0."}, {"number": "1.15", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "An aqueous solution of 2% non-volatile solute exerts a pressure of 1.004 bar at the normal boiling point of the solvent. What is the molar mass of the solute?", "steps": ["At the normal boiling point p₁° = 1.013 bar.", "(p° − p)/p° = x₂ = (1.013 − 1.004)/1.013 = 0.008885.", "2 g solute + 98 g water: n₁ = 98/18 = 5.444 mol.", "x₂ = n₂/(n₂ + 5.444) = 0.008885 ⇒ n₂ = 0.0488 mol; M₂ = 2/0.0488 = 41.0 g mol⁻¹."], "answer": "41 g mol⁻¹."}, {"number": "1.16", "conceptIdx": 2, "page": 28, "printPage": 28, "question": "Heptane and octane form an ideal solution. At 373 K, the vapour pressures of the two liquid components are 105.2 kPa and 46.8 kPa respectively. What will be the vapour pressure of a mixture of 26.0 g of heptane and 35 g of octane?", "steps": ["n_heptane = 26.0/100 = 0.260 mol; n_octane = 35/114 = 0.307 mol.", "x_H = 0.459; x_O = 0.541.", "p = 0.459 × 105.2 + 0.541 × 46.8 = 73.6 kPa."], "answer": "73.6 kPa."}, {"number": "1.17", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "The vapour pressure of water is 12.3 kPa at 300 K. Calculate vapour pressure of 1 molal solution of a non-volatile solute in it.", "steps": ["1 molal: 1 mol solute + 1 kg water = 55.55 mol water.", "x₁ = 55.55/56.55 = 0.9823.", "p = 0.9823 × 12.3 = 12.08 kPa."], "answer": "12.08 kPa."}, {"number": "1.18", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "Calculate the mass of a non-volatile solute (molar mass 40 g mol⁻¹) which should be dissolved in 114 g octane to reduce its vapour pressure to 80%.", "steps": ["p/p° = 0.80 = x₁ ⇒ x₂ = 0.20.", "n_octane = 114/114 = 1.00 mol.", "n₂/(n₂ + 1) = 0.20 ⇒ n₂ = 0.25 mol; mass = 10 g."], "answer": "10 g."}, {"number": "1.19", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "A solution containing 30 g of non-volatile solute exactly in 90 g of water has a vapour pressure of 2.8 kPa at 298 K. Further, 18 g of water is then added to the solution and the new vapour pressure becomes 2.9 kPa at 298 K. Calculate: (i) molar mass of the solute (ii) vapour pressure of water at 298 K.", "steps": ["p = x₁ p° ⇒ 2.8 = [90/18 / (90/18 + 30/M)] p° and 2.9 = [108/18 / (108/18 + 30/M)] p°.", "2.8 = 5 p° / (5 + 30/M); 2.9 = 6 p° / (6 + 30/M).", "Dividing: 2.8/2.9 = 5(6 + 30/M) / [6(5 + 30/M)] ⇒ M = 23 g mol⁻¹.", "Then p° = 2.8 × (5 + 30/23)/5 = 3.53 kPa."], "answer": "(i) 23 g mol⁻¹; (ii) 3.53 kPa."}, {"number": "1.20", "conceptIdx": 5, "page": 28, "printPage": 28, "question": "A 5% solution (by mass) of cane sugar in water has freezing point of 271K. Calculate the freezing point of 5% glucose in water if freezing point of pure water is 273.15 K.", "steps": ["ΔT_f (sugar) = 273.15 − 271 = 2.15 K.", "Same % by mass ⇒ m ∝ 1/M, so ΔT_f ∝ 1/M.", "ΔT_f (glucose) = 2.15 × (342/180) = 4.085 K.", "T_f = 273.15 − 4.085 = 269.07 K."], "answer": "269.07 K."}, {"number": "1.21", "conceptIdx": 5, "page": 28, "printPage": 28, "question": "Two elements A and B form compounds having formula AB₂ and AB₄. When dissolved in 20 g of benzene (C₆H₆), 1 g of AB₂ lowers the freezing point by 2.3 K whereas 1.0 g of AB₄ lowers it by 1.3 K. The molar depression constant for benzene is 5.1 K kg mol⁻¹. Calculate atomic masses of A and B.", "steps": ["M = K_f w₂ 1000 / (ΔT_f w₁).", "M(AB₂) = 5.1 × 1 × 1000 / (2.3 × 20) = 110.9 g mol⁻¹.", "M(AB₄) = 5.1 × 1 × 1000 / (1.3 × 20) = 196.2 g mol⁻¹.", "Let a, b be atomic masses: a + 2b = 110.9; a + 4b = 196.2 ⇒ 2b = 85.3, b = 42.6, a = 25.6."], "answer": "A = 25.6 u; B = 42.6 u."}, {"number": "1.22", "conceptIdx": 5, "page": 29, "printPage": 29, "question": "At 300 K, 36 g of glucose present in a litre of its solution has an osmotic pressure of 4.98 bar. If the osmotic pressure of the solution is 1.52 bars at the same temperature, what would be its concentration?", "steps": ["First solution: C₁ = 36/180 = 0.20 mol L⁻¹; π₁ = 4.98 bar.", "π ∝ C at constant T, so C₂ = 0.20 × 1.52 / 4.98 = 0.061 mol L⁻¹."], "answer": "0.061 M."}, {"number": "1.23", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Suggest the most important type of intermolecular attractive interaction in the following pairs. (i) n-hexane and n-octane (ii) I₂ and CCl₄ (iii) NaClO₄ and water (iv) methanol and acetone (v) acetonitrile (CH₃CN) and acetone (C₃H₆O).", "steps": ["(i) London (dispersion) forces.", "(ii) London forces (both non-polar).", "(iii) Ion–dipole.", "(iv) Hydrogen bonding (and dipole–dipole).", "(v) Dipole–dipole."], "answer": "(i) dispersion; (ii) dispersion; (iii) ion–dipole; (iv) H-bonding; (v) dipole–dipole."}, {"number": "1.24", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Based on solute-solvent interactions, arrange the following in order of increasing solubility in n-octane and explain. Cyclohexane, KCl, CH₃OH, CH₃CN.", "steps": ["n-Octane is non-polar. Like dissolves like.", "KCl (ionic) least; then CH₃OH (H-bonded polar); then CH₃CN (polar, no H-bond donor); cyclohexane (non-polar) most."], "answer": "KCl < CH₃OH < CH₃CN < cyclohexane."}, {"number": "1.25", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Amongst the following compounds, identify which are insoluble, partially soluble and highly soluble in water? (i) phenol (ii) toluene (iii) formic acid (iv) ethylene glycol (v) chloroform (vi) pentanol.", "steps": ["Highly soluble (H-bonding, small): formic acid, ethylene glycol.", "Partially soluble: phenol, pentanol (larger hydrophobic part).", "Insoluble: toluene, chloroform (essentially non-polar / weak H-bond)."], "answer": "Highly soluble: HCOOH, ethylene glycol; partial: phenol, pentanol; insoluble: toluene, CHCl₃."}, {"number": "1.26", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "If the density of some lake water is 1.25g mL⁻¹ and contains 92 g of Na⁺ ions per kg of water, calculate the molarity of Na⁺ ions in the lake.", "steps": ["1 L of lake water has mass 1250 g. Taking 92 g Na⁺ per kg of water and density 1.25 g mL⁻¹, moles in 1 L ≈ (92/23) × 1.25 = 5.0 mol.", "Molarity = 5.0 mol L⁻¹.", "Alternatively: 1 kg water + 92 g Na⁺ = 1092 g solution; V = 1092/1.25 = 0.874 L; M = 4/0.874 = 4.58 M. NCERT uses the 5.0 M convention."], "answer": "5.0 M (4.58 M if solution mass is 1092 g L⁻¹)."}, {"number": "1.27", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "If the solubility product of CuS is 6 × 10⁻¹⁶, calculate the maximum molarity of CuS in aqueous solution.", "steps": ["CuS(s) ⇌ Cu²⁺ + S²⁻; K_sp = s² = 6 × 10⁻¹⁶.", "s = √(6 × 10⁻¹⁶) = 2.45 × 10⁻⁸ mol L⁻¹."], "answer": "2.45 × 10⁻⁸ M."}, {"number": "1.28", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Calculate the mass percentage of aspirin (C₉H₈O₄) in acetonitrile (CH₃CN) when 6.5 g of C₉H₈O₄ is dissolved in 450 g of CH₃CN.", "steps": ["Mass % = 6.5 / (6.5 + 450) × 100 = 1.424%."], "answer": "1.42%."}, {"number": "1.29", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Nalorphene (C₁₉H₂₁NO₃), similar to morphine, is used to combat withdrawal symptoms in narcotic users. Dose of nalorphene generally given is 1.5 mg. Calculate the mass of 1.5 × 10⁻³ m aqueous solution required for the above dose.", "steps": ["M(nalorphene) = 311 g mol⁻¹.", "1.5 × 10⁻³ m means 1.5 × 10⁻³ mol = 0.4665 g solute per kg solvent.", "Dose 1.5 × 10⁻³ g requires mass of solution ≈ (1.5 × 10⁻³ / 0.4665) × 1000 = 3.22 g."], "answer": "3.22 g of solution."}, {"number": "1.30", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Calculate the amount of benzoic acid (C₆H₅COOH) required for preparing 250 mL of 0.15 M solution in methanol.", "steps": ["n = 0.15 × 0.250 = 0.0375 mol.", "M = 122 g mol⁻¹; mass = 4.575 g."], "answer": "4.575 g."}, {"number": "1.31", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "The depression in freezing point of water observed for the same amount of acetic acid, trichloroacetic acid and trifluoroacetic acid increases in the order given above. Explain briefly.", "steps": ["ΔT_f ∝ i = 1 + α. Stronger acid ⇒ larger α ⇒ larger i ⇒ larger ΔT_f.", "F is more electronegative than Cl, which is more electronegative than H, so acidity (and α) increases CF₃COOH > CCl₃COOH > CH₃COOH."], "answer": "Acidity/α increases CH₃COOH < CCl₃COOH < CF₃COOH, so ΔT_f increases in that order."}, {"number": "1.32", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "Calculate the depression in the freezing point of water when 10 g of CH₃CH₂CHClCOOH is added to 250 g of water. K_a = 1.4 × 10⁻³, K_f = 1.86 K kg mol⁻¹.", "steps": ["M = 122.5 g mol⁻¹; m = (10/122.5)/0.250 = 0.3265 mol kg⁻¹.", "K_a = c α²/(1 − α) ≈ c α² ⇒ α = √(1.4 × 10⁻³ / 0.3265) = 0.0655.", "i = 1 + α = 1.0655; ΔT_f = i K_f m = 1.0655 × 1.86 × 0.3265 = 0.65 K."], "answer": "0.65 K."}, {"number": "1.33", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "19.5 g of CH₂FCOOH is dissolved in 500 g of water. The depression in the freezing point of water observed is 1.0° C. Calculate the van’t Hoff factor and dissociation constant of fluoroacetic acid.", "steps": ["M = 78 g mol⁻¹; m = (19.5/78)/0.500 = 0.50 mol kg⁻¹.", "i = ΔT_f /(K_f m) = 1.00/(1.86 × 0.50) = 1.075.", "α = i − 1 = 0.075; K_a = c α²/(1 − α) = 0.50 × (0.075)² / 0.925 = 3.07 × 10⁻³."], "answer": "i = 1.075; K_a = 3.07 × 10⁻³."}, {"number": "1.34", "conceptIdx": 4, "page": 29, "printPage": 29, "question": "Vapour pressure of water at 293 K is 17.535 mm Hg. Calculate the vapour pressure of water at 293 K when 25 g of glucose is dissolved in 450 g of water.", "steps": ["n₂ = 25/180 = 0.1389 mol; n₁ = 450/18 = 25.00 mol.", "x₁ = 25/25.1389 = 0.9945.", "p = 0.9945 × 17.535 = 17.44 mm Hg."], "answer": "17.44 mm Hg."}, {"number": "1.35", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Henry’s law constant for the molality of methane in benzene at 298 K is 4.27 × 10⁵ mm Hg. Calculate the solubility of methane in benzene at 298 K under 760 mm Hg.", "steps": ["x = p / K_H = 760 / (4.27 × 10⁵) = 1.78 × 10⁻³.", "This mole fraction is the solubility as used in Eq. 1.11."], "answer": "x(CH₄) = 1.78 × 10⁻³."}, {"number": "1.36", "conceptIdx": 2, "page": 29, "printPage": 29, "question": "100 g of liquid A (molar mass 140 g mol⁻¹) was dissolved in 1000 g of liquid B (molar mass 180 g mol⁻¹). The vapour pressure of pure liquid B was found to be 500 torr. Calculate the vapour pressure of pure liquid A and its vapour pressure in the solution if the total vapour pressure of the solution is 475 Torr.", "steps": ["n_A = 100/140 = 0.714 mol; n_B = 1000/180 = 5.556 mol.", "x_A = 0.114; x_B = 0.886.", "p_B = 0.886 × 500 = 443 torr; p_A = 475 − 443 = 32 torr.", "p_A° = p_A / x_A = 32 / 0.114 = 280.7 torr."], "answer": "p_A° = 280.7 torr; p_A (in solution) = 32 torr."}, {"number": "1.37", "conceptIdx": 3, "page": 30, "printPage": 30, "question": "Vapour pressures of pure acetone and chloroform at 328 K are 741.8 mm Hg and 632.8 mm Hg respectively. Assuming that they form ideal solution over the entire range of composition, plot ptotal, pchloroform, and pacetone as a function of xacetone. The experimental data observed for different compositions of mixture is given in the table (100 x_acetone = 0, 11.8, 23.4, 36.0, 50.8, 58.2, 64.5, 72.1 with corresponding p_acetone and p_chloroform). Plot this data also on the same graph paper. Indicate whether it has positive deviation or negative deviation from the ideal solution.", "steps": ["Ideal p_acetone = x_a × 741.8; p_chloroform = x_c × 632.8; p_total linear between 632.8 and 741.8.", "At x_acetone = 0.508, experimental p_acetone = 322.7 mm Hg < ideal 377 mm Hg; experimental p_total = 580.4 < ideal 688.", "The mixture shows negative deviation (H-bonding acetone–chloroform)."], "answer": "Negative deviation from Raoult’s law."}, {"number": "1.38", "conceptIdx": 2, "page": 30, "printPage": 30, "question": "Benzene and toluene form ideal solution over the entire range of composition. The vapour pressure of pure benzene and toluene at 300 K are 50.71 mm Hg and 32.06 mm Hg respectively. Calculate the mole fraction of benzene in vapour phase if 80 g of benzene is mixed with 100 g of toluene.", "steps": ["n_b = 80/78 = 1.026; n_t = 100/92 = 1.087; x_b = 0.486.", "p_b = 0.486 × 50.71 = 24.64 mm Hg; p_t = 0.514 × 32.06 = 16.48 mm Hg.", "y_b = 24.64 / 41.12 = 0.599."], "answer": "y_benzene = 0.599."}, {"number": "1.39", "conceptIdx": 1, "page": 30, "printPage": 30, "question": "The air is a mixture of a number of gases. The major components are oxygen and nitrogen with approximate proportion of 20% is to 79% by volume at 298 K. The water is in equilibrium with air at a pressure of 10 atm. At 298 K if the Henry’s law constants for oxygen and nitrogen at 298 K are 3.30 × 10⁷ mm and 6.51 × 10⁷ mm respectively, calculate the composition of these gases in water.", "steps": ["p(O₂) = 0.20 × 10 atm = 2 atm = 1520 mm Hg; p(N₂) = 0.79 × 10 = 7.9 atm = 6004 mm Hg.", "x(O₂) = 1520 / 3.30 × 10⁷ = 4.61 × 10⁻⁵.", "x(N₂) = 6004 / 6.51 × 10⁷ = 9.22 × 10⁻⁵."], "answer": "x(O₂) = 4.61 × 10⁻⁵; x(N₂) = 9.22 × 10⁻⁵."}, {"number": "1.40", "conceptIdx": 6, "page": 30, "printPage": 30, "question": "Determine the amount of CaCl₂ (i = 2.47) dissolved in 2.5 litre of water such that its osmotic pressure is 0.75 atm at 27° C.", "steps": ["π = i C R T ⇒ C = 0.75 / (2.47 × 0.0821 × 300) = 0.01232 mol L⁻¹.", "n = 0.01232 × 2.5 = 0.0308 mol.", "Mass = 0.0308 × 111 = 3.42 g."], "answer": "3.42 g CaCl₂."}, {"number": "1.41", "conceptIdx": 6, "page": 30, "printPage": 30, "question": "Determine the osmotic pressure of a solution prepared by dissolving 25 mg of K₂SO₄ in 2 litre of water at 25° C, assuming that it is completely dissociated.", "steps": ["K₂SO₄ → 2K⁺ + SO₄²⁻, i = 3.", "n = 0.025 / 174 = 1.437 × 10⁻⁴ mol; C = 7.18 × 10⁻⁵ mol L⁻¹.", "π = 3 × 7.18 × 10⁻⁵ × 0.0821 × 298 = 5.27 × 10⁻³ atm."], "answer": "5.27 × 10⁻³ atm."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+function numEl(id, fallback){
+  var n = document.getElementById(id);
+  return n ? Number(n.value) : fallback;
+}
+
+window.SIMS.concunits = (function(){
+  var preset = "glycol";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solute particles</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Solvent</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-gly">Ex 1.1: 20% glycol</button>' +
+      '<button class="preset-btn" id="p-naoh">Ex 1.2: 5 g NaOH / 450 mL</button>' +
+      '<button class="preset-btn" id="p-hoac">Ex 1.3: 2.5 g HOAc / 75 g benzene</button>';
+    document.getElementById("p-gly").onclick = function(){ setActivePreset(this); preset="glycol"; draw(App.state.t); };
+    document.getElementById("p-naoh").onclick = function(){ setActivePreset(this); preset="naoh"; draw(App.state.t); };
+    document.getElementById("p-hoac").onclick = function(){ setActivePreset(this); preset="hoac"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Mass % solute (glycol preset)</span><span class="val" id="ctrl-pct">20</span></div>' +
+      '<input type="range" id="ctrl-pct-range" min="5" max="50" step="1" value="20"></div>';
+    document.getElementById("ctrl-pct-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var pct = numEl("ctrl-pct-range", 20);
+    var el = document.getElementById("ctrl-pct"); if(el) el.textContent = pct;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var nSol, nSolv, Msol, Msolv, label, Vlitre, massSolvKg;
+    if(preset === "glycol"){
+      Msol = 62; Msolv = 18;
+      var wSol = pct, wSolv = 100 - pct;
+      nSol = wSol / Msol; nSolv = wSolv / Msolv;
+      massSolvKg = wSolv / 1000;
+      Vlitre = 0.100;
+      label = pct + "% w/w ethylene glycol in water (100 g batch)";
+    } else if(preset === "naoh"){
+      nSol = 5 / 40; nSolv = 0; Msol = 40; Vlitre = 0.450; massSolvKg = 0.445;
+      label = "5 g NaOH in 450 mL solution — molarity (Example 1.2)";
+    } else {
+      nSol = 2.5 / 60; nSolv = 75 / 78; Vlitre = 0.086; massSolvKg = 0.075;
+      label = "2.5 g CH₃COOH in 75 g benzene — molality (Example 1.3)";
+    }
+    var x = nSolv > 0 ? nSol / (nSol + nSolv) : 0;
+    var molality = nSol / (massSolvKg || 1e-9);
+    var molarity = nSol / Vlitre;
+    var fill = 80 + Math.min(500, nSol * 80);
+    m += '<rect x="80" y="70" width="200" height="180" rx="8" fill="#0f1f2e" stroke="#334155"/>';
+    m += '<rect x="90" y="' + (240 - fill * 0.25) + '" width="180" height="' + (fill * 0.25) + '" fill="#1e3a5f"/>';
+    var nDots = Math.min(40, 6 + Math.floor(nSol * 30));
+    for(var i=0;i<nDots;i++){
+      var px = 110 + (i * 37 + t * 17) % 150;
+      var py = 100 + (i * 19 + t * 11) % 130;
+      m += '<circle cx="'+px+'" cy="'+py+'" r="4" fill="#38bdf8"/>';
+    }
+    m += '<text x="180" y="60" fill="#94a3b8" font-size="12" text-anchor="middle">Beaker</text>';
+    m += '<text x="430" y="80" fill="#e2e8f0" font-size="14">' + label + '</text>';
+    m += '<text x="430" y="110" fill="#38bdf8" font-size="13">n(solute) = ' + nSol.toFixed(3) + ' mol</text>';
+    m += '<text x="430" y="132" fill="#94a3b8" font-size="13">x(solute) = ' + (preset==="naoh" ? "—" : x.toFixed(3)) + '</text>';
+    m += '<text x="430" y="154" fill="#f59e0b" font-size="13">Molarity M = ' + molarity.toFixed(3) + ' mol L⁻¹</text>';
+    m += '<text x="430" y="176" fill="#34d399" font-size="13">Molality m = ' + molality.toFixed(3) + ' mol kg⁻¹</text>';
+    svg.innerHTML = m;
+    readout(cell("x₂", preset==="naoh" ? "n/a" : x.toFixed(3), "#38bdf8") +
+            cell("M", molarity.toFixed(3)+" M", "#f59e0b") +
+            cell("m", molality.toFixed(3)+" mol kg⁻¹", "#34d399"));
+    if(preset==="glycol") verdict("<b>Example 1.1:</b> at 20% w/w, x_glycol = 0.068 (not 0.20 — mole fraction is not mass %). Molarity changes if this flask is heated; molality does not.");
+    else if(preset==="naoh") verdict("<b>Example 1.2:</b> 0.125 mol / 0.450 L = <b>0.278 M</b>. Volume (hence M) is T-dependent.");
+    else verdict("<b>Example 1.3:</b> 0.0417 mol / 0.075 kg benzene = <b>0.556 mol kg⁻¹</b>. Molality is the colligative concentration.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.henrylaw = (function(){
+  var gas = "N2";
+  var KH = {N2: 76.48, O2: 34.86, He: 144.97, CO2: 1.67};
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Dissolved gas</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Headspace pressure</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-n2">Ex 1.4: N₂ in water</button>' +
+      '<button class="preset-btn" id="p-soda">Intext 1.7: soda CO₂</button>' +
+      '<button class="preset-btn" id="p-o2">Table 1.2: O₂ cold vs warm</button>';
+    document.getElementById("p-n2").onclick = function(){ setActivePreset(this); gas="N2"; draw(App.state.t); };
+    document.getElementById("p-soda").onclick = function(){ setActivePreset(this); gas="CO2"; var p=document.getElementById("ctrl-p-range"); if(p) p.value=2.5; draw(App.state.t); };
+    document.getElementById("p-o2").onclick = function(){ setActivePreset(this); gas="O2"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>p / atm</span><span class="val" id="ctrl-p">0.99</span></div>' +
+      '<input type="range" id="ctrl-p-range" min="0.2" max="10" step="0.1" value="0.99"></div>' +
+      '<div class="control-item"><div class="control-label"><span>T / K</span><span class="val" id="ctrl-T">293</span></div>' +
+      '<input type="range" id="ctrl-T-range" min="280" max="320" step="1" value="293"></div>';
+    document.getElementById("ctrl-p-range").oninput = function(){ draw(App.state.t); };
+    document.getElementById("ctrl-T-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var pAtm = numEl("ctrl-p-range", 0.99);
+    var T = numEl("ctrl-T-range", 293);
+    var pe = document.getElementById("ctrl-p"); if(pe) pe.textContent = pAtm.toFixed(2);
+    var Te = document.getElementById("ctrl-T"); if(Te) Te.textContent = T.toFixed(0);
+    var kh;
+    if(gas==="CO2"){ kh = 1.67e3; } // kbar equivalent of 1.67e8 Pa ≈ 1.67 kbar
+    else if(gas==="O2"){ kh = 34.86 * (1 + 0.03*(T-293)/10); }
+    else if(gas==="He"){ kh = 144.97; }
+    else { kh = 76.48 * (1 + 0.16*(T-293)/10); } // N2 76.48 → 88.84 from 293 to 303
+    var pBar = pAtm * 1.013;
+    var x = pBar / (kh * 1000);
+    var n = x * 55.5;
+    var mmol = n * 1000;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="80" y="120" width="220" height="140" rx="6" fill="#0f1f2e" stroke="#334155"/>';
+    var h = Math.min(120, 20 + mmol * 40);
+    m += '<rect x="90" y="'+(250-h)+'" width="200" height="'+h+'" fill="#164e63"/>';
+    var bubbles = Math.min(18, 2 + Math.floor(pAtm * 2));
+    for(var i=0;i<bubbles;i++){
+      var bx = 110 + (i*23)%180;
+      var by = 140 - (t*30 + i*17)%90;
+      m += '<circle cx="'+bx+'" cy="'+by+'" r="'+(3+pAtm*0.4)+'" fill="none" stroke="#38bdf8"/>';
+    }
+    m += '<text x="190" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">p = K_H x   ·  Table 1.2 / Example 1.4</text>';
+    m += '<text x="430" y="90" fill="#e2e8f0" font-size="14">Gas: '+gas+'</text>';
+    m += '<text x="430" y="114" fill="#f59e0b" font-size="13">K_H ≈ '+kh.toFixed(2)+' kbar</text>';
+    m += '<text x="430" y="138" fill="#38bdf8" font-size="13">x = p/K_H = '+x.toExponential(2)+'</text>';
+    m += '<text x="430" y="162" fill="#34d399" font-size="13">n in 1 L water = '+mmol.toFixed(3)+' mmol</text>';
+    svg.innerHTML = m;
+    readout(cell("p", pBar.toFixed(3)+" bar") + cell("K_H", kh.toFixed(2)+" kbar", "#f59e0b") + cell("x", x.toExponential(2), "#38bdf8") + cell("n (1 L)", mmol.toFixed(3)+" mmol", "#34d399"));
+    if(gas==="N2") verdict("<b>Example 1.4:</b> at 0.987 bar, K_H = 76.48 kbar, x = 1.29×10⁻⁵ and n = <b>0.716 mmol</b> in 1 L water. Higher K_H ⇒ lower solubility.");
+    else if(gas==="CO2") verdict("<b>Intext 1.7:</b> soda at ~2.5 atm. x ≈ 1.5×10⁻³; 500 mL water holds ~1.85 g CO₂. Opening the cap drops p, so x must fall — fizz.");
+    else verdict("<b>Table 1.2:</b> K_H(O₂) rises 34.86 → 46.82 kbar from 293 to 303 K. Fish are more comfortable in cold water because x = p/K_H falls as the lake warms.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.raoult = (function(){
+  var mode = "AB";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>p_A = x_A p_A°</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>p_B = x_B p_B°</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>p_total</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ab">Intext 1.8: A + B</button>' +
+      '<button class="preset-btn" id="p-hep">Ex 1.16: heptane + octane</button>';
+    document.getElementById("p-ab").onclick = function(){ setActivePreset(this); mode="AB"; draw(App.state.t); };
+    document.getElementById("p-hep").onclick = function(){ setActivePreset(this); mode="hep"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>x₂ (more volatile)</span><span class="val" id="ctrl-x">0.60</span></div>' +
+      '<input type="range" id="ctrl-x-range" min="0" max="1" step="0.01" value="0.60"></div>';
+    document.getElementById("ctrl-x-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var x2 = numEl("ctrl-x-range", 0.60);
+    var el = document.getElementById("ctrl-x"); if(el) el.textContent = x2.toFixed(2);
+    var p1s, p2s, unit, name1, name2;
+    if(mode==="AB"){ p1s=450; p2s=700; unit="mm Hg"; name1="A"; name2="B"; }
+    else { p1s=105.2; p2s=46.8; unit="kPa"; name1="heptane"; name2="octane"; }
+    var x1 = 1 - x2;
+    var p1 = x1 * p1s, p2 = x2 * p2s, pt = p1 + p2;
+    var y1 = pt > 0 ? p1 / pt : 0;
+    function X(x){ return 80 + x * 520; }
+    function Y(p){ var pmax = Math.max(p1s, p2s) * 1.15; return 250 - (p / pmax) * 200; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="250" x2="640" y2="250" stroke="#475569"/><line x1="80" y1="250" x2="80" y2="40" stroke="#475569"/>';
+    m += '<line x1="'+X(0)+'" y1="'+Y(p1s)+'" x2="'+X(1)+'" y2="'+Y(0)+'" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<line x1="'+X(0)+'" y1="'+Y(0)+'" x2="'+X(1)+'" y2="'+Y(p2s)+'" stroke="#f59e0b" stroke-width="2"/>';
+    m += '<line x1="'+X(0)+'" y1="'+Y(p1s)+'" x2="'+X(1)+'" y2="'+Y(p2s)+'" stroke="#34d399" stroke-width="3"/>';
+    m += '<circle cx="'+X(x2)+'" cy="'+Y(pt)+'" r="6" fill="#f8fafc"/>';
+    m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Raoult p–x · p_total = p₁° + (p₂° − p₁°) x₂  (Eq. 1.16)</text>';
+    svg.innerHTML = m;
+    readout(cell("x₂", x2.toFixed(2)) + cell("p₁", p1.toFixed(1)+" "+unit, "#38bdf8") + cell("p₂", p2.toFixed(1)+" "+unit, "#f59e0b") + cell("p_total", pt.toFixed(1)+" "+unit, "#34d399") + cell("y₁", y1.toFixed(2)));
+    if(mode==="AB") verdict("<b>Intext 1.8:</b> at x_A = 0.40 (x_B = 0.60) p_total = 600 mm Hg. y_A = 0.30 — vapour is richer in more-volatile B. Drag x₂ to walk the green line.");
+    else verdict("<b>Exercise 1.16:</b> 26 g heptane + 35 g octane → x_H = 0.459, p = 73.6 kPa at 373 K. Ideal: the green line is the whole law.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.deviation = (function(){
+  var showExp = true;
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Ideal p_total</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Ex 1.37 experimental</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-neg">Acetone–CHCl₃ (−)</button>' +
+      '<button class="preset-btn" id="p-hide">Ideal line only</button>';
+    document.getElementById("p-neg").onclick = function(){ setActivePreset(this); showExp=true; draw(App.state.t); };
+    document.getElementById("p-hide").onclick = function(){ setActivePreset(this); showExp=false; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var xa = [0, 0.118, 0.234, 0.360, 0.508, 0.582, 0.645, 0.721, 1];
+    var pa = [0, 54.9, 110.1, 202.4, 322.7, 405.9, 454.1, 521.1, 741.8];
+    var pc = [632.8, 548.1, 469.4, 359.7, 257.7, 193.6, 161.2, 120.7, 0];
+    function X(x){ return 80 + x * 520; }
+    function Y(p){ return 260 - p / 800 * 210; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="260" x2="640" y2="260" stroke="#475569"/><line x1="80" y1="260" x2="80" y2="40" stroke="#475569"/>';
+    m += '<line x1="'+X(0)+'" y1="'+Y(632.8)+'" x2="'+X(1)+'" y2="'+Y(741.8)+'" stroke="#34d399" stroke-width="2" stroke-dasharray="6 4"/>';
+    if(showExp){
+      var d = "";
+      for(var i=0;i<xa.length;i++){
+        d += (i===0?"M":"L") + " " + X(xa[i]) + " " + Y(pa[i]+pc[i]);
+        m += '<circle cx="'+X(xa[i])+'" cy="'+Y(pa[i]+pc[i])+'" r="4" fill="#f87171"/>';
+      }
+      m += '<path d="'+d+'" fill="none" stroke="#f87171" stroke-width="2"/>';
+    }
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Exercise 1.37 · 328 K · acetone–chloroform</text>';
+    svg.innerHTML = m;
+    var pId = 632.8 + (741.8-632.8)*0.508;
+    var pEx = 322.7 + 257.7;
+    readout(cell("x_acetone", "0.508") + cell("p_ideal", pId.toFixed(1)+" mm Hg", "#34d399") + cell("p_exp", pEx.toFixed(1)+" mm Hg", "#f87171"));
+    verdict("<b>Negative deviation:</b> experimental p_total lies below the Raoult line because acetone carbonyl H-bonds to CHCl₃. Δ_mix H < 0 (Exercise 1.14).");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.deltatb = (function(){
+  var solute = "glucose";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Pure water p–T</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Solution p–T</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-glu">Ex 1.7: 18 g glucose / 1 kg</button>' +
+      '<button class="preset-btn" id="p-suc">Intext 1.10: sucrose → 100 °C</button>';
+    document.getElementById("p-glu").onclick = function(){ setActivePreset(this); solute="glucose"; draw(App.state.t); };
+    document.getElementById("p-suc").onclick = function(){ setActivePreset(this); solute="sucrose"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Mass of solute / g</span><span class="val" id="ctrl-w">18</span></div>' +
+      '<input type="range" id="ctrl-w-range" min="0" max="200" step="1" value="18"></div>';
+    document.getElementById("ctrl-w-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var w = numEl("ctrl-w-range", 18);
+    var el = document.getElementById("ctrl-w"); if(el) el.textContent = w.toFixed(0);
+    var M = solute === "glucose" ? 180 : 342;
+    var Kb = 0.52;
+    var m = (w / M) / 1.0;
+    var dTb = Kb * m;
+    var Tb = 373.15 + dTb;
+    var fig = '<rect width="720" height="300" fill="#09131d"/>';
+    fig += '<line x1="80" y1="250" x2="640" y2="250" stroke="#475569"/><line x1="80" y1="250" x2="80" y2="40" stroke="#475569"/>';
+    fig += '<line x1="80" y1="80" x2="640" y2="80" stroke="#64748b" stroke-dasharray="4 4"/>';
+    fig += '<text x="650" y="84" fill="#94a3b8" font-size="11">1.013 bar</text>';
+    fig += '<path d="M 100 240 Q 280 200 400 80" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    var shift = Math.min(80, dTb * 200);
+    fig += '<path d="M 100 240 Q 280 200 '+(400+shift)+' 80" fill="none" stroke="#f59e0b" stroke-width="2"/>';
+    fig += '<circle cx="'+(400+shift)+'" cy="80" r="5" fill="#f8fafc"/>';
+    fig += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Fig. 1.7 style · ΔT_b = K_b m · K_b(water) = 0.52 K kg mol⁻¹</text>';
+    svg.innerHTML = fig;
+    readout(cell("m", m.toFixed(3)+" mol kg⁻¹") + cell("ΔT_b", dTb.toFixed(3)+" K", "#f59e0b") + cell("T_b", Tb.toFixed(3)+" K", "#34d399"));
+    if(solute==="glucose") verdict("<b>Example 1.7:</b> 18 g glucose in 1 kg water is 0.10 molal; ΔT_b = 0.52 × 0.10 = <b>0.052 K</b>. Water boils at 373.20 K, not 373.15 K.");
+    else verdict("<b>Intext 1.10:</b> to raise T_b by 0.37 K (99.63 → 100 °C) need m = 0.712 mol kg⁻¹ sucrose in 500 g water = <b>121.67 g</b>.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.osmosis = (function(){
+  var mode = "fwd";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solvent</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Solution</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-os">Osmosis (mango in brine)</button>' +
+      '<button class="preset-btn" id="p-ro">Reverse osmosis (desalination)</button>' +
+      '<button class="preset-btn" id="p-pi">Intext 1.12: polymer π</button>';
+    document.getElementById("p-os").onclick = function(){ setActivePreset(this); mode="fwd"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-ro").onclick = function(){ setActivePreset(this); mode="ro"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-pi").onclick = function(){ setActivePreset(this); mode="pi"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>C / mol L⁻¹</span><span class="val" id="ctrl-c">0.20</span></div>' +
+      '<input type="range" id="ctrl-c-range" min="0.01" max="1" step="0.01" value="0.20"></div>';
+    document.getElementById("ctrl-c-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var C = numEl("ctrl-c-range", 0.20);
+    var el = document.getElementById("ctrl-c"); if(el) el.textContent = C.toFixed(2);
+    var pi = C * 0.083 * 298; // bar
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="80" y="60" width="240" height="180" fill="#0f1f2e" stroke="#334155"/>';
+    m += '<rect x="320" y="60" width="240" height="180" fill="#1e293b" stroke="#334155"/>';
+    m += '<rect x="312" y="60" width="16" height="180" fill="#475569"/>';
+    var hL = mode==="ro" ? 90 + t*8 : 110 - t*6;
+    var hR = mode==="ro" ? 150 - t*8 : 130 + t*6;
+    m += '<rect x="90" y="'+(230-hL)+'" width="220" height="'+hL+'" fill="#164e63"/>';
+    m += '<rect x="330" y="'+(230-hR)+'" width="220" height="'+hR+'" fill="#7c2d12"/>';
+    var dir = mode==="ro" ? -1 : 1;
+    m += '<polygon points="'+(360-dir*20)+',140 '+(360+dir*20)+',130 '+(360+dir*20)+',150" fill="#f8fafc"/>';
+    m += '<text x="200" y="50" fill="#94a3b8" font-size="12" text-anchor="middle">solvent</text>';
+    m += '<text x="440" y="50" fill="#f59e0b" font-size="12" text-anchor="middle">solution</text>';
+    svg.innerHTML = m;
+    readout(cell("C", C.toFixed(2)+" M") + cell("π (298 K)", pi.toFixed(2)+" bar", "#f59e0b") + cell("mode", mode==="ro"?"P > π":"osmosis"));
+    if(mode==="pi") verdict("<b>Intext 1.12:</b> 1.0 g of M = 185000 g mol⁻¹ in 450 mL at 37 °C gives π = <b>30.96 Pa</b>. Osmotic pressure is the colligative of choice for polymers.");
+    else if(mode==="ro") verdict("<b>Section 1.6.5:</b> apply P > π on the solution side and solvent is forced out through cellulose acetate — desalination. Seawater π ~ 30 bar.");
+    else verdict("<b>Osmosis:</b> solvent flows into the solution until the hydrostatic head equals π = CRT. Raw mangoes shrivel in brine because water leaves the fruit.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.vanthoff = (function(){
+  var kind = "kcl";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Formula units</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Free particles</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-kcl">KCl (n = 2)</button>' +
+      '<button class="preset-btn" id="p-fa">Ex 1.33: CH₂FCOOH</button>' +
+      '<button class="preset-btn" id="p-ca">Ex 1.40: CaCl₂ i = 2.47</button>';
+    document.getElementById("p-kcl").onclick = function(){ setActivePreset(this); kind="kcl"; draw(App.state.t); };
+    document.getElementById("p-fa").onclick = function(){ setActivePreset(this); kind="fa"; draw(App.state.t); };
+    document.getElementById("p-ca").onclick = function(){ setActivePreset(this); kind="ca"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>α (degree of dissociation)</span><span class="val" id="ctrl-a">1.00</span></div>' +
+      '<input type="range" id="ctrl-a-range" min="0" max="1" step="0.01" value="1"></div>';
+    document.getElementById("ctrl-a-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var a = numEl("ctrl-a-range", 1);
+    var el = document.getElementById("ctrl-a"); if(el) el.textContent = a.toFixed(2);
+    var n = kind==="ca" ? 3 : 2;
+    var i = 1 + (n - 1) * a;
+    if(kind==="ca") i = 2.47;
+    if(kind==="fa") { a = 0.075; i = 1.075; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var particles = Math.round(8 * i);
+    for(var k=0;k<particles;k++){
+      var px = 80 + (k % 8) * 70;
+      var py = 80 + Math.floor(k / 8) * 70;
+      m += '<circle cx="'+px+'" cy="'+py+'" r="16" fill="'+(k%2?"#38bdf8":"#f59e0b")+'" opacity="0.85"/>';
+    }
+    m += '<text x="500" y="80" fill="#e2e8f0" font-size="16">i = 1 + (n − 1)α</text>';
+    m += '<text x="500" y="110" fill="#34d399" font-size="20">i = '+i.toFixed(3)+'</text>';
+    m += '<text x="500" y="140" fill="#94a3b8" font-size="13">n = '+n+' ions / formula</text>';
+    svg.innerHTML = m;
+    var dTf = i * 1.86 * 0.50;
+    readout(cell("α", (kind==="fa"?0.075:a).toFixed(3)) + cell("i", i.toFixed(3), "#34d399") + cell("ΔT_f (0.50 m water)", dTf.toFixed(3)+" K"));
+    if(kind==="kcl") verdict("<b>Section 1.7:</b> 1 mol KCl in 1 kg water would raise T_b by 2 × 0.52 = <b>1.04 K</b> if fully ionised and interionic drag is ignored. Real i is a little less than 2.");
+    else if(kind==="fa") verdict("<b>Exercise 1.33:</b> 19.5 g CH₂FCOOH in 500 g water, ΔT_f = 1.00 °C ⇒ i = 1.075, α = 0.075, K_a = 3.07 × 10⁻³.");
+    else verdict("<b>Exercise 1.40:</b> CaCl₂ with measured i = 2.47 (not 3 — ion pairing). 3.42 g in 2.5 L gives π = 0.75 atm at 27 °C.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

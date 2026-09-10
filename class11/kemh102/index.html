@@ -1,0 +1,2229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 2: Relations and Functions — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 02 · RELATIONS AND FUNCTIONS</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="18"></progress>
+      <span id="progress-text">0 / 18</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 36 Exercises from NCERT Class 11 Mathematics (pp. 24–42) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kemh102", "chapterNumber": 2, "book_name": "Mathematics", "title": "Relations and Functions", "subtitle": "Cartesian products, relations as subsets of A×B, functions as unique-image relations, a catalogue of real graphs, and algebra of real functions.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh102.pdf", "page_start": 24, "page_end": 42, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "cartesian", "nav": "Cartesian products", "title": "Ordered pairs: (a,b)=(x,y) iff a=x and b=y. n(A×B)=n(A)·n(B).", "deck": "A×B is the set of all ordered pairs (p,q) with p∈A, q∈B. Number-plate codes (DL,01) ≠ (01,DL). R×R is the plane.", "minutes": 8, "section": "2.1–2.2", "pages": [1, 4], "print": "24–27", "sim": "cartesian", "simTitle": "Cartesian-product grid (Fig 2.1–2.3)", "quick": ["An <strong>ordered pair</strong> (p,q) remembers order: (DL,01) is not (01,DL). Definition 1: P×Q = {(p,q): p∈P, q∈Q}. If P or Q is empty, P×Q=φ.", "If n(A)=p and n(B)=q then n(A×B)=pq. In general A×B ≠ B×A (Example 2). R×R is the coordinate plane; R×R×R is 3-space. A×A×A is ordered triples.", "Example 1 (and Ex 2.1.1, zoom p.4): (x/3 + 1, y − 2/3) = (5/3, 1/3) ⇒ x=2, y=1. Stacked fractions, no slash in the PDF."], "formulas": [{"label": "Cartesian product", "html": "A × B = { (a,b) : a ∈ A, b ∈ B }", "cond": "n(A×B)=n(A)·n(B); A×φ=φ"}, {"label": "Equality of pairs", "html": "(a,b)=(x,y)  ⇔  a=x and b=y", "cond": "Example 1 / Ex 2.1.1"}, {"label": "Ex 2.1.1 (zoom p.4)", "html": "(x/3 + 1, y − 2/3) = (5/3, 1/3)", "cond": "x=2, y=1"}], "deeper": "Licence-plate illustration: A={DL,MP,KA}, B={01,02,03} gives 9 codes. The first slot is a state, the second a serial — swapping them is a different object. Example 3 is the distributive law A×(B∩C)=(A×B)∩(A×C).", "worked": "Ex 2.1.1: x/3 + 1 = 5/3 ⇒ x/3 = 2/3 ⇒ x=2; y − 2/3 = 1/3 ⇒ y=1. Ex 2.1.10: n(A×A)=9 ⇒ n(A)=3; (−1,0) and (0,1) in A×A ⇒ −1,0,1 ∈ A, so A={−1,0,1} and the remaining pairs fill the 3×3 grid.", "prediction": {"prompt": "(x/3 + 1, y − 2/3) = (5/3, 1/3). Then (x, y) is", "options": ["(2, 1)", "(5, 1)", "(2, 3)"], "answer": 0, "explanation": "Ex 2.1.1, zoom p.4. Equate corresponding slots: x/3+1=5/3 and y−2/3=1/3."}, "connect": [["DL / MP / KA number plates", "Fig 2.2 is a transport-department Cartesian product: 3 states × 3 serials = 9 codes. (DL,01) will never be issued as (01,DL)."], ["Wow — R×R is the page you are looking at", "Example 5: every point of the plane is an ordered pair of reals. GPS (lat, long) is a Cartesian product of two intervals; a third coordinate would be altitude, R×R×R."], ["IPL (team, jersey number)", "A squad × {1,…,99} is a Cartesian product. The pair (MI, 45) is not (45, MI). n = (#teams)×99 if every number is allowed.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh102.pdf"}]]], "recall": "Write A×B, n(A×B)=pq, and solve Ex 2.1.1 from the stacked fractions on zoom p.4.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If n(A)=3 and B={3,4,5}, then n(A×B) is", "options": ["9", "6", "8"], "answer": 0, "hint": "Ex 2.1.2: n(A×B)=n(A)·n(B).", "solution": "3×3=9.", "wrong": ["", "That would be 3+3.", "2³ is for subsets of a 3-set, not here."]}, {"level": "Medium", "type": "number", "map": "Ex 2.1.8", "prompt": "A={1,2}, B={3,4}. Number of subsets of A×B is", "answer": 16, "unit": "subsets", "tolerance": 0, "hint": "n(A×B)=4, number of subsets is 2^4.", "solution": "A×B has 4 ordered pairs; 2⁴=16 subsets, including φ and A×B itself."}, {"level": "Hard", "type": "mcq", "prompt": "A×A has 9 elements including (−1,0) and (0,1). Then A is", "options": ["{−1, 0, 1}", "{−1, 0}", "{0, 1}"], "answer": 0, "hint": "Ex 2.1.10: n(A×A)=n(A)²=9.", "solution": "n(A)=3. First and second slots of the given pairs force −1,0,1 ∈ A.", "wrong": ["", "n(A×A) would be 4.", "Missing −1, and n would be 2."]}]}, {"id": "relations", "nav": "Relations", "title": "A relation is a subset of A×B. Domain = first slots, range = second slots, 2^{pq} relations.", "deck": "R ⊂ A×B. Arrow diagrams. Number of relations from A to B is 2^{n(A)n(B)}. Range ⊂ codomain = B.", "minutes": 8, "section": "2.3", "pages": [5, 7], "print": "28–30", "sim": "arrows", "simTitle": "Arrow-diagram lab (Fig 2.4–2.7)", "quick": ["Definition 2: a <strong>relation</strong> R from A to B is a subset of A×B, described by a rule linking first and second slots. The second element is the <strong>image</strong> of the first.", "Domain = all first elements that actually appear; range = all second elements that appear; <strong>codomain</strong> = the whole of B. Always range ⊂ codomain.", "If n(A)=p, n(B)=q, then n(A×B)=pq and the number of relations is 2^{pq} (every subset). Example 9: A={1,2}, B={3,4} ⇒ 2⁴=16 relations."], "formulas": [{"label": "Relation", "html": "R ⊂ A × B", "cond": "domain = first slots; range = second slots ⊂ B = codomain"}, {"label": "Count", "html": "number of relations from A to B = 2<sup>pq</sup>", "cond": "n(A)=p, n(B)=q"}], "deeper": "Fig 2.7 (Ex 2.2.4, zoom p.7): P={5,6,7} arrows to Q={3,4,5} by y=x−2. Roster {(5,3),(6,4),(7,5)}. Element 1 in a typical Q of Fig 2.6 is an unused codomain point — it is in the codomain, not in the range.", "worked": "Ex 2.2.1: A={1,…,14}, R={(x,y): 3x−y=0}. Then y=3x with y≤14 ⇒ (1,3),(2,6),(3,9),(4,12). Domain {1,2,3,4}, range {3,6,9,12}, codomain A.", "prediction": {"prompt": "A={x,y,z}, B={1,2}. Number of relations from A to B is", "options": ["64", "6", "8"], "answer": 0, "explanation": "Ex 2.2.8: n(A×B)=6, so 2⁶=64 subsets, hence 64 relations."}, "connect": [["First letter of a name", "Fig 2.4: P={a,b,c} related to Q of names by ‘x is the first letter of y’. Only some of the 15 pairs survive. That is a relation, not (yet) a function — two names can share a letter."], ["Wow — 2^{pq} is the power set of the grid", "Each of the pq possible arrows may be on or off. That is why Example 9’s 2×2 grid already has 16 relations, most of them unnamed."], ["Class XI roll numbers", "A relation ‘sits in the same row as’ on a seating chart is a subset of (students)×(students). Domain is whoever has a neighbour; isolated seats drop out of the domain.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh102.pdf"}]]], "recall": "Define domain, range, codomain of a relation. How many relations from a 3-set to a 2-set?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Range of a relation R from A to B is always", "options": ["a subset of the codomain B", "equal to A", "equal to A×B"], "answer": 0, "hint": "Definition 4.", "solution": "Range = second slots that actually appear ⊂ B = codomain.", "wrong": ["", "Domain lives in A.", "A×B is the ambient product."]}, {"level": "Medium", "type": "mcq", "map": "Ex 2.2.1", "prompt": "A={1,…,14}, R={(x,y): 3x−y=0}. Range of R is", "options": ["{3,6,9,12}", "{1,2,3,4}", "{1,2,…,14}"], "answer": 0, "hint": "y=3x ≤ 14.", "solution": "Pairs (1,3),(2,6),(3,9),(4,12).", "wrong": ["", "That is the domain.", "That is the codomain."]}, {"level": "Hard", "type": "number", "map": "Ex 2.2.8", "prompt": "Number of relations from {x,y,z} to {1,2}", "answer": 64, "unit": "", "tolerance": 0, "hint": "2^{3·2}.", "solution": "n(A×B)=6, 2⁶=64."}]}, {"id": "functions", "nav": "Functions", "title": "A function: every domain element has exactly one image. Vertical-line test.", "deck": "f: A→B means domain = A and no two pairs share a first slot. Example 7 (y=x+1 on {1..6}) is not a function — 6 has no image.", "minutes": 8, "section": "2.4", "pages": [7, 9], "print": "30–32", "sim": "funmachine", "simTitle": "Function machine / unique-image test", "quick": ["Definition 5: a relation f from A to B is a <strong>function</strong> if every element of A has one and only one image in B. Written f: A → B, f(a)=b. A is the domain, B the codomain; range = {f(a): a∈A} ⊂ B.", "Example 7’s R={(x,y): y=x+1} on {1..6} misses 6 — not a function. Example 8 (x is the square of y) gives two images for 9 — not a function. Example 10: y=2x on N is a function, range = even naturals.", "A <strong>real function</strong> has domain and range inside R (Definition 6). Example 12: f:N→N, f(x)=2x+1 fills the odd numbers 3,5,7,…"], "formulas": [{"label": "Function", "html": "f : A → B, &nbsp; every a ∈ A has exactly one f(a) ∈ B", "cond": "no two pairs share a first element"}, {"label": "Real function", "html": "domain ⊂ R and range ⊂ R", "cond": "Definition 6"}], "deeper": "The vertical-line test on a graph is Definition 5 drawn: a vertical line x=a must hit the graph once. A relation that fails uniqueness (two y’s) or totality (a hole in the intended domain) is not a function. Misc. Ex 1: the piecewise x² on [0,3] and 3x on [3,10] agrees at x=3 (both 9) so it is a function; g that uses x² on [0,2] and 3x on [2,10] disagrees at 2 (4 vs 6) so it is not.", "worked": "Example 11: (i) {(2,1),(3,1),(4,2)} is a function (unique images; 1 may be reused). (ii) {(2,2),(2,4),…} is not — 2 has two images. (iii) the chain (1,2)…(6,7) is a function.", "prediction": {"prompt": "g(x)=x² on 0≤x≤2 and g(x)=3x on 2≤x≤10. Is g a function?", "options": ["No — at x=2 one has 4 and 6 as two images.", "Yes — piecewise definitions are always functions.", "Yes, because both pieces are polynomials."], "answer": 0, "explanation": "Misc. Ex 1 (zoom p.17). The junction x=2 is assigned two values, violating ‘exactly one image’."}, "connect": [["Function machines in a ticket window", "An IRCTC PNR maps each passenger-id to exactly one current status. Two statuses for one PNR would not be a function; an unused status-code sits in the codomain, not the range."], ["Wow — many-one is still a function", "Example 11(i) sends 2 and 3 both to 1. Reusing an image is allowed. Forbidding it would be ‘one-to-one’, a word this chapter does not yet require."], ["Aadhaar as a function", "Resident → 12-digit uid is designed to be a function (exactly one uid). A duplicate uid for one person, or two uids, would break Definition 5.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh102.pdf"}]]], "recall": "State Definition 5 and give one relation that fails totality and one that fails uniqueness.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A relation from A to B is a function if", "options": ["every element of A has exactly one image in B", "every element of B has exactly one preimage", "A×B is finite"], "answer": 0, "hint": "Definition 5.", "solution": "Totality on A plus uniqueness of image.", "wrong": ["", "That would be bijective onto B.", "Finiteness is irrelevant."]}, {"level": "Medium", "type": "mcq", "map": "Ex 2.3.1", "prompt": "{(1,3),(1,5),(2,5)} is", "options": ["not a function, because 1 has two images", "a function with domain {1,2}", "not a relation"], "answer": 0, "hint": "Ex 2.3.1(iii).", "solution": "Two pairs share first slot 1.", "wrong": ["", "Uniqueness fails.", "It is a subset of a product, hence a relation."]}, {"level": "Hard", "type": "mcq", "map": "Misc. Ex 10", "prompt": "A={1,2,3,4}, B={1,5,9,11,15,16}, f={(1,5),(2,9),(3,1),(4,5),(2,11)}. Then", "options": ["f is a relation from A to B but not a function", "f is a function from A to B", "f is not a relation, because 2 appears twice"], "answer": 0, "hint": "Repeating a first slot kills functions, not relations.", "solution": "All pairs live in A×B, so it is a relation; 2 maps to 9 and 11, so not a function.", "wrong": ["", "Uniqueness fails at 2.", "Relations may reuse first slots."]}]}, {"id": "graphs", "nav": "A catalogue of graphs", "title": "Identity, constant, polynomial, rational, |x|, signum, and [x] — seven pictures.", "deck": "§2.4.1: y=x through the origin; y=c horizontal; y=x² a parabola; 1/x a hyperbola missing 0; |x| a V; signum three values; [x] a staircase.", "minutes": 9, "section": "2.4.1", "pages": [9, 13], "print": "32–36", "sim": "catalogue", "simTitle": "Seven real functions (Fig 2.8–2.15)", "quick": ["<strong>Identity</strong> f(x)=x, domain=range=R, line through origin (Fig 2.8). <strong>Constant</strong> f(x)=c, range={c}, horizontal (Fig 2.9).", "<strong>Polynomial</strong> f(x)=a₀+a₁x+…+aₙxⁿ. x³−x²+2 is a polynomial; √x + 2x is not (fractional power). <strong>Rational</strong> f/g with g≠0; 1/x has domain R−{0}=range (Fig 2.12).", "<strong>Modulus</strong> |x| = x for x≥0 and −x for x<0 (Fig 2.13). <strong>Signum</strong> sgn(x) ∈ {−1,0,1} (Fig 2.14). <strong>Greatest integer</strong> [x] = greatest integer ≤ x, a staircase: [x]=n on [n,n+1) (Fig 2.15)."], "formulas": [{"label": "Modulus", "html": "|x| = x (x≥0), &nbsp; −x (x&lt;0)", "cond": "Fig 2.13; domain R, range [0,∞)"}, {"label": "Signum", "html": "sgn(x) = 1 (x&gt;0), 0 (x=0), −1 (x&lt;0)", "cond": "range {−1,0,1}"}, {"label": "Greatest integer", "html": "[x] = n  for n ≤ x &lt; n+1, n∈Z", "cond": "Fig 2.15 staircase"}], "deeper": "h(x)=x^{3/2}+2x is not polynomial because the power 3/2 is not a non-negative integer. Range of x² is [0,∞), not R — the parabola never goes below the x-axis (Example 13). Range of 1/x never includes 0.", "worked": "Ex 2.3.2 (zoom p.15): (i) f(x)=−|x|, domain R, range (−∞,0]. (ii) f(x)=√(9−x²), domain [−3,3] (need 9−x²≥0), range [0,3] (upper semicircle of radius 3).", "prediction": {"prompt": "Domain and range of f(x)=√(9−x²) are", "options": ["[−3,3] and [0,3]", "R and [0,3]", "[−3,3] and R"], "answer": 0, "explanation": "Ex 2.3.2(ii), zoom p.15. 9−x²≥0 ⇔ |x|≤3; the square root is ≥0 and hits 3 at x=0."}, "connect": [["Thermometer as a linear function", "Ex 2.3.4: t(C)=9C/5+32 is the catalogue’s linear function in disguise (remark after Example 18). t(0)=32, t(100)=212 — freezing and boiling on two scales."], ["Wow — [x] is how a railway clock displays hours", "The greatest-integer staircase is ‘how many full hours have elapsed’. At 14:59 we still read 14. Fig 2.15 is that display."], ["Signum in cricket run-rate deltas", "sgn(run-rate − required-rate) is +1, 0 or −1: ahead, level, behind. Range is a 3-element set even though the domain is all of R.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh102.pdf"}]]], "recall": "Sketch |x|, sgn(x) and [x]. State domain and range of √(9−x²).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Range of the signum function is", "options": ["{−1, 0, 1}", "R", "{0,1}"], "answer": 0, "hint": "Fig 2.14.", "solution": "Three horizontal pieces, values −1, 0, 1.", "wrong": ["", "Domain is R.", "Misses the negative piece."]}, {"level": "Medium", "type": "mcq", "map": "Ex 2.3.2", "prompt": "Range of f(x)=−|x| is", "options": ["(−∞, 0]", "[0, ∞)", "R"], "answer": 0, "hint": "Flip the V of |x| below the axis.", "solution": "−|x| ≤ 0 with equality at 0.", "wrong": ["", "That is |x|.", "Positive values are never taken."]}, {"level": "Hard", "type": "mcq", "prompt": "[−1.2] equals", "options": ["−2", "−1", "1"], "answer": 0, "hint": "Greatest integer ≤ −1.2, not ‘drop the decimal’.", "solution": "Integers ≤ −1.2 are −2,−3,…; the greatest is −2. On [−2,−1) the floor is −2.", "wrong": ["", "Truncation toward zero is not [x].", "Sign error."]}]}, {"id": "algebra-fn", "nav": "Algebra of real functions", "title": "(f+g)(x)=f(x)+g(x); (f/g)(x) needs g(x)≠0. Domain is the common domain.", "deck": "§2.4.2: add, subtract, scalar-multiply, multiply, divide real functions on a common X ⊂ R.", "minutes": 8, "section": "2.4.2", "pages": [13, 15], "print": "36–38", "sim": "algebrafn", "simTitle": "f+g, f−g, f/g on a shared domain", "quick": ["On a common domain X ⊂ R: (f+g)(x)=f(x)+g(x), (f−g)(x)=f(x)−g(x), (αf)(x)=α f(x), (fg)(x)=f(x)g(x).", "Quotient (f/g)(x)=f(x)/g(x) for x∈X with g(x)≠0. Example 16–17 style: if f(x)=x+1, g(x)=2x−3 then f+g=3x−2, f−g=−x+4, f/g=(x+1)/(2x−3) with domain R−{3/2}."], "formulas": [{"label": "Sum / difference / product", "html": "(f±g)(x)=f(x)±g(x), &nbsp; (fg)(x)=f(x)g(x)", "cond": "on the common domain X"}, {"label": "Quotient", "html": "(f/g)(x)=f(x)/g(x), &nbsp; g(x)≠0", "cond": "Misc. Ex 7"}], "deeper": "The domain of f+g is Dom(f) ∩ Dom(g). The domain of f/g further deletes zeros of g. A linear function is f(x)=mx+c (remark after Example 18).", "worked": "Misc. Ex 7: f(x)=x+1, g(x)=2x−3. (f+g)(x)=3x−2, (f−g)(x)=−x+4, (f/g)(x)=(x+1)/(2x−3). Misc. Ex 8: f={(1,1),(2,3),(0,−1),(−1,−3)}=ax+b ⇒ b=f(0)=−1, a=2 so f(x)=2x−1.", "prediction": {"prompt": "f(x)=x+1, g(x)=2x−3. Then (f/g)(x) is undefined at", "options": ["x=3/2", "x=−1", "x=0"], "answer": 0, "explanation": "g(3/2)=0. Misc. Ex 7. The numerator zero x=−1 is a root of f, not a domain hole of f/g (it is a zero of the quotient)."}, "connect": [["Two fare rules on the same route", "If f is a base fare and g a surcharge, the payable amount is (f+g)(x) on the common domain of ‘this ticket class’. Division f/g would be a dimensionless ratio, defined only where g≠0."], ["Wow — deleting g=0 is the rational-function lesson again", "1/x was §2.4.1(iv). Algebra of functions is the same hole: never divide by zero, even when the formula looks like a single letter g."], ["Run-rate minus required-rate", "f−g on overs remaining is how a chase is tracked. Domain is the common overs both rates are defined for.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh102.pdf"}]]], "recall": "Write (f+g), (f−g) and f/g for f(x)=x+1, g(x)=2x−3, including the hole at 3/2.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "(f+g)(x) is defined as", "options": ["f(x)+g(x) on the common domain", "f(g(x))", "f(x)+g(x) only when f=g"], "answer": 0, "hint": "§2.4.2(i).", "solution": "Pointwise sum on Dom(f)∩Dom(g).", "wrong": ["", "That is composition, not in this section.", "No such restriction."]}, {"level": "Medium", "type": "number", "map": "Ex 2.3.3", "prompt": "f(x)=2x−5. f(−3) equals", "answer": -11, "unit": "", "tolerance": 0, "hint": "2(−3)−5.", "solution": "−6−5=−11."}, {"level": "Hard", "type": "mcq", "map": "Misc. Ex 8", "prompt": "f={(1,1),(2,3),(0,−1),(−1,−3)} = ax+b. Then (a,b) is", "options": ["(2, −1)", "(1, −1)", "(2, 1)"], "answer": 0, "hint": "f(0)=b; f(1)=a+b=1.", "solution": "b=−1, a=2. Check f(2)=3, f(−1)=−3.", "wrong": ["", "a+b would be 0, not 1.", "b=f(0)=−1."]}]}, {"id": "domain-range", "nav": "Domain, range, miscellaneous", "title": "Domain of a formula is where it makes sense; range is the set of output values.", "deck": "√(x−1) needs x≥1; |x−1| has range [0,∞); x²/(1+x²) has range [0,1). A relation a=b² on N is not reflexive/symmetric/transitive.", "minutes": 9, "section": "Misc.", "pages": [16, 18], "print": "39–41", "sim": "domainlab", "simTitle": "Domain–range lab (√, |·|, x²/(1+x²))", "quick": ["To find a domain: honour square roots (inside ≥0), denominators ≠0, and any stated restriction. Example 21: (x²+2x+1)/(x²−5x+4) has domain R−{1,4}.", "Range needs the possible outputs. f(x)=x²/(1+x²) always lies in [0,1) (Misc. Ex 6). f(x)=√(x−1) has domain [1,∞) and range [0,∞).", "Misc. Ex 9: R={(a,b)∈N×N : a=b²} fails (a,a) for a≠0,1; fails symmetry; fails transitivity. Misc. Ex 12: highest prime factor of {9,10,11,12,13} is the set {3,5,11,13}."], "formulas": [{"label": "Difference quotient (Misc. 2)", "html": "[f(1.1) − f(1)] / (1.1 − 1) = 2.1  for f(x)=x²", "cond": "zoom p.17, stacked 1.1"}, {"label": "Rational domain", "html": "Dom(f/g) = {x : g(x) ≠ 0}", "cond": "factor the denominator"}], "deeper": "Misc. Ex 2 is a numerical derivative: (1.21−1)/0.1=2.1, which is close to (x²)'=2x at x=1. The chapter never says ‘derivative’ — it only asks the arithmetic of the difference quotient.", "worked": "Misc. Ex 3: f(x)=(x²+2x+1)/(x²−8x+12)=(x+1)²/((x−6)(x−2)), domain R−{2,6}. Misc. Ex 11: f={(ab, a+b): a,b∈Z} is not a function (6=2·3=1·6 gives sums 5 and 7).", "prediction": {"prompt": "f(x)=x². [f(1.1)−f(1)]/(1.1−1) equals", "options": ["2.1", "2", "1.1"], "answer": 0, "explanation": "Misc. Ex 2, zoom p.17. (1.21−1)/0.1=2.1. Independently: 1.1²=1.21."}, "connect": [["√(x−1) as ‘age since last birthday ≥0’", "The expression is silent below 1, just as a square-root age formula would refuse a negative radicand. Domain is a health-check on the formula, not a moral rule."], ["Wow — x²/(1+x²) never reaches 1", "Misc. Ex 6: divide num and den by x² for large x and watch the value approach 1 from below. 1 is a horizontal asymptote, not a range point."], ["Highest prime factor of a PIN", "Misc. Ex 12 is a function A→N. 12→3, 10→5, 11→11, 13→13. Range {3,5,11,13} — 2 is a prime but never the highest prime factor of these five numbers.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh102.pdf"}]]], "recall": "Compute the Misc. Ex 2 difference quotient and state domain/range of √(x−1) and |x−1|.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Domain of f(x)=√(x−1) is", "options": ["[1, ∞)", "R", "(1, ∞)"], "answer": 0, "hint": "Misc. Ex 4; radicand ≥0, and 0 is allowed.", "solution": "x−1≥0 ⇔ x≥1. √0=0 is fine.", "wrong": ["", "Negatives make the square root non-real here.", "x=1 is included."]}, {"level": "Medium", "type": "number", "map": "Misc. Ex 2", "prompt": "f(x)=x². [f(1.1)−f(1)]/(1.1−1) =", "answer": 2.1, "unit": "", "tolerance": 0.001, "hint": "1.1²=1.21.", "solution": "(1.21−1)/0.1=2.1."}, {"level": "Hard", "type": "mcq", "map": "Misc. Ex 12", "prompt": "A={9,10,11,12,13}, f(n)=highest prime factor of n. Range of f is", "options": ["{3,5,11,13}", "{2,3,5,11,13}", "{9,10,11,12,13}"], "answer": 0, "hint": "9=3², 10=2·5, 12=2²·3.", "solution": "Highest primes: 3,5,11,3,13. 2 is a factor of 10 and 12 but not the highest.", "wrong": ["", "2 is a factor, not the highest.", "Those are domain points."]}]}], "exercises": [{"number": "2.1.1", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "If (x/3 + 1, y − 2/3) = (5/3, 1/3), find the values of x and y.", "steps": ["Equate corresponding slots (Definition of equal ordered pairs).", "x/3 + 1 = 5/3 ⇒ x/3 = 2/3 ⇒ x=2.", "y − 2/3 = 1/3 ⇒ y=1.", "Stacked fractions verified on zoom p.4."], "answer": "x = 2, y = 1", "section": "2.1"}, {"number": "2.1.2", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "If the set A has 3 elements and the set B = {3, 4, 5}, then find the number of elements in (A×B).", "steps": ["n(B)=3, n(A×B)=3×3=9."], "answer": "9", "section": "2.1"}, {"number": "2.1.3", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "If G={7,8} and H={5,4,2}, find G×H and H×G.", "steps": ["6 pairs each, order swapped."], "answer": "G×H={(7,5),(7,4),(7,2),(8,5),(8,4),(8,2)}\nH×G={(5,7),(5,8),(4,7),(4,8),(2,7),(2,8)}\nG×H ≠ H×G.", "section": "2.1"}, {"number": "2.1.4", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "State whether each of the following statements are true or false. If the statement is false, rewrite the given statement correctly.\n(i) If P={m,n} and Q={n,m}, then P×Q={(m,n),(n,m)}.\n(ii) If A and B are non-empty sets, then A×B is a non-empty set of ordered pairs (x,y) such that x∈A and y∈B.\n(iii) If A={1,2}, B={3,4}, then A×(B ∩ φ)=φ.", "steps": ["(i) P=Q={m,n} so P×Q has 4 pairs, not 2. Correct: {(m,m),(m,n),(n,m),(n,n)}.", "(ii) True (Definition 1).", "(iii) B ∩ φ=φ so A×φ=φ. True."], "answer": "(i) F; P×Q={(m,m),(m,n),(n,m),(n,n)}. (ii) T. (iii) T.", "section": "2.1"}, {"number": "2.1.5", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "If A={−1,1}, find A×A×A.", "steps": ["2³=8 ordered triples."], "answer": "{(−1,−1,−1),(−1,−1,1),(−1,1,−1),(−1,1,1),(1,−1,−1),(1,−1,1),(1,1,−1),(1,1,1)}", "section": "2.1"}, {"number": "2.1.6", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "If A×B={(a,x),(a,y),(b,x),(b,y)}. Find A and B.", "steps": ["First slots {a,b}, second slots {x,y}."], "answer": "A={a,b}, B={x,y}", "section": "2.1"}, {"number": "2.1.7", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "Let A={1,2}, B={1,2,3,4}, C={5,6} and D={5,6,7,8}. Verify that\n(i) A×(B ∩ C)=(A×B) ∩ (A×C). (ii) A×C is a subset of B×D.", "steps": ["B ∩ C=φ, so both sides of (i) are φ.", "A×C={(1,5),(1,6),(2,5),(2,6)} ⊂ B×D because 1,2∈B and 5,6∈D."], "answer": "(i) both φ. (ii) yes, A×C ⊂ B×D.", "section": "2.1"}, {"number": "2.1.8", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "Let A={1,2} and B={3,4}. Write A×B. How many subsets will A×B have? List them.", "steps": ["4 pairs, 2⁴=16 subsets."], "answer": "A×B={(1,3),(1,4),(2,3),(2,4)}. 16 subsets: φ; four singletons; six doubletons {(1,3),(1,4)}, {(1,3),(2,3)}, {(1,3),(2,4)}, {(1,4),(2,3)}, {(1,4),(2,4)}, {(2,3),(2,4)}; four tripletons; and A×B itself.", "section": "2.1"}, {"number": "2.1.9", "conceptIdx": 0, "page": 4, "printPage": 27, "question": "Let A and B be two sets such that n(A)=3 and n(B)=2. If (x,1), (y,2), (z,1) are in A×B, find A and B, where x, y and z are distinct elements.", "steps": ["Second slots 1,2 are all of B (n(B)=2). First slots x,y,z are all of A (n(A)=3, distinct)."], "answer": "A={x,y,z}, B={1,2}", "section": "2.1"}, {"number": "2.1.10", "conceptIdx": 0, "page": 5, "printPage": 28, "question": "The Cartesian product A×A has 9 elements among which are found (−1,0) and (0,1). Find the set A and the remaining elements of A×A.", "steps": ["n(A)²=9 ⇒ n(A)=3. −1,0,1 must all lie in A. Remaining 7 pairs of {−1,0,1}²."], "answer": "A={−1,0,1}. Remaining elements: (−1,−1),(−1,1),(0,−1),(0,0),(1,−1),(1,0),(1,1).", "section": "2.1"}, {"number": "2.2.1", "conceptIdx": 1, "page": 6, "printPage": 29, "question": "Let A={1,2,3,…,14}. Define a relation R from A to A by R={(x,y): 3x−y=0, where x,y∈A}. Write down its domain, codomain and range.", "steps": ["y=3x ∈ A ⇒ x=1,2,3,4. R={(1,3),(2,6),(3,9),(4,12)}."], "answer": "Domain={1,2,3,4}, codomain=A={1,…,14}, range={3,6,9,12}.", "section": "2.2"}, {"number": "2.2.2", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "Define a relation R on the set N of natural numbers by R={(x,y): y=x+5, x is a natural number less than 4; x,y∈N}. Depict this relationship using roster form. Write down the domain and the range.", "steps": ["x=1,2,3 ⇒ y=6,7,8."], "answer": "R={(1,6),(2,7),(3,8)}. Domain={1,2,3}, range={6,7,8}.", "section": "2.2"}, {"number": "2.2.3", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "A={1,2,3,5} and B={4,6,9}. Define a relation R from A to B by R={(x,y): the difference between x and y is odd; x∈A, y∈B}. Write R in roster form.", "steps": ["x−y odd ⇔ x and y have opposite parity. A: 1,3,5 odd; 2 even. B: 4,6 even; 9 odd. So odd x with even y, and 2 with 9."], "answer": "R={(1,4),(1,6),(3,4),(3,6),(5,4),(5,6),(2,9)}", "section": "2.2"}, {"number": "2.2.4", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "The Fig 2.7 shows a relationship between the sets P and Q. Write this relation (i) in set-builder form (ii) roster form. What is its domain and range?", "steps": ["Zoom p.7: P={5,6,7} arrows to Q={3,4,5} as 5→3, 6→4, 7→5, i.e. y=x−2."], "answer": "(i) {(x,y): y=x−2, x∈P, y∈Q}\n(ii) {(5,3),(6,4),(7,5)}\nDomain={5,6,7}, range={3,4,5}.", "section": "2.2"}, {"number": "2.2.5", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "Let A={1,2,3,4,6}. Let R be the relation on A defined by {(a,b): a,b∈A, b is exactly divisible by a}.\n(i) Write R in roster form (ii) Find the domain of R (iii) Find the range of R.", "steps": ["List pairs where a|b inside A."], "answer": "(i) {(1,1),(1,2),(1,3),(1,4),(1,6),(2,2),(2,4),(2,6),(3,3),(3,6),(4,4),(6,6)}\n(ii) domain={1,2,3,4,6}=A\n(iii) range={1,2,3,4,6}=A", "section": "2.2"}, {"number": "2.2.6", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "Determine the domain and range of the relation R defined by R={(x, x+5): x∈{0,1,2,3,4,5}}.", "steps": ["Six pairs (0,5)…(5,10)."], "answer": "Domain={0,1,2,3,4,5}, range={5,6,7,8,9,10}.", "section": "2.2"}, {"number": "2.2.7", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "Write the relation R={(x, x³): x is a prime number less than 10} in roster form.", "steps": ["Primes <10: 2,3,5,7. Cubes 8,27,125,343."], "answer": "R={(2,8),(3,27),(5,125),(7,343)}", "section": "2.2"}, {"number": "2.2.8", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "Let A={x,y,z} and B={1,2}. Find the number of relations from A to B.", "steps": ["n(A×B)=6, 2⁶=64."], "answer": "64", "section": "2.2"}, {"number": "2.2.9", "conceptIdx": 1, "page": 7, "printPage": 30, "question": "Let R be the relation on Z defined by R={(a,b): a,b∈Z, a−b is an integer}. Find the domain and range of R.", "steps": ["a−b ∈ Z for every a,b∈Z, so R=Z×Z."], "answer": "Domain = Z, range = Z.", "section": "2.2"}, {"number": "2.3.1", "conceptIdx": 2, "page": 15, "printPage": 38, "question": "Which of the following relations are functions? Give reasons. If it is a function, determine its domain and range.\n(i) {(2,1),(5,1),(8,1),(11,1),(14,1),(17,1)}\n(ii) {(2,1),(4,2),(6,3),(8,4),(10,5),(12,6),(14,7)}\n(iii) {(1,3),(1,5),(2,5)}", "steps": ["(i) unique images, constant 1. (ii) unique images. (iii) 1 maps to 3 and 5."], "answer": "(i) Function; domain={2,5,8,11,14,17}, range={1}.\n(ii) Function; domain={2,4,6,8,10,12,14}, range={1,2,3,4,5,6,7}.\n(iii) Not a function.", "section": "2.3"}, {"number": "2.3.2", "conceptIdx": 3, "page": 15, "printPage": 38, "question": "Find the domain and range of the following real functions:\n(i) f(x)=−|x|\n(ii) f(x)=√(9−x²).", "steps": ["(i) |x| defined on R; −|x|≤0. (ii) 9−x²≥0 ⇒ x∈[−3,3]; square root ∈[0,3]. Zoom p.15."], "answer": "(i) Domain R, range (−∞,0].\n(ii) Domain [−3,3], range [0,3].", "section": "2.3"}, {"number": "2.3.3", "conceptIdx": 4, "page": 15, "printPage": 38, "question": "A function f is defined by f(x)=2x−5. Write down the values of (i) f(0), (ii) f(7), (iii) f(−3).", "steps": ["Substitute."], "answer": "(i) −5  (ii) 9  (iii) −11", "section": "2.3"}, {"number": "2.3.4", "conceptIdx": 4, "page": 15, "printPage": 38, "question": "The function ‘t’ which maps temperature in degree Celsius into temperature in degree Fahrenheit is defined by t(C)=(9C)/5 + 32.\nFind (i) t(0) (ii) t(28) (iii) t(−10) (iv) The value of C, when t(C)=212.", "steps": ["(i) 32. (ii) 9·28/5+32=252/5+32=50.4+32=82.4. (iii) 9(−10)/5+32=−18+32=14. (iv) 9C/5+32=212 ⇒ 9C/5=180 ⇒ C=100."], "answer": "(i) 32  (ii) 82.4  (iii) 14  (iv) C=100", "section": "2.3"}, {"number": "2.3.5", "conceptIdx": 3, "page": 15, "printPage": 38, "question": "Find the range of each of the following functions.\n(i) f(x)=2−3x, x∈R, x>0.\n(ii) f(x)=x²+2, x is a real number.\n(iii) f(x)=x, x is a real number.", "steps": ["(i) x>0 ⇒ −3x<0 ⇒ f<2, and f→−∞ as x→∞, so (−∞,2).", "(ii) x²+2≥2, range [2,∞).", "(iii) identity, range R."], "answer": "(i) (−∞, 2)  (ii) [2, ∞)  (iii) R", "section": "2.3"}, {"number": "2.Misc.1", "conceptIdx": 2, "page": 17, "printPage": 40, "question": "The relation f is defined by f(x)=x² for 0≤x≤3 and f(x)=3x for 3≤x≤10.\nThe relation g is defined by g(x)=x² for 0≤x≤2 and g(x)=3x for 2≤x≤10.\nShow that f is a function and g is not a function.", "steps": ["At x=3: 3²=9 and 3·3=9, so f is well-defined (unique image).", "At x=2: 2²=4 but 3·2=6, two images, so g is not a function.", "Zoom p.17 piecewise braces."], "answer": "f is a function (agrees at x=3). g is not (4≠6 at x=2).", "section": "Misc."}, {"number": "2.Misc.2", "conceptIdx": 5, "page": 17, "printPage": 40, "question": "If f(x)=x², find [f(1.1)−f(1)]/(1.1−1).", "steps": ["f(1.1)=1.21, f(1)=1, denominator 0.1. (1.21−1)/0.1=2.1. Zoom p.17 stacked 1.1."], "answer": "2.1", "section": "Misc."}, {"number": "2.Misc.3", "conceptIdx": 5, "page": 17, "printPage": 40, "question": "Find the domain of the function f(x)=(x²+2x+1)/(x²−8x+12).", "steps": ["Denominator (x−6)(x−2)=0 at x=2,6. Numerator (x+1)² never cancels those."], "answer": "R − {2, 6}", "section": "Misc."}, {"number": "2.Misc.4", "conceptIdx": 5, "page": 17, "printPage": 40, "question": "Find the domain and the range of the real function f defined by f(x)=√(x−1).", "steps": ["x−1≥0 ⇒ domain [1,∞). Square root ≥0, and every y≥0 is √((y²+1)−1), so range [0,∞)."], "answer": "Domain [1, ∞), range [0, ∞).", "section": "Misc."}, {"number": "2.Misc.5", "conceptIdx": 5, "page": 17, "printPage": 40, "question": "Find the domain and the range of the real function f defined by f(x)=|x−1|.", "steps": ["Absolute value defined on all R. |x−1|≥0, hits 0 at x=1, so range [0,∞)."], "answer": "Domain R, range [0, ∞).", "section": "Misc."}, {"number": "2.Misc.6", "conceptIdx": 5, "page": 17, "printPage": 40, "question": "Let f={(x, x²/(1+x²)): x∈R} be a function from R into R. Determine the range of f.", "steps": ["0 ≤ x²/(1+x²) < 1 for all real x (equal 0 only at 0; approaches 1 but never reaches it)."], "answer": "[0, 1)", "section": "Misc."}, {"number": "2.Misc.7", "conceptIdx": 4, "page": 17, "printPage": 40, "question": "Let f, g : R→R be defined, respectively by f(x)=x+1, g(x)=2x−3. Find f+g, f−g and f/g.", "steps": ["Pointwise. f/g undefined at g=0 i.e. x=3/2."], "answer": "(f+g)(x)=3x−2, (f−g)(x)=−x+4, (f/g)(x)=(x+1)/(2x−3) (x≠3/2).", "section": "Misc."}, {"number": "2.Misc.8", "conceptIdx": 4, "page": 17, "printPage": 40, "question": "Let f={(1,1),(2,3),(0,−1),(−1,−3)} be a function from Z to Z defined by f(x)=ax+b, for some integers a, b. Determine a, b.", "steps": ["f(0)=b=−1. f(1)=a−1=1 ⇒ a=2. Checks: f(2)=3, f(−1)=−3."], "answer": "a=2, b=−1", "section": "Misc."}, {"number": "2.Misc.9", "conceptIdx": 1, "page": 17, "printPage": 40, "question": "Let R be a relation from N to N defined by R={(a,b): a,b∈N and a=b²}. Are the following true?\n(i) (a,a)∈R, for all a∈N\n(ii) (a,b)∈R implies (b,a)∈R\n(iii) (a,b)∈R, (b,c)∈R implies (a,c)∈R.\nJustify your answer in each case.", "steps": ["(i) a=a² ⇒ a=1 (in N); fails for 2. (ii) a=b² and b=a² force a=b=1; (4,2)∈R but (2,4)∉R. (iii) a=b², b=c² ⇒ a=c⁴, not c² in general (c=2: b=4, a=16 ≠ 4)."], "answer": "(i) F  (ii) F  (iii) F", "section": "Misc."}, {"number": "2.Misc.10", "conceptIdx": 2, "page": 17, "printPage": 40, "question": "Let A={1,2,3,4}, B={1,5,9,11,15,16} and f={(1,5),(2,9),(3,1),(4,5),(2,11)}.\nAre the following true?\n(i) f is a relation from A to B\n(ii) f is a function from A to B.\nJustify your answer in each case.", "steps": ["All pairs in A×B, so (i) yes. 2 maps to 9 and 11, so (ii) no."], "answer": "(i) True (f ⊂ A×B). (ii) False (2 has two images).", "section": "Misc."}, {"number": "2.Misc.11", "conceptIdx": 2, "page": 18, "printPage": 41, "question": "Let f be the subset of Z×Z defined by f={(ab, a+b): a,b∈Z}. Is f a function from Z to Z? Justify your answer.", "steps": ["Same first slot, two second slots: ab=6 as 2·3 and 1·6 give sums 5 and 7."], "answer": "No. (2,3) and (1,6) give first component 6 with images 5 and 7.", "section": "Misc."}, {"number": "2.Misc.12", "conceptIdx": 5, "page": 18, "printPage": 41, "question": "Let A={9,10,11,12,13} and let f:A→N be defined by f(n)= the highest prime factor of n. Find the range of f.", "steps": ["9=3² →3; 10=2·5 →5; 11→11; 12=2²·3 →3; 13→13."], "answer": "{3, 5, 11, 13}", "section": "Misc."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var connectItems = l.connect || [];
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.cartesian = (function(){
+  var mode = "colour";
+  function mount(){
+    App.state.maxT = 6; var s=document.getElementById("time-scrubber"); if(s) s.max=6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>First slot</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Second slot</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-c">Colours × objects (Fig 2.1)</button>' +
+      '<button class="preset-btn" id="p-p">DL/MP/KA plates (Fig 2.2)</button>' +
+      '<button class="preset-btn" id="p-r">R × R plane</button>';
+    document.getElementById("p-c").onclick=function(){setActivePreset(this);mode="colour";App.resetTimeline();};
+    document.getElementById("p-p").onclick=function(){setActivePreset(this);mode="plate";App.resetTimeline();};
+    document.getElementById("p-r").onclick=function(){setActivePreset(this);mode="plane";App.resetTimeline();};
+    document.getElementById("lab-controls").innerHTML="";
+    draw(0);
+  }
+  function draw(t){
+    var svg=svgEl(); if(!svg) return;
+    var m='<rect width="720" height="300" fill="#09131d"/>';
+    var rows, cols, n;
+    if(mode==="colour"){ rows=["red","blue"]; cols=["b","c","s"]; n=6; }
+    else if(mode==="plate"){ rows=["DL","MP","KA"]; cols=["01","02","03"]; n=9; }
+    else { rows=["−1","0","1"]; cols=["−1","0","1"]; n=9; }
+    var k=0, lit=Math.min(n-1, Math.floor(((t||0)/6)*n));
+    for(var i=0;i<rows.length;i++){
+      for(var j=0;j<cols.length;j++){
+        var x=80+j*120, y=70+i*70;
+        var on = k===lit;
+        m += '<rect x="'+x+'" y="'+y+'" width="100" height="50" rx="8" fill="'+(on?"#38bdf844":"#0f2744")+'" stroke="'+(on?"#34d399":"#334155")+'" stroke-width="2"/>';
+        m += '<text x="'+(x+50)+'" y="'+(y+30)+'" fill="#f8fafc" font-size="13" text-anchor="middle">('+rows[i]+', '+cols[j]+')</text>';
+        k++;
+      }
+    }
+    m += '<text x="360" y="36" fill="#94a3b8" font-size="14" text-anchor="middle">n(A×B) = '+n+' · play to walk the grid</text>';
+    svg.innerHTML=m;
+    readout(cell("n(A×B)", String(n), "#34d399") + cell("Highlighted", "("+rows[Math.floor(lit/cols.length)]+", "+cols[lit%cols.length]+")"));
+    verdict("<b>Definition 1:</b> order matters. (DL,01) is not (01,DL). Empty factor ⇒ empty product.");
+  }
+  return {mount:mount,draw:draw};
+})();
+
+window.SIMS.arrows = (function(){
+  var mode = "fig27";
+  function mount(){
+    App.state.maxT=6; var s=document.getElementById("time-scrubber"); if(s) s.max=6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Domain P</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Codomain Q</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-27">Fig 2.7  y=x−2</button>' +
+      '<button class="preset-btn" id="p-3x">Ex 2.2.1  y=3x</button>' +
+      '<button class="preset-btn" id="p-all">All 6 arrows (2⁶=64)</button>';
+    document.getElementById("p-27").onclick=function(){setActivePreset(this);mode="fig27";App.resetTimeline();};
+    document.getElementById("p-3x").onclick=function(){setActivePreset(this);mode="threex";App.resetTimeline();};
+    document.getElementById("p-all").onclick=function(){setActivePreset(this);mode="all";App.resetTimeline();};
+    document.getElementById("lab-controls").innerHTML="";
+    draw(0);
+  }
+  function draw(t){
+    var svg=svgEl(); if(!svg) return;
+    var m='<rect width="720" height="300" fill="#09131d"/>';
+    function oval(x,y,label,col){
+      return '<circle cx="'+x+'" cy="'+y+'" r="16" fill="'+col+'"/><text x="'+x+'" y="'+(y+5)+'" fill="#0b1220" font-size="12" text-anchor="middle">'+label+'</text>';
+    }
+    if(mode==="fig27"){
+      var P=[5,6,7], Q=[3,4,5];
+      P.forEach(function(v,i){ m+=oval(180,70+i*70,v,"#38bdf8"); });
+      Q.forEach(function(v,i){ m+=oval(540,70+i*70,v,"#f59e0b"); });
+      var pairs=[[0,0],[1,1],[2,2]];
+      var show=Math.min(3, 1+Math.floor((t||0)/2));
+      for(var k=0;k<show;k++){
+        var a=pairs[k];
+        m += '<line x1="196" y1="'+(70+a[0]*70)+'" x2="524" y2="'+(70+a[1]*70)+'" stroke="#34d399" stroke-width="2" marker-end="url(#arr)"/>';
+      }
+      m += '<text x="360" y="36" fill="#94a3b8" font-size="14" text-anchor="middle">Fig 2.7 · R={(5,3),(6,4),(7,5)}</text>';
+      readout(cell("Domain","{5,6,7}") + cell("Range","{3,4,5}") + cell("Rule","y = x − 2"));
+      verdict("<b>Ex 2.2.4:</b> set-builder {(x,y): y=x−2, x∈P, y∈Q}. Codomain Q equals the range in this picture.");
+    } else if(mode==="threex"){
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">A={1,…,14}, y=3x ≤ 14</text>';
+      [[1,3],[2,6],[3,9],[4,12]].forEach(function(p,i){
+        m += oval(160,55+i*55,p[0],"#38bdf8") + oval(560,55+i*55,p[1],"#f59e0b");
+        m += '<line x1="176" y1="'+(55+i*55)+'" x2="544" y2="'+(55+i*55)+'" stroke="#34d399" stroke-width="2"/>';
+      });
+      readout(cell("Domain","{1,2,3,4}") + cell("Range","{3,6,9,12}") + cell("Codomain","{1,…,14}"));
+      verdict("<b>Ex 2.2.1:</b> unused numbers 5,7,8,… stay in the codomain, not the range.");
+    } else {
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">A={x,y,z} → B={1,2} · 6 possible arrows · 2⁶=64 relations</text>';
+      ["x","y","z"].forEach(function(v,i){ m+=oval(200,80+i*70,v,"#38bdf8"); });
+      ["1","2"].forEach(function(v,i){ m+=oval(520,100+i*80,v,"#f59e0b"); });
+      var bit=Math.floor((t||0)*2) % 64;
+      var idx=0;
+      for(var i=0;i<3;i++) for(var j=0;j<2;j++){
+        if(bit & (1<<idx)){
+          m += '<line x1="216" y1="'+(80+i*70)+'" x2="504" y2="'+(100+j*80)+'" stroke="#34d399" stroke-width="2"/>';
+        }
+        idx++;
+      }
+      readout(cell("Subset mask", "0b"+bit.toString(2).padStart(6,"0")) + cell("Relations", "64"));
+      verdict("<b>Ex 2.2.8 / Example 9:</b> each of the 6 grid-cells is an independent yes/no. Play to cycle masks.");
+    }
+    svg.innerHTML=m;
+  }
+  return {mount:mount,draw:draw};
+})();
+
+window.SIMS.funmachine = (function(){
+  var mode="ok";
+  function mount(){
+    App.state.maxT=6; var s=document.getElementById("time-scrubber"); if(s) s.max=6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Unique image (function)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Violation</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ok">Function (Ex 2.3.1 i)</button>' +
+      '<button class="preset-btn" id="p-two">Two images (Ex 2.3.1 iii)</button>' +
+      '<button class="preset-btn" id="p-miss">Missing image (Example 7)</button>';
+    document.getElementById("p-ok").onclick=function(){setActivePreset(this);mode="ok";App.resetTimeline();};
+    document.getElementById("p-two").onclick=function(){setActivePreset(this);mode="two";App.resetTimeline();};
+    document.getElementById("p-miss").onclick=function(){setActivePreset(this);mode="miss";App.resetTimeline();};
+    document.getElementById("lab-controls").innerHTML="";
+    draw(0);
+  }
+  function draw(){
+    var svg=svgEl(); if(!svg) return;
+    var m='<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="260" y="90" width="200" height="120" rx="12" fill="#0f2744" stroke="#38bdf8"/>';
+    m += '<text x="360" y="155" fill="#f8fafc" font-size="16" text-anchor="middle">f machine</text>';
+    if(mode==="ok"){
+      m += '<text x="120" y="150" fill="#38bdf8" font-size="14">2,5,8,11,14,17</text>';
+      m += '<text x="560" y="150" fill="#34d399" font-size="18">all → 1</text>';
+      readout(cell("Test","PASS","#34d399")+cell("Domain","6 points")+cell("Range","{1}"));
+      verdict("<b>Ex 2.3.1(i):</b> every input has exactly one output (here the constant 1). Reusing 1 is allowed.");
+    } else if(mode==="two"){
+      m += '<text x="120" y="150" fill="#38bdf8">1 , 2</text>';
+      m += '<text x="560" y="120" fill="#f87171">1 → 3</text>';
+      m += '<text x="560" y="180" fill="#f87171">1 → 5</text>';
+      readout(cell("Test","FAIL","#f87171")+cell("Reason","1 has two images"));
+      verdict("<b>Ex 2.3.1(iii) / Definition 5:</b> two pairs share a first slot. Not a function.");
+    } else {
+      m += '<text x="100" y="150" fill="#38bdf8">1,2,3,4,5, <tspan fill="#f87171">6</tspan></text>';
+      m += '<text x="560" y="150" fill="#f8fafc">y = x+1</text>';
+      m += '<text x="360" y="250" fill="#f87171" font-size="14" text-anchor="middle">6 has no image inside {1,…,6}</text>';
+      readout(cell("Test","FAIL","#f87171")+cell("Reason","totality fails at 6"));
+      verdict("<b>Example 7:</b> R={(x,y): y=x+1} on {1..6} is a relation, not a function — 6 is unemployed.");
+    }
+    svg.innerHTML=m;
+  }
+  return {mount:mount,draw:draw};
+})();
+
+window.SIMS.catalogue = (function(){
+  var mode="abs";
+  function mount(){
+    App.state.maxT=6; var s=document.getElementById("time-scrubber"); if(s) s.max=6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = f(x)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-abs">|x| Fig 2.13</button>' +
+      '<button class="preset-btn" id="p-sgn">signum Fig 2.14</button>' +
+      '<button class="preset-btn" id="p-fl">[x] Fig 2.15</button>' +
+      '<button class="preset-btn" id="p-circ">√(9−x²) Ex 2.3.2</button>';
+    document.getElementById("p-abs").onclick=function(){setActivePreset(this);mode="abs";App.resetTimeline();App.play();};
+    document.getElementById("p-sgn").onclick=function(){setActivePreset(this);mode="sgn";App.resetTimeline();App.play();};
+    document.getElementById("p-fl").onclick=function(){setActivePreset(this);mode="fl";App.resetTimeline();App.play();};
+    document.getElementById("p-circ").onclick=function(){setActivePreset(this);mode="circ";App.resetTimeline();App.play();};
+    document.getElementById("lab-controls").innerHTML="";
+    draw(0);
+  }
+  function X(x){ return 360 + x*40; }
+  function Y(y){ return 160 - y*28; }
+  function draw(t){
+    var svg=svgEl(); if(!svg) return;
+    var x = -4 + ((t||0)/6)*8;
+    var m='<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="160" x2="680" y2="160" stroke="#334155"/><line x1="360" y1="20" x2="360" y2="280" stroke="#334155"/>';
+    var d="", yv=0, note="";
+    if(mode==="abs"){
+      for(var u=-5;u<=5.05;u+=0.1){ d += (u===-5?"M":"L")+" "+X(u)+" "+Y(Math.abs(u)); }
+      yv=Math.abs(x); note="Fig 2.13: V-shape. Domain R, range [0,∞).";
+    } else if(mode==="sgn"){
+      m += '<line x1="'+X(-5)+'" y1="'+Y(-1)+'" x2="'+X(0)+'" y2="'+Y(-1)+'" stroke="#38bdf8" stroke-width="3"/>';
+      m += '<line x1="'+X(0)+'" y1="'+Y(1)+'" x2="'+X(5)+'" y2="'+Y(1)+'" stroke="#38bdf8" stroke-width="3"/>';
+      m += '<circle cx="'+X(0)+'" cy="'+Y(0)+'" r="5" fill="#f8fafc"/>';
+      yv = x>0?1:(x<0?-1:0); note="Fig 2.14: range {−1,0,1}.";
+    } else if(mode==="fl"){
+      for(var n=-4;n<=3;n++){
+        m += '<line x1="'+X(n)+'" y1="'+Y(n)+'" x2="'+X(n+1)+'" y2="'+Y(n)+'" stroke="#38bdf8" stroke-width="3"/>';
+        m += '<circle cx="'+X(n)+'" cy="'+Y(n)+'" r="4" fill="#38bdf8"/>';
+        m += '<circle cx="'+X(n+1)+'" cy="'+Y(n)+'" r="4" fill="#09131d" stroke="#38bdf8"/>';
+      }
+      yv=Math.floor(x); note="Fig 2.15: [x]=n on [n, n+1). Open on the right.";
+    } else {
+      for(var a=-3;a<=3.02;a+=0.05){ var yy=Math.sqrt(Math.max(0,9-a*a)); d += (a===-3?"M":"L")+" "+X(a)+" "+Y(yy); }
+      yv = Math.abs(x)<=3 ? Math.sqrt(9-x*x) : NaN;
+      note="Ex 2.3.2(ii): upper semicircle radius 3. Domain [−3,3], range [0,3].";
+    }
+    if(d) m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2.5"/>';
+    if(!isNaN(yv)) m += '<circle cx="'+X(x)+'" cy="'+Y(yv)+'" r="6" fill="#f8fafc"/>';
+    svg.innerHTML=m;
+    readout(cell("x", x.toFixed(2)) + cell("f(x)", isNaN(yv)?"undefined":yv.toFixed(2), "#34d399"));
+    verdict("<b>Catalogue:</b> "+note);
+  }
+  return {mount:mount,draw:draw};
+})();
+
+window.SIMS.algebrafn = (function(){
+  var mode="sum";
+  function f(x){ return x+1; }
+  function g(x){ return 2*x-3; }
+  function mount(){
+    App.state.maxT=6; var s=document.getElementById("time-scrubber"); if(s) s.max=6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>f(x)=x+1</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>g(x)=2x−3</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>combination</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-s">f + g = 3x−2</button>' +
+      '<button class="preset-btn" id="p-d">f − g = −x+4</button>' +
+      '<button class="preset-btn" id="p-q">f / g  hole at 3/2</button>';
+    document.getElementById("p-s").onclick=function(){setActivePreset(this);mode="sum";App.resetTimeline();App.play();};
+    document.getElementById("p-d").onclick=function(){setActivePreset(this);mode="diff";App.resetTimeline();App.play();};
+    document.getElementById("p-q").onclick=function(){setActivePreset(this);mode="quot";App.resetTimeline();App.play();};
+    document.getElementById("lab-controls").innerHTML="";
+    draw(0);
+  }
+  function X(x){ return 360 + x*50; }
+  function Y(y){ return 160 - y*18; }
+  function draw(t){
+    var svg=svgEl(); if(!svg) return;
+    var x=-3+((t||0)/6)*6;
+    var m='<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="160" x2="680" y2="160" stroke="#334155"/><line x1="360" y1="20" x2="360" y2="280" stroke="#334155"/>';
+    function path(fn, col){
+      var d="";
+      for(var u=-4;u<=4.05;u+=0.1){
+        var yu=fn(u);
+        if(mode==="quot" && Math.abs(2*u-3)<0.08){ d+="M "+X(u+0.12)+" "+Y(fn(u+0.12)); continue; }
+        if(Math.abs(yu)>8) continue;
+        d += (d===""?"M":"L")+" "+X(u)+" "+Y(yu);
+      }
+      return '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2"/>';
+    }
+    m += path(f,"#38bdf8") + path(g,"#f59e0b");
+    var comb = mode==="sum" ? function(u){return f(u)+g(u);} : mode==="diff" ? function(u){return f(u)-g(u);} : function(u){return f(u)/g(u);};
+    m += path(comb,"#34d399");
+    if(!(mode==="quot" && Math.abs(g(x))<1e-6)) m += '<circle cx="'+X(x)+'" cy="'+Y(comb(x))+'" r="5" fill="#f8fafc"/>';
+    if(mode==="quot") m += '<line x1="'+X(1.5)+'" y1="20" x2="'+X(1.5)+'" y2="280" stroke="#f87171" stroke-dasharray="4 4"/>';
+    svg.innerHTML=m;
+    var val = (mode==="quot" && Math.abs(g(x))<1e-6) ? "undefined" : comb(x).toFixed(2);
+    readout(cell("x", x.toFixed(2)) + cell("f", f(x).toFixed(2)) + cell("g", g(x).toFixed(2)) + cell("combo", val, "#34d399"));
+    verdict("<b>Misc. Ex 7 / §2.4.2:</b> pointwise algebra. The red dashed line is x=3/2 where g vanishes.");
+  }
+  return {mount:mount,draw:draw};
+})();
+
+window.SIMS.domainlab = (function(){
+  var mode="sqrt";
+  function mount(){
+    App.state.maxT=6; var s=document.getElementById("time-scrubber"); if(s) s.max=6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>graph</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>outside domain</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-sq">√(x−1)</button>' +
+      '<button class="preset-btn" id="p-ab">|x−1|</button>' +
+      '<button class="preset-btn" id="p-rat">x²/(1+x²) → [0,1)</button>';
+    document.getElementById("p-sq").onclick=function(){setActivePreset(this);mode="sqrt";App.resetTimeline();App.play();};
+    document.getElementById("p-ab").onclick=function(){setActivePreset(this);mode="abs";App.resetTimeline();App.play();};
+    document.getElementById("p-rat").onclick=function(){setActivePreset(this);mode="rat";App.resetTimeline();App.play();};
+    document.getElementById("lab-controls").innerHTML="";
+    draw(0);
+  }
+  function X(x){ return 200 + x*50; }
+  function Y(y){ return 220 - y*80; }
+  function draw(t){
+    var svg=svgEl(); if(!svg) return;
+    var x=-1+((t||0)/6)*6;
+    var m='<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="220" x2="680" y2="220" stroke="#334155"/><line x1="200" y1="20" x2="200" y2="280" stroke="#334155"/>';
+    var d="", yv, note, dom, rng;
+    if(mode==="sqrt"){
+      for(var u=1;u<=6.05;u+=0.1){ d += (u===1?"M":"L")+" "+X(u)+" "+Y(Math.sqrt(u-1)); }
+      yv = x>=1 ? Math.sqrt(x-1) : NaN; dom="[1, ∞)"; rng="[0, ∞)"; note="Misc. Ex 4. Red zone x<1 is not in the domain.";
+      m += '<rect x="40" y="20" width="'+(X(1)-40)+'" height="260" fill="#f8717122"/>';
+    } else if(mode==="abs"){
+      for(var u=-1;u<=6.05;u+=0.1){ d += (u===-1?"M":"L")+" "+X(u)+" "+Y(Math.abs(u-1)); }
+      yv=Math.abs(x-1); dom="R"; rng="[0, ∞)"; note="Misc. Ex 5. V shifted to x=1.";
+    } else {
+      for(var u=-1;u<=6.05;u+=0.1){ var r=u*u/(1+u*u); d += (u===-1?"M":"L")+" "+X(u)+" "+Y(r); }
+      yv=x*x/(1+x*x); dom="R"; rng="[0, 1)"; note="Misc. Ex 6. Approaches 1, never arrives. Asymptote y=1.";
+      m += '<line x1="40" y1="'+Y(1)+'" x2="680" y2="'+Y(1)+'" stroke="#f59e0b" stroke-dasharray="5 4"/>';
+    }
+    m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2.5"/>';
+    if(!isNaN(yv)) m += '<circle cx="'+X(x)+'" cy="'+Y(yv)+'" r="5" fill="#f8fafc"/>';
+    svg.innerHTML=m;
+    readout(cell("x", x.toFixed(2)) + cell("f(x)", isNaN(yv)?"undefined":yv.toFixed(3), "#34d399") + cell("Domain", dom) + cell("Range", rng));
+    verdict("<b>Domain/range:</b> "+note);
+  }
+  return {mount:mount,draw:draw};
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

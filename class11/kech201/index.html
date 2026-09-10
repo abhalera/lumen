@@ -1,0 +1,2551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 7: Chapter 7 — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.video-facade .thumb{display:block;width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#173b56,#0b1c2b 65%)}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}@media(max-width:430px){.topbar,.top-actions{flex-wrap:wrap;row-gap:6px}.top-actions,.progress-pill{max-width:100%;min-width:0}.topbar{height:auto;padding:8px 12px}}@media(max-width:430px){.concept-header{flex-wrap:wrap;max-width:100%;min-width:0}.concept-header>*{min-width:0;max-width:100%}main,main *{min-width:0}.concept-title,.concept-header{overflow-wrap:anywhere}}@media(max-width:430px){select{max-width:100%;width:100%;box-sizing:border-box}}@media(max-width:430px){.revise-callout,.concept-footer-nav{max-width:100%;min-width:0;flex-wrap:wrap;box-sizing:border-box}main{max-width:100vw;box-sizing:border-box;overflow-wrap:anywhere}pre,code,table{max-width:100%;overflow-x:auto;display:block}}</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+  <span class="chapter-crumb" id="chapter-crumb">CH 07 · CHAPTER 7</span>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+<a class="class-pill" href="../index.html">CLASS 11 <span>·</span> CHEMISTRY</a></header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 30 Exercises from NCERT Class 11 Chemistry Part II () mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"chapter_meta": {"id": "kech201", "number": 7, "title": "Redox Reactions", "book": "Chemistry Part II", "class": 11, "reprint": "2026-27", "tagline": "From classical and electronic oxidation-reduction definitions to balancing redox equations, electrochemical cells, and standard electrode potentials.", "total_concepts": 7, "total_practice_questions": 21, "total_exercises": 30}, "concepts": [{"id": "c1", "title": "Classical and Electronic Concepts of Oxidation and Reduction", "navTitle": "Classical & Electronic Concepts", "minutes": 15, "pages": ["1", "4"], "deck": "Unify classical oxygen-hydrogen transfer with modern electronation theory: competitive electron displacement and half-reactions.", "quick": "Classical chemistry defined oxidation as addition of oxygen/electronegative element or removal of hydrogen/electropositive element, and reduction as addition of hydrogen/electropositive element or removal of oxygen/electronegative element. The electronic theory defines oxidation as loss of electrons (de-electronation) and reduction as gain of electrons (electronation). A reducing agent (reductant) supplies electrons, while an oxidising agent (oxidant) accepts electrons.", "formulas": [{"label": "Zinc Half-Oxidation (Electron Loss)", "cond": "Anodic de-electronation", "html": "Zn(s) \\to Zn^{2+}(aq) + 2e^-"}, {"label": "Copper Half-Reduction (Electron Gain)", "cond": "Cathodic electronation", "html": "Cu^{2+}(aq) + 2e^- \\to Cu(s)"}, {"label": "Overall Redox Electron Balance", "cond": "Stoichiometric electron cancellation", "html": "Zn(s) + Cu^{2+}(aq) \\to Zn^{2+}(aq) + Cu(s)"}, {"label": "Silver Ion Reduction", "cond": "Cu in AgNO3 solution", "html": "Cu(s) + 2Ag^+(aq) \\to Cu^{2+}(aq) + 2Ag(s)"}], "deeper": "Competitive electron transfer experiments reveal the relative tendencies of metals to lose electrons. Dipping a zinc rod into blue aqueous CuSO4 solution results in a spontaneous deposition of reddish-brown copper metal on zinc, with the blue color of hydrated Cu2+ fading to colorless Zn2+. Conversely, placing a copper wire in ZnSO4 yields no reaction whatsoever. When copper is placed in colorless AgNO3 solution, the solution turns sky blue (forming Cu2+) and shimmering silver needles crystallize onto the copper. This establishes an electron-releasing hierarchy: Zn > Cu > Ag.", "worked": {"title": "Identifying Oxidants and Reductants via Electron Transfer", "problem": "In the reaction: 2 Na(s) + Cl2(g) -> 2 NaCl(s), identify the species oxidised, the species reduced, the oxidising agent, and the reducing agent.", "given": "Reactants: elemental sodium Na(s) and elemental chlorine gas Cl2(g).", "steps": ["Split the reaction into half-reactions: 2 Na(s) -> 2 Na+(s) + 2 e- (loss of electrons, oxidation).", "Cl2(g) + 2 e- -> 2 Cl-(s) (gain of electrons, reduction).", "Sodium atoms lose electrons; hence Na is oxidised and acts as the reducing agent (reductant).", "Chlorine molecules accept electrons; hence Cl2 is reduced and acts as the oxidising agent (oxidant)."], "solution": "Na loses electrons to form Na+, and Cl2 gains electrons to form Cl-.", "answer": "Oxidised: Na; Reduced: Cl2; Reducing agent: Na; Oxidising agent: Cl2."}, "prediction": {"prompt": "A polished strip of copper metal is immersed into a 1.0 M aqueous solution of zinc sulfate (ZnSO4). What will be observed over time?", "options": ["Zinc metal plates onto copper and the solution turns deep blue.", "No visible change occurs because copper cannot displace zinc ions.", "Copious bubbles of hydrogen gas evolve immediately.", "The copper strip dissolves completely forming copper sulfate precipitate."], "answer": 1, "explanation": "Copper has a much lower tendency to release electrons than zinc (E° for Cu2+/Cu is +0.34 V, while Zn2+/Zn is -0.76 V). Copper cannot transfer electrons to Zn2+ ions, so no reaction occurs."}, "simTitle": "Competitive Electron Transfer Lab", "connect": "Biological electron transport chains in mitochondrial inner membranes use sequential redox centers (NADH-Q oxidoreductase, Cytochrome c, and Cytochrome oxidase) to transfer electrons down a precise thermodynamic gradient to terminal molecular oxygen, driving ATP synthesis.", "quizzes": [{"tier": "easy", "question": "Which of the following processes represents oxidation in terms of modern electronic theory?", "options": ["Gain of electrons (electronation)", "Loss of electrons (de-electronation)", "Addition of electropositive element", "Decrease in oxidation state"], "answer": 1, "hint": "Remember the mnemonic 'OIL RIG' — Oxidation Is Loss, Reduction Is Gain of electrons.", "explanation": "According to the electronic concept, oxidation is defined strictly as de-electronation, or the loss of one or more electrons by an atom, molecule, or ion."}, {"tier": "medium", "question": "In the reaction: 2 Fe3+(aq) + Sn2+(aq) -> 2 Fe2+(aq) + Sn4+(aq), which species functions as the reducing agent?", "options": ["Fe3+", "Fe2+", "Sn2+", "Sn4+"], "answer": 2, "hint": "The reducing agent loses electrons and undergoes an increase in its own oxidation state.", "explanation": "Sn2+ loses 2 electrons to become Sn4+ (oxidation: Sn2+ -> Sn4+ + 2e-). Because it supplies electrons to reduce Fe3+ to Fe2+, Sn2+ is the reducing agent."}, {"tier": "hard", "question": "When copper wire is dipped into aqueous AgNO3, shimmering silver crystals form and the solution turns blue. Why does this electron transfer occur spontaneously?", "options": ["Ag has a greater tendency to lose electrons than Cu.", "Cu has a lower reduction potential than Ag+, meaning Cu is oxidized more readily and transfers electrons to Ag+.", "Ag+ acts as a strong reducing agent in aqueous medium.", "NO3- ions oxidize Cu to Cu2+ while leaving Ag unchanged."], "answer": 1, "hint": "Compare standard reduction potentials: E°(Ag+/Ag) = +0.80 V, while E°(Cu2+/Cu) = +0.34 V.", "explanation": "Because E°(Ag+/Ag) = +0.80 V is more positive than E°(Cu2+/Cu) = +0.34 V, Ag+ is a stronger oxidant than Cu2+. Cu spontaneously donates electrons to Ag+ (Cu + 2Ag+ -> Cu2+ + 2Ag), releasing blue hydrated Cu2+ ions."}]}, {"id": "c2", "title": "Oxidation Number: Rules, Calculation & Stock Notation", "navTitle": "Oxidation Number & Stock Notation", "minutes": 18, "pages": ["4", "7"], "deck": "Master IUPAC assignment rules for oxidation states, resolve the paradox of fractional oxidation states, and apply Stock notation.", "quick": "Oxidation number denotes the residual electrical charge an atom appears to possess when all bonding electron pairs are allocated entirely to the more electronegative partner. Pure elements carry O.N. = 0; fluorine is strictly -1; oxygen is -2 (except peroxides -1, superoxides -1/2, OF2 +2); hydrogen is +1 (except ionic hydrides -1). Stock notation specifies metal oxidation states using Roman numerals in parentheses immediately following the metal symbol or name, e.g., Fe(II)SO4, Fe2(III)(SO4)3.", "formulas": [{"label": "Sum of Oxidation States (Neutral Molecule)", "cond": "All neutral compounds", "html": "\\sum_{i} n_i \\cdot \\text{O.N.}_i = 0"}, {"label": "Sum of Oxidation States (Polyatomic Ion)", "cond": "Ions with net charge z", "html": "\\sum_{i} n_i \\cdot \\text{O.N.}_i = z"}, {"label": "Peroxo Linkage Oxygen O.N.", "cond": "In H2O2, H2SO5 (Caro's), H2S2O8", "html": "\\text{O.N. of } (-O-O-) = -1"}, {"label": "Average Fractional State in Suboxides", "cond": "C3O2, Br3O8, S4O6^2-", "html": "\\text{O.N.}_{\\text{avg}} = \\frac{\\sum \\text{individual structural states}}{N_{\\text{atoms}}}"}], "deeper": "The 'paradox of fractional oxidation states' arises when we assign an average state to chemically non-equivalent atoms of the same element in a molecule. In carbon suboxide (C3O2: O=C=C=C=O), the terminal carbons are bonded to electronegative oxygen and have oxidation state +2, while the central carbon atom is bonded only to adjacent carbon atoms, carrying oxidation state 0. The stoichiometric average is (2 + 0 + 2)/3 = +4/3. Similarly, in the tetrathionate ion (S4O6^2-), the two central sulfur atoms form an S-S homonuclear bond (O.N. = 0), while the two terminal sulfur atoms are each bonded to three oxygens (O.N. = +5), giving an average of (5 + 0 + 0 + 5)/4 = +2.5.", "worked": {"title": "Oxidation Number of Sulfur in Caro's Acid (H2SO5)", "problem": "Calculate the oxidation number of sulfur in peroxomonosulfuric acid (Caro's acid, H2SO5). Explain the fallacy if applying conventional rules directly.", "given": "Formula: H2SO5. Structure: HO-SO2-O-O-H containing one peroxo (-O-O-) group.", "steps": ["Direct algebraic formula: 2(+1) + x + 5(-2) = 0 => x - 8 = 0 => x = +8.", "Fallacy: Sulfur belongs to Group 16 and has only 6 valence electrons (3s2 3p4). It cannot have an oxidation number exceeding +6.", "Structural analysis: H2SO5 contains one peroxo group (-O-O-) where each peroxo oxygen has O.N. = -1. The other three oxygens are oxo oxygens with O.N. = -2.", "Equation: 2(+1) [for H] + x [for S] + 2(-1) [for peroxo O] + 3(-2) [for oxo O] = 0.", "+2 + x - 2 - 6 = 0 => x - 6 = 0 => x = +6."], "solution": "By accounting for the -O-O- peroxo bridge, the true oxidation state of S is +6.", "answer": "Oxidation number of S in H2SO5 is +6."}, "prediction": {"prompt": "Potassium superoxide (KO2) is used in submarine and aerospace rebreathers. What is the oxidation state of oxygen in KO2?", "options": ["-2 (standard oxide)", "-1 (peroxide)", "-1/2 (superoxide)", "+1 (fluoride analog)"], "answer": 2, "explanation": "Potassium is an alkali metal (Group 1) and strictly carries an oxidation state of +1. Since the compound is neutral: +1 + 2(x) = 0 => 2x = -1 => x = -1/2. The superoxide radical ion is O2^-."}, "simTitle": "Oxidation Number & Stock Notation Calculator", "connect": "Breathalyzer devices used by law enforcement utilize the oxidation of ethanol by orange potassium dichromate in acidic medium (Cr in +6) to green chromium sulfate (Cr in +3). The photometric absorbance of the green color quantifies blood alcohol concentration.", "quizzes": [{"tier": "easy", "question": "What is the Stock notation formula for chromium(III) oxide?", "options": ["CrO", "Cr2O3 with Cr in state (III), written as Cr2(III)O3 or Cr2O3", "CrO3", "Cr3O2"], "answer": 1, "hint": "Stock notation puts the Roman numeral representing the metal's oxidation state in parentheses.", "explanation": "In chromium(III) oxide, chromium has an oxidation state of +3 and oxide is -2. Balancing charges gives Cr2O3, designated in Stock notation as Cr2(III)O3 or chromium(III) oxide."}, {"tier": "medium", "question": "Calculate the oxidation numbers of the three individual bromine atoms in tribromooctoxide (Br3O8).", "options": ["+16/3 for all three bromines uniformly", "+6 for the two terminal bromines and +4 for the central bromine", "+7 for two bromines and +2 for one bromine", "+5 for all three bromines"], "answer": 1, "hint": "Draw the Lewis structure: O3Br - Br(O2) - BrO3. Terminal Br atoms are bonded to 3 oxygens each; the central Br is bonded to 2 oxygens.", "explanation": "In Br3O8, the two terminal Br atoms are each bonded to three oxygens (O.N. = +6 each). The central Br atom is bonded to two oxygens and two Br atoms (O.N. = +4). The average oxidation state is (6 + 4 + 6)/3 = +16/3."}, {"tier": "hard", "question": "Chromium pentoxide (CrO5) is an ethereal blue compound formed when dichromate reacts with H2O2. What is the actual oxidation state of Cr in CrO5?", "options": ["+10 (by naive formula 5 * -2)", "+6, because it has a butterfly structure with four peroxo oxygens (-1) and one oxo oxygen (-2)", "+4 with two superoxide bonds", "+3 with two ozone bridges"], "answer": 1, "hint": "Cr is in Group 6 and cannot exceed its total valence count of 6. CrO5 has a butterfly structure with two (-O-O-) peroxo rings.", "explanation": "CrO5 has a butterfly geometry with two peroxo linkages: four oxygen atoms belong to peroxo groups (O.N. = -1 each) and one oxygen is doubly bonded (oxo oxygen, O.N. = -2). Therefore, x + 4(-1) + 1(-2) = 0 => x = +6."}]}, {"id": "c3", "title": "Types of Redox Reactions: Combination, Decomposition, Displacement & Disproportionation", "navTitle": "Types of Redox Reactions", "minutes": 16, "pages": ["8", "11"], "deck": "Classify combination, decomposition, metal and non-metal displacement, and disproportionation redox transformations.", "quick": "Redox reactions are classified into four major categories: (1) Combination: two or more reactants unite into one product, with at least one reactant in elemental form; (2) Decomposition: breakdown into simpler species where at least one product is elemental (e.g. 2H2O -> 2H2 + O2; note CaCO3 -> CaO + CO2 is non-redox); (3) Displacement: an atom or ion in a compound is replaced by another (metal displacement: Zn + CuSO4; non-metal displacement: Na + H2O -> NaOH + H2); (4) Disproportionation: an element in an intermediate oxidation state is simultaneously oxidised and reduced.", "formulas": [{"label": "Disproportionation of Hydrogen Peroxide", "cond": "O(-1) -> O(-2) + O(0)", "html": "2H_2O_2(aq) \\to 2H_2O(l) + O_2(g)"}, {"label": "Disproportionation of White Phosphorus", "cond": "P(0) -> P(-3) in PH3 and P(+1) in H2PO2^-", "html": "P_4(s) + 3OH^-(aq) + 3H_2O(l) \\to PH_3(g) + 3H_2PO_2^-(aq)"}, {"label": "Chlorine in Cold Dilute Alkali", "cond": "Cl(0) -> Cl(-1) and Cl(+1)", "html": "Cl_2(g) + 2OH^-(aq) \\to Cl^-(aq) + ClO^-(aq) + H_2O(l)"}, {"label": "Chlorine in Hot Concentrated Alkali", "cond": "Cl(0) -> Cl(-1) and Cl(+5)", "html": "3Cl_2(g) + 6OH^-(aq) \\to 5Cl^-(aq) + ClO_3^-(aq) + 3H_2O(l)"}], "deeper": "Disproportionation is a special redox reaction in which one and the same element undergoes simultaneous oxidation and reduction. For an element to undergo disproportionation, it must exist in an intermediate oxidation state; it cannot be in its maximum or minimum oxidation state. Fluorine is the most electronegative element of all and exhibits only 0 (in F2) and -1 (in fluorides). Having no positive oxidation states and no available d-orbitals, fluorine can never undergo disproportionation. Conversely, chlorine, bromine, and iodine exhibit oxidation states of -1, 0, +1, +3, +5, and +7, enabling rich disproportionation chemistry in basic media.", "worked": {"title": "Classifying a Disproportionation Reaction", "problem": "Which of the following reactions is a disproportionation reaction? (a) 2 KClO3 -> 2 KCl + 3 O2; (b) 2 NO2 + H2O -> HNO2 + HNO3.", "given": "Reactions (a) thermal decomposition of potassium chlorate, and (b) hydration of nitrogen dioxide.", "steps": ["For (a): In KClO3, Cl is +5 and O is -2. In products, Cl is -1 (in KCl) and O is 0 (in O2). Chlorine is reduced (+5 -> -1) and oxygen is oxidised (-2 -> 0). Two different elements change oxidation states. This is a decomposition redox reaction, NOT disproportionation.", "For (b): In NO2, nitrogen is in oxidation state +4. In HNO2, nitrogen is +3 (reduction: +4 -> +3). In HNO3, nitrogen is +5 (oxidation: +4 -> +5).", "The same element, nitrogen, is simultaneously reduced and oxidised from intermediate state +4 to +3 and +5."], "solution": "Reaction (b) is a true disproportionation reaction.", "answer": "Reaction (b) 2 NO2 + H2O -> HNO2 + HNO3 is a disproportionation reaction."}, "prediction": {"prompt": "Elemental fluorine gas (F2) is bubbled through a cold, dilute aqueous sodium hydroxide solution. Can fluorine undergo disproportionation into F^- and FO^-?", "options": ["Yes, forming NaF and NaOF analogous to chlorine.", "No, because fluorine is the most electronegative element and cannot exhibit a positive oxidation state.", "Yes, but only under high ultraviolet radiation.", "Yes, fluorine disproportionates to F^- and OF2."], "answer": 1, "explanation": "Fluorine is the most electronegative element and has no d-orbitals. It cannot have a positive oxidation state; hence it cannot undergo disproportionation. Instead, it vigorously oxidizes oxygen in water/alkali: 2 F2 + 2 OH^- -> 2 F^- + OF2 + H2O."}, "simTitle": "Redox Reaction Classifier & Disproportionation Chamber", "connect": "Household bleaching powder (CaOCl2) acts as a disinfectant through redox disproportionation: in water, it releases hypochlorite ion (ClO^-), which readily oxidizes bacterial cell walls and denatures microbial proteins by decomposing into chloride and nascent oxygen.", "quizzes": [{"tier": "easy", "question": "Which of the following decomposition reactions is NOT a redox reaction?", "options": ["2 H2O(l) -> 2 H2(g) + O2(g)", "2 KClO3(s) -> 2 KCl(s) + 3 O2(g)", "CaCO3(s) -> CaO(s) + CO2(g)", "2 NaH(s) -> 2 Na(s) + H2(g)"], "answer": 2, "hint": "Check whether the oxidation numbers of calcium, carbon, or oxygen change during limestone heating.", "explanation": "In CaCO3 -> CaO + CO2, Ca remains +2, C remains +4, and O remains -2. There is no transfer of electrons and no change in oxidation state; hence it is a thermal non-redox decomposition."}, {"tier": "medium", "question": "When chlorine gas reacts with hot, concentrated sodium hydroxide solution, the products formed are:", "options": ["NaCl + NaOCl + H2O", "NaCl + NaClO3 + H2O", "NaClO2 + NaClO3 + H2", "NaCl + Cl2O7 + H2O"], "answer": 1, "hint": "In hot concentrated alkali, chlorate (ClO3^-) is favored over hypochlorite (ClO^-).", "explanation": "Hot concentrated NaOH drives the disproportionation of Cl2 to chloride (Cl^- in -1) and chlorate (ClO3^- in +5): 3 Cl2 + 6 OH^- -> 5 Cl^- + ClO3^- + 3 H2O."}, {"tier": "hard", "question": "Which species CANNOT undergo a disproportionation reaction under any circumstances?", "options": ["ClO^-", "ClO2^-", "ClO3^-", "ClO4^-"], "answer": 3, "hint": "An ion in its maximum oxidation state cannot be oxidised any further.", "explanation": "In the perchlorate ion (ClO4^-), chlorine is in its maximum possible oxidation state of +7 (Group 17). It cannot be oxidised further to a higher oxidation state, so it cannot undergo disproportionation."}]}, {"id": "c4", "title": "Balancing Redox Equations: Oxidation Number & Ion-Electron Methods", "navTitle": "Balancing Redox Equations", "minutes": 20, "pages": ["11", "15"], "deck": "Execute algorithmic step-by-step balancing in acidic and basic media using both oxidation number and half-reaction techniques.", "quick": "Balancing redox reactions requires satisfying both the Law of Conservation of Mass (atom balance) and the Conservation of Charge. Two standard systematic algorithms are used: (1) The Oxidation Number Method adjusts stoichiometric coefficients so that the total increase in oxidation number equals the total decrease in oxidation number; (2) The Ion-Electron (Half-Reaction) Method splits the process into separate oxidation and reduction half-reactions, balances non-O/H atoms, balances O with H2O, balances H with H+ (in acid) or H2O/OH- (in base), balances electrical charges with electrons, and adds the half-reactions so electrons cancel out completely.", "formulas": [{"label": "Electron Conservation Criterion", "cond": "All redox reactions", "html": "n_{\\text{electrons lost (oxidation)}} = n_{\\text{electrons gained (reduction)}}"}, {"label": "Acidic Medium Oxygen/Hydrogen Balancing", "cond": "For each deficient O atom add H2O; balance H with H+", "html": "\\text{O balance: } +\\text{H}_2\\text{O}; \\quad \\text{H balance: } +\\text{H}^+"}, {"label": "Basic Medium Hydrogen/Oxygen Balancing", "cond": "For each H+ add equal OH^- to both sides", "html": "\\text{H}^+ + \\text{OH}^- \\to \\text{H}_2\\text{O}"}, {"label": "Dichromate Half-Reaction in Acid", "cond": "Standard reduction in H2SO4", "html": "Cr_2O_7^{2-} + 14H^+ + 6e^- \\to 2Cr^{3+} + 7H_2O"}], "deeper": "In basic medium, students frequently stumble over balancing hydrogen and oxygen. A foolproof algorithmic shortcut is to balance the half-reaction initially as if it were in acidic medium (using H+ and H2O). Once atoms and charges are balanced with electrons, add an equal number of OH- ions to both sides of the equation corresponding to the number of H+ present. Combine H+ and OH- on the same side into H2O molecules (H+ + OH- -> H2O), and then cancel out common H2O molecules from both sides. This guarantees flawless mass and charge conservation without confusing basic-medium rules.", "worked": {"title": "Balancing Permanganate and Iron(II) in Acidic Solution", "problem": "Balance the following skeletal ionic equation in acidic solution using the ion-electron method: MnO4^-(aq) + Fe2+(aq) -> Mn2+(aq) + Fe3+(aq).", "given": "Skeletal equation in acidic medium with H+ and H2O available.", "steps": ["Step 1: Identify half-reactions. Oxidation: Fe2+ -> Fe3+; Reduction: MnO4^- -> Mn2+.", "Step 2: Balance atoms other than O and H. Fe and Mn are already balanced.", "Step 3: Balance O in reduction half-reaction by adding 4 H2O to right: MnO4^- -> Mn2+ + 4 H2O.", "Step 4: Balance H by adding 8 H+ to left: MnO4^- + 8 H+ -> Mn2+ + 4 H2O.", "Step 5: Balance charge with electrons. Left charge = -1 + 8 = +7; Right charge = +2. Add 5 e- to left: MnO4^- + 8 H+ + 5 e- -> Mn2+ + 4 H2O.", "Step 6: Balance charge in oxidation half-reaction: Fe2+ -> Fe3+ + e-.", "Step 7: Equalize electrons. Multiply oxidation half-reaction by 5: 5 Fe2+ -> 5 Fe3+ + 5 e-.", "Step 8: Add the two half-reactions together; 5 e- cancel on both sides: MnO4^- + 5 Fe2+ + 8 H+ -> Mn2+ + 5 Fe3+ + 4 H2O."], "solution": "Mass and charge (+17 on both sides) are perfectly conserved.", "answer": "MnO4^-(aq) + 5 Fe2+(aq) + 8 H+(aq) -> Mn2+(aq) + 5 Fe3+(aq) + 4 H2O(l)"}, "prediction": {"prompt": "In balancing the reduction of dichromate Cr2O7^2- to Cr^3+ in acidic solution, how many electrons (e^-) must be added to the reactant side?", "options": ["2 electrons", "3 electrons", "6 electrons", "14 electrons"], "answer": 2, "explanation": "Each chromium atom changes from +6 in Cr2O7^2- to +3 in Cr^3+ (a gain of 3 e^- per Cr atom). Since there are 2 Cr atoms in dichromate, the total electrons gained is 2 * 3 = 6 e^-: Cr2O7^2- + 14 H^+ + 6 e^- -> 2 Cr^3+ + 7 H2O."}, "simTitle": "Interactive Step-by-Step Redox Reaction Balancer", "connect": "Industrial water treatment plants neutralize toxic hexavalent chromium Cr(VI) in electroplating wastewater by reducing it to Cr(III) using sulfur dioxide (SO2) or ferrous sulfate at pH 2–3, followed by precipitation as harmless Cr(OH)3 sludge at pH 8.5.", "quizzes": [{"tier": "easy", "question": "What is the stoichiometric coefficient of H+ when balancing the reduction half-reaction: MnO4^- + H+ + 5e^- -> Mn2+ + 4H2O?", "options": ["4", "8", "5", "10"], "answer": 1, "hint": "Notice that 4 water molecules on the right require 4 * 2 = 8 hydrogen atoms.", "explanation": "4 H2O molecules contain 8 hydrogen atoms; therefore, 8 H+ ions must be added to the reactant side to balance hydrogen."}, {"tier": "medium", "question": "Balance the reaction in basic medium: MnO4^-(aq) + I^-(aq) -> MnO2(s) + I2(s). What is the coefficient of OH^- in the balanced equation?", "options": ["8 on the product side", "4 on the product side", "2 on the product side", "2 on the reactant side"], "answer": 0, "hint": "The reduction half-reaction is 2 MnO4^- + 4 H2O + 6 e^- -> 2 MnO2 + 8 OH^-, and oxidation is 6 I^- -> 3 I2 + 6 e^-.", "explanation": "Balancing in basic medium: 2 MnO4^- + 6 I^- + 4 H2O -> 2 MnO2 + 3 I2 + 8 OH^-. The coefficient of OH^- on the product side is 8."}, {"tier": "hard", "question": "In the balanced reaction: a Cr2O7^2- + b SO2 + c H+ -> d Cr^3+ + e SO4^2- + f H2O, what are the coefficients a, b, and c?", "options": ["a = 1, b = 3, c = 2", "a = 2, b = 3, c = 4", "a = 1, b = 1, c = 2", "a = 1, b = 3, c = 4"], "answer": 0, "hint": "Cr2O7^2- gains 6 e^-; each SO2 loses 2 e^- (S from +4 to +6). Equating electrons: 1 Cr2O7^2- reacts with 3 SO2.", "explanation": "Oxidation: 3 [SO2 + 2 H2O -> SO4^2- + 4 H+ + 2 e^-]; Reduction: Cr2O7^2- + 14 H+ + 6 e^- -> 2 Cr^3+ + 7 H2O. Adding them cancels 6 e^- and 6 H2O, leaving 2 H+ on the left: Cr2O7^2- + 3 SO2 + 2 H+ -> 2 Cr^3+ + 3 SO4^2- + H2O. Thus a=1, b=3, c=2."}]}, {"id": "c5", "title": "Redox Reactions as the Basis for Titrations: Indicators & Endpoints", "navTitle": "Redox Titrations & Indicators", "minutes": 18, "pages": ["15", "17"], "deck": "Explore permanganometry self-indicators, dichromatometry internal redox indicators, and iodometric starch complexes.", "quick": "Redox titrations determine the unknown concentration of a reductant (or oxidant) using a standard solution of an oxidant (or reductant). Three major titration classes are: (1) Permanganate titrations (Permanganometry): KMnO4 is an intense purple self-indicator; at the endpoint, the first excess drop of MnO4^- imparts a persistent faint pink color; (2) Potassium dichromate titrations (Dichromatometry): K2Cr2O7 is a primary standard but requires an external or internal redox indicator (like diphenylamine) which changes to deep violet at equivalence; (3) Iodometry and Iodimetry: titration of I2 with standard sodium thiosulfate (Na2S2O3) using starch as an indicator, transitioning from intense deep blue to crystal clear colorless.", "formulas": [{"label": "Permanganate Reduction in Acid", "cond": "Self-indicating reduction (faint pink endpoint)", "html": "MnO_4^- + 8H^+ + 5e^- \\to Mn^{2+} + 4H_2O"}, {"label": "Iodometric Thiosulfate Reaction", "cond": "Titration of liberated iodine", "html": "I_2 + 2S_2O_3^{2-} \\to 2I^- + S_4O_6^{2-}"}, {"label": "Liberation of Iodine from Iodide by Oxidant", "cond": "Iodometric step 1", "html": "2Cu^{2+} + 4I^- \\to Cu_2I_2(s) + I_2"}, {"label": "Equivalence Law in Redox Titrations", "cond": "Milliequivalents balance", "html": "N_1 V_1 = N_2 V_2 \\iff (n_1 M_1) V_1 = (n_2 M_2) V_2"}], "deeper": "In iodometric titrations, starch must NOT be added at the beginning when the iodine concentration is high. At high iodine concentrations, iodine forms a strong, stable water-insoluble complex with amylose in starch, which releases iodine extremely slowly and causes a lagging, inaccurate endpoint. Instead, thiosulfate titrant is added until the dark brown solution fades to a pale straw-yellow color (signifying that only trace iodine remains). At that precise moment, starch solution is added, turning the mixture intensely blue. A few final drops of thiosulfate discharge the blue color sharply to water-clear.", "worked": {"title": "Stoichiometry of Iodometric Copper Assay", "problem": "A 25.0 mL sample containing Cu2+ is treated with excess KI, liberating iodine: 2 Cu2+ + 4 I- -> Cu2I2 + I2. The liberated I2 requires 20.0 mL of 0.05 M Na2S2O3 solution for complete titration. Calculate the molarity of Cu2+.", "given": "Volume of Cu2+ = 25.0 mL; Volume of Na2S2O3 = 20.0 mL; Molarity of thiosulfate = 0.05 M.", "steps": ["Moles of thiosulfate = M * V = 0.05 mol/L * 0.020 L = 1.0 * 10^-3 mol.", "From the equation: I2 + 2 S2O3^2- -> 2 I^- + S4O6^2-, 1 mole of I2 reacts with 2 moles of S2O3^2-.", "Moles of I2 = (1.0 * 10^-3) / 2 = 5.0 * 10^-4 mol.", "From 2 Cu2+ -> 1 I2, moles of Cu2+ = 2 * moles of I2 = 2 * (5.0 * 10^-4) = 1.0 * 10^-3 mol.", "Molarity of Cu2+ = moles / volume = (1.0 * 10^-3 mol) / 0.025 L = 0.040 M."], "solution": "The stoichiometric mole ratio Cu2+ : S2O3^2- is exactly 1 : 1.", "answer": "Molarity of Cu2+ is 0.040 M (or 0.04 mol/L)."}, "prediction": {"prompt": "Why can dilute sulfuric acid (H2SO4) be used to acidify KMnO4 titrations, but dilute hydrochloric acid (HCl) cannot?", "options": ["H2SO4 acts as a catalyst, while HCl destroys the conical flask.", "KMnO4 oxidizes chloride ions (Cl^-) in HCl to toxic chlorine gas (Cl2), consuming titrant erroneously.", "HCl precipitates potassium permanganate as insoluble KCl.", "H2SO4 produces a brighter pink color at the endpoint."], "answer": 1, "explanation": "KMnO4 is a sufficiently powerful oxidant (E° = +1.51 V) to oxidize Cl^- to Cl2 (E° = +1.36 V). Part of the KMnO4 is consumed in oxidizing HCl rather than the analyte, causing severe experimental error. Sulfate in H2SO4 cannot be oxidized further."}, "simTitle": "Redox Permanganate & Iodine Titration Simulator", "connect": "Winkler titration is the gold-standard environmental assay used worldwide to measure Dissolved Oxygen (DO) in aquatic ecosystems: dissolved O2 oxidizes Mn(II) to Mn(IV) hydroxide, which quantitatively liberates iodine from KI upon acidification, followed by thiosulfate titration to detect hypoxia in lakes.", "quizzes": [{"tier": "easy", "question": "In a permanganate titration, what indicates that the equivalence point has been reached?", "options": ["A deep blue starch complex appears.", "A persistent faint pink color appears without adding any external indicator.", "The purple solution turns completely green.", "Dense white precipitate of MnSO4 settles."], "answer": 1, "hint": "KMnO4 acts as a self-indicator: Mn2+ is nearly colorless, while unreacted MnO4^- is intensely purple.", "explanation": "During titration, purple MnO4^- is reduced to almost colorless Mn2+. As soon as all analyte is consumed, the very first excess drop of standard KMnO4 imparts a permanent faint pink tint."}, {"tier": "medium", "question": "Why is starch indicator added only when the solution becomes pale straw yellow during an iodometric titration?", "options": ["Starch decomposes if exposed to air for more than 5 minutes.", "At high iodine concentrations, starch forms an insoluble blue complex with iodine that releases iodine very slowly.", "Starch reacts directly with sodium thiosulfate in concentrated solutions.", "Starch is only soluble in cold water."], "answer": 1, "hint": "Think about the reversibility of the starch-iodine adsorption complex at high vs low I2 concentration.", "explanation": "At high I2 concentrations, iodine irreversibly adsorbs into the helical amylose structure of starch, trapping iodine and preventing it from reacting cleanly with thiosulfate, causing a sluggish, inaccurate endpoint."}, {"tier": "hard", "question": "What is the n-factor (valency factor) of potassium dichromate (K2Cr2O7) when it acts as an oxidizing agent in acidic medium?", "options": ["2", "3", "6", "1"], "answer": 2, "hint": "In acidic medium, Cr2O7^2- is reduced to 2 Cr^3+. Count total electrons gained per molecule of K2Cr2O7.", "explanation": "Cr changes from +6 in Cr2O7^2- to +3 in Cr^3+, gaining 3 electrons per chromium atom. Since there are 2 Cr atoms in K2Cr2O7, total electrons gained per mole is 2 * 3 = 6. Thus, n-factor = 6, and Equivalent Weight = Molecular Weight / 6."}]}, {"id": "c6", "title": "Electrochemical Cells & Electrode Potential: The Daniell Cell", "navTitle": "Daniell Cell & Electrode Potentials", "minutes": 18, "pages": ["17", "19"], "deck": "Construct galvanic cells, unravel salt bridge ionic migration, and formulate standard electrode potentials via SHE.", "quick": "A galvanic (voltaic) cell converts spontaneous chemical redox energy into electrical energy. The classic Daniell cell consists of a Zinc anode immersed in ZnSO4 solution (oxidation: Zn -> Zn2+ + 2e-) and a Copper cathode immersed in CuSO4 solution (reduction: Cu2+ + 2e- -> Cu). The two half-cells are connected externally by a wire with a voltmeter and internally by a salt bridge (an inverted U-tube filled with agar gel and inert electrolyte like KCl or KNO3). The salt bridge maintains electrical neutrality by ion migration and prevents accumulation of liquid junction potential. The standard cell potential is E°cell = E°cathode - E°anode = +0.34 V - (-0.76 V) = +1.10 V.", "formulas": [{"label": "Standard Cell Potential (EMF)", "cond": "IUPAC convention (Cathode - Anode)", "html": "E^{\\circ}_{\\text{cell}} = E^{\\circ}_{\\text{right (cathode)}} - E^{\\circ}_{\\text{left (anode)}}"}, {"label": "Daniell Cell Standard Potential", "cond": "Zn-Cu cell at 298 K, 1 M", "html": "E^{\\circ}_{\\text{cell}} = +0.34\\text{ V} - (-0.76\\text{ V}) = +1.10\\text{ V}"}, {"label": "Standard Hydrogen Electrode (SHE)", "cond": "Universal potential benchmark", "html": "E^{\\circ}_{H^+/H_2} = 0.00\\text{ V} \\quad (p_{H_2} = 1\\text{ bar}, [H^+] = 1\\text{ M})"}, {"label": "IUPAC Cell Representation", "cond": "Anode | Solution || Solution | Cathode", "html": "Zn(s) \\mid Zn^{2+}(aq, 1\\text{ M}) \\parallel Cu^{2+}(aq, 1\\text{ M}) \\mid Cu(s)"}], "deeper": "When an external opposing potential (V_ext) is applied to the Daniell cell: (1) If V_ext < 1.10 V, electrons continue flowing from Zn to Cu, and current flows from Cu to Zn; (2) If V_ext = 1.10 V, the opposing electromotive forces balance exactly: no electrons flow, no chemical reaction occurs, and the cell is in thermodynamic equilibrium; (3) If V_ext > 1.10 V, the reaction reverses entirely! Electrons are forced to flow from Cu to Zn, copper dissolves at the positive terminal, zinc plates out at the negative terminal, and the cell acts as an electrolytic cell consuming electrical power.", "worked": {"title": "Calculating Daniell Cell Potential from Electrode Potentials", "problem": "Given standard reduction potentials: E°(Zn2+/Zn) = -0.76 V and E°(Cu2+/Cu) = +0.34 V, write the cell notation and calculate the standard cell EMF.", "given": "E°(Zn2+/Zn) = -0.76 V, E°(Cu2+/Cu) = +0.34 V.", "steps": ["Identify anode and cathode: More negative E° (-0.76 V) undergoes oxidation (anode: Zn -> Zn2+ + 2e-).", "More positive E° (+0.34 V) undergoes reduction (cathode: Cu2+ + 2e- -> Cu).", "Write IUPAC cell notation: Zn(s) | Zn2+(aq, 1 M) || Cu2+(aq, 1 M) | Cu(s).", "Calculate cell EMF: E°cell = E°cathode - E°anode = E°(Cu2+/Cu) - E°(Zn2+/Zn).", "E°cell = +0.34 V - (-0.76 V) = +0.34 V + 0.76 V = +1.10 V."], "solution": "The positive potential confirms spontaneous current generation.", "answer": "Cell notation: Zn | Zn2+(1 M) || Cu2+(1 M) | Cu; E°cell = +1.10 V."}, "prediction": {"prompt": "What happens if the salt bridge is suddenly pulled out of a functioning Daniell cell generating 1.10 V?", "options": ["The voltage doubles to 2.20 V.", "The voltage immediately drops to 0.00 V and current ceases.", "The cell begins generating alternating current (AC).", "Zinc dissolves much faster due to lower resistance."], "answer": 1, "explanation": "Removing the salt bridge breaks the internal electrical circuit and prevents ion counter-diffusion. Charge builds up instantly in both half-cells (+ in zinc beaker, - in copper beaker), halting electron flow completely; cell voltage drops to zero."}, "simTitle": "Daniell Galvanic Cell & Voltmeter Lab", "connect": "Lithium-ion batteries in modern smartphones and electric vehicles utilize the same electrochemical principles: lithium atoms de-intercalate from a graphite anode (oxidation: Li_x C6 -> 6C + xLi+ + xe-), migrate across an organic electrolyte, and intercalate into a lithium cobalt oxide cathode (reduction).", "quizzes": [{"tier": "easy", "question": "What is the primary role of the salt bridge in a galvanic cell?", "options": ["To supply electrons directly to the cathode", "To maintain electrical neutrality in both half-cell solutions and complete the circuit", "To increase the standard cell potential beyond 2.0 V", "To mix the zinc and copper sulfate solutions together"], "answer": 1, "hint": "Consider what happens to charges in the two beakers as Zn2+ ions are produced and Cu2+ ions are consumed.", "explanation": "As Zn oxidizes to Zn2+, positive charge builds up in the anode beaker; as Cu2+ deposits, negative SO4^2- accumulates in the cathode beaker. The salt bridge allows ions (e.g. Cl- to anode, K+ to cathode) to migrate, preserving electrical neutrality without bulk liquid mixing."}, {"tier": "medium", "question": "In the IUPAC representation of a galvanic cell, which component is written on the far left?", "options": ["Cathode metal electrode", "Anode metal electrode (oxidation site)", "Salt bridge double line", "Cathodic electrolyte solution"], "answer": 1, "hint": "Remember the acronym 'LOAN': Left, Oxidation, Anode, Negative.", "explanation": "Under IUPAC conventions, the oxidation half-cell (anode) is always positioned on the left, separated by a single line from its electrolyte, followed by double vertical lines for the salt bridge, and cathode on the right."}, {"tier": "hard", "question": "An external voltage V_ext = 1.40 V is applied against a standard Daniell cell (E° = 1.10 V). What happens in the cell?", "options": ["The cell continues discharging normally with higher current.", "No current flows because the voltages cancel out.", "Current direction reverses: Zn plates out on the zinc rod, Cu dissolves from the copper rod, and it functions as an electrolytic cell.", "Both electrodes dissolve rapidly."], "answer": 2, "hint": "When the external opposing potential exceeds the spontaneous cell EMF (V_ext > E°cell), the reaction is forced in reverse.", "explanation": "Because V_ext = 1.40 V > 1.10 V, the external power source forces electrons in the reverse direction (from Cu to Zn). Zinc ions are reduced and deposit at the zinc electrode, while copper dissolves as Cu2+; the cell acts as an electrolytic cell."}]}, {"id": "c7", "title": "Electrochemical Series & Redox Feasibility", "navTitle": "Electrochemical Series & Feasibility", "minutes": 18, "pages": ["19", "21"], "deck": "Evaluate standard reduction potentials to predict thermodynamic spontaneity (delta G° = -nFE°), metal displacement, and corrosion prevention.", "quick": "The Electrochemical Series arranges electrode redox couples in order of increasing standard reduction potential (E°). A high positive E° indicates a strong affinity for electrons (powerful oxidising agent, e.g. F2/F- with E° = +2.87 V); a large negative E° indicates a high tendency to lose electrons (powerful reducing agent, e.g. Li+/Li with E° = -3.05 V). Thermodynamically, a redox reaction is spontaneous under standard conditions if and only if E°cell > 0, which corresponds to a negative standard Gibbs free energy change: delta G° = -n F E°cell.", "formulas": [{"label": "Thermodynamic Redox Criterion", "cond": "Spontaneous if delta G° < 0", "html": "\\Delta G^{\\circ} = -n F E^{\\circ}_{\\text{cell}}"}, {"label": "Equilibrium Constant Relation", "cond": "Link between EMF and Kc at 298 K", "html": "E^{\\circ}_{\\text{cell}} = \\frac{2.303 RT}{nF} \\log_{10} K = \\frac{0.0591}{n} \\log_{10} K"}, {"label": "Acid Hydrogen Displacement Condition", "cond": "Metal displaces H2 from acid if", "html": "E^{\\circ}_{M^{n+}/M} < 0.00\\text{ V} \\quad (\\text{more negative than SHE})"}, {"label": "Rusting of Iron (Anodic Oxidation)", "cond": "Corrosion cell initiation", "html": "2Fe(s) + O_2(g) + 4H^+(aq) \\to 2Fe^{2+}(aq) + 2H_2O(l)"}], "deeper": "The electrochemical series directly explains why copper metal does not dissolve in dilute hydrochloric acid, but dissolves vigorously in concentrated or dilute nitric acid. In dilute HCl, the only available oxidizing agent is the H+ ion (E° = 0.00 V). Since E°(Cu2+/Cu) = +0.34 V is more positive than SHE, H+ cannot oxidize Cu to Cu2+ (E°cell = -0.34 V < 0, non-spontaneous). In nitric acid, however, nitrate ion in acidic medium (NO3^- + 4H+ + 3e- -> NO + 2H2O) has a standard reduction potential of E° = +0.96 V. Because +0.96 V > +0.34 V, nitrate easily oxidizes copper metal to Cu2+ with E°cell = +0.62 V > 0, evolving nitric oxide gas.", "worked": {"title": "Predicting Spontaneity and Standard Gibbs Energy", "problem": "Calculate delta G° for the reaction: Zn(s) + 2 Ag+(aq) -> Zn2+(aq) + 2 Ag(s). (Given: E°(Ag+/Ag) = +0.80 V, E°(Zn2+/Zn) = -0.76 V, F = 96485 C/mol). Is the reaction spontaneous?", "given": "E°(Ag+/Ag) = +0.80 V, E°(Zn2+/Zn) = -0.76 V, n = 2 electrons transferred.", "steps": ["E°cell = E°cathode - E°anode = E°(Ag+/Ag) - E°(Zn2+/Zn) = +0.80 V - (-0.76 V) = +1.56 V.", "Since E°cell > 0 (+1.56 V), the reaction is thermodynamically spontaneous.", "Calculate delta G°: delta G° = -n F E°cell = -(2) * (96485 C/mol) * (1.56 J/C).", "delta G° = -301,033 J/mol = -301.03 kJ/mol."], "solution": "The large negative delta G° confirms strong forward thermodynamic driving force.", "answer": "E°cell = +1.56 V; delta G° = -301.03 kJ/mol; Spontaneous."}, "prediction": {"prompt": "Can a solution of copper sulfate (CuSO4) be safely stored in an iron container without reacting?", "options": ["Yes, because iron has a higher density than copper.", "No, because iron has a lower reduction potential (-0.44 V) than copper (+0.34 V) and will spontaneously displace copper.", "Yes, because copper forms an impenetrable oxide coating on iron.", "No, because sulfate ions corrode the iron container into rust."], "answer": 1, "explanation": "E°(Fe2+/Fe) = -0.44 V and E°(Cu2+/Cu) = +0.34 V. E°cell = +0.34 - (-0.44) = +0.78 V > 0. Iron spontaneously dissolves as Fe2+, plating out metallic copper and eating holes through the vessel: Fe + Cu2+ -> Fe2+ + Cu."}, "simTitle": "Electrochemical Series & Feasibility Predictor", "connect": "Sacrificial cathodic protection utilizes the electrochemical series to prevent underwater rusting of steel ship hulls and offshore oil drilling platforms: blocks of zinc or magnesium (E° = -0.76 V or -2.37 V) are bolted to the steel hull (E° = -0.44 V), corroding preferentially and sparing the iron.", "quizzes": [{"tier": "easy", "question": "Which of the following metals can liberate hydrogen gas from dilute hydrochloric acid?", "options": ["Copper (E° = +0.34 V)", "Silver (E° = +0.80 V)", "Zinc (E° = -0.76 V)", "Gold (E° = +1.50 V)"], "answer": 2, "hint": "Metals with standard reduction potentials more negative than 0.00 V reduce H+ to H2 gas.", "explanation": "Zinc has E° = -0.76 V < 0.00 V. It spontaneously reduces H+ to H2 (Zn + 2H+ -> Zn2+ + H2, E°cell = +0.76 V > 0). Cu, Ag, and Au have positive reduction potentials and cannot displace H2 from non-oxidizing acids."}, {"tier": "medium", "question": "Given standard potentials: E°(Mg2+/Mg) = -2.37 V and E°(Fe2+/Fe) = -0.44 V. Why is magnesium used as a sacrificial anode for buried iron pipelines?", "options": ["Magnesium has a more positive potential and reduces iron oxide.", "Magnesium has a more negative potential (-2.37 V) and oxidizes preferentially, protecting the iron.", "Magnesium creates a magnetic shield around the iron pipe.", "Magnesium neutralizes soil acidity."], "answer": 1, "hint": "In cathodic protection, the sacrificial metal must be more easily oxidized than iron.", "explanation": "Because E°(Mg2+/Mg) = -2.37 V is far more negative than E°(Fe2+/Fe) = -0.44 V, magnesium oxidizes much more readily than iron. The magnesium anode donates electrons to the iron pipe, keeping iron in its reduced metallic state while magnesium sacrifices itself."}, {"tier": "hard", "question": "If standard cell potential E°cell for a 2-electron redox process is +1.10 V at 298 K, what is the order of magnitude of the equilibrium constant Kc?", "options": ["Kc ≈ 10^10", "Kc ≈ 10^20", "Kc ≈ 10^37", "Kc ≈ 10^-37"], "answer": 2, "hint": "Use E°cell = (0.0591 / n) * log10 Kc. Here n = 2 and E°cell = 1.10 V.", "explanation": "1.10 = (0.0591 / 2) * log10 Kc => log10 Kc = (1.10 * 2) / 0.0591 = 2.20 / 0.0591 ≈ 37.22. Therefore, Kc = 10^37.22 ≈ 1.7 * 10^37, indicating the reaction goes to virtually 100% completion."}]}], "exercises": [{"q": "7.1", "number": "7.1", "title": "Assign oxidation numbers to underlined elements", "conceptIdx": 1, "page": 18, "printPage": 252, "question": "Assign oxidation number to the underlined elements in each of the following species: (a) NaH2PO4, (b) NaHSO4, (c) H4P2O7, (d) K2MnO4, (e) CaO2, (f) NaBH4, (g) H2S2O7, (h) KAl(SO4)2·12 H2O.", "steps": ["(a) NaH2PO4 (P underlined): +1(Na) + 2(+1)(H) + x(P) + 4(-2)(O) = 0 => 1 + 2 + x - 8 = 0 => x = +5.", "(b) NaHSO4 (S underlined): +1(Na) + 1(+1)(H) + x(S) + 4(-2)(O) = 0 => 1 + 1 + x - 8 = 0 => x = +6.", "(c) H4P2O7 (P underlined): 4(+1)(H) + 2x(P) + 7(-2)(O) = 0 => 4 + 2x - 14 = 0 => 2x = 10 => x = +5.", "(d) K2MnO4 (Mn underlined): 2(+1)(K) + x(Mn) + 4(-2)(O) = 0 => 2 + x - 8 = 0 => x = +6.", "(e) CaO2 (O underlined): Calcium is an alkaline earth metal (+2). In calcium peroxide CaO2: +2 + 2x(O) = 0 => 2x = -2 => x = -1 (peroxide linkage).", "(f) NaBH4 (B underlined): +1(Na) + x(B) + 4(-1)(hydridic H) = 0 => 1 + x - 4 = 0 => x = +3.", "(g) H2S2O7 (pyrosulfuric acid / oleum, S underlined): 2(+1)(H) + 2x(S) + 7(-2)(O) = 0 => 2 + 2x - 14 = 0 => 2x = 12 => x = +6.", "(h) KAl(SO4)2·12 H2O (S underlined): Neutral alum molecule. Waters of crystallization are neutral (0). +1(K) + 3(Al) + 2[x(S) + 4(-2)(O)] + 12(0) = 0 => 4 + 2x - 16 = 0 => 2x = 12 => x = +6 (standard sulfate S)."], "answer": "(a) P = +5; (b) S = +6; (c) P = +5; (d) Mn = +6; (e) O = -1; (f) B = +3; (g) S = +6; (h) S = +6."}, {"q": "7.2", "number": "7.2", "title": "Oxidation numbers and rationalization of fractional/apparent states", "conceptIdx": 1, "page": 18, "printPage": 252, "question": "What are the oxidation numbers of the underlined elements in each of the following and how do you rationalise your results? (a) KI3, (b) H2S4O6, (c) Fe3O4, (d) CH3CH2OH, (e) CH3COOH.", "steps": ["(a) KI3 (I underlined): In potassium triiodide, K+ is coordinated to I3^-. Overall average O.N. is -1/3. Structurally, I3^- is composed of an I2 molecule bonded via a coordinate bond to an I^- ion (I-I <- I^-). Thus, two iodine atoms have O.N. = 0 and one iodine atom has O.N. = -1.", "(b) H2S4O6 (tetrathionic acid, S underlined): 2(+1) + 4x + 6(-2) = 0 => 4x = +10 => x = +2.5 (average). Structurally, HO-SO2-S-S-SO2-OH: the two central sulfur atoms are joined by an S-S homonuclear covalent bond, each having O.N. = 0. The two terminal sulfur atoms are bonded to three oxygens each, possessing O.N. = +5. Average = (5 + 0 + 0 + 5)/4 = +2.5.", "(c) Fe3O4 (magnetite, Fe underlined): 3x + 4(-2) = 0 => 3x = +8 => x = +8/3 (average). Magnetite is a mixed oxide: FeO·Fe2O3. In FeO, Fe is in the +2 oxidation state; in Fe2O3, two Fe atoms are in the +3 oxidation state. Average = (2 + 2*3)/3 = +8/3.", "(d) CH3CH2OH (ethanol, C in CH2 underlined): In ethanol, assigning states based on electronegativity: for methyl C (CH3): C is bonded to 3 H (+1 each) and 1 C (0) => O.N. of C(1) = -3. For CH2 carbon: C is bonded to 1 C (0), 2 H (+1 each), and 1 O (-1 contribution to C) => x + 2(+1) - 1 = 0 => x = -1.", "(e) CH3COOH (acetic acid, C in COOH underlined): In CH3COOH, for methyl C: x + 3(+1) = 0 => x = -3. For carboxylic C: bonded to C (0), =O (-2), and -OH (-1) => x - 2 - 1 = 0 => x = +3. Average C oxidation state is (-3 + 3)/2 = 0."], "answer": "(a) Average = -1/3 (two 0, one -1); (b) Average = +2.5 (two 0, two +5); (c) Average = +8/3 (one +2, two +3); (d) C(in CH2) = -1; (e) C(in COOH) = +3."}, {"q": "7.3", "number": "7.3", "title": "Justification of redox nature in five chemical reactions", "conceptIdx": 0, "page": 18, "printPage": 252, "question": "Justify that the following reactions are redox reactions: (a) CuO(s) + H2(g) -> Cu(s) + H2O(g); (b) Fe2O3(s) + 3 CO(g) -> 2 Fe(s) + 3 CO2(g); (c) 4 BCl3(g) + 3 LiAlH4(s) -> 2 B2H6(g) + 3 LiCl(s) + 3 AlCl3(s); (d) 2 K(s) + F2(g) -> 2 K+F^-(s); (e) 4 NH3(g) + 5 O2(g) -> 4 NO(g) + 6 H2O(g).", "steps": ["(a) Cu decreases from +2 in CuO to 0 in Cu(s) (reduction; CuO is oxidant). H increases from 0 in H2 to +1 in H2O (oxidation; H2 is reductant). Hence redox.", "(b) Fe decreases from +3 in Fe2O3 to 0 in Fe(s) (reduction; Fe2O3 is oxidant). Carbon increases from +2 in CO to +4 in CO2 (oxidation; CO is reductant). Hence redox.", "(c) B decreases from +3 in BCl3 to -3 in B2H6 (reduction; BCl3 is oxidant). Hydrogen increases from -1 in LiAlH4 (hydride) to +1 in B2H6 (bonded to more electronegative B) (oxidation; LiAlH4 is reductant). Hence redox.", "(d) K increases from 0 in K(s) to +1 in K+ (oxidation; K is reductant). F decreases from 0 in F2 to -1 in F^- (reduction; F2 is oxidant). Hence redox.", "(e) Nitrogen increases from -3 in NH3 to +2 in NO (oxidation; NH3 is reductant). Oxygen decreases from 0 in O2 to -2 in NO and H2O (reduction; O2 is oxidant). Hence redox."], "answer": "All five reactions involve simultaneous increase and decrease of oxidation numbers (electron transfer) and are therefore redox reactions."}, {"q": "7.4", "number": "7.4", "title": "Fluorine reaction with ice as a redox process", "conceptIdx": 0, "page": 18, "printPage": 252, "question": "Fluorine reacts with ice and results in the change: H2O(s) + F2(g) -> HF(g) + HOF(g). Justify that this reaction is a redox reaction.", "steps": ["Assign oxidation numbers to all atoms before and after the reaction:", "In reactants: In H2O, H = +1, O = -2. In elemental F2, F = 0.", "In products: In HF, H = +1, F = -1. In HOF (hypofluorous acid), H = +1; fluorine is more electronegative than oxygen, so F = -1, and oxygen is therefore in the 0 oxidation state.", "Changes in oxidation states:", "Fluorine atom from F2 (0) goes to -1 in HF and -1 in HOF: decrease in oxidation number from 0 to -1 (reduction; F2 acts as oxidant).", "Oxygen atom from H2O (-2) goes to 0 in HOF: increase in oxidation number from -2 to 0 (oxidation; H2O acts as reductant).", "Since oxidation and reduction occur simultaneously, the reaction is unequivocally a redox reaction."], "answer": "Fluorine is reduced (0 -> -1) and oxygen is oxidised (-2 -> 0); hence it is a redox reaction."}, {"q": "7.5", "number": "7.5", "title": "Oxidation numbers and structures of H2SO5, Cr2O7^2-, and NO3^- (accounting for fallacies)", "conceptIdx": 1, "page": 18, "printPage": 252, "question": "Calculate the oxidation number of sulphur, chromium and nitrogen in H2SO5, Cr2O7^2- and NO3^-. Suggest structure of these compounds. Count for the fallacy.", "steps": ["(1) H2SO5 (Caro's acid): Naive calculation: 2(+1) + x + 5(-2) = 0 => x = +8. Fallacy: S has only 6 valence electrons (Group 16) and cannot exceed +6. Structure: contains one peroxo bridge (-O-O-): HO-SO2-O-O-H. The two peroxo oxygens have O.N. = -1 each; the three oxo oxygens have O.N. = -2. Correct equation: 2(+1) + x + 2(-1) + 3(-2) = 0 => x = +6.", "(2) Cr2O7^2- (dichromate ion): 2x + 7(-2) = -2 => 2x - 14 = -2 => 2x = 12 => x = +6. Structure: two tetrahedral CrO4 units sharing one central bridging oxygen (Cr-O-Cr), with three terminal oxygens on each chromium. No fallacy here; +6 is chromium's maximum group oxidation state.", "(3) NO3^- (nitrate ion): x + 3(-2) = -1 => x - 6 = -1 => x = +5. Structure: planar trigonal nitrogen resonance hybrid with three equivalent N-O bonds. Nitrogen's valence shell has 5 electrons, so +5 corresponds to the maximum group oxidation state with no fallacy."], "answer": "S in H2SO5 = +6 (fallacy avoided by peroxo linkage O.N. = -1); Cr in Cr2O7^2- = +6; N in NO3^- = +5."}, {"q": "7.6", "number": "7.6", "title": "Formulas of compounds using Stock notation", "conceptIdx": 1, "page": 18, "printPage": 252, "question": "Write formulas for the following compounds: (a) Mercury(II) chloride, (b) Nickel(II) sulphate, (c) Tin(IV) oxide, (d) Thallium(I) sulphate, (e) Iron(III) sulphate, (f) Chromium(III) oxide.", "steps": ["(a) Mercury(II) chloride: Hg has O.N. +2, Cl has -1 => HgCl2.", "(b) Nickel(II) sulphate: Ni has O.N. +2, SO4 has -2 => NiSO4.", "(c) Tin(IV) oxide: Sn has O.N. +4, O has -2 => SnO2.", "(d) Thallium(I) sulphate: Tl has O.N. +1, SO4 has -2 => Tl2SO4.", "(e) Iron(III) sulphate: Fe has O.N. +3, SO4 has -2 => Fe2(SO4)3.", "(f) Chromium(III) oxide: Cr has O.N. +3, O has -2 => Cr2O3."], "answer": "(a) HgCl2; (b) NiSO4; (c) SnO2; (d) Tl2SO4; (e) Fe2(SO4)3; (f) Cr2O3."}, {"q": "7.7", "number": "7.7", "title": "Substances exhibiting carbon (-4 to +4) and nitrogen (-3 to +5) oxidation states", "conceptIdx": 1, "page": 18, "printPage": 252, "question": "Suggest a list of the substances where carbon can exhibit oxidation states from -4 to +4 and nitrogen from -3 to +5.", "steps": ["Carbon exhibits oxidation states from -4 to +4 as follows:", "-4 in CH4 (methane); -3 in C2H6 (ethane); -2 in CH3OH (methanol) or CH2Cl2; -1 in C2H2 (ethyne); 0 in CH2O (formaldehyde) or C(diamond/graphite); +1 in C2H2O4 (oxalic acid); +2 in CO (carbon monoxide); +3 in (COOH)2; +4 in CO2 (carbon dioxide) or CF4.", "Nitrogen exhibits oxidation states from -3 to +5 as follows:", "-3 in NH3 (ammonia); -2 in N2H4 (hydrazine); -1 in NH2OH (hydroxylamine); 0 in N2 (elemental dinitrogen); +1 in N2O (nitrous oxide); +2 in NO (nitric oxide); +3 in N2O3 (dinitrogen trioxide) or HNO2; +4 in NO2 (nitrogen dioxide) or N2O4; +5 in N2O5 (dinitrogen pentoxide) or HNO3."], "answer": "Carbon: CH4 (-4), C2H6 (-3), CH3OH (-2), C2H2 (-1), HCHO (0), CO (+2), CO2 (+4). Nitrogen: NH3 (-3), N2H4 (-2), NH2OH (-1), N2 (0), N2O (+1), NO (+2), N2O3 (+3), NO2 (+4), HNO3 (+5)."}, {"q": "7.8", "number": "7.8", "title": "Dual vs exclusive oxidant behavior of SO2, H2O2, O3, and HNO3", "conceptIdx": 2, "page": 18, "printPage": 252, "question": "While sulphur dioxide and hydrogen peroxide can act as oxidising as well as reducing agents in their reactions, ozone and nitric acid act only as oxidants. Why?", "steps": ["For SO2: Sulfur is in oxidation state +4. Sulfur belongs to Group 16 with possible oxidation states ranging from -2 to +6. Since +4 is an intermediate oxidation state, sulfur can increase its O.N. to +6 (acting as reductant) or decrease to 0 or -2 (acting as oxidant).", "For H2O2: Oxygen is in oxidation state -1 (peroxide). The range of oxygen states is -2 to +2 (or 0). Since -1 is intermediate, oxygen can be oxidized to 0 (in O2, reducing agent) or reduced to -2 (in H2O, oxidizing agent).", "For HNO3: Nitrogen is in oxidation state +5, which is its maximum possible oxidation state (Group 15 has 5 valence electrons). Nitrogen cannot be oxidized further; it can only decrease its O.N. by accepting electrons. Therefore, HNO3 acts strictly as an oxidant.", "For O3: Ozone decomposes to O2 + [O]. The nascent oxygen atom has an intense thermodynamic affinity to gain 2 electrons to attain the stable -2 state. Oxygen in ozone cannot easily be oxidized above 0; hence O3 acts exclusively as a powerful oxidant."], "answer": "In SO2 and H2O2, S (+4) and O (-1) are in intermediate states and can be oxidized or reduced. In HNO3, N is in its maximum state (+5) and can only be reduced; O3 readily releases nascent oxygen to attain the -2 state."}, {"q": "7.9", "number": "7.9", "title": "Stoichiometric writing of photosynthesis and ozonolysis reactions and tracer technique", "conceptIdx": 2, "page": 18, "printPage": 253, "question": "Consider the reactions: (a) 6 CO2(g) + 6 H2O(l) -> C6H12O6(aq) + 6 O2(g); (b) O3(g) + H2O2(l) -> H2O(l) + 2 O2(g). Why is it more appropriate to write these reactions as: (a) 6 CO2 + 12 H2O -> C6H12O6 + 6 H2O + 6 O2; (b) O3 + H2O2 -> H2O + O2 + O2? Also suggest a technique to investigate their paths.", "steps": ["(a) In photosynthesis, isotopic tracer studies using 18O-labeled water (H2^18O) prove that all 6 moles of molecular oxygen (6 O2 = 12 oxygen atoms) originate entirely from water, NOT from carbon dioxide. To produce 12 oxygen atoms of O2, 12 molecules of H2O must participate as reactants, yielding 6 H2O molecules regenerated as byproducts. Hence, 6 CO2 + 12 H2O -> C6H12O6 + 6 H2O + 6 O2 reflects the true photochemical mechanism.", "(b) In the reaction O3 + H2O2 -> H2O + O2 + O2, isotopic labeling of H2O2 with 18O demonstrates that one mole of O2 comes exclusively from H2O2 (oxidation: H2^18O2 -> ^18O2 + 2 H+ + 2 e-), while the other mole of O2 comes from ozone (reduction: O3 + 2 H+ + 2 e- -> H2O + O2). Writing O2 + O2 indicates two mechanistically distinct oxygen molecules.", "Technique: The isotopic tracer technique (using stable isotope 18O or radioactive tracers detected via Mass Spectrometry) is used to establish the exact reaction pathways."], "answer": "Writing 12 H2O shows that all evolved O2 comes from H2O; writing O2 + O2 indicates distinct origins (one from O3, one from H2O2). The isotopic tracer technique with 18O is used."}, {"q": "7.10", "number": "7.10", "title": "Instability and powerful oxidizing nature of silver(II) fluoride (AgF2)", "conceptIdx": 6, "page": 19, "printPage": 253, "question": "The compound AgF2 is an unstable compound. However, if formed, the compound acts as a very strong oxidising agent. Why?", "steps": ["In AgF2, silver is in the unusual +2 oxidation state (Ag2+ with electron configuration [Kr] 4d9).", "The standard electronic configuration of silver is [Kr] 4d10 5s1. The +1 oxidation state (Ag+ with completely filled, highly stable [Kr] 4d10 configuration) is exceptionally stable.", "The Ag2+ ion with an incompletely filled 4d9 subshell has a tremendous thermodynamic tendency to gain an electron to reach the fully filled, stable 4d10 configuration of Ag+:", "Ag2+(aq) + e- -> Ag+(aq) with a very large positive reduction potential (E° ≈ +1.98 V).", "Consequently, AgF2 readily oxidizes other substances (even water to oxygen) by accepting an electron, acting as an extraordinarily strong oxidising agent."], "answer": "Ag2+ has a 4d9 configuration and violently seeks one electron to reach the stable 4d10 configuration of Ag+ (E° ≈ +1.98 V), making AgF2 a fierce oxidising agent."}, {"q": "7.11", "number": "7.11", "title": "Dependence of product oxidation state on reactant stoichiometry (excess reductant vs oxidant)", "conceptIdx": 2, "page": 19, "printPage": 253, "question": "Whenever a reaction between an oxidising agent and a reducing agent is carried out, a compound of lower oxidation state is formed if the reducing agent is in excess and a compound of higher oxidation state is formed if the oxidising agent is in excess. Justify this statement giving three illustrations.", "steps": ["Illustration 1 (Carbon with Oxygen):", "Excess reducing agent (C): 2 C(s) + O2(g) [limited] -> 2 CO(g) (C is in lower oxidation state +2).", "Excess oxidising agent (O2): C(s) + O2(g) [excess] -> CO2(g) (C is in higher oxidation state +4).", "Illustration 2 (Phosphorus with Chlorine):", "Excess reducing agent (P4): P4 + 6 Cl2 [limited] -> 4 PCl3 (P is in lower oxidation state +3).", "Excess oxidising agent (Cl2): P4 + 10 Cl2 [excess] -> 4 PCl5 (P is in higher oxidation state +5).", "Illustration 3 (Sulfur with Fluorine):", "Excess reducing agent (S): S8 + 4 F2 [limited] -> 4 S2F2 or S + 3 F2 -> SF4 (S is in state +1 or +4).", "Excess oxidising agent (F2): S + 3 F2 [excess] -> SF6 (S is in its maximum oxidation state +6)."], "answer": "Justified by: (1) C + limited O2 -> CO (+2) vs excess O2 -> CO2 (+4); (2) P4 + limited Cl2 -> PCl3 (+3) vs excess Cl2 -> PCl5 (+5); (3) S + limited F2 -> SF4 (+4) vs excess F2 -> SF6 (+6)."}, {"q": "7.12", "number": "7.12", "title": "Alcoholic KMnO4 in toluene oxidation and H2SO4 reaction with chloride vs bromide", "conceptIdx": 4, "page": 19, "printPage": 253, "question": "How do you account for the following observations? (a) Though alkaline potassium permanganate and acidic potassium permanganate both are used as oxidants, yet in the manufacture of benzoic acid from toluene we use alcoholic potassium permanganate as an oxidant. Why? Write a balanced redox equation for the reaction. (b) When concentrated sulphuric acid is added to an inorganic mixture containing chloride, we get colourless pungent smelling gas HCl, but if the mixture contains bromide then we get red vapour of bromine. Why?", "steps": ["(a) Toluene (C6H5CH3) is an organic non-polar hydrocarbon, insoluble in pure water. Alcohol acts as a mutual solvent that dissolves both non-polar toluene and polar KMnO4, creating a homogeneous single-phase reaction medium for rapid, uniform contact.", "Balanced equation in alkaline alcoholic medium: C6H5CH3 + 2 KMnO4 -> C6H5COOK + 2 MnO2 + KOH + H2O, followed by acidification to yield benzoic acid C6H5COOH.", "(b) Concentrated H2SO4 is a moderately strong oxidizing agent. Chloride ion (Cl^-) has E°(Cl2/Cl^-) = +1.36 V, which is higher than the oxidizing power of concentrated H2SO4 (E° = +0.17 V). Thus, H2SO4 cannot oxidize Cl^- to Cl2; it simply acts as a non-oxidizing acid to displace volatile HCl: NaCl + H2SO4 -> NaHSO4 + HCl(g) (pungent fumes).", "In contrast, bromide ion (Br^-) is a much stronger reducing agent with a lower reduction potential E°(Br2/Br^-) = +1.09 V. Concentrated H2SO4 readily oxidizes 2 Br^- to reddish-brown elemental bromine vapour: 2 NaBr + 2 H2SO4 -> Na2SO4 + SO2 + Br2(g) + 2 H2O."], "answer": "(a) Alcohol acts as a mutual homogenizing solvent for non-polar toluene and polar KMnO4; (b) H2SO4 is not strong enough to oxidize Cl^- (+1.36 V), yielding HCl; but easily oxidizes Br^- (+1.09 V) to red Br2 vapour."}, {"q": "7.13", "number": "7.13", "title": "Identification of oxidised/reduced species, oxidants, and reductants", "conceptIdx": 0, "page": 19, "printPage": 253, "question": "Identify the substance oxidised, reduced, oxidising agent and reducing agent for each of the following reactions: (a) 2 AgBr(s) + C6H6O2(aq) -> 2 Ag(s) + 2 HBr(aq) + C6H4O2(aq); (b) HCHO(l) + 2 [Ag(NH3)2]+(aq) + 3 OH^-(aq) -> 2 Ag(s) + HCOO^-(aq) + 4 NH3(aq) + 2 H2O(l); (c) HCHO(l) + 2 Cu2+(aq) + 5 OH^-(aq) -> Cu2O(s) + HCOO^-(aq) + 3 H2O(l); (d) N2H4(l) + 2 H2O2(l) -> N2(g) + 4 H2O(l); (e) Pb(s) + PbO2(s) + 2 H2SO4(aq) -> 2 PbSO4(s) + 2 H2O(l).", "steps": ["(a) Ag in AgBr (+1 -> 0): reduced (AgBr is oxidant). C6H6O2 (hydroquinone): C increases (-1 in C6H6O2 to 0 in quinone C6H4O2): oxidised (C6H6O2 is reductant).", "(b) Ag in [Ag(NH3)2]+ (+1 -> 0): reduced (Tollens reagent is oxidant). C in HCHO (0 -> +2 in HCOO^-): oxidised (HCHO is reductant).", "(c) Cu in Cu2+ (+2 -> +1 in Cu2O): reduced (Cu2+ is oxidant). C in HCHO (0 -> +2 in HCOO^-): oxidised (HCHO is reductant).", "(d) N in N2H4 (-2 -> 0 in N2): oxidised (N2H4 is reductant). O in H2O2 (-1 -> -2 in H2O): reduced (H2O2 is oxidant).", "(e) Pb(s) (0 -> +2 in PbSO4): oxidised (Pb is reductant). Pb in PbO2 (+4 -> +2 in PbSO4): reduced (PbO2 is oxidant)."], "answer": "(a) Oxidised: C6H6O2, Reduced: AgBr, Oxidant: AgBr, Reductant: C6H6O2; (b) Oxidised: HCHO, Reduced: [Ag(NH3)2]+, Oxidant: [Ag(NH3)2]+, Reductant: HCHO; (c) Oxidised: HCHO, Reduced: Cu2+, Oxidant: Cu2+, Reductant: HCHO; (d) Oxidised: N2H4, Reduced: H2O2, Oxidant: H2O2, Reductant: N2H4; (e) Oxidised: Pb, Reduced: PbO2, Oxidant: PbO2, Reductant: Pb."}, {"q": "7.14", "number": "7.14", "title": "Differential reaction of thiosulphate with iodine and bromine", "conceptIdx": 2, "page": 19, "printPage": 253, "question": "Consider the reactions: 2 S2O3^2-(aq) + I2(s) -> S4O6^2-(aq) + 2 I^-(aq); S2O3^2-(aq) + 2 Br2(l) + 5 H2O(l) -> 2 SO4^2-(aq) + 4 Br^-(aq) + 10 H+(aq). Why does the same reductant, thiosulphate, react differently with iodine and bromine?", "steps": ["Bromine is a substantially stronger oxidising agent than iodine because E°(Br2/Br^-) = +1.09 V, whereas E°(I2/I^-) = +0.54 V.", "Iodine, being a mild oxidant, oxidizes sulfur in thiosulphate (average O.N. = +2) only partially to tetrathionate (S4O6^2-, average O.N. = +2.5).", "Bromine, being a much more powerful oxidant, completely oxidizes sulfur from +2 all the way to its maximum possible oxidation state of +6 in sulfate ion (SO4^2-).", "Hence, the difference in product arises from the differing standard oxidation potentials of halogens (Br2 >> I2)."], "answer": "Bromine is a stronger oxidising agent (E° = +1.09 V) than iodine (E° = +0.54 V), oxidising S in S2O3^2- completely to SO4^2- (+6), whereas iodine only oxidises it mildly to S4O6^2- (+2.5)."}, {"q": "7.15", "number": "7.15", "title": "Fluorine as the best oxidant and HI as the best reductant among hydrohalic acids", "conceptIdx": 6, "page": 19, "printPage": 253, "question": "Justify giving reactions that among halogens, fluorine is the best oxidant and among hydrohalic compounds, hydroiodic acid is the best reductant.", "steps": ["(1) Fluorine as the strongest oxidant: Fluorine oxidizes all other halide ions (Cl^-, Br^-, I^-) in solution to their elemental states: F2 + 2 X^- -> 2 F^- + X2 (where X = Cl, Br, I). It even oxidizes water to oxygen: 2 F2(g) + 2 H2O(l) -> 4 HF(aq) + O2(g). Standard reduction potential of F2 is the highest of all chemical elements (+2.87 V).", "(2) Hydroiodic acid (HI) as the strongest reductant: Iodide ion has the largest ionic radius and lowest ionization/hydration energy among halides, losing electrons most readily. HI reduces sulfuric acid to hydrogen sulfide: 8 HI + H2SO4 -> 4 I2 + H2S + 4 H2O (HCl cannot reduce H2SO4, and HBr only reduces it to SO2). HI also readily reduces Fe3+ to Fe2+: 2 Fe3+ + 2 I^- -> 2 Fe2+ + I2."], "answer": "F2 has the highest reduction potential (+2.87 V) and oxidises all halides and water; HI has the lowest bond dissociation enthalpy and readily reduces H2SO4 to H2S and Fe3+ to Fe2+."}, {"q": "7.16", "number": "7.16", "title": "Spontaneity of perxenate fluorination and oxidizing power of Na4XeO6", "conceptIdx": 6, "page": 19, "printPage": 253, "question": "Why does the following reaction occur? XeO6^4-(aq) + 2 F^-(aq) + 6 H+(aq) -> XeO3(g) + F2(g) + 3 H2O(l). What conclusion about the compound Na4XeO6 (of which XeO6^4- is a part) can be drawn from the reaction?", "steps": ["The reaction shows that perxenate ion (XeO6^4-) oxidizes fluoride ion (F^-) to elemental fluorine gas (F2).", "Elemental fluorine is the strongest known chemical oxidising agent with a standard reduction potential E°(F2/F^-) = +2.87 V.", "For XeO6^4- to oxidize F^- to F2, the standard reduction potential of the perxenate couple (XeO6^4- / XeO3) must be even more positive than +2.87 V (E° > +2.87 V) in acidic medium.", "Conclusion: Sodium perxenate (Na4XeO6) is an exceptionally powerful and ferocious oxidising agent, stronger than elemental fluorine under these conditions."], "answer": "The reaction occurs because the reduction potential of XeO6^4- exceeds that of F2 (+2.87 V). Na4XeO6 is an extraordinarily powerful oxidising agent, capable of oxidising fluoride to fluorine gas."}, {"q": "7.17", "number": "7.17", "title": "Inference regarding the oxidizing behaviour of Ag+ vs Cu2+", "conceptIdx": 6, "page": 19, "printPage": 254, "question": "Consider the reactions: (a) H3PO2(aq) + 4 AgNO3(aq) + 2 H2O(l) -> H3PO4(aq) + 4 Ag(s) + 4 HNO3(aq); (b) H3PO2(aq) + 2 CuSO4(aq) + 2 H2O(l) -> H3PO4(aq) + 2 Cu(s) + H2SO4(aq); (c) C6H5CHO(l) + 2 [Ag(NH3)2]+(aq) + 3 OH^-(aq) -> C6H5COO^-(aq) + 2 Ag(s) + 4 NH3(aq) + 2 H2O(l); (d) C6H5CHO(l) + 2 Cu2+(aq) + 5 OH^-(aq) -> No change observed. What inference do you draw about the behaviour of Ag+ and Cu2+ from these reactions?", "steps": ["Reactions (a) and (b) show that both Ag+ and Cu2+ can oxidize hypophosphorous acid (H3PO2), which is a very strong reducing agent.", "However, when reacted with benzaldehyde (C6H5CHO, a weaker reducing agent), Ag+ (as Tollens reagent [Ag(NH3)2]+) readily oxidizes benzaldehyde to benzoate ion, depositing a silver mirror (reaction c).", "In contrast, Cu2+ (Fehling's solution) fails completely to oxidize benzaldehyde (reaction d).", "This proves that Ag+ has a higher standard reduction potential (E° = +0.80 V) than Cu2+ (E° = +0.34 V).", "Inference: Ag+ is a stronger oxidising agent than Cu2+."], "answer": "Ag+ is a stronger oxidising agent than Cu2+. Both oxidize strong reductants like H3PO2, but only Ag+ can oxidize weaker reductants like benzaldehyde."}, {"q": "7.18", "number": "7.18", "title": "Balancing four redox reactions by the ion-electron method", "conceptIdx": 3, "page": 20, "printPage": 254, "question": "Balance the following redox reactions by ion–electron method: (a) MnO4^-(aq) + I^-(aq) -> MnO2(s) + I2(s) (in basic medium); (b) MnO4^-(aq) + SO2(g) -> Mn2+(aq) + HSO4^-(aq) (in acidic solution); (c) H2O2(aq) + Fe2+(aq) -> Fe3+(aq) + H2O(l) (in acidic solution); (d) Cr2O7^2-(aq) + SO2(g) -> Cr3+(aq) + SO4^2-(aq) (in acidic solution).", "steps": ["(a) Basic medium: Oxidation: 2 I^- -> I2 + 2 e- (x3 => 6 I^- -> 3 I2 + 6 e-). Reduction: MnO4^- + 2 H2O + 3 e- -> MnO2 + 4 OH^- (x2 => 2 MnO4^- + 4 H2O + 6 e- -> 2 MnO2 + 8 OH^-). Adding: 2 MnO4^-(aq) + 6 I^-(aq) + 4 H2O(l) -> 2 MnO2(s) + 3 I2(s) + 8 OH^-(aq).", "(b) Acidic medium: Oxidation: SO2 + 2 H2O -> HSO4^- + 3 H+ + 2 e- (x5). Reduction: MnO4^- + 8 H+ + 5 e- -> Mn2+ + 4 H2O (x2). Adding: 2 MnO4^- + 5 SO2 + 16 H+ + 10 H2O -> 2 Mn2+ + 5 HSO4^- + 15 H+ + 8 H2O. Simplifying H+ and H2O: 2 MnO4^-(aq) + 5 SO2(g) + 2 H2O(l) + H+(aq) -> 2 Mn2+(aq) + 5 HSO4^-(aq).", "(c) Acidic medium: Oxidation: Fe2+ -> Fe3+ + e- (x2). Reduction: H2O2 + 2 H+ + 2 e- -> 2 H2O. Adding: 2 Fe2+(aq) + H2O2(aq) + 2 H+(aq) -> 2 Fe3+(aq) + 2 H2O(l).", "(d) Acidic medium: Oxidation: SO2 + 2 H2O -> SO4^2- + 4 H+ + 2 e- (x3). Reduction: Cr2O7^2- + 14 H+ + 6 e- -> 2 Cr3+ + 7 H2O. Adding: Cr2O7^2- + 3 SO2 + 14 H+ + 6 H2O -> 2 Cr3+ + 3 SO4^2- + 12 H+ + 7 H2O. Simplifying: Cr2O7^2-(aq) + 3 SO2(g) + 2 H+(aq) -> 2 Cr3+(aq) + 3 SO4^2-(aq) + H2O(l)."], "answer": "(a) 2 MnO4^- + 6 I^- + 4 H2O -> 2 MnO2 + 3 I2 + 8 OH^-; (b) 2 MnO4^- + 5 SO2 + 2 H2O + H+ -> 2 Mn2+ + 5 HSO4^-; (c) 2 Fe2+ + H2O2 + 2 H+ -> 2 Fe3+ + 2 H2O; (d) Cr2O7^2- + 3 SO2 + 2 H+ -> 2 Cr3+ + 3 SO4^2- + H2O."}, {"q": "7.19", "number": "7.19", "title": "Balancing equations in basic medium and identifying oxidants and reductants", "conceptIdx": 3, "page": 20, "printPage": 254, "question": "Balance the following equations in basic medium by ion-electron method and oxidation number methods and identify the oxidising agent and the reducing agent: (a) P4(s) + OH^-(aq) -> PH3(g) + H2PO2^-(aq); (b) N2H4(l) + ClO3^-(aq) -> NO(g) + Cl^-(g); (c) Cl2O7(g) + H2O2(aq) -> ClO2^-(aq) + O2(g) + H+.", "steps": ["(a) P4 is both oxidized and reduced (disproportionation). P4 acts as both oxidant and reductant. Reduction: P4 + 12 H2O + 12 e- -> 4 PH3 + 12 OH^-. Oxidation: P4 + 8 OH^- -> 4 H2PO2^- + 4 e- (x3 => 3 P4 + 24 OH^- -> 12 H2PO2^- + 12 e-). Adding: 4 P4 + 12 H2O + 12 OH^- -> 4 PH3 + 12 H2PO2^-. Dividing by 4: P4(s) + 3 OH^-(aq) + 3 H2O(l) -> PH3(g) + 3 H2PO2^-(aq).", "(b) Oxidation: N2H4 + 8 OH^- -> 2 NO + 6 H2O + 8 e- (x3). Reduction: ClO3^- + 3 H2O + 6 e- -> Cl^- + 6 OH^- (x4). Adding: 3 N2H4 + 4 ClO3^- -> 6 NO + 4 Cl^- + 6 H2O. Oxidant: ClO3^-; Reductant: N2H4.", "(c) Basic medium: Reduction: Cl2O7 + 3 H2O + 8 e- -> 2 ClO2^- + 6 OH^-. Oxidation: H2O2 + 2 OH^- -> O2 + 2 H2O + 2 e- (x4 => 4 H2O2 + 8 OH^- -> 4 O2 + 8 H2O + 8 e-). Adding: Cl2O7(g) + 4 H2O2(aq) + 2 OH^-(aq) -> 2 ClO2^-(aq) + 4 O2(g) + 5 H2O(l). Oxidant: Cl2O7; Reductant: H2O2."], "answer": "(a) P4 + 3 OH^- + 3 H2O -> PH3 + 3 H2PO2^- (P4 is both oxidant and reductant); (b) 3 N2H4 + 4 ClO3^- -> 6 NO + 4 Cl^- + 6 H2O (Oxidant: ClO3^-, Reductant: N2H4); (c) Cl2O7 + 4 H2O2 + 2 OH^- -> 2 ClO2^- + 4 O2 + 5 H2O (Oxidant: Cl2O7, Reductant: H2O2)."}, {"q": "7.20", "number": "7.20", "title": "Information drawn from cyanogen disproportionation in basic medium", "conceptIdx": 2, "page": 20, "printPage": 254, "question": "What sorts of information can you draw from the following reaction? (CN)2(g) + 2 OH^-(aq) -> CN^-(aq) + CNO^-(aq) + H2O(l).", "steps": ["(1) Redox Classification: In cyanogen (CN)2, carbon has O.N. +3 (bonded to N -3). In cyanide (CN^-), carbon is +2. In cyanate (CNO^-), carbon is +4. Carbon is simultaneously reduced (+3 -> +2) and oxidised (+3 -> +4). Therefore, this is a disproportionation redox reaction.", "(2) Pseudohalogen Character: The reaction is entirely analogous to halogen disproportionation in alkaline medium: Cl2 + 2 OH^- -> Cl^- + ClO^- + H2O. This demonstrates that cyanogen (CN)2 acts as a pseudohalogen, and CN^- / CNO^- act as pseudohalide ions.", "(3) Medium Dependence: The reaction requires basic medium (OH^-) to proceed spontaneously."], "answer": "1. It is a disproportionation redox reaction (C changes from +3 to +2 and +4). 2. Cyanogen behaves as a pseudohalogen, mimicking chlorine's alkaline disproportionation."}, {"q": "7.21", "number": "7.21", "title": "Disproportionation of unstable Mn3+ ion in aqueous solution", "conceptIdx": 2, "page": 20, "printPage": 254, "question": "The Mn3+ ion is unstable in solution and undergoes disproportionation to give Mn2+, MnO2, and H+ ion. Write a balanced ionic equation for the reaction.", "steps": ["Identify the two half-reactions for Mn3+ disproportionation:", "Reduction: Mn3+ gains 1 electron to form Mn2+: Mn3+(aq) + e- -> Mn2+(aq).", "Oxidation: Mn3+ loses 1 electron to form MnO2 (Mn in +4): Mn3+(aq) + 2 H2O(l) -> MnO2(s) + 4 H+(aq) + e-.", "Both half-reactions involve 1 electron. Adding them directly:", "Mn3+(aq) + e- + Mn3+(aq) + 2 H2O(l) -> Mn2+(aq) + MnO2(s) + 4 H+(aq) + e-.", "Cancel the electron on both sides: 2 Mn3+(aq) + 2 H2O(l) -> Mn2+(aq) + MnO2(s) + 4 H+(aq)."], "answer": "2 Mn3+(aq) + 2 H2O(l) -> Mn2+(aq) + MnO2(s) + 4 H+(aq)"}, {"q": "7.22", "number": "7.22", "title": "Oxidation state profiles of Cs, Ne, I, and F", "conceptIdx": 1, "page": 20, "printPage": 254, "question": "Consider the elements: Cs, Ne, I and F. (a) Identify the element that exhibits only negative oxidation state. (b) Identify the element that exhibits only positive oxidation state. (c) Identify the element that exhibits both positive and negative oxidation states. (d) Identify the element which exhibits neither negative nor positive oxidation state.", "steps": ["(a) Fluorine (F): Being the most electronegative element of all, fluorine strictly exhibits an oxidation state of -1 in all its compounds (and 0 as F2). It never exhibits a positive oxidation state.", "(b) Cesium (Cs): Being an alkali metal with very low ionization enthalpy, cesium readily loses its single valence electron, exhibiting exclusively the +1 oxidation state in its compounds.", "(c) Iodine (I): Being a halogen with accessible d-orbitals and lower electronegativity, iodine exhibits -1 (in iodides like KI) as well as positive oxidation states: +1 (ICl), +3 (ICl3), +5 (HIO3, IF5), and +7 (IF7, H5IO6).", "(d) Neon (Ne): A noble gas with a completely filled valence octet (2s2 2p6); it forms no known chemical compounds and exists strictly in the 0 oxidation state."], "answer": "(a) F (only -1); (b) Cs (only +1); (c) I (-1 to +7); (d) Ne (only 0, neither positive nor negative)."}, {"q": "7.23", "number": "7.23", "title": "Balanced redox equation for removal of excess chlorine by sulfur dioxide", "conceptIdx": 3, "page": 20, "printPage": 254, "question": "Chlorine is used to purify drinking water. Excess of chlorine is harmful. The excess of chlorine is removed by treating with sulphur dioxide. Present a balanced equation for this redox change taking place in water.", "steps": ["Chlorine (Cl2) acts as the oxidant, being reduced to chloride (Cl^-).", "Sulfur dioxide (SO2) acts as the reductant, being oxidized to sulfate (SO4^2-).", "Reduction half-reaction: Cl2(aq) + 2 e- -> 2 Cl^-(aq).", "Oxidation half-reaction: SO2(g) + 2 H2O(l) -> SO4^2-(aq) + 4 H+(aq) + 2 e-.", "Adding the two half-reactions together (2 electrons cancel):", "Cl2(aq) + SO2(g) + 2 H2O(l) -> 2 Cl^-(aq) + SO4^2-(aq) + 4 H+(aq).", "In molecular form: Cl2 + SO2 + 2 H2O -> 2 HCl + H2SO4."], "answer": "Ionic: Cl2(aq) + SO2(g) + 2 H2O(l) -> 2 Cl^-(aq) + SO4^2-(aq) + 4 H+(aq); Molecular: Cl2 + SO2 + 2 H2O -> 2 HCl + H2SO4."}, {"q": "7.24", "number": "7.24", "title": "Non-metals and metals capable of showing disproportionation reactions", "conceptIdx": 2, "page": 20, "printPage": 254, "question": "Refer to the periodic table and answer the following questions: (a) Select the possible non-metals that can show disproportionation reaction. (b) Select three metals that can show disproportionation reaction.", "steps": ["(a) Non-metals capable of disproportionation: Must have multiple oxidation states and intermediate states available. Examples include Phosphorus (P4 in basic medium -> PH3 + H2PO2^-), Sulfur (S8 in basic medium -> S^2- + S2O3^2-), Chlorine (Cl2 -> Cl^- + ClO^- / ClO3^-), and Bromine (Br2 -> Br^- + BrO3^-).", "(b) Metals capable of disproportionation: Transition and post-transition metals exhibiting multiple oxidation states where an intermediate state is thermodynamically unstable with respect to higher and lower states.", "1. Copper: Cu+ disproportionates in aqueous solution: 2 Cu+(aq) -> Cu2+(aq) + Cu(s).", "2. Manganese: Mn3+ disproportionates: 2 Mn3+(aq) + 2 H2O(l) -> Mn2+(aq) + MnO2(s) + 4 H+(aq); also manganate: 3 MnO4^2- + 4 H+ -> 2 MnO4^- + MnO2 + 2 H2O.", "3. Gallium (or Thallium): Ga+ disproportionates: 3 Ga+(aq) -> Ga3+(aq) + 2 Ga(s)."], "answer": "(a) Non-metals: P, S, Cl, Br; (b) Three metals: Cu (Cu+ -> Cu2+ + Cu), Mn (Mn3+ -> Mn2+ + MnO2), and Ga (Ga+ -> Ga3+ + Ga)."}, {"q": "7.25", "number": "7.25", "title": "Stoichiometry and limiting reagent in Ostwald ammonia oxidation", "conceptIdx": 3, "page": 20, "printPage": 254, "question": "In Ostwald's process for the manufacture of nitric acid, the first step involves the oxidation of ammonia gas by oxygen gas to give nitric oxide gas and steam. What is the maximum weight of nitric oxide that can be obtained starting only with 10.00 g of ammonia and 20.00 g of oxygen?", "steps": ["Balanced chemical equation: 4 NH3(g) + 5 O2(g) -> 4 NO(g) + 6 H2O(g).", "Molar masses: NH3 = 14 + 3 = 17.03 g/mol; O2 = 32.00 g/mol; NO = 14 + 16 = 30.01 g/mol.", "Moles of reactants supplied: n(NH3) = 10.00 g / 17.03 g/mol = 0.5872 mol; n(O2) = 20.00 g / 32.00 g/mol = 0.6250 mol.", "Determine limiting reagent: From stoichiometry, 4 moles of NH3 require 5 moles of O2, i.e., ratio O2/NH3 = 5/4 = 1.25.", "Actual mole ratio: 0.6250 / 0.5872 = 1.064 < 1.25. Therefore, O2 is the limiting reagent.", "Moles of NO formed = (4/5) * moles of O2 = (4/5) * 0.6250 mol = 0.5000 mol.", "Mass of NO = 0.5000 mol * 30.01 g/mol = 15.00 g."], "answer": "Oxygen is the limiting reagent; maximum weight of nitric oxide (NO) obtained is 15.00 g."}, {"q": "7.26", "number": "7.26", "title": "Predicting feasibility of redox reactions using standard electrode potentials", "conceptIdx": 6, "page": 20, "printPage": 254, "question": "Using standard electrode potentials, predict if the reaction between the following is feasible: (a) Fe3+(aq) and I^-(aq), (b) Ag+(aq) and Cu(s), (c) Fe3+(aq) and Cu(s), (d) Ag(s) and Fe3+(aq), (e) Br2(aq) and Fe2+(aq).", "steps": ["Standard reduction potentials: E°(Fe3+/Fe2+) = +0.77 V; E°(I2/I^-) = +0.54 V; E°(Ag+/Ag) = +0.80 V; E°(Cu2+/Cu) = +0.34 V; E°(Br2/Br^-) = +1.09 V.", "(a) Fe3+ + I^-: E°cell = E°(Fe3+/Fe2+) - E°(I2/I^-) = +0.77 V - (+0.54 V) = +0.23 V > 0. Feasible!", "(b) Ag+ + Cu: E°cell = E°(Ag+/Ag) - E°(Cu2+/Cu) = +0.80 V - (+0.34 V) = +0.46 V > 0. Feasible!", "(c) Fe3+ + Cu: E°cell = E°(Fe3+/Fe2+) - E°(Cu2+/Cu) = +0.77 V - (+0.34 V) = +0.43 V > 0. Feasible!", "(d) Ag + Fe3+: Reaction would be Fe3+ + Ag -> Fe2+ + Ag+. E°cell = E°(Fe3+/Fe2+) - E°(Ag+/Ag) = +0.77 V - (+0.80 V) = -0.03 V < 0. Not feasible!", "(e) Br2 + Fe2+: E°cell = E°(Br2/Br^-) - E°(Fe3+/Fe2+) = +1.09 V - (+0.77 V) = +0.32 V > 0. Feasible!"], "answer": "(a) Feasible (E° = +0.23 V); (b) Feasible (E° = +0.46 V); (c) Feasible (E° = +0.43 V); (d) Not feasible (E° = -0.03 V); (e) Feasible (E° = +0.32 V)."}, {"q": "7.27", "number": "7.27", "title": "Predicting products of electrolysis under four distinct conditions", "conceptIdx": 5, "page": 21, "printPage": 255, "question": "Predict the products of electrolysis in each of the following: (i) An aqueous solution of AgNO3 with silver electrodes; (ii) An aqueous solution of AgNO3 with platinum electrodes; (iii) A dilute solution of H2SO4 with platinum electrodes; (iv) An aqueous solution of CuCl2 with platinum electrodes.", "steps": ["(i) AgNO3 with silver electrodes: At cathode: Ag+(aq) + e- -> Ag(s) (silver deposits). At active anode: Ag(s) -> Ag+(aq) + e- (silver anode dissolves into solution). Products: Ag deposited at cathode, Ag dissolved at anode.", "(ii) AgNO3 with inert Pt electrodes: At cathode: Ag+(aq) + e- -> Ag(s) (silver deposits, since E° = +0.80 V > E°(H+/H2)). At inert anode: water is oxidized preferentially over nitrate: 2 H2O(l) -> O2(g) + 4 H+(aq) + 4 e-. Products: Ag at cathode, O2 gas at anode.", "(iii) Dilute H2SO4 with Pt electrodes: At cathode: 2 H+(aq) + 2 e- -> H2(g). At anode: water is oxidized preferentially over sulfate: 2 H2O(l) -> O2(g) + 4 H+(aq) + 4 e-. Products: H2 gas at cathode, O2 gas at anode (electrolysis of water).", "(iv) Aqueous CuCl2 with Pt electrodes: At cathode: Cu2+(aq) + 2 e- -> Cu(s) (E° = +0.34 V > 0.00 V, copper deposits). At anode: Cl^-(aq) is oxidized to Cl2(g) due to lower oxygen overpotential: 2 Cl^-(aq) -> Cl2(g) + 2 e-. Products: Cu metal at cathode, Cl2 gas at anode."], "answer": "(i) Cathode: Ag metal, Anode: Ag dissolves; (ii) Cathode: Ag metal, Anode: O2 gas; (iii) Cathode: H2 gas, Anode: O2 gas; (iv) Cathode: Cu metal, Anode: Cl2 gas."}, {"q": "7.28", "number": "7.28", "title": "Metal displacement order for Al, Cu, Fe, Mg, and Zn", "conceptIdx": 6, "page": 21, "printPage": 255, "question": "Arrange the following metals in the order in which they displace each other from the solution of their salts: Al, Cu, Fe, Mg and Zn.", "steps": ["A metal with a more negative standard reduction potential is more electropositive, a stronger reducing agent, and displaces any metal with a less negative (or positive) potential from its aqueous salt solution.", "Standard reduction potentials (E°):", "Mg2+/Mg = -2.37 V", "Al3+/Al = -1.66 V", "Zn2+/Zn = -0.76 V", "Fe2+/Fe = -0.44 V", "Cu2+/Cu = +0.34 V", "Therefore, Magnesium displaces Al, Zn, Fe, Cu. Aluminum displaces Zn, Fe, Cu. Zinc displaces Fe, Cu. Iron displaces Cu. Copper cannot displace any of them.", "Displacement order: Mg > Al > Zn > Fe > Cu."], "answer": "Mg > Al > Zn > Fe > Cu (Mg displaces all four metals; Cu is displaced by all)."}, {"q": "7.29", "number": "7.29", "title": "Arranging metals in increasing order of reducing power from standard electrode potentials", "conceptIdx": 6, "page": 21, "printPage": 255, "question": "Given the standard electrode potentials: K+/K = -2.93 V, Ag+/Ag = +0.80 V, Hg2+/Hg = +0.79 V, Mg2+/Mg = -2.37 V, Cr3+/Cr = -0.74 V, arrange these metals in their increasing order of reducing power.", "steps": ["Reducing power is the tendency of a metal to lose electrons (undergo oxidation).", "The more negative the standard reduction potential (E°), the greater the tendency to be oxidised, and the stronger the reducing power.", "Conversely, a higher positive E° corresponds to weaker reducing power.", "Given E° values:", "Ag+/Ag = +0.80 V (weakest reducing agent)", "Hg2+/Hg = +0.79 V", "Cr3+/Cr = -0.74 V", "Mg2+/Mg = -2.37 V", "K+/K = -2.93 V (strongest reducing agent)", "Arranging in increasing order of reducing power (from weakest to strongest): Ag < Hg < Cr < Mg < K."], "answer": "Ag < Hg < Cr < Mg < K"}, {"q": "7.30", "number": "7.30", "title": "Galvanic cell depiction, polarity, current carriers, and electrode reactions for Zn-Ag cell", "conceptIdx": 5, "page": 21, "printPage": 255, "question": "Depict the galvanic cell in which the reaction Zn(s) + 2 Ag+(aq) -> Zn2+(aq) + 2 Ag(s) takes place. Further show: (i) which of the electrodes is negatively charged, (ii) the carriers of the current in the cell, and (iii) individual reaction at each electrode.", "steps": ["Cell Depiction (IUPAC): Zn(s) | Zn2+(aq, 1 M) || Ag+(aq, 1 M) | Ag(s).", "(i) Negative electrode: Zinc electrode (anode) undergoes oxidation, releasing electrons onto the metal surface. Hence, the Zinc electrode is negatively charged.", "(ii) Current carriers: In the external circuit (wire), current is carried by electrons flowing from the negative zinc anode to the positive silver cathode (conventional current flows from Ag to Zn). In the internal circuit (electrolytic solution and salt bridge), current is carried by ions (cations migrate toward the cathode; anions migrate toward the anode).", "(iii) Individual electrode reactions:", "At Anode (Oxidation): Zn(s) -> Zn2+(aq) + 2 e-.", "At Cathode (Reduction): Ag+(aq) + e- -> Ag(s) (or 2 Ag+(aq) + 2 e- -> 2 Ag(s))."], "answer": "Cell: Zn(s) | Zn2+(aq) || Ag+(aq) | Ag(s); (i) Zinc electrode is negatively charged (anode); (ii) Electrons in external wire, ions in solution and salt bridge; (iii) Anode: Zn -> Zn2+ + 2e^-, Cathode: Ag+ + e^- -> Ag."}], "revision_summary": {"key_laws": [{"name": "Electronic Definition of Redox", "formula": "Oxidation: de-electronation (loss of e⁻); Reduction: electronation (gain of e⁻)", "context": "OIL RIG mnemonic; electron donor is reductant, electron acceptor is oxidant."}, {"name": "Conservation of Oxidation State", "formula": "∑ (n_i · O.N._i) = 0 (neutral) or z (polyatomic ion)", "context": "Oxidation number is the formal residual charge when bonds are allocated to more electronegative atoms."}, {"name": "Disproportionation Condition", "formula": "Reactant must have intermediate oxidation state (e.g., Cl in Cl₂, P in P₄, O in H₂O₂)", "context": "Element is simultaneously oxidised and reduced; F cannot disproportionate (no positive states)."}, {"name": "Redox Balancing Conservation", "formula": "Total increase in O.N. = Total decrease in O.N. ⟺ Total e⁻ lost = Total e⁻ gained", "context": "Satisfies simultaneous conservation of mass and electrical charge in acidic and basic media."}, {"name": "Daniell Cell EMF", "formula": "E°_cell = E°_cathode − E°_anode = +0.34 V − (−0.76 V) = +1.10 V", "context": "Zn(s) | Zn²⁺(aq) || Cu²⁺(aq) | Cu(s); salt bridge maintains internal circuit electrical neutrality."}, {"name": "Redox Thermodynamic Criterion", "formula": "ΔG° = −n F E°_cell; Spontaneous if E°_cell > 0", "context": "Links electrochemical potential to Gibbs free energy and chemical equilibrium constant (E° = (0.0591/n) log K)."}, {"name": "Electrochemical Displacement Series", "formula": "Metals with E° < 0.00 V liberate H₂ from dilute acids; lower E° displaces higher E° from salt solution", "context": "Governs metal reactivity order: Mg > Al > Zn > Fe > Cu."}], "common_pitfalls": ["Exceeding group valence for maximum oxidation state — S cannot exceed +6, Cr cannot exceed +6, N cannot exceed +5; peroxo linkages (-O-O- with O = -1) resolve apparent fallacies in H₂SO₅, CrO₅, etc.", "Confusing average oxidation number with individual structural oxidation states in molecules like C₃O₂ (terminal C = +2, central C = 0; average = +4/3) and S₄O₆²⁻ (terminal S = +5, central S-S = 0; average = +2.5).", "Using HCl to acidify KMnO₄ solutions — KMnO₄ oxidizes Cl⁻ to poisonous Cl₂ gas, skewing titrant volume; non-oxidizable dilute H₂SO₄ must be used instead.", "Adding starch indicator at the beginning of iodometric titrations — high iodine concentration irreversibly adsorbs onto amylose, causing an inaccurate, lagging endpoint.", "Assuming a catalyst alters E°cell or ΔG° — catalysts accelerate the rate of electron transfer equally in both directions without altering electrode potentials or equilibrium states."]}};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + printPage + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '</div>' +
+      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? (links[0] && links[0].u ? ' data-wow data-source="' + links[0].u + '"' : ' data-wow') : '') + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
+              '<span class="thumb" aria-hidden="true"></span>' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+              '</p>';
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Physics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  var p = btn.parentElement;
+  if(p){
+    p.querySelectorAll('.filter-chip').forEach(function(b){ b.classList.remove('active'); });
+  }
+  btn.classList.add('active');
+}
+
+// ==========================================
+// 1. electrontransfer: Competitive Electron Transfer Lab
+// ==========================================
+window.SIMS.electrontransfer = {
+  mount: function(container){
+    var pair = 'zn_cu'; // zn_cu, cu_ag, cu_zn
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip active" id="btn-pair-zncu">Zn in CuSO4 (Blue Fades)</button>' +
+      '    <button class="filter-chip" id="btn-pair-cuag">Cu in AgNO3 (Silver Needles)</button>' +
+      '    <button class="filter-chip" id="btn-pair-cuzn">Cu in ZnSO4 (No Reaction)</button>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <svg id="svg-et" viewBox="0 0 700 280" style="width:100%;height:auto;max-height:280px;background:#0f172a;border-radius:6px;"></svg>' +
+      '    <div id="et-readout" style="margin-top:12px;padding:12px;background:var(--paper);border-radius:6px;border:1px solid var(--line);font-size:13px;line-height:1.5;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var svg = document.getElementById('svg-et');
+      var rd = document.getElementById('et-readout');
+      if(!svg || !rd) return;
+
+      var solnColor, stripColor, depositColor, rxnTitle, equation, e0, statusTxt, desc;
+      if(pair === 'zn_cu'){
+        solnColor = 'rgba(56, 189, 248, 0.4)'; // blue fading
+        stripColor = '#94a3b8'; // zinc silvery grey
+        depositColor = '#b45309'; // copper reddish brown
+        rxnTitle = 'Zinc Metal dipped in Aqueous Copper Sulfate (CuSO4)';
+        equation = 'Zn(s) + Cu²⁺(aq) ⟶ Zn²⁺(aq) + Cu(s)';
+        e0 = '+1.10 V (Spontaneous)';
+        statusTxt = '<span style="color:#10b981;font-weight:700;">Spontaneous Exothermic Redox Reaction</span>';
+        desc = 'Zinc atoms lose 2 electrons (oxidation: Zn ⟶ Zn²⁺ + 2e⁻) and dissolve into solution. Cu²⁺ ions accept electrons (reduction: Cu²⁺ + 2e⁻ ⟶ Cu) and deposit as reddish-brown copper on the zinc strip. The deep blue color of hydrated Cu²⁺ fades as colorless Zn²⁺ ions accumulate.';
+      } else if(pair === 'cu_ag'){
+        solnColor = 'rgba(14, 165, 233, 0.5)'; // turns blue
+        stripColor = '#d97706'; // copper reddish
+        depositColor = '#e2e8f0'; // silver shimmering needles
+        rxnTitle = 'Copper Wire coiled in Aqueous Silver Nitrate (AgNO3)';
+        equation = 'Cu(s) + 2Ag⁺(aq) ⟶ Cu²⁺(aq) + 2Ag(s)';
+        e0 = '+0.46 V (Spontaneous)';
+        statusTxt = '<span style="color:#10b981;font-weight:700;">Spontaneous Silver Needle Crystallization</span>';
+        desc = 'Copper atoms lose electrons (oxidation: Cu ⟶ Cu²⁺ + 2e⁻) turning the solution sky blue. Ag⁺ ions accept electrons (reduction: Ag⁺ + e⁻ ⟶ Ag), precipitating out as glistening, branched needles of metallic silver.';
+      } else {
+        solnColor = 'rgba(241, 245, 249, 0.15)'; // clear
+        stripColor = '#d97706'; // copper
+        depositColor = 'none';
+        rxnTitle = 'Copper Metal in Aqueous Zinc Sulfate (ZnSO4)';
+        equation = 'Cu(s) + Zn²⁺(aq) ↛ No Reaction';
+        e0 = '−1.10 V (Non-Spontaneous)';
+        statusTxt = '<span style="color:#ef4444;font-weight:700;">Non-Spontaneous (Thermodynamically Forbidden)</span>';
+        desc = 'Copper has a much higher standard reduction potential (E° = +0.34 V) than zinc (E° = −0.76 V). Copper cannot donate electrons to Zn²⁺ ions. The solution remains colorless and the copper metal remains pristine.';
+      }
+
+      svg.innerHTML = 
+        '<rect x="220" y="40" width="260" height="200" rx="12" fill="none" stroke="#64748b" stroke-width="3" />' +
+        '<rect x="223" y="80" width="254" height="157" rx="8" fill="' + solnColor + '" />' +
+        '<line x1="223" y1="80" x2="477" y2="80" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,2" />' +
+        '<text x="350" y="70" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="monospace">Solution Meniscus</text>' +
+        '<rect x="330" y="20" width="40" height="180" rx="4" fill="' + stripColor + '" stroke="#334155" stroke-width="2" />' +
+        (depositColor !== 'none' ? 
+          '<rect x="326" y="85" width="48" height="110" rx="2" fill="' + depositColor + '" opacity="0.85" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,2" />' +
+          '<text x="390" y="140" fill="#fcd34d" font-size="12" font-weight="700">Deposition Layer</text>' +
+          '<path d="M 385 136 L 374 136" stroke="#fcd34d" stroke-width="2" marker-end="url(#arr)" />'
+          : '') +
+        '<text x="350" y="260" text-anchor="middle" fill="#f8fafc" font-size="14" font-weight="700">' + rxnTitle + '</text>';
+
+      rd.innerHTML = 
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+        '  <span style="font-family:monospace;font-size:14px;font-weight:700;color:var(--primary);">' + equation + '</span>' +
+        '  <span style="font-size:12px;padding:4px 8px;border-radius:4px;background:var(--paper-soft);border:1px solid var(--line);">' + e0 + '</span>' +
+        '</div>' +
+        '<div>' + statusTxt + '</div>' +
+        '<div style="margin-top:6px;color:var(--muted);">' + desc + '</div>';
+    }
+
+    container.querySelector('#btn-pair-zncu').onclick = function(){ pair = 'zn_cu'; setActivePreset(this); render(); };
+    container.querySelector('#btn-pair-cuag').onclick = function(){ pair = 'cu_ag'; setActivePreset(this); render(); };
+    container.querySelector('#btn-pair-cuzn').onclick = function(){ pair = 'cu_zn'; setActivePreset(this); render(); };
+    render();
+  }
+};
+
+// ==========================================
+// 2. oxnumberlab: Oxidation Number & Stock Notation Calculator
+// ==========================================
+window.SIMS.oxnumberlab = {
+  mount: function(container){
+    var compound = 'h2so5'; // h2so5, cr2o7, cro5, c3o2, s4o6, fe3o4, ko2
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div class="preset-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip active" id="btn-h2so5">H2SO5 (Caro&#39;s Acid)</button>' +
+      '    <button class="filter-chip" id="btn-cr2o7">Cr2O7²⁻ (Dichromate)</button>' +
+      '    <button class="filter-chip" id="btn-cro5">CrO5 (Butterfly)</button>' +
+      '    <button class="filter-chip" id="btn-c3o2">C3O2 (Carbon Suboxide)</button>' +
+      '    <button class="filter-chip" id="btn-s4o6">S4O6²⁻ (Tetrathionate)</button>' +
+      '    <button class="filter-chip" id="btn-fe3o4">Fe3O4 (Magnetite)</button>' +
+      '    <button class="filter-chip" id="btn-ko2">KO2 (Superoxide)</button>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:16px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <div id="ox-structure" style="background:#0f172a;border-radius:6px;padding:20px;text-align:center;color:#f8fafc;font-family:monospace;font-size:16px;min-height:90px;display:flex;flex-direction:column;justify-content:center;align-items:center;"></div>' +
+      '    <div id="ox-derivation" style="margin-top:14px;background:var(--paper);border-radius:6px;border:1px solid var(--line);padding:14px;font-size:13px;line-height:1.6;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var st = document.getElementById('ox-structure');
+      var dv = document.getElementById('ox-derivation');
+      if(!st || !dv) return;
+
+      if(compound === 'h2so5'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#38bdf8;font-weight:700;">H - O - SO₂(O.N. = +6) - O - O - H</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Three oxo oxygens (-2) &bull; One peroxo bridge (-O-O-, each O = -1) &bull; Two H (+1)</div>';
+        dv.innerHTML = 
+          '<b>Peroxomonosulfuric Acid (Caro&#39;s Acid, H2SO5):</b><br>' +
+          '• <b>Naive direct formula fallacy:</b> 2(+1) + x + 5(−2) = 0 ⟹ x − 8 = 0 ⟹ x = +8 (Impossible! S has only 6 valence electrons).<br>' +
+          '• <b>Structural resolution:</b> Molecule possesses one peroxo linkage (-O-O-) with O.N. = −1 each. Other 3 oxygens are oxo oxygens with O.N. = −2.<br>' +
+          '• <b>Correct equation:</b> 2(+1) + x(S) + 2(−1) + 3(−2) = 0 ⟹ +2 + x − 2 − 6 = 0 ⟹ <b>x = +6</b>.<br>' +
+          '• <b>Stock Notation:</b> Hydrogen tetraoxoperoxosulfato(VI).';
+      } else if(compound === 'cr2o7'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#f59e0b;font-weight:700;">[ O₃Cr(+6) — O(bridging, −2) — Cr(+6)O₃ ]²⁻</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Two CrO4 tetrahedra sharing one apex oxygen &bull; Net charge = −2</div>';
+        dv.innerHTML = 
+          '<b>Potassium Dichromate Ion (Cr2O7²⁻):</b><br>' +
+          '• <b>Algebraic equation:</b> 2x + 7(−2) = −2 ⟹ 2x − 14 = −2 ⟹ 2x = 12 ⟹ <b>x = +6</b>.<br>' +
+          '• <b>Valence verification:</b> Group 6 transition element in its maximum stable group oxidation state d⁰.<br>' +
+          '• <b>Stock Notation:</b> Potassium heptaoxidodichromate(VI).';
+      } else if(compound === 'cro5'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#38bdf8;font-weight:700;">Cr(+6)(=O)(O₂)²⁻ (Butterfly Geometry)</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Four peroxo oxygens in two (-O-O-) rings (O = -1 each) &bull; One oxo oxygen (=O, O = -2)</div>';
+        dv.innerHTML = 
+          '<b>Chromium Pentoxide (CrO5, Ethereal Blue Complex):</b><br>' +
+          '• <b>Naive fallacy:</b> x + 5(−2) = 0 ⟹ x = +10 (Gross fallacy: Cr maximum oxidation state is +6).<br>' +
+          '• <b>Structural resolution:</b> CrO5 has two peroxo (-O-O-) bridges forming a butterfly structure. Four oxygens have O.N. = −1; one oxo oxygen has O.N. = −2.<br>' +
+          '• <b>Calculation:</b> x + 4(−1) + 1(−2) = 0 ⟹ x − 6 = 0 ⟹ <b>x = +6</b>.<br>' +
+          '• <b>Stock Notation:</b> Oxodiperoxidochromium(VI).';
+      } else if(compound === 'c3o2'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#a855f7;font-weight:700;">O = C(+2) = C(0) = C(+2) = O</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Terminal carbons bonded to O &bull; Central carbon bonded only to C</div>';
+        dv.innerHTML = 
+          '<b>Carbon Suboxide (C3O2, Paradox of Fractional State):</b><br>' +
+          '• <b>Stoichiometric average:</b> 3x + 2(−2) = 0 ⟹ 3x = +4 ⟹ <b>x = +4/3</b>.<br>' +
+          '• <b>Structural resolution:</b> The two terminal C atoms are bonded to electronegative oxygen (O.N. = +2 each). The central C is bonded to two carbon atoms of identical electronegativity (O.N. = 0).<br>' +
+          '• <b>True Individual States:</b> C(1) = +2, C(2) = 0, C(3) = +2. Average = (2 + 0 + 2)/3 = +4/3.';
+      } else if(compound === 's4o6'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#ec4899;font-weight:700;">[ ⁻O₃S(+5) — S(0) — S(0) — S(+5)O₃⁻ ]</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Two central S atoms in homonuclear S-S bond &bull; Two terminal SO3 units</div>';
+        dv.innerHTML = 
+          '<b>Tetrathionate Ion (S4O6²⁻, Paradox of Fractional State):</b><br>' +
+          '• <b>Stoichiometric average:</b> 4x + 6(−2) = −2 ⟹ 4x = +10 ⟹ <b>x = +2.5</b>.<br>' +
+          '• <b>Structural resolution:</b> Central -S-S- linkage consists of zero-valent sulfur (O.N. = 0 each). The two terminal S atoms are bonded to three oxygens each (O.N. = +5 each).<br>' +
+          '• <b>True Individual States:</b> S(terminal) = +5, S(central) = 0, S(central) = 0, S(terminal) = +5. Average = (5 + 0 + 0 + 5)/4 = +2.5.';
+      } else if(compound === 'fe3o4'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#64748b;font-weight:700;">FeO &bull; Fe2O3  ⟹  Fe(+2) + 2 Fe(+3)</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Inverse spinel crystal lattice &bull; Stoichiometric mixed valence oxide</div>';
+        dv.innerHTML = 
+          '<b>Magnetite / Iron(II,III) Oxide (Fe3O4):</b><br>' +
+          '• <b>Stoichiometric average:</b> 3x + 4(−2) = 0 ⟹ 3x = +8 ⟹ <b>x = +8/3</b>.<br>' +
+          '• <b>Structural resolution:</b> Fe3O4 is a mixed oxide: 1 mole FeO + 1 mole Fe2O3. One Fe atom has O.N. = +2; two Fe atoms have O.N. = +3.<br>' +
+          '• <b>Stock Notation:</b> Iron(II,III) oxide or Fe(II)Fe2(III)O4.';
+      } else if(compound === 'ko2'){
+        st.innerHTML = 
+          '<div style="font-size:18px;color:#eab308;font-weight:700;">K⁺ [ O — O ]•⁻  ⟹  O.N. of O = −1/2</div>' +
+          '<div style="margin-top:10px;font-size:13px;color:#cbd5e1;">Potassium superoxide &bull; Paramagnetic radical anion O2⁻</div>';
+        dv.innerHTML = 
+          '<b>Potassium Superoxide (KO2):</b><br>' +
+          '• <b>Calculation:</b> Potassium is an alkali metal (Group 1), strictly +1. Neutral compound: +1 + 2x = 0 ⟹ 2x = −1 ⟹ <b>x = −1/2</b>.<br>' +
+          '• <b>Chemical Role:</b> Used in space station and submarine rebreathers to absorb CO2 and release O2: 4 KO2 + 2 CO2 ⟶ 2 K2CO3 + 3 O2.';
+      }
+    }
+
+    container.querySelector('#btn-h2so5').onclick = function(){ compound = 'h2so5'; setActivePreset(this); render(); };
+    container.querySelector('#btn-cr2o7').onclick = function(){ compound = 'cr2o7'; setActivePreset(this); render(); };
+    container.querySelector('#btn-cro5').onclick = function(){ compound = 'cro5'; setActivePreset(this); render(); };
+    container.querySelector('#btn-c3o2').onclick = function(){ compound = 'c3o2'; setActivePreset(this); render(); };
+    container.querySelector('#btn-s4o6').onclick = function(){ compound = 's4o6'; setActivePreset(this); render(); };
+    container.querySelector('#btn-fe3o4').onclick = function(){ compound = 'fe3o4'; setActivePreset(this); render(); };
+    container.querySelector('#btn-ko2').onclick = function(){ compound = 'ko2'; setActivePreset(this); render(); };
+    render();
+  }
+};
+
+// ==========================================
+// 3. redoxtypes: Redox Reaction Classifier & Disproportionation Chamber
+// ==========================================
+window.SIMS.redoxtypes = {
+  mount: function(container){
+    var type = 'disprop'; // disprop, metal_disp, nonmetal_disp, decomp
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip active" id="btn-type-disprop">Disproportionation (P4 / H2O2)</button>' +
+      '    <button class="filter-chip" id="btn-type-mdisp">Metal Displacement (Zn + CuSO4)</button>' +
+      '    <button class="filter-chip" id="btn-type-nmdisp">Non-Metal Displacement (Cl2 + KBr)</button>' +
+      '    <button class="filter-chip" id="btn-type-decomp">Decomposition (2KClO3 vs CaCO3)</button>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:16px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <div id="rt-equation" style="background:#0f172a;border-radius:6px;padding:16px;color:#f8fafc;font-family:monospace;font-size:16px;text-align:center;"></div>' +
+      '    <div id="rt-analysis" style="margin-top:14px;background:var(--paper);border-radius:6px;border:1px solid var(--line);padding:14px;font-size:13px;line-height:1.6;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var eq = document.getElementById('rt-equation');
+      var an = document.getElementById('rt-analysis');
+      if(!eq || !an) return;
+
+      if(type === 'disprop'){
+        eq.innerHTML = 
+          '<div style="color:#38bdf8;font-weight:700;">P₄(s, O.N.=0) + 3OH⁻ + 3H₂O ⟶ PH₃(g, P=−3) + 3H₂PO₂⁻(aq, P=+1)</div>' +
+          '<div style="margin-top:8px;font-size:13px;color:#a855f7;">2H₂O₂(aq, O=−1) ⟶ 2H₂O(l, O=−2) + O₂(g, O=0)</div>';
+        an.innerHTML = 
+          '<b>Disproportionation Redox Transformation:</b><br>' +
+          '• <b>Criterion:</b> An element in an intermediate oxidation state is simultaneously oxidised and reduced.<br>' +
+          '• <b>Phosphorus Disproportionation:</b> P4 (O.N. = 0) is reduced to phosphine PH3 (P = −3, 3 e⁻ gain per P) and oxidised to hypophosphite H2PO2⁻ (P = +1, 1 e⁻ loss per P).<br>' +
+          '• <b>Why Fluorine Cannot Disproportionate:</b> Fluorine is the most electronegative element of all and has no accessible d-orbitals; it exhibits only 0 and −1, with zero positive oxidation states.';
+      } else if(type === 'metal_disp'){
+        eq.innerHTML = 
+          '<div style="color:#10b981;font-weight:700;">Zn(s, 0) + Cu²⁺(aq, +2) ⟶ Zn²⁺(aq, +2) + Cu(s, 0)</div>' +
+          '<div style="margin-top:8px;font-size:13px;color:#fcd34d;">TiCl₄(l, +4) + 2Mg(s, 0) ⟶ Ti(s, 0) + 2MgCl₂(s, +2)</div>';
+        an.innerHTML = 
+          '<b>Metal Displacement Redox Reaction:</b><br>' +
+          '• <b>Principle:</b> A metal in elemental state displaces another metal from its compound if it has a more negative standard reduction potential (greater reducing power).<br>' +
+          '• <b>Kroll Process Titanium Extraction:</b> Magnesium metal reduces titanium tetrachloride at 850 °C: Ti(+4) is reduced to Ti(0) and Mg(0) is oxidised to Mg(+2).';
+      } else if(type === 'nonmetal_disp'){
+        eq.innerHTML = 
+          '<div style="color:#38bdf8;font-weight:700;">Cl₂(g, 0) + 2KBr(aq, Br=−1) ⟶ 2KCl(aq, Cl=−1) + Br₂(l, 0)</div>' +
+          '<div style="margin-top:8px;font-size:13px;color:#e2e8f0;">2Na(s, 0) + 2H₂O(l, H=+1) ⟶ 2NaOH(aq, Na=+1) + H₂(g, 0)</div>';
+        an.innerHTML = 
+          '<b>Non-Metal Displacement Redox Reaction:</b><br>' +
+          '• <b>Halogen Displacement:</b> Stronger oxidizing halogens displace weaker halogens: F2 > Cl2 > Br2 > I2.<br>' +
+          '• Chlorine (E° = +1.36 V) oxidises bromide (E° = +1.09 V) to red liquid bromine Br2.<br>' +
+          '• <b>Hydrogen Displacement:</b> Highly reactive alkali metals (Na, K, Ca) reduce water violently, evolving H2 gas.';
+      } else if(type === 'decomp'){
+        eq.innerHTML = 
+          '<div style="color:#f59e0b;font-weight:700;">Redox: 2KClO₃(s, Cl=+5, O=−2) ⟶ 2KCl(s, Cl=−1) + 3O₂(g, O=0)</div>' +
+          '<div style="margin-top:8px;font-size:13px;color:#94a3b8;">Non-Redox: CaCO₃(s, Ca=+2, C=+4, O=−2) ⟶ CaO(+2,−2) + CO₂(+4,−2)</div>';
+        an.innerHTML = 
+          '<b>Decomposition: Redox vs Non-Redox:</b><br>' +
+          '• In KClO3 thermal decomposition: Cl is reduced (+5 ⟶ −1) and O is oxidised (−2 ⟶ 0). It is a decomposition redox reaction.<br>' +
+          '• In limestone heating (CaCO3 ⟶ CaO + CO2): No atom changes oxidation state! Ca remains +2, C remains +4, and O remains −2. It is a non-redox thermal decomposition.';
+      }
+    }
+
+    container.querySelector('#btn-type-disprop').onclick = function(){ type = 'disprop'; setActivePreset(this); render(); };
+    container.querySelector('#btn-type-mdisp').onclick = function(){ type = 'metal_disp'; setActivePreset(this); render(); };
+    container.querySelector('#btn-type-nmdisp').onclick = function(){ type = 'nonmetal_disp'; setActivePreset(this); render(); };
+    container.querySelector('#btn-type-decomp').onclick = function(){ type = 'decomp'; setActivePreset(this); render(); };
+    render();
+  }
+};
+
+// ==========================================
+// 4. balancerlab: Interactive Step-by-Step Redox Reaction Balancer
+// ==========================================
+window.SIMS.balancerlab = {
+  mount: function(container){
+    var rxn = 'mno4_fe'; // mno4_fe, cr2o7_so2, mno4_i_basic, p4_basic
+    var step = 1;
+
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div class="preset-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip active" id="btn-rxn-mno4">MnO4⁻ + Fe²⁺ (Acidic)</button>' +
+      '    <button class="filter-chip" id="btn-rxn-cr2o7">Cr2O7²⁻ + SO2 (Acidic)</button>' +
+      '    <button class="filter-chip" id="btn-rxn-mno4i">MnO4⁻ + I⁻ (Basic)</button>' +
+      '    <button class="filter-chip" id="btn-rxn-p4">P4 Disproportionation (Basic)</button>' +
+      '  </div>' +
+      '  <div style="display:flex;gap:8px;margin-bottom:12px;">' +
+      '    <button class="btn-secondary" id="btn-step-prev">← Prev Step</button>' +
+      '    <button class="btn-primary" id="btn-step-next">Next Step →</button>' +
+      '    <span id="step-label" style="font-size:13px;font-weight:700;align-self:center;margin-left:10px;">Step 1 of 5</span>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:16px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <div id="balancer-display" style="background:#0f172a;border-radius:6px;padding:16px;color:#f8fafc;font-family:monospace;font-size:15px;line-height:1.8;"></div>' +
+      '    <div id="balancer-explanation" style="margin-top:14px;background:var(--paper);border-radius:6px;border:1px solid var(--line);padding:14px;font-size:13px;line-height:1.6;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var dp = document.getElementById('balancer-display');
+      var ex = document.getElementById('balancer-explanation');
+      var lbl = document.getElementById('step-label');
+      if(!dp || !ex || !lbl) return;
+      lbl.textContent = 'Step ' + step + ' of 5';
+
+      if(rxn === 'mno4_fe'){
+        if(step === 1){
+          dp.innerHTML = '<span style="color:#38bdf8;">Oxidation Half-Reaction:</span> Fe²⁺(aq) ⟶ Fe³⁺(aq)<br><span style="color:#f59e0b;">Reduction Half-Reaction:</span> MnO₄⁻(aq) ⟶ Mn²⁺(aq)';
+          ex.innerHTML = '<b>Step 1: Identify and Separate Half-Reactions.</b> Iron increases oxidation state from +2 to +3 (oxidation). Manganese decreases oxidation state from +7 to +2 (reduction).';
+        } else if(step === 2){
+          dp.innerHTML = 'Oxidation: Fe atoms already balanced (1 : 1)<br>Reduction: MnO₄⁻ ⟶ Mn²⁺ + <span style="color:#38bdf8;font-weight:700;">4 H₂O</span>';
+          ex.innerHTML = '<b>Step 2: Balance Atoms other than O and H, then balance O with H2O.</b> Manganese is balanced (1 : 1). Four oxygen atoms on the left are balanced by adding 4 H2O molecules to the right.';
+        } else if(step === 3){
+          dp.innerHTML = 'Oxidation: Fe²⁺ ⟶ Fe³⁺<br>Reduction: MnO₄⁻ + <span style="color:#ec4899;font-weight:700;">8 H⁺</span> ⟶ Mn²⁺ + 4 H₂O';
+          ex.innerHTML = '<b>Step 3: Balance Hydrogen atoms with H+ ions (Acidic Medium).</b> 4 H2O molecules on the right require 8 H+ ions on the left.';
+        } else if(step === 4){
+          dp.innerHTML = 'Oxidation: Fe²⁺ ⟶ Fe³⁺ + <span style="color:#10b981;font-weight:700;">1 e⁻</span><br>Reduction: MnO₄⁻ + 8 H⁺ + <span style="color:#10b981;font-weight:700;">5 e⁻</span> ⟶ Mn²⁺ + 4 H₂O';
+          ex.innerHTML = '<b>Step 4: Balance Electrical Charge by adding electrons.</b> Left charge in reduction is (−1 + 8 = +7); right is +2. Adding 5 e⁻ balances charge at +2 on both sides. In oxidation, adding 1 e⁻ balances charge at +2.';
+        } else if(step === 5){
+          dp.innerHTML = '<span style="color:#10b981;font-size:16px;font-weight:700;">MnO₄⁻(aq) + 5 Fe²⁺(aq) + 8 H⁺(aq) ⟶ Mn²⁺(aq) + 5 Fe³⁺(aq) + 4 H₂O(l)</span>';
+          ex.innerHTML = '<b>Step 5: Equalize Electrons and Combine.</b> Multiply oxidation half-reaction by 5 so 5 electrons are exchanged. Cancel out 5 e⁻ on both sides. Mass and charge (+17 on both sides) are perfectly balanced!';
+        }
+      } else if(rxn === 'cr2o7_so2'){
+        if(step === 1){
+          dp.innerHTML = '<span style="color:#38bdf8;">Oxidation:</span> SO₂(g) ⟶ SO₄²⁻(aq)<br><span style="color:#f59e0b;">Reduction:</span> Cr₂O₇²⁻(aq) ⟶ Cr³⁺(aq)';
+          ex.innerHTML = '<b>Step 1: Half-Reactions.</b> S changes from +4 to +6 (oxidation); Cr changes from +6 to +3 (reduction).';
+        } else if(step === 2){
+          dp.innerHTML = 'Oxidation: SO₂ + <span style="color:#38bdf8;">2 H₂O</span> ⟶ SO₄²⁻<br>Reduction: Cr₂O₇²⁻ ⟶ <span style="color:#f59e0b;">2 Cr³⁺</span> + <span style="color:#38bdf8;">7 H₂O</span>';
+          ex.innerHTML = '<b>Step 2: Balance non-O/H atoms, then balance O with H2O.</b> Balance Cr by putting coefficient 2 on Cr³⁺. Balance O: add 7 H2O to right in reduction, add 2 H2O to left in oxidation.';
+        } else if(step === 3){
+          dp.innerHTML = 'Oxidation: SO₂ + 2 H₂O ⟶ SO₄²⁻ + <span style="color:#ec4899;">4 H⁺</span><br>Reduction: Cr₂O₇²⁻ + <span style="color:#ec4899;">14 H⁺</span> ⟶ 2 Cr³⁺ + 7 H₂O';
+          ex.innerHTML = '<b>Step 3: Balance Hydrogen with H+.</b> 14 H on right of reduction balanced by 14 H⁺ on left. 4 H on left of oxidation balanced by 4 H⁺ on right.';
+        } else if(step === 4){
+          dp.innerHTML = 'Oxidation: SO₂ + 2 H₂O ⟶ SO₄²⁻ + 4 H⁺ + <span style="color:#10b981;">2 e⁻</span><br>Reduction: Cr₂O₇²⁻ + 14 H⁺ + <span style="color:#10b981;">6 e⁻</span> ⟶ 2 Cr³⁺ + 7 H₂O';
+          ex.innerHTML = '<b>Step 4: Balance Charge with Electrons.</b> Dichromate gains 6 e⁻; sulfur dioxide loses 2 e⁻.';
+        } else if(step === 5){
+          dp.innerHTML = '<span style="color:#10b981;font-size:16px;font-weight:700;">Cr₂O₇²⁻(aq) + 3 SO₂(g) + 2 H⁺(aq) ⟶ 2 Cr³⁺(aq) + 3 SO₄²⁻(aq) + H₂O(l)</span>';
+          ex.innerHTML = '<b>Step 5: Multiply oxidation by 3, add and simplify.</b> Cancel 6 e⁻, cancel 6 H2O from left, cancel 12 H⁺ from right, leaving 2 H⁺ on left and 1 H2O on right.';
+        }
+      } else if(rxn === 'mno4_i_basic'){
+        if(step === 1){
+          dp.innerHTML = '<span style="color:#38bdf8;">Oxidation:</span> 2 I⁻ ⟶ I₂<br><span style="color:#f59e0b;">Reduction:</span> MnO₄⁻ ⟶ MnO₂';
+          ex.innerHTML = '<b>Step 1: Half-Reactions in Basic Medium.</b> Iodide is oxidised to elemental iodine; permanganate is reduced to manganese dioxide.';
+        } else if(step === 2){
+          dp.innerHTML = 'Oxidation: 2 I⁻ ⟶ I₂<br>Reduction: MnO₄⁻ ⟶ MnO₂ + <span style="color:#38bdf8;">2 H₂O</span>';
+          ex.innerHTML = '<b>Step 2: Balance Oxygen with H2O.</b> MnO4⁻ has 4 O, MnO2 has 2 O; add 2 H2O to right.';
+        } else if(step === 3){
+          dp.innerHTML = 'Reduction in Base: MnO₄⁻ + 4 H₂O ⟶ MnO₂ + 2 H₂O + <span style="color:#ec4899;">4 OH⁻</span><br>Simplifies to: MnO₄⁻ + <span style="color:#38bdf8;">2 H₂O</span> ⟶ MnO₂ + <span style="color:#ec4899;">4 OH⁻</span>';
+          ex.innerHTML = '<b>Step 3: Balance Hydrogen in Basic Medium.</b> Add 4 H2O to side deficient in H, and add 4 OH⁻ to the other side.';
+        } else if(step === 4){
+          dp.innerHTML = 'Oxidation: 2 I⁻ ⟶ I₂ + <span style="color:#10b981;">2 e⁻</span> (x3)<br>Reduction: MnO₄⁻ + 2 H₂O + <span style="color:#10b981;">3 e⁻</span> ⟶ MnO₂ + 4 OH⁻ (x2)';
+          ex.innerHTML = '<b>Step 4: Balance Charge.</b> I⁻ loses 2 e⁻; MnO4⁻ gains 3 e⁻. Least common multiple = 6 e⁻.';
+        } else if(step === 5){
+          dp.innerHTML = '<span style="color:#10b981;font-size:16px;font-weight:700;">2 MnO₄⁻(aq) + 6 I⁻(aq) + 4 H₂O(l) ⟶ 2 MnO₂(s) + 3 I₂(s) + 8 OH⁻(aq)</span>';
+          ex.innerHTML = '<b>Step 5: Combine and Cancel Electrons.</b> Charge on left = 2(−1) + 6(−1) = −8; charge on right = 8(−1) = −8. Perfect conservation!';
+        }
+      } else if(rxn === 'p4_basic'){
+        if(step === 1){
+          dp.innerHTML = '<span style="color:#38bdf8;">Oxidation:</span> P₄ ⟶ H₂PO₂⁻ (P: 0 ⟶ +1)<br><span style="color:#f59e0b;">Reduction:</span> P₄ ⟶ PH₃ (P: 0 ⟶ −3)';
+          ex.innerHTML = '<b>Step 1: Disproportionation Half-Reactions.</b> Elemental white phosphorus acts simultaneously as oxidant and reductant.';
+        } else if(step === 2){
+          dp.innerHTML = 'Oxidation: P₄ + 8 H₂O ⟶ 4 H₂PO₂⁻<br>Reduction: P₄ ⟶ 4 PH₃';
+          ex.innerHTML = '<b>Step 2: Balance non-O/H atoms (P4 ⟶ 4 P).</b> Add 8 H2O to balance 8 O in 4 H2PO2⁻.';
+        } else if(step === 3){
+          dp.innerHTML = 'In Basic Medium:<br>Oxidation: P₄ + 8 OH⁻ ⟶ 4 H₂PO₂⁻ + 4 e⁻<br>Reduction: P₄ + 12 H₂O + 12 e⁻ ⟶ 4 PH₃ + 12 OH⁻';
+          ex.innerHTML = '<b>Step 3 & 4: Balance H, O, and Charge in Basic Medium.</b> Add OH⁻ and electrons.';
+        } else if(step === 4){
+          dp.innerHTML = 'Multiply Oxidation by 3:<br>3 P₄ + 24 OH⁻ ⟶ 12 H₂PO₂⁻ + 12 e⁻<br>Add to Reduction: P₄ + 12 H₂O + 12 e⁻ ⟶ 4 PH₃ + 12 OH⁻';
+          ex.innerHTML = '<b>Step 4: Equalize 12 electrons transferred.</b>';
+        } else if(step === 5){
+          dp.innerHTML = '<span style="color:#10b981;font-size:16px;font-weight:700;">P₄(s) + 3 OH⁻(aq) + 3 H₂O(l) ⟶ PH₃(g) + 3 H₂PO₂⁻(aq)</span>';
+          ex.innerHTML = '<b>Step 5: Divide by common factor 4.</b> All mass and charge (−3 on both sides) conserved.';
+        }
+      }
+    }
+
+    container.querySelector('#btn-rxn-mno4').onclick = function(){ rxn = 'mno4_fe'; step = 1; setActivePreset(this); render(); };
+    container.querySelector('#btn-rxn-cr2o7').onclick = function(){ rxn = 'cr2o7_so2'; step = 1; setActivePreset(this); render(); };
+    container.querySelector('#btn-rxn-mno4i').onclick = function(){ rxn = 'mno4_i_basic'; step = 1; setActivePreset(this); render(); };
+    container.querySelector('#btn-rxn-p4').onclick = function(){ rxn = 'p4_basic'; step = 1; setActivePreset(this); render(); };
+
+    container.querySelector('#btn-step-prev').onclick = function(){ if(step > 1){ step--; render(); } };
+    container.querySelector('#btn-step-next').onclick = function(){ if(step < 5){ step++; render(); } };
+    render();
+  }
+};
+
+// ==========================================
+// 5. redoxtitration: Redox Permanganate & Iodine Titration Simulator
+// ==========================================
+window.SIMS.redoxtitration = {
+  mount: function(container){
+    var mode = 'kmno4'; // kmno4 or iodine
+    var vAdded = 0.0; // mL
+    var vEq = 20.0; // mL equivalence
+
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip active" id="btn-mode-perm">Permanganometry (Self-Indicator)</button>' +
+      '    <button class="filter-chip" id="btn-mode-iod">Iodometry (Starch Indicator)</button>' +
+      '  </div>' +
+      '  <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">' +
+      '    <button class="btn-primary" id="btn-add-drop">+0.5 mL Titrant</button>' +
+      '    <button class="btn-secondary" id="btn-add-fast">+5.0 mL Fast</button>' +
+      '    <button class="btn-secondary" id="btn-reset-titr">↺ Reset</button>' +
+      '    <span id="titr-vol-readout" style="font-size:14px;font-family:monospace;font-weight:700;">Vol: 0.0 mL</span>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <svg id="svg-titr" viewBox="0 0 700 280" style="width:100%;height:auto;max-height:280px;background:#0f172a;border-radius:6px;"></svg>' +
+      '    <div id="titr-readout" style="margin-top:12px;padding:12px;background:var(--paper);border-radius:6px;border:1px solid var(--line);font-size:13px;line-height:1.5;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var svg = document.getElementById('svg-titr');
+      var rd = document.getElementById('titr-readout');
+      var vl = document.getElementById('titr-vol-readout');
+      if(!svg || !rd || !vl) return;
+      vl.textContent = 'Vol: ' + vAdded.toFixed(1) + ' mL / 20.0 mL';
+
+      var flaskColor, indicatorStatus, desc;
+      if(mode === 'kmno4'){
+        if(vAdded < 19.8){
+          flaskColor = 'rgba(241, 245, 249, 0.2)'; // colorless Mn2+
+          indicatorStatus = '<span style="color:#94a3b8;">Pre-Equivalence: Fe²⁺ in excess; purple MnO₄⁻ is instantly reduced to colorless Mn²⁺.</span>';
+        } else if(vAdded >= 19.8 && vAdded <= 20.5){
+          flaskColor = 'rgba(244, 114, 182, 0.45)'; // permanent faint pink!
+          indicatorStatus = '<span style="color:#ec4899;font-weight:700;">★ Stoichiometric Equivalence Point: Persistent Faint Pink Color!</span>';
+        } else {
+          flaskColor = 'rgba(219, 39, 119, 0.85)'; // deep purple excess
+          indicatorStatus = '<span style="color:#f43f5e;font-weight:700;">Post-Equivalence: Over-titrated with excess purple MnO₄⁻ titrant.</span>';
+        }
+        desc = 'KMnO4 is an intense purple self-indicator. In acidic H2SO4 medium, 5 Fe²⁺ + MnO₄⁻ + 8 H⁺ ⟶ 5 Fe³⁺ + Mn²⁺ + 4 H2O. The very first excess drop of MnO4⁻ imparts a persistent faint pink blush.';
+      } else {
+        if(vAdded < 15.0){
+          flaskColor = 'rgba(180, 83, 9, 0.7)'; // dark brown iodine
+          indicatorStatus = '<span style="color:#f59e0b;">High [I2]: Dark brown solution. DO NOT add starch yet (would form irreversible coagulate).</span>';
+        } else if(vAdded < 19.8){
+          flaskColor = 'rgba(253, 224, 71, 0.5)'; // straw yellow
+          indicatorStatus = '<span style="color:#eab308;font-weight:700;">Near Endpoint (Straw Yellow): ADD STARCH INDICATOR NOW ➔ turns deep blue!</span>';
+        } else if(vAdded >= 19.8 && vAdded <= 20.5){
+          flaskColor = 'rgba(241, 245, 249, 0.15)'; // crystal clear!
+          indicatorStatus = '<span style="color:#10b981;font-weight:700;">★ Endpoint Reached: Sharp discharge of blue starch-iodine complex to crystal clear!</span>';
+        } else {
+          flaskColor = 'rgba(241, 245, 249, 0.15)'; // clear excess
+          indicatorStatus = '<span style="color:#64748b;">Post-Equivalence: Thiosulfate in excess; solution remains water-clear.</span>';
+        }
+        desc = 'Iodometry titrates liberated I2 with standard Na2S2O3: I2 + 2 S2O3²⁻ ⟶ 2 I⁻ + S4O6²⁻. Starch forms an intense blue adsorption complex with trace I3⁻, discharging sharply at 0.00 M I2.';
+      }
+
+      svg.innerHTML = 
+        '<rect x="335" y="10" width="30" height="130" rx="3" fill="#1e293b" stroke="#64748b" stroke-width="2" />' +
+        '<rect x="338" y="20" width="24" height="' + (110 * (1 - vAdded/40)) + '" fill="' + (mode === "kmno4" ? "#ec4899" : "#0284c7") + '" opacity="0.8" />' +
+        '<line x1="335" y1="140" x2="365" y2="140" stroke="#f8fafc" stroke-width="3" />' +
+        '<polygon points="350,140 345,155 355,155" fill="#94a3b8" />' +
+        '<path d="M 350 155 L 350 175" stroke="' + (mode === "kmno4" ? "#ec4899" : "#38bdf8") + '" stroke-width="2" stroke-dasharray="3,2" />' +
+        '<polygon points="310,180 390,180 430,260 270,260" fill="none" stroke="#64748b" stroke-width="3" />' +
+        '<polygon points="305,190 395,190 425,257 275,257" fill="' + flaskColor + '" />' +
+        '<text x="350" y="240" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="700">Conical Flask</text>' +
+        '<text x="540" y="60" fill="#f8fafc" font-size="14" font-weight="700">Burette Titrant</text>' +
+        '<text x="540" y="85" fill="#94a3b8" font-size="12">' + (mode === "kmno4" ? "0.02 M KMnO4 (Purple)" : "0.05 M Na2S2O3 (Colorless)") + '</text>' +
+        '<text x="540" y="130" fill="#f8fafc" font-size="14" font-weight="700">Analyte in Flask</text>' +
+        '<text x="540" y="155" fill="#94a3b8" font-size="12">' + (mode === "kmno4" ? "Fe²⁺ in dilute H2SO4" : "Liberated I2 from excess KI") + '</text>';
+
+      rd.innerHTML = 
+        '<div style="margin-bottom:6px;">' + indicatorStatus + '</div>' +
+        '<div style="color:var(--muted);">' + desc + '</div>';
+    }
+
+    container.querySelector('#btn-mode-perm').onclick = function(){ mode = 'kmno4'; vAdded = 0.0; setActivePreset(this); render(); };
+    container.querySelector('#btn-mode-iod').onclick = function(){ mode = 'iodine'; vAdded = 0.0; setActivePreset(this); render(); };
+    container.querySelector('#btn-add-drop').onclick = function(){ vAdded = Math.min(30.0, vAdded + 0.5); render(); };
+    container.querySelector('#btn-add-fast').onclick = function(){ vAdded = Math.min(30.0, vAdded + 5.0); render(); };
+    container.querySelector('#btn-reset-titr').onclick = function(){ vAdded = 0.0; render(); };
+    render();
+  }
+};
+
+// ==========================================
+// 6. daniellcell: Daniell Galvanic Cell & Voltmeter Lab
+// ==========================================
+window.SIMS.daniellcell = {
+  mount: function(container){
+    var vExtMode = 'zero'; // zero (1.10V normal), eq (1.10V opposing), rev (1.40V opposing)
+
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip active" id="btn-vext-zero">Discharging (V_ext = 0 V)</button>' +
+      '    <button class="filter-chip" id="btn-vext-eq">Equilibrium (V_ext = 1.10 V)</button>' +
+      '    <button class="filter-chip" id="btn-vext-rev">Reversed / Electrolytic (V_ext = 1.40 V)</button>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <svg id="svg-dc" viewBox="0 0 700 300" style="width:100%;height:auto;max-height:300px;background:#0f172a;border-radius:6px;"></svg>' +
+      '    <div id="dc-readout" style="margin-top:12px;padding:12px;background:var(--paper);border-radius:6px;border:1px solid var(--line);font-size:13px;line-height:1.5;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var svg = document.getElementById('svg-dc');
+      var rd = document.getElementById('dc-readout');
+      if(!svg || !rd) return;
+
+      var vMeterVal, electronDir, statusHeader, desc;
+      if(vExtMode === 'zero'){
+        vMeterVal = '1.10 V';
+        electronDir = 'Zn ⟶ Cu (e⁻ flows Left to Right)';
+        statusHeader = '<span style="color:#10b981;font-weight:700;">Normal Galvanic Cell Operation (Spontaneous Discharge)</span>';
+        desc = 'Electrons flow spontaneously through the external circuit from the negative Zinc anode to the positive Copper cathode. Conventional electric current flows from Cu to Zn. Zn rod dissolves (Zn ⟶ Zn²⁺ + 2e⁻); Cu²⁺ ions deposit on Cu rod (Cu²⁺ + 2e⁻ ⟶ Cu). Salt bridge completes internal circuit with Cl⁻ migrating to anode and K⁺ to cathode.';
+      } else if(vExtMode === 'eq'){
+        vMeterVal = '0.00 V';
+        electronDir = 'No Net Electron Flow (Zero Current)';
+        statusHeader = '<span style="color:#eab308;font-weight:700;">Thermodynamic Equilibrium (V_ext = E°cell = 1.10 V)</span>';
+        desc = 'When the opposing external potential exactly equals the cell potential (1.10 V), no net electrons flow, no chemical reaction occurs, and current is zero.';
+      } else {
+        vMeterVal = '−0.30 V';
+        electronDir = 'Cu ⟶ Zn (e⁻ forced Right to Left)';
+        statusHeader = '<span style="color:#ef4444;font-weight:700;">Electrolytic Cell Operation (Forced Reverse Charging)</span>';
+        desc = 'External potential V_ext (1.40 V) exceeds E°cell (1.10 V). Electrons are forced from Cu to Zn: copper rod dissolves as Cu²⁺, and zinc deposits on the zinc electrode. The cell consumes electrical energy.';
+      }
+
+      svg.innerHTML = 
+        '<rect x="80" y="100" width="200" height="150" rx="8" fill="rgba(241,245,249,0.1)" stroke="#64748b" stroke-width="2" />' +
+        '<rect x="82" y="140" width="196" height="108" fill="rgba(203,213,225,0.25)" />' +
+        '<rect x="130" y="50" width="30" height="160" fill="#94a3b8" stroke="#334155" stroke-width="2" />' +
+        '<text x="145" y="40" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">Zn Anode (−)</text>' +
+        '<text x="180" y="220" text-anchor="middle" fill="#cbd5e1" font-size="12">1.0 M ZnSO4</text>' +
+
+        '<rect x="420" y="100" width="200" height="150" rx="8" fill="rgba(241,245,249,0.1)" stroke="#64748b" stroke-width="2" />' +
+        '<rect x="422" y="140" width="196" height="108" fill="rgba(56,189,248,0.4)" />' +
+        '<rect x="540" y="50" width="30" height="160" fill="#d97706" stroke="#78350f" stroke-width="2" />' +
+        '<text x="555" y="40" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="700">Cu Cathode (+)</text>' +
+        '<text x="520" y="220" text-anchor="middle" fill="#cbd5e1" font-size="12">1.0 M CuSO4</text>' +
+
+        '<path d="M 230 150 L 230 90 Q 350 40 470 90 L 470 150" fill="none" stroke="#fcd34d" stroke-width="16" stroke-linecap="round" />' +
+        '<text x="350" y="75" text-anchor="middle" fill="#0f172a" font-size="11" font-weight="700">SALT BRIDGE (KCl/Agar)</text>' +
+
+        '<path d="M 145 50 L 145 20 L 320 20" fill="none" stroke="#38bdf8" stroke-width="3" />' +
+        '<path d="M 380 20 L 555 20 L 555 50" fill="none" stroke="#38bdf8" stroke-width="3" />' +
+        '<circle cx="350" cy="20" r="22" fill="#1e293b" stroke="#38bdf8" stroke-width="2" />' +
+        '<text x="350" y="25" text-anchor="middle" fill="#38bdf8" font-size="11" font-family="monospace" font-weight="700">' + vMeterVal + '</text>' +
+        '<text x="350" y="285" text-anchor="middle" fill="#f8fafc" font-size="13" font-weight="700">IUPAC: Zn(s) | Zn²⁺(aq, 1 M) ∥ Cu²⁺(aq, 1 M) | Cu(s)</text>';
+
+      rd.innerHTML = 
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+        '  <span style="font-family:monospace;font-size:14px;font-weight:700;color:var(--primary);">' + electronDir + '</span>' +
+        '  <span style="font-size:12px;padding:4px 8px;border-radius:4px;background:var(--paper-soft);border:1px solid var(--line);">' + vMeterVal + '</span>' +
+        '</div>' +
+        '<div>' + statusHeader + '</div>' +
+        '<div style="margin-top:6px;color:var(--muted);">' + desc + '</div>';
+    }
+
+    container.querySelector('#btn-vext-zero').onclick = function(){ vExtMode = 'zero'; setActivePreset(this); render(); };
+    container.querySelector('#btn-vext-eq').onclick = function(){ vExtMode = 'eq'; setActivePreset(this); render(); };
+    container.querySelector('#btn-vext-rev').onclick = function(){ vExtMode = 'rev'; setActivePreset(this); render(); };
+    render();
+  }
+};
+
+// ==========================================
+// 7. ecserieslab: Electrochemical Series & Feasibility Predictor
+// ==========================================
+window.SIMS.ecserieslab = {
+  mount: function(container){
+    var couple1 = 'zn'; // anode candidate
+    var couple2 = 'cu'; // cathode candidate
+
+    var potentials = {
+      'li': { name: 'Li⁺ / Li', e0: -3.05, n: 1 },
+      'k':  { name: 'K⁺ / K', e0: -2.93, n: 1 },
+      'mg': { name: 'Mg²⁺ / Mg', e0: -2.37, n: 2 },
+      'al': { name: 'Al³⁺ / Al', e0: -1.66, n: 3 },
+      'zn': { name: 'Zn²⁺ / Zn', e0: -0.76, n: 2 },
+      'fe': { name: 'Fe²⁺ / Fe', e0: -0.44, n: 2 },
+      'she':{ name: '2H⁺ / H₂ (SHE)', e0: 0.00, n: 2 },
+      'cu': { name: 'Cu²⁺ / Cu', e0: +0.34, n: 2 },
+      'i2': { name: 'I₂ / 2I⁻', e0: +0.54, n: 2 },
+      'fe3':{ name: 'Fe³⁺ / Fe²⁺', e0: +0.77, n: 1 },
+      'ag': { name: 'Ag⁺ / Ag', e0: +0.80, n: 1 },
+      'br2':{ name: 'Br₂ / 2Br⁻', e0: +1.09, n: 2 },
+      'cr2':{ name: 'Cr₂O₇²⁻ / 2Cr³⁺', e0: +1.33, n: 6 },
+      'cl2':{ name: 'Cl₂ / 2Cl⁻', e0: +1.36, n: 2 },
+      'mno4':{ name: 'MnO₄⁻ / Mn²⁺', e0: +1.51, n: 5 },
+      'f2': { name: 'F₂ / 2F⁻', e0: +2.87, n: 2 }
+    };
+
+    container.innerHTML = 
+      '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
+      '  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">' +
+      '    <div>' +
+      '      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;">Anode Couple (Oxidation):</label>' +
+      '      <select id="sel-anode" class="select-input" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);">' +
+      '        <option value="li">Li⁺ / Li (−3.05 V)</option>' +
+      '        <option value="k">K⁺ / K (−2.93 V)</option>' +
+      '        <option value="mg">Mg²⁺ / Mg (−2.37 V)</option>' +
+      '        <option value="al">Al³⁺ / Al (−1.66 V)</option>' +
+      '        <option value="zn" selected>Zn²⁺ / Zn (−0.76 V)</option>' +
+      '        <option value="fe">Fe²⁺ / Fe (−0.44 V)</option>' +
+      '        <option value="she">2H⁺ / H₂ (0.00 V)</option>' +
+      '        <option value="cu">Cu²⁺ / Cu (+0.34 V)</option>' +
+      '        <option value="ag">Ag⁺ / Ag (+0.80 V)</option>' +
+      '      </select>' +
+      '    </div>' +
+      '    <div>' +
+      '      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;">Cathode Couple (Reduction):</label>' +
+      '      <select id="sel-cathode" class="select-input" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);">' +
+      '        <option value="she">2H⁺ / H₂ (0.00 V)</option>' +
+      '        <option value="cu" selected>Cu²⁺ / Cu (+0.34 V)</option>' +
+      '        <option value="i2">I₂ / 2I⁻ (+0.54 V)</option>' +
+      '        <option value="fe3">Fe³⁺ / Fe²⁺ (+0.77 V)</option>' +
+      '        <option value="ag">Ag⁺ / Ag (+0.80 V)</option>' +
+      '        <option value="br2">Br₂ / 2Br⁻ (+1.09 V)</option>' +
+      '        <option value="cr2">Cr₂O₇²⁻ / Cr³⁺ (+1.33 V)</option>' +
+      '        <option value="cl2">Cl₂ / 2Cl⁻ (+1.36 V)</option>' +
+      '        <option value="mno4">MnO₄⁻ / Mn²⁺ (+1.51 V)</option>' +
+      '        <option value="f2">F₂ / 2F⁻ (+2.87 V)</option>' +
+      '      </select>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div style="background:var(--paper-soft);padding:16px;border-radius:8px;border:1px solid var(--line);">' +
+      '    <div id="ec-readout" style="background:var(--paper);border-radius:6px;border:1px solid var(--line);padding:14px;font-size:14px;line-height:1.7;"></div>' +
+      '  </div>' +
+      '</div>';
+
+    function render(){
+      var rd = document.getElementById('ec-readout');
+      if(!rd) return;
+
+      var cA = potentials[couple1];
+      var cC = potentials[couple2];
+      var eCell = cC.e0 - cA.e0;
+      var nVal = Math.max(cA.n, cC.n);
+      var deltaG = -nVal * 96.485 * eCell; // kJ/mol
+
+      var isSpont = eCell > 0;
+      var verdict = isSpont 
+        ? '<span style="color:#10b981;font-weight:700;">★ Thermodynamically Feasible & Spontaneous (ΔG° < 0)</span>'
+        : '<span style="color:#ef4444;font-weight:700;">✗ Non-Spontaneous (Thermodynamically Forbidden under standard conditions, ΔG° > 0)</span>';
+
+      rd.innerHTML = 
+        '<div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px;">' +
+        '  E°_cell = E°_cathode − E°_anode = (' + (cC.e0 >= 0 ? '+' : '') + cC.e0.toFixed(2) + ' V) − (' + (cA.e0 >= 0 ? '+' : '') + cA.e0.toFixed(2) + ' V) = <b>' + (eCell >= 0 ? '+' : '') + eCell.toFixed(2) + ' V</b>' +
+        '</div>' +
+        '<div>' + verdict + '</div>' +
+        '<div style="margin-top:10px;font-family:monospace;font-size:13px;color:var(--muted);">' +
+        '  • Standard Gibbs Free Energy Change: ΔG° = −n F E°_cell ≈ <b>' + deltaG.toFixed(1) + ' kJ/mol</b><br>' +
+        '  • Anode Reaction (Oxidation): ' + cA.name + ' donor<br>' +
+        '  • Cathode Reaction (Reduction): ' + cC.name + ' acceptor' +
+        '</div>';
+    }
+
+    container.querySelector('#sel-anode').onchange = function(e){ couple1 = e.target.value; render(); };
+    container.querySelector('#sel-cathode').onchange = function(e){ couple2 = e.target.value; render(); };
+    render();
+  }
+};
+
+// Map concept aliases
+window.SIMS.c1 = window.SIMS.electrontransfer;
+window.SIMS.c2 = window.SIMS.oxnumberlab;
+window.SIMS.c3 = window.SIMS.redoxtypes;
+window.SIMS.c4 = window.SIMS.balancerlab;
+window.SIMS.c5 = window.SIMS.redoxtitration;
+window.SIMS.c6 = window.SIMS.daniellcell;
+window.SIMS.c7 = window.SIMS.ecserieslab;
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 11: Thermodynamics — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 11 · THERMODYNAMICS</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="24"></progress>
+      <span id="progress-text">0 / 24</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 8 Exercises from NCERT Class 11 Physics (pp. 226–243) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "keph204", "chapterNumber": 11, "book_name": "Physics", "title": "Thermodynamics", "subtitle": "Zeroth, first and second laws; heat, work and U; named processes on the P–V plane; Carnot engine.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph204.pdf", "page_start": 226, "page_end": 243, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "thermal-eq-zeroth", "nav": "Thermal equilibrium & zeroth law", "title": "If A and B each match C, they match each other — that common value is temperature.", "deck": "Thermodynamics is macroscopic. Thermal equilibrium means the macroscopic variables have stopped changing. The Zeroth Law invents temperature as the shared label of that equilibrium.", "minutes": 8, "section": "11.1–11.3", "pages": [1, 3], "print": "226–228", "sim": "zeroth", "simTitle": "Adiabatic vs diathermic wall (Fig. 11.1–11.2)", "quick": ["<strong>Thermodynamics</strong> deals with heat, temperature and the inter-conversion of heat and other forms of energy. It is a <em>macroscopic</em> science: the state of a gas is specified by pressure, volume, temperature, mass and composition — not by the coordinates of 10<sup>23</sup> molecules. A fired bullet is not hotter because of its centre-of-mass speed; temperature tracks the disordered internal motion.", "A system is in thermodynamic <strong>equilibrium</strong> when its macroscopic variables do not change with time. Two systems separated by an <strong>adiabatic</strong> wall (no heat flow) can sit at independent (P, V). Replace that wall by a <strong>diathermic</strong> (conducting) wall and the variables change until thermal equilibrium is reached (Fig. 11.1, zoom p.2).", "<strong>Zeroth Law</strong> (Fowler, 1931): two systems in thermal equilibrium with a third system separately are in thermal equilibrium with each other. The shared thermodynamic variable is temperature T. If T<sub>A</sub> = T<sub>C</sub> and T<sub>B</sub> = T<sub>C</sub>, then T<sub>A</sub> = T<sub>B</sub>."], "formulas": [{"label": "Zeroth Law", "html": "T<sub>A</sub> = T<sub>C</sub> and T<sub>B</sub> = T<sub>C</sub>  ⇒  T<sub>A</sub> = T<sub>B</sub>", "cond": "Fig. 11.2; the common value is temperature"}, {"label": "Thermal equilibrium", "html": "no net heat flow ⇔ temperatures equal", "cond": "diathermic contact; adiabatic walls block the test"}], "deeper": "Mechanics equilibrium is net force and torque zero. Thermodynamic equilibrium is time-independent macroscopic variables — even while molecules still collide. The caloric-fluid picture (heat as an invisible liquid that flowed until ‘levels’ equalised) was discarded after Rumford’s cannon-boring experiment (1798): the heat produced depended on the work done by the horses, not on the sharpness of the drill.", "worked": "Fig. 11.2 (zoom p.3): A and B each touch C through conducting walls, while A and B are separated by an adiabatic wall. After A and B equilibrate with C, the adiabatic wall is swapped for a conducting one and C is insulated. No further change occurs — that is the Zeroth Law, and it is why a thermometer (system C) can assign a temperature that two other bodies will share.", "prediction": {"prompt": "Two closed flasks of air sit in a Mumbai laboratory, separated first by a thick thermocol slab, then by a thin copper plate. When does thermal equilibrium become a meaningful statement about a shared temperature?", "options": ["Only after the copper (diathermic) plate replaces the thermocol, and the macroscopic variables have stopped changing.", "Immediately, because both flasks are in the same room.", "Never, because molecules keep colliding."], "answer": 0, "explanation": "An adiabatic wall (thermocol) lets each flask keep its own (P, V). A diathermic wall allows heat flow until T is common. Molecular collisions never stop; equilibrium is macroscopic."}, "connect": [["IRCTC pantry vs the rails", "A steel tea urn and a passenger’s stainless tumbler come to a common temperature through the conducting wall of the tumbler. The wooden table they rest on is closer to adiabatic on the time-scale of a chai stop — the rails outside do not share that T."], ["Wow — temperature is defined before the First Law", "The Zeroth Law is numbered 0 because Fowler stated it after the First and Second Laws already had names. Without it, ‘hotter’ is only a feeling; with it, T is the equality class of thermal equilibrium.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "State the Zeroth Law in one sentence and name the wall that prevents the test.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Thermodynamics describes a gas by", "options": ["macroscopic variables such as P, V, T, mass and composition", "the coordinates and velocities of every molecule", "only the centre-of-mass kinetic energy"], "answer": 0, "hint": "§11.1: thermodynamics is macroscopic.", "solution": "A thermodynamic state is specified by a few measurable bulk variables. Kinetic theory (Ch. 12) is the molecular picture.", "wrong": ["", "That is the fully microscopic description.", "CM kinetic energy is mechanics, not temperature."]}, {"level": "Medium", "type": "mcq", "prompt": "A and B are each in thermal equilibrium with C. After a conducting wall is placed between A and B,", "options": ["A and B are already in thermal equilibrium; their states do not change further", "heat must still flow from A to B until (T_A + T_B)/2 is reached", "the Zeroth Law forbids any statement about A and B"], "answer": 0, "hint": "Fig. 11.2(b).", "solution": "Zeroth Law: A ~ C and B ~ C imply A ~ B. No further heat flow.", "wrong": ["", "They already share T; the mean is not a new destination.", "The law is precisely that statement."]}, {"level": "Hard", "type": "mcq", "prompt": "A bullet in flight is not at a higher temperature merely because it is fast. Why?", "options": ["Temperature tracks disordered internal energy, not the kinetic energy of the body as a whole", "Temperature is undefined for moving objects", "Friction with air always cools a bullet"], "answer": 0, "hint": "Points to Ponder 1; §11.1 bullet-in-wood.", "solution": "U is evaluated in the CM frame. When the bullet stops in wood, ordered KE becomes disordered energy and T rises.", "wrong": ["", "T is well-defined in the CM frame.", "Air drag heats, not cools, the surface."]}]}, {"id": "heat-u-work", "nav": "Heat, internal energy, work", "title": "U is a state; heat and work are two ways of changing it.", "deck": "Internal energy U is the molecular KE + PE in the CM frame. Heat is energy transfer driven by a temperature difference; work is every other transfer (a moving piston, a falling weight).", "minutes": 8, "section": "11.4", "pages": [4, 5], "print": "229–230", "sim": "heatwork", "simTitle": "Two modes of changing U (Fig. 11.4)", "quick": ["<strong>Internal energy U</strong> is the sum of molecular kinetic and potential energies relative to the centre of mass. Translational, rotational and vibrational motion all count (Fig. 11.3). The kinetic energy of the box sliding across the bench does <em>not</em>. U is a <strong>state variable</strong>: its value depends only on the present (P, V, T), not on the path that got you there.", "<strong>Heat</strong> is energy in transit because of a temperature difference. <strong>Work</strong> is energy in transit by any other means — typically PΔV work of a piston. A sentence like ‘this gas contains 40 J of heat’ is as meaningless as ‘this gas contains 40 J of work’. The gas in a given state has a definite U."], "formulas": [{"label": "Piston work (constant P)", "html": "ΔW = P ΔV", "cond": "work done <em>by</em> the system; area under the P–V curve in general"}, {"label": "State vs path", "html": "U = U(state);  Q, W depend on the path", "cond": "§11.4; Q and W are modes of transfer, not properties"}], "deeper": "Sign convention in this reprint (Summary point 13): Q > 0 heat added to the system; Q < 0 heat removed; W > 0 work done by the system; W < 0 work done on the system. Many engineering books flip the work sign. Stick to NCERT’s ΔQ = ΔU + ΔW.", "worked": "Water at 1 atm, 1 g liquid → vapour (zoom p.5): measured latent heat ΔQ = 2256 J. Volumes 1 cm³ → 1671 cm³ so ΔW = P(V_g − V_l) = 1.013×10⁵ × 1670×10⁻⁶ = 169.2 J. Then ΔU = ΔQ − ΔW = 2256 − 169.2 = 2086.8 J. Most of the latent heat becomes internal energy of the vapour, not piston work.", "prediction": {"prompt": "1 g of water boils at 1 atm. Latent heat 2256 J, expansion work 169 J. Where does the 2087 J difference go?", "options": ["Into the internal energy of the vapour (molecular KE + PE of a much larger volume)", "It is destroyed, violating conservation", "It must appear as a temperature rise of the steam"], "answer": 0, "explanation": "Boiling is isothermal at 100 °C. ΔU stores the energy that unbinds molecules and feeds their disordered motion in the vapour."}, "connect": [["Idli steamer in a Bengaluru kitchen", "The latent heat that turns water to steam is mostly ΔU, not the small PΔV of the rattling lid. That is why a steamer stays hot long after you turn the gas down — U is stored in the vapour."], ["Wow — a statement that a body ‘contains heat’ is meaningless", "NCERT is blunt: heat is not a state variable. After the steam condenses, you cannot point to which joules ‘were heat’ and which ‘were work’. Only U remains.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "Distinguish U from Q and W in one sentence each, and quote the boiling-water numbers 2256, 169.2, 2086.8 J.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which of these is a thermodynamic state variable?", "options": ["internal energy U", "heat Q", "work W"], "answer": 0, "hint": "§11.4 last paragraphs.", "solution": "U depends only on the state. Q and W are path-dependent transfers.", "wrong": ["", "Heat is energy in transit.", "Work is energy in transit."]}, {"level": "Medium", "type": "number", "map": "§11.5 water", "prompt": "For 1 g water → steam at 1 atm, ΔQ = 2256 J and ΔW = 169.2 J. ΔU in joules is", "answer": 2086.8, "unit": "J", "tolerance": 0.2, "hint": "ΔU = ΔQ − ΔW with W the work by the system.", "solution": "2256 − 169.2 = 2086.8 J. Most of the latent heat increases U."}, {"level": "Hard", "type": "mcq", "prompt": "A gas is taken from (P₁, V₁) to (P₂, V₂) by two different paths. Which quantity is the same on both paths?", "options": ["ΔU", "ΔQ", "ΔW"], "answer": 0, "hint": "U is a state variable; Q − W = ΔU is path-independent, Q and W separately are not.", "solution": "Only the combination ΔQ − ΔW is path-independent, and it equals ΔU.", "wrong": ["", "Heat depends on the path.", "Work is the area under the particular P–V path."]}]}, {"id": "first-law", "nav": "First law of thermodynamics", "title": "ΔQ = ΔU + ΔW is energy conservation with the surroundings allowed to talk.", "deck": "Heat into the system equals the rise in U plus the work the system does. For a cycle ΔU = 0 so Q_net = W_net. For an ideal-gas isotherm ΔU = 0 so Q = W.", "minutes": 9, "section": "11.5", "pages": [5, 6], "print": "230–231", "sim": "firstlaw", "simTitle": "First-law ledger: heat, work, ΔU", "quick": ["Let ΔQ be heat supplied <em>to</em> the system, ΔW the work done <em>by</em> the system, and ΔU the change in internal energy. Conservation of energy then reads <strong>ΔQ = ΔU + ΔW</strong> (Eq. 11.1). Equivalently ΔQ − ΔW = ΔU (Eq. 11.2): the combination of the two path-dependent transfers is path-independent.", "If ΔU = 0 (isothermal process of an ideal gas, or any complete cycle), heat supplied is used entirely as work. For a gas pushing a piston against constant pressure, ΔW = P ΔV and Eq. (11.3) is ΔQ = ΔU + P ΔV."], "formulas": [{"label": "First Law", "html": "ΔQ = ΔU + ΔW", "cond": "Eq. (11.1); Q to the system, W by the system"}, {"label": "Constant-pressure piston", "html": "ΔQ = ΔU + P ΔV", "cond": "Eq. (11.3)"}, {"label": "Signs (this reprint)", "html": "Q&gt;0 heat in; W&gt;0 work by the system", "cond": "Summary point 13"}], "deeper": "The First Law does not say which processes can actually happen — only that energy is accounted for. A cup of tea spontaneously cooling while lifting a weight would conserve energy if Q = W, but the Second Law forbids that sole result. Keep the two laws distinct.", "worked": {"title": "Ex 11.5 (zoom p.17)", "problem": "Adiabatic A→B: 22.3 J of work is done on the system. Via another path A→B the net heat absorbed is 9.35 cal. Net work done by the system on the second path? (1 cal = 4.19 J.)", "steps": ["Adiabatic: Q = 0, W_by = −22.3 J ⇒ ΔU = Q − W_by = 22.3 J (state function).", "Q₂ = 9.35 × 4.19 = 39.1765 J.", "W_by,₂ = Q₂ − ΔU = 39.1765 − 22.3 = 16.88 J."], "answer": "16.9 J (work done by the system on the latter path)."}, "prediction": {"prompt": "An electric heater dumps 100 W into a cylinder while the gas does 75 J of work each second. What is dU/dt?", "options": ["+25 J s⁻¹ — first law as a rate: 100 = dU/dt + 75", "175 J s⁻¹ — add heat and work", "0 — temperature cannot change if work is being done"], "answer": 0, "explanation": "Ex 11.7: power form of Eq. (11.1). Internal energy increases at 25 W."}, "connect": [["NTPC thermal plant ledger", "Coal heat ΔQ splits into turbine work ΔW and the rise (or, in a cycle, the dump) of U of the working fluid. You cannot get more shaft work than the first-law remainder ΔQ − ΔU."], ["Wow — Joule’s paddle wheel is Eq. (11.1) with Q = 0", "Stirring water with a falling weight does work on the system (W < 0 in NCERT signs), so ΔU = −ΔW > 0 and the water warms. That experiment retired the caloric fluid.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "Write Eq. (11.1) with NCERT signs and recast Ex 11.7 as a rate equation.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The First Law of thermodynamics is", "options": ["conservation of energy including heat and work with the surroundings", "the statement that heat never flows from cold to hot", "Boyle’s law for an ideal gas"], "answer": 0, "hint": "§11.5.", "solution": "ΔQ = ΔU + ΔW is energy conservation. The cold-to-hot ban is the Second Law (Clausius).", "wrong": ["", "That is Clausius.", "Boyle is PV = const at fixed T."]}, {"level": "Medium", "type": "number", "map": "Ex 11.7", "prompt": "Heater 100 W, system performs 75 J of work per second. Rate of increase of U, in W, is", "answer": 25, "unit": "W", "tolerance": 0.1, "hint": "dQ/dt = dU/dt + dW/dt.", "solution": "100 = dU/dt + 75 ⇒ dU/dt = 25 W."}, {"level": "Hard", "type": "number", "map": "Ex 11.5", "prompt": "A→B adiabatic with 22.3 J work on the system; another path has Q = 9.35 cal (1 cal = 4.19 J). Work done by the system on the second path, in J, is", "answer": 16.88, "unit": "J", "tolerance": 0.1, "hint": "ΔU is 22.3 J on both paths.", "solution": "Q = 9.35×4.19 = 39.1765 J; W = Q − ΔU = 16.88 J."}]}, {"id": "specific-heat", "nav": "Specific heat capacity", "title": "Heat capacity depends on the process: Cp − Cv = R for an ideal gas.", "deck": "s = (1/m) ΔQ/ΔT and C = (1/μ) ΔQ/ΔT. For a solid, equipartition gives C ≈ 3R (Dulong–Petit). For an ideal gas the two molar heats differ by R because extra heat at constant pressure pays for PΔV work.", "minutes": 8, "section": "11.6", "pages": [6, 7], "print": "231–232", "sim": "cpcv", "simTitle": "Why Cp exceeds Cv by R", "quick": ["Heat capacity S = ΔQ/ΔT (Eq. 11.4). Specific heat s = S/m (J kg⁻¹ K⁻¹) and molar specific heat C = S/μ (J mol⁻¹ K⁻¹) strip out the amount of substance. Both still depend on the <em>process</em> — Points to Ponder 4.", "One calorie is the heat that raises 1 g of water from 14.5 °C to 15.5 °C; 1 cal = 4.186 J, and s_water = 4186 J kg⁻¹ K⁻¹. For an ideal gas <strong>C<sub>p</sub> − C<sub>v</sub> = R</strong> (Eq. 11.8). Proof: C<sub>v</sub> = dU/dT; at constant pressure the extra R comes from P(dV/dT) = R per mole. Solids: U = 3RT per mole so C ≈ 3R at ordinary T (Table 11.1; carbon is the exception)."], "formulas": [{"label": "Specific heat", "html": "s = (1/m) ΔQ/ΔT", "cond": "Eq. (11.5); SI unit J kg⁻¹ K⁻¹"}, {"label": "Molar specific heat", "html": "C = (1/μ) ΔQ/ΔT", "cond": "Eq. (11.6)"}, {"label": "Ideal gas", "html": "C<sub>p</sub> − C<sub>v</sub> = R", "cond": "Eq. (11.8)"}, {"label": "Dulong–Petit (solids)", "html": "C ≈ 3R", "cond": "Eq. (11.7); ordinary temperatures"}], "deeper": "C_v is the heat to raise T with the piston locked (all of ΔQ becomes ΔU). C_p lets the piston move: some of ΔQ becomes PΔV work, so more heat is needed for the same ΔT. γ = C_p/C_v later labels adiabats on the P–V plane.", "worked": "Ex 11.2 (zoom p.17): 2.0×10⁻² kg of N₂, ΔT = 45 °C at constant pressure. μ = 0.020/0.028 = 5/7 mol. Diatomic C_p = (7/2)R. Q = μ C_p ΔT = (5/7)×(7/2)×8.3×45 = (5/2)×8.3×45 = 933.75 J.", "prediction": {"prompt": "Why is more heat needed to warm an ideal gas by 1 K at constant pressure than at constant volume?", "options": ["At constant pressure the gas expands and does PΔV work; that extra energy is C_p − C_v = R per mole", "Molecules move faster at constant pressure by definition", "R is added only for real gases"], "answer": 0, "explanation": "U of an ideal gas depends only on T, so ΔU is the same. The constant-pressure path has extra work."}, "connect": [["Geyser vs desert town (Ex 11.1, 11.3)", "A 3 L min⁻¹ geyser lifting water 50 K at s ≈ 4.2×10³ J kg⁻¹ K⁻¹ burns fuel at 15.75 g min⁻¹ if the heat of combustion is 4.0×10⁴ J g⁻¹. Harbour towns are temperate because water’s huge s stores monsoon heat."], ["Wow — the calorie is just a conversion factor", "‘Mechanical equivalent of heat’ is 4.186 J cal⁻¹. In SI we quote everything in joules; the name is historical clutter (NCERT §11.6).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "Write C_p − C_v = R and explain the extra R as PΔV work per mole per kelvin.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "1 calorie, as defined in this chapter, is the heat that raises", "options": ["1 g of water from 14.5 °C to 15.5 °C", "1 kg of water by 1 K at any temperature", "1 mol of an ideal gas by 1 K"], "answer": 0, "hint": "§11.6; s of water varies slightly with T (Fig. 11.5).", "solution": "The interval is specified because s_water is not perfectly constant. 1 cal = 4.186 J.", "wrong": ["", "That would be 4186 J, and s is T-dependent.", "That is a molar heat, process-dependent."]}, {"level": "Medium", "type": "number", "map": "Ex 11.2", "prompt": "Heat (J) to raise 2.0×10⁻² kg of N₂ by 45 °C at constant pressure (R = 8.3, M = 28) is", "answer": 933.75, "unit": "J", "tolerance": 1, "hint": "μ C_p ΔT with C_p = 7R/2.", "solution": "(0.02/0.028)×(7/2)×8.3×45 = 933.75 J."}, {"level": "Hard", "type": "mcq", "prompt": "Dulong–Petit C = 3R for a solid comes from", "options": ["three quadratic energy terms per atom (each ½k_B T kinetic + ½k_B T potential)", "the ideal-gas law applied to the lattice", "latent heat of fusion"], "answer": 0, "hint": "§11.6; three oscillators, two modes each.", "solution": "U = 3 N k_B T = 3 μ R T so C = dU/dT = 3R, with PΔV negligible.", "wrong": ["", "A solid is not an ideal gas.", "Fusion is a phase change, not C."]}]}, {"id": "state-vars-quasi", "nav": "State variables & quasi-static processes", "title": "Equilibrium states live on a P–V–T surface; a quasi-static process crawls along it.", "deck": "P, V, T, U are state variables; Q and W are not. A quasi-static process is infinitely slow, so the system is always in equilibrium with the surroundings. Real explosions and free expansions leave the surface.", "minutes": 7, "section": "11.7–11.8.1", "pages": [8, 9], "print": "233–234", "sim": "quasistatic", "simTitle": "On-surface crawl vs free expansion (Fig. 11.6–11.7)", "quick": ["An <strong>equation of state</strong> (ideal gas: PV = μRT) links the state variables. Extensive variables (U, V, M) scale with size; intensive ones (P, T, ρ) do not. Heat and work are not state variables — they do not live on the P–V–T surface.", "If you yank a partition or drop the external pressure by a finite amount, the gas passes through non-equilibrium states with no well-defined P or T (Fig. 11.6). A <strong>quasi-static</strong> process is the idealisation in which the external pressure and the reservoir temperature differ only infinitesimally from those of the system (Fig. 11.7). All named processes below are treated as quasi-static unless stated otherwise."], "formulas": [{"label": "Ideal-gas equation of state", "html": "PV = μ R T", "cond": "equilibrium states only"}, {"label": "Quasi-static", "html": "|P − P_ext| → 0 and |T − T_res| → 0 at every stage", "cond": "Fig. 11.7; infinitely slow"}], "deeper": "Free expansion into vacuum (Ex 11.6) is the textbook non-quasi-static process: intermediate states do not lie on the P–V–T surface. You may still join the initial and final equilibrium dots by a dashed curve, but that curve is not the history of the gas.", "worked": "Ex 11.6 (zoom p.17): equal cylinders A (gas at STP) and B (vacuum), stopcock opened, whole system insulated. Final P = ½ atm (volume doubles). ΔU = 0 (Q = 0, W = 0 against vacuum). ΔT = 0 for an ideal gas. Intermediate states are not on the P–V–T surface.", "prediction": {"prompt": "Two equal insulated cylinders, A at STP and B evacuated, are joined by a stopcock. After the stopcock opens, the intermediate states", "options": ["do not lie on the P–V–T surface — the process is not quasi-static", "follow Boyle’s isotherm PV = const", "follow an adiabat PV^γ = const"], "answer": 0, "explanation": "Ex 11.6(d). There is no well-defined P, V of ‘the gas’ while it is rushing. Only the end-points are equilibrium states."}, "connect": [["Opening an LPG valve into a balloon", "The first fraction of a second is a free-expansion-like rush. Thermodynamic P, T are defined again only after the hissing stops. The quasi-static idealisation is the slow, controlled fill."], ["Wow — thermodynamics refuses to describe a bang", "NCERT: non-equilibrium states are ‘difficult to deal with’. That is not a gap in this reprint; it is the subject’s boundary. Kinetic theory later estimates rates, but the First Law is applied between equilibrium end-points.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "Name three state variables and one process whose intermediate states leave the P–V–T surface.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which is not a thermodynamic state variable?", "options": ["heat Q", "pressure P", "internal energy U"], "answer": 0, "hint": "Summary 6.", "solution": "Heat is a transfer. P and U characterise the state.", "wrong": ["", "P is a classic state variable.", "U is a state variable."]}, {"level": "Medium", "type": "mcq", "map": "Ex 11.6", "prompt": "Insulated free expansion of an ideal gas into vacuum. ΔT is", "options": ["zero, because Q = 0 and W = 0 so ΔU = 0, and U = U(T) only", "negative, because the gas ‘uses energy to expand’", "positive, because molecules speed up into the empty cylinder"], "answer": 0, "hint": "Ex 11.6(b,c).", "solution": "No heat, no work against vacuum, so ΔU = 0. For an ideal gas that means ΔT = 0.", "wrong": ["", "There is no opposing pressure, so W = 0.", "Speeds are reshuffled, not boosted."]}, {"level": "Hard", "type": "mcq", "prompt": "A quasi-static process is", "options": ["infinitely slow, with the system always in equilibrium with the surroundings", "any process that is adiabatic", "any cyclic process"], "answer": 0, "hint": "§11.8.1.", "solution": "Infinitesimal mismatch of P and T. Adiabatic and cyclic processes need not be quasi-static (free expansion is adiabatic and not quasi-static).", "wrong": ["", "Adiabatic only means Q = 0.", "A cycle can be irreversible."]}]}, {"id": "pv-processes", "nav": "Isothermal, adiabatic, isochoric, isobaric", "title": "Four named paths on the P–V plane — and the area under each is the work.", "deck": "Isotherm: PV = const, Q = W = μRT ln(V₂/V₁). Adiabat: PV^γ = const, steeper, W = μR(T₁−T₂)/(γ−1). Isochoric: W = 0. Isobaric: W = PΔV. Cycle: ΔU = 0, Q_net = W_net.", "minutes": 10, "section": "11.8.2–11.8.6", "pages": [9, 11], "print": "234–236", "sim": "pvdiag", "simTitle": "Fig. 11.8 isotherm vs adiabat lab", "quick": ["<strong>Isothermal</strong> (T fixed): PV = const (Boyle). For an ideal gas ΔU = 0, so Q = W = μRT ln(V₂/V₁) (Eq. 11.12). Expansion absorbs heat and does work; compression does the reverse.", "<strong>Adiabatic</strong> (Q = 0, insulated): PV<sup>γ</sup> = const with γ = C<sub>p</sub>/C<sub>v</sub> (Eqs. 11.13–11.14). Work by the gas cools it: W = μR(T₁ − T₂)/(γ − 1) (Eq. 11.16). On a P–V plot the adiabat is <em>steeper</em> than the isotherm through the same point (Fig. 11.8, zoom p.10).", "<strong>Isochoric</strong> (V fixed): W = 0, ΔQ = ΔU. <strong>Isobaric</strong> (P fixed): W = P(V₂ − V₁) = μR(T₂ − T₁) (Eq. 11.17). <strong>Cyclic</strong>: ΔU = 0, so the net heat absorbed equals the net work done (area enclosed on the P–V diagram)."], "formulas": [{"label": "Isothermal work (ideal gas)", "html": "W = μ R T ln(V₂/V₁) = Q", "cond": "Eq. (11.12); ΔU = 0"}, {"label": "Adiabat", "html": "P V<sup>γ</sup> = const,  γ = C<sub>p</sub>/C<sub>v</sub>", "cond": "Eqs. (11.13), (11.14)"}, {"label": "Adiabatic work", "html": "W = μ R (T₁ − T₂)/(γ − 1)", "cond": "Eq. (11.16); Q = 0 so ΔU = −W"}, {"label": "Isobaric work", "html": "W = P(V₂ − V₁) = μ R (T₂ − T₁)", "cond": "Eq. (11.17)"}], "deeper": "Why is the adiabat steeper? For a given dV < 0, an adiabat has no incoming heat, so T falls and P drops faster than on the isotherm. Equivalently |dP/dV|_s = γ P/V > P/V = |dP/dV|_T.", "worked": {"title": "Ex 11.4 and Ex 11.8 (zooms p.17–18)", "problem": "(i) 3 mol H₂, insulated cylinder, compressed to half volume. Factor by which P increases? (ii) Fig. 11.11: D(2.0 m³, 600 N m⁻²) → E(5.0 m³, 300 N m⁻²) linear, then E → F(2.0 m³, 300 N m⁻²) isobaric. W_{D→E→F}?", "steps": ["H₂ is diatomic, γ = 7/5 = 1.4. Adiabatic: P₂/P₁ = (V₁/V₂)^γ = 2^{1.4} = 2.64.", "W_DE = area of trapezium = ½(600+300)(5−2) = 1350 J.", "W_EF = P ΔV = 300(2−5) = −900 J. Total 450 J."], "answer": "(i) 2.64  (ii) 450 J."}, "prediction": {"prompt": "From the same (P, V), you compress an ideal gas to half volume, once isothermally and once adiabatically. Which final pressure is higher?", "options": ["Adiabatic — the curve is steeper, so P rises more for the same ΔV", "Isothermal — heat cannot escape, so P must rise more", "They meet, because both obey Boyle"], "answer": 0, "explanation": "Fig. 11.8. On the adiabat T also rises, adding to the P increase. Boyle applies only at constant T."}, "connect": [["Diesel compression in a Tata 407", "The compression stroke is closer to adiabatic than isothermal: Q has no time to leak. T soars, which is why diesel can ignite without a spark plug."], ["Wow — the enclosed P–V area is the work of a cycle", "Clockwise (engine) area is work by the system; anticlockwise (refrigerator) is work on the system. That single geometric fact is why indicator diagrams exist in every ITI workshop.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "Write the four process names with their constraints and the expression for W of an ideal-gas isotherm and adiabat.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "On a P–V diagram, the work done by the gas equals", "options": ["the area under the process curve", "the slope of the process curve", "the intercept on the P-axis"], "answer": 0, "hint": "W = ∫ P dV.", "solution": "Work is the P–V area, signed by the direction of dV.", "wrong": ["", "Slope is related to γ or T, not W.", "Intercept is not W."]}, {"level": "Medium", "type": "number", "map": "Ex 11.4", "prompt": "Insulated H₂ (γ = 1.4) compressed to half volume. P₂/P₁ equals", "answer": 2.639, "unit": "", "tolerance": 0.02, "hint": "P₁ V₁^γ = P₂ V₂^γ.", "solution": "2^{1.4} = 2.639. (About 2.64.)"}, {"level": "Hard", "type": "number", "map": "Ex 11.8 / Fig. 11.11", "prompt": "W by the gas for D(2 m³, 600 Pa) → E(5 m³, 300 Pa) linear then E → F(2 m³, 300 Pa), in J, is", "answer": 450, "unit": "J", "tolerance": 1, "hint": "Trapezium minus isobaric compression rectangle.", "solution": "½(600+300)×3 + 300×(−3) = 1350 − 900 = 450 J."}]}, {"id": "second-law-rev", "nav": "Second law & reversibility", "title": "The First Law allows a 100 % heat engine; the Second Law forbids it.", "deck": "Kelvin–Planck: no engine whose sole result is heat from one reservoir → work. Clausius: no sole result of heat from cold to hot. Reversible means quasi-static and frictionless; nature’s spontaneous processes are irreversible.", "minutes": 8, "section": "11.9–11.10", "pages": [11, 12], "print": "236–237", "sim": "secondlaw", "simTitle": "Kelvin–Planck vs Clausius, in pictures", "quick": ["The First Law is silent on direction. A perfect conversion of heat from a single reservoir into work would conserve energy — and never happens. <strong>Kelvin–Planck</strong>: no process is possible whose sole result is the absorption of heat from a reservoir and complete conversion of that heat into work. <strong>Clausius</strong>: no process is possible whose sole result is the transfer of heat from a colder object to a hotter object.", "Put simply: no heat engine has η = 1, and no refrigerator has coefficient of performance α = ∞. A process is <strong>reversible</strong> if both system and surroundings can be restored with no change anywhere else. That demands quasi-static plus no friction/viscosity. Spontaneous processes of nature are irreversible."], "formulas": [{"label": "Engine efficiency", "html": "η = W/Q₁ = 1 − Q₂/Q₁  &lt; 1", "cond": "Q₁ from hot reservoir, Q₂ dumped to cold"}, {"label": "Refrigerator COP", "html": "α = Q₂/W  finite", "cond": "Second Law: α ≠ ∞"}], "deeper": "The two statements of the Second Law are equivalent: if a Kelvin–Planck violator existed you could couple it to a refrigerator and build a Clausius violator, and vice versa. NCERT sketches that coupling (Fig. 11.10) around the Carnot argument.", "worked": "A Carnot-style comparison (zoom p.13–14): couple a supposed super-efficient irreversible engine I to a reversed Carnot engine R. The composite can be arranged to transfer heat from cold to hot with no net work — a Clausius violation. Therefore no engine is more efficient than Carnot between the same two temperatures.", "prediction": {"prompt": "A claimed ‘100 % efficient’ engine takes heat from a single boiler and turns all of it into shaft work, dumping nothing. Which law is violated?", "options": ["Kelvin–Planck statement of the Second Law (First Law is satisfied)", "Zeroth Law, because two temperatures are missing", "First Law, because energy would not be conserved"], "answer": 0, "explanation": "Energy balances (Q = W). What is forbidden is the sole result ‘heat from one reservoir → work’."}, "connect": [["Window AC in a Chennai summer", "Heat is pumped from the cold bedroom to the hotter street — but not as a sole result: the compressor’s work W is the Second-Law tax. Unplug it and the flow reverses spontaneously."], ["Wow — friction is a one-way street", "A block sliding to rest converts work to internal energy; you cannot gather that heat from a single reservoir and restore the block’s KE without a colder dump. That everyday observation is Kelvin–Planck.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "State Kelvin–Planck and Clausius in one sentence each, and name two ingredients of reversibility.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The Kelvin–Planck statement forbids", "options": ["an engine whose sole result is heat from one reservoir converted entirely into work", "any conversion of work into heat", "isothermal expansion of an ideal gas"], "answer": 0, "hint": "Summary 10.", "solution": "η = 1 is forbidden. Work → heat (Joule heating) happens all the time.", "wrong": ["", "That direction is allowed.", "Isothermal expansion dumps no heat to a second reservoir only because ΔU = 0 and a reservoir is still present."]}, {"level": "Medium", "type": "mcq", "prompt": "A process is reversible only if it is", "options": ["quasi-static and free of dissipative factors such as friction", "adiabatic", "cyclic"], "answer": 0, "hint": "§11.10; Summary 11.", "solution": "Both ingredients. Free expansion is adiabatic and irreversible.", "wrong": ["", "Q = 0 is not enough.", "A cycle can be irreversible (hysteresis loop)."]}, {"level": "Hard", "type": "mcq", "prompt": "Clausius and Kelvin–Planck statements are", "options": ["equivalent — a violator of one can be coupled to build a violator of the other", "independent laws about different quantities", "the same as the First Law written twice"], "answer": 0, "hint": "Fig. 11.10 coupling argument.", "solution": "NCERT shows the coupling. They are two faces of one Second Law.", "wrong": ["", "They constrain the same set of processes.", "First Law is conservation; this is direction."]}]}, {"id": "carnot", "nav": "Carnot engine", "title": "Two isotherms and two adiabats: η = 1 − T₂/T₁, and nothing between those T’s beats it.", "deck": "Carnot’s reversible engine absorbs Q₁ at T₁, dumps Q₂ at T₂, and uses adiabats to switch reservoirs. Efficiency is 1 − T₂/T₁, independent of the working substance. That ratio also defines the thermodynamic temperature scale.", "minutes": 10, "section": "11.11", "pages": [12, 14], "print": "237–239", "sim": "carnot", "simTitle": "Carnot cycle on the P–V plane (Fig. 11.9)", "quick": ["A reversible engine between only two reservoirs must absorb heat isothermally at T₁, dump heat isothermally at T₂, and move between those temperatures by <strong>adiabats</strong> (any non-adiabatic link would need extra reservoirs). That loop is the <strong>Carnot cycle</strong> (Fig. 11.9, zoom p.13).", "For an ideal gas: Q₁ = μRT₁ ln(V₂/V₁), Q₂ = μRT₂ ln(V₃/V₄), and the adiabats force V₂/V₁ = V₃/V₄, so <strong>η = 1 − T₂/T₁</strong> (Eq. 11.27). Carnot’s theorem: no engine between the same two temperatures is more efficient, and all reversible engines share this η, independent of the working substance. Thermodynamic temperature is defined by Q₁/Q₂ = T₁/T₂ (Eq. 11.28)."], "formulas": [{"label": "Carnot efficiency", "html": "η = 1 − T₂/T₁ = 1 − Q₂/Q₁", "cond": "Eq. (11.27); T on the thermodynamic scale"}, {"label": "Isothermal legs", "html": "Q₁ = μ R T₁ ln(V₂/V₁),  Q₂ = μ R T₂ ln(V₃/V₄)", "cond": "Eqs. (11.18), (11.20)"}, {"label": "Thermodynamic scale", "html": "T₁/T₂ = Q₁/Q₂", "cond": "Eq. (11.28); independent of substance"}], "deeper": "The adiabatic legs cancel in the net work (W_{2→3} = −W_{4→1} for an ideal gas), leaving W = Q₁ − Q₂. Raising T₁ (hotter boiler) or lowering T₂ (colder condenser, or a Himalayan river instead of a warm estuary) is the only way to raise the Carnot ceiling. Real plants live well below it because every finite ΔT and every bit of friction is irreversibility.", "worked": "A Carnot engine between a 227 °C boiler (500 K) and a 27 °C river (300 K) has η = 1 − 300/500 = 0.40 = 40 %. A real NTPC Rankine plant between the same numbers might reach ~30 % — the gap is irreversibility, not a First-Law leak.", "prediction": {"prompt": "Two Carnot engines, one using ideal gas and one using steam, operate between the same 500 K and 300 K. Their efficiencies", "options": ["are equal (40 %), independent of the working substance", "differ because steam is not ideal", "are both 100 % because Carnot is reversible"], "answer": 0, "explanation": "Carnot’s theorem (b): η depends only on the two temperatures. Reversible does not mean η = 1 unless T₂ = 0."}, "connect": [["Tapovan hydel vs a desert thermal plant", "The same boiler T₁ against a colder Himalayan sink T₂ raises the Carnot ceiling. That is why condenser cooling water is an engineering obsession, not a plumbing afterthought."], ["Wow — temperature itself is a heat ratio", "Eq. (11.28) lets you define T without mercury or gas thermometers: take a Carnot engine, measure Q₁/Q₂. The ideal-gas scale of Chapter 10 is shown to agree with this thermodynamic scale.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph204.pdf"}]]], "recall": "Sketch the four legs of Fig. 11.9, write η = 1 − T₂/T₁, and state Carnot’s theorem.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The four legs of a Carnot cycle are", "options": ["isothermal expansion, adiabatic expansion, isothermal compression, adiabatic compression", "two isochors and two isobars", "four adiabats"], "answer": 0, "hint": "Fig. 11.9; Summary 12.", "solution": "Two isotherms joined by two adiabats.", "wrong": ["", "That is a rectangle on the P–V plane, not Carnot.", "Adiabats alone cannot exchange Q with the reservoirs."]}, {"level": "Medium", "type": "number", "prompt": "Carnot efficiency between 500 K and 300 K, as a percentage, is", "answer": 40, "unit": "%", "tolerance": 0.2, "hint": "η = 1 − T₂/T₁.", "solution": "1 − 300/500 = 0.40 = 40 %."}, {"level": "Hard", "type": "mcq", "prompt": "No engine operating between two given temperatures can exceed Carnot efficiency. This is", "options": ["Carnot’s theorem, proved by coupling a supposed better engine to a reversed Carnot engine", "a restatement of the First Law", "true only for ideal-gas working substances"], "answer": 0, "hint": "Fig. 11.10; §11.11 after Eq. (11.27).", "solution": "The coupling would violate Clausius. The result is independent of substance (Eq. 11.28).", "wrong": ["", "First Law allows η = 1.", "Independence of substance is the second half of the theorem."]}]}], "exercises": [{"number": "11.1", "section": "Exercises", "conceptIdx": 3, "page": 17, "printPage": 242, "question": "A geyser heats water flowing at the rate of 3.0 litres per minute from 27 °C to 77 °C. If the geyser operates on a gas burner, what is the rate of consumption of the fuel if its heat of combustion is 4.0 × 10⁴ J/g ?", "given": "ṁ = 3.0 L min⁻¹ = 3.0 kg min⁻¹, ΔT = 50 K, s_water = 4.2 × 10³ J kg⁻¹ K⁻¹, L_comb = 4.0 × 10⁴ J g⁻¹", "steps": ["Heat per minute Q = m s ΔT = 3.0 × 4.2×10³ × 50 = 6.30×10⁵ J min⁻¹.", "Fuel rate = Q / 4.0×10⁴ J g⁻¹ = 15.75 g min⁻¹."], "answer": "15.75 g min⁻¹"}, {"number": "11.2", "section": "Exercises", "conceptIdx": 3, "page": 17, "printPage": 242, "question": "What amount of heat must be supplied to 2.0 × 10⁻² kg of nitrogen (at room temperature) to raise its temperature by 45 °C at constant pressure? (Molecular mass of N₂ = 28; R = 8.3 J mol⁻¹ K⁻¹.)", "given": "m = 2.0×10⁻² kg, M = 28 g mol⁻¹, ΔT = 45 K, C_p = 7R/2 (diatomic)", "steps": ["μ = 0.020/0.028 = 5/7 mol.", "Q = μ C_p ΔT = (5/7)×(7/2)×8.3×45 = (5/2)×8.3×45 = 933.75 J."], "answer": "933.75 J (≈ 934 J)"}, {"number": "11.3", "section": "Exercises", "conceptIdx": 0, "page": 17, "printPage": 242, "question": "Explain why (a) two bodies at different temperatures T₁ and T₂ if brought in thermal contact do not necessarily settle to the mean temperature (T₁+T₂)/2. (b) The coolant in a chemical or a nuclear plant should have high specific heat. (c) Air pressure in a car tyre increases during driving. (d) The climate of a harbour town is more temperate than that of a town in a desert at the same latitude.", "steps": ["(a) Heat lost by one equals heat gained by the other: m₁ s₁ ΔT₁ = m₂ s₂ ΔT₂. Equal T_f only if the heat capacities match; the mean is special, not general.", "(b) For a given Q, ΔT = Q/(m s) is small when s is large — parts stay below damage thresholds.", "(c) Flexing and friction heat the air (work → U). At nearly fixed V, P/T ≈ const so P rises. (Not just ‘air expands’.)", "(d) Water’s large s damps temperature swings; dry desert sand does not."], "answer": "(a) Final T weighted by heat capacities, not the arithmetic mean. (b) Large s ⇒ small ΔT. (c) Driving does work on the air; U and hence T and P rise. (d) High s of water."}, {"number": "11.4", "section": "Exercises", "conceptIdx": 5, "page": 17, "printPage": 242, "question": "A cylinder with a movable piston contains 3 moles of hydrogen at standard temperature and pressure. The walls of the cylinder are made of a heat insulator, and the piston is insulated by having a pile of sand on it. By what factor does the pressure of the gas increase if the gas is compressed to half its original volume?", "given": "μ = 3 mol H₂ (diatomic, γ = 1.4), Q = 0, V₂ = V₁/2", "steps": ["Insulated + rapid ⇒ adiabatic, PV^γ = const.", "P₂/P₁ = (V₁/V₂)^γ = 2^{1.4} = 2.639 ≈ 2.64."], "answer": "2.64"}, {"number": "11.5", "section": "Exercises", "conceptIdx": 2, "page": 17, "printPage": 242, "question": "In changing the state of a gas adiabatically from an equilibrium state A to another equilibrium state B, an amount of work equal to 22.3 J is done on the system. If the gas is taken from state A to B via a process in which the net heat absorbed by the system is 9.35 cal, how much is the net work done by the system in the latter case? (Take 1 cal = 4.19 J)", "given": "Adiabatic: W_on = 22.3 J so W_by = −22.3 J, Q = 0. Other path: Q = 9.35 cal", "steps": ["ΔU = Q − W_by = 0 − (−22.3) = 22.3 J (state function).", "Q₂ = 9.35 × 4.19 = 39.1765 J.", "W_by,₂ = Q₂ − ΔU = 16.8765 J ≈ 16.9 J."], "answer": "16.9 J (work done by the system)"}, {"number": "11.6", "section": "Exercises", "conceptIdx": 4, "page": 17, "printPage": 242, "question": "Two cylinders A and B of equal capacity are connected to each other via a stopcock. A contains a gas at standard temperature and pressure. B is completely evacuated. The entire system is thermally insulated. The stopcock is suddenly opened. Answer: (a) final pressure of the gas in A and B? (b) change in internal energy of the gas? (c) change in the temperature of the gas? (d) Do the intermediate states of the system (before settling to the final equilibrium state) lie on its P-V-T surface?", "steps": ["Free expansion, Q = 0, W = 0.", "(a) Volume doubles, ideal-gas T unchanged ⇒ P_f = 0.5 atm.", "(b) ΔU = Q − W = 0.", "(c) Ideal gas U = U(T) ⇒ ΔT = 0.", "(d) No — intermediate states are not equilibrium states."], "answer": "(a) 0.5 atm (b) 0 (c) 0 (d) No"}, {"number": "11.7", "section": "Exercises", "conceptIdx": 2, "page": 17, "printPage": 242, "question": "An electric heater supplies heat to a system at a rate of 100 W. If system performs work at a rate of 75 joules per second. At what rate is the internal energy increasing?", "steps": ["dQ/dt = dU/dt + dW/dt", "100 = dU/dt + 75", "dU/dt = 25 J s⁻¹ = 25 W"], "answer": "25 W"}, {"number": "11.8", "section": "Exercises", "conceptIdx": 5, "page": 18, "printPage": 243, "question": "A thermodynamic system is taken from an original state to an intermediate state by the linear process shown in Fig. 11.11. Its volume is then reduced to the original value from E to F by an isobaric process. Calculate the total work done by the gas from D to E to F.", "given": "Fig. 11.11 (zoom p.18): D(V=2.0 m³, P=600 N m⁻²), E(5.0 m³, 300 N m⁻²), F(2.0 m³, 300 N m⁻²)", "steps": ["W_DE = area of trapezium = ½(600+300)(5.0−2.0) = 1350 J.", "W_EF = P(V_F−V_E) = 300(2.0−5.0) = −900 J.", "W_total = 1350 − 900 = 450 J."], "answer": "450 J"}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.zeroth = (function(){
+  var mode = "adiabatic";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>System A</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>System B / C</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="z-ad">Fig 11.1a adiabatic wall</button>' +
+      '<button class="preset-btn" id="z-di">Fig 11.1b diathermic wall</button>' +
+      '<button class="preset-btn" id="z-0">Fig 11.2 Zeroth Law</button>';
+    document.getElementById("z-ad").onclick = function(){ setActivePreset(this); mode="adiabatic"; App.resetTimeline(); App.play(); };
+    document.getElementById("z-di").onclick = function(){ setActivePreset(this); mode="diathermic"; App.resetTimeline(); App.play(); };
+    document.getElementById("z-0").onclick = function(){ setActivePreset(this); mode="zeroth"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function box(x, y, label, T, fill){
+    return '<rect x="'+x+'" y="'+y+'" width="140" height="110" rx="8" fill="'+fill+'" stroke="#94a3b8"/>' +
+      '<text x="'+(x+70)+'" y="'+(y+40)+'" fill="#e2e8f0" font-size="16" text-anchor="middle">'+label+'</text>' +
+      '<text x="'+(x+70)+'" y="'+(y+70)+'" fill="#f8fafc" font-size="14" text-anchor="middle">T = '+T.toFixed(0)+' K</text>';
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var f = Math.min(t/6, 1);
+    if(mode === "adiabatic"){
+      m += box(120, 90, "A", 400, "#7f1d1d");
+      m += box(460, 90, "B", 300, "#1e3a5f");
+      m += '<rect x="270" y="90" width="24" height="110" fill="#78716c"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Adiabatic wall — no heat, independent states</text>';
+      readout(cell("T_A","400 K","#f87171") + cell("T_B","300 K","#38bdf8") + cell("Heat flow","none"));
+      verdict("<b>Fig. 11.1a:</b> any (P_A, V_A) can sit next to any (P_B, V_B). The wall blocks the Zeroth-Law test.");
+    } else if(mode === "diathermic"){
+      var TA = 400 - 50*f, TB = 300 + 50*f;
+      m += box(120, 90, "A", TA, "#7f1d1d");
+      m += box(460, 90, "B", TB, "#1e3a5f");
+      m += '<rect x="270" y="90" width="24" height="110" fill="#fbbf24"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Diathermic wall — heat flows until T_A = T_B</text>';
+      readout(cell("T_A", TA.toFixed(0)+" K","#f87171") + cell("T_B", TB.toFixed(0)+" K","#38bdf8") + cell("Heat","A → B", "#fbbf24"));
+      verdict("<b>Fig. 11.1b:</b> macroscopic variables change spontaneously until thermal equilibrium. That shared value is temperature.");
+    } else {
+      var Tc = 350;
+      m += box(290, 30, "C (thermometer)", Tc, "#14532d");
+      m += box(80, 160, "A", 350, "#7f1d1d");
+      m += box(500, 160, "B", 350, "#1e3a5f");
+      m += '<line x1="150" y1="160" x2="330" y2="140" stroke="#fbbf24" stroke-width="4"/>';
+      m += '<line x1="570" y1="160" x2="390" y2="140" stroke="#fbbf24" stroke-width="4"/>';
+      m += '<text x="360" y="290" fill="#94a3b8" font-size="13" text-anchor="middle">A ~ C and B ~ C  ⇒  A ~ B</text>';
+      readout(cell("T_A","350 K") + cell("T_C","350 K") + cell("T_B","350 K"));
+      verdict("<b>Zeroth Law:</b> two systems in thermal equilibrium with a third are in thermal equilibrium with each other. Fowler, 1931.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.heatwork = (function(){
+  var mode = "heat";
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Heat Q</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Work W</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Internal energy U</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="h-q">Fig 11.4a heat in</button>' +
+      '<button class="preset-btn" id="h-w">Fig 11.4b piston work on system</button>' +
+      '<button class="preset-btn" id="h-boil">1 g water → steam</button>';
+    document.getElementById("h-q").onclick = function(){ setActivePreset(this); mode="heat"; App.resetTimeline(); App.play(); };
+    document.getElementById("h-w").onclick = function(){ setActivePreset(this); mode="work"; App.resetTimeline(); App.play(); };
+    document.getElementById("h-boil").onclick = function(){ setActivePreset(this); mode="boil"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/5, 1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="260" y="80" width="200" height="140" rx="8" fill="#1e293b" stroke="#64748b"/>';
+    m += '<text x="360" y="120" fill="#e2e8f0" font-size="14" text-anchor="middle">gas / system</text>';
+    if(mode === "heat"){
+      m += '<rect x="40" y="100" width="80" height="100" fill="#7f1d1d"/>';
+      m += '<text x="80" y="155" fill="#fecaca" font-size="12" text-anchor="middle">hot</text>';
+      var q = 80*f;
+      m += '<text x="180" y="150" fill="#f59e0b" font-size="16">Q →</text>';
+      m += '<text x="360" y="180" fill="#34d399" font-size="14" text-anchor="middle">U + '+q.toFixed(0)+' J</text>';
+      readout(cell("mode","heat") + cell("ΔQ",(80*f).toFixed(0)+" J","#f59e0b") + cell("ΔW","0") + cell("ΔU",(80*f).toFixed(0)+" J","#34d399"));
+      verdict("<b>Fig. 11.4a:</b> heat is energy transfer driven by a temperature difference. U rises; the gas does not ‘contain heat’.");
+    } else if(mode === "work"){
+      var y = 70 + 40*f;
+      m += '<rect x="330" y="'+y+'" width="60" height="14" fill="#38bdf8"/>';
+      m += '<text x="520" y="150" fill="#38bdf8" font-size="14">weight down ⇒ W on system</text>';
+      var w = -60*f;
+      readout(cell("mode","piston") + cell("ΔQ","0") + cell("ΔW",w.toFixed(0)+" J","#38bdf8") + cell("ΔU",(-w).toFixed(0)+" J","#34d399"));
+      verdict("<b>Fig. 11.4b:</b> NCERT sign: W &gt; 0 is work <em>by</em> the system. Compressing means W &lt; 0 and ΔU = −W &gt; 0.");
+    } else {
+      var Q = 2256*f, W = 169.2*f, U = 2086.8*f;
+      m += '<text x="360" y="50" fill="#94a3b8" font-size="14" text-anchor="middle">1 g water, 1 atm, liquid → vapour</text>';
+      m += '<text x="360" y="190" fill="#e2e8f0" font-size="14" text-anchor="middle">ΔQ = 2256 J · ΔW = 169.2 J · ΔU = 2086.8 J</text>';
+      readout(cell("ΔQ", Q.toFixed(0)+" J","#f59e0b") + cell("ΔW", W.toFixed(1)+" J") + cell("ΔU", U.toFixed(1)+" J","#34d399"));
+      verdict("<b>Zoom p.5:</b> most of the latent heat becomes internal energy of the vapour, not piston work. ΔU = ΔQ − ΔW.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.firstlaw = (function(){
+  var path = "isotherm";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Q in</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>W by system</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>ΔU</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="fl-iso">Ideal-gas isotherm ΔU = 0</button>' +
+      '<button class="preset-btn" id="fl-11.7">Ex 11.7 heater 100 W</button>' +
+      '<button class="preset-btn" id="fl-11.5">Ex 11.5 two paths</button>';
+    document.getElementById("fl-iso").onclick = function(){ setActivePreset(this); path="isotherm"; App.resetTimeline(); App.play(); };
+    document.getElementById("fl-11.7").onclick = function(){ setActivePreset(this); path="heater"; App.resetTimeline(); App.play(); };
+    document.getElementById("fl-11.5").onclick = function(){ setActivePreset(this); path="twopath"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/6, 1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="36" fill="#94a3b8" font-size="14" text-anchor="middle">First Law  ΔQ = ΔU + ΔW</text>';
+    function bar(x, label, val, max, color){
+      var h = Math.abs(val)/max*140;
+      var y = val >= 0 ? 220-h : 220;
+      return '<rect x="'+x+'" y="'+y+'" width="70" height="'+h+'" fill="'+color+'"/>' +
+        '<text x="'+(x+35)+'" y="250" fill="#94a3b8" font-size="12" text-anchor="middle">'+label+'</text>' +
+        '<text x="'+(x+35)+'" y="'+ (y-8) +'" fill="#e2e8f0" font-size="12" text-anchor="middle">'+val.toFixed(1)+'</text>';
+    }
+    m += '<line x1="80" y1="220" x2="640" y2="220" stroke="#475569"/>';
+    if(path === "isotherm"){
+      var Q = 40*f, W = 40*f, U = 0;
+      m += bar(160,"ΔQ",Q,50,"#f59e0b") + bar(320,"ΔU",U,50,"#34d399") + bar(480,"ΔW",W,50,"#38bdf8");
+      readout(cell("ΔQ",Q.toFixed(1)+" J") + cell("ΔU","0") + cell("ΔW",W.toFixed(1)+" J"));
+      verdict("<b>Ideal-gas isotherm:</b> U = U(T) only, so ΔU = 0 and every joule of heat becomes work. Q = W = μRT ln(V₂/V₁).");
+    } else if(path === "heater"){
+      var Qin = 100*f, Wby = 75*f, dU = 25*f;
+      m += bar(160,"Q rate",Qin,120,"#f59e0b") + bar(320,"ΔU rate",dU,120,"#34d399") + bar(480,"W rate",Wby,120,"#38bdf8");
+      readout(cell("heater","100 W") + cell("work","75 W") + cell("dU/dt","25 W","#34d399"));
+      verdict("<b>Ex 11.7:</b> 100 = dU/dt + 75 ⇒ internal energy increases at <b>25 W</b>.");
+    } else {
+      var U = 22.3, Q2 = 39.18*f, W2 = 16.88*f;
+      m += bar(120,"ΔU both",U,50,"#34d399") + bar(280,"Q path 2",Q2,50,"#f59e0b") + bar(440,"W path 2",W2,50,"#38bdf8");
+      readout(cell("ΔU","22.3 J") + cell("Q₂","39.18 J") + cell("W₂","16.88 J"));
+      verdict("<b>Ex 11.5:</b> adiabatic A→B stores ΔU = 22.3 J. Other path: Q = 9.35 cal = 39.18 J, so W_by = 16.9 J.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.cpcv = (function(){
+  var proc = "cv";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Locked piston (C_v)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Free piston (C_p)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c-v">Constant volume C_v</button>' +
+      '<button class="preset-btn" id="c-p">Constant pressure C_p = C_v + R</button>';
+    document.getElementById("c-v").onclick = function(){ setActivePreset(this); proc="cv"; App.resetTimeline(); App.play(); };
+    document.getElementById("c-p").onclick = function(){ setActivePreset(this); proc="cp"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/4, 1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var h = 80 + 70*f;
+    m += '<rect x="280" y="'+(200-h)+'" width="160" height="'+h+'" fill="#1e3a5f" stroke="#38bdf8"/>';
+    if(proc === "cv"){
+      m += '<rect x="280" y="'+(200-h-8)+'" width="160" height="8" fill="#64748b"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Piston locked — all heat becomes ΔU</text>';
+      readout(cell("process","isochoric") + cell("W","0") + cell("C_v","dU/dT"));
+      verdict("<b>Eq. 11.9:</b> C_v = (∂U/∂T)_V. For 1 mol, ΔQ = C_v ΔT = ΔU.");
+    } else {
+      m += '<rect x="280" y="'+(192-h)+'" width="160" height="8" fill="#f59e0b"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Piston free — extra heat pays for PΔV = RΔT per mole</text>';
+      readout(cell("process","isobaric") + cell("extra work","R ΔT") + cell("C_p − C_v","R"));
+      verdict("<b>Eq. 11.8:</b> C_p − C_v = R. Same ΔU (ideal gas); extra heat is the expansion work.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.quasistatic = (function(){
+  var mode = "quasi";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Equilibrium surface</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Off-surface rush</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="q-q">Fig 11.7 quasi-static crawl</button>' +
+      '<button class="preset-btn" id="q-f">Ex 11.6 free expansion</button>';
+    document.getElementById("q-q").onclick = function(){ setActivePreset(this); mode="quasi"; App.resetTimeline(); App.play(); };
+    document.getElementById("q-f").onclick = function(){ setActivePreset(this); mode="free"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/6, 1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="250" x2="660" y2="250" stroke="#475569"/><line x1="80" y1="250" x2="80" y2="40" stroke="#475569"/>';
+    m += '<text x="670" y="254" fill="#94a3b8" font-size="12">V</text><text x="70" y="36" fill="#94a3b8" font-size="12">P</text>';
+    if(mode === "quasi"){
+      var V = 2 + 3*f, P = 8/V;
+      var pts = "";
+      for(var i=0;i<=20;i++){ var v=2+3*i/20; pts += (i===0?"M":"L")+" "+(80+v*80)+" "+(250- (8/v)*22); }
+      m += '<path d="'+pts+'" fill="none" stroke="#34d399" stroke-width="3"/>';
+      m += '<circle cx="'+(80+V*80)+'" cy="'+(250-P*22)+'" r="6" fill="#f8fafc"/>';
+      readout(cell("process","quasi-static isotherm") + cell("P", P.toFixed(2)+" (arb)") + cell("on surface","YES","#34d399"));
+      verdict("<b>Fig. 11.7:</b> P_ext and T_res differ only infinitesimally. Every dot is an equilibrium state.");
+    } else {
+      m += '<circle cx="240" cy="80" r="7" fill="#34d399"/>';
+      m += '<circle cx="520" cy="160" r="7" fill="#34d399"/>';
+      var x = 240 + 280*f, y = 80 + 80*Math.sin(f*12)*Math.exp(-f)*0.4 + 80*f;
+      m += '<circle cx="'+x+'" cy="'+y+'" r="5" fill="#f87171"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Ex 11.6: end-points on the surface, history is not</text>';
+      readout(cell("P_final","0.5 atm") + cell("ΔU","0") + cell("ΔT","0") + cell("intermediate","off surface","#f87171"));
+      verdict("<b>Ex 11.6:</b> Q = W = 0, so ΔU = ΔT = 0 and P halves. Dashed join is not a process curve.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.pvdiag = (function(){
+  var kind = "iso";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Isotherm PV = const</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Adiabat PV^γ = const</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-iso">Isothermal expansion</button>' +
+      '<button class="preset-btn" id="p-ad">Adiabatic expansion</button>' +
+      '<button class="preset-btn" id="p-11.8">Ex 11.8 D–E–F area</button>';
+    document.getElementById("p-iso").onclick = function(){ setActivePreset(this); kind="iso"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-ad").onclick = function(){ setActivePreset(this); kind="ad"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-11.8").onclick = function(){ setActivePreset(this); kind="area"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function XV(V){ return 80 + V*90; }
+  function YP(P){ return 250 - P*0.32; }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/6, 1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="250" x2="680" y2="250" stroke="#475569"/><line x1="80" y1="250" x2="80" y2="30" stroke="#475569"/>';
+    m += '<text x="690" y="254" fill="#94a3b8" font-size="12">V</text><text x="60" y="36" fill="#94a3b8" font-size="12">P</text>';
+    if(kind === "area"){
+      // Fig 11.11: D(2,600)-E(5,300)-F(2,300)
+      var vd = 2, ve = 2 + 3*Math.min(f/0.6,1);
+      var pe = 600 - 100*(ve-2);
+      if(f < 0.6){
+        m += '<path d="M '+XV(2)+' '+YP(600)+' L '+XV(ve)+' '+YP(pe)+' L '+XV(ve)+' '+YP(0)+' L '+XV(2)+' '+YP(0)+' Z" fill="#34d39933"/>';
+        m += '<line x1="'+XV(2)+'" y1="'+YP(600)+'" x2="'+XV(ve)+'" y2="'+YP(pe)+'" stroke="#f8fafc" stroke-width="3"/>';
+        m += '<circle cx="'+XV(ve)+'" cy="'+YP(pe)+'" r="5" fill="#f59e0b"/>';
+      } else {
+        var vf = 5 - 3*((f-0.6)/0.4);
+        m += '<path d="M '+XV(2)+' '+YP(600)+' L '+XV(5)+' '+YP(300)+' L '+XV(5)+' '+YP(0)+' L '+XV(2)+' '+YP(0)+' Z" fill="#34d39933"/>';
+        m += '<path d="M '+XV(5)+' '+YP(300)+' L '+XV(vf)+' '+YP(300)+' L '+XV(vf)+' '+YP(0)+' L '+XV(5)+' '+YP(0)+' Z" fill="#f8717133"/>';
+        m += '<line x1="'+XV(2)+'" y1="'+YP(600)+'" x2="'+XV(5)+'" y2="'+YP(300)+'" stroke="#f8fafc" stroke-width="3"/>';
+        m += '<line x1="'+XV(5)+'" y1="'+YP(300)+'" x2="'+XV(vf)+'" y2="'+YP(300)+'" stroke="#38bdf8" stroke-width="3"/>';
+        m += '<circle cx="'+XV(vf)+'" cy="'+YP(300)+'" r="5" fill="#f59e0b"/>';
+      }
+      m += '<text x="'+XV(2)+'" y="'+(YP(600)-8)+'" fill="#e2e8f0" font-size="12">D</text>';
+      m += '<text x="'+XV(5)+'" y="'+(YP(300)-8)+'" fill="#e2e8f0" font-size="12">E</text>';
+      m += '<text x="'+XV(2)+'" y="'+(YP(300)-8)+'" fill="#e2e8f0" font-size="12">F</text>';
+      readout(cell("W_DE","1350 J") + cell("W_EF","−900 J") + cell("W_net","450 J","#34d399"));
+      verdict("<b>Ex 11.8 / Fig. 11.11:</b> trapezium ½(600+300)×3 = 1350 J minus isobaric 300×3 = 900 J gives <b>450 J</b>.");
+    } else {
+      var V1 = 2, V2 = 5, V = V1 + (V2-V1)*f, g = 1.4;
+      var Piso = 400/V, Pad = 400 * Math.pow(2/V, g);
+      var dI="", dA="";
+      for(var i=0;i<=40;i++){
+        var v = 1.8 + i*0.1;
+        dI += (i?"L":"M")+" "+XV(v)+" "+YP(400/v);
+        dA += (i?"L":"M")+" "+XV(v)+" "+YP(400*Math.pow(2/v,g));
+      }
+      m += '<path d="'+dI+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<path d="'+dA+'" fill="none" stroke="#f59e0b" stroke-width="2"/>';
+      var P = kind==="iso" ? Piso : Pad;
+      m += '<circle cx="'+XV(V)+'" cy="'+YP(P)+'" r="6" fill="#f8fafc"/>';
+      readout(cell("V", V.toFixed(2)) + cell("P_iso", Piso.toFixed(1)) + cell("P_ad", Pad.toFixed(1),"#f59e0b"));
+      verdict("<b>Fig. 11.8:</b> adiabat is steeper. Same compression raises P more when Q cannot enter. γ = C_p/C_v.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.secondlaw = (function(){
+  var mode = "kelvin";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Forbidden sole result</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Allowed with a second reservoir / work</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="s-k">Kelvin–Planck (η ≠ 1)</button>' +
+      '<button class="preset-btn" id="s-c">Clausius (α ≠ ∞)</button>';
+    document.getElementById("s-k").onclick = function(){ setActivePreset(this); mode="kelvin"; App.resetTimeline(); };
+    document.getElementById("s-c").onclick = function(){ setActivePreset(this); mode="clausius"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode === "kelvin"){
+      m += '<rect x="80" y="40" width="220" height="70" rx="8" fill="#7f1d1d"/><text x="190" y="80" fill="#fecaca" text-anchor="middle">hot reservoir T₁</text>';
+      m += '<rect x="130" y="150" width="120" height="70" rx="8" fill="#1e293b" stroke="#f87171"/><text x="190" y="190" fill="#f87171" text-anchor="middle">engine η=1?</text>';
+      m += '<text x="190" y="250" fill="#f8fafc" text-anchor="middle">W = Q₁  (no dump)</text>';
+      m += '<text x="500" y="150" fill="#f87171" font-size="16" text-anchor="middle">FORBIDDEN</text>';
+      readout(cell("statement","Kelvin–Planck") + cell("η = 1","impossible","#f87171"));
+      verdict("<b>Kelvin–Planck:</b> no process whose sole result is heat from one reservoir converted entirely into work. First Law would allow it; Second Law does not.");
+    } else {
+      m += '<rect x="80" y="40" width="200" height="60" rx="8" fill="#7f1d1d"/><text x="180" y="75" fill="#fecaca" text-anchor="middle">hot</text>';
+      m += '<rect x="80" y="200" width="200" height="60" rx="8" fill="#1e3a5f"/><text x="180" y="235" fill="#bfdbfe" text-anchor="middle">cold</text>';
+      m += '<text x="180" y="160" fill="#f87171" text-anchor="middle">Q up, W = 0  FORBIDDEN</text>';
+      m += '<rect x="420" y="40" width="200" height="60" rx="8" fill="#7f1d1d"/><text x="520" y="75" fill="#fecaca" text-anchor="middle">hot</text>';
+      m += '<rect x="420" y="200" width="200" height="60" rx="8" fill="#1e3a5f"/><text x="520" y="235" fill="#bfdbfe" text-anchor="middle">cold</text>';
+      m += '<text x="520" y="160" fill="#34d399" text-anchor="middle">Q up, W in  ALLOWED</text>';
+      readout(cell("statement","Clausius") + cell("α = ∞","impossible","#f87171"));
+      verdict("<b>Clausius:</b> heat does not flow cold → hot as a sole result. A Chennai AC does it only by paying compressor work.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.carnot = (function(){
+  var T1 = 500, T2 = 300;
+  function mount(){
+    App.state.maxT = 8;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Isotherms</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Adiabats</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c500">Boiler 500 K / river 300 K</button>' +
+      '<button class="preset-btn" id="c800">Hotter boiler 800 K</button>' +
+      '<button class="preset-btn" id="c200">Colder sink 200 K</button>';
+    document.getElementById("c500").onclick = function(){ setActivePreset(this); T1=500; T2=300; App.resetTimeline(); App.play(); };
+    document.getElementById("c800").onclick = function(){ setActivePreset(this); T1=800; T2=300; App.resetTimeline(); App.play(); };
+    document.getElementById("c200").onclick = function(){ setActivePreset(this); T1=500; T2=200; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function XV(V){ return 70 + Math.log(V)*90; }
+  function YP(P){ return 260 - Math.log(P)*40; }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var g = 1.4;
+    // Construct a Carnot rectangle in (ln V, ln P)
+    var V1 = 2, V2 = 4;
+    var P1 = 12, P2 = P1*V1/V2;
+    var V3 = V2 * Math.pow(T1/T2, 1/(g-1));
+    var P3 = P2 * Math.pow(V2/V3, g);
+    var V4 = V1 * V3 / V2;
+    var P4 = P1 * Math.pow(V1/V4, g);
+    function Pi(V){ return P1*V1/V; }
+    function Pa(V){ return P2 * Math.pow(V2/V, g); }
+    function Pib(V){ return P3*V3/V; }
+    function Pac(V){ return P4 * Math.pow(V4/V, g); }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="50" y1="270" x2="700" y2="270" stroke="#475569"/><line x1="50" y1="270" x2="50" y2="20" stroke="#475569"/>';
+    function pathIso(Vstart, Vend, Pfun, color){
+      var d="", n=24;
+      for(var i=0;i<=n;i++){
+        var V = Vstart + (Vend-Vstart)*i/n;
+        d += (i?"L":"M")+" "+XV(V)+" "+YP(Pfun(V));
+      }
+      return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="3"/>';
+    }
+    m += pathIso(V1,V2,Pi,"#38bdf8");
+    m += pathIso(V2,V3,Pa,"#f59e0b");
+    m += pathIso(V3,V4,Pib,"#38bdf8");
+    m += pathIso(V4,V1,Pac,"#f59e0b");
+    var phase = (t/8)*4;
+    var V, P, label;
+    if(phase < 1){ V = V1+(V2-V1)*phase; P = Pi(V); label = "1→2 isothermal expansion, Q₁ in"; }
+    else if(phase < 2){ var u=phase-1; V = V2+(V3-V2)*u; P = Pa(V); label = "2→3 adiabatic expansion, Q = 0"; }
+    else if(phase < 3){ var u=phase-2; V = V3+(V4-V3)*u; P = Pib(V); label = "3→4 isothermal compression, Q₂ out"; }
+    else { var u=phase-3; V = V4+(V1-V4)*u; P = Pac(V); label = "4→1 adiabatic compression, Q = 0"; }
+    m += '<circle cx="'+XV(V)+'" cy="'+YP(P)+'" r="6" fill="#f8fafc"/>';
+    m += '<text x="360" y="36" fill="#94a3b8" font-size="13" text-anchor="middle">Fig. 11.9 · '+label+'</text>';
+    var eta = 1 - T2/T1;
+    svg.innerHTML = m;
+    readout(cell("T₁", T1+" K","#f87171") + cell("T₂", T2+" K","#38bdf8") + cell("η = 1 − T₂/T₁", (eta*100).toFixed(1)+"%","#34d399"));
+    verdict("<b>Carnot:</b> η = 1 − T₂/T₁ = <b>"+(eta*100).toFixed(1)+"%</b>. No engine between these two temperatures can beat this ceiling. Independent of working substance.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

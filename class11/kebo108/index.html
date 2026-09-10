@@ -1,0 +1,2852 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 8: Cell: The Unit of Life — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 08 · CELL: THE UNIT OF LIFE</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 14 Exercises from NCERT Class 11 Biology (pp. 85–103) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kebo108", "chapterNumber": 8, "book_name": "Biology", "title": "Cell: The Unit of Life", "subtitle": "Cell theory, prokaryotic and eukaryotic organisation, fluid mosaic membrane dynamics, endomembrane trafficking, semiautonomous energy organelles, and chromosomal architecture.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kebo108.pdf", "page_start": 85, "page_end": 103, "extraction": "PyMuPDF dict spans + 2x PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "cell-theory-and-continuum", "nav": "Cell Theory", "title": "What is a Cell? History, Discovery & Cell Theory", "deck": "A cell is the fundamental structural and functional unit of all living organisms; any entity less than a complete cell cannot sustain independent life.", "minutes": 11, "section": "8.1–8.3", "pages": [3, 4], "print": "87–88", "sim": "celltheorylab", "simTitle": "Interactive Cell Discovery Timeline & Scale Comparator", "quick": ["<strong>Cell Definition:</strong> Unicellular organisms are capable of independent existence and performing all essential metabolic functions of life. Anything less than a complete cell does not ensure independent living. Hence, the cell is the <strong>fundamental structural and functional unit of all living organisms</strong>.", "<strong>Historical Landmarks:</strong> (1) <strong>Antonie von Leeuwenhoek:</strong> First observed and described a live cell; (2) <strong>Robert Brown (1831):</strong> Discovered the cell nucleus; (3) <strong>Matthias Schleiden (1838):</strong> German botanist who concluded that all plant tissues are composed of cells; (4) <strong>Theodore Schwann (1839):</strong> German zoologist who reported that animal cells possess a delicate outer membrane (plasma membrane) and noted that a cell wall is a unique diagnostic feature of plant cells. Schwann proposed that all living bodies are made of cells and cell products.", "<strong>Modern Cell Theory:</strong> Schleiden and Schwann's classical theory lacked an explanation for how new cells originate. In 1855, <strong>Rudolf Virchow</strong> formulated the revolutionary doctrine <em>'Omnis cellula-e cellula'</em> (all cells arise from pre-existing cells by division). The modern cell theory posits: (1) All living organisms are composed of cells and products of cells; (2) All cells arise from pre-existing cells.", "<strong>Cellular Size Spectrum:</strong> Mycoplasmas are the smallest known living cells (0.3 µm in length), typical bacteria measure 3 to 5 µm (or 1–2 µm for typical bacteria), the largest isolated single cell is an ostrich egg, and human red blood cells are about 7.0 µm in diameter."], "formulas": [{"label": "Virchow's Axiom of Biogenesis", "html": "\\text{Omnis cellula-e cellula} \\iff \\text{New Cells} = \\text{Mitotic / Meiotic Division of Pre-existing Cells}", "cond": "Refuted spontaneous generation (abiogenesis) within modern cytological theory"}, {"label": "Cellular Scaling Hierarchy", "html": "\\text{Mycoplasma } (0.3\\,\\mu\\text{m}) < \\text{Bacteria } (1\\text{--}5\\,\\mu\\text{m}) < \\text{Human RBC } (7.0\\,\\mu\\text{m}) < \\text{Eukaryotic Cell } (10\\text{--}20\\,\\mu\\text{m})", "cond": "Dimensional metrics of cytological diversity"}], "deeper": "Why can an isolated virus or pure organelle not be called a 'living cell'? A virus contains genetic material enclosed in a protein capsid, but it possesses zero independent metabolic machinery—it cannot synthesize ATP, conduct translation, or replicate without hijacking a host cell. Because life requires autonomous self-sustaining homeostasis and reproductive capability, the complete cellular boundary and cytoplasm define the absolute lower threshold of life.", "worked": "Exercise 8.1 & 8.2 Solutions:\\n8.1: Which of the following is not correct?\\n(a) Robert Brown discovered the cell. -> INCORRECT. Robert Brown discovered the nucleus (1831), whereas Antonie von Leeuwenhoek first observed live cells and Robert Hooke discovered dead cork cells.\\n8.2: New cells generate from:\\n(c) pre-existing cells -> By Rudolf Virchow's 1855 principle *Omnis cellula-e cellula*.", "prediction": {"prompt": "If an extract containing isolated ribosomes, mitochondria, and pure DNA is incubated in a test tube with glucose, why does it fail to qualify as an independent living organism?", "options": ["Because it lacks cellular integrity; independent life requires an intact bounding membrane maintaining internal homeostasis.", "Because mitochondria can only function inside plant cells.", "Because ribosomes cannot translate proteins outside a fungal spore.", "Because DNA immediately breaks down whenever it contacts glucose."], "correct": 0, "feedback": "Correct! Independent life requires complete cellular organization where an intact selectively permeable membrane maintains internal bioenergetic and ionic gradients."}, "quizzes": [{"id": "kebo108-c1-q1", "question": "Who first explained that new cells arise from the division of pre-existing cells ('Omnis cellula-e cellula')?", "options": ["Theodore Schwann", "Rudolf Virchow", "Robert Brown", "Matthias Schleiden"], "correct": 1, "explanation": "Rudolf Virchow in 1855 added the vital second tenet to cell theory: 'Omnis cellula-e cellula' (all cells arise from pre-existing cells).", "level": "easy"}, {"id": "kebo108-c1-q2", "question": "What is the approximate diameter of a mature human red blood cell (erythrocyte)?", "options": ["0.3 µm", "1 to 2 µm", "7.0 µm", "20.0 µm"], "correct": 2, "explanation": "Human red blood cells measure approximately 7.0 µm in diameter.", "level": "medium"}, {"id": "kebo108-c1-q3", "question": "Which of the following conclusions was made specifically by Theodore Schwann during his comparative cytological studies?", "options": ["Nucleus is the control center of cellular heredity", "The presence of a cell wall is a unique characteristic of plant cells", "All bacterial cells contain circular plasmids", "Chromatin consists of DNA wrapped around basic histone octamers"], "correct": 1, "explanation": "Theodore Schwann studied both animal and plant cells and concluded that the presence of a cell wall is a unique distinguishing property of plant cells.", "level": "hard"}]}, {"id": "prokaryotic-cell-architecture", "nav": "Prokaryotic Cell", "title": "Prokaryotic Organisation: Envelope, Mesosomes & Plasmids", "deck": "Prokaryotes lack membrane-bound organelles; their cytoplasm is safeguarded by a tripartite cell envelope and energised by mesosomal membranes.", "minutes": 11, "section": "8.4", "pages": [5, 6, 7], "print": "89–91", "sim": "prokaryotearchitect", "simTitle": "Interactive Bacterial Envelope & Mesosome Functional Lab", "quick": ["<strong>Prokaryotic Lineages:</strong> Represented by bacteria, blue-green algae (cyanobacteria), mycoplasmas, and PPLO (Pleuro Pneumonia Like Organisms). They are smaller and multiply much more rapidly than eukaryotic cells.", "<strong>Tripartite Cell Envelope:</strong> A tightly bound three-layered protective complex acting as a single unit: (1) <strong>Glycocalyx:</strong> Outermost layer; either a loose mucilaginous sheath called a <strong>slime layer</strong> or a thick, tough protective <strong>capsule</strong>; (2) <strong>Cell Wall:</strong> Rigid middle layer composed of peptidoglycan, determining cell shape and preventing osmotic bursting; (3) <strong>Plasma Membrane:</strong> Selectively permeable inner lipid bilayer interacting with the external environment.", "<strong>Mesosomes & Chromatophores:</strong> A characteristic inward infolding of the plasma membrane into the cytoplasm in the form of vesicles, tubules, and lamellae. <strong>Mesosome Functions:</strong> (1) Cell wall synthesis; (2) DNA replication and distribution of chromosomes to daughter cells; (3) Respiration and oxidative phosphorylation; (4) Secretion processes; (5) Increasing plasma membrane surface area and enzymatic content. In cyanobacteria, membranous extensions called <strong>chromatophores</strong> contain photosynthetic pigments.", "<strong>Nucleoid & Plasmids:</strong> Genetic material is naked (not enveloped by a nuclear membrane) and consists of a single circular double-stranded DNA chromosome termed the <strong>genophore or nucleoid</strong>. Many bacteria contain small, extra-chromosomal, self-replicating circular DNA molecules called <strong>plasmids</strong>, which confer unique phenotypic traits such as antibiotic resistance.", "<strong>Prokaryotic Ribosomes & Inclusions:</strong> <strong>70S Ribosomes</strong> (measuring 15 nm by 20 nm) consist of <strong>50S</strong> and <strong>30S</strong> subunits. Several ribosomes attach to a single mRNA to form a <strong>polyribosome (polysome)</strong> for rapid translation. Reserve materials are stored in the cytoplasm as non-membrane-bound <strong>inclusion bodies</strong> (phosphate granules, cyanophycean granules, and glycogen granules; gas vacuoles occur in photosynthetic bacteria)."], "formulas": [{"label": "Prokaryotic Ribosomal Subunit Svedberg Math", "html": "50\\text{S} + 30\\text{S} \\xrightarrow{\\text{Hydrodynamic Association}} 70\\text{S} \\quad (\\text{S} = \\text{Svedberg sedimentation coefficient})", "cond": "Sedimentation rate non-additive due to surface area/friction change"}, {"label": "Tripartite Envelope Assembly", "html": "\\text{Bacterial Envelope} = \\text{Glycocalyx (Capsule/Slime)} + \\text{Peptidoglycan Cell Wall} + \\text{Plasma Membrane}", "cond": "Concerted protective and permeability barrier of Eubacteria"}], "deeper": "Why are mesosomes called the bacterial analogue of eukaryotic mitochondria? Prokaryotes lack membrane-bound mitochondria. The respiratory electron transport chain complexes, cytochromes, and ATP synthase enzymes are embedded directly within the bacterial plasma membrane. By folding deeply inward to form mesosomal lamellae, the cell vastly expands its membrane surface area, concentrating respiratory enzyme complexes to power rapid oxidative phosphorylation.", "worked": "Exercise 8.5 Solution: What is a mesosome in a prokaryotic cell? Mention the functions that it performs.\\nAnswer Walkthrough:\\nA mesosome is a characteristic specialized membranous structure formed by the inward extension or invagination of the plasma membrane into the cytoplasm of prokaryotic cells. Mesosomes may exist in the form of vesicles, tubules, or lamellae.\\nFunctions performed by mesosomes:\\n1. Cell wall formation: Assists in synthesis and deposition of peptidoglycan wall precursors.\\n2. DNA replication & daughter distribution: Facilitates chromosome replication and segregation during binary fission.\\n3. Cellular respiration: Houses electron transport chains and ATP synthase complexes for aerobic energy generation.\\n4. Secretion processes: Participates in exporting extracellular enzymes and toxins.\\n5. Membrane amplification: Vastly increases the functional surface area of the plasma membrane and its enzymatic content.", "prediction": {"prompt": "What critical phenotypic advantage does a bacterial cell gain from possessing extra-chromosomal plasmid DNA?", "options": ["Resistance to specific antibiotics and capacity for conjugation.", "The ability to synthesize eukaryotic 80S ribosomes.", "Formation of true histones to package chromatin.", "Development of a double-membrane nuclear envelope."], "correct": 0, "feedback": "Correct! Plasmids are small circular extra-chromosomal DNA molecules that provide distinct survival advantages such as antibiotic resistance and fertility factors."}, "quizzes": [{"id": "kebo108-c2-q1", "question": "Which layer of the bacterial cell envelope may exist either as a loose slime layer or as a thick, tough capsule?", "options": ["Peptidoglycan wall", "Plasma membrane", "Glycocalyx", "Mesosomal membrane"], "correct": 2, "explanation": "The outermost glycocalyx differs among bacteria; it may be a loose slime layer or a dense protective capsule.", "level": "easy"}, {"id": "kebo108-c2-q2", "question": "What is the Svedberg sedimentation coefficient of ribosomes found in prokaryotic cytoplasm?", "options": ["60S", "70S (comprising 50S and 30S subunits)", "80S (comprising 60S and 40S subunits)", "100S"], "correct": 1, "explanation": "Prokaryotic ribosomes are 70S particles composed of two unequal subunits: a large 50S subunit and a small 30S subunit.", "level": "medium"}, {"id": "kebo108-c2-q3", "question": "Which of the following is NOT a recognized physiological function of prokaryotic mesosomes?", "options": ["Assisting in cell wall synthesis and secretory processes", "Carrying out aerobic respiration and ATP generation", "Packaging and translation of nuclear chromatin into 80S ribosomes", "Aiding in DNA replication and distribution to daughter cells"], "correct": 2, "explanation": "Mesosomes have no role in 80S ribosome translation (which only occurs in eukaryotes) or nuclear chromatin packaging; they function in respiration, wall formation, and DNA segregation.", "level": "hard"}]}, {"id": "plasma-membrane-dynamics", "nav": "Plasma Membrane", "title": "Plasma Membrane Dynamics: Fluid Mosaic & Transport", "deck": "The quasi-fluid phospholipid bilayer hosts mobile integral and peripheral proteins, governing selective permeability via passive diffusion and active ion pumps.", "minutes": 11, "section": "8.5.1", "pages": [7, 8], "print": "91–92", "sim": "fluidmosaiclab", "simTitle": "Interactive Fluid Mosaic Bilayer & Membrane Transport Simulator", "quick": ["<strong>Biochemical Composition:</strong> Cell membranes are composed primarily of <strong>lipids and proteins</strong>, along with carbohydrates. In human red blood cell membranes, the composition is approximately <strong>52% protein and 40% lipids</strong>.", "<strong>Phospholipid Bilayer:</strong> The lipid molecules are amphipathic phospholipids arranged in a bilayer. The polar, hydrophilic phosphate heads face outward toward the aqueous cytosol and exterior, while the hydrophobic non-polar saturated fatty acid tails are tucked protected into the interior.", "<strong>Fluid Mosaic Model (Singer & Nicolson, 1972):</strong> Widely accepted model describing the membrane as a mosaic of proteins floating in or on a quasi-fluid lipid bilayer. The <strong>quasi-fluid nature</strong> of lipids enables lateral movement of proteins within the overall bilayer. This membrane fluidity is vital for cell growth, formation of intercellular junctions, secretion, endocytosis, and cell division.", "<strong>Membrane Proteins:</strong> Classified based on ease of extraction: (1) <strong>Integral Proteins:</strong> Partially or totally buried deep within the phospholipid core (e.g., transmembrane channels and pumps); (2) <strong>Peripheral Proteins:</strong> Lie loosely on the external or internal surfaces of the membrane.", "<strong>Membrane Transport Mechanisms:</strong> (1) <strong>Passive Simple Diffusion:</strong> Neutral non-polar solutes move freely down their concentration gradient ($[High] \\to [Low]$) across the lipid core without energy or carrier proteins; (2) <strong>Osmosis:</strong> Movement of water by diffusion across the selectively permeable membrane down its water potential gradient; (3) <strong>Facilitated Diffusion:</strong> Polar/hydrophilic molecules cannot cross non-polar fatty acid tails and require specialized carrier or channel transmembrane proteins to cross down their concentration gradient without ATP; (4) <strong>Active Transport:</strong> Movement of ions/molecules against their concentration gradient ($[Low] \\to [High]$), an energy-dependent process requiring ATP hydrolysis (e.g., the $\\text{Na}^+/\\text{K}^+$ ATPase pump)."], "formulas": [{"label": "Human Erythrocyte Membrane Stoichiometry", "html": "\\text{Erythrocyte Membrane} \\approx 52\\% \\text{ Protein} + 40\\% \\text{ Lipid} + 8\\% \\text{ Oligosaccharides}", "cond": "Established biochemical ratio of human RBC plasma membrane"}, {"label": "Active Transport Electrogenic Stoichiometry", "html": "\\text{ATP} + 3\\,\\text{Na}^+_{\\text{inside}} + 2\\,\\text{K}^+_{\\text{outside}} \\xrightarrow{\\text{Na}^+/\\text{K}^+\\text{-ATPase}} \\text{ADP} + \\text{P}_i + 3\\,\\text{Na}^+_{\\text{outside}} + 2\\,\\text{K}^+_{\\text{inside}}", "cond": "Antiport active pump generating resting negative membrane potential"}], "deeper": "Why is membrane fluidity essential for life? If the plasma membrane were a rigid, static wall, cells could neither divide, nor phagocytose nutrients, nor fuse transport vesicles. The cis-unsaturated double bonds of fatty acid tails introduce kinks that prevent tight packing, keeping the bilayer in a fluid liquid-crystalline phase at physiological temperatures. This fluid mosaic allows receptor proteins to drift laterally, encounter signaling partners, and trigger intracellular cascades.", "worked": "Exercise 8.6 Solution: How do neutral solutes move across the plasma membrane? Can the polar molecules also move across it in the same way? If not, then how are these transported across the membrane?\\nSolution Walkthrough:\\n1. Neutral Solutes: Move across the plasma membrane by **simple diffusion** down their concentration gradient (from higher concentration to lower concentration). Because they are uncharged and non-polar or lipid-soluble, they can dissolve in and traverse the hydrophobic interior of the phospholipid bilayer without carrier proteins or cellular energy.\\n2. Polar Molecules: **CANNOT** move across the membrane in the same way. The non-polar, hydrophobic core of the fatty acid tails acts as an impermeable barrier to polar and charged solutes.\\n3. Transport Mechanism for Polar Molecules:\\n   - **Facilitated Diffusion:** Polar molecules bind to specific transmembrane carrier proteins or pass through channel proteins that provide a hydrophilic pore, moving down their concentration gradient without requiring ATP.\\n   - **Active Transport:** When polar molecules or ions must move *against* their electrochemical or concentration gradient (from lower to higher concentration), they are transported across by energy-dependent pump proteins that consume ATP (e.g., the $\\text{Na}^+/\\text{K}^+$ pump).", "prediction": {"prompt": "Why can glucose or amino acids not passively diffuse across the phospholipid bilayer despite having a favorable concentration gradient?", "options": ["They are polar/hydrophilic molecules that cannot dissolve through the hydrophobic non-polar fatty acid interior of the bilayer.", "They are converted into starch immediately upon touching the membrane surface.", "Their molecular mass exceeds the maximum weight limit of the entire cell.", "They can only pass through the nuclear envelope directly."], "correct": 0, "feedback": "Correct! Polar and hydrophilic molecules are repelled by the hydrophobic fatty acid core of the phospholipid bilayer and require specific transmembrane carrier or channel proteins (facilitated diffusion) to cross."}, "quizzes": [{"id": "kebo108-c3-q1", "question": "Who proposed the widely accepted Fluid Mosaic Model of the cell membrane in 1972?", "options": ["Matthias Schleiden and Theodore Schwann", "Singer and Nicolson", "Camillo Golgi", "George Palade"], "correct": 1, "explanation": "The Fluid Mosaic Model was proposed by S.J. Singer and G.L. Nicolson in 1972.", "level": "easy"}, {"id": "kebo108-c3-q2", "question": "According to the Fluid Mosaic Model, what allows the lateral movement of proteins within the overall bilayer?", "options": ["The rigid crystalline matrix of cellulose fibres", "The quasi-fluid nature of the phospholipid bilayer", "Continuous contraction of actin microfilaments", "Hydrostatic pressure generated by the central vacuole"], "correct": 1, "explanation": "The quasi-fluid state of the lipid bilayer confers lateral fluidity, allowing proteins to diffuse and reorganize laterally.", "level": "medium"}, {"id": "kebo108-c3-q3", "question": "Movement of ions across a plasma membrane against their concentration gradient requiring energy from ATP hydrolysis is termed:", "options": ["Simple diffusion", "Osmosis", "Facilitated diffusion", "Active transport"], "correct": 3, "explanation": "Active transport moves solutes uphill against their concentration gradient using specific protein pumps coupled to ATP hydrolysis.", "level": "hard"}]}, {"id": "endomembrane-system", "nav": "Endomembrane System", "title": "The Endomembrane System: ER, Golgi, Lysosomes & Vacuoles", "deck": "A functionally coordinated network where the ER synthesizes, Golgi modifies and packs, lysosomes hydrolyze, and vacuoles store and regulate turgor.", "minutes": 12, "section": "8.5.3", "pages": [9, 10, 11], "print": "93–95", "sim": "endomembraneflow", "simTitle": "Interactive Endomembrane Vesicle Trafficking & Secretory Simulator", "quick": ["<strong>Endomembrane System Definition:</strong> While each eukaryotic organelle is structurally distinct, four organelles are grouped together as the <strong>endomembrane system</strong> because their functions are intimately coordinated: (1) <strong>Endoplasmic Reticulum (ER)</strong>; (2) <strong>Golgi Complex</strong>; (3) <strong>Lysosomes</strong>; (4) <strong>Vacuoles</strong>. (Mitochondria, chloroplasts, and peroxisomes are NOT part of the endomembrane system because their functions are uncoordinated with these!).", "<strong>Endoplasmic Reticulum (ER):</strong> Network of interconnected branching tubules and flattened cisternae dividing intracellular space into luminal (inside ER) and extra-luminal (cytoplasm) compartments. (1) <strong>Rough ER (RER):</strong> Bears ribosomes on its outer surface; actively involved in <strong>protein synthesis and secretion</strong>; continuous with outer nuclear membrane; (2) <strong>Smooth ER (SER):</strong> Lacks ribosomes; major site for <strong>synthesis of lipids, phospholipids, and steroid hormones</strong> (in animal cells, steroid hormones like testosterone and estrogen are synthesized in SER).", "<strong>Golgi Apparatus:</strong> Discovered by <strong>Camillo Golgi (1898)</strong> in nerve cells. Consists of flat, disc-shaped membranous sacs called <strong>cisternae</strong> (0.5 to 1.0 µm diameter) stacked parallel to each other. Shows distinct polarity: convex forming <strong>cis face</strong> (receives transition vesicles from ER) and concave maturing <strong>trans face</strong> (buds off secretory vesicles). Major function: <strong>packaging and chemical modification</strong> of proteins and lipids. It is the vital site for formation of <strong>glycoproteins</strong> (glycosylation of proteins) and <strong>glycolipids</strong>!", "<strong>Lysosomes:</strong> Membrane-bound vesicular structures formed by packaging in the Golgi apparatus. Contain rich concentrations of almost all types of <strong>hydrolytic enzymes (hydrolases—lipases, proteases, carbohydrases, nucleases)</strong> that are optimally active at <strong>acidic pH (~ 5.0)</strong>, capable of digesting carbohydrates, proteins, lipids, and nucleic acids.", "<strong>Vacuoles:</strong> Large membrane-bound space in plant cytoplasm bound by a single semipermeable membrane called the <strong>tonoplast</strong>. Occupies up to 90% of plant cell volume. Contains water, sap, excretory products, and unusable materials. The tonoplast actively pumps ions against concentration gradients into the vacuole, making sap concentration significantly higher than the cytoplasm. In amoeba, a <strong>contractile vacuole</strong> mediates osmoregulation and excretion; in many protists, <strong>food vacuoles</strong> engulf nutrients."], "formulas": [{"label": "Secretory Protein Maturation Pathway", "html": "\\text{RER (Ribosome Synthesis)} \\xrightarrow{\\text{Transport Vesicles}} \\text{Golgi cis-face} \\xrightarrow{\\text{Glycosylation}} \\text{Golgi trans-face} \\xrightarrow{\\text{Secretory Vesicles}} \\text{Exocytosis / Lysosome}", "cond": "Vectorial functional flow of the eukaryotic endomembrane system"}, {"label": "Lysosomal Acid Hydrolase Optimal Activity", "html": "\\text{Hydrolytic Efficacy} = f(\\text{pH} \\approx 5.0) \\quad [\\text{V-type } \\text{H}^+\\text{-ATPase vacuolar pump keeps interior acidic}]", "cond": "Protection mechanism: leaking enzymes are neutralized by neutral cytoplasmic pH 7.2"}], "deeper": "Why are mitochondria and chloroplasts excluded from the endomembrane system? The four endomembrane components share contiguous membrane trafficking—vesicles physically bud from the ER, fuse with the Golgi cis-face, and bud off to become lysosomes or secretory vesicles. Mitochondria and chloroplasts neither exchange membrane vesicles with the Golgi nor share their biosynthetic pathways; they possess independent genomes, divide autonomously by binary fission, and generate their own inner compartments.", "worked": "Exercise 8.12 Solution: Both lysosomes and vacuoles are endomembrane structures, yet they differ in terms of their functions. Comment.\\nAnswer Walkthrough:\\nAlthough both lysosomes and vacuoles are single-membrane bound organelles belonging to the endomembrane system, they perform fundamentally different physiological roles:\\n1. **Lysosomes:**\\n   - Nature: Small vesicular structures filled with over 40 types of hydrolytic enzymes (acid hydrolases: proteases, nucleases, lipases, carbohydrases) active at acidic pH.\\n   - Function: Intracellular digestion of foreign phagocytosed pathogens, food macromolecules, and damaged organelles (autophagy/autolysis).\\n2. **Vacuoles:**\\n   - Nature: Large fluid-filled spaces enclosed by a specialized semi-permeable membrane called the **tonoplast**.\\n   - Function: Osmoregulation, turgor pressure generation in plants (occupies up to 90% of cell volume), non-enzymatic storage of water, sap, anthocyanin pigments, and metabolic waste products. In protists, specialized contractile vacuoles regulate water excretion, while food vacuoles store engulfed particles.", "prediction": {"prompt": "If a pharmaceutical drug completely inhibits the trans-Golgi cisternae, what cellular process would immediately fail?", "options": ["Delivery and targeted sorting of glycosylated secretory proteins and formation of mature lysosomes.", "Transcription of DNA into messenger RNA in the nucleolus.", "Aerobic synthesis of ATP on mitochondrial cristae.", "Photolysis of water inside chloroplast thylakoids."], "correct": 0, "feedback": "Correct! The trans-Golgi face is the exit sorting hub where modified glycoproteins and glycolipids are packaged into secretory vesicles or directed to lysosomes."}, "quizzes": [{"id": "kebo108-c4-q1", "question": "Which of the following organelles is NOT considered part of the endomembrane system?", "options": ["Endoplasmic reticulum", "Golgi apparatus", "Mitochondrion", "Lysosome"], "correct": 2, "explanation": "Mitochondria (along with chloroplasts and peroxisomes) are not part of the endomembrane system because their functions and membranes are not coordinated with the ER-Golgi pathway.", "level": "easy"}, {"id": "kebo108-c4-q2", "question": "Smooth Endoplasmic Reticulum (SER) is the major intracellular site for the synthesis of:", "options": ["Proteins and ribosomal RNA", "Lipids, phospholipids, and steroid hormones", "Hydrolytic digestive enzymes", "Starch and glycogen granules"], "correct": 1, "explanation": "Smooth ER lacks ribosomes and is specialized for lipid metabolism, phospholipid synthesis, and steroid hormone production (e.g., testosterone, estrogen).", "level": "medium"}, {"id": "kebo108-c4-q3", "question": "What is the single semipermeable bounding membrane of a plant vacuole called that actively pumps ions into the sap?", "options": ["Plasmalemma", "Tonoplast", "Pericardium", "Crista"], "correct": 1, "explanation": "The plant central vacuole is bounded by a single semipermeable membrane called the tonoplast, which actively concentrates ions inside the vacuolar lumen.", "level": "hard"}]}, {"id": "semiautonomous-energy-organelles", "nav": "Mitochondria & Plastids", "title": "Mitochondria & Chloroplasts: Semiautonomous Energy Engines", "deck": "Double-membrane powerhouses possessing their own circular DNA, 70S ribosomes, and internal cristae or thylakoid grana to drive ATP synthesis.", "minutes": 12, "section": "8.5.4–8.5.5", "pages": [11, 12, 13], "print": "95–97", "sim": "energytransducersim", "simTitle": "Interactive Mitochondria vs Chloroplast Ultrastructure Explorer", "quick": ["<strong>Semiautonomous Organelles Concept:</strong> Both mitochondria and chloroplasts are double-membrane bound organelles that contain their own circular double-stranded DNA, RNA molecules, <strong>70S ribosomes</strong>, and enzymes required for autonomous protein synthesis. They multiply independently within the cell by <strong>binary fission</strong>.", "<strong>Mitochondria (Powerhouse of the Cell):</strong> Typically sausage-shaped or cylindrical (diameter 0.2–1.0 µm, length 1.0–4.1 µm). Bound by two distinct membranes: (1) <strong>Outer Membrane:</strong> Smooth, continuous, and porous to small molecules; (2) <strong>Inner Membrane:</strong> Forms numerous infoldings called <strong>cristae</strong> projecting into the dense inner matrix. Cristae vastly increase the surface area for electron transport chain complexes and ATP synthase particles. Mitochondria are the sites of aerobic respiration, generating ATP via oxidative phosphorylation.", "<strong>Plastids:</strong> Pigment-containing organelles found in all plant cells and euglenoids, classified into three types based on pigments: (1) <strong>Chloroplasts:</strong> Contain chlorophyll and carotenoid pigments trapping light energy for photosynthesis; (2) <strong>Chromoplasts:</strong> Contain fat-soluble carotenoid pigments (carotene, xanthophylls) imparting yellow, orange, or red colors to flowers and fruits; (3) <strong>Leucoplasts:</strong> Colorless plastids storing nutrient reserves—<strong>amyloplasts</strong> store starch (potato), <strong>elaioplasts</strong> store oils and fats, and <strong>aleuroplasts</strong> store proteins.", "<strong>Chloroplast Ultrastructure:</strong> Double-membrane bound organelle; inner membrane is relatively less permeable. Space limited by the inner membrane is the <strong>stroma</strong>. Within the stroma lies an organized system of flattened membranous sacs called <strong>thylakoids</strong>. Thylakoids are stacked like piles of coins into units called <strong>grana</strong> (singular: granum), interconnected by flat tubular <strong>stroma lamellae</strong>. Chlorophyll pigments are localized within the thylakoid membranes. Grana are the sites of photochemical light reactions (photophosphorylation), while the stroma contains enzymes (like RuBisCO) for dark reactions (carbon fixation)."], "formulas": [{"label": "Functional Organelle Partitioning", "html": "\\begin{aligned} \\text{Mitochondrion} &= \\text{Cristae (ETC/ATP Synthase)} + \\text{Matrix (Krebs Cycle / 70S / dsDNA)} \\\\ \\text{Chloroplast} &= \\text{Grana Thylakoids (Light Reactions)} + \\text{Stroma (Calvin Cycle / 70S / dsDNA)} \\end{aligned}", "cond": "Ultrastructural sites of bioenergetic transformation"}, {"label": "Plastid Functional Taxonomy", "html": "\\text{Plastid} = \\begin{cases} \\text{Chloroplast} & \\to \\text{Chlorophyll/Carotenoids (Photosynthesis)} \\\\ \\text{Chromoplast} & \\to \\text{Carotene/Xanthophylls (Coloring)} \\\\ \\text{Leucoplast} & \\to \\begin{cases} \\text{Amyloplast} & \\text{(Starch)} \\\\ \\text{Elaioplast} & \\text{(Oils/Fats)} \\\\ \\text{Aleuroplast} & \\text{(Proteins)} \\end{cases} \\end{cases}", "cond": "Pigment and storage taxonomy of plant plastids"}], "deeper": "Why do mitochondria and chloroplasts have 70S ribosomes and circular DNA instead of eukaryotic 80S ribosomes and linear chromosomes? This is the core evidence for the Endosymbiotic Theory. Ancestral eukaryotic precursor cells engulfed aerobic alpha-proteobacteria (which evolved into mitochondria) and photosynthetic cyanobacteria (which evolved into chloroplasts). Over evolutionary time, while many genes transferred to the nucleus, these organelles retained their ancestral prokaryotic 70S ribosomes, naked circular genomes, and binary fission mechanics.", "worked": "Exercise 8.3 & 8.7 Solutions:\\n8.3: Match the following:\\n(a) Cristae -> (ii) Infoldings in mitochondria\\n(b) Cisternae -> (iii) Disc-shaped sacs in Golgi apparatus\\n(c) Thylakoids -> (i) Flat membranous sacs in stroma\\n\\n8.7: Name two cell-organelles that are double membrane bound. What are the characteristics of these two organelles? State their functions and draw labelled diagrams of both.\\nAnswer Walkthrough:\\nTwo double membrane-bound organelles are (1) **Mitochondria** and (2) **Chloroplasts**.\\nCharacteristics:\\n- Both are bounded by two phospholipid membranes (outer and inner) separated by an intermembrane space.\\n- Both are semiautonomous, containing their own circular double-stranded DNA, 70S ribosomes, and independent protein-synthesizing machinery.\\n- Both reproduce by binary fission.\\nFunctions:\\n- Mitochondria: Powerhouses of the cell; perform Krebs cycle in the matrix and electron transport / oxidative phosphorylation on cristae to produce ATP.\\n- Chloroplasts: Energy transducers of plant cells; thylakoids in grana perform light-dependent generation of ATP and NADPH, while the stroma fixes $CO_2$ into carbohydrates via the Calvin cycle.", "prediction": {"prompt": "Which leucoplast type specifically stores nutrient starch reserves in plant organs such as potato tubers?", "options": ["Amyloplast", "Elaioplast", "Aleuroplast", "Chromoplast"], "correct": 0, "feedback": "Correct! Amyloplasts are specialized colorless leucoplasts that synthesize and store starch grains in potatoes and storage tubers."}, "quizzes": [{"id": "kebo108-c5-q1", "question": "What is the primary function of the numerous infoldings (cristae) of the inner mitochondrial membrane?", "options": ["To store glycogen granules and starch", "To vastly increase the surface area for electron transport and ATP synthesis", "To pump hydrolytic enzymes into the cytoplasm", "To synthesize steroid hormones and carotenoid pigments"], "correct": 1, "explanation": "Cristae project into the matrix to dramatically expand the surface area available for respiratory chain complexes and ATP synthase enzymes.", "level": "easy"}, {"id": "kebo108-c5-q2", "question": "In a chloroplast, where are the light-harvesting photosynthetic pigments (chlorophylls and carotenoids) physically located?", "options": ["Freely dissolved in the aqueous stroma", "Embedded within the thylakoid membranes", "Inside the outer chloroplast envelope membrane", "Enclosed inside the circular DNA nucleoid"], "correct": 1, "explanation": "Chlorophyll and accessory pigments are organized into photosystems embedded within the lipid bilayer of thylakoid membranes.", "level": "medium"}, {"id": "kebo108-c5-q3", "question": "Which of the following features proves the semiautonomous nature of mitochondria and chloroplasts?", "options": ["They lack any outer bounding membrane", "They contain their own circular DNA, 70S ribosomes, and divide by binary fission", "They are directly synthesized de novo by the Golgi apparatus", "They perform cellular transcription using 80S ribosomes"], "correct": 1, "explanation": "Possession of an independent circular DNA genome, 70S prokaryotic-like ribosomes, and autonomous replication via binary fission confirm their semiautonomous status.", "level": "hard"}]}, {"id": "cytoskeleton-cilia-and-centrosome", "nav": "Cytoskeleton & Centrosome", "title": "Cytoskeleton, Cilia, Flagella & Centrosomal Cartwheels", "deck": "An elaborate filamentous framework powers cellular motility, while 9+2 doublet axonemes drive ciliary beating and 9+0 triplet cartwheels organize the centrosome.", "minutes": 11, "section": "8.5.6–8.5.9", "pages": [14, 15, 16], "print": "98–100", "sim": "axonemecentriolesim", "simTitle": "Interactive 9+2 Axoneme vs 9+0 Centriolar Cartwheel Simulator", "quick": ["<strong>Cytoskeleton:</strong> An elaborate network of filamentous proteinaceous structures consisting of <strong>microtubules, microfilaments, and intermediate filaments</strong> present in eukaryotic cytoplasm. Provides mechanical support, cell motility, and maintenance of cell shape.", "<strong>Cilia and Flagella:</strong> Hair-like outgrowths of the cell membrane mediating movement of either the cell or surrounding fluid. Cilia are small, numerous oars beating in coordination; flagella are longer and responsible for cell locomotion. Both emerge from a centriole-like structure called the <strong>basal body</strong>.", "<strong>The 9+2 Axoneme Pattern:</strong> Electron microscopy reveals that the core of a cilium or flagellum, termed the <strong>axoneme</strong>, possesses <strong>9 peripheral doublets of microtubules</strong> arranged radially around a <strong>central pair of singlets</strong> ($9 + 2$ array). The central tubules are enclosed by a central sheath, connected to peripheral doublets by <strong>radial spokes</strong> (9 total). Peripheral doublets are interconnected by nexin bridges/linkers.", "<strong>Centrosome and Centrioles:</strong> The centrosome is an organelle usually containing two cylindrical structures called <strong>centrioles</strong> that lie perpendicular to each other, surrounded by amorphous pericentriolar materials. Each centriole exhibits a <strong>9 + 0 cartwheel pattern</strong> consisting of <strong>9 evenly spaced peripheral triplets</strong> of tubulin fibrils, with no central microtubule (central hub connected to triplets by proteinaceous spokes).", "<strong>Centriolar Functions:</strong> (1) Centrioles form the <strong>basal bodies</strong> of cilia and flagella; (2) In animal cells, centrioles give rise to the <strong>spindle apparatus and asters</strong> during cell division to separate sister chromatids."], "formulas": [{"label": "Microtubule Architecture Dichotomy", "html": "\\begin{aligned} \\text{Cilia / Flagella Axoneme} &= 9 \\text{ Doublets (Peripheral)} + 2 \\text{ Singlets (Central)} \\quad (9 + 2) \\\\ \\text{Centriole / Basal Body} &= 9 \\text{ Triplets (Peripheral)} + 0 \\text{ Singlets (Central)} \\quad (9 + 0) \\end{aligned}", "cond": "Universal structural difference between locomotive axonemes and centriolar organizers"}, {"label": "Microtubule Triplet Subunits", "html": "\\text{Peripheral Triplet} = \\text{A-tubule (13 protofilaments)} + \\text{B-tubule (10)} + \\text{C-tubule (10)}", "cond": "Molecular architecture of centriolar tubulin triplets"}], "deeper": "Why do centrioles have a cartwheel 9+0 triplet structure while axonemes have a 9+2 doublet structure? The 9+0 triplet architecture confers extraordinary mechanical rigidity and rotational symmetry, making it an ideal anchor as a basal body and an unyielding nucleation template for spindle fibers during mitosis. In contrast, the 9+2 doublet architecture with dynein arms and flexible radial spokes is engineered specifically for sliding filament mechanics—dynein arms walk along adjacent doublets to cause active bending waves for swimming.", "worked": "Exercise 8.13(ii) Solution: Describe the structure of Centrosome with the help of a labelled diagram.\\nAnswer Walkthrough:\\n1. The centrosome is a non-membrane bound cytoplasmic organelle in animal cells containing two cylindrical structures called **centrioles** situated perpendicular to each other, surrounded by amorphous pericentriolar material.\\n2. Ultrastructure of a Centriole:\\n   - Displays a characteristic **'cartwheel' appearance** in transverse section.\\n   - Has a **9 + 0 arrangement**: composed of 9 evenly spaced peripheral triplets of tubulin microtubules arranged in a pinwheel fashion at a 40° slant.\\n   - The central axis is a non-tubular proteinaceous **hub** (0 central microtubules).\\n   - 9 proteinaceous **radial spokes** extend outward from the central hub to connect with the A-tubule of each peripheral triplet.\\n   - Adjacent triplets are linked together by A-C linkers.\\n3. Functional Significance:\\n   - Serves as the Microtubule Organizing Center (MTOC) that forms the mitotic spindle during cell division.\\n   - Forms the basal bodies from which cilia and flagella arise.", "prediction": {"prompt": "If an electron micrograph shows a 9+0 pattern of 9 peripheral microtubule triplets with a central proteinaceous hub and no central singlets, what organelle is being viewed?", "options": ["A centriole or ciliary basal body", "The shaft of a eukaryotic flagellum", "A prokaryotic flagellar hook", "A chloroplast stroma lamella"], "correct": 0, "feedback": "Correct! The 9+0 triplet cartwheel pattern is the defining diagnostic hallmark of a centriole and a basal body."}, "quizzes": [{"id": "kebo108-c6-q1", "question": "What is the microtubule arrangement pattern inside the axoneme of eukaryotic cilia and flagella?", "options": ["9 + 0 arrangement of triplets", "9 + 2 arrangement (9 peripheral doublets + 2 central singlets)", "7 + 2 arrangement of singlets", "Single central axial filament"], "correct": 1, "explanation": "The axoneme of cilia and flagella consists of 9 peripheral doublets surrounding a pair of central microtubules (the 9+2 pattern).", "level": "easy"}, {"id": "kebo108-c6-q2", "question": "Which organelle forms the basal body from which cilia and flagella arise in eukaryotic cells?", "options": ["Peroxisome", "Centriole", "Golgi body", "Nucleolus"], "correct": 1, "explanation": "Centrioles migrate to the plasma membrane to form the basal bodies that nucleate and anchor cilia and flagella.", "level": "medium"}, {"id": "kebo108-c6-q3", "question": "The proteinaceous spokes in a centriole connect the central hub directly to which tubule of the peripheral triplet?", "options": ["A-tubule", "B-tubule", "C-tubule", "D-tubule"], "correct": 0, "explanation": "The radial spokes connect the central hub to the innermost A-tubule of each peripheral triplet.", "level": "hard"}]}, {"id": "nucleus-and-chromosomes", "nav": "Nucleus & Chromosomes", "title": "Nuclear Architecture, Karyotypes & Chromosome Taxonomy", "deck": "The double nuclear envelope encloses nucleoplasm, nucleoli, and 2 meters of DNA chromatin packaged into metacentric, submetacentric, acrocentric, or telocentric chromosomes.", "minutes": 12, "section": "8.5.10", "pages": [16, 17, 18], "print": "100–102", "sim": "chromosomekaryosim", "simTitle": "Interactive Chromosome Centromere Classifier & Karyotype Simulator", "quick": ["<strong>Discovery & Interphase Nucleus:</strong> Discovered by <strong>Robert Brown (1831)</strong>; chromatin named by <strong>Flemming</strong> from basic dye staining. The interphase nucleus has four components: (1) <strong>Nuclear Envelope:</strong> Two parallel membranes separated by a <strong>perinuclear space</strong> (10 to 50 nm); outer membrane is continuous with RER and bears ribosomes; (2) <strong>Nuclear Pores:</strong> Minute apertures where outer and inner membranes fuse, formed by nuclear pore complexes that mediate bidirectional transit of RNA and proteins between nucleus and cytoplasm; (3) <strong>Nucleoplasm:</strong> Nuclear matrix containing chromatin and nucleoli; (4) <strong>Nucleolus:</strong> Non-membrane bound spherical colloidal structure; site of active <strong>ribosomal RNA (rRNA) synthesis</strong>. Cells actively synthesizing proteins have larger and more numerous nucleoli.", "<strong>Chromatin & DNA Compaction:</strong> Interphase nucleus contains loose, indistinct nucleoprotein threads called <strong>chromatin</strong> composed of DNA, basic histone proteins, non-histone proteins, and RNA. A single human diploid cell contains approximately <strong>two meters of DNA</strong> distributed among its 46 (23 pairs) chromosomes!", "<strong>Chromosome Anatomy:</strong> During cell division, chromatin condenses into structured chromosomes. Every chromosome possesses a primary constriction called the <strong>centromere</strong>, flanked on either side by disc-shaped protein complexes called <strong>kinetochores</strong> (attachment sites for spindle microtubules).", "<strong>Chromosome Classification by Centromere Position:</strong> (1) <strong>Metacentric:</strong> Centromere is precisely in the middle, forming two equal arms ($p = q$, V-shaped in anaphase); (2) <strong>Sub-metacentric:</strong> Centromere is slightly off-center, producing one shorter $p$-arm and one longer $q$-arm (L-shaped); (3) <strong>Acrocentric:</strong> Centromere is situated close to one end, forming one extremely short stubby arm and one very long arm (J-shaped); (4) <strong>Telocentric:</strong> Centromere is located at the terminal tip (i-shaped; telocentric chromosomes do not occur in normal human karyotypes).", "<strong>Satellite Chromosomes (SAT Chromosomes):</strong> Certain chromosomes possess non-staining <strong>secondary constrictions</strong> at constant locations, isolating a terminal chromosomal knob called a <strong>satellite</strong>."], "formulas": [{"label": "Arm Ratio Index for Chromosome Taxonomy", "html": "r = \\frac{L_{\\text{long arm } (q)}}{L_{\\text{short arm } (p)}} \\implies \\begin{cases} r = 1.0 & \\to \\text{Metacentric} \\\\ 1.0 < r < 3.0 & \\to \\text{Sub-metacentric} \\\\ 3.0 \\le r < 7.0 & \\to \\text{Acrocentric} \\\\ r \\to \\infty & \\to \\text{Telocentric (Terminal Centromere)} \\end{cases}", "cond": "Quantitative karyotypic classification criteria"}, {"label": "Human Genomic Packaging Stoichiometry", "html": "2.0\\,\\text{m DNA} \\approx 6.6 \\times 10^9 \\,\\text{bp} \\xrightarrow{\\text{Histone Octamers / Chromatin}} 46 \\text{ Metaphase Chromosomes}", "cond": "10,000-fold compaction ratio of diploid human genome"}], "deeper": "Why are nuclear pores so complex rather than simple open holes? If the nuclear envelope had open holes, cytoplasmic ribonucleases would enter the nucleus and destroy pre-mRNAs, or translation factors would enter prematurely. The nuclear pore complex is an 8-fold symmetric molecular machine (~125 MDa) acting as a smart selective gatekeeper: small molecules (<40 kDa) diffuse freely, but larger proteins (like DNA polymerases and histones) and assembled ribosomal subunits require specific nuclear localization/export signals (NLS/NES) and importin/exportin karyopherin receptors.", "worked": "Exercise 8.11 & 8.14 Solutions:\\n8.11: What are nuclear pores? State their function.\\nNuclear pores are microscopic circular apertures formed by the fusion of the inner and outer nuclear membranes across the nuclear envelope. They are guarded by proteinaceous nuclear pore complexes.\\nFunction: Nuclear pores act as selective bidirectional molecular conduits. They permit the regulated import of proteins (such as histones, DNA and RNA polymerases) into the nucleus, and the export of RNA molecules (mRNA, tRNA, rRNA) and ribosomal subunits from the nucleus into the cytoplasm.\\n\\n8.14: What is a centromere? How does the position of centromere form the basis of classification of chromosomes? Support with a diagram.\\nA centromere (primary constriction) is a clear, non-staining region of the chromosome holding together two sister chromatids. On its outer flanks lie disc-shaped protein kinetochores that attach to spindle fibres.\\nBased on the position of the centromere, chromosomes are classified into four types:\\n1. Metacentric: Centromere in the middle, forming two equal arms (V-shaped).\\n2. Sub-metacentric: Centromere slightly away from the middle, forming one shorter arm and one longer arm (L-shaped).\\n3. Acrocentric: Centromere close to one end, forming one extremely short arm and one very long arm (J-shaped).\\n4. Telocentric: Centromere strictly at the terminal end (I-shaped).", "prediction": {"prompt": "If a chromosome has its centromere located almost at the very tip, producing one minuscule stubby arm and one exceptionally long arm, which type is it?", "options": ["Acrocentric", "Metacentric", "Sub-metacentric", "Polycentric"], "correct": 0, "feedback": "Correct! An acrocentric chromosome has its centromere situated close to one end, yielding one extremely short arm and one very long arm."}, "quizzes": [{"id": "kebo108-c7-q1", "question": "What is the primary site of ribosomal RNA (rRNA) synthesis within the eukaryotic nucleus?", "options": ["Kinetochore", "Nucleolus", "Perinuclear space", "Centromere"], "correct": 1, "explanation": "The nucleolus is the active site for the transcription and processing of ribosomal RNA (rRNA) and assembly of pre-ribosomal subunits.", "level": "easy"}, {"id": "kebo108-c7-q2", "question": "What are the disc-shaped protein structures present on either flank of the chromosomal centromere where spindle fibres attach during mitosis?", "options": ["Chromocentres", "Kinetochores", "Satellites", "Telomeres"], "correct": 1, "explanation": "Kinetochores are disc-shaped protein complexes located on the lateral surfaces of the centromere that anchor spindle microtubules during cell division.", "level": "medium"}, {"id": "kebo108-c7-q3", "question": "Which chromosome morphology features a central centromere producing two arms of equal length and appears V-shaped during anaphase?", "options": ["Acrocentric", "Telocentric", "Metacentric", "Sub-metacentric"], "correct": 2, "explanation": "A metacentric chromosome has its centromere centrally positioned, forming two equal arms that assume a V-shape as they are pulled to opposite poles in anaphase.", "level": "hard"}]}], "exercises": [{"id": "ex-8-1", "number": "8.1", "question": "Which of the following is not correct?\\n(a) Robert Brown discovered the cell.\\n(b) Schleiden and Schwann formulated the cell theory.\\n(c) Virchow explained that cells are formed from pre-existing cells.\\n(d) A unicellular organism carries out its life activities within a single cell.", "answer": "Option (a) is not correct.\\n\\nDetailed Explanation:\\n- Robert Brown discovered the cell **nucleus** in 1831, not the cell itself.\\n- Robert Hooke (1665) first discovered and coined the term 'cell' while observing cork slices, and Antonie von Leeuwenhoek (1674) first observed and described a living cell.\\n- Options (b), (c), and (d) are all scientifically accurate: Schleiden and Schwann formulated the original cell theory; Rudolf Virchow established *Omnis cellula-e cellula*; and a unicellular organism executes all vital physiological processes inside its single cell.", "page": 103}, {"id": "ex-8-2", "number": "8.2", "question": "New cells generate from\\n(a) bacterial fermentation\\n(b) regeneration of old cells\\n(c) pre-existing cells\\n(d) abiotic materials", "answer": "Correct Answer: (c) pre-existing cells.\\n\\nDetailed Explanation:\\nAccording to Rudolf Virchow's doctrine of biogenesis (*Omnis cellula-e cellula*, 1855), all new cells arise strictly through the division of pre-existing living cells. Spontaneous generation of cells from abiotic matter or bacterial fermentation was disproven by Louis Pasteur and cell theory.", "page": 103}, {"id": "ex-8-3", "number": "8.3", "question": "Match the following:\\nColumn I\\n(a) Cristae\\n(b) Cisternae\\n(c) Thylakoids\\nColumn II\\n(i) Flat membranous sacs in stroma\\n(ii) Infoldings in mitochondria\\n(iii) Disc-shaped sacs in Golgi apparatus", "answer": "Correct Matching:\\n- (a) Cristae $\\longrightarrow$ (ii) Infoldings in mitochondria (expand surface area for respiratory electron transport)\\n- (b) Cisternae $\\longrightarrow$ (iii) Disc-shaped sacs in Golgi apparatus (stacked flattened parallel sacs mediating glycosylation and packaging)\\n- (c) Thylakoids $\\longrightarrow$ (i) Flat membranous sacs in stroma (chloroplast sacs stacked into grana housing light-harvesting pigments)", "page": 103}, {"id": "ex-8-4", "number": "8.4", "question": "Which of the following is correct:\\n(a) Cells of all living organisms have a nucleus.\\n(b) Both animal and plant cells have a well defined cell wall.\\n(c) In prokaryotes, there are no membrane bound organelles.\\n(d) Cells are formed de novo from abiotic materials.", "answer": "Correct Answer: (c) In prokaryotes, there are no membrane bound organelles.\\n\\nDetailed Explanation:\\n- (a) is incorrect because prokaryotes (bacteria, mycoplasmas) lack a membrane-bound nucleus.\\n- (b) is incorrect because animal cells completely lack a cell wall; only plant cells, fungi, and bacteria possess cell walls.\\n- (c) is CORRECT: Prokaryotes lack all membrane-bound organelles such as mitochondria, ER, Golgi, lysosomes, and chloroplasts.\\n- (d) is incorrect because cells arise only from pre-existing cells via division.", "page": 103}, {"id": "ex-8-5", "number": "8.5", "question": "What is a mesosome in a prokaryotic cell? Mention the functions that it performs.", "answer": "Definition:\\nA **mesosome** is a characteristic specialized membranous structure in prokaryotic cells formed by the invagination or inward folding of the plasma membrane into the cytoplasm. It can occur in three distinct morphological forms: vesicles, tubules, and lamellae.\\n\\nFunctions Performed by Mesosomes:\\n1. **Cell Wall Synthesis:** Facilitates the assembly, transport, and cross-linking of peptidoglycan wall precursors.\\n2. **DNA Replication & Daughter Distribution:** Attaches to the bacterial nucleoid, assisting in chromosome replication and ensuring equal segregation into daughter cells during binary fission.\\n3. **Respiration & Oxidative Phosphorylation:** Houses respiratory electron transport chain complexes, cytochromes, and ATP synthase enzymes, acting as the functional bacterial equivalent of eukaryotic mitochondrial cristae.\\n4. **Secretion:** Participates in the extracellular export of enzymes, toxins, and metabolites across the cell envelope.\\n5. **Surface Area Expansion:** Vastly increases the functional surface area of the plasma membrane and its enzymatic density.", "page": 103}, {"id": "ex-8-6", "number": "8.6", "question": "How do neutral solutes move across the plasma membrane? Can the polar molecules also move across it in the same way? If not, then how are these transported across the membrane?", "answer": "1. Movement of Neutral Solutes:\\nNeutral, non-polar, and lipid-soluble solutes move across the plasma membrane by **simple passive diffusion** down their concentration gradient (from a region of higher concentration to one of lower concentration). Because they carry no charge, they can dissolve directly into the hydrophobic core of the phospholipid bilayer and cross freely without requiring energy or transport proteins.\\n\\n2. Can Polar Molecules Move in the Same Way?\\n**No**, polar molecules cannot move across in the same way. The interior of the plasma membrane consists of hydrophobic, non-polar fatty acid hydrocarbon chains that strongly repel charged or polar molecules (such as glucose, amino acids, and ions), preventing their passive diffusion.\\n\\n3. Transport of Polar Molecules:\\nPolar and charged molecules are transported across the membrane via two specialized mechanisms:\\n- **Facilitated Diffusion (Passive):** Transmembrane transport proteins (channel proteins and carrier proteins) create hydrophilic tunnels or undergo conformational changes to ferry polar molecules down their concentration gradient without consuming cellular energy (ATP).\\n- **Active Transport (Energy-Dependent):** When polar molecules or ions must be moved *against* their concentration gradient (from lower to higher concentration), specialized carrier proteins known as **pumps** (e.g., the $\\text{Na}^+/\\text{K}^+$ ATPase pump) utilize energy derived from ATP hydrolysis to drive transport uphill.", "page": 103}, {"id": "ex-8-7", "number": "8.7", "question": "Name two cell-organelles that are double membrane bound. What are the characteristics of these two organelles? State their functions and draw labelled diagrams of both.", "answer": "The two double-membrane bound organelles are **Mitochondria** and **Chloroplasts**.\\n\\n1. **Characteristics of Both Organelles (Semiautonomous Nature):**\\n   - Both are bounded by two distinct phospholipid membranes (an outer membrane and an inner membrane) separated by an intermembrane space.\\n   - Both contain their own **circular double-stranded DNA**, RNA, and **70S ribosomes**.\\n   - Both can synthesize some of their own proteins independently of nuclear control and replicate by **binary fission**.\\n\\n2. **Mitochondria:**\\n   - *Structure:* Sausage-shaped/cylindrical. Outer membrane is smooth; inner membrane folds into deep finger-like ridges called **cristae** projecting into the dense gel-like **matrix**.\\n   - *Function:* Powerhouse of the cell; site of aerobic cellular respiration (Krebs cycle in the matrix; electron transport chain and oxidative phosphorylation on the cristae) generating ATP.\\n\\n3. **Chloroplasts:**\\n   - *Structure:* Lens-shaped/ovoid. The inner membrane encloses a fluid-filled space called the **stroma**. Embedded in the stroma are stacks of flattened membranous discs called **thylakoids** organized into **grana**, interconnected by **stroma lamellae**.\\n   - *Function:* Primary energy transducers of plant cells; chlorophyll in thylakoids traps sunlight to produce ATP and NADPH (light reactions), while stroma enzymes fix $CO_2$ into carbohydrates (dark reactions).", "page": 103}, {"id": "ex-8-8", "number": "8.8", "question": "What are the characteristics of prokaryotic cells?", "answer": "Characteristics of Prokaryotic Cells:\\n1. **Lack of Membrane-Bound Nucleus:** Genetic material is naked (not enclosed by a nuclear envelope) and exists as a single circular double-stranded DNA chromosome termed a **nucleoid or genophore**.\\n2. **Absence of Membrane-Bound Organelles:** Completely lack endoplasmic reticulum, Golgi bodies, mitochondria, chloroplasts, lysosomes, and vacuoles.\\n3. **Tripartite Cell Envelope:** Typically guarded by a three-layered envelope consisting of an outer glycocalyx (slime layer or capsule), a rigid middle **peptidoglycan cell wall**, and an inner selectively permeable plasma membrane.\\n4. **Mesosomes:** Possess inward invaginations of the plasma membrane (mesosomes) that participate in cellular respiration, cell wall formation, and DNA replication.\\n5. **70S Ribosomes:** Protein synthesis occurs on **70S ribosomes** (composed of 50S and 30S subunits), which may form polyribosomes along mRNA.\\n6. **Plasmids:** Many carry small, circular, autonomous extra-chromosomal DNA molecules that confer traits like antibiotic resistance.\\n7. **Inclusion Bodies:** Cytoplasmic reserves are stored in non-membrane bound granules (e.g., phosphate granules, cyanophycean granules, glycogen granules).\\n8. **Locomotion:** Motile bacteria bear simple flagella composed of the protein **flagellin** (lacking the 9+2 microtubule axoneme), as well as non-motile pili and fimbriae for attachment and conjugation.", "page": 103}, {"id": "ex-8-9", "number": "8.9", "question": "Multicellular organisms have division of labour. Explain.", "answer": "Explanation of Division of Labour in Multicellular Organisms:\\n1. In unicellular organisms, all vital life functions (ingestion, digestion, respiration, excretion, reproduction) must be executed by a single cell.\\n2. In contrast, multicellular organisms exhibit **division of labour** across multiple hierarchical tiers:\\n   - **Cellular Level:** Undifferentiated stem cells differentiate into specialized cell lineages (e.g., nerve cells for impulse transmission, muscle cells for mechanical contraction, RBCs for oxygen transport).\\n   - **Tissue Level:** Similar cells and intercellular matrices associate into primary tissues (epithelial, connective, muscular, neural) that carry out distinct physiological tasks.\\n   - **Organ & System Level:** Tissues assemble into coordinated organs (e.g., stomach, lungs, heart, kidneys), which associate into dedicated organ systems (digestive, respiratory, circulatory, excretory).\\n3. **Subcellular Division of Labour:** Even within an individual eukaryotic cell, division of labour is achieved by membrane-bound organelles: the nucleus directs heredity, mitochondria produce ATP, the ER and ribosomes synthesize proteins, Golgi apparatus modifies and packages, and lysosomes digest macromolecules.\\n4. *Biological Advantage:* Division of labour dramatically enhances metabolic efficiency, energy conservation, organismal adaptability, and overall survival.", "page": 103}, {"id": "ex-8-10", "number": "8.10", "question": "Cell is the basic unit of life. Discuss in brief.", "answer": "Discussion:\\n1. **Threshold of Independent Existence:** A single cell is the smallest structural entity in nature capable of independent, self-sustaining existence and replication. Anything less than an intact cell (such as an isolated virus particle or an isolated organelle like a mitochondrion) cannot sustain autonomous life.\\n2. **Structural Basis:** Every living organism—from microscopic bacteria and yeast to colossal blue whales and redwood trees—is structurally built from one or more cells and cellular secretions.\\n3. **Functional & Metabolic Unity:** All biochemical processes essential for life (cellular respiration, DNA replication, protein synthesis, active transport, metabolic homeostasis) occur within the boundaries of cells.\\n4. **Continuity of Life:** Every living cell originates from a pre-existing cell through cell division (*Omnis cellula-e cellula*), carrying genetic information from generation to generation.\\nConclusion: Because the cell constitutes both the structural building block and the operational functional unit of all living organisms, it is universally recognized as the **fundamental unit of life**.", "page": 103}, {"id": "ex-8-11", "number": "8.11", "question": "What are nuclear pores? State their function.", "answer": "What are Nuclear Pores?\\nNuclear pores are minute circular openings or perforations present throughout the **nuclear envelope**. They are formed at specific points where the outer and inner nuclear membranes fuse together. Each pore is surrounded by an elaborate octagonal protein complex termed the **nuclear pore complex (NPC)**.\\n\\nFunctions of Nuclear Pores:\\n1. **Bidirectional Molecular Highway:** They serve as the primary regulated conduits mediating selective transport of macromolecules between the nucleus (nucleoplasm) and the cytoplasm.\\n2. **Nuclear Export:** Facilitate the export of newly synthesized RNA molecules (mRNA, tRNA, rRNA) and assembled ribosomal subunits from the nucleoplasm into the cytoplasm for translation.\\n3. **Nuclear Import:** Facilitate the selective import of essential proteins synthesized in the cytoplasm—such as histones, DNA polymerases, RNA polymerases, and transcription factors—into the nucleus for chromatin organization and genetic activity.", "page": 103}, {"id": "ex-8-12", "number": "8.12", "question": "Both lysosomes and vacuoles are endomembrane structures, yet they differ in terms of their functions. Comment.", "answer": "Commentary on Lysosomes vs Vacuoles:\\nAlthough both lysosomes and vacuoles are single-membrane bound vesicular components of the endomembrane system, their enzymatic content and physiological functions diverge completely:\\n\\n1. **Lysosomes (Digestive Organelles):**\\n   - *Membrane & Lumen:* Bound by a single membrane and maintained at an **acidic pH (~5.0)** by active proton pumps.\\n   - *Enzyme Content:* Packed with over 40 types of **hydrolytic enzymes** (acid hydrolases: proteases, lipases, nucleases, carbohydrases).\\n   - *Function:* Primary role is **intracellular digestion**—hydrolyzing foreign engulfed pathogens, phagocytosed food particles, and worn-out damaged cellular organelles (autophagy).\\n\\n2. **Vacuoles (Storage & Osmoregulatory Organelles):**\\n   - *Membrane & Lumen:* Bound by a specialized semipermeable membrane called the **tonoplast**.\\n   - *Content:* Devoid of hydrolytic enzymes; filled with watery cell sap, inorganic ions, water-soluble pigments (anthocyanins), and metabolic by-products/waste.\\n   - *Function:* Maintains **cell turgidity and mechanical stiffness** in plant cells (occupying up to 90% of cell volume). In freshwater protists like *Amoeba*, contractile vacuoles pump out excess water for **osmoregulation and excretion**, while food vacuoles store engulfed food.\\n\\n*Summary Table:*\\n- **Lysosomes:** Acid hydrolases $\\to$ Enzymatic degradation & cellular scavenging.\\n- **Vacuoles:** Tonoplast & cell sap $\\to$ Turgor maintenance, ion accumulation & osmoregulation.", "page": 103}, {"id": "ex-8-13", "number": "8.13", "question": "Describe the structure of the following with the help of labelled diagrams.\\n(i) Nucleus\\n(ii) Centrosome", "answer": "Detailed Structural Descriptions:\\n\\n(i) **Nucleus:**\\n- **Nuclear Envelope:** Composed of two parallel lipid membranes (outer and inner) separated by a 10–50 nm **perinuclear space**. The outer membrane is continuous with the rough endoplasmic reticulum and studded with ribosomes.\\n- **Nuclear Pores:** Circular apertures formed by membrane fusion, housing nuclear pore complexes that regulate bidirectional macromolecular transport.\\n- **Nucleoplasm (Nuclear Matrix):** Transparent semi-fluid ground substance containing chromatin, nucleoli, nucleotides, and enzymes.\\n- **Chromatin:** Indistinct network of nucleoprotein fibres composed of double-stranded DNA wrapped around basic **histone proteins**, non-histone proteins, and RNA.\\n- **Nucleolus:** One or more dense, non-membrane bound spherical colloidal bodies where ribosomal RNA (rRNA) is actively transcribed and assembled into pre-ribosomal subunits.\\n\\n(ii) **Centrosome:**\\n- Located in the cytoplasm near the nucleus of animal cells (absent in higher plants).\\n- Contains **two cylindrical centrioles** oriented perpendicular to each other, surrounded by an amorphous protein mass called the **pericentriolar material**.\\n- **Ultrastructure of Centriole:** Displays a **9 + 0 cartwheel pattern** in transverse cross-section:\\n  * **9 Peripheral Triplets:** Nine evenly spaced triplets of tubulin microtubules (each triplet composed of A, B, and C tubules at a 40° slant).\\n  * **Central Hub:** A proteinaceous rod located at the center with **zero central microtubules** (hence 9 + 0).\\n  * **Radial Spokes:** Nine proteinaceous spokes connecting the central hub to the A-tubule of each peripheral triplet.\\n- **Function:** Serves as the Microtubule Organizing Center (MTOC); nucleates the mitotic spindle fibers during cell division and forms basal bodies of cilia and flagella.", "page": 103}, {"id": "ex-8-14", "number": "8.14", "question": "What is a centromere? How does the position of centromere form the basis of classification of chromosomes. Support your answer with a diagram showing the position of centromere on different types of chromosomes.", "answer": "1. What is a Centromere?\\nA **centromere**, or **primary constriction**, is a clear, condensed, non-staining region of a chromosome that holds two sister chromatids together. On the lateral surfaces of the centromere lie disc-shaped multi-protein complexes called **kinetochores**, which serve as the attachment sites for spindle microtubules during cell division.\\n\\n2. Classification of Chromosomes by Centromere Position:\\nBased on the location of the centromere, eukaryotic chromosomes are categorized into four distinct morphological types:\\n\\n- **1. Metacentric Chromosome:**\\n  * Centromere Position: Located exactly in the **middle** of the chromosome.\\n  * Arm Length: Forms **two equal arms** ($p = q$).\\n  * Anaphase Shape: Appears **V-shaped** as the centromere leads toward the spindle pole.\\n\\n- **2. Sub-metacentric Chromosome:**\\n  * Centromere Position: Located **slightly away from the middle**.\\n  * Arm Length: Produces **one slightly shorter arm** (p-arm) and **one longer arm** (q-arm).\\n  * Anaphase Shape: Appears **L-shaped** or J-like during anaphase movement.\\n\\n- **3. Acrocentric Chromosome:**\\n  * Centromere Position: Located **very close to one end**.\\n  * Arm Length: Forms **one extremely short, stubby arm** and **one very long arm**.\\n  * Anaphase Shape: Appears **J-shaped** during anaphasic migration.\\n\\n- **4. Telocentric Chromosome:**\\n  * Centromere Position: Located strictly at the **terminal end** of the chromosome.\\n  * Arm Length: Has only a **single long arm** extending from the centromere.\\n  * Anaphase Shape: Appears **i-shaped** or rod-like (not found in normal human karyotypes).\\n\\n*Satellite Chromosomes (SAT):* In addition to the primary constriction, some chromosomes possess non-staining **secondary constrictions** at constant sites that delineate small knob-like terminal fragments termed **satellites**.", "page": 103}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap" id="lab-viewport"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-presets" id="lab-presets"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readouts" id="lab-readouts" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Wow: Real-World Biological Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect) && rawConnect.length) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    } else {
+      connectItems = [
+        {
+          title: "Wow: Biological Mechanics & Frontiers",
+          text: "Fundamental biological principles govern cellular pathways, tissue differentiation, and ecological balances.",
+          links: [{label: "NCERT Biology Guide", link: "https://ncert.nic.in/textbook.php"}]
+        }
+      ];
+    }
+
+    html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+        var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+        var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+        var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+        var wow = /^Wow/i.test(title) || (ci === 0);
+
+        var src = (C.source || "NCERT Class 11 Biology") + (printPage ? (" p." + printPage) : " p. 1");
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        if(!v && (!links || !links.length)){
+          links = [{t: "NCERT Chapter Exploration", u: "https://ncert.nic.in/textbook.php", provider: "NCERT Official Resource"}];
+        }
+        if(v && (v.id || v.youtubeId)){
+          var vidId = v.id || v.youtubeId;
+          cHtml += '<button type="button" class="video-facade" data-yt="' + vidId + '" data-video="' + vidId + '" aria-label="Play video: ' + (v.title || "Curriculum Demonstration") + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "NCERT Resource") + '</span>' +
+            '</button>';
+        }
+        if(links && links.length){
+          links.forEach(function(a){
+            var href = a.u || a.link || "#";
+            var lab = a.t || a.label || "Curriculum Reading";
+            var prov = /ncert/i.test(href) ? "NCERT Resource" : (a.provider || "NCERT Resource");
+            cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + ' · ' + prov + '">' +
+              '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+          });
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+})();
+
+</script>
+<script>
+// kebo108 interactive simulations: Cell - The Unit of Life
+window.SIMS = window.SIMS || {};
+
+function cell(title, val, color) {
+  return '<div class="readout-cell">' +
+    '<div class="readout-label">' + title + '</div>' +
+    '<div class="readout-val" style="color:' + (color || 'var(--primary)') + ';">' + val + '</div>' +
+    '</div>';
+}
+
+function readout(html) {
+  var r = document.getElementById("lab-readouts");
+  if (r) r.innerHTML = html;
+}
+
+function verdict(html) {
+  var n = document.getElementById("lab-verdict");
+  if (n) n.innerHTML = html;
+}
+
+// -------------------------------------------------------------------------
+// 1. SIMULATION 1: Cell Discovery Timeline & Scale Comparator (celltheorylab)
+// -------------------------------------------------------------------------
+window.SIMS.celltheorylab = (function(){
+  var scaleTier = "rbc"; // "mycoplasma", "bacteria", "rbc", "eukaryote"
+
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f43f5e;"></span><span>Mycoplasma (0.3 µm)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Bacterium (1–2 µm)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Human RBC (7.0 µm)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Typical Eukaryote (10–20 µm)</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.celltheorylab.setScale(\'mycoplasma\')">Mycoplasma (0.3 µm)</button>' +
+      '<button class="preset-btn" onclick="SIMS.celltheorylab.setScale(\'bacteria\')">Bacterium (1–2 µm)</button>' +
+      '<button class="preset-btn" onclick="SIMS.celltheorylab.setScale(\'rbc\')">Human RBC (7.0 µm)</button>' +
+      '<button class="preset-btn" onclick="SIMS.celltheorylab.setScale(\'eukaryote\')">Eukaryote (15 µm)</button>';
+  }
+
+  function setScale(s){
+    scaleTier = s;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">CELL SIZE SPECTRUM & VIRCHOW\'S CELL THEORY</text>';
+
+    // Comparative diagram
+    var cx = W / 2;
+    var cy = H / 2 + 10;
+
+    // Outer Eukaryotic cell reference (15 um)
+    m += '<circle cx="' + cx + '" cy="' + cy + '" r="150" fill="rgba(56,189,248,0.08)" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4"/>';
+    m += '<text x="' + cx + '" y="' + (cy - 120) + '" fill="#38bdf8" font-size="12" text-anchor="middle">Typical Eukaryotic Cell (~15 µm)</text>';
+
+    // Human RBC reference (7 um)
+    m += '<circle cx="' + cx + '" cy="' + cy + '" r="70" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="2"/>';
+    m += '<text x="' + cx + '" y="' + (cy - 45) + '" fill="#10b981" font-size="11" text-anchor="middle">Human RBC (7.0 µm)</text>';
+
+    // Bacterium reference (1-2 um)
+    m += '<rect x="' + (cx - 20) + '" y="' + (cy + 10) + '" width="40" height="20" rx="10" fill="rgba(245,158,11,0.3)" stroke="#f59e0b" stroke-width="2"/>';
+    m += '<text x="' + cx + '" y="' + (cy + 25) + '" fill="#fbbf24" font-size="10" text-anchor="middle">Bacterium</text>';
+
+    // Mycoplasma (0.3 um)
+    m += '<circle cx="' + cx + '" cy="' + (cy + 45) + '" r="4" fill="#f43f5e" stroke="#fff" stroke-width="1"/>';
+    m += '<text x="' + (cx + 25) + '" y="' + (cy + 49) + '" fill="#f43f5e" font-size="10">Mycoplasma (0.3 µm)</text>';
+
+    // Highlight target
+    if (scaleTier === "mycoplasma") {
+      m += '<circle cx="' + cx + '" cy="' + (cy + 45) + '" r="14" fill="none" stroke="#f43f5e" stroke-width="2.5"/>';
+    } else if (scaleTier === "bacteria") {
+      m += '<rect x="' + (cx - 24) + '" y="' + (cy + 6) + '" width="48" height="28" rx="14" fill="none" stroke="#f59e0b" stroke-width="2.5"/>';
+    } else if (scaleTier === "rbc") {
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="74" fill="none" stroke="#10b981" stroke-width="2.5"/>';
+    } else {
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="154" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+    }
+
+    // Historical banner
+    m += '<rect x="60" y="325" width="' + (W - 120) + '" height="55" rx="8" fill="rgba(30,41,59,0.7)" stroke="#64748b" stroke-width="1"/>';
+    m += '<text x="' + (W/2) + '" y="345" fill="#fcd34d" font-size="12" font-weight="bold" text-anchor="middle">RUDOLF VIRCHOW (1855): Omnis cellula-e cellula</text>';
+    m += '<text x="' + (W/2) + '" y="365" fill="#cbd5e1" font-size="11" text-anchor="middle">All living organisms are made of cells, and all new cells arise by division of pre-existing cells.</text>';
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Focused Specimen", scaleTier.toUpperCase(), scaleTier === "mycoplasma" ? "#f43f5e" : (scaleTier === "bacteria" ? "#f59e0b" : (scaleTier === "rbc" ? "#10b981" : "#38bdf8"))) +
+      cell("Physical Size", scaleTier === "mycoplasma" ? "0.3 µm (Smallest Cell)" : (scaleTier === "bacteria" ? "1 to 2 µm" : (scaleTier === "rbc" ? "7.0 µm" : "10 to 20 µm")), "#38bdf8") +
+      cell("Nucleus Status", scaleTier === "mycoplasma" || scaleTier === "bacteria" ? "ABSENT (Prokaryotic)" : (scaleTier === "rbc" ? "ENUCLEATED (Mature Human)" : "PRESENT (Membrane-bound)"), "#10b981") +
+      cell("Biogenesis", "Omnis cellula-e cellula", "#fcd34d")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Cell Theory Axiom:</span> ' +
+      "Schleiden (botanist) and Schwann (zoologist) founded cell theory; Rudolf Virchow completed it in 1855 with 'Omnis cellula-e cellula'—all cells arise from pre-existing cells by division."
+    );
+  }
+
+  return { mount: mount, setScale: setScale, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 2. SIMULATION 2: Bacterial Envelope & Mesosome (prokaryotearchitect - Exercise 8.5)
+// -------------------------------------------------------------------------
+window.SIMS.prokaryotearchitect = (function(){
+  var part = "mesosome"; // "glycocalyx", "wall", "membrane", "mesosome", "plasmid"
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Glycocalyx (Capsule)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Peptidoglycan Cell Wall</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Plasma Membrane & Mesosome</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Nucleoid & Plasmid DNA</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.prokaryotearchitect.setPart(\'mesosome\')">Mesosome Infoldings</button>' +
+      '<button class="preset-btn" onclick="SIMS.prokaryotearchitect.setPart(\'wall\')">Peptidoglycan Wall</button>' +
+      '<button class="preset-btn" onclick="SIMS.prokaryotearchitect.setPart(\'glycocalyx\')">Glycocalyx Capsule</button>' +
+      '<button class="preset-btn" onclick="SIMS.prokaryotearchitect.setPart(\'plasmid\')">Plasmids & Genophore</button>';
+  }
+
+  function setPart(p){
+    part = p;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 8.5: BACTERIAL ENVELOPE ARCHITECTURE & MESOSOME ROLES</text>';
+
+    var bx = W / 2 - 40;
+    var by = H / 2 + 5;
+
+    // 1. Outermost Glycocalyx (Capsule)
+    var glyStroke = (part === "glycocalyx") ? "#f43f5e" : "#ec4899";
+    var glyWidth = (part === "glycocalyx") ? 8 : 4;
+    m += '<rect x="' + (bx - 190) + '" y="' + (by - 95) + '" width="380" height="190" rx="95" fill="rgba(236,72,153,0.12)" stroke="' + glyStroke + '" stroke-width="' + glyWidth + '"/>';
+    m += '<text x="' + (bx - 140) + '" y="' + (by - 105) + '" fill="#f472b6" font-size="11">Glycocalyx (Capsule / Slime Layer)</text>';
+
+    // 2. Middle Peptidoglycan Cell Wall
+    var wallStroke = (part === "wall") ? "#f59e0b" : "#b45309";
+    var wallWidth = (part === "wall") ? 8 : 4;
+    m += '<rect x="' + (bx - 170) + '" y="' + (by - 75) + '" width="340" height="150" rx="75" fill="rgba(245,158,11,0.15)" stroke="' + wallStroke + '" stroke-width="' + wallWidth + '"/>';
+    m += '<text x="' + (bx - 120) + '" y="' + (by - 82) + '" fill="#fbbf24" font-size="11">Peptidoglycan Cell Wall (Shape & Protection)</text>';
+
+    // 3. Inner Plasma Membrane
+    m += '<rect x="' + (bx - 150) + '" y="' + (by - 55) + '" width="300" height="110" rx="55" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="3"/>';
+
+    // 4. Mesosome Infoldings (Vesicles, tubules, lamellae)
+    var mesoColor = (part === "mesosome") ? "#38bdf8" : "#0284c7";
+    var mesoWidth = (part === "mesosome") ? 5 : 3;
+    // Invagination path
+    m += '<path d="M ' + (bx - 50) + ' ' + (by + 55) + ' C ' + (bx - 40) + ' ' + (by + 20) + ' ' + (bx - 10) + ' ' + (by + 10) + ' ' + (bx - 30) + ' ' + (by - 10) + ' S ' + (bx - 10) + ' ' + (by - 30) + ' ' + (bx - 40) + ' ' + (by - 55) + '" fill="none" stroke="' + mesoColor + '" stroke-width="' + mesoWidth + '"/>';
+    // Mesosome vesicles
+    m += '<circle cx="' + (bx - 20) + '" cy="' + (by + 15) + '" r="9" fill="rgba(56,189,248,0.4)" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<circle cx="' + (bx - 25) + '" cy="' + (by - 15) + '" r="8" fill="rgba(56,189,248,0.4)" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<text x="' + (bx - 20) + '" y="' + (by + 40) + '" fill="#38bdf8" font-size="12" font-weight="bold">MESOSOME</text>';
+
+    // 5. Naked Nucleoid DNA (Genophore)
+    m += '<path d="M ' + (bx + 30) + ' ' + (by - 20) + ' Q ' + (bx + 70) + ' ' + (by - 40) + ' ' + (bx + 90) + ' ' + (by - 10) + ' T ' + (bx + 50) + ' ' + (by + 25) + ' T ' + (bx + 20) + ' ' + (by - 10) + '" fill="none" stroke="#10b981" stroke-width="3.5"/>';
+    m += '<text x="' + (bx + 40) + '" y="' + by + '" fill="#10b981" font-size="11" font-weight="bold">Nucleoid DNA</text>';
+
+    // 6. Plasmids
+    var plColor = (part === "plasmid") ? "#fbbf24" : "#10b981";
+    m += '<circle cx="' + (bx + 95) + '" cy="' + (by + 25) + '" r="8" fill="none" stroke="' + plColor + '" stroke-width="3"/>';
+    m += '<circle cx="' + (bx + 115) + '" cy="' + (by + 10) + '" r="6" fill="none" stroke="' + plColor + '" stroke-width="2.5"/>';
+    m += '<text x="' + (bx + 85) + '" y="' + (by + 45) + '" fill="#fbbf24" font-size="10">Plasmids (R-factors)</text>';
+
+    // 7. Flagellum (Flagellin protein)
+    m += '<path d="M ' + (bx - 190) + ' ' + by + ' Q ' + (bx - 240) + ' ' + (by - 30) + ' ' + (bx - 280) + ' ' + by + ' T ' + (bx - 340) + ' ' + by + '" fill="none" stroke="#e2e8f0" stroke-width="4"/>';
+    m += '<text x="' + (bx - 280) + '" y="' + (by - 20) + '" fill="#cbd5e1" font-size="10">Flagellum</text>';
+
+    // Info panel for Mesosome Functions
+    m += '<rect x="490" y="65" width="215" height="240" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
+    m += '<text x="597" y="90" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">MESOSOME FUNCTIONS</text>';
+    m += '<text x="502" y="115" fill="#fcd34d" font-size="11" font-weight="bold">1. Cell Wall Synthesis</text>';
+    m += '<text x="502" y="140" fill="#fcd34d" font-size="11" font-weight="bold">2. DNA Replication</text>';
+    m += '<text x="502" y="155" fill="#cbd5e1" font-size="10">   & Segregation to daughters</text>';
+    m += '<text x="502" y="180" fill="#fcd34d" font-size="11" font-weight="bold">3. Cellular Respiration</text>';
+    m += '<text x="502" y="195" fill="#cbd5e1" font-size="10">   (Mitochondria equivalent)</text>';
+    m += '<text x="502" y="220" fill="#fcd34d" font-size="11" font-weight="bold">4. Secretion Processes</text>';
+    m += '<text x="502" y="245" fill="#fcd34d" font-size="11" font-weight="bold">5. Surface Area Boost</text>';
+    m += '<text x="502" y="260" fill="#cbd5e1" font-size="10">   Expands enzyme capacity</text>';
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Inspected Domain", part.toUpperCase(), "#38bdf8") +
+      cell("Mesosome Form", "Vesicles, Tubules & Lamellae", "#10b981") +
+      cell("Wall Composition", "Peptidoglycan Polymer", "#f59e0b") +
+      cell("Genetic Storage", "Genophore (dsDNA) + Plasmids", "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#38bdf8;font-weight:700;">Exercise 8.5 Solution:</span> ' +
+      "Mesosomes are invaginations of the bacterial plasma membrane performing 5 vital functions: cell wall synthesis, DNA replication and daughter distribution, cellular respiration, enzyme secretion, and surface area amplification."
+    );
+  }
+
+  return { mount: mount, setPart: setPart, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 3. SIMULATION 3: Fluid Mosaic & Transport Mechanics (fluidmosaiclab - Exercise 8.6)
+// -------------------------------------------------------------------------
+window.SIMS.fluidmosaiclab = (function(){
+  var mode = "neutral_simple"; // "neutral_simple", "polar_facilitated", "active_pump"
+
+  function mount(){
+    App.state.maxT = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Hydrophilic Polar Heads</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Hydrophobic Fatty Acid Tails</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Integral Channel / Carrier</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Active Na+/K+ ATP Pump</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.fluidmosaiclab.setMode(\'neutral_simple\')">Neutral Solute (Simple Diffusion)</button>' +
+      '<button class="preset-btn" onclick="SIMS.fluidmosaiclab.setMode(\'polar_facilitated\')">Polar Solute (Facilitated)</button>' +
+      '<button class="preset-btn" onclick="SIMS.fluidmosaiclab.setMode(\'active_pump\')">Active Ion Pump (ATP)</button>';
+  }
+
+  function setMode(m){
+    mode = m;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#090d16"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 8.6: FLUID MOSAIC BILAYER & MEMBRANE TRANSPORT MODES</text>';
+
+    var topY = 150;
+    var botY = 250;
+
+    // Phospholipid Bilayer
+    // Upper leaflet
+    for (var x = 60; x < W - 60; x += 22) {
+      if ((mode === "polar_facilitated" || mode === "active_pump") && x > W/2 - 45 && x < W/2 + 45) continue;
+      m += '<circle cx="' + x + '" cy="' + topY + '" r="9" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>';
+      m += '<line x1="' + (x - 3) + '" y1="' + (topY + 9) + '" x2="' + (x - 4) + '" y2="' + (topY + 35) + '" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<line x1="' + (x + 3) + '" y1="' + (topY + 9) + '" x2="' + (x + 4) + '" y2="' + (topY + 35) + '" stroke="#f59e0b" stroke-width="2"/>';
+    }
+    // Lower leaflet
+    for (var x2 = 60; x2 < W - 60; x2 += 22) {
+      if ((mode === "polar_facilitated" || mode === "active_pump") && x2 > W/2 - 45 && x2 < W/2 + 45) continue;
+      m += '<circle cx="' + x2 + '" cy="' + botY + '" r="9" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>';
+      m += '<line x1="' + (x2 - 3) + '" y1="' + (botY - 9) + '" x2="' + (x2 - 4) + '" y2="' + (botY - 35) + '" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<line x1="' + (x2 + 3) + '" y1="' + (botY - 9) + '" x2="' + (x2 + 4) + '" y2="' + (botY - 35) + '" stroke="#f59e0b" stroke-width="2"/>';
+    }
+
+    m += '<text x="70" y="110" fill="#38bdf8" font-size="12">Extracellular Fluid (High Solute [C])</text>';
+    m += '<text x="70" y="295" fill="#bae6fd" font-size="12">Intracellular Cytosol (Low Solute [C])</text>';
+
+    var cx = W / 2;
+
+    if (mode === "neutral_simple") {
+      // Neutral solute passing directly through fatty acid core
+      m += '<text x="' + cx + '" y="90" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">SIMPLE PASSIVE DIFFUSION (Neutral / Lipid-Soluble O2, CO2)</text>';
+      for (var s = 0; s < 5; s++) {
+        var sx = cx - 80 + s * 40;
+        m += '<circle cx="' + sx + '" cy="100" r="7" fill="#10b981"/>';
+        m += '<line x1="' + sx + '" y1="115" x2="' + sx + '" y2="280" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6,4"/>';
+        m += '<polygon points="' + (sx - 4) + ',280 ' + (sx + 4) + ',280 ' + sx + ',290" fill="#10b981"/>';
+      }
+      m += '<text x="' + cx + '" y="330" fill="#cbd5e1" font-size="12" text-anchor="middle">Moves down concentration gradient directly across hydrophobic lipid core without carriers or ATP</text>';
+    } else if (mode === "polar_facilitated") {
+      // Transmembrane carrier / channel protein
+      m += '<text x="' + cx + '" y="90" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">FACILITATED DIFFUSION (Polar Molecules: Glucose, Amino Acids)</text>';
+      // Channel protein halves
+      m += '<rect x="' + (cx - 45) + '" y="130" width="35" height="140" rx="8" fill="#10b981" stroke="#059669" stroke-width="2"/>';
+      m += '<rect x="' + (cx + 10) + '" y="130" width="35" height="140" rx="8" fill="#10b981" stroke="#059669" stroke-width="2"/>';
+      m += '<text x="' + cx + '" y="205" fill="#fff" font-size="10" text-anchor="middle">Pore</text>';
+      // Polar molecule traversing channel
+      m += '<circle cx="' + cx + '" cy="110" r="9" fill="#ec4899" stroke="#fff" stroke-width="1.5"/>';
+      m += '<line x1="' + cx + '" y1="125" x2="' + cx + '" y2="275" stroke="#ec4899" stroke-width="3" stroke-dasharray="6,3"/>';
+      m += '<polygon points="' + (cx - 4) + ',275 ' + (cx + 4) + ',275 ' + cx + ',286" fill="#ec4899"/>';
+      m += '<text x="' + cx + '" y="330" fill="#cbd5e1" font-size="12" text-anchor="middle">Requires transmembrane channel/carrier protein; moves downhill without consuming ATP</text>';
+    } else { // active_pump
+      m += '<text x="' + cx + '" y="90" fill="#ef4444" font-size="14" font-weight="bold" text-anchor="middle">ACTIVE TRANSPORT (Against Gradient: Na+/K+ ATPase Pump)</text>';
+      // Pump protein
+      m += '<rect x="' + (cx - 40) + '" y="130" width="80" height="140" rx="12" fill="#ef4444" stroke="#b91c1c" stroke-width="2.5"/>';
+      m += '<text x="' + cx + '" y="195" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">Na+/K+ PUMP</text>';
+      // ATP consumption
+      m += '<circle cx="' + (cx - 70) + '" cy="240" r="14" fill="#eab308" stroke="#ca8a04" stroke-width="2"/>';
+      m += '<text x="' + (cx - 70) + '" y="244" fill="#000" font-size="9" font-weight="bold" text-anchor="middle">ATP</text>';
+      m += '<path d="M ' + (cx - 55) + ' 240 L ' + (cx - 40) + ' 230" stroke="#eab308" stroke-width="3"/>';
+      m += '<text x="' + (cx + 85) + '" y="170" fill="#38bdf8" font-size="11" font-weight="bold">3 Na+ PUMPED OUT</text>';
+      m += '<text x="' + (cx + 85) + '" y="235" fill="#fcd34d" font-size="11" font-weight="bold">2 K+ PUMPED IN</text>';
+      m += '<text x="' + cx + '" y="330" fill="#cbd5e1" font-size="12" text-anchor="middle">Uphill transport against concentration gradient powered by direct ATP hydrolysis</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Active Modality", mode.replace("_", " ").toUpperCase(), mode === "neutral_simple" ? "#10b981" : (mode === "polar_facilitated" ? "#ec4899" : "#ef4444")) +
+      cell("Lipid Bilayer Permeability", mode === "neutral_simple" ? "PERMEABLE (Direct Dissolution)" : "IMPERMEABLE (Requires Protein)", "#38bdf8") +
+      cell("Protein Required", mode === "neutral_simple" ? "NO" : "YES (Carrier/Channel/Pump)", mode === "neutral_simple" ? "#94a3b8" : "#10b981") +
+      cell("Energy Source", mode === "active_pump" ? "ATP Hydrolysis" : "None (Passive Downhill)", mode === "active_pump" ? "#ef4444" : "#10b981")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Exercise 8.6 Answer:</span> ' +
+      (mode === "neutral_simple" ? "Neutral solutes cross easily by simple passive diffusion down concentration gradient across the hydrophobic lipid core." :
+       (mode === "polar_facilitated" ? "Polar molecules cannot dissolve in hydrophobic tails and cross downhill via facilitated diffusion using channel/carrier proteins." :
+        "Polar ions moving against their concentration gradient require energy-dependent active transport pumps utilizing ATP (e.g., Na+/K+ pump)."))
+    );
+  }
+
+  return { mount: mount, setMode: setMode, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 4. SIMULATION 4: Endomembrane System Flow (endomembraneflow - Exercise 8.12)
+// -------------------------------------------------------------------------
+window.SIMS.endomembraneflow = (function(){
+  var dest = "lysosome"; // "secretory", "lysosome", "vacuole"
+
+  function mount(){
+    App.state.maxT = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Rough ER (Synthesis)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Golgi Cisternae (Sorting)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Lysosome (Acid Hydrolases)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Tonoplast Vacuole (Turgor)</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.endomembraneflow.setDest(\'lysosome\')">Lysosome Digestion</button>' +
+      '<button class="preset-btn" onclick="SIMS.endomembraneflow.setDest(\'vacuole\')">Vacuolar Turgor Storage</button>' +
+      '<button class="preset-btn" onclick="SIMS.endomembraneflow.setDest(\'secretory\')">Secretory Exocytosis</button>';
+  }
+
+  function setDest(d){
+    dest = d;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 8.12: ENDOMEMBRANE SYSTEM & LYSOSOME VS VACUOLE DICHOTOMY</text>';
+
+    // 1. RER
+    m += '<path d="M 80 120 C 120 100 120 220 80 200" fill="none" stroke="#38bdf8" stroke-width="18" stroke-linecap="round"/>';
+    m += '<path d="M 110 130 C 150 110 150 230 110 210" fill="none" stroke="#38bdf8" stroke-width="18" stroke-linecap="round"/>';
+    // Ribosome studs
+    for (var rb = 125; rb <= 195; rb += 14) {
+      m += '<circle cx="95" cy="' + rb + '" r="3" fill="#fff"/>';
+      m += '<circle cx="125" cy="' + rb + '" r="3" fill="#fff"/>';
+    }
+    m += '<text x="95" y="245" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Rough ER</text>';
+    m += '<text x="95" y="260" fill="#bae6fd" font-size="10" text-anchor="middle">Protein Synthesis</text>';
+
+    // Transport Vesicles
+    m += '<circle cx="170" cy="165" r="9" fill="rgba(56,189,248,0.5)" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<line x1="135" y1="165" x2="200" y2="165" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,3"/>';
+
+    // 2. Golgi Apparatus (Cisternae stack with cis and trans polarity)
+    var gx = 250;
+    // Cis face (convex)
+    m += '<path d="M ' + (gx - 20) + ' 110 Q ' + (gx + 10) + ' 165 ' + (gx - 20) + ' 220" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round"/>';
+    m += '<path d="M ' + gx + ' 105 Q ' + (gx + 30) + ' 165 ' + gx + ' 225" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round"/>';
+    // Trans face (concave)
+    m += '<path d="M ' + (gx + 20) + ' 100 Q ' + (gx + 50) + ' 165 ' + (gx + 20) + ' 230" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round"/>';
+    m += '<text x="' + (gx - 25) + '" y="95" fill="#fbbf24" font-size="11">Cis (Forming)</text>';
+    m += '<text x="' + (gx + 30) + '" y="95" fill="#f59e0b" font-size="11">Trans (Maturing)</text>';
+    m += '<text x="' + gx + '" y="255" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">Golgi Apparatus</text>';
+    m += '<text x="' + gx + '" y="270" fill="#fde68a" font-size="10" text-anchor="middle">Glycosylation & Packaging</text>';
+
+    // Arrow to destination
+    m += '<line x1="320" y1="165" x2="390" y2="165" stroke="#f59e0b" stroke-width="3"/><polygon points="390,159 390,171 402,165" fill="#f59e0b"/>';
+
+    // 3. Destination Organelle
+    var dx = 520;
+    var dy = 165;
+
+    if (dest === "lysosome") {
+      // Lysosome
+      m += '<circle cx="' + dx + '" cy="' + dy + '" r="55" fill="rgba(239,68,68,0.2)" stroke="#ef4444" stroke-width="3"/>';
+      // Hydrolytic enzymes inside
+      for (var e = 0; e < 7; e++) {
+        var ex = dx - 25 + (e % 3) * 25;
+        var ey = dy - 20 + Math.floor(e / 3) * 20;
+        m += '<circle cx="' + ex + '" cy="' + ey + '" r="5" fill="#ef4444"/>';
+      }
+      m += '<text x="' + dx + '" y="' + (dy - 65) + '" fill="#f87171" font-size="14" font-weight="bold" text-anchor="middle">LYSOSOME (Acidic pH ~ 5.0)</text>';
+      m += '<text x="' + dx + '" y="' + (dy + 75) + '" fill="#fca5a5" font-size="11" text-anchor="middle">Acid Hydrolases: Proteases, Lipases, Nucleases</text>';
+      m += '<text x="' + dx + '" y="' + (dy + 92) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Role: Intracellular Macromolecular Digestion & Autophagy</text>';
+    } else if (dest === "vacuole") {
+      // Plant Vacuole
+      m += '<ellipse cx="' + dx + '" cy="' + dy + '" rx="85" ry="60" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="3.5"/>';
+      m += '<text x="' + dx + '" y="' + (dy - 70) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">PLANT CENTRAL VACUOLE</text>';
+      m += '<text x="' + dx + '" y="' + (dy - 10) + '" fill="#6ee7b7" font-size="12" font-weight="bold" text-anchor="middle">TONOPLAST MEMBRANE</text>';
+      m += '<text x="' + dx + '" y="' + (dy + 15) + '" fill="#a7f3d0" font-size="11" text-anchor="middle">Cell Sap, Ions, Water & Pigments</text>';
+      m += '<text x="' + dx + '" y="' + (dy + 80) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Role: Maintains Turgidity & Osmoregulation (Up to 90% Cell Vol)</text>';
+    } else {
+      // Secretory Exocytosis
+      m += '<path d="M 460 70 L 460 260" stroke="#38bdf8" stroke-width="4"/>';
+      m += '<circle cx="460" cy="' + dy + '" r="25" fill="rgba(56,189,248,0.4)" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="540" y="' + (dy - 30) + '" fill="#38bdf8" font-size="13" font-weight="bold">Secretory Exocytosis</text>';
+      m += '<text x="540" y="' + (dy - 10) + '" fill="#bae6fd" font-size="11">Vesicle fuses with Plasma Membrane</text>';
+      m += '<text x="540" y="' + (dy + 10) + '" fill="#cbd5e1" font-size="11">Extracellular export of hormones/enzymes</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Vesicle Route", dest === "lysosome" ? "Golgi -> Lysosome" : (dest === "vacuole" ? "Golgi -> Vacuole" : "Golgi -> Exocytosis"), "#38bdf8") +
+      cell("Digestive Enzymes", dest === "lysosome" ? "PRESENT (Acid Hydrolases)" : "ABSENT (Sap/Ions)", dest === "lysosome" ? "#ef4444" : "#10b981") +
+      cell("Bounding Membrane", dest === "vacuole" ? "TONOPLAST" : "Single Phospholipid Membrane", "#f59e0b") +
+      cell("Primary Function", dest === "lysosome" ? "Digestion & Autophagy" : (dest === "vacuole" ? "Turgor & Storage" : "Extracellular Secretion"), "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Exercise 8.12 Contrast:</span> ' +
+      (dest === "lysosome" ? "Lysosomes are endomembrane digestive compartments packed with acid hydrolases active at pH 5 for enzymatic macromolecular lysis." :
+       (dest === "vacuole" ? "Vacuoles are tonoplast-bound non-enzymatic compartments maintaining plant cell turgor and storing sap, water, and metabolic waste." :
+        "Secretory vesicles bud from the trans-Golgi to discharge processed glycoproteins and lipids via exocytic fusion."))
+    );
+  }
+
+  return { mount: mount, setDest: setDest, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 5. SIMULATION 5: Semiautonomous Energy Engines (energytransducersim - Ex 8.3 & 8.7)
+// -------------------------------------------------------------------------
+window.SIMS.energytransducersim = (function(){
+  var org = "mitochondria"; // "mitochondria", "chloroplast"
+
+  function mount(){
+    App.state.maxT = 2;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Mitochondria (Cristae & ATP)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Chloroplast (Grana & Stroma)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Circular dsDNA & 70S Ribosomes</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.energytransducersim.setOrganelle(\'mitochondria\')">Mitochondrion (Aerobic ATP)</button>' +
+      '<button class="preset-btn" onclick="SIMS.energytransducersim.setOrganelle(\'chloroplast\')">Chloroplast (Photosynthesis)</button>';
+  }
+
+  function setOrganelle(o){
+    org = o;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 8.7: DOUBLE-MEMBRANE SEMIAUTONOMOUS ENERGY TRANSDUCERS</text>';
+
+    var cx = W / 2 - 50;
+    var cy = H / 2 + 5;
+
+    if (org === "mitochondria") {
+      // Sausage-shaped Mitochondrion
+      m += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="180" ry="100" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" stroke-width="3"/>';
+      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">Smooth Outer Membrane</text>';
+
+      // Inner membrane with Cristae
+      m += '<path d="M ' + (cx - 150) + ' ' + cy + ' ' +
+           'C ' + (cx - 120) + ' ' + (cy - 60) + ' ' + (cx - 100) + ' ' + (cy - 20) + ' ' + (cx - 80) + ' ' + (cy - 60) + ' ' +
+           'C ' + (cx - 60) + ' ' + cy + ' ' + (cx - 40) + ' ' + (cy - 60) + ' ' + (cx - 20) + ' ' + cy + ' ' +
+           'C ' + cx + ' ' + (cy - 60) + ' ' + (cx + 20) + ' ' + (cy - 20) + ' ' + (cx + 40) + ' ' + (cy - 60) + ' ' +
+           'C ' + (cx + 60) + ' ' + cy + ' ' + (cx + 80) + ' ' + (cy - 60) + ' ' + (cx + 120) + ' ' + cy + ' ' +
+           'C ' + (cx + 80) + ' ' + (cy + 60) + ' ' + (cx + 60) + ' ' + cy + ' ' + (cx + 40) + ' ' + (cy + 60) + ' ' +
+           'C ' + (cx + 20) + ' ' + (cy + 20) + ' ' + cx + ' ' + (cy + 60) + ' ' + (cx - 20) + ' ' + cy + ' ' +
+           'C ' + (cx - 40) + ' ' + (cy + 60) + ' ' + (cx - 60) + ' ' + cy + ' ' + (cx - 80) + ' ' + (cy + 60) + ' Z" ' +
+           'fill="rgba(245,158,11,0.2)" stroke="#d97706" stroke-width="2.5"/>';
+
+      m += '<text x="' + cx + '" y="' + (cy - 20) + '" fill="#fcd34d" font-size="12" font-weight="bold" text-anchor="middle">CRISTAE (Infoldings)</text>';
+      m += '<text x="' + cx + '" y="' + cy + '" fill="#cbd5e1" font-size="10" text-anchor="middle">Oxidative Phosphorylation & ATP Synthase</text>';
+
+      // Circular DNA in Matrix
+      m += '<circle cx="' + (cx - 70) + '" cy="' + (cy + 20) + '" r="12" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="' + (cx - 70) + '" y="' + (cy + 42) + '" fill="#38bdf8" font-size="10" text-anchor="middle">Circular dsDNA</text>';
+
+      // 70S Ribosomes
+      m += '<circle cx="' + (cx + 60) + '" cy="' + (cy + 20) + '" r="4" fill="#38bdf8"/><circle cx="' + (cx + 72) + '" cy="' + (cy + 16) + '" r="4" fill="#38bdf8"/>';
+      m += '<text x="' + (cx + 70) + '" y="' + (cy + 38) + '" fill="#38bdf8" font-size="10" text-anchor="middle">70S Ribosomes</text>';
+
+      // Side Info Panel
+      m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#f59e0b" stroke-width="1.5"/>';
+      m += '<text x="' + (W - 110) + '" y="105" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">MITOCHONDRION</text>';
+      m += '<text x="' + (W - 190) + '" y="135" fill="#fcd34d" font-size="11">Form: Sausage / Cylinder</text>';
+      m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">Diameter: 0.2–1.0 µm</text>';
+      m += '<text x="' + (W - 190) + '" y="175" fill="#cbd5e1" font-size="11">Length: 1.0–4.1 µm</text>';
+      m += '<text x="' + (W - 190) + '" y="200" fill="#fcd34d" font-size="11">Function: Cellular Respiration</text>';
+      m += '<text x="' + (W - 190) + '" y="220" fill="#cbd5e1" font-size="11">Krebs Cycle in Matrix</text>';
+      m += '<text x="' + (W - 190) + '" y="240" fill="#cbd5e1" font-size="11">ATP Generation on Cristae</text>';
+      m += '<text x="' + (W - 190) + '" y="265" fill="#38bdf8" font-size="11">Binary Fission Division</text>';
+    } else {
+      // Chloroplast
+      m += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="180" ry="100" fill="rgba(16,185,129,0.12)" stroke="#10b981" stroke-width="3"/>';
+      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">Chloroplast Double Envelope</text>';
+
+      // Grana stacks of Thylakoids
+      for (var g = -1; g <= 1; g++) {
+        var gx2 = cx + g * 85;
+        for (var t = 0; t < 5; t++) {
+          var ty = cy - 40 + t * 18;
+          m += '<ellipse cx="' + gx2 + '" cy="' + ty + '" rx="26" ry="6" fill="#047857" stroke="#10b981" stroke-width="1.5"/>';
+        }
+        m += '<text x="' + gx2 + '" y="' + (cy + 65) + '" fill="#6ee7b7" font-size="11" font-weight="bold" text-anchor="middle">Granum</text>';
+      }
+      // Stroma lamellae interconnecting grana
+      m += '<line x1="' + (cx - 60) + '" y1="' + cy + '" x2="' + (cx + 60) + '" y2="' + cy + '" stroke="#10b981" stroke-width="3"/>';
+      m += '<text x="' + cx + '" y="' + (cy - 10) + '" fill="#a7f3d0" font-size="10" text-anchor="middle">Stroma Lamella</text>';
+
+      // Stroma label
+      m += '<text x="' + (cx - 110) + '" y="' + (cy - 60) + '" fill="#a7f3d0" font-size="12">Stroma (Calvin Cycle / RuBisCO)</text>';
+
+      // Circular DNA in Stroma
+      m += '<circle cx="' + (cx + 90) + '" cy="' + (cy - 60) + '" r="11" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="' + (cx + 90) + '" y="' + (cy - 40) + '" fill="#38bdf8" font-size="10" text-anchor="middle">Circular DNA</text>';
+
+      // Side Info Panel
+      m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="' + (W - 110) + '" y="105" fill="#10b981" font-size="13" font-weight="bold" text-anchor="middle">CHLOROPLAST</text>';
+      m += '<text x="' + (W - 190) + '" y="135" fill="#6ee7b7" font-size="11">Form: Lens / Discoid</text>';
+      m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">Length: 5–10 µm</text>';
+      m += '<text x="' + (W - 190) + '" y="175" fill="#cbd5e1" font-size="11">Width: 2–4 µm</text>';
+      m += '<text x="' + (W - 190) + '" y="200" fill="#6ee7b7" font-size="11">Function: Photosynthesis</text>';
+      m += '<text x="' + (W - 190) + '" y="220" fill="#cbd5e1" font-size="11">Light Rxns in Thylakoids</text>';
+      m += '<text x="' + (W - 190) + '" y="240" fill="#cbd5e1" font-size="11">Dark Rxns in Stroma</text>';
+      m += '<text x="' + (W - 190) + '" y="265" fill="#38bdf8" font-size="11">Chlorophyll Pigments</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Energy Organelle", org.toUpperCase(), org === "mitochondria" ? "#f59e0b" : "#10b981") +
+      cell("Inner Membrane Specialization", org === "mitochondria" ? "CRISTAE Infoldings (Exercise 8.3a)" : "THYLAKOIDS / GRANA (Exercise 8.3c)", "#38bdf8") +
+      cell("Autonomous Genome", "Circular dsDNA + 70S Ribosomes", "#10b981") +
+      cell("Reproduction Mode", "Binary Fission", "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Exercise 8.7 Solution:</span> ' +
+      (org === "mitochondria" ? "Mitochondria are double-membrane powerhouses whose cristae carry out oxidative phosphorylation and ATP generation." :
+       "Chloroplasts are double-membrane transducers whose thylakoid grana trap light and whose stroma fixes carbon dioxide into carbohydrates.")
+    );
+  }
+
+  return { mount: mount, setOrganelle: setOrganelle, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 6. SIMULATION 6: 9+2 Axoneme vs 9+0 Centriolar Cartwheel (axonemecentriolesim - Ex 8.13)
+// -------------------------------------------------------------------------
+window.SIMS.axonemecentriolesim = (function(){
+  var view = "axoneme"; // "axoneme", "centriole"
+
+  function mount(){
+    App.state.maxT = 2;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>9 Peripheral Doublets / Triplets</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Radial Spokes</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Central Sheath / Hub</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Dynein Arms / A-C Linkers</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.axonemecentriolesim.setView(\'axoneme\')">9 + 2 Ciliary Axoneme</button>' +
+      '<button class="preset-btn" onclick="SIMS.axonemecentriolesim.setView(\'centriole\')">9 + 0 Centriolar Cartwheel</button>';
+  }
+
+  function setView(v){
+    view = v;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 8.13: 9+2 AXONEME (CILIA/FLAGELLA) VS 9+0 CARTWHEEL (CENTRIOLE)</text>';
+
+    var cx = W / 2 - 40;
+    var cy = H / 2 + 10;
+    var radius = 120;
+
+    if (view === "axoneme") {
+      // 9+2 pattern
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="145" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4"/>';
+      m += '<text x="' + cx + '" y="' + (cy - 150) + '" fill="#38bdf8" font-size="11" text-anchor="middle">Plasma Membrane Covering</text>';
+
+      // Central Sheath & 2 Central Singlets
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="28" fill="rgba(245,158,11,0.2)" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<circle cx="' + (cx - 9) + '" cy="' + cy + '" r="7" fill="#f59e0b" stroke="#fff" stroke-width="1"/>';
+      m += '<circle cx="' + (cx + 9) + '" cy="' + cy + '" r="7" fill="#f59e0b" stroke="#fff" stroke-width="1"/>';
+      m += '<line x1="' + (cx - 2) + '" y1="' + cy + '" x2="' + (cx + 2) + '" y2="' + cy + '" stroke="#fff" stroke-width="1.5"/>';
+      m += '<text x="' + cx + '" y="' + (cy + 42) + '" fill="#fcd34d" font-size="11" text-anchor="middle">Central Sheath + 2 Singlets</text>';
+
+      // 9 Peripheral Doublets
+      for (var i = 0; i < 9; i++) {
+        var angle = (i * 40 - 90) * Math.PI / 180;
+        var dx = cx + radius * Math.cos(angle);
+        var dy = cy + radius * Math.sin(angle);
+
+        // Radial spoke to central sheath
+        var sx = cx + 28 * Math.cos(angle);
+        var sy = cy + 28 * Math.sin(angle);
+        m += '<line x1="' + sx + '" y1="' + sy + '" x2="' + dx + '" y2="' + dy + '" stroke="#ec4899" stroke-width="2"/>';
+
+        // Doublet (A tubule and B tubule)
+        m += '<circle cx="' + (dx - 4) + '" cy="' + (dy - 4) + '" r="7" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>';
+        m += '<circle cx="' + (dx + 4) + '" cy="' + (dy + 4) + '" r="7" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>';
+
+        // Dynein arms
+        m += '<line x1="' + (dx - 4) + '" y1="' + (dy - 4) + '" x2="' + (dx - 12) + '" y2="' + (dy - 10) + '" stroke="#10b981" stroke-width="2.5"/>';
+      }
+
+      // Side Info Panel
+      m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
+      m += '<text x="' + (W - 110) + '" y="105" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">9 + 2 AXONEME</text>';
+      m += '<text x="' + (W - 190) + '" y="135" fill="#7dd3fc" font-size="11">Location: Cilia & Flagella</text>';
+      m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">9 Peripheral Doublets</text>';
+      m += '<text x="' + (W - 190) + '" y="175" fill="#fcd34d" font-size="11">2 Central Singlets</text>';
+      m += '<text x="' + (W - 190) + '" y="195" fill="#ec4899" font-size="11">9 Radial Spokes</text>';
+      m += '<text x="' + (W - 190) + '" y="215" fill="#10b981" font-size="11">Dynein Motor Arms</text>';
+      m += '<text x="' + (W - 190) + '" y="240" fill="#cbd5e1" font-size="11">Sliding doublet bending</text>';
+      m += '<text x="' + (W - 190) + '" y="265" fill="#fcd34d" font-size="11">Arises from Basal Body</text>';
+    } else {
+      // 9+0 Centriolar Cartwheel pattern
+      // Central Hub (proteinaceous rod, 0 microtubules)
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="16" fill="#f59e0b" stroke="#fff" stroke-width="2"/>';
+      m += '<text x="' + cx + '" y="' + (cy + 30) + '" fill="#fcd34d" font-size="11" font-weight="bold" text-anchor="middle">Central Hub (0 MTs)</text>';
+
+      // 9 Peripheral Triplets
+      for (var j = 0; j < 9; j++) {
+        var angle2 = (j * 40 - 90) * Math.PI / 180;
+        var tx = cx + radius * Math.cos(angle2);
+        var ty = cy + radius * Math.sin(angle2);
+
+        // Radial spoke from hub to A tubule
+        var hx = cx + 16 * Math.cos(angle2);
+        var hy = cy + 16 * Math.sin(angle2);
+        m += '<line x1="' + hx + '" y1="' + hy + '" x2="' + tx + '" y2="' + ty + '" stroke="#ec4899" stroke-width="2.5"/>';
+
+        // Triplet (A, B, C tubules at 40 deg tilt)
+        m += '<circle cx="' + tx + '" cy="' + ty + '" r="6" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>';
+        m += '<circle cx="' + (tx + 9 * Math.cos(angle2 + 0.5)) + '" cy="' + (ty + 9 * Math.sin(angle2 + 0.5)) + '" r="6" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>';
+        m += '<circle cx="' + (tx + 18 * Math.cos(angle2 + 0.5)) + '" cy="' + (ty + 18 * Math.sin(angle2 + 0.5)) + '" r="6" fill="#0369a1" stroke="#38bdf8" stroke-width="1.5"/>';
+      }
+
+      // Side Info Panel
+      m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="' + (W - 110) + '" y="105" fill="#10b981" font-size="13" font-weight="bold" text-anchor="middle">9 + 0 CENTRIOLE</text>';
+      m += '<text x="' + (W - 190) + '" y="135" fill="#6ee7b7" font-size="11">Location: Centrosome</text>';
+      m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">9 Peripheral Triplets</text>';
+      m += '<text x="' + (W - 190) + '" y="175" fill="#fcd34d" font-size="11">0 Central Tubules (Hub)</text>';
+      m += '<text x="' + (W - 190) + '" y="195" fill="#ec4899" font-size="11">9 Radial Spokes</text>';
+      m += '<text x="' + (W - 190) + '" y="215" fill="#cbd5e1" font-size="11">A-C Linkers connecting</text>';
+      m += '<text x="' + (W - 190) + '" y="240" fill="#fcd34d" font-size="11">Cartwheel appearance</text>';
+      m += '<text x="' + (W - 190) + '" y="265" fill="#38bdf8" font-size="11">Forms Spindle Apparatus</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Ultrastructure", view === "axoneme" ? "9 + 2 AXONEME (Cilia/Flagella)" : "9 + 0 CARTWHEEL (Centriole)", view === "axoneme" ? "#38bdf8" : "#10b981") +
+      cell("Peripheral Subunit", view === "axoneme" ? "9 Doublets" : "9 Triplets (A, B, C)", "#f59e0b") +
+      cell("Central Architecture", view === "axoneme" ? "2 Singlets in Sheath" : "Proteinaceous Hub (0 MTs)", "#ec4899") +
+      cell("Cell Division Role", view === "centriole" ? "Spindle MTOC in Animals" : "Ciliary Locomotion", "#10b981")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Exercise 8.13 Solution:</span> ' +
+      (view === "axoneme" ? "The ciliary/flagellar axoneme exhibits a 9+2 doublet array with dynein arms generating bending locomotion." :
+       "The centriole exhibits a 9+0 triplet cartwheel pattern that nucleates mitotic spindle fibers and basal bodies.")
+    );
+  }
+
+  return { mount: mount, setView: setView, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 7. SIMULATION 7: Chromosome Centromere Classifier (chromosomekaryosim - Ex 8.14)
+// -------------------------------------------------------------------------
+window.SIMS.chromosomekaryosim = (function(){
+  var cType = "metacentric"; // "metacentric", "submetacentric", "acrocentric", "telocentric"
+
+  function mount(){
+    App.state.maxT = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Metacentric (V-shape)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Sub-metacentric (L-shape)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Acrocentric (J-shape)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Telocentric (I-shape)</span></div>';
+
+    document.getElementById("lab-presets").innerHTML =
+      '<button class="preset-btn" onclick="SIMS.chromosomekaryosim.setType(\'metacentric\')">1. Metacentric</button>' +
+      '<button class="preset-btn" onclick="SIMS.chromosomekaryosim.setType(\'submetacentric\')">2. Sub-metacentric</button>' +
+      '<button class="preset-btn" onclick="SIMS.chromosomekaryosim.setType(\'acrocentric\')">3. Acrocentric (Satellite)</button>' +
+      '<button class="preset-btn" onclick="SIMS.chromosomekaryosim.setType(\'telocentric\')">4. Telocentric</button>';
+  }
+
+  function setType(t){
+    cType = t;
+    draw();
+  }
+
+  function draw(){
+    var svg = document.getElementById("lab-canvas");
+    if (!svg) return;
+    var W = svg.clientWidth || 720;
+    var H = svg.clientHeight || 400;
+
+    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
+    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 8.14: CHROMOSOME TAXONOMY BY CENTROMERE POSITION</text>';
+
+    var cx = W / 2 - 50;
+    var topY = 80;
+    var botY = 320;
+    var totalLen = botY - topY; // 240 px
+
+    var centY;
+    var anaphaseShape;
+    var ratio;
+
+    if (cType === "metacentric") {
+      centY = topY + totalLen / 2; // middle: 200
+      anaphaseShape = "V-Shaped";
+      ratio = "1.0 (Equal Arms: p = q)";
+    } else if (cType === "submetacentric") {
+      centY = topY + totalLen * 0.35; // sub-median: ~164
+      anaphaseShape = "L-Shaped";
+      ratio = "1.8 (Slightly unequal arms)";
+    } else if (cType === "acrocentric") {
+      centY = topY + totalLen * 0.15; // near end: ~116
+      anaphaseShape = "J-Shaped";
+      ratio = "5.6 (One tiny, one very long arm)";
+    } else { // telocentric
+      centY = topY; // terminal: 80
+      anaphaseShape = "I-Shaped (Rod-like)";
+      ratio = "Infinite (Terminal Centromere)";
+    }
+
+    // Draw Sister Chromatids
+    // Left Chromatid
+    if (centY > topY) {
+      m += '<line x1="' + (cx - 15) + '" y1="' + topY + '" x2="' + (cx - 15) + '" y2="' + (centY - 10) + '" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>';
+    }
+    m += '<line x1="' + (cx - 15) + '" y1="' + (centY + 10) + '" x2="' + (cx - 15) + '" y2="' + botY + '" stroke="#38bdf8" stroke-width="12" stroke-linecap="round"/>';
+
+    // Right Chromatid
+    if (centY > topY) {
+      m += '<line x1="' + (cx + 15) + '" y1="' + topY + '" x2="' + (cx + 15) + '" y2="' + (centY - 10) + '" stroke="#0284c7" stroke-width="12" stroke-linecap="round"/>';
+    }
+    m += '<line x1="' + (cx + 15) + '" y1="' + (centY + 10) + '" x2="' + (cx + 15) + '" y2="' + botY + '" stroke="#0284c7" stroke-width="12" stroke-linecap="round"/>';
+
+    // Centromere (Primary Constriction)
+    m += '<circle cx="' + cx + '" cy="' + centY + '" r="12" fill="#ef4444" stroke="#fff" stroke-width="2"/>';
+    m += '<text x="' + (cx - 85) + '" y="' + (centY + 4) + '" fill="#ef4444" font-size="11" font-weight="bold">Centromere</text>';
+
+    // Disc-shaped Kinetochores
+    m += '<rect x="' + (cx - 28) + '" y="' + (centY - 8) + '" width="6" height="16" rx="3" fill="#f59e0b"/>';
+    m += '<rect x="' + (cx + 22) + '" y="' + (centY - 8) + '" width="6" height="16" rx="3" fill="#f59e0b"/>';
+    m += '<text x="' + (cx + 35) + '" y="' + (centY + 4) + '" fill="#fbbf24" font-size="11">Kinetochore</text>';
+
+    // Satellite (if acrocentric)
+    if (cType === "acrocentric") {
+      m += '<circle cx="' + cx + '" cy="' + (topY - 18) + '" r="8" fill="#ec4899" stroke="#fff" stroke-width="1.5"/>';
+      m += '<line x1="' + cx + '" y1="' + (topY - 10) + '" x2="' + cx + '" y2="' + topY + '" stroke="#94a3b8" stroke-width="2" stroke-dasharray="2,2"/>';
+      m += '<text x="' + (cx + 25) + '" y="' + (topY - 14) + '" fill="#ec4899" font-size="11" font-weight="bold">Satellite (SAT)</text>';
+      m += '<text x="' + (cx + 25) + '" y="' + (topY - 2) + '" fill="#94a3b8" font-size="10">Secondary Constriction</text>';
+    }
+
+    // Side Info Panel
+    m += '<rect x="' + (W - 220) + '" y="80" width="200" height="230" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
+    m += '<text x="' + (W - 120) + '" y="105" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">' + cType.toUpperCase() + '</text>';
+    m += '<text x="' + (W - 205) + '" y="135" fill="#fcd34d" font-size="11">Centromere Location:</text>';
+    m += '<text x="' + (W - 205) + '" y="155" fill="#cbd5e1" font-size="11">' + (cType === "metacentric" ? "Median (Middle)" : (cType === "submetacentric" ? "Sub-median (Off-center)" : (cType === "acrocentric" ? "Sub-terminal (Near end)" : "Terminal (At the tip)"))) + '</text>';
+    m += '<text x="' + (W - 205) + '" y="180" fill="#fcd34d" font-size="11">Arm Ratio:</text>';
+    m += '<text x="' + (W - 205) + '" y="200" fill="#cbd5e1" font-size="11">' + ratio + '</text>';
+    m += '<text x="' + (W - 205) + '" y="225" fill="#fcd34d" font-size="11">Anaphase Shape:</text>';
+    m += '<text x="' + (W - 205) + '" y="245" fill="#10b981" font-size="12" font-weight="bold">' + anaphaseShape + '</text>';
+    m += '<text x="' + (W - 205) + '" y="275" fill="#ec4899" font-size="11">' + (cType === "acrocentric" ? "Possesses Satellite Knob" : (cType === "telocentric" ? "Not found in humans" : "Standard morphology")) + '</text>';
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Chromosome Type", cType.toUpperCase(), "#38bdf8") +
+      cell("Centromere Position", cType === "metacentric" ? "MEDIAN" : (cType === "submetacentric" ? "SUB-MEDIAN" : (cType === "acrocentric" ? "SUB-TERMINAL" : "TERMINAL")), "#10b981") +
+      cell("Anaphase Profile", anaphaseShape, "#ec4899") +
+      cell("Arm Proportion", ratio, "#fcd34d")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Exercise 8.14 Taxonomy Rule:</span> ' +
+      (cType === "metacentric" ? "Metacentric chromosomes have a middle centromere forming two equal arms, appearing V-shaped in anaphase." :
+       (cType === "submetacentric" ? "Sub-metacentric chromosomes have centromeres slightly off-center, producing one short and one long arm (L-shaped)." :
+        (cType === "acrocentric" ? "Acrocentric chromosomes have centromeres close to the end forming one tiny stubby arm (often bearing a satellite) and one long arm (J-shaped)." :
+         "Telocentric chromosomes have a terminal centromere with a single long arm (I-shaped; absent in humans).")))
+    );
+  }
+
+  return { mount: mount, setType: setType, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

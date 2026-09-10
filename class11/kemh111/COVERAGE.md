@@ -1,0 +1,43 @@
+# COVERAGE — kemh111 Introduction to Three Dimensional Geometry
+
+**Source:** `books/originals/Class11-Maths_kemh111.pdf` (9 pdf pages, printed pp. 208–216, Reprint 2026–27).  
+**SHA-256:** `a122b628970880c7a9738ba64a440e55d16a931800ae0e0e162cf7d5f9cef561` (in `output/Class11/MATHS-SOURCE-MANIFEST.md`).  
+**Extraction:** PyMuPDF `page.get_text("dict")` + `text` + 2× PNG zooms in `extracted/zooms/`. **pdftotext was not used.**  
+**NCERT:** https://ncert.nic.in/textbook/pdf/kemh111.pdf
+
+## Concepts
+
+| ID | Section | PDF pp | Status |
+|---|---|---|---|
+| axes-planes | 11.1–11.2 | 1–2 | Complete; three axes, three planes, eight octants |
+| point-octants | 11.3 | 2–4 | Complete; Table 11.1, Examples 1–2 |
+| distance-3d | 11.4 | 4–5 | Complete; PQ formula zoom p.5, Example 3 = 3√5 |
+| collinear-triangles | 11.4 Ex 4–5 | 5–6 | Complete; PQ+QR=PR, Pythagoras in 3-D |
+| locus-sets | Ex 6, 8 + 11.2 | 6–7 | Complete; PA=PB plane, PA+PB ellipsoid |
+| centroid-misc | Misc. Ex 7–9 | 6–8 | Complete; centroid average, parallelogram test |
+
+## Examples (all zoom-verified)
+
+| Item | Result |
+|---|---|
+| 1 Fig 11.3 F | (2, 0, 5) |
+| 2 octants | (−3,1,2) in II; (−3,1,−2) in VI |
+| 3 distance | 3√5 |
+| 4 collinear | √14 + 2√14 = 3√14 |
+| 5 not right-angled | 2709+686 ≠ 4571 |
+| 7 parallelogram not rectangle | AB=CD=6, AC≠BD |
+| 8 PA=PB | 10x+6y−18z−29=0 |
+| 9 centroid | C(1, 1, 2) |
+
+## Exercises 11.1 (4) + 11.2 (5) + Miscellaneous (4)
+
+All **13** items of this reprint mapped with steps in `chapter.json`. Section formula in 3-D is **not** in this 9-page rationalised chapter (honest gap; not invented).
+
+## Pedagogical simulations (sims.js)
+
+1. `axes3d` — isometric x, y, z axes and coordinate planes.
+2. `octant` — P(x,y,z) with Table 11.1 readout.
+3. `dist3d` — distance between two points in space.
+4. `collinear3d` — Example 4 vs Example 5.
+5. `locus3d` — equidistant plane / PA+PB ellipsoid.
+6. `centroid3d` — centroid G and parallelogram test.

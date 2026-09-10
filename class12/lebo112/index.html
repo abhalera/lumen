@@ -1,0 +1,2251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 12: Ecosystem — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font: inherit;
+}
+.play-btn {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+}
+.video-title {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+
+/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
+@media (max-width:640px){
+.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
+.brand{font-size:17px}
+.top-actions{flex-wrap:wrap;gap:8px}
+.toolbar-btn{padding:5px 9px;font-size:12px}
+.progress-pill{font-size:11px;padding:3px 10px}
+}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+
+/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
+.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+
+/* muse-textbooks structural 2026-09-09: class link */
+.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
+.class-link:hover{text-decoration:underline}
+
+/* muse-textbooks resources 2026-09-09: optional resource cards */
+.resource-list{display:grid;gap:10px;margin-top:12px}
+.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
+.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
+.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
+.res-body strong{font-size:14px}
+.res-provider{font-size:12px;color:var(--muted)}
+.res-link{font-size:13px;font-weight:700;white-space:nowrap}
+.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+
+/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
+.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+
+/* muse-textbooks nofab 2026-09-09: question cites */
+.q-cite{font-size:11px;color:var(--muted);font-weight:600}
+</style>
+</head>
+<body>
+<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
+
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a class="class-link" href="../index.html">Class 12</a><span class="chapter-crumb" id="chapter-crumb">CH 12 · ECOSYSTEM</span>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="15"></progress>
+      <span id="progress-text">0 / 15</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h1 class="concept-title">Revise, Reflect, Refine</h1>
+        <p class="concept-deck">All 11 Exercises from NCERT Class 12 Biology (PDF pp. 1–11 · printed folio absent in source) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"code": "lebo112", "chapterNumber": 12, "book_name": "Biology", "title": "Ecosystem", "subtitle": "Pond structure and stratification, GPP and NPP, the five steps of decomposition, energy flow with the 10% law, and ecological pyramids.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo112.pdf", "page_start": 1, "page_end": 11, "extraction": "PyMuPDF text layer (/tmp/opencode/bio_text/lebo112.txt) + section/exercise page maps in /tmp/opencode/bio_maps.json (key lebo112). pdftotext not used. No PNG zooms (disk full).", "lessons": [{"id": "pond-structure", "nav": "Structure & pond", "title": "Ecosystem structure and function: species composition, stratification and the pond", "deck": "An ecosystem is a functional unit of nature. Biotic–abiotic interaction builds a physical structure — species composition plus stratification — and runs four functions: productivity, decomposition, energy flow and nutrient cycling. A small pond shows all of them.", "minutes": 8, "section": "12.1", "pages": [1, 2], "print": "1–2", "sim": "pond", "simTitle": "Pond stratification explorer: abiotic + producers + consumers + decomposers", "quick": ["An ecosystem can be visualised as a <strong>functional unit of nature</strong>, where living organisms interact among themselves and also with the surrounding physical environment. It varies greatly in size from a small pond to a large forest or a sea, and many ecologists regard the entire <strong>biosphere as a global ecosystem</strong>. For convenience it is divided into <strong>terrestrial</strong> (forest, grassland, desert) and <strong>aquatic</strong> (pond, lake, wetland, river, estuary) types; crop fields and an aquarium are <strong>man-made</strong> ecosystems.", "Interaction of biotic and abiotic components results in a <strong>physical structure</strong> characteristic of each ecosystem. Identification and enumeration of plant and animal species gives its <strong>species composition</strong>; the vertical distribution of species in different layers is <strong>stratification</strong> — trees occupy the top strata of a forest, shrubs the second, and herbs and grasses the bottom layers.", "The components function as a unit through four aspects: <strong>(i) productivity, (ii) decomposition, (iii) energy flow and (iv) nutrient cycling</strong>.", "A small <strong>pond</strong> is a fairly self-sustainable model aquatic ecosystem. The <strong>abiotic</strong> component is the water with all dissolved inorganic and organic substances plus the rich soil deposit at the bottom (solar input, temperature cycle, day-length and climatic conditions regulate the rate of function). <strong>Autotrophs</strong> are the phytoplankton, some algae and the floating, submerged and marginal plants; <strong>consumers</strong> are zooplankton and the free-swimming and bottom-dwelling forms; <strong>decomposers</strong> — fungi, bacteria and flagellates — are especially abundant at the bottom. The pond converts inorganic into organic matter via autotrophs, feeds heterotrophs, and decomposes and mineralises dead matter for reuse, over and over — with <strong>unidirectional movement of energy</strong> toward higher trophic levels and dissipation as heat."], "formulas": [{"label": "Structural features", "html": "species composition (identification + enumeration) + stratification (trees → shrubs → herbs/grasses)", "cond": "§12.1"}, {"label": "Four functional aspects", "html": "(i) productivity · (ii) decomposition · (iii) energy flow · (iv) nutrient cycling", "cond": "§12.1"}, {"label": "Pond component map", "html": "abiotic (water + bottom soil) + autotrophs (phytoplankton, algae, marginal plants) + consumers (zooplankton, swimmers, bottom dwellers) + decomposers (fungi, bacteria, flagellates)", "cond": "§12.1 pond example"}], "deeper": "Reading note: the chapter first surveys the whole system — input (productivity), transfer (food chains/webs, nutrient cycling) and output (degradation and energy loss) — before treating each in §§12.2–12.5. The pond performs every function of the biosphere as a whole, which is why the book uses it as the self-sustainable exemplar.", "worked": "Pond sorting check (Exercise 7 core): marginal plants at the edges → autotrophic components; zooplankton → consumers; flagellates abundant at the bottom → decomposers; dissolved inorganic substances and bottom soil deposit → abiotic component. Each of the four boxes must be non-empty for the system to be self-sustainable.", "prediction": {"prompt": "All fungi, bacteria and flagellates are removed from a pond but everything else stays. What happens first?", "options": ["Dead matter accumulates and mineralisation stops, so autotrophs run short of recycled nutrients", "Photosynthesis immediately doubles because there are no competitors", "Zooplankton switch to photosynthesis"], "answer": 0, "explanation": "Decomposers mineralise dead matter and release it back for reuse by autotrophs (§12.1). Without them the reuse leg of the cycle breaks and detritus piles up."}, "connect": [["Paddy-field ponds across India", "Flooded paddy fields act as seasonal pond ecosystems — standing water, phytoplankton and algae, zooplankton, bottom decomposers — the §12.1 pond component map replayed in a man-made crop-field ecosystem the book explicitly allows.", [], {"id": "042LD-Xnt3A", "title": "Ecosystem Class 12 One Shot | NCERT + PYQs | Biology Chapter 12 by By Aarushi Ma'am", "channel": "NCERT Wallah"}], ["Wow — an aquarium is an ecosystem too", "The chapter counts an aquarium as a man-made ecosystem. A home fish tank has the same four boxes — water + dissolved substances, plants/algae, fish (consumers), microbial decomposers — and collapses for exactly the textbook reason when any one box fails."]], "recall": "Define ecosystem; name the two structural features and the four functional aspects; list the four pond components with one example each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Stratification in an ecosystem means the", "options": ["Vertical distribution of different species occupying different levels", "Counting of all plant and animal species", "Rate of biomass production per unit area"], "answer": 0, "hint": "Trees on top, shrubs second, herbs at the bottom.", "solution": "Stratification is vertical layering; identification/enumeration gives species composition; rate of biomass production is productivity.", "wrong": ["That is species composition.", "That is productivity (§12.2)."]}, {"level": "Medium", "type": "number", "map": "§12.1 aspects", "prompt": "Number of functional aspects through which ecosystem components act as a unit", "answer": 4, "unit": "aspects", "tolerance": 0.1, "hint": "Productivity, decomposition, energy flow and …?", "solution": "Four: (i) productivity, (ii) decomposition, (iii) energy flow, (iv) nutrient cycling."}, {"level": "Hard", "type": "mcq", "prompt": "In the pond example, decomposers (fungi, bacteria, flagellates) are especially abundant in the", "options": ["Bottom of the pond", "Sunlit surface film", "Leaves of marginal plants"], "answer": 0, "hint": "Where does dead matter settle?", "solution": "The book places decomposers especially abundantly in the bottom of the pond, where detritus accumulates.", "wrong": ["The surface film is the phytoplankton zone.", "Marginal plants are autotrophic components at the edges."]}], "resources": [{"title": "NCERT §12.1 — Structure & pond (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo112.pdf#page=1"}]}, {"id": "productivity", "nav": "Productivity GPP/NPP", "title": "Productivity: GPP − R = NPP, and why the ocean yields so little", "deck": "Primary production is biomass made per unit area over time; its rate is productivity. GPP minus respiration is NPP — the food available to heterotrophs. The biosphere makes ~170 billion tons; the ocean, ~70% of the surface, only ~55.", "minutes": 9, "section": "12.2", "pages": [2, 3], "print": "2–3", "sim": "productivity", "simTitle": "GPP − R = NPP slider lab: respiration eats the gross", "quick": ["A <strong>constant input of solar energy</strong> is the basic requirement for any ecosystem to function and sustain. <strong>Primary production</strong> is the amount of biomass or organic matter produced per unit area over a time period by plants during photosynthesis, expressed in <strong>g m⁻²</strong> or <strong>kcal m⁻²</strong>.", "The <strong>rate</strong> of biomass production is <strong>productivity</strong> (g m⁻² yr⁻¹ or (kcal m⁻²) yr⁻¹). <strong>Gross primary productivity (GPP)</strong> is the rate of organic-matter production during photosynthesis; a considerable amount is used in respiration, so <strong>GPP − R = NPP</strong>. <strong>Net primary productivity</strong> is the biomass available to heterotrophs (herbivores and decomposers), while <strong>secondary productivity</strong> is the rate of formation of new organic matter by <strong>consumers</strong>.", "Primary productivity depends on the <strong>plant species</strong> inhabiting an area, <strong>environmental factors</strong>, <strong>nutrient availability</strong> and the <strong>photosynthetic capacity</strong> of plants — so it varies across ecosystems.", "The annual NPP of the whole biosphere is approximately <strong>170 billion tons</strong> (dry weight); despite covering about <strong>70 per cent</strong> of the surface, the oceans contribute only <strong>55 billion tons</strong>. The book leaves the main reason for low ocean productivity as a discussion with your teacher."], "formulas": [{"label": "NPP identity", "html": "NPP = GPP − R", "cond": "§12.2; R = respiration losses of producers"}, {"label": "Units", "html": "production: g m⁻² or kcal m⁻²; productivity (rate): g m⁻² yr⁻¹ or (kcal m⁻²) yr⁻¹", "cond": "§12.2"}, {"label": "Biosphere split", "html": "170 billion tons total NPP ≈ 55 (oceans) + 115 (land), dry weight", "cond": "§12.2; oceans ~70% of surface"}], "deeper": "Do not confuse the three productivities: GPP is what photosynthesis fixes, NPP is what remains after producers respire (the heterotrophs' share), and secondary productivity belongs to consumers forming new organic matter from that share. Land therefore accounts for 170 − 55 = 115 billion tons of annual NPP.", "worked": "Biosphere split (book figures): land NPP = 170 − 55 = 115 billion tons dry weight per year. In rate units the same identity holds: a patch with GPP 52 kcal m⁻² yr⁻¹ and respiration 17 kcal m⁻² yr⁻¹ has NPP = 52 − 17 = 35 kcal m⁻² yr⁻¹ available to herbivores and decomposers.", "prediction": {"prompt": "The ocean covers ~70% of Earth's surface but yields only ~55 of 170 billion tons of NPP. The most plausible textbook-grounded hypothesis is", "options": ["Light attenuates with depth and nutrients/photosynthetic capacity limit producers, so per-area production stays low", "The ocean has no producers at all", "Seawater chemically destroys all organic matter as it forms"], "answer": 0, "explanation": "Productivity depends on plant species present, environmental factors, nutrient availability and photosynthetic capacity (§12.2) — all of which limit the ocean per unit area. The book poses this as a teacher discussion, so any answer must cite these factors."}, "connect": [["Why cropland beats the open sea per hectare", "Fertilised, irrigated cropland raises exactly the §12.2 levers — nutrients, water, high-photosynthetic-capacity species — while the open ocean is starved of nutrients over vast areas, so its per-area productivity stays low."], ["Wow — land wins 115 to 55", "Subtract the ocean's 55 from the biosphere's 170: land fixes about 115 billion tons yearly — more than double the ocean despite one-third the area. That single subtraction is the quantitative punch of §12.2."]], "recall": "State GPP − R = NPP with units; define secondary productivity; give the 170/55 biosphere figures and the four factors productivity depends on.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Net primary productivity equals", "options": ["GPP − R (respiration losses)", "GPP + R", "R − GPP"], "answer": 0, "hint": "Respiration consumes part of the gross.", "solution": "NPP = GPP − R; the remainder is available to heterotrophs.", "wrong": ["Adding respiration would exceed what photosynthesis fixed.", "That would make NPP negative whenever producers respire."]}, {"level": "Medium", "type": "number", "map": "§12.2 biosphere", "prompt": "Annual NPP of land (billion tons dry weight) if the biosphere total is 170 and oceans contribute 55", "answer": 115, "unit": "billion tons", "tolerance": 1, "hint": "Total minus ocean share.", "solution": "170 − 55 = 115 billion tons on land."}, {"level": "Hard", "type": "number", "map": "NPP = GPP − R", "prompt": "NPP (kcal m⁻² yr⁻¹) of a patch with GPP 52 and respiration loss 17", "answer": 35, "unit": "kcal m⁻² yr⁻¹", "tolerance": 0.5, "hint": "Subtract respiration from the gross.", "solution": "NPP = 52 − 17 = 35 kcal m⁻² yr⁻¹."}], "resources": [{"title": "NCERT §12.2 — Productivity GPP/NPP (official PDF, PDF p.2)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo112.pdf#page=2"}]}, {"id": "decomposition", "nav": "Decomposition 5 steps", "title": "Decomposition: fragmentation to mineralisation, and what controls the rate", "deck": "Detritus is the raw material; fragmentation, leaching, catabolism, humification and mineralisation act simultaneously. Humus resists decay and stores nutrients; mineralisation releases them. Lignin slows, nitrogen and warmth speed.", "minutes": 9, "section": "12.3", "pages": [3, 4], "print": "3–4", "sim": "decomposition", "simTitle": "Decomposition 5-step stepper: detritus → humus → inorganic nutrients", "quick": ["Decomposers break down complex organic matter into inorganic substances like <strong>carbon dioxide, water and nutrients</strong> — the process is <strong>decomposition</strong>. The raw material is <strong>detritus</strong>: dead plant remains (leaves, bark, flowers) and dead animal remains, including faecal matter. The earthworm is the farmer's 'friend' because it breaks down complex organic matter and loosens the soil.", "The five steps are <strong>fragmentation</strong> (detritivores such as earthworms break detritus into smaller particles), <strong>leaching</strong> (water-soluble inorganic nutrients go down into the soil horizon and precipitate as unavailable salts), <strong>catabolism</strong> (bacterial and fungal enzymes degrade detritus into simpler inorganic substances), <strong>humification</strong> and <strong>mineralisation</strong> — and all operate <strong>simultaneously</strong> on the detritus (Figure 12.1).", "<strong>Humification</strong> accumulates <strong>humus</strong>: a dark-coloured amorphous substance, highly resistant to microbial action, decomposing extremely slowly; colloidal in nature, it serves as a <strong>reservoir of nutrients</strong>. <strong>Mineralisation</strong> is the further microbial degradation of humus with release of inorganic nutrients.", "Decomposition is largely an <strong>oxygen-requiring</strong> process. Its rate is controlled by the <strong>chemical composition of detritus</strong> and <strong>climatic factors</strong>: detritus rich in <strong>lignin and chitin</strong> decomposes slowly, detritus rich in <strong>nitrogen and water-soluble substances like sugars</strong> quickly; <strong>temperature and soil moisture</strong> regulate it via soil microbes — <strong>warm and moist</strong> favour decomposition, while <strong>low temperature and anaerobiosis</strong> inhibit it and build up organic materials."], "formulas": [{"label": "Five steps in order", "html": "fragmentation → leaching → catabolism → humification → mineralisation", "cond": "§12.3; all operate simultaneously (Fig 12.1)"}, {"label": "Humus vs mineralisation", "html": "humification → humus (dark, amorphous, colloidal nutrient reservoir, resists microbes); mineralisation → release of inorganic nutrients", "cond": "§12.3"}, {"label": "Rate controls", "html": "slow if lignin/chitin-rich; fast if nitrogen/sugar-rich; warm + moist favour; low T + anaerobiosis inhibit", "cond": "§12.3; oxygen-requiring"}], "deeper": "Keep the agents straight: detritivores (earthworm) fragment; water leaches; bacterial and fungal enzymes catabolise; soil microbes humify and mineralise. Products at the end are carbon dioxide, water and inorganic nutrients — the same inorganic pool the pond autotrophs draw on.", "worked": "Exercise 10 skeleton: define decomposition (complex organic of detritus → CO₂, water, inorganic nutrients by decomposers); describe the five processes in order with agents; name the two products of the late stages — humus (humification) and released inorganic nutrients (mineralisation); state the two rate controls with one example each.", "prediction": {"prompt": "Two leaf litters lie in warm, moist soil: one rich in lignin, one rich in nitrogen and sugars. Which disappears faster, and why?", "options": ["The nitrogen/sugar-rich litter — chemistry favours microbes, and warmth plus moisture help them", "The lignin-rich litter — tough material breaks down faster", "Both at exactly the same rate — climate alone decides"], "answer": 0, "explanation": "In a given climate, lignin/chitin-rich detritus is slow while nitrogen/sugar-rich detritus is quick; warm moist conditions favour microbial activity (§12.3)."}, "connect": [["Vermicompost pits on Indian farms", "Farmers harness the book's 'farmer's friend': earthworms fragment crop residue and dung while microbes catabolise it — a managed §12.3 assembly line turning detritus into humus-rich manure."], ["Wow — cold peaks stockpile what forests spend", "Where low temperature and anaerobiosis prevail — high Himalayan soils and waterlogged cold sites — decomposition stalls and organic material builds up instead of recycling, the exact inhibition case §12.3 predicts."]], "recall": "List the five decomposition steps with agents in order; contrast humification and mineralisation; state the chemical and climatic rate controls.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Detritus, the raw material of decomposition, is", "options": ["Dead plant and animal remains, including faecal matter", "Living phytoplankton and zooplankton", "Dissolved oxygen in pond water"], "answer": 0, "hint": "Leaves, bark, flowers, dead remains, faecal matter.", "solution": "Detritus = dead remains (leaves, bark, flowers, animals, faecal matter).", "wrong": ["Those are living pond components, not detritus.", "Oxygen is a requirement of decomposition, not its raw material."]}, {"level": "Medium", "type": "number", "map": "§12.3 steps", "prompt": "Number of steps in decomposition (fragmentation, leaching, catabolism, humification, mineralisation)", "answer": 5, "unit": "steps", "tolerance": 0.1, "hint": "Fragmentation first, mineralisation last.", "solution": "Five steps, all operating simultaneously on the detritus."}, {"level": "Hard", "type": "mcq", "prompt": "Which detritus decomposes more slowly in the same climate?", "options": ["Detritus rich in lignin and chitin", "Detritus rich in nitrogen and water-soluble sugars", "Both decompose at identical rates"], "answer": 0, "hint": "Tough structural polymers resist enzymes.", "solution": "Lignin/chitin-rich detritus is slow; nitrogen/sugar-rich detritus is quick (§12.3).", "wrong": ["That combination decomposes quicker, not slower.", "Chemical composition changes the rate even in identical climates."]}], "resources": [{"title": "NCERT §12.3 — Decomposition 5 steps (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo112.pdf#page=3"}]}, {"id": "energy-flow", "nav": "Energy flow & 10% law", "title": "Energy flow: PAR, grazing vs detritus chains, trophic levels and the 10% law", "deck": "Sun is the only source (except deep-sea hydrothermal systems). PAR is <50% of incident radiation; plants capture 2–10% of it. Grazing and detritus chains interlink into webs; only ~10% crosses each trophic level.", "minutes": 9, "section": "12.4", "pages": [5, 7], "print": "5–7", "sim": "energyflow", "simTitle": "10% law chain visualiser: 10 000 → 1 000 → 100 → 10", "quick": ["Except for the deep-sea hydro-thermal ecosystem, the <strong>sun is the only source of energy</strong> for all ecosystems. Of the incident solar radiation, <strong>less than 50 per cent is photosynthetically active radiation (PAR)</strong>, and plants capture only <strong>2–10 per cent of the PAR</strong> — yet this small amount sustains the entire living world. Ecosystems obey the thermodynamic laws: energy flow is <strong>unidirectional</strong> (sun → producers → consumers), and a constant supply is needed to synthesise molecules against the universal tendency toward increasing disorderliness.", "Producers are the green plants — <strong>herbaceous and woody plants</strong> on land; <strong>phytoplankton, algae and higher plants</strong> in water. All animals depend on them directly or indirectly and are <strong>consumers (heterotrophs)</strong>: <strong>primary consumers</strong> are herbivores (insects, birds, mammals on land; molluscs in water), feeding on producers; <strong>secondary consumers</strong> are the primary carnivores; then <strong>tertiary consumers</strong> (secondary carnivores). A grazing food chain (GFC) reads: <strong>Grass (producer) → Goat (primary consumer) → Man (secondary consumer)</strong>.", "The <strong>detritus food chain (DFC)</strong> begins with <strong>dead organic matter</strong>; its decomposers — mainly <strong>fungi and bacteria (saprotrophs)</strong> — secrete digestive enzymes and absorb the simple inorganic products. In <strong>aquatic</strong> ecosystems the GFC is the major energy conduit; in <strong>terrestrial</strong> ecosystems a much larger fraction flows through the <strong>DFC</strong>. The chains interconnect (DFC organisms are prey to GFC animals; cockroaches and crows are omnivores) into a <strong>food web</strong>.", "Feeding position defines the <strong>trophic level</strong>: producers T1, herbivores T2, carnivores T3 (Figure 12.2); energy <strong>decreases at successive levels</strong>. Each level holds a <strong>standing crop</strong> — biomass (dry weight is more accurate) or numbers per unit area. Transfer follows the <strong>10 per cent law</strong>: only ~10% of energy passes to each higher level, which restricts the grazing chain to producer → herbivore → primary carnivore → secondary carnivore (Figure 12.3). Death at any level diverts energy into detritus for decomposers."], "formulas": [{"label": "PAR capture", "html": "PAR < 50% of incident solar; plants capture 2–10% of PAR; producers convert ~1% of sunlight into NPP (Fig 12.4d)", "cond": "§12.4 + Fig 12.4d"}, {"label": "10% law", "html": "T1 → T2 → T3 → T4 ≈ 10 000 → 1 000 → 100 → 10", "cond": "§12.4; Fig 12.3"}, {"label": "Trophic ladder", "html": "T1 producers → T2 herbivores (primary consumers) → T3 carnivores (secondary consumers) → T4 secondary carnivores", "cond": "§12.4; Fig 12.2"}], "deeper": "Two book questions to carry: 'How would you classify human beings?' (omnivores spanning levels — like the sparrow, primary consumer on seeds/fruits/peas and secondary consumer on insects/worms) and whether the detritus chain faces the same level limit (posed open in §12.4). Also note why dry weight beats fresh weight for biomass: water content fluctuates.", "worked": "Exercises 2–4 plus chain math: Q2 → decomposers hold the largest population; Q3 → T2 in a lake is zooplankton (phytoplankton are T1 producers); Q4 → 'secondary producers' is none of the above (consumers show secondary productivity, not production). Ex 5: PAR is <50% of incident radiation (option b, 50%) — distinct from the 2–10% of PAR that plants capture. Chain math: 10 000 J at producers → ~1 000 J herbivores → ~100 J primary carnivores → ~10 J secondary carnivores.", "prediction": {"prompt": "Grass holds 6 000 kJ. By the 10% law, the Man in Grass → Goat → Man receives about", "options": ["60 kJ — two successive 10% transfers (6 000 → 600 → 60)", "600 kJ — only one transfer is lost", "6 000 kJ — energy is conserved across levels"], "answer": 0, "explanation": "Each level passes ~10%: goat gets ~600 kJ, man ~60 kJ. Energy is lost (ultimately as heat), so higher levels get progressively less."}, "connect": [["Sundarbans: a detritus engine", "In the Sundarbans mangroves, huge leaf-litter fall feeds crabs, fungi and bacteria first — the terrestrial rule that a much larger fraction of energy flows through the DFC than the GFC, visible across the delta mud."], ["Wow — the lake vs land swap", "A lake runs mostly on its grazing chain (phytoplankton → zooplankton → fishes) while a forest runs mostly on its detritus chain (litter → decomposers → detritivores) — the same sunlight, opposite conduits, exactly as §12.4 contrasts them."]], "recall": "Give the PAR figures; contrast GFC and DFC with the Grass→Goat→Man example; state the trophic ladder and the 10% law with chain math.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The second trophic level in a lake is the", "options": ["Zooplankton", "Phytoplankton", "Benthos"], "answer": 0, "hint": "T1 producers are eaten by …?", "solution": "Phytoplankton (T1 producers) → zooplankton (T2 primary consumers). (Exercise 3.)", "wrong": ["Phytoplankton are the T1 producers.", "Benthos are bottom dwellers, not T2 by definition."]}, {"level": "Medium", "type": "number", "map": "10% law chain", "prompt": "Energy (J) reaching secondary carnivores if producers hold 10 000 J (10% law, three transfers)", "answer": 10, "unit": "J", "tolerance": 1, "hint": "10 000 → 1 000 → 100 → ?", "solution": "10 000 × 0.1³ = 10 J (Fig 12.3 chain)."}, {"level": "Hard", "type": "mcq", "prompt": "'Secondary producers are herbivores / producers / carnivores / none of the above.' The correct choice is", "options": ["None of the above", "Herbivores", "Producers"], "answer": 0, "hint": "Consumers show secondary productivity — but are they producers?", "solution": "The book recognises producers and consumers; 'secondary producers' is not a valid category, so none of the above. (Exercise 4.)", "wrong": ["Herbivores are primary consumers with secondary productivity.", "Producers are primary, not secondary."]}], "resources": [{"title": "NCERT §12.4 — Energy flow & 10% law (official PDF, PDF p.5)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo112.pdf#page=5"}]}, {"id": "pyramids", "nav": "Ecological pyramids", "title": "Ecological pyramids: number, biomass and energy — upright, inverted, always", "deck": "Base = producers, apex = top consumer. Number and biomass pyramids are usually upright but invert (tree→insects; sea fishes>phytoplankton). Energy is always upright: heat is lost at every step.", "minutes": 8, "section": "12.5", "pages": [7, 9], "print": "7–9", "sim": "pyramids", "simTitle": "Pyramid builder: number / biomass / energy with upright–inverted toggle", "quick": ["An ecological pyramid has a broad <strong>base of producers (first trophic level)</strong> narrowing to an <strong>apex of tertiary/top consumers</strong>, expressing food or energy relations in <strong>number, biomass or energy</strong>. Figure 12.4a is a grassland <strong>pyramid of numbers</strong>: nearly <strong>6 million plants</strong> support only <strong>3 top-carnivores</strong>. Figure 12.4b shows biomass falling sharply at higher levels, while Figure 12.4d is an ideal <strong>pyramid of energy</strong> — primary producers convert only <strong>1% of sunlight</strong> into NPP.", "In most ecosystems all three pyramids are <strong>upright</strong>: producers exceed herbivores in number and biomass, herbivores exceed carnivores, and lower-level energy always exceeds higher-level energy. But count the <strong>insects on one big tree</strong>, then the small birds on the insects and larger birds on the smaller — the <strong>pyramid of numbers inverts</strong>. Likewise the <strong>sea's biomass pyramid is generally inverted</strong>: fish biomass far exceeds the small standing crop of phytoplankton that supports the large zooplankton crop (Figure 12.4c).", "The <strong>pyramid of energy is always upright and can never be inverted</strong>: every transfer loses some energy as heat, so each bar — energy per trophic level per unit time or area — must shrink upward.", "Pyramids have limits (p. 214 box): they ignore a species spanning <strong>two or more trophic levels</strong> (the sparrow: primary consumer on seeds/fruits/peas, secondary on insects/worms), assume a <strong>simple food chain</strong> that almost never exists, cannot accommodate a <strong>food web</strong>, and give <strong>saprophytes no place</strong> despite their vital role. Any calculation must also include <strong>all organisms</strong> at a level, and trophic level is a <strong>functional</strong> level, not a species."], "formulas": [{"label": "Three pyramids", "html": "number (12.4a: ~6M plants → 3 top-carnivores) · biomass (12.4b upright, 12.4c inverted sea) · energy (12.4d always upright)", "cond": "§12.5; Fig 12.4 a–d"}, {"label": "Upright vs inverted", "html": "upright: producers > herbivores > carnivores; inverted number: tree → insects → birds; inverted biomass: sea fishes > phytoplankton", "cond": "§12.5"}, {"label": "Energy always upright", "html": "heat lost at each transfer; bar = energy per level per unit time/area", "cond": "§12.5"}], "deeper": "The sea 'paradox' resolves through turnover: a tiny phytoplankton standing crop with rapid reproduction feeds a larger zooplankton crop — biomass at an instant misleads, while the energy pyramid (a rate) never inverts. Trophic level as function, not species, is why humans and sparrows sit on several levels at once.", "worked": "Grassland numbers (Fig 12.4a): nearly 6 000 000 producers at the base support just 3 top-carnivores at the apex — the classic upright pyramid of numbers. Tree case: one producer → many insects → fewer small birds → still fewer large birds reads apex-down, i.e. inverted. Energy check (Fig 12.4d): only ~1% of sunlight becomes NPP at the base, and each level above keeps ~10% of the one below.", "prediction": {"prompt": "You census one banyan: 1 tree, thousands of insects, tens of small birds, 2 large birds. The pyramid of numbers is", "options": ["Inverted — one producer supports progressively counted consumers upward", "Upright — producers must always outnumber consumers", "An energy pyramid — numbers and energy are the same thing"], "answer": 0, "explanation": "The book's own tree–insect–bird census inverts the number pyramid; uprightness holds for energy, not always for numbers."}, "connect": [["Sacred-grove pyramids", "A sacred grove's giantTerminalia or banyan hosts exactly the book's census — one tree, swarms of insects, insect-eating birds above them — a living inverted pyramid of numbers protected by tradition."], ["Wow — the sea stands on its head", "In the sea, fish biomass outweighs the phytoplankton supporting it — the biomass pyramid flipped — yet the energy pyramid above the same water stays stubbornly upright, because watts, unlike weight, cannot be recycled."]], "recall": "Name the three pyramid types with figure examples; state which invert and why; explain why energy never inverts; list the four pyramid limitations.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The pyramid of energy is always upright because", "options": ["Some energy is lost as heat at each transfer", "Producers always outnumber consumers", "Biomass always decreases upward"], "answer": 0, "hint": "What happens to energy at every step?", "solution": "Heat loss at each trophic transfer forces every higher bar lower — never inverted.", "wrong": ["Numbers can invert (tree → insects).", "Biomass can invert (sea). Neither forces the energy shape."]}, {"level": "Medium", "type": "number", "map": "Fig 12.4a grassland", "prompt": "Top-carnivores supported by nearly 6 million plants in the grassland pyramid of numbers", "answer": 3, "unit": "animals", "tolerance": 0.5, "hint": "Figure 12.4a caption.", "solution": "Only three top-carnivores crown ~6 million producers."}, {"level": "Hard", "type": "number", "map": "Fig 12.4d energy", "prompt": "Percentage of sunlight energy that primary producers convert into NPP (ideal energy pyramid)", "answer": 1, "unit": "%", "tolerance": 0.2, "hint": "Figure 12.4d caption.", "solution": "Only ~1% of sunlight becomes NPP; of that, ~10% crosses each level."}], "resources": [{"title": "NCERT §12.5 — Ecological pyramids (official PDF, PDF p.7)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo112.pdf#page=7"}]}], "exercises": [{"number": 1, "conceptIdx": 0, "page": 10, "printPage": null, "question": "Fill in the blanks. (a) Plants are called as_________because they fix carbon dioxide. (b) In an ecosystem dominated by trees, the pyramid (of numbers) is_________type. (c) In aquatic ecosystems, the limiting factor for the productivity is_________. (d) Common detritivores in our ecosystem are_________. (e) The major reservoir of carbon on earth is_________.", "steps": ["(a) Plants fix carbon dioxide during photosynthesis, i.e. they produce organic matter — the book's definition of producers (§12.1, §12.4).", "(b) One tree supports many insects, which support birds above them — the §12.5 inverted pyramid of numbers.", "(c) Aquatic producers depend on light reaching through water; light limits aquatic productivity.", "(d) The book's detritivore example is the earthworm (§12.3, the farmer's 'friend').", "(e) The summary names the carbon cycle's reservoir as atmosphere/hydrosphere; the major earth reservoir is the oceans."], "answer": "(a) producers (b) inverted (c) light (d) earthworms (e) oceans."}, {"number": 2, "conceptIdx": 3, "page": 11, "printPage": null, "question": "Which one of the following has the largest population in a food chain? (a) Producers (b) Primary consumers (c) Secondary consumers (d) Decomposers", "steps": ["Population at each step of the grazing chain shrinks upward by the 10% law (§12.4).", "Decomposers sit outside the grazing chain: every dead organism at every level becomes their detritus (§12.3–12.4).", "Hence the decomposer population, feeding on all levels, is the largest."], "answer": "(d) Decomposers."}, {"number": 3, "conceptIdx": 3, "page": 11, "printPage": null, "question": "The second trophic level in a lake is (a) Phytoplankton (b) Zooplankton (c) Benthos (d) Fishes", "steps": ["T1 in a lake = producers: phytoplankton, algae, higher plants (§12.4).", "T2 = primary consumers feeding on producers: zooplankton.", "Fishes are higher consumers; benthos are bottom dwellers, not a trophic level."], "answer": "(b) Zooplankton."}, {"number": 4, "conceptIdx": 3, "page": 11, "printPage": null, "question": "Secondary producers are (a) Herbivores (b) Producers (c) Carnivores (d) None of the above", "steps": ["The book recognises only producers (primary production) and consumers (secondary productivity, §12.2).", "Herbivores and carnivores are consumers, not producers.", "'Secondary producer' is therefore not a valid category."], "answer": "(d) None of the above."}, {"number": 5, "conceptIdx": 3, "page": 11, "printPage": null, "question": "What is the percentage of photosynthetically active radiation (PAR) in the incident solar radiation? (a) 100% (b) 50 % (c) 1-5% (d) 2-10%", "steps": ["§12.4: less than 50 per cent of incident solar radiation is PAR.", "2–10% is the fraction of PAR that plants capture — a different quantity.", "So the listed option matching the book is 50%."], "answer": "(b) 50%."}, {"number": 6, "conceptIdx": 3, "page": 11, "printPage": null, "question": "Distinguish between (a) Grazing food chain and detritus food chain (b) Production and decomposition (c) Upright and inverted pyramid (d) Food chain and Food web (e) Litter and detritus (f) Primary and secondary productivity", "steps": ["(a) GFC starts from living producers (Grass → Goat → Man); DFC starts from dead organic matter via saprotrophs (fungi, bacteria). Aquatic systems run mainly on GFC, terrestrial mainly on DFC (§12.4).", "(b) Production = capture of solar energy / biomass formation by producers; decomposition = breakdown of complex organic detritus to CO₂, water and nutrients by decomposers (§§12.2–12.3).", "(c) Upright: producers > herbivores > carnivores (most pyramids); inverted: tree → insects number pyramid, or sea biomass pyramid (§12.5).", "(d) Food chain = single linear feeding sequence; food web = natural interconnection of chains (e.g. via omnivores like crows) (§12.4).", "(e) Litter = fallen dead plant matter lying on the soil surface; detritus = all dead plant/animal remains including faecal matter, the raw material of decomposition (§12.3).", "(f) Primary productivity = rate of biomass production by producers (GPP/NPP); secondary productivity = rate of new organic-matter formation by consumers (§12.2)."], "answer": "See six distinctions above (GFC/DFC, production/decomposition, upright/inverted, chain/web, litter/detritus, primary/secondary productivity)."}, {"number": 7, "conceptIdx": 0, "page": 11, "printPage": null, "question": "Describe the components of an ecosystem.", "steps": ["Abiotic components: inorganic materials — air, water, soil — with dissolved substances and climatic inputs (solar input, temperature, day-length).", "Biotic components: producers (green plants), consumers (heterotrophs: herbivores, carnivores) and decomposers (fungi, bacteria, flagellates).", "Illustrate with the pond: water + bottom soil (abiotic); phytoplankton, algae, marginal plants (autotrophs); zooplankton, swimmers, bottom dwellers (consumers); bottom fungi, bacteria, flagellates (decomposers) (§12.1, Summary)."], "answer": "Abiotic (air, water, soil) + biotic (producers, consumers, decomposers), e.g. the four pond components of §12.1."}, {"number": 8, "conceptIdx": 4, "page": 11, "printPage": null, "question": "Define ecological pyramids and describe with examples, pyramids of number and biomass.", "steps": ["Definition: graphic relation of food/energy between trophic levels with producers at the base and top consumers at the apex, in number, biomass or energy (§12.5).", "Number: grassland upright — nearly 6 million plants support 3 top-carnivores (Fig 12.4a); tree-dominated system inverted — one tree → insects → birds.", "Biomass: usually upright with sharp decrease upward (Fig 12.4b); sea inverted — fish biomass exceeds phytoplankton, whose small crop supports large zooplankton (Fig 12.4c)."], "answer": "Pyramids = base-producers/apex-consumers in number, biomass or energy; number: grassland upright (6M → 3), tree inverted; biomass: upright on land, inverted in the sea."}, {"number": 9, "conceptIdx": 1, "page": 11, "printPage": null, "question": "What is primary productivity? Give brief description of factors that affect primary productivity.", "steps": ["Definition: amount of biomass/organic matter produced per unit area over a time period by plants during photosynthesis (g m⁻² or kcal m⁻²); its rate is productivity (per year); GPP − R = NPP (§12.2).", "Factors: plant species inhabiting the area, environmental factors, availability of nutrients, photosynthetic capacity of plants.", "Consequence: productivity varies across ecosystems — e.g. biosphere 170 billion tons with oceans only 55 despite ~70% surface."], "answer": "Biomass production rate of producers (GPP − R = NPP); depends on species, environment, nutrients and photosynthetic capacity."}, {"number": 10, "conceptIdx": 2, "page": 11, "printPage": null, "question": "Define decomposition and describe the processes and products of decomposition.", "steps": ["Definition: breakdown of complex organic matter into inorganic substances (CO₂, water, nutrients) by decomposers; detritus is the raw material (§12.3).", "Processes: fragmentation (earthworm detritivores), leaching (soluble nutrients down, precipitated as unavailable salts), catabolism (bacterial/fungal enzymes to simpler inorganics) — all simultaneous — then humification (dark amorphous colloidal humus, nutrient reservoir) and mineralisation (release of inorganic nutrients).", "Controls: lignin/chitin slow, nitrogen/sugars quicken; warm + moist favour, low temperature + anaerobiosis inhibit (oxygen-requiring process)."], "answer": "Detritus → (fragmentation, leaching, catabolism, humification, mineralisation) → CO₂ + water + inorganic nutrients (+ humus intermediate)."}, {"number": 11, "conceptIdx": 3, "page": 11, "printPage": null, "question": "Give an account of energy flow in an ecosystem.", "steps": ["Source: sun (except deep-sea hydrothermal); PAR < 50% of incident, plants capture 2–10%; flow is unidirectional and obeys thermodynamic laws (§12.4).", "Routes: GFC from producers (Grass → Goat → Man) vs DFC from dead matter via saprotrophs; aquatic mainly GFC, terrestrial mainly DFC; interlinked into food webs (omnivores).", "Levels: T1 producers → T2 herbivores → T3/T4 carnivores with decreasing energy; standing crop as biomass (dry weight best) or numbers; 10% law limits grazing levels; death feeds detritus decomposers (Figs 12.2–12.3)."], "answer": "Unidirectional solar flow via GFC/DFC food webs across T1–T4 with ~10% transfer per level and heat loss throughout."}], "pageOffset": null, "printPageStart": null, "printPageEnd": null, "paginationProvenance": "folio-absent-in-source"};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
+     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
+     var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '</div>' +
+      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    var resList = l.resources || [];
+    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
+      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
+    }).join("") + '</div>' : '';
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var wowSrc = pdfRef;
+          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
+          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+              '</p>';
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div>' + resHtml + '</section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: null,
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      var exPg = ex.page || ex.pdfPage;
+      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+function numEl(id, fallback){
+  var n = document.getElementById(id);
+  return n ? Number(n.value) : fallback;
+}
+
+window.SIMS["pond-structure"] = (function(){
+  var mode = "pond";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Abiotic (water + soil)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Producers</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Consumers</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Decomposers (bottom)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-pond">Pond: full system</button>' +
+      '<button class="preset-btn" id="p-for">Forest stratification</button>' +
+      '<button class="preset-btn" id="p-node">Remove decomposers</button>';
+    document.getElementById("p-pond").onclick = function(){ setActivePreset(this); mode="pond"; draw(App.state.t); };
+    document.getElementById("p-for").onclick = function(){ setActivePreset(this); mode="forest"; draw(App.state.t); };
+    document.getElementById("p-node").onclick = function(){ setActivePreset(this); mode="nodecomp"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Highlight component</span><span class="val" id="ctrl-h">all</span></div>' +
+      '<input type="range" id="ctrl-h-range" min="0" max="3" step="1" value="0"></div>';
+    document.getElementById("ctrl-h-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var h = Math.round(numEl("ctrl-h-range", 0));
+    var names = ["all", "abiotic", "producers", "consumers+decomposers"];
+    var el = document.getElementById("ctrl-h"); if(el) el.textContent = names[h];
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode === "forest"){
+      m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Stratification: trees (top) -&gt; shrubs -&gt; herbs/grasses (bottom)</text>';
+      m += '<rect x="160" y="44" width="400" height="60" rx="6" fill="#14532d" opacity="' + (h === 0 || h === 2 ? "1" : "0.4") + '"/>';
+      m += '<text x="360" y="78" fill="#e2e8f0" font-size="13" text-anchor="middle">trees: top vertical stratum</text>';
+      m += '<rect x="200" y="110" width="320" height="52" rx="6" fill="#166534" opacity="' + (h === 0 || h === 2 ? "1" : "0.4") + '"/>';
+      m += '<text x="360" y="141" fill="#e2e8f0" font-size="12" text-anchor="middle">shrubs: second layer</text>';
+      m += '<rect x="240" y="168" width="240" height="52" rx="6" fill="#22c55e" opacity="' + (h === 0 || h === 2 ? "1" : "0.4") + '"/>';
+      m += '<text x="360" y="199" fill="#09131d" font-size="12" text-anchor="middle">herbs + grasses: bottom</text>';
+      m += '<text x="360" y="246" fill="#94a3b8" font-size="12" text-anchor="middle">Species composition = identification + enumeration; stratification = vertical layers (Sec 12.1).</text>';
+      m += '<text x="360" y="268" fill="#64748b" font-size="11" text-anchor="middle">Four functions: (i) productivity (ii) decomposition (iii) energy flow (iv) nutrient cycling.</text>';
+    } else {
+      var dead = (mode === "nodecomp");
+      m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Pond self-sustainable model: abiotic + autotrophs + consumers + decomposers; energy flows up, heat lost</text>';
+      m += '<rect x="80" y="50" width="560" height="200" rx="8" fill="#0f2537" stroke="#38bdf8" opacity="' + (h === 0 || h === 1 ? "1" : "0.45") + '"/>';
+      m += '<rect x="80" y="210" width="560" height="40" rx="4" fill="#3f2d1c" opacity="' + (h === 0 || h === 1 ? "1" : "0.45") + '"/>';
+      m += '<text x="100" y="70" fill="#38bdf8" font-size="11">water + dissolved substances + sun/temperature</text>';
+      m += '<text x="100" y="242" fill="#d6a35c" font-size="11">bottom soil deposit (rich)</text>';
+      for(var i=0;i<10;i++){
+        var px = 110 + (i * 53) % 300;
+        var py = 92 + (i * 29) % 40 + Math.sin(t * 2 + i) * 2;
+        m += '<circle cx="' + px + '" cy="' + py.toFixed(1) + '" r="5" fill="#34d399" opacity="' + (h === 0 || h === 2 ? "1" : "0.35") + '"/>';
+      }
+      m += '<rect x="430" y="86" width="26" height="50" fill="#166534" opacity="' + (h === 0 || h === 2 ? "1" : "0.35") + '"/>';
+      m += '<rect x="470" y="100" width="22" height="36" fill="#15803d" opacity="' + (h === 0 || h === 2 ? "1" : "0.35") + '"/>';
+      m += '<text x="490" y="70" fill="#34d399" font-size="11">phytoplankton, algae, marginal plants</text>';
+      for(var f=0;f<3;f++){
+        var fx = 170 + f * 110 + Math.sin(t * 1.5 + f * 2) * 10;
+        var fy = 160 + (f % 2) * 22;
+        m += '<ellipse cx="' + fx.toFixed(1) + '" cy="' + fy + '" rx="22" ry="10" fill="#f59e0b" opacity="' + (h === 0 || h === 3 ? "1" : "0.35") + '"/>';
+        m += '<polygon points="' + (fx + 22).toFixed(1) + ',' + fy + ' ' + (fx + 32).toFixed(1) + ',' + (fy - 6) + ' ' + (fx + 32).toFixed(1) + ',' + (fy + 6) + '" fill="#f59e0b" opacity="' + (h === 0 || h === 3 ? "1" : "0.35") + '"/>';
+      }
+      m += '<text x="360" y="200" fill="#f59e0b" font-size="11" text-anchor="middle">zooplankton + swimmers + bottom dwellers</text>';
+      if(!dead){
+        for(var dI=0;dI<8;dI++){
+          var dx = 110 + dI * 62;
+          m += '<circle cx="' + dx + '" cy="' + (224 + Math.sin(t * 3 + dI) * 2).toFixed(1) + '" r="6" fill="#a78bfa" opacity="' + (h === 0 || h === 3 ? "1" : "0.35") + '"/>';
+        }
+        m += '<text x="540" y="200" fill="#a78bfa" font-size="11">fungi, bacteria, flagellates</text>';
+      } else {
+        for(var p=0;p<6;p++){
+          m += '<rect x="' + (110 + p * 80) + '" y="216" width="40" height="14" fill="#57534e"/>';
+        }
+        m += '<text x="360" y="200" fill="#f87171" font-size="12" text-anchor="middle">NO decomposers: detritus piles up, minerals not released</text>';
+      }
+      m += '<text x="360" y="272" fill="#64748b" font-size="11" text-anchor="middle">Aquarium / paddy field = same four boxes (man-made ecosystems, Sec 12.1).</text>';
+    }
+    svg.innerHTML = m;
+    readout(cell("abiotic", "water + soil") + cell("producers", "phytoplankton+plants", "#34d399") + cell("consumers", "zooplankton+fish", "#f59e0b") + cell("decomposers", mode === "nodecomp" ? "REMOVED" : "bottom-abundant", mode === "nodecomp" ? "#f87171" : "#a78bfa"));
+    if(mode === "forest") verdict("<b>Section 12.1:</b> structure = <b>species composition</b> (identify + count) + <b>stratification</b> (trees -&gt; shrubs -&gt; herbs/grasses). Function runs through <b>productivity, decomposition, energy flow, nutrient cycling</b> (4 aspects).");
+    else if(mode === "nodecomp") verdict("<b>Section 12.1 prediction:</b> remove fungi/bacteria/flagellates and <b>dead matter accumulates, mineralisation stops</b> — autotrophs run short of recycled nutrients. Each box must be non-empty (Exercise 7 core).");
+    else verdict("<b>Section 12.1 pond (Exercise 7):</b> autotrophs (phytoplankton, algae, marginal plants) fix inorganic -&gt; organic; heterotrophs feed; <b>bottom decomposers mineralise</b> for reuse. <b>Energy moves unidirectionally</b> upward, dissipated as heat.");
+  }
+  return { mount: mount, draw: draw };
+})();
+window.SIMS["pond"] = window.SIMS["pond-structure"];
+
+window.SIMS["productivity"] = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>GPP (gross fixed)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>R (respiration eaten)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>NPP (left for heterotrophs)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-pt">Patch: GPP 52, R 17</button>' +
+      '<button class="preset-btn" id="p-oc">Ocean: thin per-area</button>' +
+      '<button class="preset-btn" id="p-ld">Land: 115 of 170</button>';
+    document.getElementById("p-pt").onclick = function(){ setActivePreset(this); var a=document.getElementById("ctrl-g-range"); var b=document.getElementById("ctrl-r-range"); if(a) a.value=52; if(b) b.value=17; draw(App.state.t); };
+    document.getElementById("p-oc").onclick = function(){ setActivePreset(this); var a=document.getElementById("ctrl-g-range"); var b=document.getElementById("ctrl-r-range"); if(a) a.value=30; if(b) b.value=18; draw(App.state.t); };
+    document.getElementById("p-ld").onclick = function(){ setActivePreset(this); var a=document.getElementById("ctrl-g-range"); var b=document.getElementById("ctrl-r-range"); if(a) a.value=70; if(b) b.value=22; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>GPP (kcal m-2 yr-1)</span><span class="val" id="ctrl-g">52</span></div>' +
+      '<input type="range" id="ctrl-g-range" min="10" max="100" step="1" value="52"></div>' +
+      '<div class="control-item"><div class="control-label"><span>R: respiration loss</span><span class="val" id="ctrl-r">17</span></div>' +
+      '<input type="range" id="ctrl-r-range" min="0" max="60" step="1" value="17"></div>';
+    document.getElementById("ctrl-g-range").oninput = function(){ draw(App.state.t); };
+    document.getElementById("ctrl-r-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var gpp = numEl("ctrl-g-range", 52);
+    var rr = numEl("ctrl-r-range", 17);
+    if(rr > gpp) rr = gpp;
+    var a = document.getElementById("ctrl-g"); if(a) a.textContent = gpp;
+    var b = document.getElementById("ctrl-r"); if(b) b.textContent = rr;
+    var npp = gpp - rr;
+    function H(v){ return (v / 100) * 170; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">NPP = GPP - R: what remains feeds herbivores + decomposers (Sec 12.2)</text>';
+    m += '<rect x="120" y="' + (230 - H(gpp)).toFixed(0) + '" width="110" height="' + H(gpp).toFixed(0) + '" fill="#14532d" stroke="#34d399"/>';
+    m += '<rect x="120" y="' + (230 - H(gpp)).toFixed(0) + '" width="110" height="' + H(rr).toFixed(0) + '" fill="#f87171" opacity="0.9"/>';
+    m += '<text x="175" y="250" fill="#94a3b8" font-size="12" text-anchor="middle">GPP ' + gpp + '</text>';
+    m += '<rect x="300" y="' + (230 - H(npp)).toFixed(0) + '" width="110" height="' + H(npp).toFixed(0) + '" fill="#38bdf8" stroke="#e2e8f0"/>';
+    m += '<text x="355" y="250" fill="#94a3b8" font-size="12" text-anchor="middle">NPP ' + npp + '</text>';
+    var breathe = 1 + 0.06 * Math.sin(t * 3);
+    m += '<text x="520" y="100" fill="#e2e8f0" font-size="20">NPP = ' + gpp + ' - ' + rr + ' = ' + npp + '</text>';
+    m += '<text x="520" y="126" fill="#94a3b8" font-size="12">kcal m-2 yr-1; production in</text>';
+    m += '<text x="520" y="144" fill="#94a3b8" font-size="12">g m-2, rate adds yr-1</text>';
+    m += '<circle cx="500" cy="170" r="' + (10 * breathe).toFixed(1) + '" fill="none" stroke="#f87171" stroke-width="2"/>';
+    m += '<text x="520" y="174" fill="#f87171" font-size="11">R breathes (use)</text>';
+    m += '<text x="360" y="278" fill="#64748b" font-size="11" text-anchor="middle">Biosphere 170 billion t (dry): oceans ~70% surface but only 55; land = 115. Secondary productivity = consumers.</text>';
+    svg.innerHTML = m;
+    readout(cell("GPP", gpp + " kcal", "#34d399") + cell("R", rr + " kcal", "#f87171") + cell("NPP", npp + " kcal", "#38bdf8") + cell("land share", "115 / 170"));
+    verdict("<b>Section 12.2 (Exercises 6, 9):</b> <b>NPP = GPP - R</b>; NPP is the heterotrophs share, <b>secondary productivity</b> belongs to consumers. Biosphere <b>170 = 55 (ocean) + 115 (land)</b> billion tons dry — oceans lose per-area on light, nutrients, species and photosynthetic capacity (teacher discussion).");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS["decomposition"] = (function(){
+  var litter = "nitrogen";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Current step</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#334155;"></span><span>Later step</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Humus reservoir</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ni">Nitrogen/sugar litter (fast)</button>' +
+      '<button class="preset-btn" id="p-li">Lignin/chitin litter (slow)</button>';
+    document.getElementById("p-ni").onclick = function(){ setActivePreset(this); litter="nitrogen"; draw(App.state.t); };
+    document.getElementById("p-li").onclick = function(){ setActivePreset(this); litter="lignin"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Decomposition step (0-4)</span><span class="val" id="ctrl-ds">4</span></div>' +
+      '<input type="range" id="ctrl-ds-range" min="0" max="4" step="1" value="4"></div>' +
+      '<div class="control-item"><div class="control-label"><span>Warm + moist climate</span><span class="val" id="ctrl-cl">warm-moist</span></div>' +
+      '<input type="range" id="ctrl-cl-range" min="0" max="1" step="1" value="1"></div>';
+    document.getElementById("ctrl-ds-range").oninput = function(){ draw(App.state.t); };
+    document.getElementById("ctrl-cl-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var st = Math.round(numEl("ctrl-ds-range", 4));
+    var cl = Math.round(numEl("ctrl-cl-range", 1));
+    var el = document.getElementById("ctrl-ds"); if(el) el.textContent = st;
+    var ce = document.getElementById("ctrl-cl"); if(ce) ce.textContent = cl === 1 ? "warm-moist" : "cold/dry";
+    var steps = ["fragmentation", "leaching", "catabolism", "humification", "mineralisation"];
+    var agents = ["earthworm detritivores", "water: soluble salts down", "bacterial+fungal enzymes", "humus: dark, colloidal store", "release inorganic nutrients"];
+    var speed = (litter === "nitrogen" ? 2 : 0.5) * (cl === 1 ? 1.5 : 0.4);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Detritus (dead + faecal) -&gt; CO2 + water + nutrients; 5 steps run simultaneously (Fig 12.1)</text>';
+    for(var i=0;i<5;i++){
+      var bx = 40 + i * 130;
+      var active = (i === st);
+      var done = (i < st);
+      var bob = active ? Math.sin(t * 3) * 3 : 0;
+      m += '<rect x="' + bx + '" y="' + (70 + bob).toFixed(0) + '" width="116" height="70" rx="8" fill="' + (active ? '#f59e0b' : (done ? '#134e4a' : '#0f1f2e')) + '" stroke="' + (active ? '#fff' : '#334155') + '"/>';
+      m += '<text x="' + (bx + 58) + '" y="' + (96 + bob).toFixed(0) + '" fill="' + (active ? '#09131d' : '#e2e8f0') + '" font-size="10" text-anchor="middle">' + (i + 1) + '. ' + steps[i] + '</text>';
+      m += '<text x="' + (bx + 58) + '" y="' + (116 + bob).toFixed(0) + '" fill="' + (active ? '#09131d' : '#94a3b8') + '" font-size="9" text-anchor="middle">' + agents[i] + '</text>';
+      if(i < 4) m += '<line x1="' + (bx + 116) + '" y1="105" x2="' + (bx + 130) + '" y2="105" stroke="#475569" stroke-width="2"/>';
+    }
+    m += '<text x="360" y="180" fill="#e2e8f0" font-size="13" text-anchor="middle">Step ' + (st + 1) + '/5: ' + steps[st] + ' — ' + agents[st] + '</text>';
+    var barW = Math.min(560, speed * 130);
+    m += '<rect x="80" y="200" width="560" height="20" rx="6" fill="#0f1f2e" stroke="#334155"/>';
+    m += '<rect x="80" y="200" width="' + barW.toFixed(0) + '" height="20" rx="6" fill="' + (speed > 1.5 ? '#34d399' : '#f87171') + '"/>';
+    m += '<text x="360" y="240" fill="#94a3b8" font-size="12" text-anchor="middle">' + litter + ' litter, ' + (cl === 1 ? 'warm+moist favours (O2 needs met)' : 'cold/anaerobic inhibits: organic builds up') + ' — rate x' + speed.toFixed(1) + '</text>';
+    m += '<text x="360" y="262" fill="#64748b" font-size="11" text-anchor="middle">Earthworm = farmer friend (fragments + loosens). Humus resists microbes; mineralisation frees nutrients.</text>';
+    svg.innerHTML = m;
+    readout(cell("step", (st + 1) + "/5 " + steps[st]) + cell("litter", litter, litter === "nitrogen" ? "#34d399" : "#f87171") + cell("climate", cl === 1 ? "warm-moist" : "cold/dry") + cell("rate", "x" + speed.toFixed(1)));
+    verdict("<b>Section 12.3 (Exercise 10):</b> order <b>fragmentation -&gt; leaching -&gt; catabolism -&gt; humification -&gt; mineralisation</b> (simultaneous). <b>Lignin/chitin = slow, nitrogen/sugars = quick;</b> <b>warm+moist favours, low-T + anaerobiosis inhibits</b> (oxygen-requiring). Products: <b>CO2 + water + inorganic nutrients</b> (+ humus store).");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS["energy-flow"] = (function(){
+  var chain = "grass";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>T1 producers</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>T2 herbivores</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>T3-T4 carnivores</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-gr">Grass-Goat-Man (GFC)</button>' +
+      '<button class="preset-btn" id="p-lk">Lake: phyto-zoo-fish</button>' +
+      '<button class="preset-btn" id="p-df">Detritus chain (DFC)</button>';
+    document.getElementById("p-gr").onclick = function(){ setActivePreset(this); chain="grass"; draw(App.state.t); };
+    document.getElementById("p-lk").onclick = function(){ setActivePreset(this); chain="lake"; draw(App.state.t); };
+    document.getElementById("p-df").onclick = function(){ setActivePreset(this); chain="detritus"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Producer energy (J)</span><span class="val" id="ctrl-pj">10000</span></div>' +
+      '<input type="range" id="ctrl-pj-range" min="1000" max="20000" step="500" value="10000"></div>';
+    document.getElementById("ctrl-pj-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var pj = numEl("ctrl-pj-range", 10000);
+    var el = document.getElementById("ctrl-pj"); if(el) el.textContent = pj;
+    var t2 = pj * 0.1, t3 = pj * 0.01, t4 = pj * 0.001;
+    var labels = chain === "grass" ? ["Grass T1", "Goat T2", "Man T3", "Top T4"] : (chain === "lake" ? ["Phytoplankton T1", "Zooplankton T2", "Fish T3", "Top fish T4"] : ["Detritus", "Saprotrophs", "Detritivores", "GFC predators"]);
+    var cols = ["#34d399", "#f59e0b", "#38bdf8", "#a78bfa"];
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">10% law (Fig 12.3): only ~10% crosses each level; PAR &lt;50%, plants catch 2-10%, ~1% to NPP</text>';
+    var vals = [pj, t2, t3, t4];
+    for(var i=0;i<4;i++){
+      var bw = 40 + (3 - i) * 0 + Math.max(30, 200 - i * 52);
+      var bx = 70 + i * 150;
+      var bob = Math.sin(t * 2 + i) * 2;
+      m += '<rect x="' + bx + '" y="' + (110 + bob).toFixed(0) + '" width="120" height="' + bw + '" rx="6" fill="#0f1f2e" stroke="' + cols[i] + '" stroke-width="2"/>';
+      m += '<rect x="' + bx + '" y="' + (110 + bw - Math.min(bw, bw * 0.9) + bob).toFixed(0) + '" width="120" height="' + Math.min(bw, 12 + (3 - i) * 8).toFixed(0) + '" fill="' + cols[i] + '" opacity="0.85"/>';
+      m += '<text x="' + (bx + 60) + '" y="' + (100 + bob).toFixed(0) + '" fill="' + cols[i] + '" font-size="11" text-anchor="middle">' + labels[i] + '</text>';
+      m += '<text x="' + (bx + 60) + '" y="' + (124 + bw + bob).toFixed(0) + '" fill="#e2e8f0" font-size="12" text-anchor="middle">' + vals[i].toFixed(vals[i] < 100 ? 1 : 0) + ' J</text>';
+      if(i < 3){
+        var ax = bx + 120;
+        m += '<line x1="' + ax + '" y1="170" x2="' + (ax + 30) + '" y2="170" stroke="#475569" stroke-width="2"/>';
+        m += '<polygon points="' + (ax + 30) + ',170 ' + (ax + 20) + ',164 ' + (ax + 20) + ',176" fill="#94a3b8"/>';
+        m += '<text x="' + (ax + 4) + '" y="160" fill="#f87171" font-size="10">90% heat</text>';
+      }
+    }
+    m += '<text x="360" y="268" fill="#64748b" font-size="11" text-anchor="middle">' + (chain === "detritus" ? 'DFC starts from dead matter (fungi/bacteria saprotrophs); land runs mainly DFC, water mainly GFC; webs link via omnivores (cockroach, crow).' : 'GFC: Grass -&gt; Goat -&gt; Man. Standing crop as dry-weight biomass or numbers; death diverts to detritus.') + '</text>';
+    svg.innerHTML = m;
+    readout(cell("T1", vals[0].toFixed(0) + " J", "#34d399") + cell("T2", vals[1].toFixed(0) + " J", "#f59e0b") + cell("T3", vals[2].toFixed(1) + " J", "#38bdf8") + cell("T4", vals[3].toFixed(2) + " J", "#a78bfa"));
+    verdict("<b>Section 12.4 (Figs 12.2-12.3; Exercises 2-5):</b> chain <b>" + pj + " -&gt; " + t2.toFixed(0) + " -&gt; " + t3.toFixed(0) + " -&gt; " + t4.toFixed(1) + " J</b> (10,000 -&gt; 1,000 -&gt; 100 -&gt; 10 at default). Decomposers hold the <b>largest population</b> (Ex 2); lake T2 = <b>zooplankton</b> (Ex 3); <b>no secondary producers</b> (Ex 4); PAR = <b>50%</b> option (Ex 5).");
+  }
+  return { mount: mount, draw: draw };
+})();
+window.SIMS["energyflow"] = window.SIMS["energy-flow"];
+
+window.SIMS["pyramids"] = (function(){
+  var kind = "numgrass";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Producers (base)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Herbivores</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Carnivores (apex)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ng">Numbers: grassland upright</button>' +
+      '<button class="preset-btn" id="p-nt">Numbers: tree inverted</button>' +
+      '<button class="preset-btn" id="p-bs">Biomass: sea inverted</button>' +
+      '<button class="preset-btn" id="p-en">Energy: always upright</button>';
+    document.getElementById("p-ng").onclick = function(){ setActivePreset(this); kind="numgrass"; draw(App.state.t); };
+    document.getElementById("p-nt").onclick = function(){ setActivePreset(this); kind="numtree"; draw(App.state.t); };
+    document.getElementById("p-bs").onclick = function(){ setActivePreset(this); kind="biosea"; draw(App.state.t); };
+    document.getElementById("p-en").onclick = function(){ setActivePreset(this); kind="energy"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Base size (illustrative)</span><span class="val" id="ctrl-pb">100</span></div>' +
+      '<input type="range" id="ctrl-pb-range" min="40" max="100" step="5" value="100"></div>';
+    document.getElementById("ctrl-pb-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var pb = numEl("ctrl-pb-range", 100);
+    var el = document.getElementById("ctrl-pb"); if(el) el.textContent = pb;
+    var rows, title, note;
+    if(kind === "numgrass"){ rows = [pb, 62, 34, 12]; title = "Numbers upright: ~6M plants -&gt; 3 top-carnivores (Fig 12.4a)"; note = "Base widest: producers exceed every level above."; }
+    else if(kind === "numtree"){ rows = [18, 60, 40, 22]; title = "Numbers INVERTED: 1 tree -&gt; insects -&gt; small -&gt; large birds"; note = "One producer supports counted crowds upward."; }
+    else if(kind === "biosea"){ rows = [26, 70, 48, 24]; title = "Biomass INVERTED sea: fishes &gt; phytoplankton (Fig 12.4c)"; note = "Tiny fast-turnover crop feeds a bigger zooplankton crop."; }
+    else { rows = [pb, 60, 32, 12]; title = "Energy ALWAYS upright: ~1% sunlight to NPP, ~10% per level (Fig 12.4d)"; note = "Heat lost each transfer; watts cannot be recycled."; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">' + title + '</text>';
+    var cols = ["#34d399", "#f59e0b", "#38bdf8", "#a78bfa"];
+    var names = ["producers", "herbivores", "carnivores", "top"];
+    for(var i=0;i<4;i++){
+      var w = Math.max(30, rows[i] / 100 * 300);
+      var bx = 200 - w / 2 + 60;
+      var by = 50 + i * 48;
+      var sway = Math.sin(t * 2 + i) * 2;
+      m += '<rect x="' + (bx + sway).toFixed(0) + '" y="' + by + '" width="' + w.toFixed(0) + '" height="38" rx="4" fill="' + cols[i] + '" opacity="0.9"/>';
+      m += '<text x="' + (bx + w + 14 + sway).toFixed(0) + '" y="' + (by + 24) + '" fill="#94a3b8" font-size="11">' + names[i] + '</text>';
+    }
+    m += '<text x="480" y="120" fill="#e2e8f0" font-size="13">shape: ' + ((kind === "numtree" || kind === "biosea") ? "INVERTED" : "upright") + '</text>';
+    m += '<text x="480" y="144" fill="#94a3b8" font-size="12">apex = tertiary/top</text>';
+    m += '<text x="480" y="166" fill="#94a3b8" font-size="12">base = producers T1</text>';
+    m += '<text x="360" y="262" fill="#94a3b8" font-size="12" text-anchor="middle">' + note + '</text>';
+    m += '<text x="360" y="282" fill="#64748b" font-size="11" text-anchor="middle">Limits (p.214): no two-level species (sparrow), no food webs, no saprophytes; count ALL organisms; level = function.</text>';
+    svg.innerHTML = m;
+    readout(cell("type", kind === "energy" ? "energy" : (kind === "biosea" ? "biomass" : "numbers")) + cell("shape", (kind === "numtree" || kind === "biosea") ? "INVERTED" : "upright", (kind === "numtree" || kind === "biosea") ? "#f59e0b" : "#34d399") + cell("base", "producers") + cell("apex", "top consumers"));
+    if(kind === "energy") verdict("<b>Section 12.5 (Fig 12.4d; Exercise 1e-f):</b> energy is <b>always upright, never inverted</b> — heat lost each transfer; producers convert only <b>~1% of sunlight</b> to NPP. Bar = energy per level per time/area.");
+    else if(kind === "numtree") verdict("<b>Section 12.5 / Exercise 1(b) (Fig 12.4 tree case):</b> tree-dominated pyramid of numbers is <b>inverted</b> — 1 tree, thousands of insects, tens of small birds, few large birds. Census the banyan to see it.");
+    else if(kind === "biosea") verdict("<b>Section 12.5 (Fig 12.4c):</b> sea biomass pyramid is <b>generally inverted</b> — fish biomass exceeds the small phytoplankton standing crop. Energy above the same water stays upright (rate vs instant).");
+    else verdict("<b>Section 12.5 (Fig 12.4a-b; Exercise 8):</b> grassland numbers upright — <b>nearly 6 million plants support 3 top-carnivores</b>; biomass usually upright with sharp fall upward. Base = producers, apex = top consumers.");
+  }
+  return { mount: mount, draw: draw };
+})();
+window.SIMS["pyramids"] = window.SIMS["pyramids"];
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

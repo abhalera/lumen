@@ -1,0 +1,2229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 3: Motion in a Plane — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 03 · MOTION IN A PLANE</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="24"></progress>
+      <span id="progress-text">0 / 24</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 22 Exercises from NCERT Class 11 Physics (pp. 27–48) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "keph103", "chapterNumber": 3, "book_name": "Physics", "title": "Motion in a Plane", "subtitle": "Vectors, planar kinematics, projectile motion, and uniform circular motion.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph103.pdf", "page_start": 27, "page_end": 48, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "scalars-vectors", "nav": "Scalars and vectors", "title": "A vector needs magnitude, direction, and the triangle law — displacement ignores the path.", "deck": "Scalars: one number + unit (mass, temperature, time). Vectors: displacement, velocity, acceleration, force. OP = r is the position vector; PP′ is the displacement, independent of the path.", "minutes": 8, "section": "3.1–3.2", "pages": [1, 3], "print": "27–29", "sim": "vecdef", "simTitle": "Position vs displacement (Fig. 3.1)", "quick": ["Chapter 2 used + and − for two directions. In a plane we need <strong>vectors</strong>. A <strong>scalar</strong> has magnitude only (distance, mass, temperature, time) and combines by ordinary algebra. A <strong>vector</strong> has magnitude and direction and obeys the triangle (equivalently parallelogram) law. Printed bold (v); handwritten with an arrow. Magnitude |v| = v.", "<strong>Position vector</strong> r = OP from a chosen origin. If the object moves P → P′, the <strong>displacement</strong> is PP′, the straight join of the endpoints — independent of the actual path (PABCQ, PDQ, PBEFQ in Fig. 3.1b all share the same PQ). |displacement| ≤ path length.", "Two vectors are equal iff they have the same magnitude and the same direction (free vectors: parallel transport does not change them). Equal length with different direction is not equality (Fig. 3.2)."], "formulas": [{"label": "Position", "html": "r = OP from a chosen origin O", "cond": "Fig. 3.1(a)"}, {"label": "Displacement", "html": "Δr = r′ − r = PP′ (path-independent)", "cond": "|Δr| ≤ path length"}, {"label": "Equality", "html": "A = B  ⇔  |A|=|B| and same direction", "cond": "Fig. 3.2"}], "deeper": "Localised vectors (a force at a point of application) care about the line of action; this chapter’s displacements and velocities are free vectors. The scalar/vector split is not ‘has an arrow drawn on it’: current is a scalar in this list even though it has a sense in a wire; work is a scalar.", "worked": "Perimeter of a 1.0 m × 0.5 m rectangle is the scalar 3.0 m. Temperature drop 35.6 °C − 24.2 °C = 11.4 °C, a scalar. Density of a 10 cm aluminium cube of mass 2.7 kg is 2.7×10³ kg m⁻³, a scalar. Displacement of a closed loop is the null vector.", "prediction": {"prompt": "Three paths from P to Q on Fig. 3.1(b) have different lengths. Their displacements", "options": ["are the same vector PQ", "equal the path lengths", "cannot be compared because the paths curve"], "answer": 0, "explanation": "Displacement is the endpoint join. Path length changes; PQ does not."}, "connect": [["A Delhi Metro hop from Rajiv Chowk to Kashmere Gate", "The Yellow-line meander is the path. The displacement is the straight chord between the two stations — what a crow (or a ranging laser) would report."], ["Wow — walking around India Gate and back", "Path length is a kilometre; displacement is the null vector. §3.2.1 is the 2-D version of Chapter 2’s tired man.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Define scalar vs vector, and state why |displacement| ≤ path length.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which of the following is a vector?", "options": ["displacement", "distance", "temperature"], "answer": 0, "hint": "§3.2.", "solution": "Displacement has magnitude and direction and adds by the triangle law.", "wrong": ["", "Distance is a scalar path length.", "Temperature is a scalar."]}, {"level": "Medium", "type": "mcq", "prompt": "Two vectors of equal magnitude are equal if and only if they", "options": ["also have the same direction", "are drawn from the same origin", "are perpendicular"], "answer": 0, "hint": "Fig. 3.2.", "solution": "Equality is magnitude and direction. Free vectors may be slid.", "wrong": ["", "Location is irrelevant for free vectors.", "Perpendicular vectors are not equal."]}, {"level": "Hard", "type": "mcq", "prompt": "For motion from P to Q along any curve, |PQ| compared with the path length is", "options": ["≤ path length, equal only for a straight path without reversal", "always equal", "always greater"], "answer": 0, "hint": "§3.2.1.", "solution": "Straight join is the shortest.", "wrong": ["", "Only on a straight path.", "Impossible."]}]}, {"id": "graphical-add", "nav": "Graphical addition", "title": "Head-to-tail and the parallelogram are the same law — addition is commutative and associative.", "deck": "λA stretches A (or flips it if λ<0). A+B = B+A. (A+B)+C = A+(B+C). A+(−A)=0, the null vector. Subtraction is A+(−B). Example 3.1: rain 35 m s⁻¹, wind 12 m s⁻¹ west ⇒ hold the umbrella 19° east of vertical.", "minutes": 9, "section": "3.3–3.4", "pages": [3, 5], "print": "29–31", "sim": "vecadd", "simTitle": "Example 3.1 rain + wind = 37 m s⁻¹ at 19°", "quick": ["Multiplying A by λ&gt;0 keeps the direction and scales the magnitude; λ&lt;0 reverses it. λ may carry its own dimension (velocity × time = displacement).", "<strong>Head-to-tail / triangle law:</strong> put B’s tail on A’s head; the join of A’s tail to B’s head is R = A+B. The parallelogram law (tails together, diagonal from the origin) gives the same R. Addition is <strong>commutative</strong> A+B=B+A (3.1) and <strong>associative</strong> (A+B)+C=A+(B+C) (3.2).", "A+(−A)=0, the <strong>null vector</strong> (|0|=0, direction unspecified). A−B := A+(−B). A closed path has null displacement."], "formulas": [{"label": "Commutative", "html": "A + B = B + A", "cond": "Eq. (3.1)"}, {"label": "Associative", "html": "(A + B) + C = A + (B + C)", "cond": "Eq. (3.2)"}, {"label": "Null vector", "html": "A + (−A) = 0, &nbsp; |0| = 0", "cond": "Eq. (3.3)"}, {"label": "Subtraction", "html": "A − B = A + (−B)", "cond": "Eq. (3.5)"}], "deeper": "The physical meaning of 0: go P → P′ → P and the displacement vanishes, even though you travelled. Force pairs on a body do <em>not</em> make a null vector of ‘the force’ — they act on different bodies (Chapter 4).", "worked": "Example 3.1 (zoom p.5): v_r = 35 m s⁻¹ down, v_w = 12 m s⁻¹ west. R = √(35²+12²) = √(1225+144) = √1369 = 37 m s⁻¹. tan θ = 12/35 = 0.343, θ = tan⁻¹(0.343) = 19°. Hold the umbrella 19° from the vertical towards the east (into the wind’s source).", "prediction": {"prompt": "Rain 35 m s⁻¹ vertical, wind 12 m s⁻¹ west. The boy should tilt the umbrella", "options": ["about 19° from the vertical towards the east", "19° towards the west, along the wind", "straight up, because rain is vertical"], "answer": 0, "explanation": "The rain’s velocity relative to ground is the resultant of vertical rain and westward wind, so the velocity vector leans west; the umbrella points into that resultant, i.e. east of vertical."}, "connect": [["Monsoon at Churchgate, Mumbai", "A 35 m s⁻¹ downpour with a 12 m s⁻¹ Arabian-Sea wind is Example 3.1 on a real platform. Tilt into the wind, not with it, or the resultant still hits your shoulder."], ["Wow — 12 and 35 make a 3–4–5 cousin", "12²+35²=144+1225=1369=37². The resultant is an integer on purpose — a 12–35–37 triple, the 2-D Pythagoras of this example.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write A+B=B+A and recover R=37 m s⁻¹, θ=19° of Example 3.1.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A + (−A) is", "options": ["the null vector 0", "A", "undefined, because 0 has no direction"], "answer": 0, "hint": "Eq. (3.3).", "solution": "|0|=0; direction of a null vector is not specified, but the vector exists.", "wrong": ["", "That would require −A = 0.", "Existence is not the problem; direction is free."]}, {"level": "Medium", "type": "number", "map": "Example 3.1", "prompt": "Rain 35 m s⁻¹, wind 12 m s⁻¹ perpendicular. Magnitude of the resultant (m s⁻¹).", "answer": 37, "unit": "m s⁻¹", "tolerance": 0.1, "hint": "√(35²+12²).", "solution": "√1369 = 37 m s⁻¹."}, {"level": "Hard", "type": "number", "map": "Example 3.1", "prompt": "Angle of the resultant from the vertical, in degrees (nearest degree).", "answer": 19, "unit": "°", "tolerance": 0.6, "hint": "tan θ = 12/35.", "solution": "θ = tan⁻¹(0.343) ≈ 19°."}]}, {"id": "resolution", "nav": "Resolution and unit vectors", "title": "A = A_x î + A_y ĵ, with A_x = A cos θ and A = √(A_x² + A_y²).", "deck": "Unit vectors î, ĵ, k̂ have magnitude 1 and no dimension. In a plane, two numbers (A_x, A_y) or (A, θ) specify A. tan θ = A_y/A_x.", "minutes": 8, "section": "3.5", "pages": [5, 7], "print": "31–33", "sim": "resolve", "simTitle": "Resolve A into A_x î + A_y ĵ", "quick": ["Any planar vector A can be written as λ a + μ b along two non-colinear vectors (Eq. 3.8). The convenient choice is the rectangular unit vectors î, ĵ, k̂, |î|=|ĵ|=|k̂|=1 (Eq. 3.9), dimensionless, used only to flag direction.", "A = A_x î + A_y ĵ (3.12) with A_x = A cos θ, A_y = A sin θ (3.13). Conversely A = √(A_x²+A_y²) (3.14) and tan θ = A_y/A_x (3.15). A component can be positive, negative or zero. In 3-D, A_x = A cos α etc. (3.16), |A|=√(A_x²+A_y²+A_z²).", "A unit vector along A is n̂ = A/|A|. Position r = x î + y ĵ + z k̂ (3.17)."], "formulas": [{"label": "Components", "html": "A<sub>x</sub> = A cos θ, &nbsp; A<sub>y</sub> = A sin θ", "cond": "Eq. (3.13)"}, {"label": "Magnitude", "html": "A = √(A<sub>x</sub>² + A<sub>y</sub>²)", "cond": "Eq. (3.14)"}, {"label": "Direction", "html": "tan θ = A<sub>y</sub> / A<sub>x</sub>", "cond": "Eq. (3.15); quadrant from the signs of A_x, A_y"}, {"label": "Unit vector", "html": "n̂ = A / |A|, &nbsp; |î|=|ĵ|=|k̂|=1", "cond": "Eqs. (3.9), (3.10)"}], "deeper": "A_x is a real number, not a vector; A_x î is the vector. Saying ‘the x-component is a scalar’ is NCERT’s usage (Points to ponder / Ex 3.5b is the subtle one: some authors call A_x î ‘the component vector’). Signs of cos θ, sin θ take care of direction: θ = 180° gives A_x = −A, A_y = 0.", "worked": "A force of 10 N at 30° to +x: A_x = 10 cos 30° = 5√3 N, A_y = 10 sin 30° = 5 N. Magnitude check: √(75+25)=10.", "prediction": {"prompt": "If A_x = 3 and A_y = 4, |A| and θ from +x are", "options": ["5, tan⁻¹(4/3) ≈ 53°", "7, 45°", "12, tan⁻¹(3/4)"], "answer": 0, "explanation": "√(9+16)=5; tan θ = 4/3. This is Example 3.4’s velocity at t=1 s."}, "connect": [["Resolving a tow-rope on Marine Drive", "A 500 N pull at 20° to the car’s axis has 500 cos 20° along the road and 500 sin 20° lifting the bumper. Only the cosine tows you out of the monsoon puddle."], ["Wow — two numbers replace an arrow", "Once you pick axes, the whole geometry of Fig. 3.4 becomes two ordinary additions. That is why §3.6 exists.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write A = A_x î + A_y ĵ, A_x = A cos θ, and tan θ = A_y/A_x.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A unit vector has", "options": ["magnitude 1 and no dimension", "the dimensions of the original vector", "magnitude 0"], "answer": 0, "hint": "§3.5.", "solution": "î, ĵ, k̂ specify direction only.", "wrong": ["", "Dividing by |A| strips dimensions.", "That is the null vector."]}, {"level": "Medium", "type": "number", "prompt": "A = 10 N at 30° to +x. A_y in N.", "answer": 5, "unit": "N", "tolerance": 0.05, "hint": "A sin θ.", "solution": "10 sin 30° = 5 N."}, {"level": "Hard", "type": "number", "prompt": "|3 î + 4 ĵ| equals", "answer": 5, "unit": "", "tolerance": 0.05, "hint": "√(9+16).", "solution": "5. Direction tan⁻¹(4/3)≈53°."}]}, {"id": "analytical-add", "nav": "Analytical addition", "title": "Add components: R_x = A_x + B_x. Law of cosines: R² = A² + B² + 2AB cos θ.", "deck": "Example 3.2 is the parallelogram formula. Example 3.3: boat 25 km/h north, current 10 km/h 60° east of south ⇒ R ≈ 22 km/h, φ ≈ 23.4° from north.", "minutes": 9, "section": "3.6", "pages": [7, 9], "print": "33–35", "sim": "cosine", "simTitle": "Example 3.3 motorboat + current", "quick": ["Graphical addition is visual but imprecise. Analytically, R = A+B means R_x = A_x+B_x, R_y = A_y+B_y (3.21), and in 3-D also R_z (3.22). Subtraction flips the minus on each component (3.23b).", "Example 3.2 (zoom p.8): two vectors of magnitudes A, B with included angle θ. Law of cosines: R = √(A²+B²+2AB cos θ) (3.24a). Direction: tan α = (B sin θ)/(A+B cos θ) (3.24f). Law of sines: R/sin θ = A/sin β = B/sin α (3.24d).", "Example 3.3 (zoom p.8): v_b = 25 km/h north, v_c = 10 km/h at 60° east of south, so the angle between v_b and v_c is 120°. R = √(25²+10²+2·25·10·cos 120°) = √(625+100+500·(−1/2)) = √475 ≈ 22 km/h. sin φ = (10 sin 120°)/21.8 ≈ 0.397, φ ≈ 23.4°."], "formulas": [{"label": "Component sum", "html": "R<sub>x</sub> = A<sub>x</sub>+B<sub>x</sub>, &nbsp; R<sub>y</sub> = A<sub>y</sub>+B<sub>y</sub>", "cond": "Eq. (3.21)"}, {"label": "Law of cosines", "html": "R = √(A² + B² + 2AB cos θ)", "cond": "Eq. (3.24a); θ = included angle"}, {"label": "Direction", "html": "tan α = (B sin θ) / (A + B cos θ)", "cond": "Eq. (3.24f); α from A toward R"}], "deeper": "cos 120° = −1/2 is why a current ‘partly against’ the boat shrinks R below 25+10. If you forget the 120° and use 60°, you invent a 32 km/h tailwind that the figure does not show. Always draw the two arrows from one origin before picking θ.", "worked": "Example 3.3 (zoom p.8): R = √(625+100−250) = √475 ≈ 21.8 ≈ 22 km/h. sin φ = 10·(√3/2)/21.8 = 8.660/21.8 ≈ 0.397 ⇒ φ ≈ 23.4° from north towards the resultant drawn in Fig. 3.11.", "prediction": {"prompt": "Boat 25 km/h north, current 10 km/h 60° east of south. Magnitude of R is about", "options": ["22 km/h, because θ between the vectors is 120° and cos 120° = −1/2", "35 km/h, the scalar sum", "15 km/h, the scalar difference"], "answer": 0, "explanation": "√(25²+10²+2·25·10·(−1/2))=√475≈21.8 km/h, quoted 22 km/h."}, "connect": [["A fishing boat off Malvan, Maharashtra", "A 25 km/h hull speed into a 10 km/h current at 120° is Example 3.3. Skippers add the two arrows on a plotter the same way — law of cosines, not 25−10."], ["Wow — 23.4° is a sine-rule leftover, not a guess", "NCERT keeps three figures on φ after approximating R as 21.8. That is the law of sines, Eq. (3.24e), not a protractor on Fig. 3.11.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write the law of cosines and recover 22 km/h, 23.4° of Example 3.3.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "R_x equals", "options": ["A_x + B_x", "A + B", "A_x B_x"], "answer": 0, "hint": "Eq. (3.21).", "solution": "Components add separately.", "wrong": ["", "That ignores direction.", "That is not addition."]}, {"level": "Medium", "type": "number", "map": "Example 3.3", "prompt": "Example 3.3: magnitude of the resultant in km/h (NCERT’s two-figure value).", "answer": 22, "unit": "km/h", "tolerance": 0.5, "hint": "√(25²+10²+2·25·10·cos 120°).", "solution": "√475 ≈ 21.8 ≅ 22 km/h."}, {"level": "Hard", "type": "number", "map": "Example 3.3", "prompt": "Example 3.3: φ in degrees from the sine rule (one decimal as in the book).", "answer": 23.4, "unit": "°", "tolerance": 0.3, "hint": "sin φ = 10 sin 120° / 21.8.", "solution": "0.397 ⇒ φ ≅ 23.4°."}]}, {"id": "plane-kinematics", "nav": "Motion in a plane", "title": "v is tangent to the path; a = dv/dt may point anywhere between 0° and 180° from v.", "deck": "r = x î + y ĵ, v = v_x î + v_y ĵ, a = a_x î + a_y ĵ. Example 3.4: r = 3.0 t î + 2.0 t² ĵ + 5.0 k̂ ⇒ v(1 s) = 5.0 m s⁻¹ at 53° to x.", "minutes": 9, "section": "3.7", "pages": [9, 11], "print": "35–37", "sim": "planeva", "simTitle": "Example 3.4: v(t) = 3.0 î + 4.0 t ĵ", "quick": ["Position r = x î + y ĵ. Displacement Δr = Δx î + Δy ĵ (3.25–3.26). Average velocity Δr/Δt has the direction of Δr. Instantaneous v = dr/dt (3.28) is <strong>tangent to the path</strong> in the direction of motion (Fig. 3.13).", "v_x = dx/dt, v_y = dy/dt, |v|=√(v_x²+v_y²), tan θ = v_y/v_x (3.30). Average a = Δv/Δt; instantaneous a = dv/dt with a_x = dv_x/dt, a_y = dv_y/dt (3.32).", "In 1-D, v and a are collinear. In 2-D/3-D they may make any angle 0°–180°. Example 3.4 (zoom p.11): r = 3.0 t î + 2.0 t² ĵ + 5.0 k̂. v = 3.0 î + 4.0 t ĵ, a = 4.0 ĵ. At t = 1.0 s, v = 3 î + 4 ĵ, |v|=5.0 m s⁻¹, θ = tan⁻¹(4/3) ≅ 53°."], "formulas": [{"label": "Velocity", "html": "v = dr/dt = v<sub>x</sub> î + v<sub>y</sub> ĵ, &nbsp; v<sub>x</sub>=dx/dt", "cond": "Eqs. (3.28), (3.30a); tangent to the path"}, {"label": "Acceleration", "html": "a = dv/dt = a<sub>x</sub> î + a<sub>y</sub> ĵ", "cond": "Eq. (3.32)"}, {"label": "Magnitude of v", "html": "v = √(v<sub>x</sub>² + v<sub>y</sub>²)", "cond": "Eq. (3.30b)"}], "deeper": "Fig. 3.15 is the 2-D analogue of Table 2.1: shrink Δt and the chord of Δv becomes the instantaneous a, which need not be along v. A particle can speed up, slow down, or only turn, depending on the angle between a and v.", "worked": "Example 3.4 (zoom p.11): dr/dt = 3.0 î + 4.0 t ĵ. a = d v/dt = 4.0 ĵ (constant, along +y). At t=1.0 s, |v|=√(9+16)=5.0 m s⁻¹, θ=tan⁻¹(4/3)≅53° from +x.", "prediction": {"prompt": "Example 3.4 at t = 1.0 s: |v| and the angle with +x are", "options": ["5.0 m s⁻¹ at ≅ 53°", "3.0 m s⁻¹ along x", "4.0 m s⁻¹ along y"], "answer": 0, "explanation": "v = 3 î + 4 ĵ. √(9+16)=5; tan⁻¹(4/3)≅53° (zoom p.11)."}, "connect": [["A flyover ramp in Bengaluru", "Your velocity is along the ramp (tangent). The acceleration has a component down the slope (speeding) and a component that turns you if the ramp curves — v and a are not forced to share a line."], ["Wow — a can be perpendicular to v and the speed still stays constant", "That is the whole of §3.10 waiting in one sentence of §3.7. Uniform circular motion is Example 3.4’s geometry with |v| glued.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write v = dr/dt and quote |v|(1 s)=5.0 m s⁻¹ at 53° from Example 3.4.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Instantaneous velocity is", "options": ["tangent to the path at that instant", "always along a", "the same as average velocity"], "answer": 0, "hint": "Fig. 3.13.", "solution": "v = lim Δr/Δt, and Δr becomes the tangent.", "wrong": ["", "Only if a is tangential.", "Only for uniform motion."]}, {"level": "Medium", "type": "number", "map": "Example 3.4", "prompt": "Example 3.4: |v| at t = 1.0 s, in m s⁻¹.", "answer": 5, "unit": "m s⁻¹", "tolerance": 0.05, "hint": "√(3²+4²).", "solution": "5.0 m s⁻¹."}, {"level": "Hard", "type": "mcq", "map": "Example 3.4", "prompt": "In Example 3.4, a(t) is", "options": ["4.0 ĵ m s⁻², constant", "3.0 î m s⁻²", "zero, because the 5.0 k̂ term is constant"], "answer": 0, "hint": "a = dv/dt = 4.0 ĵ.", "solution": "v_y = 4.0 t ⇒ a_y = 4.0. The constant 5.0 k̂ drops on differentiating twice.", "wrong": ["", "v_x is constant so a_x=0.", "The constant term affects neither v nor a."]}]}, {"id": "const-acc-plane", "nav": "Constant acceleration in a plane", "title": "Two independent 1-D motions: v = v₀ + a t and r = r₀ + v₀ t + ½ a t².", "deck": "x- and y-motions decouple. Example 3.5: v₀ = 5.0 î m/s, a = (3.0 î + 2.0 ĵ) m/s². At x=84 m, t=6 s, y=36 m, speed ≅ 26 m s⁻¹.", "minutes": 8, "section": "3.8", "pages": [11, 13], "print": "37–39", "sim": "constacc", "simTitle": "Example 3.5: x=84 m at t=6 s, y=36 m", "quick": ["If a is constant, v = v₀ + a t (3.33a) and r = r₀ + v₀ t + ½ a t² (3.34a). In components: v_x = v_{ox}+a_x t, x = x₀ + v_{ox} t + ½ a_x t², and the y-analogues (3.33b, 3.34b).", "Immediate reading: motion in a plane with constant a is two simultaneous 1-D constant-a motions along perpendicular axes. The same holds in 3-D. This is the engine of projectile motion (§3.9).", "Example 3.5 (zoom p.12): r(t) = (5.0 t + 1.5 t²) î + (1.0 t²) ĵ. x=84 ⇒ 1.5 t² + 5 t − 84 = 0 ⇒ t=6 s. y=36.0 m. v = (5.0+3.0 t) î + 2.0 t ĵ; at 6 s, v=23 î + 12 ĵ, |v|=√(529+144)=√673 ≅ 26 m s⁻¹."], "formulas": [{"label": "Velocity", "html": "v = v<sub>0</sub> + a t", "cond": "Eq. (3.33a); a constant"}, {"label": "Position", "html": "r = r<sub>0</sub> + v<sub>0</sub> t + ½ a t²", "cond": "Eq. (3.34a)"}, {"label": "Decoupling", "html": "x(t) and y(t) independently 1-D", "cond": "Eq. (3.34b)"}], "deeper": "These are vector equations: they do not prefer axes (Points to ponder 3). You may resolve them along any pair of independent directions. They fail when a is not constant — in particular they do not describe uniform circular motion (Points to ponder 4), where |a| is constant but its direction turns.", "worked": "Example 3.5 (zoom p.12): 5.0 t + 1.5 t² = 84. Quadratic 3t² + 10t − 168=0, t=(−10+46)/6=6 s (physical root). y=1.0×36=36 m. speed=√(23²+12²)≅26 m s⁻¹.", "prediction": {"prompt": "Example 3.5: when x=84 m, the y-coordinate is", "options": ["36 m, at t = 6 s", "84 m, because the motion is at 45°", "0, it started on the x-axis and a_y is small"], "answer": 0, "explanation": "y = t² = 36 m at the physical root t=6 s (zoom p.12)."}, "connect": [["A cricket throw that is not yet a projectile", "If a fielder’s arm still pushes (a not equal to g ĵ), you must use (3.34) with that a, not the parabola of §3.9. Example 3.5 is that more general constant-a motion."], ["Wow — 26 m s⁻¹ from a 3–4–5 that grew", "At t=0, v=5 î. At t=6 s the extra 18 î + 12 ĵ makes 23 and 12 — not a 5-12-13, and NCERT honestly writes ≅ 26, not 25.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write Eqs. (3.33a) and (3.34a) and recover t=6 s, y=36 m, |v|≅26 m s⁻¹.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Eqs. (3.33)–(3.34) require", "options": ["constant acceleration (vector)", "constant speed", "motion along x only"], "answer": 0, "hint": "§3.8.", "solution": "a constant in magnitude and direction.", "wrong": ["", "That is a special case a=0 or a ⊥ v with |a| turning — not this section.", "The whole point is two axes."]}, {"level": "Medium", "type": "number", "map": "Example 3.5", "prompt": "Example 3.5: time in seconds when x=84 m.", "answer": 6, "unit": "s", "tolerance": 0.05, "hint": "1.5 t² + 5 t = 84.", "solution": "t=6 s."}, {"level": "Hard", "type": "number", "map": "Example 3.5", "prompt": "Example 3.5: y-coordinate in metres at that instant.", "answer": 36, "unit": "m", "tolerance": 0.1, "hint": "y=t².", "solution": "36.0 m. Speed ≅ 26 m s⁻¹."}]}, {"id": "projectile", "nav": "Projectile motion", "title": "A parabola: R = v₀² sin 2θ₀ / g, H = (v₀ sin θ₀)² / 2g, T_f = 2 v₀ sin θ₀ / g.", "deck": "Horizontal a=0, vertical a=−g. Example 3.7: cliff 490 m, 15 m s⁻¹ horizontal, g=9.8 → t=10 s, speed 99 m s⁻¹. Example 3.8: 28 m s⁻¹ at 30° → H=10.0 m, T_f=2.9 s, R=69 m.", "minutes": 10, "section": "3.9", "pages": [13, 15], "print": "39–41", "sim": "projectile", "simTitle": "Projectile lab: Examples 3.7–3.8", "quick": ["A projectile is in flight under gravity alone (air neglected). a = −g ĵ, so a_x=0, a_y=−g (3.35). v_{ox}=v₀ cos θ₀, v_{oy}=v₀ sin θ₀ (3.36). Then x=(v₀ cos θ₀)t, y=(v₀ sin θ₀)t − ½ g t² (3.37); v_x is constant, v_y = v₀ sin θ₀ − g t (3.38).", "Eliminate t: y = x tan θ₀ − (g x²)/(2 v₀² cos² θ₀) (3.39) — a <strong>parabola</strong>. Time to peak t_m = v₀ sin θ₀ / g (3.40a); time of flight T_f = 2 t_m (3.40b). Peak height h_m = (v₀ sin θ₀)² / (2g) (3.41). Range R = v₀² sin 2θ₀ / g (3.42a), maximum at θ₀=45° with R_m = v₀²/g (3.42b).", "Example 3.6: ranges at 45°±α are equal because sin(90°+2α)=sin(90°−2α). Example 3.7 (zoom p.14): 490 m cliff, 15 m s⁻¹ horizontal, g=9.8 → t=10 s, v=√(15²+98²)=99 m s⁻¹. Example 3.8: 28 m s⁻¹ at 30°, g=9.8 → h_m=10.0 m, T_f=2.9 s, R=69 m."], "formulas": [{"label": "Path", "html": "y = x tan θ₀ − g x² / (2 v₀² cos² θ₀)", "cond": "Eq. (3.39); a parabola"}, {"label": "Time of flight", "html": "T<sub>f</sub> = 2 v₀ sin θ₀ / g", "cond": "Eq. (3.40b); level ground"}, {"label": "Max height", "html": "h<sub>m</sub> = (v₀ sin θ₀)² / (2g)", "cond": "Eq. (3.41)"}, {"label": "Range", "html": "R = v₀² sin 2θ₀ / g, &nbsp; R<sub>m</sub> = v₀²/g at 45°", "cond": "Eqs. (3.42a,b)"}], "deeper": "The shape is not set by g alone (Points to ponder 7): the same g gives a vertical line if v₀ is vertical, a parabola if v₀ is angled. Horizontal velocity never changes (Fig. 3.17) because a has no x-component — Newton’s second law in one line, used again in Chapter 4.", "worked": "Example 3.8 (zoom p.14): h_m = (28 sin 30°)²/(2×9.8) = 14²/19.6 = 10.0 m. T_f = 2×28×0.5/9.8 = 28/9.8 = 2.9 s. R = 28² sin 60° / 9.8 = 784×(√3/2)/9.8 ≈ 69 m.", "prediction": {"prompt": "Galileo’s claim (Example 3.6): ranges at 30° and 60° with the same v₀", "options": ["are equal, because 45°±15° share sin 2θ", "the 60° throw goes farther because it is in the air longer", "the 30° throw goes farther because v_x is larger"], "answer": 0, "explanation": "sin 2θ at 60° and 120° equals sin 60°. Longer hang time of 60° is exactly cancelled by smaller v_x."}, "connect": [["A Gully-cricket 28 m s⁻¹ lob at 30°", "Example 3.8 is a tennis-ball throw: 10 m up, 2.9 s hang, 69 m on flat ground — longer than a residential street in Chembur, which is why the ball ends up on a balcony."], ["Wow — 45° is not always the farthest when the landing is not level", "Eq. (3.42) assumed y=0 at landing. From a 490 m cliff (Example 3.7) the optimum angle is below 45°. Do not paste R_m = v₀²/g onto a hillside.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write T_f, h_m, R and the 45° result. Quote Example 3.8’s three numbers.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a given v₀ the horizontal range is maximum at", "options": ["θ₀ = 45°", "θ₀ = 90°", "θ₀ = 0°"], "answer": 0, "hint": "sin 2θ peaks at 2θ=90°.", "solution": "R_m = v₀²/g at 45°, level ground, no air.", "wrong": ["", "That maximises height, not range.", "That is a horizontal throw, R=0 on level ground? Wait, T_f=0 so R=0."]}, {"level": "Medium", "type": "number", "map": "Example 3.8", "prompt": "Example 3.8: maximum height in metres.", "answer": 10, "unit": "m", "tolerance": 0.1, "hint": "(28 sin 30°)²/(2×9.8).", "solution": "196/19.6 = 10.0 m."}, {"level": "Hard", "type": "number", "map": "Example 3.7", "prompt": "Example 3.7: speed on hitting the ground, in m s⁻¹ (g=9.8).", "answer": 99, "unit": "m s⁻¹", "tolerance": 0.6, "hint": "t=10 s, v_y=−98, √(15²+98²).", "solution": "99 m s⁻¹."}]}, {"id": "ucm", "nav": "Uniform circular motion", "title": "Speed fixed, velocity turning: a_c = v²/R = ω² R, always towards the centre.", "deck": "v = ω R, ω = 2πν, a_c = 4π² ν² R. Example 3.9: insect, R=12 cm, 7 rev in 100 s → ω=0.44 rad/s, v=5.3 cm s⁻¹, a=2.3 cm s⁻², not a constant vector.", "minutes": 9, "section": "3.10", "pages": [15, 17], "print": "41–43", "sim": "ucm", "simTitle": "Example 3.9 insect in a groove", "quick": ["<strong>Uniform</strong> circular motion means constant speed on a circle. Velocity is tangent, so it changes direction: there is an acceleration. Shrinking Δt on Fig. 3.18 shows a always toward the centre — <strong>centripetal</strong> (centre-seeking). Magnitude a_c = v²/R (3.43).", "Angular speed ω = Δθ/Δt (3.44). Arc Δs = R Δθ ⇒ v = ω R (3.45). Then a_c = ω² R (3.46). Period T, frequency ν=1/T: v = 2πR/T = 2π R ν (3.47); ω = 2πν; a_c = 4π² ν² R (3.48).", "Example 3.9 (zoom p.16): R=12 cm, 7 rev in 100 s. ω=2π×7/100=0.44 rad/s. v=ωR=5.3 cm s⁻¹. a is not a constant vector (direction turns) but |a|=ω²R=2.3 cm s⁻²."], "formulas": [{"label": "Centripetal acceleration", "html": "a<sub>c</sub> = v²/R = ω² R", "cond": "Eqs. (3.43), (3.46); direction to the centre"}, {"label": "Linear–angular", "html": "v = ω R, &nbsp; ω = 2π ν", "cond": "Eqs. (3.45), (3.48)"}, {"label": "In frequency", "html": "a<sub>c</sub> = 4π² ν² R", "cond": "Eq. (3.48)"}], "deeper": "a_c is not a constant vector even though |a_c| is constant — that is why the constant-a kinematic set of §3.8 does not apply (Points to ponder 4). If speed is not constant, a has a tangential component too (Points to ponder 6): net a is toward the centre only for uniform circular motion. Huygens published the centripetal analysis in 1673.", "worked": "Example 3.9: ν=7/100 s⁻¹, ω=0.4398≈0.44 rad/s, v=0.44×12=5.28≈5.3 cm s⁻¹, a=(0.44)²×12=2.32≈2.3 cm s⁻², directed to the centre, turning with the insect.", "prediction": {"prompt": "Example 3.9: is the acceleration a constant vector?", "options": ["No — |a| is constant (2.3 cm s⁻²) but its direction always points to the moving centre-line, so a turns", "Yes, because the speed is constant", "Yes, because ω is constant"], "answer": 0, "explanation": "NCERT’s own words in the example: direction changes continuously, so a is not a constant vector."}, "connect": [["A giant wheel at a mela", "If the wheel turns at constant |v|, every cabin has a_c = v²/R toward the axle. You feel the seat push you inward — that push is the centripetal force of Chapter 4, not a new kind of acceleration here."], ["Wow — 7 revolutions in 100 s is ω=0.44 rad/s, not 0.07", "ω=2πν, the 2π is the conversion from ‘turns’ to radians. Dropping it underestimates a by 4π²≈40.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph103.pdf"}]]], "recall": "Write a_c = v²/R = ω² R = 4π²ν²R and quote Example 3.9’s three numbers.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In uniform circular motion, acceleration is", "options": ["v²/R toward the centre", "zero, because speed is constant", "tangential"], "answer": 0, "hint": "Eq. (3.43).", "solution": "Speed is constant; velocity is not. a is centripetal.", "wrong": ["", "Speed constant ≠ velocity constant.", "Tangential a would change speed."]}, {"level": "Medium", "type": "number", "map": "Example 3.9", "prompt": "Example 3.9: angular speed in rad/s (two figures as in the book).", "answer": 0.44, "unit": "rad/s", "tolerance": 0.01, "hint": "2π×7/100.", "solution": "0.44 rad/s."}, {"level": "Hard", "type": "number", "map": "Example 3.9", "prompt": "Example 3.9: |a| in cm s⁻².", "answer": 2.3, "unit": "cm s⁻²", "tolerance": 0.1, "hint": "ω² R = (0.44)²×12.", "solution": "2.3 cm s⁻²."}]}], "exercises": [{"number": "3.1", "section": "Exercises", "conceptIdx": 0, "page": 20, "printPage": 46, "question": "State, for each of the following physical quantities, if it is a scalar or a vector: volume, mass, speed, acceleration, density, number of moles, velocity, angular frequency, displacement, angular velocity.", "steps": ["Scalars: volume, mass, speed, density, number of moles, angular frequency.", "Vectors: acceleration, velocity, displacement, angular velocity."], "answer": "Scalars: volume, mass, speed, density, number of moles, angular frequency. Vectors: acceleration, velocity, displacement, angular velocity."}, {"number": "3.2", "section": "Exercises", "conceptIdx": 0, "page": 20, "printPage": 46, "question": "Pick out the two scalar quantities in the following list: force, angular momentum, work, current, linear momentum, electric field, average velocity, magnetic moment, relative velocity.", "steps": ["Work is a scalar (energy). Current is treated as a scalar in this list.", "All the others are vectors."], "answer": "work and current."}, {"number": "3.3", "section": "Exercises", "conceptIdx": 0, "page": 20, "printPage": 46, "question": "Pick out the only vector quantity in the following list: Temperature, pressure, impulse, time, power, total path length, energy, gravitational potential, coefficient of friction, charge.", "steps": ["Impulse = Δp is a vector. The rest are scalars."], "answer": "impulse."}, {"number": "3.4", "section": "Exercises", "conceptIdx": 0, "page": 20, "printPage": 46, "question": "State with reasons, whether the following algebraic operations with scalar and vector physical quantities are meaningful: (a) adding any two scalars, (b) adding a scalar to a vector of the same dimensions, (c) multiplying any vector by any scalar, (d) multiplying any two scalars, (e) adding any two vectors, (f) adding a component of a vector to the same vector.", "steps": ["(a) Meaningful only if they are the same physical quantity (same dimension/unit).", "(b) Never — different mathematical types.", "(c) Always meaningful (gives a vector, possibly with new dimension).", "(d) Always (ordinary product).", "(e) Meaningful if they are the same type of vector quantity.", "(f) Meaningful if ‘component’ means the component vector (A_x î added to A)."], "answer": "(a) only same quantity; (b) no; (c) yes; (d) yes; (e) same type; (f) yes if component is taken as a vector along the axis."}, {"number": "3.5", "section": "Exercises", "conceptIdx": 0, "page": 20, "printPage": 46, "question": "Read each statement below carefully and state with reasons, if it is true or false: (a) The magnitude of a vector is always a scalar, (b) each component of a vector is always a scalar, (c) the total path length is always equal to the magnitude of the displacement vector of a particle. (d) the average speed of a particle (defined as total path length divided by the time taken to cover the path) is either greater or equal to the magnitude of average velocity of the particle over the same interval of time, (e) Three vectors not lying in a plane can never add up to give a null vector.", "steps": ["(a) T — |A| is a scalar.", "(b) T in NCERT’s usage: A_x, A_y are real numbers.", "(c) F — equal only without a change of direction.", "(d) T — path ≥ |Δr|.", "(e) T — a null sum of three needs a closed triangle, hence a plane."], "answer": "(a) T; (b) T; (c) F; (d) T; (e) T."}, {"number": "3.6", "section": "Exercises", "conceptIdx": 1, "page": 20, "printPage": 46, "question": "Establish the following vector inequalities geometrically or otherwise: (a) |a+b| ≤ |a|+|b| (b) |a+b| ≥ ||a|−|b|| (c) |a−b| ≤ |a|+|b| (d) |a−b| ≥ ||a|−|b||. When does the equality sign above apply?", "steps": ["Triangle inequality: a side is ≤ the sum and ≥ the difference of the other two.", "(a)(c): equality when the two vectors are parallel (same direction for +; a parallel to −b for the minus).", "(b)(d): equality when the vectors are antiparallel (collinear, opposite sense) for the + case of (b), and parallel for (d)."], "answer": "All four are triangle inequalities. Equality: collinear vectors, sense chosen so they do not fold (parallel for |a+b|=|a|+|b|; antiparallel for |a+b|=||a|−|b||)."}, {"number": "3.7", "section": "Exercises", "conceptIdx": 1, "page": 21, "printPage": 47, "question": "Given a + b + c + d = 0, which of the following statements are correct: (a) a, b, c, and d must each be a null vector, (b) The magnitude of (a+c) equals the magnitude of (b+d), (c) The magnitude of a can never be greater than the sum of the magnitudes of b, c, and d, (d) b+c must lie in the plane of a and d if a and d are not collinear, and in the line of a and d, if they are collinear?", "steps": ["(a) F — they can cancel in pairs.", "(b) T — a+c = −(b+d) so magnitudes equal.", "(c) T — |a|=|b+c+d| ≤ |b|+|c|+|d|.", "(d) T — b+c = −(a+d) lies in the plane (or line) of a and d."], "answer": "(a) false; (b)(c)(d) true."}, {"number": "3.8", "section": "Exercises", "conceptIdx": 0, "page": 21, "printPage": 47, "question": "Three girls skating on a circular ice ground of radius 200 m start from a point P on the edge of the ground and reach a point Q diametrically opposite to P following different paths as shown in Fig. 3.19. What is the magnitude of the displacement vector for each? For which girl is this equal to the actual length of path skate?", "steps": ["Displacement is PQ = 2R = 400 m for every girl (Fig. 3.19, zoom p.21: A left-arc, B diameter, C right-arc).", "Path equals |displacement| only for the straight diameter (girl B)."], "answer": "|Δr|=400 m for each. Equal to path length for the girl who skates the diameter."}, {"number": "3.9", "section": "Exercises", "conceptIdx": 0, "page": 21, "printPage": 47, "question": "A cyclist starts from the centre O of a circular park of radius 1 km, reaches the edge P of the park, then cycles along the circumference, and returns to the centre along QO as shown in Fig. 3.20. If the round trip takes 10 min, what is the (a) net displacement, (b) average velocity, and (c) average speed of the cyclist?", "steps": ["Fig. 3.20 (zoom p.21): OP along +x, quarter-circle to Q, then QO. Closed loop.", "(a) net displacement = 0. (b) v_avg = 0.", "Path = 1 + (2π·1)/4 + 1 = 2 + π/2 ≈ 3.57 km in 10 min = 1/6 h.", "(c) avg speed = 3.57 / (1/6) ≈ 21.4 km h⁻¹."], "answer": "(a) 0; (b) 0; (c) ≈ 21.4 km h⁻¹."}, {"number": "3.10", "section": "Exercises", "conceptIdx": 1, "page": 21, "printPage": 47, "question": "On an open ground, a motorist follows a track that turns to his left by an angle of 60° after every 500 m. Starting from a given turn, specify the displacement of the motorist at the third, sixth and eighth turn. Compare the magnitude of the displacement with the total path length covered by the motorist in each case.", "steps": ["The track is a regular hexagon of side 500 m.", "3rd turn: three sides; directions 0°, 60°, 120°. Δr = 500(î + 0.5î+(√3/2)ĵ −0.5î+(√3/2)ĵ)=500(î+√3 ĵ), |Δr|=1000 m. Path=1500 m.", "6th turn: closed hexagon. Δr=0. Path=3000 m.", "8th turn: hexagon + two sides. |Δr|=500√3 ≈ 866 m. Path=4000 m."], "answer": "3rd: |Δr|=1000 m (path 1500 m); 6th: 0 (path 3000 m); 8th: 500√3 m ≈ 866 m (path 4000 m)."}, {"number": "3.11", "section": "Exercises", "conceptIdx": 0, "page": 21, "printPage": 47, "question": "A passenger arriving in a new town wishes to go from the station to a hotel located 10 km away on a straight road from the station. A dishonest cabman takes him along a circuitous path 23 km long and reaches the hotel in 28 min. What is (a) the average speed of the taxi, (b) the magnitude of average velocity? Are the two equal?", "steps": ["Δt = 28/60 h = 7/15 h.", "(a) avg speed = 23 / (28/60) = 49.3 km h⁻¹.", "(b) |v_avg| = 10 / (28/60) = 21.4 km h⁻¹. Not equal, because path ≠ |displacement|."], "answer": "(a) 49.3 km h⁻¹; (b) 21.4 km h⁻¹; no."}, {"number": "3.12", "section": "Exercises", "conceptIdx": 6, "page": 21, "printPage": 47, "question": "The ceiling of a long hall is 25 m high. What is the maximum horizontal distance that a ball thrown with a speed of 40 m s⁻¹ can go without hitting the ceiling of the hall?", "given": "u=40 m s⁻¹, H_max allowed=25 m, g=9.8 m s⁻²", "steps": ["h_m = u² sin²θ /(2g) = 25 ⇒ sin²θ = 50 g / u² = 490/1600 = 0.30625, sin θ=0.5534, θ=33.60°.", "R = u² sin 2θ / g = 1600 sin(67.20°)/9.8. sin 67.20°=0.9216 ⇒ R=150.5 m."], "answer": "≈ 150 m (150.5 m with g=9.8)."}, {"number": "3.13", "section": "Exercises", "conceptIdx": 6, "page": 21, "printPage": 47, "question": "A cricketer can throw a ball to a maximum horizontal distance of 100 m. How much high above the ground can the cricketer throw the same ball?", "steps": ["R_max = u²/g = 100 m ⇒ u² = 100 g.", "Vertical throw: H = u²/(2g) = 100 g / (2g) = 50 m."], "answer": "50 m."}, {"number": "3.14", "section": "Exercises", "conceptIdx": 7, "page": 22, "printPage": 48, "question": "A stone tied to the end of a string 80 cm long is whirled in a horizontal circle with a constant speed. If the stone makes 14 revolutions in 25 s, what is the magnitude and direction of acceleration of the stone?", "steps": ["R=0.80 m, ν=14/25=0.56 s⁻¹.", "a_c = 4π² ν² R = 4π² (0.56)² (0.80) ≈ 9.91 m s⁻², towards the centre."], "answer": "9.91 m s⁻², directed towards the centre of the circle."}, {"number": "3.15", "section": "Exercises", "conceptIdx": 7, "page": 22, "printPage": 48, "question": "An aircraft executes a horizontal loop of radius 1.00 km with a steady speed of 900 km/h. Compare its centripetal acceleration with the acceleration due to gravity.", "steps": ["v=900×5/18=250 m s⁻¹, R=1000 m.", "a_c=v²/R=62500/1000=62.5 m s⁻².", "a_c/g=62.5/9.8≈6.38."], "answer": "a_c = 62.5 m s⁻² ≈ 6.38 g."}, {"number": "3.16", "section": "Exercises", "conceptIdx": 7, "page": 22, "printPage": 48, "question": "Read each statement below carefully and state, with reasons, if it is true or false: (a) The net acceleration of a particle in circular motion is always along the radius of the circle towards the centre (b) The velocity vector of a particle at a point is always along the tangent to the path of the particle at that point (c) The acceleration vector of a particle in uniform circular motion averaged over one cycle is a null vector", "steps": ["(a) F — only if speed is constant; otherwise a has a tangential part.", "(b) T — by the limiting argument of Fig. 3.13.", "(c) T — a rotates uniformly; its vector average over a cycle vanishes."], "answer": "(a) F; (b) T; (c) T."}, {"number": "3.17", "section": "Exercises", "conceptIdx": 4, "page": 22, "printPage": 48, "question": "The position of a particle is given by r = 3.0 t î − 2.0 t² ĵ + 4.0 k̂ m where t is in seconds and the coefficients have the proper units for r to be in metres. (a) Find the v and a of the particle? (b) What is the magnitude and direction of velocity of the particle at t = 2.0 s?", "steps": ["v = dr/dt = 3.0 î − 4.0 t ĵ. a = dv/dt = −4.0 ĵ m s⁻².", "At t=2.0 s, v=3.0 î − 8.0 ĵ; |v|=√(9+64)=√73≈8.54 m s⁻¹, at tan⁻¹(8/3)≈69.4° from +x toward −y."], "answer": "(a) v=3.0 î − 4.0 t ĵ m/s, a=−4.0 ĵ m/s²; (b) 8.54 m s⁻¹ at 69.4° below +x."}, {"number": "3.18", "section": "Exercises", "conceptIdx": 5, "page": 22, "printPage": 48, "question": "A particle starts from the origin at t=0 s with a velocity of 10.0 ĵ m/s and moves in the x-y plane with a constant acceleration of (8.0 î + 2.0 ĵ) m s⁻². (a) At what time is the x-coordinate of the particle 16 m? What is the y-coordinate of the particle at that time? (b) What is the speed of the particle at the time?", "steps": ["x = ½ a_x t² = 4 t² = 16 ⇒ t=2 s.", "y = 10 t + ½ (2) t² = 20+4=24 m.", "v = 10 ĵ + (8 î + 2 ĵ)(2) = 16 î + 14 ĵ; |v|=√(256+196)=√452≈21.3 m s⁻¹."], "answer": "(a) t=2.0 s, y=24 m; (b) 21.3 m s⁻¹."}, {"number": "3.19", "section": "Exercises", "conceptIdx": 2, "page": 22, "printPage": 48, "question": "î and ĵ are unit vectors along x- and y-axis respectively. What is the magnitude and direction of the vectors î+ĵ, and î−ĵ? What are the components of a vector A=2 î + 3 ĵ along the directions of î+ĵ and î−ĵ? [You may use graphical method]", "steps": ["|î+ĵ|=√2, at 45° to +x. |î−ĵ|=√2, at −45° to +x.", "Component of A along n̂ is A·n̂. Along (î+ĵ)/√2: (2+3)/√2 = 5/√2. Along (î−ĵ)/√2: (2−3)/√2 = −1/√2."], "answer": "|î+ĵ|=√2 at 45°; |î−ĵ|=√2 at −45°. Components of A: 5/√2 and −1/√2."}, {"number": "3.20", "section": "Exercises", "conceptIdx": 5, "page": 22, "printPage": 48, "question": "For any arbitrary motion in space, which of the following relations are true: (a) v_average = (1/2)(v(t1)+v(t2)) (b) v_average = [r(t2)−r(t1)]/(t2−t1) (c) v(t)=v(0)+a t (d) r(t)=r(0)+v(0)t+(1/2)a t² (e) a_average=[v(t2)−v(t1)]/(t2−t1). (The ‘average’ stands for average of the quantity over the time interval t1 to t2)", "steps": ["(a) F unless a is constant (then v is linear in t).", "(b) T by definition of average velocity.", "(c) F unless a is constant.", "(d) F unless a is constant.", "(e) T by definition of average acceleration."], "answer": "(a) F; (b) T; (c) F; (d) F; (e) T."}, {"number": "3.21", "section": "Exercises", "conceptIdx": 0, "page": 22, "printPage": 48, "question": "Read each statement below carefully and state, with reasons and examples, if it is true or false: A scalar quantity is one that (a) is conserved in a process (b) can never take negative values (c) must be dimensionless (d) does not vary from one point to another in space (e) has the same value for observers with different orientations of axes.", "steps": ["(a) F — work/energy need not be conserved; charge is a scalar and is conserved, but that is not the definition.", "(b) F — temperature (Celsius), work, charge can be negative.", "(c) F — mass has dimension.", "(d) F — density, temperature vary in space.", "(e) T — that is the geometric meaning of a scalar under rotation of axes."], "answer": "(a) F; (b) F; (c) F; (d) F; (e) T."}, {"number": "3.22", "section": "Exercises", "conceptIdx": 6, "page": 22, "printPage": 48, "question": "An aircraft is flying at a height of 3400 m above the ground. If the angle subtended at a ground observation point by the aircraft positions 10.0 s apart is 30°, what is the speed of the aircraft?", "steps": ["Take the observation point as the ground point directly below the midpoint of the 10 s chord (symmetric 15° from the vertical).", "Half-chord = 3400 tan 15°. tan 15°=2−√3≈0.2679.", "AB = 2×3400×0.2679=1822 m in 10 s ⇒ v=182 m s⁻¹."], "answer": "≈ 182 m s⁻¹."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.vecdef = (function(){
+  var path = "arc";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Path</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Displacement PQ</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="v-arc">Curved path (Fig. 3.1b)</button>' +
+      '<button class="preset-btn" id="v-dia">Straight diameter</button>';
+    document.getElementById("v-arc").onclick = function(){ setActivePreset(this); path="arc"; App.resetTimeline(); App.play(); };
+    document.getElementById("v-dia").onclick = function(){ setActivePreset(this); path="dia"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/4,1);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<circle cx="200" cy="200" r="5" fill="#f8fafc"/><text x="190" y="220" fill="#94a3b8" font-size="12">P</text>';
+    m += '<circle cx="520" cy="80" r="5" fill="#f8fafc"/><text x="530" y="75" fill="#94a3b8" font-size="12">Q</text>';
+    m += '<line x1="200" y1="200" x2="520" y2="80" stroke="#f59e0b" stroke-width="3"/>';
+    var x,y;
+    if(path==="arc"){
+      x = 200 + 320*f; y = 200 - 120*f - 80*Math.sin(Math.PI*f);
+      var d="";
+      for(var u=0;u<=f+0.001;u+=0.02){
+        var xx=200+320*u, yy=200-120*u-80*Math.sin(Math.PI*u);
+        d += (u===0?"M":"L")+" "+xx+" "+yy;
+      }
+      m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    } else {
+      x = 200 + 320*f; y = 200 - 120*f;
+      m += '<line x1="200" y1="200" x2="'+x+'" y2="'+y+'" stroke="#38bdf8" stroke-width="2"/>';
+    }
+    m += '<circle cx="'+x+'" cy="'+y+'" r="7" fill="#38bdf8"/>';
+    svg.innerHTML = m;
+    var disp=Math.hypot(320,120), pl = path==="dia"? disp : disp + 80;
+    readout(cell("|PQ|", disp.toFixed(0)+" (arb)") + cell("path", path==="dia"?"= |PQ|":"> |PQ|","#38bdf8"));
+    verdict("<b>Fig. 3.1:</b> displacement is the orange chord, independent of the blue path. |Δr| ≤ path length, equal only on a straight run.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.vecadd = (function(){
+  function mount(){
+    App.state.maxT = 3;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Rain 35 m/s down</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Wind 12 m/s west</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Resultant 37 m/s</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="e31">Example 3.1 bus stop</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var f = Math.min(t/3,1);
+    var ox=400, oy=50;
+    var rain=160*f, wind=55*f;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+ox+'" y2="'+(oy+rain)+'" stroke="#38bdf8" stroke-width="3" marker-end="url(#a)"/>';
+    m += '<line x1="'+ox+'" y1="'+(oy+rain)+'" x2="'+(ox-wind)+'" y2="'+(oy+rain)+'" stroke="#f59e0b" stroke-width="3"/>';
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+(ox-wind)+'" y2="'+(oy+rain)+'" stroke="#34d399" stroke-width="3"/>';
+    m += '<text x="80" y="40" fill="#94a3b8" font-size="13">Hold umbrella 19° east of vertical</text>';
+    svg.innerHTML = m;
+    var R=Math.hypot(35,12), th=Math.atan2(12,35)*180/Math.PI;
+    readout(cell("|R|", R.toFixed(1)+" m/s","#34d399") + cell("θ from vertical", th.toFixed(1)+"°") + cell("book","37 m/s, 19°"));
+    verdict("<b>Example 3.1 (zoom p.5):</b> √(35²+12²)=37 m s⁻¹. tan θ=12/35=0.343 ⇒ θ=19°. Tilt into the wind (east).");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.resolve = (function(){
+  var deg = 53;
+  function mount(){
+    App.state.maxT = 2;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 2;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>A_x î</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>A_y ĵ</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="r53">3 î + 4 ĵ (53°)</button>' +
+      '<button class="preset-btn" id="r30">10 N at 30°</button>';
+    document.getElementById("r53").onclick = function(){ setActivePreset(this); deg=53; App.resetTimeline(); };
+    document.getElementById("r30").onclick = function(){ setActivePreset(this); deg=30; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var th=deg*Math.PI/180, A = deg===53?5:10;
+    var Ax=A*Math.cos(th), Ay=A*Math.sin(th);
+    var ox=120, oy=240, sc=30;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="240" x2="680" y2="240" stroke="#475569"/><line x1="120" y1="280" x2="120" y2="40" stroke="#475569"/>';
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+(ox+Ax*sc)+'" y2="'+oy+'" stroke="#f59e0b" stroke-width="3"/>';
+    m += '<line x1="'+(ox+Ax*sc)+'" y1="'+oy+'" x2="'+(ox+Ax*sc)+'" y2="'+(oy-Ay*sc)+'" stroke="#34d399" stroke-width="3"/>';
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+(ox+Ax*sc)+'" y2="'+(oy-Ay*sc)+'" stroke="#38bdf8" stroke-width="3"/>';
+    svg.innerHTML = m;
+    readout(cell("A", A.toFixed(1)) + cell("A_x", Ax.toFixed(2),"#f59e0b") + cell("A_y", Ay.toFixed(2),"#34d399") + cell("θ", deg+"°"));
+    verdict("<b>Eqs. (3.13)–(3.15):</b> A_x=A cos θ, A_y=A sin θ, A=√(A_x²+A_y²). The 3–4–5 triangle is Example 3.4’s v at t=1 s.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.cosine = (function(){
+  function mount(){
+    App.state.maxT = 3;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Boat 25 km/h N</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Current 10 km/h, 60° E of S</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>R ≈ 22 km/h</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c1">Example 3.3 (θ=120°)</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var R=Math.sqrt(25*25+10*10+2*25*10*(-0.5));
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var ox=360, oy=160;
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+ox+'" y2="'+(oy-100)+'" stroke="#38bdf8" stroke-width="3"/>';
+    var cx=ox+50, cy=oy+87;
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+cx+'" y2="'+cy+'" stroke="#f59e0b" stroke-width="3"/>';
+    m += '<line x1="'+ox+'" y1="'+oy+'" x2="'+(ox+30)+'" y2="'+(oy-70)+'" stroke="#34d399" stroke-width="3"/>';
+    m += '<text x="80" y="40" fill="#94a3b8" font-size="13">Law of cosines, included angle 120°</text>';
+    svg.innerHTML = m;
+    readout(cell("|R|", R.toFixed(1)+" km/h","#34d399") + cell("book","≅ 22 km/h") + cell("φ","≅ 23.4°"));
+    verdict("<b>Example 3.3 (zoom p.8):</b> √(625+100−250)=√475≈21.8 km/h. sin φ = 10 sin 120° / 21.8 ≈ 0.397 ⇒ φ≅23.4°.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.planeva = (function(){
+  function mount(){
+    App.state.maxT = 3;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>r(t)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v(t)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p34">Example 3.4 r=3t î + 2t² ĵ + 5 k̂</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var x=3*t, y=2*t*t;
+    var vx=3, vy=4*t, v=Math.hypot(vx,vy);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="60" y1="260" x2="680" y2="260" stroke="#475569"/><line x1="60" y1="260" x2="60" y2="30" stroke="#475569"/>';
+    var d="";
+    for(var u=0;u<=3.02;u+=0.1){
+      var X=60+ (3*u)*40, Y=260-(2*u*u)*12;
+      d += (u===0?"M":"L")+" "+X+" "+Y;
+    }
+    m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    var px=60+x*40, py=260-y*12;
+    m += '<circle cx="'+px+'" cy="'+py+'" r="6" fill="#f8fafc"/>';
+    m += '<line x1="'+px+'" y1="'+py+'" x2="'+(px+vx*15)+'" y2="'+(py-vy*15)+'" stroke="#f59e0b" stroke-width="3"/>';
+    svg.innerHTML = m;
+    readout(cell("t", t.toFixed(2)+" s") + cell("|v|", v.toFixed(2)+" m/s") + cell("a","4.0 ĵ m/s²") + cell("at 1 s","5.0 m/s at 53°"));
+    verdict("<b>Example 3.4 (zoom p.11):</b> v=3.0 î + 4.0 t ĵ, a=4.0 ĵ. At t=1 s, |v|=5.0 m s⁻¹, θ=tan⁻¹(4/3)≅53°.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.constacc = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Trajectory</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="e35">Example 3.5 to x=84 m</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var x=5*t+1.5*t*t, y=t*t;
+    var vx=5+3*t, vy=2*t, sp=Math.hypot(vx,vy);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="260" x2="700" y2="260" stroke="#475569"/>';
+    var d="";
+    for(var u=0;u<=6.02;u+=0.1){
+      d += (u===0?"M":"L")+" "+(40+(5*u+1.5*u*u)*7)+" "+(260-u*u*5);
+    }
+    m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<circle cx="'+(40+x*7)+'" cy="'+(260-y*5)+'" r="6" fill="#f8fafc"/>';
+    m += '<line x1="'+(40+84*7)+'" y1="40" x2="'+(40+84*7)+'" y2="260" stroke="#f59e0b" stroke-dasharray="4 4"/>';
+    svg.innerHTML = m;
+    readout(cell("t", t.toFixed(2)+" s") + cell("x", x.toFixed(1)+" m") + cell("y", y.toFixed(1)+" m") + cell("|v|", sp.toFixed(1)+" m/s"));
+    verdict("<b>Example 3.5 (zoom p.12):</b> x=84 m at t=6 s, y=36 m, v=23 î + 12 ĵ, |v|≅26 m s⁻¹.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.projectile = (function(){
+  var mode = "cricket";
+  function mount(){
+    App.state.maxT = 3;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Projectile</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v_x constant</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p38">Ex 3.8 cricket 28 m/s at 30°</button>' +
+      '<button class="preset-btn" id="p37">Ex 3.7 cliff 490 m, 15 m/s</button>';
+    document.getElementById("p38").onclick = function(){ setActivePreset(this); mode="cricket"; App.state.maxT=3; document.getElementById("time-scrubber").max=3; App.resetTimeline(); App.play(); };
+    document.getElementById("p37").onclick = function(){ setActivePreset(this); mode="cliff"; App.state.maxT=10; document.getElementById("time-scrubber").max=10; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var g=9.8;
+    if(mode==="cricket"){
+      var u0=28, th=Math.PI/6;
+      var Tf=2*u0*Math.sin(th)/g, hm=(u0*Math.sin(th))*(u0*Math.sin(th))/(2*g), R=u0*u0*Math.sin(2*th)/g;
+      var T=Math.min(t,Tf);
+      var x=(u0*Math.cos(th))*T, y=(u0*Math.sin(th))*T-0.5*g*T*T;
+      m += '<line x1="40" y1="260" x2="700" y2="260" stroke="#334155" stroke-width="4"/>';
+      var d="";
+      for(var u2=0;u2<=Tf;u2+=0.05){
+        var xx=(u0*Math.cos(th))*u2, yy=(u0*Math.sin(th))*u2-0.5*g*u2*u2;
+        d += (u2===0?"M":"L")+" "+(40+xx*9)+" "+(260-yy*9);
+      }
+      m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<circle cx="'+(40+x*9)+'" cy="'+(260-y*9)+'" r="7" fill="#f8fafc"/>';
+      svg.innerHTML = m;
+      readout(cell("t", T.toFixed(2)+" s") + cell("h_m", hm.toFixed(1)+" m") + cell("T_f", Tf.toFixed(1)+" s") + cell("R", R.toFixed(0)+" m"));
+      verdict("<b>Example 3.8 (zoom p.14):</b> h_m=10.0 m, T_f=2.9 s, R=69 m. Path is a parabola, Eq. (3.39).");
+    } else {
+      var T=Math.min(t,10);
+      var x=15*T, y=490-0.5*g*T*T;
+      if(y<0) y=0;
+      m += '<rect x="40" y="40" width="18" height="220" fill="#1e293b"/>';
+      m += '<line x1="40" y1="260" x2="700" y2="260" stroke="#f59e0b" stroke-width="3"/>';
+      m += '<circle cx="'+(80+x*0.4)+'" cy="'+(260-y*0.4)+'" r="7" fill="#38bdf8"/>';
+      svg.innerHTML = m;
+      var vy=-g*T, sp=Math.hypot(15, g*10);
+      readout(cell("t", T.toFixed(1)+" s") + cell("y drop", (490-y).toFixed(0)+" m") + cell("hit","t=10 s") + cell("|v|","99 m/s"));
+      verdict("<b>Example 3.7:</b> −490 = −½(9.8)t² ⇒ t=10 s. √(15²+98²)=<b>99 m s⁻¹</b>.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.ucm = (function(){
+  function mount(){
+    App.state.maxT = 14.3;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 14.3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Insect</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>a toward centre</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="u39">Example 3.9: 7 rev / 100 s</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var Rpx=90, cx=360, cy=150;
+    var w=2*Math.PI*7/100;
+    var ang=-Math.PI/2 + w*t;
+    var x=cx+Rpx*Math.cos(ang), y=cy+Rpx*Math.sin(ang);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<circle cx="'+cx+'" cy="'+cy+'" r="'+Rpx+'" fill="none" stroke="#334155" stroke-width="2"/>';
+    m += '<circle cx="'+x+'" cy="'+y+'" r="8" fill="#38bdf8"/>';
+    m += '<line x1="'+x+'" y1="'+y+'" x2="'+cx+'" y2="'+cy+'" stroke="#f59e0b" stroke-width="2"/>';
+    svg.innerHTML = m;
+    var v=w*12, a=w*w*12;
+    readout(cell("ω", w.toFixed(2)+" rad/s") + cell("v", v.toFixed(2)+" cm/s") + cell("|a|", a.toFixed(2)+" cm/s²"));
+    verdict("<b>Example 3.9 (zoom p.16):</b> ω=0.44 rad/s, v=5.3 cm s⁻¹, |a|=2.3 cm s⁻² toward the centre — not a constant vector.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

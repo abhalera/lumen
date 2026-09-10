@@ -1,0 +1,2183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 11: Introduction to Three Dimensional Geometry — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 11 · INTRODUCTION TO THREE DIMENSIONAL GEOMETRY</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="18"></progress>
+      <span id="progress-text">0 / 18</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 13 Exercises from NCERT Class 11 Mathematics (pp. 208–216) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kemh111", "chapterNumber": 11, "book_name": "Mathematics", "title": "Introduction to Three Dimensional Geometry", "subtitle": "Coordinate axes and octants in space, the 3-D distance formula, collinearity, and loci of a point.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh111.pdf", "page_start": 208, "page_end": 216, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "axes-planes", "nav": "Axes and coordinate planes", "title": "Three mutually perpendicular planes carve space into eight octants", "deck": "To locate a ceiling fan you need three numbers: distances from two walls and the floor. Those three planes — XY, YZ, ZX — meet along the x, y and z-axes at the origin O.", "minutes": 8, "section": "11.1, 11.2", "pages": [1, 2], "print": "208–209", "sim": "axes3d", "simTitle": "Fig 11.1 — rectangular axes and the three coordinate planes", "quick": ["A point in a plane needs two coordinates. A ball in flight, an aeroplane, or the lowest tip of a hanging bulb needs <strong>three</strong>: perpendicular distances from three mutually perpendicular planes (the floor and two adjacent walls).", "The three planes through O, pairwise perpendicular, meet along X′OX, Y′OY, Z′OZ — the coordinate axes. The planes XOY, YOZ, ZOX are the XY, YZ and ZX-planes.", "Convention: +z upward from XY, +y to the right of ZX, +x in front of YZ. The three planes divide space into <strong>eight octants</strong> named XOYZ, X′OYZ, … and numbered I–VIII."], "formulas": [{"label": "Origin", "html": "O(0, 0, 0)", "cond": "Intersection of the three axes"}, {"label": "Coordinate planes", "html": "XY (z=0), &nbsp; YZ (x=0), &nbsp; ZX (y=0)", "cond": "§11.2"}, {"label": "Octants", "html": "8 regions I–VIII", "cond": "Named by the signs of (x,y,z)"}], "deeper": "Descartes treated plane geometry (1637); Bernoulli’s 1715 letter to Leibniz introduced the three coordinate planes we still use. Parent (1700) gave the first systematic solid analytic geometry. This short chapter is the 3-D upgrade of Class 10’s XY-plane: same perpendicularity, one extra axis.", "worked": "No numerical example in §11.2. Picture a classroom: floor = XY, the board-wall = YZ, the window-wall = ZX. A point on the ceiling has z = room-height; a point on the board has x=0.", "prediction": {"prompt": "The three coordinate planes divide space into", "options": ["eight octants", "four quadrants", "six faces of a cube"], "answer": 0, "explanation": "§11.2 last sentence: eight parts known as octants, named I, II, …, VIII."}, "connect": [["A ceiling fan is a 3-D point", "NCERT’s own example: the central tip of a ceiling fan is located by distances from two walls and the floor — (x,y,z) in the room’s coordinate system."], ["Wow — GPS is octant I of a local frame", "A surveyor’s local ENU frame (East, North, Up) is exactly NCERT’s +x,+y,+z. Negative Up is octant V.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh111.pdf"}]]], "recall": "Name the three axes, the three planes, the origin, and how many octants they create.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The XY-plane consists of points with", "options": ["z = 0", "x = 0", "y = z"], "answer": 0, "hint": "XOY is the plane of the paper.", "solution": "Any point in XY has coordinates (x,y,0).", "wrong": ["", "That is the YZ-plane.", "A line."]}, {"level": "Medium", "type": "mcq", "prompt": "Distances measured upward from the XY-plane along OZ are", "options": ["positive z", "negative z", "the x-coordinate"], "answer": 0, "hint": "§11.2 sign convention.", "solution": "Up along OZ is +z; down OZ′ is −z.", "wrong": ["", "Downward.", "x is in front of YZ."]}, {"level": "Hard", "type": "mcq", "prompt": "The three coordinate planes meet", "options": ["along three mutually perpendicular lines through one origin", "at six different origins", "only at infinity"], "answer": 0, "hint": "Fig 11.1.", "solution": "X′OX, Y′OY, Z′OZ, concurrent at O.", "wrong": ["", "One origin.", "They meet at O."]}]}, {"id": "point-octants", "nav": "Coordinates and octants", "title": "P(x, y, z) is one perpendicular triple — signs name the octant", "deck": "Drop a perpendicular from P to the XY-plane at M, then from M to the x-axis at L. Then OL=x, LM=y, MP=z. Conversely, three numbers locate a unique point. Table 11.1 lists the eight sign patterns.", "minutes": 8, "section": "11.3", "pages": [2, 4], "print": "209–211", "sim": "octant", "simTitle": "Octant table — Example 2 and F(2,0,5) from Fig 11.3", "quick": ["Given P, drop PM ⟂ XY-plane, then ML ⟂ x-axis. <strong>x=OL, y=LM, z=MP</strong>. Conversely, from (x,y,z) locate L on the x-axis, M in the XY-plane, then P at height z.", "Alternatively (Fig 11.3): planes through P parallel to the coordinate planes meet the axes at A,B,C with OA=x, OB=y, OC=z. Then x, y, z are the perpendicular distances from the YZ, ZX and XY-planes.", "Origin is (0,0,0). A point on the x-axis is (x,0,0); a point in the YZ-plane is (0,y,z). <strong>Table 11.1</strong> (zoom p.3): I (+,+,+), II (−,+,+), III (−,−,+), IV (+,−,+), V (+,+,−), VI (−,+,−), VII (−,−,−), VIII (+,−,−)."], "formulas": [{"label": "Coordinates", "html": "P(x, y, z)", "cond": "x from YZ, y from ZX, z from XY"}, {"label": "On x-axis", "html": "(x, 0, 0)", "cond": "Similarly (0,y,0), (0,0,z)"}, {"label": "In XY-plane", "html": "(x, y, 0)", "cond": "z-coordinate vanishes"}], "deeper": "Example 1: in Fig 11.3, P=(2,4,5). F is the foot in the ZX-plane, so the y-distance is zero: F(2,0,5). Example 2: (−3,1,2) has signs (−,+,+) → octant II; (−3,1,−2) has (−,+,−) → octant VI.", "worked": "Example 1: F(2,0,5). Example 2: (−3,1,2) in II; (−3,1,−2) in VI.", "prediction": {"prompt": "The point (−3, 1, −2) lies in", "options": ["octant VI", "octant II", "the YZ-plane"], "answer": 0, "explanation": "Example 2 / Table 11.1: signs (−, +, −) = octant VI."}, "connect": [["A room’s switchboard", "A switch on the left-hand wall (negative y) and below the picture rail (positive z) sits in octant IV or VIII according as it is in front of or behind the YZ-wall."], ["Wow — Table 11.1 is a 3-bit sign code", "The eight octants are the eight combinations of three signs, exactly the bits of a 3-D computer-graphics clip space.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh111.pdf"}]]], "recall": "How do you read (x,y,z) off Fig 11.2? Recite Table 11.1 for octants I, II and VI.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A point on the x-axis has", "options": ["y=0 and z=0", "x=0", "y=z=x"], "answer": 0, "hint": "Ex 11.1 Q1.", "solution": "(x,0,0).", "wrong": ["", "That is the YZ-plane.", "Origin only."]}, {"level": "Medium", "type": "mcq", "map": "Example 1", "prompt": "If P is (2,4,5) in Fig 11.3, the coordinates of F are", "options": ["(2, 0, 5)", "(2, 4, 0)", "(0, 4, 5)"], "answer": 0, "hint": "F has zero y-distance (on ZX).", "solution": "OY-distance of F is 0.", "wrong": ["", "That would be the XY-foot M.", "That is in the YZ-plane."]}, {"level": "Hard", "type": "mcq", "map": "Example 2", "prompt": "(−3, 1, 2) and (−3, 1, −2) lie in octants", "options": ["II and VI", "I and V", "III and VII"], "answer": 0, "hint": "Table 11.1.", "solution": "(−,+,+) is II; (−,+,−) is VI.", "wrong": ["", "Those require x>0.", "Those require y<0."]}]}, {"id": "distance-3d", "nav": "Distance formula", "title": "PQ² = (x₂−x₁)² + (y₂−y₁)² + (z₂−z₁)² — Pythagoras in a box", "deck": "Planes through P and Q parallel to the coordinate planes build a rectangular parallelepiped with diagonal PQ. Two right triangles give the 3-D distance. From the origin, OQ=√(x²+y²+z²).", "minutes": 9, "section": "11.4", "pages": [4, 5], "print": "211–212", "sim": "dist3d", "simTitle": "Example 3 — P(1,−3,4) to Q(−4,1,2) equals 3√5", "quick": ["Through P(x₁,y₁,z₁) and Q(x₂,y₂,z₂) draw planes parallel to the coordinate planes, forming a rectangular parallelepiped with diagonal PQ (Fig 11.4).", "PQ² = PA² + AQ² and AQ² = AN² + NQ², with PA=y₂−y₁, AN=x₂−x₁, NQ=z₂−z₁. Hence <strong>PQ = √[(x₂−x₁)²+(y₂−y₁)²+(z₂−z₁)²]</strong> (zoom p.5).", "If P is the origin, OQ=√(x₂²+y₂²+z₂²). Example 3: P(1,−3,4), Q(−4,1,2) ⇒ PQ=√(25+16+4)=√45=3√5."], "formulas": [{"label": "Distance PQ", "html": "√[(x₂−x₁)² + (y₂−y₁)² + (z₂−z₁)²]", "cond": "Zoom p.5"}, {"label": "From origin", "html": "OQ = √(x² + y² + z²)", "cond": "P = O"}], "deeper": "This is the 2-D formula with one extra square. The derivation never uses coordinates of the other six vertices — only three mutually perpendicular edges. In vector language (Class 12) it is |Q−P|.", "worked": "Example 3 (zoom p.5): PQ=√[(−4−1)²+(1+3)²+(2−4)²]=√(25+16+4)=√45=3√5.", "prediction": {"prompt": "Distance between P(1, −3, 4) and Q(−4, 1, 2) is", "options": ["3√5", "√45 which is not simplifiable", "5"], "answer": 0, "explanation": "Example 3: √45=3√5 units."}, "connect": [["Drone to rooftop", "A delivery drone at (x₁,y₁,z₁) and a terrace at (x₂,y₂,z₂): the straight-line range is the 3-D distance. Air-traffic ‘slant range’ is the same formula."], ["Wow — a room’s space-diagonal is OQ", "A 4 m × 3 m × 12 m hall has space-diagonal √(16+9+144)=13 m — the 3-4-12 analogue of 3-4-5. NCERT’s OQ=√(x²+y²+z²) is that diagonal.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh111.pdf"}]]], "recall": "Write the 3-D distance formula and compute Example 3 from memory.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Distance from O to (x,y,z) is", "options": ["√(x²+y²+z²)", "|x|+|y|+|z|", "xyz"], "answer": 0, "hint": "Put P at the origin.", "solution": "OQ=√(x²+y²+z²).", "wrong": ["", "Taxicab metric, not Euclidean.", "A product."]}, {"level": "Medium", "type": "number", "map": "Example 3", "prompt": "PQ for P(1,−3,4), Q(−4,1,2). Enter 3√5 ≈ 6.708", "answer": 6.708, "unit": "", "tolerance": 0.02, "hint": "√(25+16+4).", "solution": "√45=3√5≈6.708."}, {"level": "Hard", "type": "number", "map": "Ex 11.2 Q1i", "prompt": "Distance between (2,3,5) and (4,3,1) is 2√5. Enter 2√5 ≈", "answer": 4.472, "unit": "", "tolerance": 0.02, "hint": "√(4+0+16)=√20.", "solution": "2√5≈4.472."}]}, {"id": "collinear-triangles", "nav": "Collinearity and triangles", "title": "Three points are collinear when one distance is the sum of the other two", "deck": "PQ+QR=PR means Q lies between P and R. A triangle is right-angled when one of AB², BC², CA² equals the sum of the other two. Example 4 is collinear; Example 5 is not right-angled.", "minutes": 8, "section": "11.4 Examples 4–5", "pages": [5, 6], "print": "212–213", "sim": "collinear3d", "simTitle": "Example 4 collinear vs Example 5 not right-angled", "quick": ["Points are collinear if they lie on a line. A practical test: the largest of PQ, QR, PR equals the sum of the other two.", "Example 4: P(−2,3,5), Q(1,2,3), R(7,0,−1). PQ=√14, QR=2√14, PR=3√14, and PQ+QR=PR ⇒ collinear.", "Example 5: A(3,6,9), B(10,20,30), C(25,−41,5). AB²=686, BC²=4571, CA²=2709. CA²+AB²=3395 ≠ 4571, so not right-angled."], "formulas": [{"label": "Collinear test", "html": "PQ + QR = PR &nbsp; (largest side)", "cond": "Q between P and R"}, {"label": "Right triangle", "html": "AB² + BC² = CA² &nbsp; (or cyclic)", "cond": "Converse of Pythagoras"}], "deeper": "Collinearity can also be checked by showing that the direction ratios of PQ and PR are proportional (Class 12). Here the distance test is enough and stays inside Chapter 11. For a parallelogram, opposite sides equal (Example 7) or diagonals bisect each other.", "worked": "Example 4 (zoom p.5): PQ=√(9+1+4)=√14, QR=√(36+4+16)=√56=2√14, PR=√(81+9+36)=√126=3√14. Example 5: 2709+686=3395 ≠ 4571.", "prediction": {"prompt": "P(−2,3,5), Q(1,2,3), R(7,0,−1) are", "options": ["collinear, because PQ+QR=PR", "the vertices of an equilateral triangle", "the vertices of a right triangle"], "answer": 0, "explanation": "Example 4: √14+2√14=3√14."}, "connect": [["Three towers in a straight alignment", "If the 3-D distances satisfy PQ+QR=PR, a microwave hop P–R can put a repeater at Q without leaving the line of sight — Example 4 as a link budget."], ["Wow — Pythagoras still rules in 3-D", "Example 5’s test is the same as Class 10, with one extra square. Space does not invent a new Pythagoras.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh111.pdf"}]]], "recall": "State the collinearity test and check Example 4’s three square-roots.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "P, Q, R are collinear if", "options": ["the largest distance equals the sum of the other two", "PQ=QR=PR", "AB²+BC²=CA² always"], "answer": 0, "hint": "Example 4.", "solution": "Q between P and R ⇔ PQ+QR=PR.", "wrong": ["", "That is equilateral.", "That is a right triangle, and needs a right angle."]}, {"level": "Medium", "type": "mcq", "map": "Example 4", "prompt": "PQ, QR, PR in Example 4 are", "options": ["√14, 2√14, 3√14", "√14, √14, √14", "1, 2, 3"], "answer": 0, "hint": "Zoom p.5.", "solution": "√14, √56=2√14, √126=3√14.", "wrong": ["", "Not equilateral.", "Those are the multipliers, not the distances."]}, {"level": "Hard", "type": "mcq", "map": "Example 5", "prompt": "A(3,6,9), B(10,20,30), C(25,−41,5) form", "options": ["a non-right triangle (CA²+AB² ≠ BC²)", "a right triangle at A", "a collinear triple"], "answer": 0, "hint": "686+2709=3395 ≠ 4571.", "solution": "Example 5.", "wrong": ["", "No right angle.", "Distances do not add."]}]}, {"id": "locus-sets", "nav": "Locus of a point", "title": "PA = PB is a plane; PA + PB = constant is an ellipsoid", "deck": "Squaring PA=PB cancels the quadratic terms and leaves a linear equation — a plane, the perpendicular bisector of AB. A constant sum of distances to two foci is an ellipse in a plane and a spheroid in space.", "minutes": 8, "section": "11.4 Examples 6, 8 + Ex 11.2", "pages": [6, 7], "print": "213–214", "sim": "locus3d", "simTitle": "Perpendicular-bisector plane — Example 8", "quick": ["Example 6: PA²+PB²=2k² with A(3,4,5), B(−1,3,−7) expands to 2x²+2y²+2z²−4x−14y+4z = 2k²−109, a sphere (complete the square) once k is given.", "Example 8: PA=PB with A(3,4,−5), B(−2,1,4) squares to the plane <strong>10x+6y−18z−29=0</strong> — the perpendicular bisector of AB.", "Ex 11.2 Q5: PA+PB=10, A(4,0,0), B(−4,0,0) is the ellipsoid x²/25+(y²+z²)/9=1 (ellipse of revolution)."], "formulas": [{"label": "Equidistant plane", "html": "PA = PB  ⇒  a linear equation", "cond": "Perpendicular bisector of AB"}, {"label": "Example 8", "html": "10x + 6y − 18z − 29 = 0", "cond": "A(3,4,−5), B(−2,1,4)"}], "deeper": "In 2-D, PA=PB is a line; in 3-D it is a plane. PA+PB=2a with 2a>AB is an ellipse in 2-D and a prolate spheroid in 3-D. The chapter writes the Cartesian equation without naming the spheroid — honest to the reprint.", "worked": "Example 8: (x−3)²+(y−4)²+(z+5)²=(x+2)²+(y−1)²+(z−4)². Expand, cancel squares: −6x+4x −8y+2y +10z+8z +9+16+25−4−1−16=0 ⇒ −2x−6y+18z+29=0, or 10x+6y−18z−29=0 after rearranging (the book’s form).", "prediction": {"prompt": "The set of points equidistant from A(3,4,−5) and B(−2,1,4) is", "options": ["the plane 10x+6y−18z−29=0", "the sphere with diameter AB", "the line AB"], "answer": 0, "explanation": "Example 8: PA=PB squares to a plane, the perpendicular bisector."}, "connect": [["Cell-tower handoff", "The plane of points equidistant from two towers is the handoff boundary — Example 8 as a Voronoi face in 3-D."], ["Wow — a rugby ball is Ex 11.2 Q5", "PA+PB=10 with foci 8 apart is an ellipse of revolution, the same shape as a rugby ball or a prolate gas giant.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh111.pdf"}]]], "recall": "Why does PA=PB become a linear equation? Write Example 8’s plane.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "PA = PB in space describes", "options": ["a plane (perpendicular bisector of AB)", "a circle", "a line"], "answer": 0, "hint": "Example 8.", "solution": "Squaring cancels x²,y²,z².", "wrong": ["", "That would need a third constraint.", "The join AB itself is not the locus."]}, {"level": "Medium", "type": "mcq", "map": "Example 8", "prompt": "PA=PB for A(3,4,−5), B(−2,1,4) is", "options": ["10x+6y−18z−29=0", "x+y+z=0", "x²+y²+z²=1"], "answer": 0, "hint": "Zoom p.7.", "solution": "Example 8.", "wrong": ["", "Not through the origin in general.", "A sphere."]}, {"level": "Hard", "type": "mcq", "map": "Ex 11.2 Q4", "prompt": "Points equidistant from (1,2,3) and (3,2,−1) satisfy", "options": ["x − 2z = 0", "y=2", "z=1"], "answer": 0, "hint": "Cancel y; remaining x and z.", "solution": "(x−1)²+(z−3)²=(x−3)²+(z+1)² ⇒ x=2z.", "wrong": ["", "y cancels, it is free.", "Not constant z."]}]}, {"id": "centroid-misc", "nav": "Centroid and parallelogram", "title": "The centroid is the average of the vertices; a parallelogram has equal opposite sides", "deck": "G = ((x₁+x₂+x₃)/3, …). Example 9 recovers C(1,1,2) from G(1,1,1). Example 7 shows ABCD is a parallelogram (AB=CD, AD=BC) but not a rectangle (AC≠BD).", "minutes": 8, "section": "Miscellaneous Examples 7–9", "pages": [6, 8], "print": "213–215", "sim": "centroid3d", "simTitle": "Example 9 centroid and Example 7 parallelogram", "quick": ["Centroid of triangle ABC: G = ((x_A+x_B+x_C)/3, (y_A+y_B+y_C)/3, (z_A+z_B+z_C)/3). Example 9: G(1,1,1), A(3,−5,7), B(−1,7,−6) ⇒ C(1,1,2).", "Example 7: A(1,2,3), B(−1,−2,−1), C(2,3,2), D(4,7,6). AB=CD=6, BC=DA=√43 ⇒ parallelogram. AC=√3, BD=√155 unequal ⇒ not a rectangle. Diagonals bisecting each other is an equivalent test.", "Miscellaneous Exercise: fourth vertex of a parallelogram, lengths of medians, centroid at the origin, and a PA²+PB²=k² locus."], "formulas": [{"label": "Centroid", "html": "G = ((x₁+x₂+x₃)/3, (y₁+y₂+y₃)/3, (z₁+z₂+z₃)/3)", "cond": "Triangle ABC"}, {"label": "Parallelogram", "html": "AB = CD and AD = BC", "cond": "Or: diagonals bisect"}], "deeper": "The centroid formula is the 3-D average; putting G at the origin (Misc Q3) is three independent linear equations for a,b,c. A rectangle in space still needs equal diagonals (or a right angle); equal opposite sides alone only give a parallelogram — Example 7’s warning.", "worked": "Example 9: (3−1+x)/3=1 ⇒ x=1; (−5+7+y)/3=1 ⇒ y=1; (7−6+z)/3=1 ⇒ z=2. Example 7: AB=√(4+16+16)=6, CD=6, BC=√(9+25+9)=√43=DA; AC=√3, BD=√155.", "prediction": {"prompt": "Centroid G(1,1,1), A(3,−5,7), B(−1,7,−6). Then C is", "options": ["(1, 1, 2)", "(1, 1, 1)", "(3, −5, 7)"], "answer": 0, "explanation": "Example 9: the third vertex is (1,1,2)."}, "connect": [["Mass centre of a triangular plate", "If three equal masses sit at A,B,C, the mass centre is G — Example 9. A hanging mobile balances at G."], ["Wow — a parallelogram that is not a rectangle", "Example 7’s ABCD has equal opposite sides but unequal diagonals. In a classroom model the figure looks ‘pushed over’ — the 3-D version of a Class 8 parallelogram that is not a rectangle.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh111.pdf"}]]], "recall": "Write the centroid formula. How do you prove ABCD is a parallelogram but not a rectangle?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The centroid of A(x₁,y₁,z₁), B, C is", "options": ["the average of the three vertices", "the mid-point of AB", "the origin always"], "answer": 0, "hint": "Example 9.", "solution": "G=((x₁+x₂+x₃)/3, …).", "wrong": ["", "That ignores C.", "Only if the average is zero."]}, {"level": "Medium", "type": "mcq", "map": "Example 9", "prompt": "G(1,1,1), A(3,−5,7), B(−1,7,−6) ⇒ C =", "options": ["(1, 1, 2)", "(1, 1, 0)", "(2, 2, 2)"], "answer": 0, "hint": "(3−1+x)/3=1.", "solution": "x=1, y=1, z=2.", "wrong": ["", "z-equation gives 2.", "Not doubled."]}, {"level": "Hard", "type": "number", "map": "Misc 11.3", "prompt": "Origin is the centroid of P(2a,2,6), Q(−4,3b,−10), R(8,14,2c). Then a =", "answer": -2, "unit": "", "tolerance": 0.05, "hint": "(2a−4+8)/3=0.", "solution": "2a+4=0 ⇒ a=−2. (Also b=−16/3, c=2.)"}]}], "exercises": [{"number": "11.1.1", "conceptIdx": 1, "page": 4, "printPage": 211, "question": "A point is on the x-axis. What are its y-coordinate and z-coordinates?", "steps": ["On the x-axis both y and z vanish."], "answer": "y = 0, z = 0", "section": "11.1"}, {"number": "11.1.2", "conceptIdx": 1, "page": 4, "printPage": 211, "question": "A point is in the XZ-plane. What can you say about its y-coordinate?", "steps": ["XZ is the ZX-plane, y=0."], "answer": "y-coordinate is 0", "section": "11.1"}, {"number": "11.1.3", "conceptIdx": 1, "page": 4, "printPage": 211, "question": "Name the octants in which the following points lie: (1,2,3), (4,−2,3), (4,−2,−5), (4,2,−5), (−4,2,−5), (−4,2,5), (−3,−1,6), (−2,−4,−7).", "steps": ["Table 11.1: I (+,+,+), IV (+,−,+), VIII (+,−,−), V (+,+,−), VI (−,+,−), II (−,+,+), III (−,−,+), VII (−,−,−)."], "answer": "I; IV; VIII; V; VI; II; III; VII", "section": "11.1"}, {"number": "11.1.4", "conceptIdx": 0, "page": 4, "printPage": 211, "question": "Fill in the blanks: (i) The x-axis and y-axis taken together determine a plane known as ______. (ii) The coordinates of points in the XY-plane are of the form ______. (iii) Coordinate planes divide the space into ______ octants.", "steps": ["(i) XY-plane. (ii) (x, y, 0). (iii) eight."], "answer": "(i) XY-plane; (ii) (x, y, 0); (iii) eight", "section": "11.1"}, {"number": "11.2.1", "conceptIdx": 2, "page": 6, "printPage": 213, "question": "Find the distance between: (i) (2,3,5) and (4,3,1) (ii) (−3,7,2) and (2,4,−1) (iii) (−1,3,−4) and (1,−3,4) (iv) (2,−1,3) and (−2,1,3).", "steps": ["(i) √(4+0+16)=√20=2√5.", "(ii) √(25+9+9)=√43.", "(iii) √(4+36+64)=√104=2√26.", "(iv) √(16+4+0)=√20=2√5."], "answer": "(i) 2√5; (ii) √43; (iii) 2√26; (iv) 2√5", "section": "11.2"}, {"number": "11.2.2", "conceptIdx": 3, "page": 6, "printPage": 213, "question": "Show that (−2,3,5), (1,2,3) and (7,0,−1) are collinear.", "steps": ["Same as Example 4: PQ=√14, QR=2√14, PR=3√14, PQ+QR=PR."], "answer": "collinear (PQ+QR=PR)", "section": "11.2"}, {"number": "11.2.3", "conceptIdx": 3, "page": 6, "printPage": 213, "question": "Verify: (i) (0,7,−10), (1,6,−6), (4,9,−6) isosceles; (ii) (0,7,10), (−1,6,6), (−4,9,6) right-angled; (iii) (−1,2,1),(1,−2,5),(4,−7,8),(2,−3,4) parallelogram.", "steps": ["(i) AB²=18, BC²=18, CA²=36: isosceles (and right-angled).", "(ii) AB²=18, BC²=18, CA²=36: 18+18=36, right-angled isosceles.", "(iii) Mid-point of AC = mid-point of BD = (1.5, −2.5, 4.5) ⇒ parallelogram."], "answer": "(i) isosceles (AB=BC); (ii) right-angled (AB²+BC²=CA²); (iii) parallelogram (diagonals bisect)", "section": "11.2"}, {"number": "11.2.4", "conceptIdx": 4, "page": 6, "printPage": 213, "question": "Equation of the set of points equidistant from (1,2,3) and (3,2,−1).", "steps": ["(x−1)²+(z−3)²=(x−3)²+(z+1)² (y cancels).", "−2x+1−6z+9=−6x+9+2z+1 ⇒ 4x−8z=0 ⇒ x−2z=0."], "answer": "x − 2z = 0", "section": "11.2"}, {"number": "11.2.5", "conceptIdx": 4, "page": 6, "printPage": 213, "question": "Set of points P with PA+PB=10, A(4,0,0), B(−4,0,0).", "steps": ["2a=10, a=5, 2c=8, c=4, b²=9.", "x²/25 + (y²+z²)/9 = 1."], "answer": "x²/25 + (y² + z²)/9 = 1", "section": "11.2"}, {"number": "11.M.1", "conceptIdx": 5, "page": 8, "printPage": 215, "question": "Three vertices of parallelogram ABCD are A(3,−1,2), B(1,2,−4) and C(−1,1,2). Find the fourth vertex.", "steps": ["Diagonals AC, BD bisect: D = A+C−B = (3−1−1, −1+1−2, 2+2+4)=(1,−2,8).", "Check: mid AC=(1,0,2)= mid BD=((1+1)/2,(2−2)/2,(−4+8)/2)=(1,0,2)."], "answer": "D(1, −2, 8)", "section": "Misc."}, {"number": "11.M.2", "conceptIdx": 5, "page": 8, "printPage": 215, "question": "Lengths of the medians of the triangle A(0,0,6), B(0,4,0), C(6,0,0).", "steps": ["Mid BC=(3,2,0), median from A: √(9+4+36)=7.", "Mid AC=(3,0,3), from B: √(9+16+9)=√34.", "Mid AB=(0,2,3), from C: √(36+4+9)=7."], "answer": "7, √34, 7", "section": "Misc."}, {"number": "11.M.3", "conceptIdx": 5, "page": 8, "printPage": 215, "question": "Origin is the centroid of P(2a,2,6), Q(−4,3b,−10), R(8,14,2c). Find a, b, c.", "steps": ["(2a−4+8)/3=0 ⇒ a=−2.", "(2+3b+14)/3=0 ⇒ 3b=−16 ⇒ b=−16/3.", "(6−10+2c)/3=0 ⇒ c=2."], "answer": "a = −2, b = −16/3, c = 2", "section": "Misc."}, {"number": "11.M.4", "conceptIdx": 4, "page": 8, "printPage": 215, "question": "A(3,4,5), B(−1,3,−7). Equation of the set of points P with PA²+PB²=k².", "steps": ["Expand: 2x²+2y²+2z²−4x−14y+4z+109=k².", "2x²+2y²+2z²−4x−14y+4z = k²−109."], "answer": "2x² + 2y² + 2z² − 4x − 14y + 4z = k² − 109", "section": "Misc."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var connectItems = l.connect || [];
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+function rng(id){ var n = document.getElementById(id); return n ? Number(n.value) : 0; }
+function setTxt(id, t){ var n = document.getElementById(id); if(n) n.textContent = t; }
+
+function iso(x, y, z){
+  var ox=360, oy=200;
+  var px = ox + (x - y) * 18;
+  var py = oy - z * 16 + (x + y) * 8;
+  return [px, py];
+}
+function axes3(){
+  var m = '<rect width="720" height="300" fill="#09131d"/>';
+  var O=iso(0,0,0), X=iso(8,0,0), Y=iso(0,8,0), Z=iso(0,0,8);
+  m += '<line x1="'+O[0]+'" y1="'+O[1]+'" x2="'+X[0]+'" y2="'+X[1]+'" stroke="#f87171" stroke-width="2"/>';
+  m += '<line x1="'+O[0]+'" y1="'+O[1]+'" x2="'+Y[0]+'" y2="'+Y[1]+'" stroke="#34d399" stroke-width="2"/>';
+  m += '<line x1="'+O[0]+'" y1="'+O[1]+'" x2="'+Z[0]+'" y2="'+Z[1]+'" stroke="#38bdf8" stroke-width="2"/>';
+  var Xm=iso(-6,0,0), Ym=iso(0,-6,0), Zm=iso(0,0,-4);
+  m += '<line x1="'+O[0]+'" y1="'+O[1]+'" x2="'+Xm[0]+'" y2="'+Xm[1]+'" stroke="#f87171" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>';
+  m += '<line x1="'+O[0]+'" y1="'+O[1]+'" x2="'+Ym[0]+'" y2="'+Ym[1]+'" stroke="#34d399" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>';
+  m += '<line x1="'+O[0]+'" y1="'+O[1]+'" x2="'+Zm[0]+'" y2="'+Zm[1]+'" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>';
+  m += '<text x="'+X[0]+'" y="'+(X[1]+14)+'" fill="#fca5a5" font-size="12">x</text>';
+  m += '<text x="'+(Y[0]-14)+'" y="'+(Y[1]+14)+'" fill="#6ee7b7" font-size="12">y</text>';
+  m += '<text x="'+(Z[0]+8)+'" y="'+Z[1]+'" fill="#7dd3fc" font-size="12">z</text>';
+  m += '<text x="'+(O[0]-14)+'" y="'+(O[1]+16)+'" fill="#94a3b8" font-size="11">O</text>';
+  return m;
+}
+
+window.SIMS.axes3d = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>x-axis</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>y-axis</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>z-axis</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ax">Coordinate axes</button>' +
+      '<button class="preset-btn" id="p-pl">Three coordinate planes</button>';
+    var mode="ax";
+    document.getElementById("p-ax").onclick = function(){ setActivePreset(this); mode="ax"; draw(0); };
+    document.getElementById("p-pl").onclick = function(){ setActivePreset(this); mode="pl"; draw(0); };
+    document.getElementById("lab-controls").innerHTML = "";
+    function draw(){
+      var svg = svgEl(); if(!svg) return;
+      var m = axes3();
+      if(mode==="pl"){
+        var a=iso(5,5,0), b=iso(5,0,5), c=iso(0,5,5);
+        m += '<polygon points="'+iso(0,0,0).join(',')+' '+iso(5,0,0).join(',')+' '+iso(5,5,0).join(',')+' '+iso(0,5,0).join(',')+'" fill="rgba(56,189,248,0.12)" stroke="#38bdf8"/>';
+        m += '<text x="420" y="240" fill="#7dd3fc" font-size="12">XY-plane</text>';
+      }
+      readout(cell("planes","XY, YZ, ZX") + cell("octants","8"));
+      verdict("<b>§11.2:</b> Three mutually perpendicular planes through O meet along the x, y, z-axes. Distances up from XY are +z; right of ZX are +y; in front of YZ are +x.");
+      svg.innerHTML = m;
+    }
+    window.SIMS.axes3d.draw = draw;
+    draw();
+  }
+  return { mount: mount, draw: function(){ if(window.SIMS.axes3d.draw) window.SIMS.axes3d.draw(); } };
+})();
+
+window.SIMS.octant = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Point P(x,y,z)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="o1">Ex 2: (−3,1,2) octant II</button>' +
+      '<button class="preset-btn" id="o2">(−3,1,−2) octant VI</button>' +
+      '<button class="preset-btn" id="o3">P(2,4,5) and F(2,0,5)</button>';
+    document.getElementById("o1").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x").value=-3; document.getElementById("ctrl-y").value=1; document.getElementById("ctrl-z").value=2; draw(0); };
+    document.getElementById("o2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x").value=-3; document.getElementById("ctrl-y").value=1; document.getElementById("ctrl-z").value=-2; draw(0); };
+    document.getElementById("o3").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x").value=2; document.getElementById("ctrl-y").value=4; document.getElementById("ctrl-z").value=5; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>x</span><span class="val" id="x-val">−3</span></div><input type="range" id="ctrl-x" min="-5" max="5" step="1" value="-3"></div>' +
+      '<div class="control-item"><div class="control-label"><span>y</span><span class="val" id="y-val">1</span></div><input type="range" id="ctrl-y" min="-5" max="5" step="1" value="1"></div>' +
+      '<div class="control-item"><div class="control-label"><span>z</span><span class="val" id="z-val">2</span></div><input type="range" id="ctrl-z" min="-5" max="5" step="1" value="2"></div>';
+    ["ctrl-x","ctrl-y","ctrl-z"].forEach(function(id){ document.getElementById(id).oninput = function(){ draw(0); }; });
+    draw(0);
+  }
+  function octName(x,y,z){
+    var names=["I XOYZ","II X′OYZ","III X′OY′Z","IV XOY′Z","V XOYZ′","VI X′OYZ′","VII X′OY′Z′","VIII XOY′Z′"];
+    var i=0;
+    if(x>=0 && y>=0 && z>=0) i=0;
+    else if(x<0 && y>=0 && z>=0) i=1;
+    else if(x<0 && y<0 && z>=0) i=2;
+    else if(x>=0 && y<0 && z>=0) i=3;
+    else if(x>=0 && y>=0 && z<0) i=4;
+    else if(x<0 && y>=0 && z<0) i=5;
+    else if(x<0 && y<0 && z<0) i=6;
+    else i=7;
+    return names[i];
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var x=rng("ctrl-x"), y=rng("ctrl-y"), z=rng("ctrl-z");
+    setTxt("x-val", x); setTxt("y-val", y); setTxt("z-val", z);
+    var m = axes3();
+    var P=iso(x,y,z), M=iso(x,y,0), L=iso(x,0,0);
+    m += '<line x1="'+P[0]+'" y1="'+P[1]+'" x2="'+M[0]+'" y2="'+M[1]+'" stroke="#f59e0b" stroke-dasharray="4 3"/>';
+    m += '<line x1="'+M[0]+'" y1="'+M[1]+'" x2="'+L[0]+'" y2="'+L[1]+'" stroke="#94a3b8" stroke-dasharray="4 3"/>';
+    m += '<circle cx="'+P[0]+'" cy="'+P[1]+'" r="6" fill="#f59e0b"/>';
+    m += '<text x="'+(P[0]+8)+'" y="'+P[1]+'" fill="#fde68a" font-size="12">P('+x+','+y+','+z+')</text>';
+    readout(cell("P","("+x+", "+y+", "+z+")","#f59e0b") + cell("octant", octName(x,y,z), "#34d399"));
+    verdict("<b>Table 11.1:</b> signs of (x,y,z) name the octant. Example 1: F in Fig 11.3 with P(2,4,5) is (2,0,5) — zero y-coordinate, in the ZX-plane.");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.dist3d = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>P</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Q</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>PQ</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="d-ex3">Ex 3: P(1,−3,4) Q(−4,1,2)</button>' +
+      '<button class="preset-btn" id="d-o">Distance from origin</button>';
+    document.getElementById("d-ex3").onclick = function(){ setActivePreset(this); document.getElementById("qx").value=-4; document.getElementById("qy").value=1; document.getElementById("qz").value=2; draw(0); };
+    document.getElementById("d-o").onclick = function(){ setActivePreset(this); document.getElementById("qx").value=0; document.getElementById("qy").value=0; document.getElementById("qz").value=0; draw(0); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Qₓ</span><span class="val" id="qx-val">−4</span></div><input type="range" id="qx" min="-6" max="6" step="1" value="-4"></div>' +
+      '<div class="control-item"><div class="control-label"><span>Qᵧ</span><span class="val" id="qy-val">1</span></div><input type="range" id="qy" min="-6" max="6" step="1" value="1"></div>' +
+      '<div class="control-item"><div class="control-label"><span>Q_z</span><span class="val" id="qz-val">2</span></div><input type="range" id="qz" min="-6" max="6" step="1" value="2"></div>';
+    ["qx","qy","qz"].forEach(function(id){ document.getElementById(id).oninput = function(){ draw(0); }; });
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var P=[1,-3,4], Q=[rng("qx"), rng("qy"), rng("qz")];
+    setTxt("qx-val", Q[0]); setTxt("qy-val", Q[1]); setTxt("qz-val", Q[2]);
+    var m = axes3();
+    var p=iso(P[0],P[1],P[2]), q=iso(Q[0],Q[1],Q[2]);
+    m += '<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#f59e0b" stroke-width="2.5"/>';
+    m += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="5" fill="#38bdf8"/>';
+    m += '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="5" fill="#f472b6"/>';
+    var d = Math.hypot(Q[0]-P[0], Q[1]-P[1], Q[2]-P[2]);
+    readout(cell("PQ", "√[(Δx)²+(Δy)²+(Δz)²]") + cell("value", d.toFixed(3), "#f59e0b"));
+    verdict("<b>Zoom p.5:</b> PQ=√[(x₂−x₁)²+(y₂−y₁)²+(z₂−z₁)²]. Example 3: √(25+16+4)=√45=3√5. From the origin, OQ=√(x²+y²+z²).");
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.collinear3d = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>P, Q, R</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c-yes">Ex 4: collinear √14 + 2√14 = 3√14</button>' +
+      '<button class="preset-btn" id="c-no">Ex 5: not right-angled</button>';
+    var mode="yes";
+    document.getElementById("c-yes").onclick = function(){ setActivePreset(this); mode="yes"; draw(0); };
+    document.getElementById("c-no").onclick = function(){ setActivePreset(this); mode="no"; draw(0); };
+    document.getElementById("lab-controls").innerHTML = "";
+    function draw(){
+      var svg = svgEl(); if(!svg) return;
+      var m = axes3();
+      var A,B,C, note;
+      if(mode==="yes"){
+        A=[-2,3,5]; B=[1,2,3]; C=[7,0,-1];
+        note = "PQ=√14, QR=2√14, PR=3√14. PQ+QR=PR ⇒ collinear (Example 4).";
+      } else {
+        A=[3,6,9]; B=[10,20,30]; C=[25,-41,5];
+        note = "AB²=686, BC²=4571, CA²=2709. CA²+AB² ≠ BC² ⇒ not right-angled (Example 5).";
+      }
+      function pt(P, col, lab){
+        var s=iso(P[0]/4, P[1]/4, P[2]/4);
+        m += '<circle cx="'+s[0]+'" cy="'+s[1]+'" r="5" fill="'+col+'"/>';
+        m += '<text x="'+(s[0]+6)+'" y="'+s[1]+'" fill="#e2e8f0" font-size="11">'+lab+'</text>';
+        return s;
+      }
+      var a=pt(A,"#38bdf8","A"), b=pt(B,"#f59e0b","B"), c=pt(C,"#f472b6","C");
+      m += '<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#94a3b8"/>';
+      m += '<line x1="'+b[0]+'" y1="'+b[1]+'" x2="'+c[0]+'" y2="'+c[1]+'" stroke="#94a3b8"/>';
+      readout(cell("test", mode==="yes"?"PQ+QR=PR":"Pythagoras fails"));
+      verdict("<b>"+note+"</b>");
+      svg.innerHTML = m;
+    }
+    window.SIMS.collinear3d.draw = draw;
+    draw();
+  }
+  return { mount: mount, draw: function(){ if(window.SIMS.collinear3d.draw) window.SIMS.collinear3d.draw(); } };
+})();
+
+window.SIMS.locus3d = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A, B</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Perpendicular-bisector plane</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="l-eq">Ex 8: PA=PB ⇒ 10x+6y−18z−29=0</button>' +
+      '<button class="preset-btn" id="l-sum">Ex 11.2 Q5: PA+PB=10 (ellipsoid)</button>';
+    var mode="eq";
+    document.getElementById("l-eq").onclick = function(){ setActivePreset(this); mode="eq"; draw(0); };
+    document.getElementById("l-sum").onclick = function(){ setActivePreset(this); mode="sum"; draw(0); };
+    document.getElementById("lab-controls").innerHTML = "";
+    function draw(){
+      var svg = svgEl(); if(!svg) return;
+      var m = axes3();
+      if(mode==="eq"){
+        var A=iso(3,2,-2), B=iso(-2,0.5,2);
+        m += '<circle cx="'+A[0]+'" cy="'+A[1]+'" r="5" fill="#38bdf8"/>';
+        m += '<circle cx="'+B[0]+'" cy="'+B[1]+'" r="5" fill="#f472b6"/>';
+        m += '<line x1="320" y1="80" x2="500" y2="240" stroke="#f59e0b" stroke-width="2"/>';
+        readout(cell("PA=PB","perpendicular-bisector plane") + cell("equation","10x+6y−18z=29"));
+        verdict("<b>Example 8:</b> A(3,4,−5), B(−2,1,4). Squaring PA=PB cancels quadratics and leaves the plane 10x+6y−18z−29=0.");
+      } else {
+        m += '<ellipse cx="360" cy="160" rx="90" ry="40" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+        m += '<ellipse cx="360" cy="160" rx="50" ry="40" fill="none" stroke="#38bdf8" stroke-width="1" opacity="0.5"/>';
+        readout(cell("PA+PB","10") + cell("2c","8") + cell("ellipsoid","x²/25 + (y²+z²)/9 = 1"));
+        verdict("<b>Ex 11.2 Q5:</b> sum of distances to (±4,0,0) is 10. In a plane that is an ellipse; in space it is a prolate spheroid — NCERT writes the Cartesian equation of that set.");
+      }
+      svg.innerHTML = m;
+    }
+    window.SIMS.locus3d.draw = draw;
+    draw();
+  }
+  return { mount: mount, draw: function(){ if(window.SIMS.locus3d.draw) window.SIMS.locus3d.draw(); } };
+})();
+
+window.SIMS.centroid3d = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A, B, C</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Centroid G</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="g-ex9">Ex 9: G(1,1,1), C=(1,1,2)</button>' +
+      '<button class="preset-btn" id="g-par">Ex 7: parallelogram, not a rectangle</button>';
+    var mode="g";
+    document.getElementById("g-ex9").onclick = function(){ setActivePreset(this); mode="g"; draw(0); };
+    document.getElementById("g-par").onclick = function(){ setActivePreset(this); mode="p"; draw(0); };
+    document.getElementById("lab-controls").innerHTML = "";
+    function draw(){
+      var svg = svgEl(); if(!svg) return;
+      var m = axes3();
+      if(mode==="g"){
+        var A=iso(3,-2,3), B=iso(-1,3,-2), C=iso(1,1,2), G=iso(1,1,1);
+        m += '<polygon points="'+A.join(',')+' '+B.join(',')+' '+C.join(',')+'" fill="rgba(56,189,248,0.15)" stroke="#38bdf8"/>';
+        m += '<circle cx="'+G[0]+'" cy="'+G[1]+'" r="6" fill="#f59e0b"/>';
+        readout(cell("G","((x₁+x₂+x₃)/3, …)") + cell("C","(1, 1, 2)","#34d399"));
+        verdict("<b>Example 9:</b> G(1,1,1), A(3,−5,7), B(−1,7,−6). Then (3−1+x)/3=1 ⇒ x=1; y=1; (7−6+z)/3=1 ⇒ z=2. C(1,1,2).");
+      } else {
+        readout(cell("AB=CD","6") + cell("BC=DA","√43") + cell("AC≠BD","not a rectangle"));
+        verdict("<b>Example 7:</b> Opposite sides equal ⇒ parallelogram. Diagonals AC=√3, BD=√155 unequal ⇒ not a rectangle. Mid-point of both diagonals is an equivalent test.");
+      }
+      svg.innerHTML = m;
+    }
+    window.SIMS.centroid3d.draw = draw;
+    draw();
+  }
+  return { mount: mount, draw: function(){ if(window.SIMS.centroid3d.draw) window.SIMS.centroid3d.draw(); } };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

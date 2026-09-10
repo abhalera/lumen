@@ -1,0 +1,2265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 6: Systems of Particles and Rotational Motion — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 06 · SYSTEMS OF PARTICLES AND ROTATIONAL MOTION</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="24"></progress>
+      <span id="progress-text">0 / 24</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 17 Exercises from NCERT Class 11 Physics (pp. 92–126) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "keph106", "chapterNumber": 6, "book_name": "Physics", "title": "Systems of Particles and Rotational Motion", "subtitle": "Centre of mass, torque, angular momentum, equilibrium, moment of inertia, and fixed-axis dynamics as in this rationalised reprint.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph106.pdf", "page_start": 92, "page_end": 126, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "rigid-cm", "nav": "Rigid body & centre of mass", "title": "A rigid body is many particles; the CM is the mass-weighted mean position.", "deck": "Pure translation: every particle has the same v. Rotation about a fixed axis: every particle has the same ω. R = Σ m_i r_i / M.", "minutes": 10, "section": "6.1–6.2", "pages": [1, 8], "print": "92–99", "sim": "cmfind", "simTitle": "CM of three masses and an L-lamina", "quick": ["A <strong>rigid body</strong> has unchanging distances between its particles (idealisation: real bodies deform a little). <strong>Pure translation</strong> (block sliding): all particles have the same velocity at an instant. <strong>Rotation about a fixed axis</strong> (ceiling fan, potter’s wheel): each particle moves in a circle centred on the axis. Rolling of a cylinder is translation of the CM plus rotation — this reprint develops rotation about a <em>fixed</em> axis; there is no separate rolling-without-slipping energy section.", "The <strong>centre of mass</strong> of n particles is M R = Σ m_i r_i, so X=Σ m_i x_i / M (and y, z). For a uniform symmetric body the CM sits at the geometric centre. It need not lie inside the material (a ring, an L-lamina)."], "formulas": [{"label": "Centre of mass", "html": "R = (Σ m<sub>i</sub> r<sub>i</sub>) / M,  M = Σ m<sub>i</sub>", "cond": "Eq. (6.4); discrete. Integrals for continuous bodies."}, {"label": "Pure translation vs rotation", "html": "all v<sub>i</sub> equal  vs  all ω equal (fixed axis)", "cond": "§6.1.1"}], "deeper": "Example 6.1 (unequal masses on an equilateral triangle of side 0.5 m) does not sit at the centroid. Example 6.2: a uniform triangular lamina has CM at the centroid (intersection of medians). Example 6.3: uniform L of three 1 m squares, CM at (5/6, 5/6) m.", "worked": {"title": "Example 6.1 (zoom p.6–7)", "problem": "Masses 100 g, 150 g, 200 g at vertices of an equilateral triangle of side 0.5 m. Find the CM.", "steps": ["Place 100 g at (0,0), 150 g at (0.5,0), 200 g at (0.25, 0.25√3)", "X=(150×0.5 + 200×0.25)/450 = 125/450 = 5/18 m", "Y=(200×0.25√3)/450 = √3/9 m"], "answer": "X=5/18 m ≈ 0.278 m, Y=√3/9 m ≈ 0.192 m — not the geometric centre."}, "prediction": {"prompt": "A uniform L-shaped lamina of three 1 m squares (Example 6.3). The CM is at", "options": ["(5/6, 5/6) m, on the angle bisector of the L", "the corner (0,0), because that is the only special point", "the centroid of a 2 m × 2 m square, ignoring the missing square"], "answer": 0, "explanation": "Three 1 kg points at (0.5,0.5), (1.5,0.5), (0.5,1.5) average to (5/6, 5/6) m."}, "connect": [["ISRO rocket as a variable-mass CM", "A PSLV is an extended body. Staging shifts the CM along the axis; the guidance software tracks that point because the net external force (thrust+gravity) accelerates the CM, not an arbitrary rivet."], ["Wow — a steel ring’s CM is empty air", "Uniform ring, hoop, hollow square: the CM sits at the geometric centre, where there is no metal. ‘Inside the body’ is not required (Ex 6.1).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write R = Σ m_i r_i / M and quote the L-lamina coordinates (5/6, 5/6) m.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In pure translational motion of a rigid body", "options": ["every particle has the same velocity at a given instant", "every particle has the same angular velocity only", "the CM must be at rest"], "answer": 0, "hint": "§6.1.1.", "solution": "Same v for all particles defines pure translation.", "wrong": ["", "That is rotation about a fixed axis.", "The whole body can translate."]}, {"level": "Medium", "type": "number", "map": "Example 6.3", "prompt": "Uniform L of three 1 m squares. The x-coordinate of the CM (m) is", "answer": 0.833, "unit": "m", "tolerance": 0.01, "hint": "(0.5+1.5+0.5)/3 = 5/6.", "solution": "5/6 m ≈ 0.833 m. Same for Y."}, {"level": "Hard", "type": "mcq", "map": "Ex 6.1", "prompt": "The CM of a uniform sphere / cylinder / ring / cube of uniform density", "options": ["coincides with the geometric centre; it need not lie in the material (ring)", "always lies inside the material", "is undefined for a ring"], "answer": 0, "hint": "Ex 6.1.", "solution": "Symmetry puts CM at the geometric centre; a ring’s centre is empty.", "wrong": ["", "Ring, hollow square, L-shape are counter-examples.", "The CM is well defined."]}]}, {"id": "motion-cm", "nav": "Motion of the CM", "title": "The CM moves as if all mass sat there and F_ext acted there.", "deck": "M A_cm = F_ext. A bursting firework’s CM still follows the parabola. Child on a trolley does not change V_cm.", "minutes": 8, "section": "6.3", "pages": [8, 10], "print": "99–101", "sim": "cmmotion", "simTitle": "Firework burst and trolley+child CM", "quick": ["Differentiate M R = Σ m_i r_i: M V_cm = Σ m_i v_i, and M A_cm = Σ F_i = F_ext (internal pairs cancel by Newton’s third law, assuming they are along the join). So the CM of a system moves exactly as a point mass M would under the net external force.", "A projectile that explodes in flight: fragments fly apart, but the CM continues on the original parabola (gravity is still the only F_ext, until air becomes important). A child running on a frictionless trolley cannot change the speed of the (trolley+child) CM (Ex 6.3)."], "formulas": [{"label": "CM law of motion", "html": "M A<sub>cm</sub> = F<sub>ext</sub>", "cond": "internal forces cancel"}, {"label": "CM velocity", "html": "V<sub>cm</sub> = (Σ m<sub>i</sub> v<sub>i</sub>) / M", "cond": "also P_tot / M"}], "deeper": "If F_ext=0, V_cm is constant. That is the content of ‘the CM frame’. Binary stars orbit a motionless CM (isolated pair).", "worked": {"title": "Ex 6.3 trolley (end-exercise)", "problem": "Child sits at one end of a long trolley moving uniformly at speed V on a smooth floor. The child runs about. Speed of the CM of (trolley+child)?", "steps": ["Smooth floor ⇒ F_ext horizontal = 0", "V_cm was V and stays V", "Internal running only redistributes velocities about the CM"], "answer": "V, unchanged."}, "prediction": {"prompt": "A Diwali rocket explodes at the top of its trajectory. The CM of the fragments", "options": ["continues on the original parabola (until drag matters)", "stops, because the explosion cancelled the motion", "falls straight down from the burst point"], "answer": 0, "explanation": "Explosion forces are internal. F_ext is still mg of the total mass."}, "connect": [["Jasdan firework and a cricket shot", "The burst of a shell is internal. So is the explosion of a cricket ball into cork and leather in a thought experiment: the CM still follows the shot’s parabola."], ["Wow — you cannot walk the CM of a boat", "On a still lake, walking from stern to bow of a dinghy slides the boat backward so the (you+boat) CM stays put. Same law as Ex 6.3.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write M A_cm = F_ext and explain why a burst firework’s CM stays on the parabola.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The CM of an isolated system (F_ext=0)", "options": ["moves with constant velocity", "must be at rest at the origin", "accelerates toward the heaviest particle"], "answer": 0, "hint": "§6.3.", "solution": "M A_cm = 0 ⇒ V_cm constant.", "wrong": ["", "Constant velocity includes a moving CM.", "Internal forces cancel."]}, {"level": "Medium", "type": "mcq", "map": "Ex 6.3", "prompt": "Child runs on a trolley (smooth floor). The (trolley+child) CM speed", "options": ["stays equal to the original V", "increases by the child’s running speed", "becomes zero when the child stops relative to the trolley"], "answer": 0, "hint": "No external horizontal force.", "solution": "V_cm is conserved.", "wrong": ["", "That would require an external kick.", "Stopping relative to the trolley is internal."]}, {"level": "Hard", "type": "mcq", "prompt": "A hole of radius R/2 is cut from a uniform disc, centre of hole at R/2 from the disc centre. The CM of the remainder is", "options": ["R/6 from the original centre, opposite the hole (Ex 6.15)", "at the original centre, by symmetry", "at the centre of the hole"], "answer": 0, "hint": "Treat the hole as negative mass.", "solution": "X(3M/4)+(R/2)(M/4)=0 ⇒ X=−R/6.", "wrong": ["", "The hole broke the symmetry.", "That would be the removed piece."]}]}, {"id": "system-P", "nav": "Linear momentum of a system", "title": "Total P is M V_cm, and F_ext = dP/dt — Newton’s second law for a system.", "deck": "P = Σ p_i = M V_cm. If F_ext=0, P is conserved. Sand leaking from a trolley does not change the speed.", "minutes": 8, "section": "6.4", "pages": [10, 12], "print": "101–103", "sim": "sysP", "simTitle": "System momentum: leaking sandbag", "quick": ["The <strong>linear momentum of a system</strong> is P=Σ p_i=Σ m_i v_i. Compared with the CM velocity, P=M V_cm. Differentiating: dP/dt=F_ext (Eq. 6.17), the system form of Newton’s second law.", "If F_ext=0, P is conserved (Eq. 6.18). This is why a leaking sandbag on a frictionless trolley (Ex 5.19 of Ch. 5 / same physics here) does not speed up or slow down: the sand carries away its share of momentum, and no horizontal impulse acts."], "formulas": [{"label": "System momentum", "html": "P = M V<sub>cm</sub>", "cond": "definition + CM"}, {"label": "System II law", "html": "F<sub>ext</sub> = dP/dt", "cond": "Eq. (6.17)"}, {"label": "Conservation", "html": "F<sub>ext</sub> = 0  ⇒  P = constant", "cond": "Eq. (6.18)"}], "deeper": "Internal forces can be huge (an explosion) and still leave P unchanged. Recoil of a gun, jet of a fire-hose, and walking are all P-conservation stories once you include the Earth.", "worked": {"title": "HCl molecule (Ex 6.2)", "problem": "HCl: nuclear separation 1.27 Å, m_Cl ≈ 35.5 m_H. Locate the CM.", "steps": ["Nearly all mass in the nuclei", "From H: x = 35.5×1.27/(36.5) Å = 1.235 Å", "From Cl: 1.27−1.235=0.035 Å ≈ 0.037 Å (rounding)"], "answer": "CM is 1.24 Å from H (0.037 Å from Cl) — almost on the chlorine nucleus."}, "prediction": {"prompt": "Sand leaks from a moving trolley on a frictionless track. The trolley’s speed", "options": ["stays the same: leaking sand has the trolley’s horizontal velocity", "increases, like a rocket dumping mass", "decreases, because mass is lost"], "answer": 0, "explanation": "No relative horizontal velocity at the leak, so no thrust. P per remaining mass is unchanged."}, "connect": [["Howrah goods wagon", "Coal dropping through a hole in a rolling wagon does not brake the wagon on a level, frictionless idealisation — the coal already had the wagon’s velocity. A rocket is different: exhaust is thrown backward."], ["Wow — HCl’s CM lives in the chlorine", "35.5 : 1 mass ratio parks the CM 0.037 Å from Cl. Rotation spectroscopy of HCl is almost ‘H flying around a fixed Cl’ — a CM fact before it is a chemistry fact.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write P=M V_cm and F_ext=dP/dt.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The total linear momentum of a system of particles is", "options": ["M V_cm", "Σ m_i |v_i|", "zero only if the CM is at rest at the origin"], "answer": 0, "hint": "§6.4.", "solution": "P=M V_cm.", "wrong": ["", "Momentum is a vector sum, not a sum of speeds.", "P=0 iff V_cm=0, origin irrelevant."]}, {"level": "Medium", "type": "number", "map": "Ex 6.2", "prompt": "HCl, d=1.27 Å, m_Cl=35.5 m_H. Distance of CM from H (Å) is", "answer": 1.235, "unit": "Å", "tolerance": 0.01, "hint": "35.5×1.27/36.5.", "solution": "1.235 Å from H."}, {"level": "Hard", "type": "mcq", "prompt": "dP/dt of a system equals", "options": ["the vector sum of external forces", "the sum of internal forces", "zero always, by momentum conservation"], "answer": 0, "hint": "Eq. (6.17).", "solution": "Internal pairs cancel.", "wrong": ["", "Internal sum is 0, not dP/dt.", "Only if F_ext=0."]}]}, {"id": "cross-omega", "nav": "Cross product & angular velocity", "title": "a×b is a vector; for rotation, v = ω × r and every particle shares ω.", "deck": "|a×b|=ab sin θ, direction by right-hand screw. v=ω r = |ω×r|. Example 6.4: a·b=−25, a×b=7î −ĵ −5k̂.", "minutes": 10, "section": "6.5–6.6", "pages": [12, 16], "print": "103–107", "sim": "crossprod", "simTitle": "Right-hand screw and v = ω × r", "quick": ["The <strong>vector (cross) product</strong> a×b has magnitude ab sin θ and direction given by the right-handed screw (or right-hand rule). a×b=−b×a. In components, a×b is the determinant with rows (î ĵ k̂), (a_x a_y a_z), (b_x b_y b_z). î×ĵ=k̂ and cyclic; reverse order flips sign.", "<strong>Angular velocity</strong> ω of a rigid body about a fixed axis is a vector along the axis (right-hand screw). Every particle has the same ω. Linear velocity of a particle at r (from an origin on the axis) is v=ω×r, so v=ω r_⊥. Particles on the axis are at rest. Angular acceleration α=dω/dt, also along the axis if the axis is fixed."], "formulas": [{"label": "Cross product", "html": "|a × b| = ab sin θ,  direction by right-hand screw", "cond": "a×b = −b×a"}, {"label": "Rigid rotation", "html": "v = ω × r", "cond": "Eq. (6.19) as a vector; same ω for every particle"}, {"label": "Area of a triangle", "html": "Area = ½ |a × b|", "cond": "Ex 6.4"}], "deeper": "|a·(b×c)| is the parallelepiped volume (Ex 6.5). Angular velocity is not ‘along v’; it is along the axis, perpendicular to the plane of the circle.", "worked": {"title": "Example 6.4 (zoom p.12)", "problem": "a=3î−4ĵ+5k̂, b=−2î+ĵ−3k̂. Scalar and vector products.", "steps": ["a·b=3(−2)+(−4)(1)+5(−3)=−6−4−15=−25", "a×b = |î ĵ k̂; 3 −4 5; −2 1 −3| = 7î −ĵ −5k̂", "Note b×a=−(a×b)=−7î+ĵ+5k̂"], "answer": "a·b=−25; a×b=7î − ĵ − 5k̂."}, "prediction": {"prompt": "A ceiling fan’s ω points (right-hand screw) along the axle. A point on a blade has v", "options": ["tangential, v=ω×r, perpendicular to both ω and r", "parallel to ω, up the axle", "radially outward along the blade"], "answer": 0, "explanation": "Fig. 6.17: v is tangent to the circle, ω along the axis."}, "connect": [["Potter’s wheel at Khanapur", "The wheel’s ω is vertical. Clay at radius r has v=ωr. A larger pot (larger r) needs faster linear speed at the same rpm — that is Eq. (6.19), not a new law."], ["Wow — a×b is the area vector of a parallelogram", "Ex 6.4 is why two sides of a triangle hide an area ½|a×b|. The same determinant later measures magnetic flux and angular momentum.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write v=ω×r and compute a·b and a×b of Example 6.4.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "î × ĵ equals", "options": ["k̂", "−k̂", "0"], "answer": 0, "hint": "Cyclic order is positive.", "solution": "î×ĵ=k̂, ĵ×k̂=î, k̂×î=ĵ.", "wrong": ["", "That is ĵ×î.", "They are perpendicular, not parallel."]}, {"level": "Medium", "type": "number", "map": "Example 6.4", "prompt": "a=3î−4ĵ+5k̂, b=−2î+ĵ−3k̂. The scalar product a·b is", "answer": -25, "unit": "", "tolerance": 0.01, "hint": "−6−4−15.", "solution": "−25."}, {"level": "Hard", "type": "mcq", "prompt": "For rotation about a fixed axis, every particle of the rigid body has", "options": ["the same angular velocity ω at a given instant", "the same linear velocity v", "zero velocity on a circle of any radius"], "answer": 0, "hint": "§6.6.", "solution": "Same ω; v=ω r_⊥ grows with radius.", "wrong": ["", "That would be pure translation.", "Only the axis is at rest."]}]}, {"id": "torque-L", "nav": "Torque & angular momentum", "title": "τ = r × F and ℓ = r × p; then τ_ext = dL/dt.", "deck": "Analogue of F=dp/dt. If τ_ext=0, L is conserved. Example 6.5: τ=2î+12ĵ+10k̂.", "minutes": 10, "section": "6.7", "pages": [16, 18], "print": "107–109", "sim": "torque", "simTitle": "Torque as r×F and ℓ of a free particle", "quick": ["<strong>Moment of force (torque)</strong> about a point: τ=r×F, magnitude r F sinθ = F×(perpendicular lever arm). Direction by right-hand screw. For a system, τ_ext=Σ r_i×F_i^{ext} (internal torques cancel if they are central).", "<strong>Angular momentum</strong> of a particle: ℓ=r×p=r×(mv). For a system L=Σ ℓ_i. Then <em>τ_ext = dL/dt</em> (Eq. 6.28b) — the rotational analogue of F_ext=dP/dt. If τ_ext=0, L is conserved (three components separately)."], "formulas": [{"label": "Torque", "html": "τ = r × F", "cond": "about the origin used for r"}, {"label": "Angular momentum", "html": "ℓ = r × p,  L = Σ ℓ<sub>i</sub>", "cond": ""}, {"label": "Rotational II law", "html": "τ<sub>ext</sub> = dL/dt", "cond": "Eq. (6.28b); τ_ext=0 ⇒ L constant"}], "deeper": "Example 6.6: a free particle (no force) has constant ℓ about any point, because the perpendicular from the point to the line of motion (impact parameter) is constant and ℓ=m v b. Ex 6.6–6.7: ℓ of two particles on parallel lines is independent of the origin.", "worked": {"title": "Example 6.5 (zoom p.17)", "problem": "Force 7î+3ĵ−5k̂ acts on a particle at î−ĵ+k̂. Torque about the origin?", "steps": ["τ=r×F = |î ĵ k̂ ; 1 −1 1 ; 7 3 −5|", "î[(−1)(−5)−(1)(3)] − ĵ[(1)(−5)−(1)(7)] + k̂[(1)(3)−(−1)(7)]", "= î(5−3) − ĵ(−5−7) + k̂(3+7) = 2î + 12ĵ + 10k̂"], "answer": "τ = 2î + 12ĵ + 10k̂."}, "prediction": {"prompt": "A particle flies in a straight line at constant v. Its angular momentum about a point off the line", "options": ["is constant (Example 6.6): ℓ = m v b, b the impact parameter", "is zero because there is no force", "grows linearly with time as r grows"], "answer": 0, "explanation": "r sinθ = b stays put. Direction of r×v is fixed. So ℓ is conserved — and indeed τ=0."}, "connect": [["Spanner on a rusted nut", "Torque is F times the perpendicular from the axis to the line of force. A longer spanner (larger r_⊥) is why a mechanic in Pune chooses a 30 cm handle, not a 10 cm one, for the same push."], ["Wow — Kepler’s area law is τ=0", "Sun’s gravity is central, so τ on a planet is 0, so L is conserved, so dA/dt=L/(2m) is constant. Chapter 7 will use this; the engine is already here.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write τ=r×F, ℓ=r×p, and τ_ext=dL/dt.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Torque about the origin is", "options": ["r × F", "F × r always equal to r × F", "r · F"], "answer": 0, "hint": "§6.7.1.", "solution": "τ=r×F. (F×r is minus that.)", "wrong": ["", "Cross product anticommutes.", "That is a scalar, not a moment."]}, {"level": "Medium", "type": "mcq", "map": "Example 6.5", "prompt": "r=î−ĵ+k̂, F=7î+3ĵ−5k̂. τ equals", "options": ["2î + 12ĵ + 10k̂", "2î − 12ĵ + 10k̂", "0"], "answer": 0, "hint": "Determinant rule.", "solution": "2î+12ĵ+10k̂.", "wrong": ["", "Sign of the ĵ component: −[(−5)−7]=+12.", "r and F are not parallel."]}, {"level": "Hard", "type": "mcq", "prompt": "If the total external torque on a system is zero", "options": ["total angular momentum L is conserved (each component)", "the system cannot rotate", "linear momentum must also vanish"], "answer": 0, "hint": "Eq. (6.29).", "solution": "τ_ext=0 ⇒ dL/dt=0.", "wrong": ["", "It can rotate at constant L.", "P is a separate conservation law."]}]}, {"id": "equilibrium", "nav": "Equilibrium of a rigid body", "title": "Mechanical equilibrium is F_net=0 and τ_net=0 — translation and rotation both quiet.", "deck": "Six scalar conditions. Ladder on a frictionless wall: N=196 N, F=34.6 N. Principle of moments: load×load-arm = effort×effort-arm.", "minutes": 11, "section": "6.8", "pages": [18, 23], "print": "109–114", "sim": "ladder", "simTitle": "Knife-edge bar and frictionless-wall ladder", "quick": ["A rigid body is in <strong>mechanical equilibrium</strong> if P and L are both constant (usually both zero in the problems): Σ F_i=0 (translational) and Σ τ_i=0 (rotational). Each is three scalar equations. If ΣF=0 already, the torque condition is independent of the origin you pick.", "<strong>Principle of moments</strong> (see-saw): in rotational equilibrium, clockwise moments equal anticlockwise moments about any point. <strong>Centre of gravity</strong> coincides with the CM for a body small enough that g is uniform; they differ if g varies over the body. A cardboard’s CG is the intersection of plumb lines from two suspension points."], "formulas": [{"label": "Translational equilibrium", "html": "Σ F<sub>i</sub> = 0", "cond": "Eq. (6.30a)"}, {"label": "Rotational equilibrium", "html": "Σ τ<sub>i</sub> = 0", "cond": "Eq. (6.30b); origin-independent if ΣF=0"}, {"label": "Principle of moments", "html": "load × load-arm = effort × effort-arm", "cond": "see-saw / beam balance"}], "deeper": "A couple (two equal opposite forces not on the same line) has zero net force and a torque independent of origin (Example 6.7). That torque equals F×(perpendicular separation).", "worked": {"title": "Example 6.8 + 6.9 (zoom p.22–23)", "problem": "Bar 70 cm, 4.00 kg, knife-edges 10 cm from each end; 6.00 kg at 30 cm from one end. Then: 3 m ladder, 20 kg, frictionless wall, foot 1 m out.", "steps": ["Bar: R1+R2=10 g=98 N; moments about G: R1−R2=1.2 g=11.76 N ⇒ R1=54.88 N, R2=43.12 N", "Ladder: BC=√8=2√2 m; N=W=196 N", "Moments about A: F1×2√2 = W×0.5 ⇒ F1=196/(4√2)=34.6 N", "F=F1=34.6 N; |F2|=√(F²+N²)=199 N; α=tan⁻¹(N/F)≈80°"], "answer": "Knife-edges ≈ 55 N and 43 N. Ladder: wall 34.6 N, floor 199 N at ≈80° to the horizontal."}, "prediction": {"prompt": "A ladder leans on a frictionless wall. The wall’s reaction is", "options": ["horizontal (no friction to provide a vertical component)", "along the ladder", "vertical, like a normal on the floor"], "answer": 0, "explanation": "Example 6.9: frictionless wall ⇒ F1 ⊥ wall. Floor friction supplies the opposing horizontal."}, "connect": [["Bamboo ladder on a chuna-washed wall", "A 3 m ladder with its foot 1 m out is Example 6.9. Smooth paint means you need floor friction; on marble, the foot slips — F has nothing to grip."], ["Wow — a see-saw is six equations in disguise", "Kids think ‘heavier side goes down’. The chapter’s statement is ΣF=0 and Στ=0. Shift the fulcrum (Ex 6.16 coins on a metre stick) and a 10 g pair at 12 cm balances a 66 g stick.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "State ΣF=0 and Στ=0, and quote R1=54.88 N, F_wall=34.6 N.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Mechanical equilibrium of a rigid body requires", "options": ["ΣF=0 and Στ=0", "ΣF=0 only", "the CM at the origin"], "answer": 0, "hint": "§6.8.", "solution": "No linear and no angular acceleration.", "wrong": ["", "A couple has ΣF=0 but rotates.", "Origin is a choice."]}, {"level": "Medium", "type": "number", "map": "Example 6.8", "prompt": "Example 6.8: reaction at knife-edge K1 (N), using g=9.8, is", "answer": 54.88, "unit": "N", "tolerance": 0.1, "hint": "R1+R2=98, R1−R2=11.76.", "solution": "R1=54.88 N."}, {"level": "Hard", "type": "number", "map": "Ex 6.16", "prompt": "Metre stick balanced at 45.0 cm with 10 g at 12.0 cm. Mass of the stick (g) is", "answer": 66, "unit": "g", "tolerance": 0.5, "hint": "M×5 = 10×33.", "solution": "M=66 g."}]}, {"id": "inertia-kin", "nav": "Moment of inertia & kinematics", "title": "I = Σ m r² is rotational inertia; then ω=ω₀+αt, as in a straight line.", "deck": "K=½ I ω². Flywheel I=½MR². Motor wheel: 1200→3120 rpm in 16 s ⇒ α=4π rad s⁻², 576 rev.", "minutes": 11, "section": "6.9–6.10", "pages": [23, 27], "print": "114–118", "sim": "flywheel", "simTitle": "I of rings and a motor-wheel spin-up", "quick": ["Rotational kinetic energy about a fixed axis is K=Σ ½ m_i (ω r_i)² = ½ I ω², with <strong>moment of inertia</strong> I=Σ m_i r_i² (Eq. 6.34). I depends on the axis (mass distribution + where the axis is). <strong>Radius of gyration</strong> k from I=M k². Table 6.1 (this edition) lists regular bodies; derivations of most entries are beyond the book. This reprint has <em>no</em> parallel-axis / perpendicular-axis theorem sections — those were in older prints.", "Fixed-axis kinematics, constant α, clones the three linear equations: ω=ω₀+αt, θ=θ₀+ω₀ t+½αt², ω²=ω₀²+2α(θ−θ₀) (Eqs. 6.36–6.38)."], "formulas": [{"label": "Moment of inertia", "html": "I = Σ m<sub>i</sub> r<sub>i</sub>² ,  K = ½ I ω²", "cond": "Eq. (6.34); I=Mk²"}, {"label": "Common I (Table 6.1)", "html": "solid cylinder / disc about axis: ½MR²; hoop: MR²; solid sphere: ⅖ MR²; rod about CM: ML²/12", "cond": "quoted, not derived"}, {"label": "Constant α", "html": "ω = ω₀ + αt,  θ = ω₀ t + ½ α t²,  ω² = ω₀² + 2αθ", "cond": "Eqs. (6.36)–(6.38)"}], "deeper": "A flywheel’s large I resists jerky α — steam and automobile engines (text). Ring about its axis: I=MR² because every mass element is at r=R.", "worked": {"title": "Example 6.11 (zoom p.26–27)", "problem": "Motor wheel 1200 rpm → 3120 rpm in 16 s. α and revolutions.", "steps": ["ω₀=1200×2π/60=40π rad s⁻¹, ω=3120×2π/60=104π rad s⁻¹", "α=(ω−ω₀)/t=64π/16=4π rad s⁻²", "θ=ω₀ t+½αt²=40π×16 + ½(4π)×256=640π+512π=1152π rad", "revolutions=θ/(2π)=576"], "answer": "α=4π rad s⁻²; 576 revolutions."}, "prediction": {"prompt": "Equal torques on a hollow cylinder and a solid sphere of the same M,R. After a given time, larger ω belongs to", "options": ["the sphere (I=⅖MR² < I_cyl=MR², so α=τ/I is larger)", "the cylinder, because a cylinder looks more free to spin", "both the same, because τ is the same"], "answer": 0, "explanation": "Ex 6.10: α=τ/I. Smaller I wins the race for ω=αt."}, "connect": [["Charkha and a bus flywheel", "A spinning charkha stores ½Iω² in a wooden wheel. A bus flywheel is the same sentence in steel: large I, smooth α, fewer jerks at the clutch."], ["Wow — 576 turns in 16 s is just the area under ω–t", "Example 6.11 is the rotational twin of s=ut+½at². 40π→104π in 16 s paints a trapezium of area 1152π rad = 576 rev.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write I=Σmr², K=½Iω², and the three constant-α equations.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Moment of inertia of a rigid body", "options": ["depends on the axis (position and orientation) as well as the mass distribution", "is a fixed number, like mass", "is always MR²"], "answer": 0, "hint": "§6.9.", "solution": "I is rotational inertia about a stated axis.", "wrong": ["", "Mass is axis-independent; I is not.", "Only a hoop about its central axis."]}, {"level": "Medium", "type": "number", "map": "Ex 6.11", "prompt": "Solid cylinder 20 kg, R=0.25 m, ω=100 rad s⁻¹. Rotational K (J) is", "answer": 3125, "unit": "J", "tolerance": 1, "hint": "I=½MR²=0.625; K=½Iω².", "solution": "0.5×0.625×10000=3125 J. L=Iω=62.5 kg m² s⁻¹."}, {"level": "Hard", "type": "number", "map": "Example 6.11", "prompt": "1200 to 3120 rpm in 16 s. Number of revolutions is", "answer": 576, "unit": "", "tolerance": 0.5, "hint": "θ=1152π rad.", "solution": "576 rev."}]}, {"id": "dynamics-Lcons", "nav": "Rotational dynamics & L conservation", "title": "τ = Iα and L = Iω; if τ_ext=0 then Iω is constant — pull your arms in and you spin faster.", "deck": "Work–KE: τ θ = Δ(½Iω²). Flywheel cord: α=12.5 rad s⁻², W=50 J=ΔK. Ice-skater / swivel chair.", "minutes": 11, "section": "6.11–6.12", "pages": [27, 33], "print": "118–124", "sim": "icechair", "simTitle": "Flywheel cord and swivel-chair L conservation", "quick": ["Table 6.2 is the translation↔rotation dictionary: m↔I, F↔τ, a↔α, so <strong>τ=Iα</strong> (Eq. 6.41) for a fixed axis (I constant). Work by a torque is τ θ; power is τ ω. Rotational KE ½Iω². Angular momentum about the axis L_z=Iω, and τ_z=d(Iω)/dt.", "If τ_ext=0, <strong>Iω is conserved</strong> (Eq. 6.44). Folding your arms on a swivel chair decreases I and increases ω; K=L²/(2I) increases — the extra K is the work you do pulling your arms in. A diver tucks to raise ω. Rolling as translation+rotation is introduced in §6.1.1; this reprint does not develop v=ωR energy of rolling without slipping as a later section."], "formulas": [{"label": "Fixed-axis dynamics", "html": "τ = I α", "cond": "Eq. (6.41); I about the axis"}, {"label": "Angular momentum (symmetric axis)", "html": "L = I ω", "cond": "Eq. (6.44) form"}, {"label": "Power / work", "html": "P = τ ω,  W = τ θ  (constant τ)", "cond": "Table 6.2"}, {"label": "L conservation", "html": "τ<sub>ext</sub> = 0  ⇒  Iω = constant", "cond": "swivel chair, diver, neutron star"}], "deeper": "Example 6.12 is the WE theorem in rotation: work by the 25 N pull unwinding 2 m equals ΔK of the flywheel (50 J), because the bearing is frictionless. If friction ate energy they would differ.", "worked": {"title": "Example 6.12 + Ex 6.12 child on a turntable", "problem": "Flywheel M=20 kg, R=20 cm, pull 25 N. (a) α (b) W for 2 m (c) ΔK. Child: 40 rev/min, I → (2/5)I.", "steps": ["τ=FR=5.0 N m; I=½MR²=0.40 kg m²; α=τ/I=12.5 rad s⁻²", "W=25×2=50 J; θ=2/0.2=10 rad; ω²=2αθ=250; ½Iω²=50 J", "Child: Iω const ⇒ ω2=40×(5/2)=100 rev/min", "K2/K1=(I2/I1)(ω2/ω1)²=(2/5)(5/2)²=2.5; extra K from the child’s work"], "answer": "α=12.5 s⁻², W=ΔK=50 J. Child: 100 rev/min; K increases by factor 2.5."}, "prediction": {"prompt": "An ice-skater pulls her arms in. Her rotational kinetic energy", "options": ["increases: L=Iω fixed so K=L²/(2I) rises as I falls; she does positive work", "stays the same by energy conservation of an isolated rotor", "decreases because she is more compact"], "answer": 0, "explanation": "Ex 6.12(b). Isolated for torque, not for internal work."}, "connect": [["Kathak pirouette on a Lucknow stage", "Arms in, I down, ω up — the same Iω as the swivel-chair paragraph and Fig. 6.32. The floor’s friction torque is small during the spin; the dancer’s muscles do the work that raises K."], ["Wow — a neutron star is a tucked diver", "A collapsing star keeps L. Radius down by 10⁵ sends ω up by ~10¹⁰. Millisecond pulsars are Eq. (6.44) with stellar mass.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph106.pdf"}]]], "recall": "Write τ=Iα, L=Iω, and explain why K rises when you pull your arms in.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Newton’s second law for rotation about a fixed axis is", "options": ["τ = I α", "τ = I ω", "F = I a"], "answer": 0, "hint": "Eq. (6.41).", "solution": "Torque produces angular acceleration; I is the inertia.", "wrong": ["", "L=Iω, not τ.", "F=ma is the linear cousin."]}, {"level": "Medium", "type": "number", "map": "Example 6.12", "prompt": "Flywheel I=0.4 kg m², τ=5 N m. Angular acceleration (rad s⁻²) is", "answer": 12.5, "unit": "rad s⁻²", "tolerance": 0.05, "hint": "α=τ/I.", "solution": "5/0.4=12.5 s⁻²."}, {"level": "Hard", "type": "number", "map": "Ex 6.12", "prompt": "Turntable 40 rev/min, I → 2/5 I. New angular speed (rev/min) is", "answer": 100, "unit": "rev/min", "tolerance": 0.5, "hint": "Iω conserved.", "solution": "40×5/2=100 rev/min."}]}], "exercises": [{"number": "6.1", "section": "Exercises", "conceptIdx": 0, "page": 34, "printPage": 125, "question": "Give the location of the centre of mass of a (i) sphere, (ii) cylinder, (iii) ring, and (iv) cube, each of uniform mass density. Does the centre of mass of a body necessarily lie inside the body?", "steps": ["Uniform + symmetry ⇒ CM at the geometric centre in each case.", "Ring: geometric centre is empty. Hollow bodies, L-shapes, a banana, a boomerang: CM can lie outside the material."], "answer": "Geometric centre for all four. No — CM need not lie inside the body (e.g. a ring)."}, {"number": "6.2", "section": "Exercises", "conceptIdx": 2, "page": 34, "printPage": 125, "question": "In the HCl molecule, the separation between the nuclei of the two atoms is about 1.27 Å (1 Å = 10^{-10} m). Find the approximate location of the CM of the molecule, given that a chlorine atom is about 35.5 times as massive as a hydrogen atom and nearly all the mass of an atom is concentrated in its nucleus.", "given": "d=1.27 Å, m_Cl=35.5 m_H", "steps": ["From H: x= m_Cl d /(m_H+m_Cl)=35.5×1.27/36.5=1.235 Å.", "From Cl: 0.035 Å."], "answer": "1.24 Å from H (0.037 Å from Cl)."}, {"number": "6.3", "section": "Exercises", "conceptIdx": 1, "page": 34, "printPage": 125, "question": "A child sits stationary at one end of a long trolley moving uniformly with a speed V on a smooth horizontal floor. If the child gets up and runs about on the trolley in any manner, what is the speed of the CM of the (trolley + child) system?", "steps": ["Smooth floor: F_ext horizontal=0.", "V_cm remains V."], "answer": "V (unchanged)."}, {"number": "6.4", "section": "Exercises", "conceptIdx": 3, "page": 34, "printPage": 125, "question": "Show that the area of the triangle contained between the vectors a and b is one half of the magnitude of a × b.", "steps": ["|a×b|=ab sinθ = area of the parallelogram on a,b.", "Triangle is half that parallelogram.", "Hence area=½|a×b|."], "answer": "Area = ½ |a × b|."}, {"number": "6.5", "section": "Exercises", "conceptIdx": 3, "page": 34, "printPage": 125, "question": "Show that a·(b × c) is equal in magnitude to the volume of the parallelepiped formed on the three vectors a, b and c.", "steps": ["b×c is the area vector of the base parallelogram.", "|a·(b×c)| = (height along a)×(base area) = volume.", "Scalar triple product changes sign under a swap, hence ‘magnitude’."], "answer": "|a·(b×c)| = volume of the parallelepiped."}, {"number": "6.6", "section": "Exercises", "conceptIdx": 4, "page": 34, "printPage": 125, "question": "Find the components along the x, y, z axes of the angular momentum ℓ of a particle, whose position vector is r with components x, y, z and momentum is p with components p_x, p_y and p_z. Show that if the particle moves only in the x-y plane the angular momentum has only a z-component.", "steps": ["ℓ=r×p ⇒ ℓ_x=y p_z−z p_y, ℓ_y=z p_x−x p_z, ℓ_z=x p_y−y p_x.", "Motion in x-y: z=0, p_z=0 ⇒ ℓ_x=ℓ_y=0, only ℓ_z survives."], "answer": "ℓ_x=yp_z−zp_y, ℓ_y=zp_x−xp_z, ℓ_z=xp_y−yp_x. Planar x-y motion ⇒ ℓ=ℓ_z k̂."}, {"number": "6.7", "section": "Exercises", "conceptIdx": 4, "page": 34, "printPage": 125, "question": "Two particles, each of mass m and speed v, travel in opposite directions along parallel lines separated by a distance d. Show that the angular momentum vector of the two particle system is the same whatever be the point about which the angular momentum is taken.", "steps": ["Take an origin a distance x from one line (d−x from the other).", "ℓ_1=m v x (sense in), ℓ_2=m v (d−x) (same sense because v reversed and r_⊥ on the other side).", "L=mvd, independent of x. Direction perpendicular to the plane."], "answer": "L = m v d, same about any origin (perpendicular to the plane)."}, {"number": "6.8", "section": "Exercises", "conceptIdx": 5, "page": 34, "printPage": 125, "question": "A non-uniform bar of weight W is suspended at rest by two strings of negligible weight as shown in Fig. 6.33. The angles made by the strings with the vertical are 36.9° and 53.1° respectively. The bar is 2 m long. Calculate the distance d of the centre of gravity of the bar from its left end.", "given": "36.9° left, 53.1° right, L=2 m (Fig. 6.33 zoom p.34). sin 36.9°=0.6, sin 53.1°=0.8", "steps": ["Horizontal: T1 sin36.9=T2 sin53.1 ⇒ 0.6 T1=0.8 T2 ⇒ T1=(4/3)T2.", "Vertical: T1 cos36.9+T2 cos53.1=W ⇒ 0.8 T1+0.6 T2=W ⇒ T2=0.6 W, T1=0.8 W.", "Moments about CG: (T1 cos36.9) d = (T2 cos53.1)(2−d) ⇒ 0.8 T1 d=0.6 T2 (2−d).", "d=0.72 m."], "answer": "d = 0.72 m from the left end."}, {"number": "6.9", "section": "Exercises", "conceptIdx": 5, "page": 34, "printPage": 125, "question": "A car weighs 1800 kg. The distance between its front and back axles is 1.8 m. Its centre of gravity is 1.05 m behind the front axle. Determine the force exerted by the level ground on each front wheel and each back wheel.", "given": "M=1800 kg, L=1.8 m, x_cg=1.05 m from front, g=9.8", "steps": ["Nf+Nb=1800 g. Moments about front: Nb×1.8=1800 g×1.05 ⇒ Nb=1050 g.", "Nf=750 g. Two wheels each: front 375 g=3675 N, back 525 g=5145 N."], "answer": "Each front wheel 3675 N; each back wheel 5145 N (g=9.8)."}, {"number": "6.10", "section": "Exercises", "conceptIdx": 6, "page": 35, "printPage": 126, "question": "Torques of equal magnitude are applied to a hollow cylinder and a solid sphere, both having the same mass and radius. The cylinder is free to rotate about its standard axis of symmetry, and the sphere is free to rotate about an axis passing through its centre. Which of the two will acquire a greater angular speed after a given time.", "steps": ["I_cyl=MR² (hollow, about symmetry axis), I_sph=⅖ MR².", "α=τ/I larger for the sphere. ω=αt larger for the sphere."], "answer": "The solid sphere (smaller I)."}, {"number": "6.11", "section": "Exercises", "conceptIdx": 6, "page": 35, "printPage": 126, "question": "A solid cylinder of mass 20 kg rotates about its axis with angular speed 100 rad s^{-1}. The radius of the cylinder is 0.25 m. What is the kinetic energy associated with the rotation of the cylinder? What is the magnitude of angular momentum of the cylinder about its axis?", "given": "M=20 kg, ω=100 rad s⁻¹, R=0.25 m", "steps": ["I=½MR²=0.5×20×0.0625=0.625 kg m²", "K=½Iω²=0.5×0.625×10⁴=3125 J", "L=Iω=62.5 kg m² s⁻¹"], "answer": "K=3125 J; L=62.5 kg m² s⁻¹"}, {"number": "6.12", "section": "Exercises", "conceptIdx": 7, "page": 35, "printPage": 126, "question": "(a) A child stands at the centre of a turntable with his two arms outstretched. The turntable is set rotating with an angular speed of 40 rev/min. How much is the angular speed of the child if he folds his hands back and thereby reduces his moment of inertia to 2/5 times the initial value? Assume that the turntable rotates without friction.\n(b) Show that the child’s new kinetic energy of rotation is more than the initial kinetic energy of rotation. How do you account for this increase in kinetic energy?", "steps": ["(a) Iω const ⇒ ω2=40×(5/2)=100 rev/min.", "(b) K2/K1=(I2 ω2²)/(I1 ω1²)=(2/5)(5/2)²=2.5. Extra K = work the child does pulling the arms in."], "answer": "(a) 100 rev/min; (b) K increases by factor 2.5 (work by the child)."}, {"number": "6.13", "section": "Exercises", "conceptIdx": 7, "page": 35, "printPage": 126, "question": "A rope of negligible mass is wound round a hollow cylinder of mass 3 kg and radius 40 cm. What is the angular acceleration of the cylinder if the rope is pulled with a force of 30 N? What is the linear acceleration of the rope? Assume that there is no slipping.", "given": "M=3 kg, R=0.40 m, F=30 N, I=MR² (hollow)", "steps": ["I=3×0.16=0.48 kg m²; τ=FR=12 N m; α=τ/I=25 rad s⁻²", "a=αR=10 m s⁻²"], "answer": "α=25 rad s⁻²; a=10 m s⁻²"}, {"number": "6.14", "section": "Exercises", "conceptIdx": 7, "page": 35, "printPage": 126, "question": "To maintain a rotor at a uniform angular speed of 200 rad s^{-1}, an engine needs to transmit a torque of 180 N m. What is the power required by the engine? (Note: uniform angular velocity in the absence of friction implies zero torque. In practice, applied torque is needed to counter frictional torque). Assume that the engine is 100% efficient.", "steps": ["P=τ ω=180×200=36000 W=36 kW."], "answer": "36 kW"}, {"number": "6.15", "section": "Exercises", "conceptIdx": 0, "page": 35, "printPage": 126, "question": "From a uniform disk of radius R, a circular hole of radius R/2 is cut out. The centre of the hole is at R/2 from the centre of the original disc. Locate the centre of gravity of the resulting flat body.", "steps": ["Mass of hole = M/4 (area). Treat as −M/4 at x=+R/2.", "(3M/4) X + (M/4)(R/2)=0 ⇒ X=−R/6.", "CG is R/6 from the original centre, opposite the hole."], "answer": "R/6 from the original centre, away from the hole."}, {"number": "6.16", "section": "Exercises", "conceptIdx": 5, "page": 35, "printPage": 126, "question": "A metre stick is balanced on a knife edge at its centre. When two coins, each of mass 5 g are put one on top of the other at the 12.0 cm mark, the stick is found to be balanced at 45.0 cm. What is the mass of the metre stick?", "steps": ["CM of stick still at 50 cm. New fulcrum 45 cm.", "M g (50−45)=10 g (45−12) ⇒ 5M=330 ⇒ M=66 g."], "answer": "66 g"}, {"number": "6.17", "section": "Exercises", "conceptIdx": 6, "page": 35, "printPage": 126, "question": "The oxygen molecule has a mass of 5.30×10^{-26} kg and a moment of inertia of 1.94×10^{-46} kg m² about an axis through its centre perpendicular to the lines joining the two atoms. Suppose the mean speed of such a molecule in a gas is 500 m/s and that its kinetic energy of rotation is two thirds of its kinetic energy of translation. Find the average angular velocity of the molecule.", "given": "M=5.30×10^{-26} kg, I=1.94×10^{-46} kg m², v=500 m s⁻¹, K_rot=(2/3)K_trans", "steps": ["½ I ω² = (2/3)(½ M v²) ⇒ I ω² = (2/3) M v²", "ω²=(2/3)×5.30e-26×250000 / 1.94e-46 = 4.55×10^{25}", "ω=6.75×10^{12} rad s⁻¹"], "answer": "6.75×10^{12} rad s⁻¹"}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.cmfind = (function(){
+  var mode = "tri";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Masses</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>CM</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c-t">Ex 6.1 equilateral</button>' +
+      '<button class="preset-btn" id="c-l">Ex 6.3 L-lamina</button>';
+    document.getElementById("c-t").onclick = function(){ setActivePreset(this); mode="tri"; App.resetTimeline(); };
+    document.getElementById("c-l").onclick = function(){ setActivePreset(this); mode="L"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="tri"){
+      var O=[160,240], A=[560,240], B=[360,240-0.5*400*Math.sqrt(3)/2];
+      B=[360, 70];
+      m += '<polygon points="'+O[0]+','+O[1]+' '+A[0]+','+A[1]+' '+B[0]+','+B[1]+'" fill="none" stroke="#475569"/>';
+      m += '<circle cx="'+O[0]+'" cy="'+O[1]+'" r="10" fill="#38bdf8"/>';
+      m += '<circle cx="'+A[0]+'" cy="'+A[1]+'" r="12" fill="#38bdf8"/>';
+      m += '<circle cx="'+B[0]+'" cy="'+B[1]+'" r="14" fill="#38bdf8"/>';
+      var Cx=160+(5/18)*400, Cy=240-(Math.sqrt(3)/9)*400*0.866*1.15;
+      Cx = 160 + (5/18)*400; Cy = 240 - (Math.sqrt(3)/9)*(240-70)/(0.25*Math.sqrt(3))*0.25*Math.sqrt(3);
+      // Y = √3/9 m, side 0.5 m maps 400 px; height 0.5*√3/2=0.433 m maps 170 px
+      Cy = 240 - (Math.sqrt(3)/9)/0.433 * 170;
+      m += '<circle cx="'+Cx+'" cy="'+Cy+'" r="7" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("X","5/18 m = 0.278 m") + cell("Y","√3/9 m = 0.192 m","#f59e0b"));
+      verdict("<b>Example 6.1:</b> unequal masses — the CM is <em>not</em> the centroid. X=5/18 m, Y=√3/9 m.");
+    } else {
+      m += '<rect x="140" y="160" width="200" height="100" fill="#1e3a5f"/>';
+      m += '<rect x="140" y="60" width="100" height="100" fill="#1e3a5f"/>';
+      var cx=140+(5/6)*100*2, cy=260-(5/6)*100*2;
+      // squares 1 m → 100 px; origin bottom-left of L at (140,260)
+      cx = 140 + (5/6)*100; cy = 260 - (5/6)*100;
+      m += '<circle cx="'+cx+'" cy="'+cy+'" r="7" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("X","5/6 m") + cell("Y","5/6 m") + cell("on","bisector of the L"));
+      verdict("<b>Example 6.3:</b> three 1 kg squares at (½,½), (3/2,½), (½,3/2) average to <b>(5/6, 5/6) m</b>.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.cmmotion = (function(){
+  var mode = "burst";
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>CM</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Fragments / child</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="b1">Firework burst</button>' +
+      '<button class="preset-btn" id="b2">Ex 6.3 trolley + child</button>';
+    document.getElementById("b1").onclick = function(){ setActivePreset(this); mode="burst"; App.resetTimeline(); App.play(); };
+    document.getElementById("b2").onclick = function(){ setActivePreset(this); mode="trolley"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="burst"){
+      var u=50, g=10, T=t;
+      var x=80+u*T*0.7, y=260-(u*T-0.5*g*T*T)*1.2;
+      if(y>260) y=260;
+      m += '<path d="M 80 260 Q 280 40 560 260" fill="none" stroke="#334155" stroke-dasharray="6 4"/>';
+      m += '<circle cx="'+x+'" cy="'+y+'" r="6" fill="#f59e0b"/>';
+      if(t>2){
+        var dt=t-2;
+        m += '<circle cx="'+(x+40*dt)+'" cy="'+(y-20*dt)+'" r="4" fill="#38bdf8"/>';
+        m += '<circle cx="'+(x-30*dt)+'" cy="'+(y-10*dt)+'" r="4" fill="#38bdf8"/>';
+        m += '<circle cx="'+x+'" cy="'+(y+25*dt)+'" r="4" fill="#38bdf8"/>';
+      }
+      svg.innerHTML = m;
+      readout(cell("F_ext","Mg down") + cell("CM path","original parabola","#f59e0b"));
+      verdict("<b>§6.3:</b> explosion forces are internal. The CM continues on the parabola the unexploded shell would have followed.");
+    } else {
+      var xT=80+40*t, xC=xT+30+20*Math.sin(t*3);
+      m += '<rect x="'+xT+'" y="160" width="160" height="40" fill="#1e3a5f"/>';
+      m += '<circle cx="'+xC+'" cy="150" r="10" fill="#38bdf8"/>';
+      m += '<circle cx="'+(xT+80)+'" cy="210" r="6" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("V_cm","V (unchanged)") + cell("floor","smooth ⇒ F_ext=0"));
+      verdict("<b>Ex 6.3:</b> the child can run anywhere on the trolley; the (trolley+child) CM keeps speed V.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.sysP = (function(){
+  function mount(){
+    App.state.maxT = 8;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Trolley + remaining sand</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Leaked sand</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p1">Sand leak (no thrust)</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var v=27; // km/h, shown as uniform
+    var x=60+t*40;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="200" x2="680" y2="200" stroke="#334155" stroke-width="6"/>';
+    m += '<rect x="'+x+'" y="150" width="120" height="40" fill="#38bdf8"/>';
+    for(var i=0;i<Math.min(6, Math.floor(t));i++){
+      m += '<circle cx="'+(x-20-i*18)+'" cy="210" r="4" fill="#f59e0b"/>';
+    }
+    svg.innerHTML = m;
+    readout(cell("v_trolley","27 km/h","#34d399") + cell("P","M(t) V, V const") + cell("thrust","0"));
+    verdict("<b>Leaking sand</b> already had the trolley’s velocity — no relative kick, unlike a rocket. Speed stays 27 km h⁻¹ (Ch. 5 Ex 5.19 / this chapter’s P law).");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.crossprod = (function(){
+  var mode = "screw";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>ω along axis</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>v = ω × r</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="x1">Fan: v = ω × r</button>' +
+      '<button class="preset-btn" id="x2">Ex 6.4 a × b</button>';
+    document.getElementById("x1").onclick = function(){ setActivePreset(this); mode="screw"; App.resetTimeline(); App.play(); };
+    document.getElementById("x2").onclick = function(){ setActivePreset(this); mode="ex"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="screw"){
+      var ang=t*1.2, cx=360, cy=160, R=90;
+      m += '<line x1="360" y1="40" x2="360" y2="260" stroke="#f59e0b" stroke-width="3"/>';
+      m += '<ellipse cx="360" cy="160" rx="90" ry="28" fill="none" stroke="#334155"/>';
+      var x=cx+R*Math.cos(ang), y=cy+28*Math.sin(ang);
+      m += '<circle cx="'+x+'" cy="'+y+'" r="8" fill="#38bdf8"/>';
+      svg.innerHTML = m;
+      readout(cell("ω","along axle") + cell("v","tangential") + cell("v","ω r_⊥"));
+      verdict("<b>Fig. 6.17:</b> ω along the fixed axis (right-hand screw). v = ω × r is tangent to the particle’s circle. Same ω for every particle.");
+    } else {
+      m += '<text x="360" y="80" fill="#e2e8f0" font-size="16" text-anchor="middle">a = 3î − 4ĵ + 5k̂,  b = −2î + ĵ − 3k̂</text>';
+      m += '<text x="360" y="140" fill="#34d399" font-size="18" text-anchor="middle">a · b = −25</text>';
+      m += '<text x="360" y="190" fill="#38bdf8" font-size="18" text-anchor="middle">a × b = 7î − ĵ − 5k̂</text>';
+      m += '<text x="360" y="240" fill="#94a3b8" font-size="14" text-anchor="middle">b × a = − (a × b)  (anticommutative)</text>';
+      svg.innerHTML = m;
+      readout(cell("a·b","−25") + cell("a×b","(7, −1, −5)"));
+      verdict("<b>Example 6.4 (zoom p.12):</b> determinant |î ĵ k̂ ; 3 −4 5 ; −2 1 −3| = 7î − ĵ − 5k̂.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.torque = (function(){
+  var mode = "wrench";
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>r</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>F or v</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="t1">Ex 6.5 r × F</button>' +
+      '<button class="preset-btn" id="t2">Ex 6.6 free particle ℓ</button>';
+    document.getElementById("t1").onclick = function(){ setActivePreset(this); mode="wrench"; App.resetTimeline(); };
+    document.getElementById("t2").onclick = function(){ setActivePreset(this); mode="free"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="wrench"){
+      m += '<text x="360" y="50" fill="#e2e8f0" font-size="15" text-anchor="middle">r = î − ĵ + k̂,  F = 7î + 3ĵ − 5k̂</text>';
+      m += '<text x="360" y="120" fill="#34d399" font-size="18" text-anchor="middle">τ = r × F = 2î + 12ĵ + 10k̂</text>';
+      m += '<line x1="200" y1="200" x2="400" y2="140" stroke="#f59e0b" stroke-width="3"/>';
+      m += '<line x1="400" y1="140" x2="520" y2="100" stroke="#38bdf8" stroke-width="3"/>';
+      svg.innerHTML = m;
+      readout(cell("τ_x","2") + cell("τ_y","12") + cell("τ_z","10"));
+      verdict("<b>Example 6.5 (zoom p.17):</b> determinant |î ĵ k̂ ; 1 −1 1 ; 7 3 −5| = 2î + 12ĵ + 10k̂.");
+    } else {
+      var x=80+t*80, y=80+40;
+      m += '<line x1="80" y1="120" x2="640" y2="120" stroke="#38bdf8" stroke-dasharray="4 4"/>';
+      m += '<circle cx="200" cy="220" r="5" fill="#f8fafc"/>';
+      m += '<text x="210" y="250" fill="#94a3b8" font-size="12">O</text>';
+      m += '<line x1="200" y1="220" x2="'+x+'" y2="120" stroke="#f59e0b"/>';
+      m += '<circle cx="'+x+'" cy="120" r="8" fill="#38bdf8"/>';
+      m += '<line x1="200" y1="220" x2="200" y2="120" stroke="#34d399" stroke-dasharray="3 3"/>';
+      svg.innerHTML = m;
+      readout(cell("b = r sinθ","constant") + cell("ℓ","m v b constant","#34d399"));
+      verdict("<b>Example 6.6:</b> free particle, impact parameter OM = r sinθ is constant, so ℓ = mvr sinθ is constant about any point. τ=0.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.ladder = (function(){
+  var mode = "bar";
+  function mount(){
+    App.state.maxT = 3;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 3;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Supports</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Loads</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="l1">Ex 6.8 knife-edges</button>' +
+      '<button class="preset-btn" id="l2">Ex 6.9 ladder</button>';
+    document.getElementById("l1").onclick = function(){ setActivePreset(this); mode="bar"; App.resetTimeline(); };
+    document.getElementById("l2").onclick = function(){ setActivePreset(this); mode="lad"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="bar"){
+      m += '<line x1="80" y1="160" x2="640" y2="160" stroke="#94a3b8" stroke-width="8"/>';
+      m += '<rect x="150" y="160" width="12" height="40" fill="#38bdf8"/>';
+      m += '<rect x="540" y="160" width="12" height="40" fill="#38bdf8"/>';
+      m += '<circle cx="280" cy="150" r="10" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("R1","54.88 N") + cell("R2","43.12 N") + cell("R1+R2","98 N"));
+      verdict("<b>Example 6.8:</b> ΣF=0 ⇒ R1+R2=10g=98 N. Moments about G ⇒ R1−R2=11.76 N. R1=54.88 N, R2=43.12 N.");
+    } else {
+      m += '<line x1="140" y1="260" x2="140" y2="60" stroke="#475569" stroke-width="6"/>';
+      m += '<line x1="140" y1="60" x2="280" y2="260" stroke="#f59e0b" stroke-width="8"/>';
+      m += '<line x1="120" y1="260" x2="500" y2="260" stroke="#334155" stroke-width="6"/>';
+      svg.innerHTML = m;
+      readout(cell("N","196 N") + cell("F_wall","34.6 N") + cell("|F2|","199 N") + cell("α","≈80°"));
+      verdict("<b>Example 6.9:</b> frictionless wall ⇒ F1 horizontal. Moments about A: F1=W/(4√2)=34.6 N. Floor reaction 199 N at tan⁻¹(4√2)≈80°.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.flywheel = (function(){
+  var mode = "cyl";
+  function mount(){
+    App.state.maxT = 16;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 16;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Rotor</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="f1">Ex 6.11 cylinder K, L</button>' +
+      '<button class="preset-btn" id="f2">Ex 6.11 motor 576 rev</button>';
+    document.getElementById("f1").onclick = function(){ setActivePreset(this); mode="cyl"; App.state.maxT=4; document.getElementById("time-scrubber").max=4; App.resetTimeline(); App.play(); };
+    document.getElementById("f2").onclick = function(){ setActivePreset(this); mode="motor"; App.state.maxT=16; document.getElementById("time-scrubber").max=16; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var ang = t * (mode==="cyl"?10: 40*Math.PI/16 * 0.3);
+    var cx=360, cy=150;
+    m += '<ellipse cx="'+cx+'" cy="'+cy+'" rx="90" ry="90" fill="none" stroke="#38bdf8" stroke-width="6"/>';
+    m += '<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+80*Math.cos(ang))+'" y2="'+(cy+80*Math.sin(ang))+'" stroke="#f8fafc" stroke-width="3"/>';
+    svg.innerHTML = m;
+    if(mode==="cyl"){
+      readout(cell("I","0.625 kg m²") + cell("K","3125 J","#34d399") + cell("L","62.5 kg m²/s"));
+      verdict("<b>Ex 6.11:</b> solid cylinder I=½MR²=0.625 kg m². K=½Iω²=<b>3125 J</b>, L=Iω=<b>62.5</b> kg m² s⁻¹.");
+    } else {
+      var w0=40*Math.PI, w=w0+4*Math.PI*t, th=w0*t+0.5*4*Math.PI*t*t;
+      readout(cell("α","4π rad/s²") + cell("θ", (th/Math.PI).toFixed(0)+" π rad") + cell("rev", (th/(2*Math.PI)).toFixed(0)));
+      verdict("<b>Example 6.11:</b> 1200→3120 rpm in 16 s. α=4π rad s⁻². θ=1152π rad = <b>576 revolutions</b>.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.icechair = (function(){
+  var mode = "cord";
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Rotor / skater</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="i1">Ex 6.12 flywheel cord</button>' +
+      '<button class="preset-btn" id="i2">Arms in: Iω conserved</button>';
+    document.getElementById("i1").onclick = function(){ setActivePreset(this); mode="cord"; App.resetTimeline(); App.play(); };
+    document.getElementById("i2").onclick = function(){ setActivePreset(this); mode="chair"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="cord"){
+      var th=t*3, R=70;
+      m += '<circle cx="400" cy="150" r="'+R+'" fill="none" stroke="#38bdf8" stroke-width="8"/>';
+      var x=400-R-t*40;
+      m += '<line x1="400" y1="150" x2="'+x+'" y2="150" stroke="#f59e0b" stroke-width="3"/>';
+      svg.innerHTML = m;
+      readout(cell("τ","5.0 N m") + cell("I","0.40 kg m²") + cell("α","12.5 rad/s²") + cell("W=ΔK","50 J","#34d399"));
+      verdict("<b>Example 6.12:</b> τ=Iα ⇒ α=12.5 s⁻². 2 m of cord: W=50 J = ½Iω². Frictionless bearing: work–energy holds.");
+    } else {
+      var arms = 80 - t*12;
+      var om = 1 + t*0.8;
+      var ang = t*om*3;
+      m += '<circle cx="360" cy="160" r="18" fill="#38bdf8"/>';
+      m += '<line x1="'+(360-arms*Math.cos(ang))+'" y1="'+(160-arms*Math.sin(ang))+'" x2="'+(360+arms*Math.cos(ang))+'" y2="'+(160+arms*Math.sin(ang))+'" stroke="#f59e0b" stroke-width="6"/>';
+      svg.innerHTML = m;
+      readout(cell("I","decreases") + cell("ω","increases") + cell("Iω","constant") + cell("K","rises ×2.5 at 2/5 I"));
+      verdict("<b>Ex 6.12 / Fig. 6.32:</b> τ_ext=0 ⇒ Iω constant. 40 rev/min → 100 rev/min when I→(2/5)I. Extra K is the work of pulling the arms in.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

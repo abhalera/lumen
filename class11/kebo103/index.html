@@ -1,0 +1,2854 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 3: Plant Kingdom — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 03 · PLANT KINGDOM</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 11 Exercises from NCERT Class 11 Biology (pp. 23–36) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "kebo103", "chapterNumber": 3, "book_name": "Biology", "title": "Plant Kingdom", "subtitle": "Classification of algae (Chlorophyceae, Phaeophyceae, Rhodophyceae), Bryophytes (liverworts and mosses), Pteridophytes (vascular cryptogams, heterospory, seed habit), Gymnosperms (naked seeds, cones), Angiosperms (double fertilization), and plant life cycle patterns.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kebo103.pdf", "page_start": 23, "page_end": 36, "extraction": "PyMuPDF dict spans + 2x PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "algae-classification", "nav": "Algae & Three Classes", "title": "Algae: Chlorophyceae, Phaeophyceae & Rhodophyceae (Table 3.1)", "deck": "Algae are simple, thalloid, autotrophic, mostly aquatic organisms. They are classified into three major classes based on photosynthetic pigments, cell wall polymers, and flagellation.", "minutes": 11, "section": "3.1, Table 3.1", "pages": [1, 4], "print": "23–26", "sim": "algaepigmentlab", "simTitle": "Algal Pigments, Storage Polysaccharides & Hydrocolloid Simulator", "quick": ["<strong>Algae</strong> are chlorophyll-bearing, simple, thalloid, autotrophic and largely aquatic (freshwater and marine) organisms. They reproduce vegetatively (by fragmentation), asexually (by flagellated <strong>zoospores</strong>), and sexually (isogamous, anisogamous, or <strong>oogamous</strong>).", "<strong>1. Chlorophyceae (Green Algae):</strong> Usually grass-green due to dominance of pigments <strong>chlorophyll a and b</strong> localised in definite chloroplasts. Possess one or more storage bodies called <strong>pyrenoids</strong> (protein surrounded by starch) located in chloroplasts. Inner cell wall of <strong>cellulose</strong>, outer of <strong>pectose</strong>. Flagella: <strong>2–8, equal, apical</strong> (e.g. <em>Chlamydomonas</em>, <em>Volvox</em>, <em>Ulothrix</em>, <em>Spirogyra</em>, <em>Chara</em>).", "<strong>2. Phaeophyceae (Brown Algae):</strong> Primarily marine. Possess <strong>chlorophyll a, c, carotenoids</strong>, and the xanthophyll pigment <strong>fucoxanthin</strong> which gives their olive-green to brown hue. Food stored as complex carbohydrates: <strong>laminarin or mannitol</strong>. Cellulosic wall covered on the outside by a gelatinous coating of <strong>algin</strong>. Plant body attached to substratum by a <strong>holdfast</strong>, having a stalk (<strong>stipe</strong>) and photosynthetic <strong>frond</strong>. Flagella: <strong>2, unequal, lateral</strong> (e.g. <em>Ectocarpus</em>, <em>Dictyota</em>, <em>Laminaria</em>, <em>Sargassum</em>, <em>Fucus</em>).", "<strong>3. Rhodophyceae (Red Algae):</strong> Mostly marine, found at greater depths in oceans. Dominant pigment is the red proteinaceous accessory pigment <strong>r-phycoerythrin</strong>, alongside <strong>chlorophyll a and d</strong>. Food stored as <strong>floridean starch</strong> (structurally very similar to amylopectin and glycogen). Flagella: <strong>completely absent</strong> in all stages. Reproduce sexually by non-motile gametes via complex post-fertilization developments (e.g. <em>Polysiphonia</em>, <em>Porphyra</em>, <em>Gracilaria</em>, <em>Gelidium</em>)."], "formulas": [{"label": "NCERT Table 3.1 Diagnostic Pigment Triad", "html": "\\begin{aligned} \\text{Chlorophyceae: } & \\text{Chl } a, b \\quad & \\rightarrow \\text{Starch} \\quad & \\rightarrow 2\\text{--}8 \\text{ equal apical flagella} \\\\ \\text{Phaeophyceae: } & \\text{Chl } a, c + \\text{Fucoxanthin} \\quad & \\rightarrow \\text{Mannitol/Laminarin} \\quad & \\rightarrow 2 \\text{ unequal lateral flagella} \\\\ \\text{Rhodophyceae: } & \\text{Chl } a, d + r\\text{-phycoerythrin} \\quad & \\rightarrow \\text{Floridean Starch} \\quad & \\rightarrow \\text{Flagella ABSENT} \\end{aligned}", "cond": "Biochemical and cytological basis of algal taxonomy"}, {"label": "Commercial Hydrocolloids", "html": "\\text{Algin (Brown Algae)} + \\text{Carrageen (Red Algae)} + \\text{Agar (Gelidium/Gracilaria)}", "cond": "Water-holding polysaccharides in food, microbiology & pharmaceutical industry"}], "deeper": "Why are red algae able to thrive at ocean depths exceeding 200 metres where sunlight scarcely penetrates? Water selectively absorbs longer wavelengths (red and orange light) in the upper tens of metres, allowing only high-energy, short-wavelength blue-green photons (400–500 nm) to reach the deep abyss. The red pigment r-phycoerythrin has strong absorption peaks precisely in the blue-green spectrum, harvesting these penetrating photons and transferring resonance energy to chlorophyll a for deep-sea photosynthesis.", "worked": "Economic Extraction Matrix from NCERT 3.1: (a) Agar, obtained from Gelidium and Gracilaria, is used to solidify microbiological culture media and in the preparation of ice creams and jellies. (b) Algin (from brown algae like Laminaria) and carrageen (from red algae) are commercial hydrocolloids used as emulsifiers. (c) Chlorella, a unicellular green alga rich in proteins, is used as a dietary food supplement even by space travellers.", "prediction": {"prompt": "If a marine botanist collects an alga from a deep ocean trench that completely lacks flagella at all stages and stores carbohydrates structurally identical to branched amylopectin, which class does it belong to?", "options": ["Class Rhodophyceae (Red Algae)", "Class Chlorophyceae (Green Algae)", "Class Phaeophyceae (Brown Algae)", "Class Bryophyta"], "answer": 0, "explanation": "Rhodophyceae (red algae) are unique in completely lacking motile flagellated stages throughout their life cycle and storing floridean starch (which is structurally similar to amylopectin and glycogen)."}, "connect": [["Agar in Petri Dishes & Microbiology", "Robert Koch's lab assistant Fanny Hesse first suggested using agar-agar from Gelidium instead of gelatin, creating the heat-stable solid medium that enabled the isolation of tuberculosis and cholera bacteria."], ["Giant Kelp Forests (Macrocystis)", "Brown algae in the Pacific Ocean form underwater kelp forests reaching heights of 60 metres, creating temperate marine ecosystems as structurally complex as terrestrial rain forests."]], "recall": "State the stored food and flagellar characteristics of Phaeophyceae.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which commercial hydrocolloid is extracted from red algae and used to grow microbes in laboratories?", "options": ["Agar", "Algin", "Cellulose", "Mannitol"], "answer": 0, "hint": "Obtained from Gelidium and Gracilaria.", "solution": "Agar, obtained from Gelidium and Gracilaria (red algae), is used to grow microbes and in preparations of ice-creams and jellies.", "wrong": ["Algin is extracted from brown algae.", "Cellulose is the primary component of all plant cell walls.", "Mannitol is stored food in brown algae, not a solidifying hydrocolloid."]}, {"level": "Medium", "type": "mcq", "prompt": "What is the nature of stored food in red algae (Rhodophyceae), and what is its chemical structure similar to?", "options": ["Floridean starch, structurally very similar to amylopectin and glycogen", "Laminarin, structurally similar to cellulose", "Mannitol, structurally similar to glucose", "Pyrenoid oil droplets, structurally similar to triglycerides"], "answer": 0, "hint": "Check NCERT section 3.1.3.", "solution": "In Rhodophyceae, food is stored as floridean starch which is very similar to amylopectin and glycogen in structure.", "wrong": ["Laminarin is stored in brown algae.", "Mannitol is a sugar alcohol stored in brown algae.", "Pyrenoids store standard starch in green algae."]}, {"level": "Hard", "type": "mcq", "prompt": "Which of the following combinations of pigments, stored food, and flagellar insertion correctly characterizes Class Phaeophyceae?", "options": ["Chlorophyll a, c, fucoxanthin; mannitol/laminarin; 2 unequal lateral flagella", "Chlorophyll a, b; starch; 2–8 equal apical flagella", "Chlorophyll a, d, r-phycoerythrin; floridean starch; flagella absent", "Chlorophyll a, b, fucoxanthin; glycogen; 1 single posterior flagellum"], "answer": 0, "hint": "Check Table 3.1 for brown algae.", "solution": "Phaeophyceae have chlorophyll a, c and fucoxanthin, store mannitol and laminarin, and possess 2 unequal, lateral flagella.", "wrong": ["Option 2 defines Chlorophyceae.", "Option 3 defines Rhodophyceae.", "Option 4 is a fabricated mixture of traits."]}]}, {"id": "bryophytes-liverworts-mosses", "nav": "Bryophytes: Liverworts & Mosses", "title": "Bryophytes: Amphibians of the Plant Kingdom, Liverworts & Mosses", "deck": "Bryophytes include liverworts and mosses that grow in moist shaded habitats. They are called amphibians of the plant kingdom because they live on soil but depend on water for sexual reproduction.", "minutes": 10, "section": "3.2", "pages": [4, 7], "print": "26–29", "sim": "bryophytelifecycle", "simTitle": "Bryophyte Life Cycle, Gemma Cup & Sporophyte Simulator", "quick": ["<strong>Bryophytes</strong> are called <strong>'amphibians of the plant kingdom'</strong> because though these plants live on land/soil, they are absolutely dependent on water for sexual reproduction (flagellated antherozoids swim through water film to reach the archegonium).", "The plant body of bryophytes is thalloid, prostrate or erect, attached to the substratum by unicellular or multicellular <strong>rhizoids</strong>. They lack true roots, stems, or leaves, but possess root-like, stem-like, or leaf-like structures. Lacks vascular tissue (xylem and phloem).", "The main plant body of the bryophyte is <strong>haploid</strong> and produces gametes, hence called a <strong>gametophyte</strong>. Sex organs are multicellular: male sex organ is <strong>antheridium</strong> (produces biflagellate antherozoids), female sex organ is flask-shaped <strong>archegonium</strong> (produces a single egg).", "Zygote does not undergo reduction division immediately; it produces a multicellular diploid <strong>sporophyte</strong> that is <strong>not free-living but attached to and nutritionally dependent on the photosynthetic gametophyte</strong>.", "<strong>Liverworts (e.g. Marchantia):</strong> Thallus dorsiventral, closely appressed. Asexual reproduction occurs by fragmentation or specialized green, multicellular, asexual buds called <strong>gemmae</strong>, which develop in small receptacles called <strong>gemma cups</strong>.", "<strong>Mosses (e.g. Funaria, Polytrichum, Sphagnum):</strong> Life cycle consists of two stages: the first is the juvenile creeping green branched filamentous <strong>protonema stage</strong> (developed directly from a spore), and the second is the upright <strong>leafy stage</strong> (bearing spirally arranged leaves and sex organs). <em>Sphagnum</em> (peat moss) provides peat used as fuel and packing material for trans-shipment of living material due to its immense water-holding capacity."], "formulas": [{"label": "Bryophyte Life Cycle Formula", "html": "\\text{Spore } (n) \\xrightarrow{\\text{Germination}} \\text{Gametophyte } (n) \\xrightarrow{\\text{Mitosis}} \\text{Antherozoid } (n) + \\text{Egg } (n) \\xrightarrow{\\text{Water Syngamy}} \\text{Zygote } (2n) \\xrightarrow{\\text{Mitosis}} \\text{Sporophyte } (2n) \\xrightarrow{\\text{Meiosis in Capsule}} \\text{Spores } (n)", "cond": "Gametophyte dominant; Sporophyte nutritionally dependent on gametophyte"}, {"label": "Moss Two-Stage Gametophyte", "html": "\\text{Spore } (n) \\rightarrow \\text{Protonema Stage (Filamentous, Budding)} \\rightarrow \\text{Leafy Stage (Spirally Arranged, Fertile)}", "cond": "Diagnostic lifecycle feature of Bryopsida (Mosses)"}], "deeper": "Why are bryophytes of little direct economic value for human food, yet of immense ecological importance? Mosses along with lichens are the first organisms to colonize bare rocks (primary ecological succession). They secrete organic acids that decompose minerals, forming initial soil layers. Furthermore, mosses form dense, continuous mats over forest floors that absorb driving rainfall like a giant sponge, preventing soil erosion and catastrophic water runoff.", "worked": "Marchantia Gemma Dissection: Gemmae are green, multicellular, asexual reproductive buds that develop inside shallow gemma cups on the dorsal surface of the thallus. When raindrops splash into the cup, gemmae are detached and catapulted onto moist soil, where each notch on the gemma germinates directly into a new haploid thallus.", "prediction": {"prompt": "If a gardener grows Marchantia in an arid greenhouse with 10% relative humidity and zero liquid surface water, what will happen to its sexual reproduction?", "options": ["Sexual fertilization will fail completely because biflagellate antherozoids require a continuous film of water to swim to the archegonium.", "It will reproduce sexually via wind-blown pollen.", "The sporophyte will become independent and photosynthetic.", "The thallus will turn into a gymnosperm cone."], "answer": 0, "explanation": "Bryophytes are amphibians of the plant kingdom precisely because their flagellated antherozoids must swim through a film of water to reach the egg inside the archegonium."}, "connect": [["Sphagnum Peat Bogs and Carbon Storage", "Peat bogs formed by Sphagnum moss store more carbon than all the world's tropical rain forests combined. The acidic, anoxic bog water preserves organic matter for thousands of years ('bog bodies')."], ["Surgical Dressings in World War I", "Due to its extraordinary water-holding capacity (absorbing 20 times its dry weight) and antiseptic acidic chemistry, Sphagnum moss was harvested by the ton as surgical wound dressings during WWI."]], "recall": "Why are bryophytes called the amphibians of the plant kingdom?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which bryophyte produces peat that has long been used as fuel and as packing material for trans-shipment of living material?", "options": ["Sphagnum", "Marchantia", "Funaria", "Riccia"], "answer": 0, "hint": "Known as peat moss.", "solution": "Sphagnum, a moss, provides peat that has long been used as fuel and for packing living material due to its water-holding capacity.", "wrong": ["Marchantia is a liverwort with gemma cups.", "Funaria is a common cord moss.", "Riccia is a thalloid liverwort."]}, {"level": "Medium", "type": "mcq", "prompt": "What are gemmae in liverworts such as Marchantia?", "options": ["Green, multicellular, asexual buds that develop in gemma cups", "Unicellular haploid sexual gametes produced in antheridia", "Diploid resting spores formed after fertilization", "Root-like anchoring hairs on the ventral thallus"], "answer": 0, "hint": "Asexual buds produced in cups on the dorsal thallus.", "solution": "Gemmae are green, multicellular, asexual buds which develop in small receptacles called gemma cups on the thalli.", "wrong": ["They are not sexual gametes.", "They are asexual vegetative propagules, not zygotic resting spores.", "Rhizoids are the anchoring hairs, not gemmae."]}, {"level": "Hard", "type": "mcq", "prompt": "Which of the following correctly describes the sporophyte of bryophytes?", "options": ["It is multicellular, diploid, and physically/nutritionally dependent on the photosynthetic gametophyte.", "It is a free-living, independent, branched photosynthetic vascular plant body.", "It is a microscopic unicellular zygote that directly produces gametes via mitosis.", "It develops into an underground rhizome bearing seeds."], "answer": 0, "hint": "Check NCERT section 3.2: 'The sporophyte is not free-living but attached to...'", "solution": "The sporophyte is not free-living but attached to the photosynthetic gametophyte and derives nourishment from it.", "wrong": ["Pteridophytes have free-living independent sporophytes, not bryophytes.", "The sporophyte is multicellular, not unicellular.", "Bryophytes never produce seeds or rhizomes."]}]}, {"id": "pteridophytes-vascular-pioneers", "nav": "Pteridophytes: Vascular Pioneers", "title": "Pteridophytes: Horsetails, Ferns & The Evolution of Vascular Tissues", "deck": "Pteridophytes are the first terrestrial plants to possess vascular tissues (xylem and phloem). The main plant body is a diploid sporophyte differentiated into true roots, stems, and leaves.", "minutes": 10, "section": "3.3", "pages": [7, 9], "print": "29–31", "sim": "pteridophytestele", "simTitle": "Pteridophyte Stele, Sporophylls & Prothallus Simulator", "quick": ["<strong>Pteridophytes (Horsetails and Ferns)</strong> are used for medicinal purposes and as soil-binders, and are frequently grown as ornamentals. Evolutionarily, they are the <strong>first terrestrial plants to possess vascular tissues—xylem and phloem</strong>.", "Unlike bryophytes, the <strong>main plant body in pteridophytes is a sporophyte ($2n$)</strong> which is differentiated into true root, stem, and leaves with well-differentiated vascular tissues.", "Leaves in pteridophytes may be small (<strong>microphylls</strong>) as in <em>Selaginella</em>, or large (<strong>macrophylls/megaphylls</strong>) as in ferns.", "Sporophytes bear <strong>sporangia</strong> that are subtended by leaf-like appendages called <strong>sporophylls</strong>. In some forms, sporophylls form distinct compact structures called <strong>strobili or cones</strong> (e.g. <em>Selaginella</em>, <em>Equisetum</em>).", "Spores germinate to give rise to inconspicuous, small, multicellular, free-living, mostly photosynthetic thalloid gametophytes called <strong>prothallus</strong>. Because the prothallus requires cool, damp, shady places and water for fertilization, <strong>the spread of living pteridophytes is limited and restricted to narrow geographical zones</strong>."], "formulas": [{"label": "Pteridophyte Life Cycle Formula", "html": "\\text{Sporophyte } (2n) \\xrightarrow{\\text{Meiosis in Sporangia}} \\text{Spore } (n) \\xrightarrow{\\text{Germination}} \\text{Prothallus } (n) \\xrightarrow{\\text{Mitosis}} \\text{Antheridia + Archegonia} \\xrightarrow{\\text{Water Syngamy}} \\text{Zygote } (2n) \\rightarrow \\text{Embryo} \\rightarrow \\text{Sporophyte } (2n)", "cond": "Independent sporophyte AND independent free-living gametophyte (Haplodiplontic)"}, {"label": "Leaf Morphometrics", "html": "\\begin{aligned} \\text{Microphylls: } & \\text{Single unbranched vein (Selaginella)} \\\\ \\text{Macrophylls: } & \\text{Branched complex venation (Ferns / Pteris / Dryopteris)} \\end{aligned}", "cond": "Leaf anatomical distinction"}], "deeper": "Why do pteridophytes have such a restricted geographical distribution compared to flowering plants? Even though the adult sporophyte has evolved efficient vascular tissues (xylem tracheids and phloem sieve cells) and a cuticularized epidermis allowing it to withstand dry aerial conditions, its sexual reproductive phase—the prothallus—is a tiny, delicate, non-vascular thallus. The flagellated antherozoids released from antheridia require a continuous film of external liquid water to swim to the neck of the archegonium for fertilization. Thus, pteridophytes remain tethered to moist, humid, shady micro-habitats.", "worked": "Classification of Pteridophyta into Four Classes (NCERT 3.3): (1) Psilopsida (Psilotum); (2) Lycopsida (Selaginella, Lycopodium); (3) Sphenopsida (Equisetum, the horsetail); (4) Pteropsida (Dryopteris, Pteris, Adiantum, the walking fern).", "prediction": {"prompt": "What ploidy level is exhibited by the cells of a fern prothallus, and what type of cell division produces its antherozoids and eggs?", "options": ["Haploid (n); produced by mitosis", "Diploid (2n); produced by meiosis", "Triploid (3n); produced by triple fusion", "Tetraploid (4n); produced by endomitosis"], "answer": 0, "explanation": "The prothallus is the haploid (n) gametophytic generation developed from a haploid spore. Gametes (antherozoids and eggs) are produced within antheridia and archegonia via mitosis."}, "connect": [["Equisetum: The Living Fossil Horsetail", "Equisetum is the sole surviving genus of the class Sphenopsida. Its stems contain heavy silica deposits, giving them an abrasive texture that earned them the historical nickname 'scouring rushes' used to clean cooking pots."], ["Carboniferous Coal Forests", "300 million years ago during the Carboniferous period, gigantic tree-ferns and lycophytes (Lepidodendron) over 30 metres tall dominated Earth's swamps. Their compressed remains formed our modern coal reserves."]], "recall": "Name the four classes into which Pteridophytes are classified.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which of the following plant groups were the first terrestrial plants to evolve vascular tissues (xylem and phloem)?", "options": ["Pteridophytes", "Bryophytes", "Algae", "Fungi"], "answer": 0, "hint": "Includes horsetails and ferns.", "solution": "Pteridophytes are the first terrestrial plants to possess vascular tissues – xylem and phloem (NCERT section 3.3).", "wrong": ["Bryophytes lack vascular tissues.", "Algae are non-vascular thallophytes.", "Fungi are non-vascular heterotrophic decomposers."]}, {"level": "Medium", "type": "mcq", "prompt": "The multicellular, free-living, mostly photosynthetic thalloid gametophyte of a fern is termed:", "options": ["Prothallus", "Protonema", "Gemma cup", "Endosperm"], "answer": 0, "hint": "Heart-shaped haploid gametophyte.", "solution": "Spores germinate to give rise to inconspicuous, small but multicellular, free-living, mostly photosynthetic thalloid gametophytes called prothallus.", "wrong": ["Protonema is the juvenile filamentous stage of mosses.", "Gemma cup is an asexual bud receptacle in Marchantia.", "Endosperm is nutritive tissue in seed plants."]}, {"level": "Hard", "type": "mcq", "prompt": "Match the pteridophyte class with its representative genus:\n(1) Psilopsida — (A) Equisetum\n(2) Lycopsida — (B) Adiantum\n(3) Sphenopsida — (C) Selaginella\n(4) Pteropsida — (D) Psilotum", "options": ["1-D, 2-C, 3-A, 4-B", "1-A, 2-C, 3-D, 4-B", "1-D, 2-A, 3-C, 4-B", "1-B, 2-C, 3-A, 4-D"], "answer": 0, "hint": "Check the 4 classes at the end of NCERT section 3.3.", "solution": "Psilopsida (Psilotum), Lycopsida (Selaginella), Sphenopsida (Equisetum), Pteropsida (Dryopteris, Pteris, Adiantum).", "wrong": ["Option 2 swaps Psilotum and Equisetum.", "Option 3 misaligns Sphenopsida with Selaginella.", "Option 4 places Adiantum in Psilopsida."]}]}, {"id": "heterospory-seed-habit", "nav": "Heterospory & Seed Habit", "title": "Heterospory & The Evolutionary Genesis of the Seed Habit", "deck": "The transition from homospory to heterospory in Selaginella and Salvinia, with retention of the megaspore on the parent sporophyte, represents the pivotal precursor to the seed habit.", "minutes": 10, "section": "3.3", "pages": [8, 9], "print": "30–31", "sim": "heterosporylab", "simTitle": "Homospory vs Heterospory & Seed Habit Evolution Simulator", "quick": ["The majority of pteridophytes produce spores of similar kinds; such plants are called <strong>homosporous</strong> (e.g. <em>Dryopteris</em>, <em>Pteris</em>, <em>Equisetum</em>).", "Genera like <strong>Selaginella</strong> and <strong>Salvinia</strong> produce two kinds of spores: smaller <strong>microspores</strong> (which germinate into male gametophytes) and vastly larger <strong>megaspores</strong> (which germinate into female gametophytes). Such plants are called <strong>heterosporous</strong>.", "<strong>The Precursor to Seed Habit:</strong> In heterosporous pteridophytes, the female gametophytes are <strong>retained on the parent sporophytes for variable periods</strong>. The development of the zygotes into young embryos takes place within the female gametophytes.", "This retention of the megaspore and developing embryo within the protective maternal tissue of the parent sporophyte is considered <strong>an important milestone and prerequisite in evolution—the seed habit</strong>, paving the way for the success of gymnosperms and angiosperms."], "formulas": [{"label": "Homospory vs Heterospory", "html": "\\begin{aligned} \\text{Homospory: } & \\text{Single spore type} \\rightarrow \\text{Bisexual/Monoecious Prothallus} \\\\ \\text{Heterospory: } & \\begin{cases} \\text{Microspore } (n) \\rightarrow \\text{Male Gametophyte (Antheridia)} \\\\ \\text{Megaspore } (n) \\rightarrow \\text{Female Gametophyte (Archegonia)} \\end{cases} \\end{aligned}", "cond": "Precursor to pollen grains and ovules"}, {"label": "Evolutionary Seed Triad", "html": "\\text{Heterospory} + \\text{Megaspore Retention in Megasporangium} + \\text{In-situ Embryogenesis} = \\text{Seed Habit}", "cond": "NCERT section 3.3 evolutionary hallmark"}], "deeper": "Why is the seed habit considered the crowning breakthrough of terrestrial plant evolution? In homosporous plants, spores are shed into the harsh outside environment where they must survive desiccation, find shade, and germinate into fragile gametophytes. Heterospory and the seed habit shield the megaspore and vulnerable embryo inside maternal tissues packed with nutrient reserves, emancipating plant reproduction from the strict requirement of external standing water.", "worked": "Dissecting Selaginella Cone Architecture: A strobilus of Selaginella bears microsporophylls with microsporangia containing hundreds of powdery microspores, and megasporophylls with megasporangia containing usually four large megaspores filled with rich yolk-like food reserves.", "prediction": {"prompt": "Which of the following events occurring in Selaginella is considered the definitive evolutionary precursor to the seed habit of higher plants?", "options": ["Retention of the female gametophyte on the parent sporophyte and development of the embryo within it.", "Formation of flagellated antherozoids that swim through water.", "Development of large macrophyllous fronds with sori.", "Production of identical homospores by sporangia."], "answer": 0, "explanation": "NCERT section 3.3 highlights that the female gametophytes are retained on parent sporophytes and development of zygote into young embryo takes place within female gametophytes, an event considered an important step in evolution."}, "connect": [["The Resurrection Plant (Selaginella bryopteris)", "Selaginella bryopteris (Sanjeevani) exhibits extreme poikilohydry, curling into a dry ball during droughts and resurrecting into vivid green within hours of rainfall."], ["Azolla-Anabaena Symbiosis in Rice Paddies", "Salvinia's relative, the water fern Azolla, harbours nitrogen-fixing cyanobacteria (Anabaena azollae), serving as an organic bio-fertilizer that sustains Asian wet-rice agriculture."]], "recall": "Name two heterosporous pteridophytes mentioned in NCERT.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which pair of pteridophytes are heterosporous, producing both microspores and megaspores?", "options": ["Selaginella and Salvinia", "Equisetum and Dryopteris", "Psilotum and Pteris", "Lycopodium and Adiantum"], "answer": 0, "hint": "Check NCERT section 3.3 on heterospory.", "solution": "Genera like Selaginella and Salvinia which produce two kinds of spores, macro (large) and micro (small) spores, are known as heterosporous.", "wrong": ["Equisetum and Dryopteris are homosporous.", "Psilotum and Pteris are homosporous.", "Lycopodium and Adiantum are homosporous."]}, {"level": "Medium", "type": "mcq", "prompt": "Why is the retention of the female gametophyte on the parent sporophyte in heterosporous pteridophytes considered an important evolutionary step?", "options": ["It represents the critical precursor to the development of the seed habit.", "It eliminates the need for photosynthesis in the adult sporophyte.", "It causes the plant to lose vascular tissues.", "It turns the plant into an obligate aquatic alga."], "answer": 0, "hint": "NCERT section 3.3: 'This event is a precursor to the...' ", "solution": "The retention of the female gametophyte on parent sporophytes and in-situ embryonic development is considered an important precursor to the seed habit.", "wrong": ["The adult sporophyte remains photosynthetic.", "It does not cause loss of vascular tissues.", "It is an adaptation to land, not to becoming an alga."]}, {"level": "Hard", "type": "mcq", "prompt": "In heterosporous plants, what do microspores and megaspores germinate to give rise to?", "options": ["Microspores germinate into male gametophytes; megaspores germinate into female gametophytes.", "Microspores germinate into female gametophytes; megaspores germinate into male gametophytes.", "Both germinate into identical bisexual prothalli.", "Microspores form seeds; megaspores form pollen grains."], "answer": 0, "hint": "Micro = male; mega = female.", "solution": "The megaspores and microspores germinate and give rise to female and male gametophytes, respectively (NCERT section 3.3).", "wrong": ["Option 2 reverses sexes.", "Heterospory produces unisexual, not bisexual gametophytes.", "Pollen grains are microgametophytes; seeds develop from ovules containing megagametophytes."]}]}, {"id": "gymnosperms-naked-seeds", "nav": "Gymnosperms: Naked Seeds", "title": "Gymnosperms: Ovules Unenclosed, Cones & Pinus/Cycas Specializations", "deck": "Gymnosperms are plants in which the ovules are not enclosed by any ovary wall and remain exposed both before and after fertilization, forming naked seeds.", "minutes": 10, "section": "3.4", "pages": [9, 11], "print": "31–33", "sim": "gymnospermcone", "simTitle": "Gymnosperm Male & Female Cones, Pinus Needle & Ovule Simulator", "quick": ["<strong>Gymnosperms</strong> (<em>gymnos</em>: naked, <em>sperma</em>: seeds) are plants in which the ovules are not enclosed by any ovary wall and remain exposed, both before and after fertilization. The seeds that develop post-fertilization are <strong>not covered, i.e., are naked</strong>.", "Gymnosperms include medium-sized trees, tall trees, and shrubs. The giant redwood tree <strong>Sequoia</strong> is one of the tallest tree species in the world.", "Roots are generally tap roots. In <strong>Pinus</strong>, roots have fungal association in the form of <strong>mycorrhiza</strong>. In <strong>Cycas</strong>, small specialized roots called <strong>coralloid roots</strong> are associated with $N_2$-fixing cyanobacteria.", "Stems are unbranched in <em>Cycas</em> or branched in <em>Pinus</em> and <em>Cedrus</em>. Leaves are well adapted to withstand extremes of temperature, humidity, and wind: in conifers (e.g. <em>Pinus</em>), needle-like leaves reduce surface area, thick cuticle, and sunken stomata reduce water loss.", "Gymnosperms are <strong>heterosporous</strong>. They produce haploid microspores and megaspores in <strong>microsporangia (male strobili/cones)</strong> and <strong>megasporangia (female strobili/seed cones)</strong>. Pollen grains are carried by wind (<strong>anemophily</strong>) directly to the open micropyle of the ovule."], "formulas": [{"label": "Gymnosperm Anatomical Adaptations", "html": "\\text{Needle Leaves} + \\text{Thick Cuticle} + \\text{Sunken Stomata} \\rightarrow \\text{Xerophytic Transpiration Minimization}", "cond": "Conifer adaptations to cold/dry alpine climates"}, {"label": "Coralloid Roots Symbiosis", "html": "\\text{Cycas Coralloid Roots} + \\text{Anabaena/Nostoc (Cyanobacteria)} \\rightarrow \\text{Nitrogen Fixation}", "cond": "Dichotomously branched apogeotropic roots"}], "deeper": "Why do gymnosperms lack true fruits even though they produce true seeds? A botanical fruit is by definition a ripened, fertilized ovary. In gymnosperms, megasporophylls bear ovules directly on their exposed scales without an enclosing carpel (ovary wall, style, and stigma). Since there is no ovary, no fruit wall (pericarp) can ever develop; the fertilized ovules transform directly into 'naked' seeds borne on the woody scales of the female cone.", "worked": "Comparing Pinus and Cycas Sexuality: Pinus is monoecious—both male cones (strobili bearing microsporophylls) and female cones (strobili bearing megasporophylls) are borne on the same tree. Cycas is strictly dioecious—male cones and female megasporophylls are borne on entirely separate male and female plants; furthermore, female Cycas does not form a compact female cone, but bears loose clusters of megasporophylls.", "prediction": {"prompt": "If an atmospheric botanist examines the pollination mechanism of Pinus, how does the pollen grain reach the archegonium in the absence of floral petals and insect pollinators?", "options": ["Air currents carry winged pollen grains directly into the open micropyle of the ovule, where a pollen tube grows down to discharge sperm.", "Pollen grains swim through groundwater into the roots.", "Honeybees enter the ovule to deposit pollen.", "Pollen grains burst open to release motile flagellated zoospores into air."], "answer": 0, "explanation": "Gymnosperms rely exclusively on wind pollination (anemophily); winged pollen grains enter the micropyle directly and germinate to form a pollen tube that delivers male gametes to the archegonium."}, "connect": [["Sequoia sempervirens: The Giants of California", "Coastal redwoods (Sequoia) reach heights over 115 metres and live for over 2,000 years, surviving forest fires due to thick, tannin-rich, fire-resistant bark."], ["Pine Resin and Turpentine", "Resin canals in Pinus wood secrete sticky aromatic oleoresin that seals insect boreholes and provides commercial rosin and turpentine oil for paints and varnishes."]], "recall": "Differentiate between Pinus and Cycas with respect to their root systems and stem branching.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Why are the seeds of gymnosperms described as 'naked'?", "options": ["Because the ovules and developing seeds are not enclosed inside an ovary wall or fruit.", "Because the seeds completely lack a seed coat.", "Because they cannot germinate in soil.", "Because they lack an embryonic sporophyte."], "answer": 0, "hint": "Check NCERT section 3.4: 'The gymnosperms are plants in which the ovules are not enclosed...'", "solution": "In gymnosperms, ovules are not enclosed by any ovary wall and remain exposed before and after fertilization, hence seeds are naked.", "wrong": ["Gymnosperm seeds have a protective seed coat (testa).", "They germinate readily in soil.", "They possess well-differentiated embryos."]}, {"level": "Medium", "type": "mcq", "prompt": "In Cycas, what are the specialized roots associated with nitrogen-fixing cyanobacteria called?", "options": ["Coralloid roots", "Mycorrhizal roots", "Stilt roots", "Pneumatophores"], "answer": 0, "hint": "Small specialized roots resembling sea corals.", "solution": "In Cycas, small specialized roots called coralloid roots are associated with N₂-fixing cyanobacteria.", "wrong": ["Mycorrhiza occurs in Pinus roots with fungi.", "Stilt roots support maize and sugarcane stems.", "Pneumatophores are breathing roots of mangrove Rhizophora."]}, {"level": "Hard", "type": "mcq", "prompt": "Which combination of xerophytic leaf adaptations allows conifers like Pinus to endure alpine cold, high winds, and drought?", "options": ["Needle-like leaves, thick cuticle, and sunken stomata", "Broad thin leaves, thin cuticle, and elevated stomata", "Loss of all chloroplasts and reliance on fungal saprophytism", "Absence of xylem tracheids and phloem sieve cells"], "answer": 0, "hint": "NCERT section 3.4: 'In conifers, the needle-like leaves reduce...'", "solution": "In conifers, needle-like leaves reduce surface area, thick cuticle and sunken stomata help reduce water loss.", "wrong": ["Broad thin leaves would transpire too much water.", "Conifers are actively photosynthetic green autotrophs.", "Conifers possess well-developed xylem tracheids."]}]}, {"id": "angiosperms-double-fertilization", "nav": "Angiosperms & Double Fertilization", "title": "Angiosperms & Double Fertilization: The Unique Hallmarks of Flowering Plants", "deck": "Angiosperms are flowering plants with enclosed seeds. Double fertilization—comprising syngamy and triple fusion—is an event unique to angiosperms.", "minutes": 11, "section": "3.5", "pages": [11, 13], "print": "33–35", "sim": "angiospermdoublefert", "simTitle": "Embryo Sac, Syngamy & Triple Fusion Double Fertilization Simulator", "quick": ["Unlike gymnosperms where ovules are naked, in <strong>angiosperms (flowering plants)</strong>, the pollen grains and ovules are developed in specialized structures called <strong>flowers</strong>, and seeds are enclosed inside fruits.", "Divided into two classes: <strong>Dicotyledons</strong> (seeds with two cotyledons, reticulate venation, tetramerous or pentamerous flowers) and <strong>Monocotyledons</strong> (seeds with single cotyledon, parallel venation, trimerous flowers).", "The male sex organ in a flower is the <strong>stamen</strong> (filament + anther producing pollen grains). The female sex organ is the <strong>pistil/carpel</strong> (ovary enclosing ovules + style + stigma).", "An ovule contains an <strong>embryo sac (female gametophyte)</strong>, which is 7-celled and 8-nucleate: 1 egg cell + 2 synergids (egg apparatus), 3 antipodal cells, and 1 large central cell with <strong>2 polar nuclei</strong>.", "<strong>Double Fertilization (Unique to Angiosperms):</strong> Pollen tube discharges <strong>two male gametes</strong> into the embryo sac:", "(1) <strong>Syngamy:</strong> One male gamete ($n$) fuses with the egg cell ($n$) to form a diploid <strong>zygote ($2n$)</strong>, which develops into the embryo.", "(2) <strong>Triple Fusion:</strong> The other male gamete ($n$) fuses with the two haploid polar nuclei ($n + n$) of the central cell to form the <strong>triploid Primary Endosperm Nucleus ($3n$ PEN)</strong>, which develops into nutritive <strong>endosperm</strong>."], "formulas": [{"label": "Double Fertilization Equation", "html": "\\begin{aligned} \\text{Syngamy: } & \\text{Male Gamete } (n) + \\text{Egg Cell } (n) \\rightarrow \\text{Zygote } (2n) \\\\ \\text{Triple Fusion: } & \\text{Male Gamete } (n) + 2 \\text{ Polar Nuclei } (n+n) \\rightarrow \\text{PEN } (3n) \\end{aligned}", "cond": "Two distinct fusion events per fertilization event; strictly unique to Angiosperms"}, {"label": "Embryo Sac Cellular Blueprint", "html": "7\\text{-celled, } 8\\text{-nucleate} = 3 \\text{ Antipodals} + 1 \\text{ Central Cell (2 polar nuclei)} + 2 \\text{ Synergids} + 1 \\text{ Egg}", "cond": "Mature female gametophyte in Angiosperms"}], "deeper": "Why is triple fusion and triploid endosperm formation such a profound evolutionary advantage over the gymnosperm condition? In gymnosperms, the female gametophyte develops massive nutritive tissue *before* fertilization takes place; if fertilization fails, that heavy maternal energy investment is completely wasted. Angiosperms evolved double fertilization so that endosperm development is triggered *only upon* successful fertilization by the second sperm nucleus, preventing wasted metabolic resources on unfertilized ovules.", "worked": "Ploidy Assessment in Angiosperm Tissues: Zygote ($2n$), Embryo ($2n$), Root/Stem/Leaf cells ($2n$), Megaspore mother cell ($2n$), Synergids ($n$), Antipodals ($n$), Egg ($n$), Male gamete ($n$), Primary Endosperm Nucleus ($3n$), Aleurone layer of endosperm ($3n$).", "prediction": {"prompt": "If a plant geneticist crosses a tetraploid (4n) female angiosperm with a diploid (2n) male angiosperm, what will be the ploidy of the resulting primary endosperm nucleus (PEN)?", "options": ["Pentaploid (5n)", "Triploid (3n)", "Tetraploid (4n)", "Hexaploid (6n)"], "answer": 0, "explanation": "The female plant is 4n, so its central cell contains two polar nuclei, each being 2n (total 4n). The male plant is 2n, so its sperm nucleus is n. Triple fusion: 4n + n = 5n (pentaploid endosperm)."}, "connect": [["Coconut Water: Free-Nuclear Liquid Endosperm", "The refreshing water inside green tender coconuts (Cocos nucifera) is free-nuclear triploid endosperm containing thousands of nuclei suspended in cytoplasm, while the white kernel is cellular endosperm."], ["Angiosperm Co-evolution with Pollinators", "The explosive radiation of angiosperms during the Cretaceous was driven by co-evolution with insect pollinators (bees, beetles, butterflies) using floral nectar rewards and visual pigments."]], "recall": "Define double fertilization and name the two fusion processes involved.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Double fertilization is an event strictly unique to which group of plants?", "options": ["Angiosperms", "Gymnosperms", "Pteridophytes", "Bryophytes"], "answer": 0, "hint": "Flowering plants.", "solution": "Because two fusions take place, syngamy and triple fusion, this event is termed double fertilization, an event unique to angiosperms (NCERT section 3.5).", "wrong": ["Gymnosperms have single fertilization.", "Pteridophytes have single fertilization.", "Bryophytes have single fertilization."]}, {"level": "Medium", "type": "mcq", "prompt": "What is the ploidy level of the Primary Endosperm Nucleus (PEN) formed after triple fusion in a typical diploid angiosperm?", "options": ["Triploid (3n)", "Diploid (2n)", "Haploid (n)", "Tetraploid (4n)"], "answer": 0, "hint": "Formed by fusion of one male gamete (n) and two polar nuclei (n+n).", "solution": "The other male gamete fuses with the diploid secondary nucleus (two polar nuclei) to produce the triploid primary endosperm nucleus (PEN).", "wrong": ["Zygote is diploid (2n).", "Egg and sperm are haploid (n).", "Tetraploid occurs only in polyploids."]}, {"level": "Hard", "type": "mcq", "prompt": "How many cells and nuclei compose a mature, functional embryo sac (female gametophyte) in angiosperms?", "options": ["7 cells and 8 nuclei", "8 cells and 8 nuclei", "3 cells and 3 nuclei", "6 cells and 7 nuclei"], "answer": 0, "hint": "3 antipodals + 1 central cell + 2 synergids + 1 egg.", "solution": "Each embryo sac has a three-celled egg apparatus, three antipodal cells and two polar nuclei that fuse to form a central cell, making it 7-celled and 8-nucleate.", "wrong": ["It is not 8-celled because the central cell contains two nuclei.", "3 cells would only be the egg apparatus.", "6 cells is incorrect."]}]}, {"id": "plant-lifecycles-alternation", "nav": "Plant Life Cycles & Alternation", "title": "Plant Life Cycles: Haplontic, Diplontic & Haplodiplontic Patterns", "deck": "Different plant groups exhibit distinct life cycle patterns: haplontic (gametophyte dominant), diplontic (sporophyte dominant), and haplodiplontic (both phases conspicuous).", "minutes": 9, "section": "3.6", "pages": [13, 14], "print": "35–36", "sim": "lifecyclesim", "simTitle": "Haplontic, Diplontic & Haplodiplontic Dynamic Lifecycle Simulator", "quick": ["<strong>1. Haplontic Life Cycle:</strong> Sporophytic generation is represented only by the <strong>one-celled zygote ($2n$)</strong>. There are no free-living sporophytes. Meiosis in the zygote results in the formation of haploid spores, which divide mitotically to form the dominant photosynthetic gametophyte. Examples: <em>Volvox</em>, <em>Spirogyra</em>, and some species of <em>Chlamydomonas</em>.", "<strong>2. Diplontic Life Cycle:</strong> The diploid sporophyte ($2n$) is the dominant, photosynthetic, independent phase of the plant. The gametophytic phase is represented by the single to few-celled haploid gametophyte. Examples: An alga <em>Fucus</em>, and <strong>all seed-bearing plants (Gymnosperms and Angiosperms)</strong>.", "<strong>3. Haplodiplontic Life Cycle:</strong> An intermediate condition where both haploid ($n$) and diploid ($2n$) phases are multicellular and conspicuous:", "• In <strong>Bryophytes</strong>: The dominant independent phase is the thalloid or leafy <strong>gametophyte ($n$)</strong>; the sporophyte ($2n$) is short-lived and totally/partially dependent on it.", "• In <strong>Pteridophytes</strong>: The dominant independent phase is the vascular <strong>sporophyte ($2n$)</strong>; it alternates with a small, independent, multicellular, free-living saprophytic/autotrophic <strong>prothallus gametophyte ($n$)</strong>.", "• Interestingly, while most algal genera are haplontic, <em>Ectocarpus</em>, <em>Polysiphonia</em>, and kelps are <strong>haplodiplontic</strong>, and <em>Fucus</em> is <strong>diplontic</strong>."], "formulas": [{"label": "Life Cycle Triad", "html": "\\begin{aligned} \\text{Haplontic: } & \\text{Zygotic Meiosis} \\rightarrow \\text{Dominant Free Gametophyte } (n) \\\\ \\text{Diplontic: } & \\text{Gametic Meiosis} \\rightarrow \\text{Dominant Free Sporophyte } (2n) \\\\ \\text{Haplodiplontic: } & \\text{Sporic Meiosis} \\rightarrow \\text{Multicellular } (n) + \\text{Multicellular } (2n) \\end{aligned}", "cond": "Timing of meiosis determines lifecycle pattern"}, {"label": "Algal Exceptions to Haplonty", "html": "\\text{Fucus (Diplontic)} \\quad \\& \\quad \\text{Ectocarpus, Polysiphonia, Kelps (Haplodiplontic)}", "cond": "NCERT section 3.6 hallmark exceptions"}], "deeper": "Understanding the timing of meiosis is the universal key to deciphering any biological life cycle. If meiosis occurs in the zygote immediately after fertilization (zygotic meiosis), the resulting organism is haplontic (only the zygote is 2n). If meiosis occurs during spore formation in sporangia (sporic meiosis), alternating multicellular haploid and diploid generations exist (haplodiplontic). If meiosis occurs directly during gametogenesis in adult bodies (gametic meiosis), only the gametes are haploid (diplontic).", "worked": "NCERT Life Cycle Problem: In a moss, where does meiosis take place? Meiosis takes place inside the capsule of the diploid sporophyte. In contrast, in Spirogyra, meiosis takes place directly inside the diploid zygospore.", "prediction": {"prompt": "If a student observes that an alga exhibits an independent multicellular diploid thallus alternating with an independent multicellular haploid thallus, which life cycle does it represent, and what is an example?", "options": ["Haplodiplontic; exemplified by Ectocarpus and Polysiphonia", "Haplontic; exemplified by Spirogyra", "Diplontic; exemplified by Fucus", "Acellular; exemplified by bacteriophages"], "answer": 0, "explanation": "NCERT section 3.6 explicitly notes that while most algae are haplontic, Ectocarpus and Polysiphonia are haplodiplontic with alternating multicellular phases."}, "connect": [["Spirogyra Conjugation Tubes", "In Spirogyra, two filamentous strands align side-by-side to form lateral conjugation tubes; the amoeboid male protoplast crawls across to fertilize the female cell, creating a thick-walled zygospore."], ["Giant Kelps and Subtidal Forests", "The haplodiplontic brown alga Laminaria displays macroscopic sporophytes over 10 metres long that produce microscopic flagellated zoospores that germinate into microscopic gametophytes."]], "recall": "Name two algae that exhibit a haplodiplontic life cycle.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which brown alga exhibits a purely diplontic life cycle, serving as a prominent exception among algae?", "options": ["Fucus", "Volvox", "Spirogyra", "Chlamydomonas"], "answer": 0, "hint": "Check NCERT section 3.6 exceptions.", "solution": "An alga, Fucus sp., is diplontic (NCERT section 3.6).", "wrong": ["Volvox is haplontic.", "Spirogyra is haplontic.", "Chlamydomonas is haplontic."]}, {"level": "Medium", "type": "mcq", "prompt": "In which type of life cycle is the sporophytic generation represented solely by the one-celled zygote, with no free-living sporophyte?", "options": ["Haplontic", "Diplontic", "Haplodiplontic", "Triplontic"], "answer": 0, "hint": "Typical of Volvox and Spirogyra.", "solution": "In haplontic life cycles, the sporophyte is represented only by the one-celled zygote; there are no free-living sporophytes.", "wrong": ["Diplontic has a dominant independent sporophyte.", "Haplodiplontic has a multicellular sporophyte.", "Triplontic does not exist as a life cycle pattern."]}, {"level": "Hard", "type": "mcq", "prompt": "How does the haplodiplontic life cycle of a bryophyte differ from that of a pteridophyte?", "options": ["In bryophytes, the gametophyte is dominant and independent; in pteridophytes, the sporophyte is dominant and independent.", "In bryophytes, the sporophyte is dominant and vascular; in pteridophytes, the gametophyte is dominant.", "Bryophytes are diplontic, whereas pteridophytes are haplontic.", "Neither group exhibits alternation of generations."], "answer": 0, "hint": "Check NCERT section 3.6 comparing mosses and ferns.", "solution": "In bryophytes, a dominant independent gametophyte alternates with a dependent sporophyte. In pteridophytes, a dominant independent vascular sporophyte alternates with an independent prothallus.", "wrong": ["Option 2 reverses the roles.", "Both groups are haplodiplontic, not diplontic/haplontic.", "Both exhibit conspicuous alternation of generations."]}]}], "exercises": [{"number": "3.1", "conceptIdx": 0, "page": 36, "printPage": 36, "question": "What is the basis of classification of algae?", "steps": ["Algae are divided into three major classes: Chlorophyceae (green algae), Phaeophyceae (brown algae), and Rhodophyceae (red algae).", "The primary criteria forming the basis of classification include:", "1. Photosynthetic Pigments: (a) Chlorophyceae: Chlorophyll a and b; (b) Phaeophyceae: Chlorophyll a, c, and fucoxanthin (xanthophyll); (c) Rhodophyceae: Chlorophyll a, d, and r-phycoerythrin.", "2. Chemical Nature of Stored Food: (a) Chlorophyceae: Starch (in pyrenoids); (b) Phaeophyceae: Laminarin or mannitol; (c) Rhodophyceae: Floridean starch (similar to amylopectin and glycogen).", "3. Cell Wall Composition: (a) Chlorophyceae: Cellulose and outer pectose; (b) Phaeophyceae: Cellulose with an outer gelatinous coating of algin; (c) Rhodophyceae: Cellulose, pectin, and polysulphate esters.", "4. Flagellar Number, Insertion, and Morphology: (a) Chlorophyceae: 2–8 equal, apical flagella; (b) Phaeophyceae: 2 unequal, lateral flagella; (c) Rhodophyceae: Flagella completely absent at all stages."], "answer": "Algae are classified into Chlorophyceae, Phaeophyceae, and Rhodophyceae based on: (1) dominant photosynthetic pigments, (2) chemical nature of stored food, (3) cell wall composition, and (4) number and insertion of flagella."}, {"number": "3.2", "conceptIdx": 6, "page": 36, "printPage": 36, "question": "When and where does reduction division take place in the life cycle of a liverwort, a moss, a fern, a gymnosperm and an angiosperm?", "steps": ["Reduction division (meiosis) converts diploid (2n) sporophytic cells into haploid (n) spores across embryophyte taxa:", "1. Liverwort (e.g. Marchantia): Meiosis occurs in the spore mother cells inside the capsule of the diploid sporophyte, producing haploid spores.", "2. Moss (e.g. Funaria): Meiosis occurs in the spore mother cells within the capsule of the sporophyte, prior to spore dispersal via peristome teeth.", "3. Fern (Pteridophyte, e.g. Dryopteris): Meiosis occurs in the diploid spore mother cells inside sporangia borne on sporophylls (sori).", "4. Gymnosperm (e.g. Pinus): Meiosis occurs: (a) in microspore mother cells inside microsporangia of male cones to produce microspores (pollen), and (b) in the megaspore mother cell within the nucellus of the ovule to produce haploid megaspores.", "5. Angiosperm: Meiosis occurs: (a) in microspore mother cells (pollen mother cells) in anther locules to form microspores, and (b) in the single megaspore mother cell in the ovule nucellus to form functional haploid megaspores."], "answer": "Reduction division occurs during sporogenesis in spore mother cells: (1) Liverwort: capsule of sporophyte; (2) Moss: capsule of sporophyte; (3) Fern: sporangia on sporophylls; (4) Gymnosperm: microsporangia (male cone) and ovule nucellus (female cone); (5) Angiosperm: anthers (pollen sacs) and ovule (nucellus)."}, {"number": "3.3", "conceptIdx": 1, "page": 36, "printPage": 36, "question": "Name three groups of plants that bear archegonia. Briefly describe the life cycle of any one of them.", "steps": ["Three archegoniate plant groups: Bryophytes, Pteridophytes, and Gymnosperms. (Angiosperms lack archegonia; female gametophyte is reduced to an embryo sac).", "Life Cycle of Bryophytes (e.g. Moss - Funaria):", "1. Gametophytic Phase (Haploid, dominant, photosynthetic): Begins with spore germination into a filamentous protonema, which buds into leafy gametophores bearing multicellular sex organs: antheridia (male) and flask-shaped archegonia (female).", "2. Fertilization: In the presence of water, biflagellate antherozoids swim into the neck of the archegonium and fuse with the egg cell to form a diploid zygote (2n).", "3. Sporophytic Phase (Diploid, dependent): The zygote develops into a sporophyte consisting of foot, seta, and capsule, remaining attached to and nourished by the gametophyte.", "4. Meiosis: Spore mother cells in the capsule undergo meiosis to produce haploid spores, which are released and wind-dispersed to initiate new protonemata."], "answer": "The three groups bearing archegonia are Bryophytes, Pteridophytes, and Gymnosperms. In mosses (bryophytes), the dominant haploid gametophyte produces gametes in antheridia and archegonia; water-mediated syngamy forms a zygote that develops into a dependent diploid sporophyte, which undergoes meiosis in its capsule to produce haploid spores."}, {"number": "3.4", "conceptIdx": 5, "page": 36, "printPage": 36, "question": "Mention the ploidy of the following: protonemal cell of a moss; primary endosperm nucleus in dicot; leaf cell of a moss; prothallus cell of a fern; gemma cell in Marchantia; meristem cell of monocot; ovum of a liverwort; and zygote of a fern.", "steps": ["Deduce ploidy based on generation (gametophytic = n, sporophytic = 2n, triple fusion = 3n):", "1. Protonemal cell of a moss: Haploid (n) [Juvenile gametophytic stage]", "2. Primary endosperm nucleus (PEN) in dicot: Triploid (3n) [Result of triple fusion: n male gamete + 2n secondary nucleus]", "3. Leaf cell of a moss: Haploid (n) [Moss leafy plant body is gametophytic]", "4. Prothallus cell of a fern: Haploid (n) [Fern prothallus is gametophytic]", "5. Gemma cell in Marchantia: Haploid (n) [Asexual bud formed on haploid gametophytic thallus]", "6. Meristem cell of monocot: Diploid (2n) [Vegetative tissue of sporophytic plant]", "7. Ovum of a liverwort: Haploid (n) [Female gamete]", "8. Zygote of a fern: Diploid (2n) [Fusion product of antherozoid and egg]"], "answer": "• Protonemal cell of moss: n\n• Primary endosperm nucleus in dicot: 3n\n• Leaf cell of moss: n\n• Prothallus cell of fern: n\n• Gemma cell in Marchantia: n\n• Meristem cell of monocot: 2n\n• Ovum of liverwort: n\n• Zygote of fern: 2n"}, {"number": "3.5", "conceptIdx": 0, "page": 36, "printPage": 36, "question": "Write a note on economic importance of algae and gymnosperms.", "steps": ["Economic Importance of Algae:", "1. Primary Productivity: Half of total carbon dioxide fixation on Earth is carried out by algae through photosynthesis; diatoms are chief ocean producers.", "2. Food Source: Porphyra, Laminaria, and Sargassum are among 70 species of marine algae used as direct human food.", "3. Hydrocolloids: Algin (from brown algae) and carrageen (from red algae) are used as industrial water-retaining gelling agents. Agar (from Gelidium and Gracilaria) is used to culture microbes and in jellies/ice-creams.", "4. Space Food: Chlorella, a unicellular green alga rich in proteins, is used as a food supplement for space travellers.", "Economic Importance of Gymnosperms:", "1. Timber & Wood Pulp: Conifers (Pinus, Cedrus/deodar) provide valuable softwood for construction, railway sleepers, plywood, and paper pulp.", "2. Resins & Turpentine: Pinus yields oleoresin distilled into turpentine (solvent in paints) and rosin (waterproofing, printing inks).", "3. Food & Medicine: Seeds of Pinus gerardiana ('chilgoza') are edible dry fruits. Ephedrine (respiratory drug) is extracted from Ephedra. Taxol (anti-cancer drug) is derived from Taxus baccata.", "4. Ornamentals: Cycas, Thuja, and Ginkgo biloba are prized ornamental landscaping plants."], "answer": "Algae provide ~50% of Earth's CO₂ fixation, food (Porphyra), commercial hydrocolloids (algin, carrageen, agar), and protein supplements (Chlorella). Gymnosperms provide softwood timber/paper pulp (Pinus, Cedrus), turpentine resins, edible chilgoza nuts, medicines (ephedrine, taxol), and ornamental landscaping."}, {"number": "3.6", "conceptIdx": 4, "page": 36, "printPage": 36, "question": "Both gymnosperms and angiosperms bear seeds, then why are they classified separately?", "steps": ["Both gymnosperms and angiosperms are spermatophytes (seed-bearing vascular plants), but diverge fundamentally in floral and carpellary architecture:", "1. Seed Enclosure: In gymnosperms (gymnos = naked), ovules are borne exposed on megasporophyll scales without an ovary wall; seeds remain completely naked. In angiosperms (angio = covered, vessel), ovules are enclosed inside a closed ovary/carpel, and seeds develop inside fruits.", "2. Floral Organs: Angiosperms possess specialized flowers with perianth (calyx, corolla), stamens, and carpels. Gymnosperms lack true flowers and bear unisexual strobili or cones.", "3. Double Fertilization: Angiosperms uniquely undergo double fertilization (syngamy + triple fusion producing 3n endosperm). Gymnosperms have single fertilization, and their endosperm is haploid (n) nutritive tissue formed before fertilization.", "4. Xylem & Phloem: Angiosperm xylem possesses true vessel elements and phloem possesses companion cells. Gymnosperm xylem consists solely of tracheids (lacks vessels, except Gnetales) and phloem has albuminous cells (lacks true companion cells)."], "answer": "They are classified separately because gymnosperms bear naked ovules and seeds on exposed cone scales without an ovary or fruit, have single fertilization, and lack vessels and flowers. Angiosperms enclose ovules within an ovary that ripens into a fruit, bear flowers, possess xylem vessels, and uniquely exhibit double fertilization."}, {"number": "3.7", "conceptIdx": 3, "page": 36, "printPage": 36, "question": "What is heterospory? Briefly comment on its significance. Give two examples.", "steps": ["Definition: Heterospory is the production of two morphologically distinct types of spores by the same plant—smaller microspores and vastly larger megaspores.", "Significance:", "1. Differentiation of Sexes: Microspores germinate to give rise to male gametophytes producing antherozoids, while megaspores germinate to give rise to female gametophytes producing archegonia and eggs.", "2. Nutrient Endowments: Megaspores are packed with maternal nutrients, providing abundant energy for embryo development.", "3. Precursor to Seed Habit: In heterosporous plants, the female gametophyte is retained on the parent sporophyte, shielding the young embryo inside maternal tissue. This retention is recognized as the pivotal evolutionary precursor to the seed habit.", "Examples: Selaginella and Salvinia (heterosporous pteridophytes)."], "answer": "Heterospory is the production of two distinct sizes of spores: small microspores (forming male gametophytes) and large megaspores (forming female gametophytes). Its significance lies in promoting unisexual gametophytes and retaining the megaspore/embryo on the parent sporophyte, representing the critical precursor to the seed habit. Examples: Selaginella and Salvinia."}, {"number": "3.8", "conceptIdx": 1, "page": 36, "printPage": 36, "question": "Explain briefly the following terms with suitable examples: (i) protonema (ii) antheridium (iii) archegonium (iv) diplontic (v) sporophyll (vi) isogamy", "steps": ["(i) Protonema: The juvenile, creeping, green, branched, filamentous haploid stage that develops directly from a germinating spore in mosses (e.g. Funaria, Sphagnum). It bears buds that develop into leafy gametophores.", "(ii) Antheridium: The multicellular, jacketed male sex organ in cryptogams (algae, bryophytes, pteridophytes) that produces motile flagellated male gametes (antherozoids), e.g. in Marchantia or ferns.", "(iii) Archegonium: The multicellular, flask-shaped female sex organ found in bryophytes, pteridophytes, and gymnosperms that encloses a single non-motile egg cell in its swollen venter.", "(iv) Diplontic: A life cycle pattern in which the diploid sporophyte (2n) is the dominant, photosynthetic, independent phase, and the gametophyte (n) is reduced to a single or few cells (e.g. Fucus, Pinus, Mangifera).", "(v) Sporophyll: A specialized leaf-like appendage that bears sporangia. In Selaginella or Equisetum, sporophylls aggregate into compact cones or strobili.", "(vi) Isogamy: Sexual reproduction involving the fusion of two gametes that are morphologically identical in size, shape, and motility (e.g. flagellated in Chlamydomonas debaryana / Ulothrix; non-flagellated in Spirogyra)."], "answer": "(i) Protonema: Filamentous juvenile moss stage (Funaria). (ii) Antheridium: Male sex organ producing antherozoids (Marchantia). (iii) Archegonium: Flask-shaped female organ housing egg (ferns, mosses). (iv) Diplontic: Dominant 2n sporophyte life cycle (Fucus, angiosperms). (v) Sporophyll: Leaf bearing sporangia (ferns, Selaginella). (vi) Isogamy: Fusion of morphologically identical gametes (Spirogyra, Ulothrix)."}, {"number": "3.9", "conceptIdx": 0, "page": 36, "printPage": 36, "question": "Differentiate between the following: (i) red algae and brown algae (ii) liverworts and moss (iii) homosporous and heterosporous pteridophyte", "steps": ["(i) Red Algae vs Brown Algae:", "• Pigments: Red algae have chlorophyll a, d, and r-phycoerythrin; brown algae have chlorophyll a, c, and fucoxanthin.", "• Stored Food: Red algae store floridean starch; brown algae store laminarin or mannitol.", "• Flagella: Red algae lack flagella entirely; brown algae possess 2 unequal lateral flagella.", "• Cell Wall: Red algae have cellulose, pectin, polysulphate esters; brown algae have cellulose and algin.", "(ii) Liverworts vs Mosses:", "• Thallus: Liverworts have dorsiventral prostrate thalli (Marchantia); mosses have radial symmetry with erect leafy gametophores (Funaria).", "• Juvenile Stage: Liverworts lack a protonema stage; mosses develop a prominent filamentous protonema.", "• Spore Dispersal: Liverworts disperse spores using elaters; mosses possess sophisticated peristome teeth in the capsule.", "(iii) Homosporous vs Heterosporous Pteridophytes:", "• Spore Type: Homosporous pteridophytes produce a single kind of identical spores; heterosporous pteridophytes produce two distinct types (microspores and megaspores).", "• Gametophyte: Homosporous spores form bisexual monoecious prothalli (Dryopteris); heterosporous spores form dioecious unisexual gametophytes (Selaginella, Salvinia).", "• Evolutionary Role: Heterospory gave rise to the seed habit."], "answer": "(i) Red vs Brown algae: Chl a,d + r-phycoerythrin / floridean starch / zero flagella VS Chl a,c + fucoxanthin / mannitol / 2 lateral flagella. (ii) Liverworts vs Mosses: Dorsiventral thallus / no protonema / elaters VS erect leafy shoot / protonema stage / peristome teeth. (iii) Homosporous vs Heterosporous: One spore size / bisexual prothallus (Dryopteris) VS micro/megaspores / unisexual gametophytes / seed habit precursor (Selaginella)."}, {"number": "3.10", "conceptIdx": 1, "page": 36, "printPage": 36, "question": "Match the following (column I with column II): (a) Chlamydomonas (b) Cycas (c) Selaginella (d) Sphagnum | (i) Moss (ii) Pteridophyte (iii) Algae (iv) Gymnosperm", "steps": ["Match each organism to its taxonomic division:", "• (a) Chlamydomonas is a unicellular green alga → (iii) Algae", "• (b) Cycas is a naked-seeded cone-bearing plant → (iv) Gymnosperm", "• (c) Selaginella is a heterosporous vascular cryptogam with microphylls → (ii) Pteridophyte", "• (d) Sphagnum is a peat-forming moss with high water retention → (i) Moss", "Resulting alignment: (a)-(iii), (b)-(iv), (c)-(ii), (d)-(i)."], "answer": "(a) - (iii) Algae; (b) - (iv) Gymnosperm; (c) - (ii) Pteridophyte; (d) - (i) Moss."}, {"number": "3.11", "conceptIdx": 4, "page": 36, "printPage": 36, "question": "Describe the important characteristics of gymnosperms.", "steps": ["1. Naked Ovules & Seeds: Ovules are borne directly on megasporophylls and remain exposed before and after fertilization; no ovary or fruit is formed.", "2. Habit and Stature: Medium-sized to giant evergreen trees and shrubs. Includes Sequoia sempervirens, one of the tallest living trees.", "3. Root System: Generally tap roots with specialized symbiotic associations: mycorrhiza in Pinus and nitrogen-fixing coralloid roots in Cycas.", "4. Xerophytic Foliage: Conifers possess needle-like leaves (reduced surface area), thick waxy cuticles, and sunken stomata to minimize transpirational water loss in alpine/arid conditions.", "5. Vascular Anatomy: Xylem contains tracheids but lacks true vessels (except in Gnetales); phloem has sieve cells and albuminous cells but lacks companion cells.", "6. Heterospory & Cones: Produce microspores in male cones (microstrobili) and megaspores in female cones (megastrobili). Pollen grains are carried by wind (anemophily) to the ovule micropyle.", "7. Fertilization & Endosperm: Non-motile male gametes are carried by a pollen tube (siphonogamy); fertilization is single. Endosperm is a haploid (n) nutritive tissue formed before fertilization."], "answer": "Key features of gymnosperms: (1) Naked ovules and seeds unenclosed by ovary/fruit; (2) Tap roots with mycorrhiza (Pinus) or coralloid roots (Cycas); (3) Needle-like leaves with thick cuticle and sunken stomata; (4) Xylem has tracheids (no vessels) and phloem has sieve cells (no companion cells); (5) Heterosporous with male and female cones; (6) Anemophilous wind pollination with pollen tubes; (7) Single fertilization forming haploid endosperm."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap" id="lab-viewport"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-presets" id="lab-presets"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readouts" id="lab-readouts" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Wow: Real-World Biological Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect) && rawConnect.length) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    } else {
+      connectItems = [
+        {
+          title: "Wow: Biological Mechanics & Frontiers",
+          text: "Fundamental biological principles govern cellular pathways, tissue differentiation, and ecological balances.",
+          links: [{label: "NCERT Biology Guide", link: "https://ncert.nic.in/textbook.php"}]
+        }
+      ];
+    }
+
+    html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+        var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+        var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+        var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+        var wow = /^Wow/i.test(title) || (ci === 0);
+
+        var src = (C.source || "NCERT Class 11 Biology") + (printPage ? (" p." + printPage) : " p. 1");
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        if(!v && (!links || !links.length)){
+          links = [{t: "NCERT Chapter Exploration", u: "https://ncert.nic.in/textbook.php", provider: "NCERT Official Resource"}];
+        }
+        if(v && (v.id || v.youtubeId)){
+          var vidId = v.id || v.youtubeId;
+          cHtml += '<button type="button" class="video-facade" data-yt="' + vidId + '" data-video="' + vidId + '" aria-label="Play video: ' + (v.title || "Curriculum Demonstration") + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "NCERT Resource") + '</span>' +
+            '</button>';
+        }
+        if(links && links.length){
+          links.forEach(function(a){
+            var href = a.u || a.link || "#";
+            var lab = a.t || a.label || "Curriculum Reading";
+            var prov = /ncert/i.test(href) ? "NCERT Resource" : (a.provider || "NCERT Resource");
+            cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + ' · ' + prov + '">' +
+              '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+          });
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+// -------------------------------------------------------------------------
+// 1. SIMULATION 1: Algal Classes & Pigments (algaepigmentlab)
+// -------------------------------------------------------------------------
+window.SIMS.algaepigmentlab = (function(){
+  var aClass = "chlorophyceae"; // "chlorophyceae", "phaeophyceae", "rhodophyceae"
+
+  var aData = {
+    chlorophyceae: {
+      name: "Chlorophyceae (Green Algae)",
+      pigments: "Chlorophyll a, b",
+      food: "Starch (in pyrenoids)",
+      wall: "Cellulose (inner) + Pectose (outer)",
+      flagella: "2–8, Equal, Apical",
+      habitat: "Fresh water, brackish water, salt water",
+      col: "#10b981",
+      example: "Chlamydomonas, Volvox, Ulothrix, Spirogyra, Chara"
+    },
+    phaeophyceae: {
+      name: "Phaeophyceae (Brown Algae)",
+      pigments: "Chlorophyll a, c, Fucoxanthin",
+      food: "Mannitol, Laminarin",
+      wall: "Cellulose + Gelatinous Algin",
+      flagella: "2, Unequal, Lateral",
+      habitat: "Primarily marine (cold seas)",
+      col: "#b45309",
+      example: "Ectocarpus, Dictyota, Laminaria, Sargassum, Fucus"
+    },
+    rhodophyceae: {
+      name: "Rhodophyceae (Red Algae)",
+      pigments: "Chlorophyll a, d, r-Phycoerythrin",
+      food: "Floridean Starch (like amylopectin)",
+      wall: "Cellulose, Pectin & Polysulphate Esters",
+      flagella: "COMPLETELY ABSENT at all stages",
+      habitat: "Marine (deep oceans & warm surface)",
+      col: "#ef4444",
+      example: "Polysiphonia, Porphyra, Gracilaria, Gelidium"
+    }
+  };
+
+  function setA(cls){
+    aClass = cls;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Chlorophyceae</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#b45309;"></span><span>Phaeophyceae</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Rhodophyceae</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-chlo">Chlorophyceae (Green)</button>' +
+      '<button class="preset-btn" id="p-phae">Phaeophyceae (Brown)</button>' +
+      '<button class="preset-btn" id="p-rhod">Rhodophyceae (Red)</button>';
+
+    document.getElementById("p-chlo").onclick = function(){ setActivePreset(this); setA("chlorophyceae"); };
+    document.getElementById("p-phae").onclick = function(){ setActivePreset(this); setA("phaeophyceae"); };
+    document.getElementById("p-rhod").onclick = function(){ setActivePreset(this); setA("rhodophyceae"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>NCERT Table 3.1: Divisions of Algae and their Main Characteristics</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Directly compares pigments, food storage, cell walls, and flagella of the three algal classes.</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var d = aData[aClass];
+
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+
+    // Left diagram: Cell / Flagellar morphology
+    m += '<rect x="40" y="30" width="260" height="240" rx="8" fill="#0b1726" stroke="' + d.col + '" stroke-width="1.5"/>';
+    m += '<text x="170" y="55" fill="' + d.col + '" font-size="13" font-weight="700" text-anchor="middle">Cell &amp; Flagella Architecture</text>';
+
+    if(aClass === "chlorophyceae"){
+      // Chlamydomonas with 2 apical equal flagella
+      m += '<ellipse cx="170" cy="160" rx="45" ry="55" fill="#065f46" stroke="#10b981" stroke-width="2.5"/>';
+      m += '<circle cx="170" cy="180" r="14" fill="#047857" stroke="#34d399"/>'; // Pyrenoid
+      m += '<text x="170" y="184" fill="#a7f3d0" font-size="9" text-anchor="middle">Pyrenoid</text>';
+      // 2 apical equal flagella
+      m += '<path d="M 160,105 Q 140,70 120,65" fill="none" stroke="#6ee7b7" stroke-width="2.5"/>';
+      m += '<path d="M 180,105 Q 200,70 220,65" fill="none" stroke="#6ee7b7" stroke-width="2.5"/>';
+      m += '<text x="170" y="245" fill="#a7f3d0" font-size="11" text-anchor="middle">2 Equal Apical Flagella</text>';
+
+    } else if(aClass === "phaeophyceae"){
+      // Pear-shaped zoospore with 2 lateral unequal flagella
+      m += '<path d="M 170,110 C 210,130 215,190 170,210 C 125,190 130,130 170,110 Z" fill="#78350f" stroke="#b45309" stroke-width="2.5"/>';
+      // Lateral unequal flagella
+      m += '<path d="M 135,150 Q 80,120 70,170" fill="none" stroke="#fcd34d" stroke-width="2.5"/>'; // Long whiplash
+      m += '<path d="M 135,165 Q 100,180 95,200" fill="none" stroke="#fcd34d" stroke-width="2"/>'; // Short tinsel
+      m += '<text x="170" y="245" fill="#fde68a" font-size="11" text-anchor="middle">2 Unequal Lateral Flagella</text>';
+
+    } else {
+      // Polysiphonia non-motile thallus
+      m += '<line x1="170" y1="210" x2="170" y2="105" stroke="#ef4444" stroke-width="6"/>';
+      m += '<line x1="170" y1="180" x2="135" y2="140" stroke="#ef4444" stroke-width="4"/>';
+      m += '<line x1="170" y1="150" x2="205" y2="120" stroke="#ef4444" stroke-width="4"/>';
+      m += '<line x1="170" y1="120" x2="140" y2="90" stroke="#ef4444" stroke-width="3"/>';
+      m += '<text x="170" y="245" fill="#fca5a5" font-size="11" font-weight="700" text-anchor="middle">FLAGELLA STRICTLY ABSENT</text>';
+    }
+
+    // Right card: Table 3.1 row breakdown
+    m += '<rect x="320" y="30" width="360" height="240" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="340" y="55" fill="' + d.col + '" font-size="14" font-weight="700">' + d.name + '</text>';
+
+    var tRows = [
+      { k: "Major Pigments", v: d.pigments },
+      { k: "Stored Food", v: d.food },
+      { k: "Cell Wall", v: d.wall },
+      { k: "Flagellation", v: d.flagella },
+      { k: "Habitat", v: d.habitat },
+      { k: "Key Genera", v: d.example }
+    ];
+
+    for(var r = 0; r < tRows.length; r++){
+      var tr = tRows[r];
+      var y = 80 + r * 30;
+      m += '<text x="340" y="' + y + '" fill="#94a3b8" font-size="11" font-weight="600">' + tr.k + ':</text>';
+      m += '<text x="340" y="' + (y + 14) + '" fill="#f8fafc" font-size="11">' + tr.v + '</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Class", aClass.toUpperCase(), d.col) +
+      cell("Stored Food", d.food.split(" ")[0], "#38bdf8") +
+      cell("Flagellar Plan", d.flagella.split(",")[0], "#f59e0b") +
+      cell("Primary Habitat", d.habitat.split(" ")[0], "#a855f7")
+    );
+
+    verdict(
+      '<span style="color:' + d.col + ';font-weight:700;">NCERT Table 3.1 Match:</span> ' +
+      d.name + ' contains ' + d.pigments + ', stores ' + d.food + ', and features ' + d.flagella.toLowerCase() + '.'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 2. SIMULATION 2: Bryophyte Life Cycle & Gemma Cup (bryophytelifecycle)
+// -------------------------------------------------------------------------
+window.SIMS.bryophytelifecycle = (function(){
+  var bView = "marchantia"; // "marchantia", "funaria"
+
+  function setV(v){
+    bView = v;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Gametophyte (n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Sporophyte (2n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Gemma Cup</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-mar">Marchantia Thallus (Liverwort)</button>' +
+      '<button class="preset-btn" id="p-fun">Funaria Gametophyte + Sporophyte (Moss)</button>';
+
+    document.getElementById("p-mar").onclick = function(){ setActivePreset(this); setV("marchantia"); };
+    document.getElementById("p-fun").onclick = function(){ setActivePreset(this); setV("funaria"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Bryophytes: Amphibians of the Plant Kingdom (NCERT 3.2)</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Inspect Marchantia dorsiventral thallus with gemma cups and Funaria dependent diploid sporophyte.</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+
+    if(bView === "marchantia"){
+      // Marchantia thallus with gemma cups & archegoniophore
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#10b981" font-size="15" font-weight="700">Marchantia (Liverwort): Thallus, Gemma Cups &amp; Archegoniophore</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Dorsiventral prostrate thallus · Unicellular rhizoids · Asexual gemmae buds in cups</text>';
+
+      // Flat thallus lobes
+      m += '<path d="M 160,210 Q 180,160 220,170 Q 250,150 280,175 Q 310,160 340,210 Z" fill="#047857" stroke="#10b981" stroke-width="2.5"/>';
+      // Rhizoids below
+      m += '<line x1="200" y1="210" x2="190" y2="235" stroke="#94a3b8" stroke-width="1.5"/>';
+      m += '<line x1="240" y1="210" x2="235" y2="240" stroke="#94a3b8" stroke-width="1.5"/>';
+      m += '<line x1="280" y1="210" x2="290" y2="235" stroke="#94a3b8" stroke-width="1.5"/>';
+      m += '<text x="240" y="255" fill="#94a3b8" font-size="10" text-anchor="middle">Rhizoids</text>';
+
+      // Gemma cups on dorsal surface
+      m += '<ellipse cx="230" cy="180" rx="14" ry="7" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<circle cx="227" cy="180" r="3" fill="#34d399"/>';
+      m += '<circle cx="233" cy="180" r="3" fill="#34d399"/>';
+      m += '<text x="230" y="165" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">Gemma Cup</text>';
+
+      // Female archegoniophore umbrella
+      m += '<line x1="290" y1="175" x2="290" y2="95" stroke="#10b981" stroke-width="3"/>';
+      m += '<path d="M 270,95 Q 290,75 310,95 L 305,105 Q 290,90 275,105 Z" fill="#059669" stroke="#34d399" stroke-width="1.5"/>';
+      m += '<text x="290" y="70" fill="#34d399" font-size="10" font-weight="700" text-anchor="middle">Archegoniophore</text>';
+
+      // Right explanation
+      m += '<text x="420" y="120" fill="#38bdf8" font-size="13" font-weight="700">Gemmae Reproduction:</text>';
+      m += '<text x="420" y="142" fill="#cbd5e1" font-size="11">• Green, multicellular asexual buds</text>';
+      m += '<text x="420" y="162" fill="#cbd5e1" font-size="11">• Detach by raindrop splash cup action</text>';
+      m += '<text x="420" y="182" fill="#cbd5e1" font-size="11">• Germinate into new haploid thalli</text>';
+      m += '<text x="420" y="202" fill="#cbd5e1" font-size="11">• Requires liquid water film for antherozoids</text>';
+
+    } else {
+      // Funaria moss gametophore + sporophyte
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#f59e0b" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#f59e0b" font-size="15" font-weight="700">Funaria (Moss): Dependent Diploid Sporophyte on Leafy Gametophyte</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Gametophyte (n): Leafy shoot · Sporophyte (2n): Foot, Seta &amp; Capsule with peristome</text>';
+
+      // Lower Gametophyte leafy shoot
+      m += '<line x1="260" y1="230" x2="260" y2="150" stroke="#10b981" stroke-width="4"/>';
+      for(var l = 0; l < 6; l++){
+        var ly = 210 - l * 10;
+        m += '<line x1="260" y1="' + ly + '" x2="245" y2="' + (ly - 6) + '" stroke="#34d399" stroke-width="2.5"/>';
+        m += '<line x1="260" y1="' + ly + '" x2="275" y2="' + (ly - 6) + '" stroke="#34d399" stroke-width="2.5"/>';
+      }
+      m += '<text x="210" y="185" fill="#10b981" font-size="11" font-weight="700">Gametophyte (n)</text>';
+
+      // Upper Sporophyte (Seta and Capsule)
+      m += '<path d="M 260,150 Q 250,110 270,75" fill="none" stroke="#f59e0b" stroke-width="2.5"/>';
+      m += '<ellipse cx="272" cy="70" rx="10" ry="16" fill="#b45309" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<polygon points="267,54 272,46 277,54" fill="#fde68a"/>'; // Operculum/Calyptra
+      m += '<text x="310" y="70" fill="#f59e0b" font-size="11" font-weight="700">Sporophyte (2n)</text>';
+      m += '<text x="310" y="86" fill="#94a3b8" font-size="10">Capsule with peristome teeth</text>';
+
+      // Right explanation
+      m += '<text x="440" y="125" fill="#f59e0b" font-size="13" font-weight="700">Key Moss Biology:</text>';
+      m += '<text x="440" y="147" fill="#cbd5e1" font-size="11">• Sporophyte is nutritionally dependent</text>';
+      m += '<text x="440" y="167" fill="#cbd5e1" font-size="11">• Meiosis occurs in capsule</text>';
+      m += '<text x="440" y="187" fill="#cbd5e1" font-size="11">• Spores germinate into Protonema</text>';
+      m += '<text x="440" y="207" fill="#cbd5e1" font-size="11">• Sphagnum provides commercial peat</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Group", bView === "marchantia" ? "Liverwort (Marchantia)" : "Moss (Funaria)", "#10b981") +
+      cell("Dominant Phase", "Gametophyte (Haploid, n)", "#38bdf8") +
+      cell("Water Dependency", "Absolute (Amphibians of Plants)", "#f59e0b") +
+      cell("Sporophyte Nature", "Nutritionally Dependent (2n)", "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Bryophyte Hallmarks:</span> ' +
+      'Gametophyte is the dominant, photosynthetic phase. Water is mandatory for flagellated antherozoids to swim to archegonia. The sporophyte is attached to and nourished by the gametophyte.'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 3. SIMULATION 3: Pteridophyte Prothallus & Vascular Stele (pteridophytestele)
+// -------------------------------------------------------------------------
+window.SIMS.pteridophytestele = (function(){
+  var pMode = "prothallus"; // "prothallus", "frond"
+
+  function setM(m){
+    pMode = m;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Prothallus (Gametophyte, n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Sporophyte (2n, Vascular)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-pro">Heart-Shaped Prothallus</button>' +
+      '<button class="preset-btn" id="p-fro">Fern Frond &amp; Sori (Sporophyte)</button>';
+
+    document.getElementById("p-pro").onclick = function(){ setActivePreset(this); setM("prothallus"); };
+    document.getElementById("p-fro").onclick = function(){ setActivePreset(this); setM("frond"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Pteridophytes: First Terrestrial Vascular Plants (NCERT 3.3)</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Examine the free-living photosynthetic prothallus and dominant vascular sporophyte with sori.</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+
+    if(pMode === "prothallus"){
+      // Heart-shaped prothallus
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#10b981" font-size="15" font-weight="700">Fern Prothallus: Inconspicuous Free-Living Gametophyte (n)</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Heart-shaped · Photosynthetic · Requires cool, damp, shady habitats &amp; water for fertilization</text>';
+
+      // Heart-shaped thallus
+      m += '<path d="M 230,120 C 190,70 140,110 140,150 C 140,200 230,240 230,240 C 230,240 320,200 320,150 C 320,110 270,70 230,120 Z" fill="#047857" stroke="#10b981" stroke-width="2.5"/>';
+      // Archegonia near apical notch
+      m += '<circle cx="225" cy="140" r="4" fill="#f59e0b"/>';
+      m += '<circle cx="235" cy="140" r="4" fill="#f59e0b"/>';
+      m += '<circle cx="230" cy="150" r="4" fill="#f59e0b"/>';
+      m += '<text x="230" y="115" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">Archegonia (Notch)</text>';
+
+      // Antheridia near base with rhizoids
+      m += '<circle cx="220" cy="205" r="3" fill="#38bdf8"/>';
+      m += '<circle cx="230" cy="210" r="3" fill="#38bdf8"/>';
+      m += '<circle cx="240" cy="205" r="3" fill="#38bdf8"/>';
+      m += '<text x="230" y="225" fill="#bae6fd" font-size="10" font-weight="700" text-anchor="middle">Antheridia</text>';
+
+      // Right explanation
+      m += '<text x="380" y="125" fill="#38bdf8" font-size="13" font-weight="700">Evolutionary Consequence:</text>';
+      m += '<text x="380" y="147" fill="#cbd5e1" font-size="11">• Prothallus lacks vascular tissue</text>';
+      m += '<text x="380" y="167" fill="#cbd5e1" font-size="11">• Antherozoids require water to swim</text>';
+      m += '<text x="380" y="187" fill="#cbd5e1" font-size="11">• Restricts living ferns to narrow, moist</text>';
+      m += '<text x="380" y="207" fill="#cbd5e1" font-size="11">  geographical zones across Earth</text>';
+
+    } else {
+      // Fern frond with sori
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#38bdf8" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#38bdf8" font-size="15" font-weight="700">Fern Sporophyte (2n): Macrophylls with Sori</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Dominant plant body differentiated into true roots, stem (rhizome), and leaves with xylem and phloem</text>';
+
+      // Frond axis
+      m += '<path d="M 180,240 Q 230,160 280,75" fill="none" stroke="#10b981" stroke-width="3.5"/>';
+      // Pinnae with circular brown sori
+      for(var p = 0; p < 7; p++){
+        var py = 210 - p * 18;
+        var px = 195 + p * 12;
+        m += '<line x1="' + px + '" y1="' + py + '" x2="' + (px - 35) + '" y2="' + (py - 12) + '" stroke="#047857" stroke-width="2"/>';
+        m += '<line x1="' + px + '" y1="' + py + '" x2="' + (px + 35) + '" y2="' + (py - 12) + '" stroke="#047857" stroke-width="2"/>';
+        // Sori dots
+        m += '<circle cx="' + (px - 20) + '" cy="' + (py - 8) + '" r="3" fill="#b45309"/>';
+        m += '<circle cx="' + (px + 20) + '" cy="' + (py - 8) + '" r="3" fill="#b45309"/>';
+      }
+      m += '<text x="280" y="65" fill="#fde68a" font-size="11" font-weight="700">Sori (Clusters of Sporangia)</text>';
+
+      // Right explanation
+      m += '<text x="410" y="125" fill="#10b981" font-size="13" font-weight="700">Vascular Anatomy:</text>';
+      m += '<text x="410" y="147" fill="#cbd5e1" font-size="11">• Xylem has tracheids (conducts water)</text>';
+      m += '<text x="410" y="167" fill="#cbd5e1" font-size="11">• Phloem has sieve cells (conducts sap)</text>';
+      m += '<text x="410" y="187" fill="#cbd5e1" font-size="11">• True roots bind soil effectively</text>';
+      m += '<text x="410" y="207" fill="#cbd5e1" font-size="11">• Sporangia undergo meiosis → Spores (n)</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Plant Group", "Pteridophyta", "#38bdf8") +
+      cell("Main Body", "Diploid Sporophyte (2n)", "#10b981") +
+      cell("Vascular Tissue", "Xylem & Phloem Present", "#f59e0b") +
+      cell("Gametophyte", "Free-living Prothallus (n)", "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#38bdf8;font-weight:700;">Vascular Cryptogams:</span> ' +
+      'Pteridophytes are the first vascular land plants with dominant independent sporophytes, but their geographic range remains limited because the free-living prothallus requires water for fertilization.'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 4. SIMULATION 4: Heterospory & Seed Habit Precursor (heterosporylab)
+// -------------------------------------------------------------------------
+window.SIMS.heterosporylab = (function(){
+  var sporyType = "heterospory"; // "homospory", "heterospory"
+
+  function setS(s){
+    sporyType = s;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Microspores (Male)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Megaspores (Female)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Seed Habit Retention</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn" id="p-homo">Homosporous Fern (Single Spore)</button>' +
+      '<button class="preset-btn active" id="p-hetero">Heterosporous Selaginella (2 Spores)</button>';
+
+    document.getElementById("p-homo").onclick = function(){ setActivePreset(this); setS("homospory"); };
+    document.getElementById("p-hetero").onclick = function(){ setActivePreset(this); setS("heterospory"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Heterospory &amp; The Seed Habit Precursor Milestone (NCERT 3.3)</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Compare identical homospores vs Selaginella microspores and retained megaspores.</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+
+    if(sporyType === "homospory"){
+      // Homospory
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#38bdf8" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#38bdf8" font-size="15" font-weight="700">Homosporous Pteridophyte (Dryopteris / Equisetum)</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Produces single kind of uniform spores · Germinate outside parent into bisexual prothallus</text>';
+
+      // Uniform spores
+      for(var i = 0; i < 20; i++){
+        var sx = 100 + (i % 5) * 35;
+        var sy = 120 + Math.floor(i / 5) * 30;
+        m += '<circle cx="' + sx + '" cy="' + sy + '" r="8" fill="#38bdf8" stroke="#0284c7"/>';
+      }
+      m += '<text x="170" y="245" fill="#bae6fd" font-size="11" font-weight="700" text-anchor="middle">Uniform Identical Spores (n)</text>';
+
+      // Arrow -> Bisexual Prothallus
+      m += '<line x1="280" y1="165" x2="340" y2="165" stroke="#f8fafc" stroke-width="2"/>';
+      m += '<polygon points="340,160 355,165 340,170" fill="#f8fafc"/>';
+
+      m += '<text x="440" y="130" fill="#38bdf8" font-size="13" font-weight="700">Bisexual Gametophyte:</text>';
+      m += '<text x="440" y="152" fill="#cbd5e1" font-size="11">• Free-living outside maternal plant</text>';
+      m += '<text x="440" y="172" fill="#cbd5e1" font-size="11">• Vulnerable to environmental drought</text>';
+      m += '<text x="440" y="192" fill="#cbd5e1" font-size="11">• High spore mortality rate</text>';
+
+    } else {
+      // Heterospory (Selaginella / Salvinia)
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#10b981" font-size="15" font-weight="700">Heterosporous Plant (Selaginella / Salvinia): Precursor to Seed Habit</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Microspores (male) + Megaspores (female) · Megaspore retained on parent sporophyte</text>';
+
+      // Left: Microspores (small, numerous)
+      m += '<rect x="80" y="110" width="100" height="90" rx="6" fill="#0c1f36" stroke="#38bdf8"/>';
+      for(var ms = 0; ms < 16; ms++){
+        var mx = 95 + (ms % 4) * 22;
+        var my = 125 + Math.floor(ms / 4) * 18;
+        m += '<circle cx="' + mx + '" cy="' + my + '" r="4" fill="#38bdf8"/>';
+      }
+      m += '<text x="130" y="220" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">Microspores (♂)</text>';
+
+      // Middle: Megaspores (huge, 4 per sporangium)
+      m += '<rect x="210" y="110" width="100" height="90" rx="6" fill="#260b1c" stroke="#ec4899"/>';
+      m += '<circle cx="240" cy="138" r="14" fill="#ec4899"/>';
+      m += '<circle cx="280" cy="138" r="14" fill="#ec4899"/>';
+      m += '<circle cx="240" cy="172" r="14" fill="#ec4899"/>';
+      m += '<circle cx="280" cy="172" r="14" fill="#ec4899"/>';
+      m += '<text x="260" y="220" fill="#ec4899" font-size="11" font-weight="700" text-anchor="middle">Megaspores (♀)</text>';
+
+      // Right: Evolutionary Significance Card
+      m += '<rect x="340" y="105" width="310" height="135" rx="6" fill="#031f17" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="360" y="130" fill="#10b981" font-size="13" font-weight="700">Precursor to Seed Habit:</text>';
+      m += '<text x="360" y="152" fill="#cbd5e1" font-size="11">• Female gametophyte retained on parent</text>';
+      m += '<text x="360" y="172" fill="#cbd5e1" font-size="11">• Zygote develops into embryo inside it</text>';
+      m += '<text x="360" y="192" fill="#cbd5e1" font-size="11">• Direct evolutionary ancestor of gymnosperm</text>';
+      m += '<text x="360" y="212" fill="#cbd5e1" font-size="11">  and angiosperm ovules and seeds</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Pattern", sporyType.toUpperCase(), sporyType === "heterospory" ? "#10b981" : "#38bdf8") +
+      cell("Genera", sporyType === "heterospory" ? "Selaginella, Salvinia" : "Dryopteris, Equisetum", "#f59e0b") +
+      cell("Gametophyte Sex", sporyType === "heterospory" ? "Dioecious (Male / Female)" : "Monoecious (Bisexual)", "#ec4899") +
+      cell("Evolutionary Value", sporyType === "heterospory" ? "Seed Habit Foundation" : "Primitive Basal", "#a855f7")
+    );
+
+    verdict(
+      sporyType === "heterospory" ?
+      '<span style="color:#10b981;font-weight:700;">Milestone of Seed Evolution:</span> In heterosporous pteridophytes (Selaginella and Salvinia), female gametophytes and developing embryos are retained on the parent sporophyte, establishing the evolutionary basis of the seed habit.' :
+      '<span style="color:#38bdf8;font-weight:700;">Homosporous Ancestral Condition:</span> All spores are identical in size and germinate externally into free-living bisexual prothalli.'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 5. SIMULATION 5: Gymnosperm Cones & Naked Ovules (gymnospermcone)
+// -------------------------------------------------------------------------
+window.SIMS.gymnospermcone = (function(){
+  var gType = "ovule"; // "ovule", "needle"
+
+  function setG(g){
+    gType = g;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Naked Ovule / Seed</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Megasporophyll Scale</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Winged Pollen Grain</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ov">Pinus Naked Ovule &amp; Wind Pollination</button>' +
+      '<button class="preset-btn" id="p-ne">Pinus Needle Xerophytic Adaptations</button>';
+
+    document.getElementById("p-ov").onclick = function(){ setActivePreset(this); setG("ovule"); };
+    document.getElementById("p-ne").onclick = function(){ setActivePreset(this); setG("needle"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Gymnosperms: Naked Seeds &amp; Conifer Adaptations (NCERT 3.4)</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Ovules remain exposed on megasporophyll scales; winged pollen carried by wind directly to micropyle.</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+
+    if(gType === "ovule"){
+      // Naked ovule on megasporophyll scale
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#f59e0b" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#f59e0b" font-size="15" font-weight="700">Gymnosperm Naked Ovule on Megasporophyll (No Ovary Wall)</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Ovule sits exposed on woody scale · Micropyle open to windblown pollen · Single fertilization</text>';
+
+      // Megasporophyll scale
+      m += '<path d="M 120,200 L 280,180 L 320,130 L 290,135 L 140,185 Z" fill="#78350f" stroke="#b45309" stroke-width="2"/>';
+      m += '<text x="210" y="215" fill="#fcd34d" font-size="10">Megasporophyll Scale</text>';
+
+      // Exposed ovule sitting on top
+      m += '<ellipse cx="230" cy="155" rx="28" ry="18" fill="#d97706" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<circle cx="240" cy="155" r="10" fill="#fef08a"/>'; // Female gametophyte/archegonia
+      m += '<line x1="258" y1="155" x2="265" y2="155" stroke="#f59e0b" stroke-width="3"/>'; // Micropyle
+      m += '<text x="230" y="130" fill="#fef08a" font-size="11" font-weight="700">Naked Ovule</text>';
+
+      // Winged pollen grain blowing in
+      m += '<circle cx="360" cy="145" r="7" fill="#fde047"/>';
+      m += '<ellipse cx="352" cy="145" rx="5" ry="8" fill="#fef08a" opacity="0.6"/>'; // Wing 1
+      m += '<ellipse cx="368" cy="145" rx="5" ry="8" fill="#fef08a" opacity="0.6"/>'; // Wing 2
+      m += '<path d="M 400,135 Q 380,140 375,145" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 2"/>';
+      m += '<text x="360" y="125" fill="#fde047" font-size="10" font-weight="700" text-anchor="middle">Winged Pollen</text>';
+
+      // Right callouts
+      m += '<text x="440" y="125" fill="#f59e0b" font-size="13" font-weight="700">Gymnosperm Hallmarks:</text>';
+      m += '<text x="440" y="147" fill="#cbd5e1" font-size="11">• Seeds are naked (no fruit / pericarp)</text>';
+      m += '<text x="440" y="167" fill="#cbd5e1" font-size="11">• Anemophilous (wind) pollination</text>';
+      m += '<text x="440" y="187" fill="#cbd5e1" font-size="11">• Pinus roots possess mycorrhiza</text>';
+      m += '<text x="440" y="207" fill="#cbd5e1" font-size="11">• Cycas has coralloid roots with cyanobacteria</text>';
+
+    } else {
+      // Pinus needle xerophytic cross-section
+      m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="65" y="60" fill="#10b981" font-size="15" font-weight="700">Pinus Needle (Conifer Leaf) Xerophytic Adaptations</text>';
+      m += '<text x="65" y="80" fill="#94a3b8" font-size="11">Needle-like shape (low surface area) · Heavy waxy cuticle · Sunken stomata in pits · Resin canals</text>';
+
+      // Semicircular needle cross section
+      m += '<path d="M 140,190 A 90,90 0 0,1 320,190 Z" fill="#064e3b" stroke="#10b981" stroke-width="3"/>';
+      // Cuticle outline
+      m += '<path d="M 136,192 A 94,94 0 0,1 324,192" fill="none" stroke="#fef08a" stroke-width="4"/>';
+      m += '<text x="230" y="85" fill="#fef08a" font-size="10" font-weight="700" text-anchor="middle">Thick Waxy Cuticle</text>';
+
+      // Sunken stomata pits
+      m += '<circle cx="180" cy="140" r="4" fill="#022c22" stroke="#34d399"/>';
+      m += '<circle cx="280" cy="140" r="4" fill="#022c22" stroke="#34d399"/>';
+      m += '<text x="140" y="130" fill="#34d399" font-size="9">Sunken Stoma</text>';
+
+      // Resin canal
+      m += '<circle cx="230" cy="165" r="8" fill="#d97706" stroke="#fde047"/>';
+      m += '<text x="230" y="168" fill="#ffffff" font-size="8" text-anchor="middle">Resin</text>';
+
+      // Right explanation
+      m += '<text x="420" y="125" fill="#10b981" font-size="13" font-weight="700">Alpine Survival Suite:</text>';
+      m += '<text x="420" y="147" fill="#cbd5e1" font-size="11">• Needle form sloughs heavy snow</text>';
+      m += '<text x="420" y="167" fill="#cbd5e1" font-size="11">• Drastically reduces transpiration</text>';
+      m += '<text x="420" y="187" fill="#cbd5e1" font-size="11">• Sunken stomata trap humid micro-air</text>';
+      m += '<text x="420" y="207" fill="#cbd5e1" font-size="11">• Resin deters herbivores &amp; seals wounds</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Plant Group", "Gymnospermae", "#f59e0b") +
+      cell("Seed Status", "NAKED (Unenclosed)", "#ef4444") +
+      cell("Pollination", "Anemophily (Wind)", "#38bdf8") +
+      cell("Root Symbionts", "Mycorrhiza / Coralloid", "#10b981")
+    );
+
+    verdict(
+      '<span style="color:#f59e0b;font-weight:700;">Gymnosperm Hallmarks:</span> ' +
+      'Ovules are borne exposed on megasporophyll scales without an ovary wall, developing into naked seeds. Conifers endure harsh alpine winters via needle-like foliage, thick cuticles, and sunken stomata.'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 6. SIMULATION 6: Double Fertilization in Angiosperms (angiospermdoublefert)
+// -------------------------------------------------------------------------
+window.SIMS.angiospermdoublefert = (function(){
+  var stage = "embryosac"; // "embryosac", "fertilized"
+
+  function setStage(st){
+    stage = st;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Syngamy → Zygote (2n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Triple Fusion → PEN (3n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Antipodals (n)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-es">Mature 7-Celled Embryo Sac</button>' +
+      '<button class="preset-btn" id="p-df">Double Fertilization Event</button>';
+
+    document.getElementById("p-es").onclick = function(){ setActivePreset(this); setStage("embryosac"); };
+    document.getElementById("p-df").onclick = function(){ setActivePreset(this); setStage("fertilized"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Angiosperms: The Hallmark of Double Fertilization (NCERT 3.5)</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Dissect the 7-celled 8-nucleate female gametophyte, Syngamy (zygote 2n) and Triple Fusion (PEN 3n).</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var isFert = (stage === "fertilized");
+
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="50" y="45" fill="#f8fafc" font-size="14" font-weight="700">Angiosperm Embryo Sac: ' + (isFert ? 'Double Fertilization Accomplished' : 'Mature 7-Celled 8-Nucleate Architecture') + '</text>';
+
+    // Embryo sac oval container
+    m += '<ellipse cx="230" cy="160" rx="80" ry="105" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+
+    // 3 Antipodal cells (Chalazal end - top)
+    m += '<circle cx="205" cy="90" r="12" fill="#831843" stroke="#ec4899"/>';
+    m += '<circle cx="230" cy="80" r="12" fill="#831843" stroke="#ec4899"/>';
+    m += '<circle cx="255" cy="90" r="12" fill="#831843" stroke="#ec4899"/>';
+    m += '<text x="230" y="65" fill="#ec4899" font-size="10" font-weight="700" text-anchor="middle">3 Antipodals (Chalazal)</text>';
+
+    // Large central cell with 2 polar nuclei OR 3n PEN
+    if(isFert){
+      m += '<circle cx="230" cy="155" r="24" fill="#b45309" stroke="#f59e0b" stroke-width="3"/>';
+      m += '<text x="230" y="152" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">PEN (3n)</text>';
+      m += '<text x="230" y="165" fill="#fde68a" font-size="8" text-anchor="middle">[Triple Fusion]</text>';
+    } else {
+      m += '<circle cx="220" cy="155" r="9" fill="#0284c7" stroke="#38bdf8"/>';
+      m += '<circle cx="240" cy="155" r="9" fill="#0284c7" stroke="#38bdf8"/>';
+      m += '<text x="230" y="138" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">2 Polar Nuclei (Central Cell)</text>';
+    }
+
+    // Egg apparatus (Micropylar end - bottom): 1 Egg + 2 Synergids OR 2n Zygote
+    if(isFert){
+      m += '<circle cx="230" cy="225" r="16" fill="#047857" stroke="#10b981" stroke-width="3"/>';
+      m += '<text x="230" y="228" fill="#a7f3d0" font-size="10" font-weight="700" text-anchor="middle">Zygote (2n)</text>';
+      m += '<text x="230" y="255" fill="#10b981" font-size="10" font-weight="700" text-anchor="middle">[Syngamy Product]</text>';
+    } else {
+      m += '<circle cx="230" cy="220" r="13" fill="#047857" stroke="#10b981"/>'; // Egg
+      m += '<circle cx="205" cy="232" r="11" fill="#065f46" stroke="#34d399"/>'; // Synergid 1
+      m += '<circle cx="255" cy="232" r="11" fill="#065f46" stroke="#34d399"/>'; // Synergid 2
+      m += '<text x="230" y="255" fill="#10b981" font-size="10" font-weight="700" text-anchor="middle">Egg Apparatus (1 Egg + 2 Synergids)</text>';
+    }
+
+    // Right explanation panel
+    m += '<rect x="360" y="60" width="320" height="205" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="380" y="88" fill="#38bdf8" font-size="14" font-weight="700">The Two Fusions in Double Fertilization:</text>';
+
+    m += '<text x="380" y="118" fill="#10b981" font-size="12" font-weight="700">1. Syngamy (Generative Fertilization):</text>';
+    m += '<text x="380" y="136" fill="#cbd5e1" font-size="11">Male gamete (n) + Egg (n) → Zygote (2n)</text>';
+    m += '<text x="380" y="152" fill="#94a3b8" font-size="10">Develops into the future embryonic plant</text>';
+
+    m += '<text x="380" y="180" fill="#f59e0b" font-size="12" font-weight="700">2. Triple Fusion (Vegetative):</text>';
+    m += '<text x="380" y="198" fill="#cbd5e1" font-size="11">Male gamete (n) + 2 Polar nuclei (n+n) → PEN (3n)</text>';
+    m += '<text x="380" y="214" fill="#94a3b8" font-size="10">Develops into triploid nutritive endosperm</text>';
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Cellular State", isFert ? "Double Fertilized" : "7-Celled 8-Nucleate", "#38bdf8") +
+      cell("Zygote Ploidy", isFert ? "Diploid (2n)" : "Egg (n)", "#10b981") +
+      cell("Endosperm Ploidy", isFert ? "Triploid (3n PEN)" : "2 Polar Nuclei", "#f59e0b") +
+      cell("Uniqueness", "Strictly Angiosperms Only", "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#10b981;font-weight:700;">Double Fertilization:</span> ' +
+      'An event strictly unique to angiosperms. Two male gametes execute two fusions simultaneously: Syngamy produces the diploid zygote (2n), while Triple Fusion produces the triploid Primary Endosperm Nucleus (3n PEN).'
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+// -------------------------------------------------------------------------
+// 7. SIMULATION 7: Life Cycle Patterns (lifecyclesim)
+// -------------------------------------------------------------------------
+window.SIMS.lifecyclesim = (function(){
+  var cPattern = "haplodiplontic"; // "haplontic", "diplontic", "haplodiplontic"
+
+  function setP(p){
+    cPattern = p;
+    draw(0);
+  }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Haploid Generation (n)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Diploid Generation (2n)</span></div>';
+
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn" id="p-hap">Haplontic (Volvox / Spirogyra)</button>' +
+      '<button class="preset-btn" id="p-dip">Diplontic (Fucus / Seed Plants)</button>' +
+      '<button class="preset-btn active" id="p-hd">Haplodiplontic (Bryo / Pterido)</button>';
+
+    document.getElementById("p-hap").onclick = function(){ setActivePreset(this); setP("haplontic"); };
+    document.getElementById("p-dip").onclick = function(){ setActivePreset(this); setP("diplontic"); };
+    document.getElementById("p-hd").onclick = function(){ setActivePreset(this); setP("haplodiplontic"); };
+
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-group" style="grid-column:span 2;">' +
+        '<label>Plant Life Cycles &amp; Alternation of Generations (NCERT 3.6)</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Dynamic proportion of haploid gametophyte (n, green) vs diploid sporophyte (2n, blue) generations.</div>' +
+      '</div>';
+
+    draw(0);
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+
+    var cx = 200, cy = 150, r = 85;
+
+    if(cPattern === "haplontic"){
+      // 90% Green (n), tiny 10% Blue (2n zygote)
+      m += '<text x="50" y="45" fill="#10b981" font-size="14" font-weight="700">Haplontic Life Cycle (Volvox, Spirogyra, Chlamydomonas)</text>';
+      // Almost complete circle green
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#10b981" stroke-width="16"/>';
+      // Tiny blue slice for 1-celled zygote
+      m += '<circle cx="' + (cx + r) + '" cy="' + cy + '" r="12" fill="#38bdf8"/>';
+      m += '<text x="' + (cx + r + 15) + '" y="' + (cy + 4) + '" fill="#38bdf8" font-size="10" font-weight="700">Zygote (2n)</text>';
+      m += '<text x="' + cx + '" y="' + cy + '" fill="#10b981" font-size="14" font-weight="700" text-anchor="middle">Gametophyte (n)</text>';
+
+      // Right explanation
+      m += '<rect x="360" y="60" width="320" height="205" rx="8" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
+      m += '<text x="380" y="88" fill="#10b981" font-size="14" font-weight="700">Haplontic Characteristics:</text>';
+      m += '<text x="380" y="115" fill="#cbd5e1" font-size="11">• Sporophyte is ONLY the one-celled zygote</text>';
+      m += '<text x="380" y="135" fill="#cbd5e1" font-size="11">• No free-living sporophytes exist</text>';
+      m += '<text x="380" y="155" fill="#cbd5e1" font-size="11">• Zygote undergoes immediate MEIOSIS</text>';
+      m += '<text x="380" y="175" fill="#cbd5e1" font-size="11">• Produces haploid spores → Gametophyte</text>';
+      m += '<text x="380" y="195" fill="#cbd5e1" font-size="11">• Typical of most green algae</text>';
+
+    } else if(cPattern === "diplontic"){
+      // 90% Blue (2n), tiny 10% Green (gametes)
+      m += '<text x="50" y="45" fill="#38bdf8" font-size="14" font-weight="700">Diplontic Life Cycle (Fucus, Gymnosperms, Angiosperms)</text>';
+      m += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#38bdf8" stroke-width="16"/>';
+      m += '<circle cx="' + (cx + r) + '" cy="' + cy + '" r="12" fill="#10b981"/>';
+      m += '<text x="' + (cx + r + 15) + '" y="' + (cy + 4) + '" fill="#10b981" font-size="10" font-weight="700">Gametes (n)</text>';
+      m += '<text x="' + cx + '" y="' + cy + '" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">Sporophyte (2n)</text>';
+
+      // Right explanation
+      m += '<rect x="360" y="60" width="320" height="205" rx="8" fill="#0b1726" stroke="#38bdf8" stroke-width="1.5"/>';
+      m += '<text x="380" y="88" fill="#38bdf8" font-size="14" font-weight="700">Diplontic Characteristics:</text>';
+      m += '<text x="380" y="115" fill="#cbd5e1" font-size="11">• Sporophyte (2n) is dominant &amp; photosynthetic</text>';
+      m += '<text x="380" y="135" fill="#cbd5e1" font-size="11">• Gametophyte reduced to single/few cells</text>';
+      m += '<text x="380" y="155" fill="#cbd5e1" font-size="11">• Meiosis occurs during gamete formation</text>';
+      m += '<text x="380" y="175" fill="#cbd5e1" font-size="11">• Universal in seed plants (Gymno &amp; Angio)</text>';
+      m += '<text x="380" y="195" fill="#cbd5e1" font-size="11">• Prominent algal exception: Fucus</text>';
+
+    } else {
+      // 50% Green, 50% Blue
+      m += '<text x="50" y="45" fill="#f59e0b" font-size="14" font-weight="700">Haplodiplontic Life Cycle (Bryophytes, Pteridophytes, Kelps)</text>';
+      m += '<path d="M ' + (cx - r) + ',' + cy + ' A ' + r + ',' + r + ' 0 0,1 ' + (cx + r) + ',' + cy + '" fill="none" stroke="#10b981" stroke-width="16"/>';
+      m += '<path d="M ' + (cx + r) + ',' + cy + ' A ' + r + ',' + r + ' 0 0,1 ' + (cx - r) + ',' + cy + '" fill="none" stroke="#38bdf8" stroke-width="16"/>';
+      m += '<text x="' + cx + '" y="' + (cy - 20) + '" fill="#10b981" font-size="12" font-weight="700" text-anchor="middle">Gametophyte (n)</text>';
+      m += '<text x="' + cx + '" y="' + (cy + 30) + '" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Sporophyte (2n)</text>';
+
+      // Right explanation
+      m += '<rect x="360" y="60" width="320" height="205" rx="8" fill="#0b1726" stroke="#f59e0b" stroke-width="1.5"/>';
+      m += '<text x="380" y="88" fill="#f59e0b" font-size="14" font-weight="700">Haplodiplontic Characteristics:</text>';
+      m += '<text x="380" y="115" fill="#cbd5e1" font-size="11">• Both phases are multicellular &amp; prominent</text>';
+      m += '<text x="380" y="135" fill="#cbd5e1" font-size="11">• Bryophytes: Gametophyte dominant</text>';
+      m += '<text x="380" y="155" fill="#cbd5e1" font-size="11">• Pteridophytes: Vascular sporophyte dominant</text>';
+      m += '<text x="380" y="175" fill="#cbd5e1" font-size="11">• Spores formed by sporic meiosis</text>';
+      m += '<text x="380" y="195" fill="#cbd5e1" font-size="11">• Algae: Ectocarpus, Polysiphonia, Kelps</text>';
+    }
+
+    svg.innerHTML = m;
+
+    readout(
+      cell("Pattern", cPattern.toUpperCase(), "#f59e0b") +
+      cell("Meiosis Timing", cPattern === "haplontic" ? "Zygotic (2n → n)" : (cPattern === "diplontic" ? "Gametic (2n → n)" : "Sporic in Sporangia"), "#38bdf8") +
+      cell("Gametophyte", cPattern === "diplontic" ? "Microscopic (Pollen/Sac)" : "Multicellular (n)", "#10b981") +
+      cell("Algal Example", cPattern === "haplontic" ? "Spirogyra" : (cPattern === "diplontic" ? "Fucus" : "Ectocarpus"), "#ec4899")
+    );
+
+    verdict(
+      '<span style="color:#f59e0b;font-weight:700;">Life Cycle Mastery:</span> ' +
+      (cPattern === "haplontic" ? "Haplontic life cycles feature a dominant multicellular gametophyte; only the zygote is diploid." :
+       (cPattern === "diplontic" ? "Diplontic life cycles feature a dominant multicellular diploid sporophyte; gametes are the only haploid stage." :
+        "Haplodiplontic life cycles exhibit alternation between multicellular haploid and diploid generations."))
+    );
+  }
+
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

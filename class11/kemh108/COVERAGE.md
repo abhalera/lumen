@@ -1,0 +1,50 @@
+# COVERAGE — kemh108 Sequences and Series
+
+**Source:** `books/originals/Class11-Maths_kemh108.pdf` (16 pdf pages, printed pp. 135–150, Reprint 2026–27).  
+**SHA-256:** `981289b5700e34750d420c072e0e24b7c63147a9fe0c9e13d25b3f03e3478aba`  
+**Extraction:** PyMuPDF dict spans + 1.6× PNG zooms. **pdftotext was not used.**  
+**NCERT:** https://ncert.nic.in/textbook/pdf/kemh108.pdf
+
+## Concepts
+
+| ID | Section | PDF pp | Status |
+|---|---|---|---|
+| sequences | 8.1–8.2 | 1–3 | Complete; ancestors, Fibonacci, primes have no aₙ |
+| series-sigma | 8.3, Ex 8.1 | 3–5 | Complete; series vs sum |
+| gp-nth | 8.4.1 | 5–7 | Complete; aₙ=arⁿ⁻¹; a₁₀=3072 |
+| gp-sum | 8.4.2 | 6–8 | Complete; S₅=211/81; n=10 |
+| gp-applications | Examples 9–11 | 8–9 | Complete; 2046 ancestors; 7+77+777 |
+| geometric-mean | 8.4.3 | 9–10 | Complete; 4,16,64 between 1 and 256 |
+| am-gm | 8.5 | 10–13 | Complete; {4,16} from A=10,G=8 |
+| compound-world | Misc 13–18 | 14 | Complete; FD, tractor, (0.8)⁵=5120 |
+
+## Exercises — all mapped
+
+| Set | Count |
+|---|---|
+| Ex 8.1 Q1–14 | 14 |
+| Ex 8.2 Q1–32 | 32 |
+| Miscellaneous Q1–18 | 18 |
+| **Total** | **64** |
+
+## Zoom-checked fixtures
+
+| Item | Result |
+|---|---|
+| Example 2 a₂₀ | −7866 |
+| Example 6 a₁₀ | 3072 |
+| Example 7 S₅ | 211/81 |
+| Example 8 n | 10 |
+| Example 11 | 2046 |
+| Example 13 | 4 and 16 |
+| Q17 depreciation | ₹5120 |
+| Q11 Σ(2+3ᵏ) | 265741 |
+| Q15 S₇ | 2059 |
+
+## Edition note (honest gap)
+
+The intro still promises “more about A.P.”, arithmetic means, and the special series Σn, Σn², Σn³. **Those sections are not in this 16-page reprint.** A.P. re-enters only through instalment miscellaneous problems (Q13, Q14, Q16, Q18) using Class 10 A.P. Not invented.
+
+## Simulations
+
+`ancestor-tree`, `series-sum`, `gp-terms`, `gp-sum`, `sevens-series`, `insert-gm`, `am-gm-compare`, `fd-compound`.

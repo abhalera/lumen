@@ -1,0 +1,294 @@
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.pointobj = (function(){
+  var mode = "train";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Centre of mass</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Finite size / spin</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-train">Vande Bharat 759 km (point object YES)</button>' +
+      '<button class="preset-btn" id="p-ball">Spinning cricket ball (NO)</button>';
+    document.getElementById("p-train").onclick = function(){ setActivePreset(this); mode="train"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-ball").onclick = function(){ setActivePreset(this); mode="ball"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode === "train"){
+      var x = 80 + (t/6)*520;
+      m += '<line x1="40" y1="180" x2="680" y2="180" stroke="#334155" stroke-width="6"/>';
+      m += '<rect x="' + (x-18) + '" y="150" width="36" height="22" rx="4" fill="#38bdf8"/>';
+      m += '<circle cx="' + x + '" cy="180" r="6" fill="#f8fafc"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Length 0.38 km ≪ 759 km — one moving dot on the route</text>';
+      readout(cell("Journey fraction", (t/6*100).toFixed(0)+"%") + cell("Point-object test","PASS","#34d399"));
+      verdict("<b>YES:</b> coach length is negligible compared with Delhi–Varanasi. Kinematics tracks the centre of mass.");
+    } else {
+      var ang = t * 4;
+      var cx = 360, cy = 150;
+      m += '<circle cx="'+cx+'" cy="'+cy+'" r="40" fill="none" stroke="#f59e0b" stroke-width="3"/>';
+      m += '<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+40*Math.cos(ang))+'" y2="'+(cy+40*Math.sin(ang))+'" stroke="#f8fafc" stroke-width="3"/>';
+      m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Spin + sharp turn: orientation is the motion of interest</text>';
+      readout(cell("Spin","visible") + cell("Point-object test","FAIL","#f87171"));
+      verdict("<b>NO (Ex 2.1c):</b> a spinning cricket ball that turns on the ground is not a point object — radius and rotation matter.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.instvel = (function(){
+  var dt = 2.0;
+  function xOf(t){ return 0.08 * t * t * t; }
+  function vExact(t){ return 0.24 * t * t; }
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>x = 0.08 t³</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Chord Δx/Δt</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Tangent dx/dt</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-dt2">Table 2.1: Δt = 2.0 s</button>' +
+      '<button class="preset-btn" id="p-dt05">Δt = 0.5 s</button>' +
+      '<button class="preset-btn" id="p-dt01">Δt = 0.01 s → 3.84</button>';
+    document.getElementById("p-dt2").onclick = function(){ setActivePreset(this); dt=2; App.resetTimeline(); };
+    document.getElementById("p-dt05").onclick = function(){ setActivePreset(this); dt=0.5; App.resetTimeline(); };
+    document.getElementById("p-dt01").onclick = function(){ setActivePreset(this); dt=0.01; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>Centre time t</span><span class="val" id="ctrl-t">4.0 s</span></div>' +
+      '<input type="range" id="ctrl-t-range" min="1" max="5.5" step="0.1" value="4"></div>';
+    document.getElementById("ctrl-t-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var t0 = Number(document.getElementById("ctrl-t-range").value);
+    document.getElementById("ctrl-t").textContent = t0.toFixed(1)+" s";
+    var t1 = Math.max(0, t0 - dt/2), t2 = t0 + dt/2;
+    var chord = (xOf(t2) - xOf(t1)) / (t2 - t1);
+    var exact = vExact(t0);
+    function X(t){ return 60 + t * 100; }
+    function Y(x){ return 250 - x * 10; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="60" y1="250" x2="680" y2="250" stroke="#475569"/><line x1="60" y1="250" x2="60" y2="30" stroke="#475569"/>';
+    var d = "";
+    for(var t=0;t<=6.05;t+=0.1){
+      d += (t===0?"M":"L") + " " + X(t) + " " + Y(xOf(t));
+    }
+    m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<line x1="'+X(t1)+'" y1="'+Y(xOf(t1))+'" x2="'+X(t2)+'" y2="'+Y(xOf(t2))+'" stroke="#f59e0b" stroke-width="3"/>';
+    var slope = exact * 10 / 100;
+    m += '<line x1="'+X(t0-0.8)+'" y1="'+(Y(xOf(t0))+slope*80)+'" x2="'+X(t0+0.8)+'" y2="'+(Y(xOf(t0))-slope*80)+'" stroke="#34d399" stroke-width="2" stroke-dasharray="6 4"/>';
+    m += '<circle cx="'+X(t0)+'" cy="'+Y(xOf(t0))+'" r="5" fill="#f8fafc"/>';
+    m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Fig. 2.1 style: chord → tangent as Δt → 0</text>';
+    svg.innerHTML = m;
+    readout(cell("Δt", dt.toFixed(2)+" s") + cell("Δx/Δt (chord)", chord.toFixed(4)+" m/s", "#f59e0b") + cell("dx/dt exact", exact.toFixed(4)+" m/s", "#34d399"));
+    verdict("<b>Table 2.1:</b> at t = 4 s the exact slope is 0.24×16 = <b>3.84 m s⁻¹</b>. Smaller Δt makes the orange chord hug the green tangent.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.accel = (function(){
+  var caseId = "a";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>v(t)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="c-a">Fig 2.3a +v +a</button>' +
+      '<button class="preset-btn" id="c-b">2.3b +v −a</button>' +
+      '<button class="preset-btn" id="c-c">2.3c −v −a</button>' +
+      '<button class="preset-btn" id="c-d">2.3d turns back</button>';
+    ["a","b","c","d"].forEach(function(k){
+      document.getElementById("c-"+k).onclick = function(){ setActivePreset(this); caseId=k; App.resetTimeline(); App.play(); };
+    });
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function params(){
+    if(caseId==="a") return {v0:4, a:2, note:"+ direction, +a: speeding up to the right"};
+    if(caseId==="b") return {v0:12, a:-2, note:"+ direction, −a: slowing, may stop"};
+    if(caseId==="c") return {v0:-4, a:-2, note:"− direction, −a: speeding up to the left"};
+    return {v0:8, a:-3, note:"starts +x, a negative: reverses after v=0"};
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var p = params();
+    var v = p.v0 + p.a * t;
+    function X(tt){ return 80 + tt*90; }
+    function Y(vv){ return 160 - vv*6; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="160" x2="680" y2="160" stroke="#475569"/><line x1="80" y1="260" x2="80" y2="40" stroke="#475569"/>';
+    m += '<line x1="'+X(0)+'" y1="'+Y(p.v0)+'" x2="'+X(6)+'" y2="'+Y(p.v0+p.a*6)+'" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<circle cx="'+X(t)+'" cy="'+Y(v)+'" r="6" fill="#f8fafc"/>';
+    svg.innerHTML = m;
+    readout(cell("v₀", p.v0+" m/s") + cell("a", p.a+" m/s²") + cell("v(t)", v.toFixed(2)+" m/s"));
+    verdict("<b>Fig. 2.3 "+caseId+":</b> "+p.note+". Slope of this line is a. Speed is increasing iff v and a have the same sign.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.vtarea = (function(){
+  var u = 15;
+  function mount(){
+    App.state.maxT = 10;
+    var s = document.getElementById("time-scrubber"); if(s){ s.max = 10; }
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>v = constant</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d39988;"></span><span>Area = displacement</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="u15">u = +15 m/s (Fig. 2.4)</button>' +
+      '<button class="preset-btn" id="u-10">u = −10 m/s (negative area)</button>';
+    document.getElementById("u15").onclick = function(){ setActivePreset(this); u=15; App.resetTimeline(); App.play(); };
+    document.getElementById("u-10").onclick = function(){ setActivePreset(this); u=-10; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var T = Math.min(t, 10);
+    var area = u * T;
+    function X(tt){ return 80 + tt*55; }
+    function Y(vv){ return 160 - vv*5; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="160" x2="680" y2="160" stroke="#475569"/><line x1="80" y1="40" x2="80" y2="280" stroke="#475569"/>';
+    var yU = Y(u);
+    m += '<rect x="80" y="'+(u>=0?yU:160)+'" width="'+(X(T)-80)+'" height="'+Math.abs(160-yU)+'" fill="#34d39944"/>';
+    m += '<line x1="80" y1="'+yU+'" x2="'+X(10)+'" y2="'+yU+'" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<circle cx="'+X(T)+'" cy="'+yU+'" r="5" fill="#f8fafc"/>';
+    svg.innerHTML = m;
+    readout(cell("u", u+" m/s") + cell("t", T.toFixed(1)+" s") + cell("area u·t", area.toFixed(1)+" m", "#34d399"));
+    verdict("<b>Fig. 2.4:</b> rectangle of height u and width T. Signed area is displacement. Negative u paints the rectangle below the t-axis.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.kin = (function(){
+  var u = 0, a = 2;
+  function mount(){
+    App.state.maxT = 8;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>x(t)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v(t)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="k1">u=0, a=2 (x=½at²)</button>' +
+      '<button class="preset-btn" id="k2">Brake: u=10, a=−2</button>' +
+      '<button class="preset-btn" id="k3">Example 2.3 launch a=−10</button>';
+    document.getElementById("k1").onclick = function(){ setActivePreset(this); u=0; a=2; App.resetTimeline(); App.play(); };
+    document.getElementById("k2").onclick = function(){ setActivePreset(this); u=10; a=-2; App.resetTimeline(); App.play(); };
+    document.getElementById("k3").onclick = function(){ setActivePreset(this); u=20; a=-10; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var v = u + a*t;
+    var x = u*t + 0.5*a*t*t;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="220" x2="680" y2="220" stroke="#334155" stroke-width="4"/>';
+    var px = 80 + x * 4;
+    if(px < 40) px = 40; if(px > 680) px = 680;
+    m += '<circle cx="'+px+'" cy="210" r="12" fill="#38bdf8"/>';
+    m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">v = u+at &nbsp; x = ut + ½at² &nbsp; v² = u² + 2ax</text>';
+    svg.innerHTML = m;
+    var check = u*u + 2*a*x;
+    readout(cell("v", v.toFixed(2)+" m/s") + cell("x", x.toFixed(2)+" m") + cell("v² vs u²+2ax", v*v.toFixed(2)+" vs "+check.toFixed(2)));
+    verdict("<b>Eq. 2.9 check:</b> the two sides of v² = u²+2ax agree while a is constant. They fail if you change a mid-run.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.falling = (function(){
+  var mode = "roof";
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Ball / ruler</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Ground / fingers</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="f-roof">Ex 2.3 roof (g=10, 5 s)</button>' +
+      '<button class="preset-btn" id="f-ruler">Ex 2.7 ruler d=21 cm</button>';
+    document.getElementById("f-roof").onclick = function(){ setActivePreset(this); mode="roof"; App.state.maxT=5; document.getElementById("time-scrubber").max=5; App.resetTimeline(); App.play(); };
+    document.getElementById("f-ruler").onclick = function(){ setActivePreset(this); mode="ruler"; App.state.maxT=0.25; document.getElementById("time-scrubber").max=0.25; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="roof"){
+      var y0=25, u=20, g=10;
+      var y = y0 + u*t - 0.5*g*t*t;
+      if(y<0) y=0;
+      var py = 260 - y*4;
+      m += '<rect x="200" y="40" width="18" height="220" fill="#1e293b"/>';
+      m += '<line x1="160" y1="260" x2="560" y2="260" stroke="#f59e0b" stroke-width="4"/>';
+      m += '<circle cx="280" cy="'+py+'" r="10" fill="#38bdf8"/>';
+      m += '<text x="500" y="80" fill="#94a3b8" font-size="13">roof 25 m</text>';
+      svg.innerHTML = m;
+      readout(cell("t", t.toFixed(2)+" s") + cell("y (from ground)", y.toFixed(2)+" m") + cell("peak", "45 m at t=2 s"));
+      verdict("<b>Example 2.3:</b> rises 20 m above the 25 m roof (peak 45 m), hits the ground at <b>5 s</b>. Quadratic 5t² − 20t − 25 = 0.");
+    } else {
+      var g=9.8, d=0.21, tr=Math.sqrt(2*d/g);
+      var y = Math.min(0.5*g*t*t, d);
+      var py = 60 + (y/d)*180;
+      m += '<rect x="340" y="50" width="16" height="200" fill="#64748b"/>';
+      m += '<rect x="340" y="'+py+'" width="16" height="24" fill="#38bdf8"/>';
+      m += '<text x="400" y="80" fill="#94a3b8" font-size="13">catch gap</text>';
+      svg.innerHTML = m;
+      readout(cell("d", "0.21 m") + cell("t", t.toFixed(3)+" s") + cell("t_r = √(2d/g)", tr.toFixed(3)+" s ≈ 0.2 s"));
+      verdict("<b>Example 2.7 (zoom p.9):</b> t_r = √(2×0.21/9.8) ≈ <b>0.207 s ≈ 0.2 s</b>.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.relvel = (function(){
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Police van 8.33 m/s</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f8fafc;"></span><span>Bullet 158.3 m/s ground</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Thief 53.3 m/s</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="r1">Ex 2.14 same direction</button>';
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var vVan=25/3, vTh=160/3, vB=150+25/3;
+    var xVan=80+vVan*t*8, xTh=220+vTh*t*8, xB=80+vB*t*8;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="40" y1="180" x2="700" y2="180" stroke="#334155" stroke-width="6"/>';
+    m += '<rect x="'+xVan+'" y="150" width="50" height="22" fill="#38bdf8"/>';
+    m += '<rect x="'+xTh+'" y="150" width="40" height="22" fill="#f59e0b"/>';
+    m += '<circle cx="'+xB+'" cy="161" r="5" fill="#f8fafc"/>';
+    svg.innerHTML = m;
+    readout(cell("v_bullet,ground", vB.toFixed(2)+" m/s") + cell("v_thief", vTh.toFixed(2)+" m/s") + cell("v_rel", (vB-vTh).toFixed(2)+" m/s","#34d399"));
+    verdict("<b>Ex 2.14:</b> muzzle 150 is relative to the van. Ground speed 150+8.33. Closing on the thief: 158.33−53.33 = <b>105 m s⁻¹</b>.");
+  }
+  return { mount: mount, draw: draw };
+})();

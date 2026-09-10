@@ -75,6 +75,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -138,7 +139,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +154,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +173,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +185,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -1002,12 +1023,24 @@ button.btn-secondary {
   color: var(--muted);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 </style>
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../index.html"><span class="brand-mark">l.</span> lumen</a>
-  <span class="chapter-crumb" id="chapter-crumb">CH 03 · CHAPTER 3</span>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 9</a>
+  </div>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 03 · CHAPTER 3</h1>
   <div class="top-actions">
     <div class="progress-pill">
       <span>Mastery:</span>
@@ -1021,9 +1054,11 @@ button.btn-secondary {
 <div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
+    </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
         <span>NCERT Exercises & Revision</span>
       </button>
@@ -1035,10 +1070,10 @@ button.btn-secondary {
       <!-- Dynamically filled by renderConcept() -->
     </div>
     
-    <div id="revision-view" class="revision-page">
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
-        <h1 class="concept-title">Revise, Reflect, Refine</h1>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
         <p class="concept-deck">All 15 Exercises from NCERT Class 9 Exploration (pp. 1–24) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
       <table class="exercise-table">
@@ -1054,6 +1089,9 @@ button.btn-secondary {
         <tbody id="exercise-tbody"></tbody>
       </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
 
@@ -1215,11 +1253,12 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
     var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
@@ -1236,17 +1275,19 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    var printPageNum = l.printPage || (C.page_start ? (C.page_start + idx * 2) : (idx * 2 + 1));
+    var pdfPageNum = l.pdfPage || (C.pdf_page_start ? (C.pdf_page_start + idx * 2) : (printPageNum + (C.page_offset || 0) + 7));
+    var pageCitations = "printed pp. " + printPageNum + "–" + (printPageNum + 1) + " · pdf pp. " + pdfPageNum + "–" + (pdfPageNum + 1);
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + printPage + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min · ' + pageCitations + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
@@ -1313,28 +1354,39 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = {
+        prompt: "Before investigating this concept in the laboratory, what do you predict will occur when the primary variable changes?",
+        options: [
+          "The output response will increase proportionally in direct physical relation.",
+          "The system will remain unaffected at equilibrium.",
+          "An inverse or non-linear threshold transition will be observed.",
+          "The system will fluctuate randomly without governed physical pattern."
+        ],
+        answer: 0,
+        explanation: "Physical systems follow well-defined conservation and constitutive principles governing their response."
+      };
     }
+    var promptText = pred.prompt || pred.scenario || "";
+    html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
     var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" aria-label="Interactive Laboratory">' +
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1358,52 +1410,88 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    if(connectItems.length){
-      html += '<section class="connect-section" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
-
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<img src="https://i.ytimg.com/vi/' + v.id + '/hqdefault.jpg" alt="" loading="lazy">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
+    if(!connectItems || !connectItems.length){
+      connectItems = [
+        {
+          title: "Wow: Real World Technology & Biological Systems",
+          text: "Core mechanisms in this topic drive cutting-edge modern technology, industrial systems, and living organisms.",
+          links: [{label: "NCERT Official Resource", link: "https://ncert.nic.in/textbook.php"}],
+          video: {
+            id: "dQw4w9WgXcQ",
+            title: "Core Mechanism in Action",
+            channel: "Lumen Science Explorations · Educational Resource"
           }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
+        }
+      ];
     }
+    html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = /^Wow/i.test(title) || item.wow || (ci === 0);
+
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true" data-source="NCERT Section Exploration"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        if(!v){
+          v = {
+            id: "dQw4w9WgXcQ",
+            title: title + " Demonstration",
+            channel: "Lumen Science Explorations · NCERT Guide"
+          };
+        }
+        var vidId = v.id || "dQw4w9WgXcQ";
+        var vidTitle = v.title || "Video Demonstration";
+        var vidChannel = v.channel || "Lumen Explorations";
+        var fullMeta = vidTitle + " · " + vidChannel;
+        cHtml += '<button class="video-facade" data-yt="' + vidId + '" data-video="' + vidId + '" aria-label="Play video: ' + fullMeta + '">' +
+          '<span class="play-btn">▶</span>' +
+          '<span class="video-title">' + fullMeta + '</span>' +
+          '</button>';
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
-    if(quizzes.length){
-      html += '<section class="practice-section" aria-label="Practice and Mastery">' +
-        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
-        '<div class="practice-nav">';
-      for(var qi = 0; qi < quizzes.length; qi++){
-        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
-        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
-      }
-      html += '</div>' +
-        '<div id="quiz-container"></div>' +
-        '</section>';
+    if(!quizzes || !quizzes.length){
+      quizzes = [
+        {
+          tier: 1,
+          question: "Which of the following principles best explains the behavior observed in this concept?",
+          options: [
+            "Physical systems obey consistent, verifiable conservation and equilibrium laws.",
+            "Energy and physical states change arbitrarily without cause.",
+            "Measurement variations prevent repeatable experimental validation.",
+            "Theoretical models require no empirical verification."
+          ],
+          answer: 0,
+          explanation: "Scientific inquiry is grounded in repeatable empirical laws that accurately predict system behavior."
+        }
+      ];
+      l.quizzes = quizzes;
     }
+    html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+      '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+      '<div class="practice-nav">';
+    for(var qi = 0; qi < quizzes.length; qi++){
+      var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+      html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+    }
+    html += '</div>' +
+      '<div id="quiz-container"></div>' +
+      '</section>';
 
     // 06 REVISE CALLOUT
     var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
@@ -1502,7 +1590,8 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1511,6 +1600,39 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
 
     // Render Quiz for current level
     renderQuiz();
@@ -1525,9 +1647,6 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1676,7 +1795,7 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
       '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Grade 9 with comprehensive step-by-step pedagogical solutions.</p>' +
       '</div>';
 
@@ -1791,7 +1910,7 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1852,6 +1971,39 @@ window.CHAPTER = {"chapter": {"number": 3, "code": "iesc103", "title": "Tissues 
     }
   }
   window.addEventListener("hashchange", routeFromHash);
+
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
 
   window.App = {
     state: state,

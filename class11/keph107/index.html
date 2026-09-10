@@ -1,0 +1,2223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 7: Gravitation — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 07 · GRAVITATION</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 21 Exercises from NCERT Class 11 Physics (pp. 127–143) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "keph107", "chapterNumber": 7, "book_name": "Physics", "title": "Gravitation", "subtitle": "Kepler’s laws, Newton’s inverse square, g(h) and g(d), escape speed, and satellite energy as in this rationalised reprint.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph107.pdf", "page_start": 127, "page_end": 143, "extraction": "ZOOM-FIRST: CID-encoded text layer is unusable. Lessons and exercises authored from extracted/zooms/p01–p17.png (and dict spans only as a secondary check). pdftotext not used.", "lessons": [{"id": "kepler", "nav": "Kepler’s laws", "title": "Ellipses, equal areas, and T² ∝ a³ — Kepler from Tycho’s ledger.", "deck": "Three laws. Table 7.1: T²/a³ is ~3×10^{-34} y² m^{-3} for all eight planets. Area law is L conservation for a central force.", "minutes": 10, "section": "7.1–7.2", "pages": [1, 3], "print": "127–129", "sim": "kepler", "simTitle": "Ellipse, perihelion/aphelion, equal areas", "quick": ["Galileo: all bodies fall with the same acceleration. Aryabhata (5th century) already wrote a heliocentric sketch; Copernicus (1473–1543) made it a programme. Tycho’s data, reduced by Kepler (1571–1640), became three laws that Newton would explain.", "<strong>1. Orbits:</strong> every planet traces an ellipse with the Sun at one focus (perihelion P, aphelion A; semi-major axis a). A circle is the special case of coincident foci. <strong>2. Areas:</strong> the radius vector sweeps equal areas in equal times — planets move faster near the Sun. <strong>3. Periods:</strong> T² ∝ a³. Table 7.1 (zoom p.3) lists eight planets; the quotient Q=T²/a³ sits between 2.95 and 3.01 in units of 10^{-34} y² m^{-3}."], "formulas": [{"label": "Area in dt", "html": "ΔA = ½ |r × v| Δt ,  dA/dt = L/(2m)", "cond": "Eqs. (7.1)–(7.2); constant for a central force"}, {"label": "Kepler III", "html": "T² = k a³  (k same for all planets around the Sun)", "cond": "Table 7.1; later k=4π²/(G M_s)"}], "deeper": "The area law is not special to 1/r²: any central force conserves L, hence dA/dt. Inverse-square is what makes the orbit a conic (Chapter’s Newton step).", "worked": {"title": "Example 7.1 (zoom p.3)", "problem": "Relate (r_p, v_p) at perihelion to (r_A, v_A) at aphelion. Equal times for arcs BAC and CPB?", "steps": ["r ⊥ v at P and at A, so L=m r v at both: m r_p v_p = m r_A v_A ⇒ v_p/v_A = r_A/r_p > 1", "Area SBAC > area SCPB, so time BAC > time CPB (2nd law)"], "answer": "v_p r_p = v_A r_A. Longer time on the far arc BAC."}, "prediction": {"prompt": "A planet is fastest at", "options": ["perihelion, because equal areas in equal times force a larger Δθ when r is small", "aphelion, where it has farther to go", "the end of the semi-minor axis, by symmetry"], "answer": 0, "explanation": "Example 7.1: v_p/v_A = r_A/r_p > 1. Kepler II is why."}, "connect": [["Aryabhata to ISRO", "The chapter’s opening names Aryabhata’s heliocentric line a thousand years before Copernicus. India’s first satellite took that name in 1975 — the same orbit-physics, now with a rocket."], ["Wow — eight independent clocks, one number", "Table 7.1 is the whole of Kepler III: Mercury’s 88 days and Neptune’s 165 years share Q≈3.0×10^{-34}. That single k is the Sun’s mass, waiting for Newton.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "State Kepler’s three laws and v_p r_p = v_A r_A.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Kepler’s first law says a planet’s orbit is", "options": ["an ellipse with the Sun at one focus", "a circle with the Earth at the centre (Ptolemy)", "a circle with the Sun at the centre (required)"], "answer": 0, "hint": "§7.2, zoom p.2.", "solution": "Ellipse; circle is the coincident-foci special case.", "wrong": ["", "That is the geocentric model the chapter discards.", "Copernicus allowed circles; Kepler needed ellipses."]}, {"level": "Medium", "type": "mcq", "map": "Example 7.1", "prompt": "At perihelion and aphelion, r and v are perpendicular, so", "options": ["m r_p v_p = m r_A v_A (L conserved)", "v_p = v_A", "kinetic energy is the same at P and A"], "answer": 0, "hint": "Example 7.1.", "solution": "L=m r v at both ends of the major axis.", "wrong": ["", "r_A>r_p ⇒ v_p>v_A.", "K is larger at perihelion."]}, {"level": "Hard", "type": "mcq", "prompt": "The area law follows from", "options": ["conservation of angular momentum for any central force", "the inverse-square law only", "Kepler’s third law"], "answer": 0, "hint": "§7.2 after Table 7.1.", "solution": "dA/dt=L/(2m). Inverse-square is not required for this one law.", "wrong": ["", "1/r² shapes the ellipse, not the area law.", "III is T²∝a³."]}]}, {"id": "newton-G", "nav": "Newton’s law & G", "title": "Every mass attracts every other: F = G m1 m2 / r², with G from Cavendish.", "deck": "Moon’s a_m : g ≈ 1:3600 = R_m² : R_E². G=6.67×10^{-11} N m² kg^{-2}. Superposition; shells.", "minutes": 11, "section": "7.3–7.4", "pages": [3, 6], "print": "129–132", "sim": "newtonG", "simTitle": "Inverse square, three masses, Cavendish", "quick": ["Newton: the Moon’s centripetal acceleration a_m=4π² R_m / T² with T≈27.3 d, R_m≈3.84×10^8 m is much smaller than g. If gravity falls as 1/r² then g/a_m = R_m²/R_E² ≈ 3600, matching (Eq. 7.4). <strong>Universal law:</strong> |F|=G m1 m2 / r² (Eq. 7.5), attractive, along −r̂. In vector form F=−G m1 m2 r̂ / r². G is the same for apples and planets.", "Cavendish (1798) measured G with a torsion balance (Fig. 7.6–7.7): G M m L / d² = κ θ. Present value G=6.67×10^{-11} N m² kg^{-2} (Eq. 7.8). Superposition: F on m1 is the vector sum of all other contributions. Hollow uniform spherical shell: outside like a point mass at the centre; inside, F=0."], "formulas": [{"label": "Newton’s law", "html": "F = G m<sub>1</sub> m<sub>2</sub> / r²   (attractive)", "cond": "Eq. (7.5); G=6.67×10^{-11} N m² kg^{-2}"}, {"label": "Moon test", "html": "g / a_m = R_m² / R_E² ≈ 3600", "cond": "Eq. (7.4)"}, {"label": "Uniform spherical shell", "html": "outside: as a point mass at the centre; inside: F = 0", "cond": "§7.3, two shell theorems"}], "deeper": "F_12=−F_21 (third law). Extended bodies: integrate. Two special results (zoom p.5): (1) hollow uniform shell, exterior point — as if all mass at the centre; (2) interior point — net force zero (regions cancel).", "worked": {"title": "Example 7.2 (zoom p.4–5)", "problem": "Three masses m at vertices of equilateral triangle ABC, 2m at centroid G, AG=BG=CG=1 m. (a) Force on 2m? (b) If mass at A is doubled?", "steps": ["F_GA=2 G m² ĵ; F_GB and F_GC at 30° to −x / +x", "y-components of F_GB and F_GC: each −2Gm² sin30°; they plus F_GA cancel. F_R=0 by symmetry.", "Double A: F'_GA=4 G m² ĵ, others unchanged ⇒ F'_R=2 G m² ĵ"], "answer": "(a) 0; (b) 2 G m² ĵ (toward A)."}, "prediction": {"prompt": "A point mass inside a uniform hollow spherical shell feels", "options": ["zero net gravitational force (shell theorem 2)", "the same force as at the centre of a solid Earth", "a force toward the nearest wall"], "answer": 0, "explanation": "Pieces of the shell pull in all directions and cancel. Gravitational shielding, however, is not possible (Points to Ponder 9)."}, "connect": [["Cavendish ‘weighed the Earth’", "Once G is known, M_E=g R_E²/G (Example 7.6). The torsion-fibre experiment in a Cambridge shed is why we quote 5.97×10^{24} kg."], ["Wow — 3600 is (60)²", "R_m/R_E≈60, so 1/r² predicts g/a_m=3600. The Moon ‘falls’ 1.6 mm in one second the way an apple falls 4.9 m — same law, different r.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "Write F=Gm1m2/r², G’s value, and the two shell theorems.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The gravitational force is", "options": ["always attractive and along the line joining the point masses", "repulsive for opposite ‘charges’ of mass", "perpendicular to the line joining the masses"], "answer": 0, "hint": "Eq. (7.5) and the vector form.", "solution": "Mass is positive; F is along −r̂.", "wrong": ["", "There is no negative mass in this chapter.", "That would do no work on a circular orbit for a different reason."]}, {"level": "Medium", "type": "mcq", "map": "Example 7.2", "prompt": "Three equal m at ABC, 2m at the centroid. Net force on 2m is", "options": ["zero, by symmetry", "3 G m² toward A", "undefined because G is at the centre"], "answer": 0, "hint": "Example 7.2(a).", "solution": "Three equal pulls 120° apart cancel.", "wrong": ["", "That is after doubling A, and the factor is 2Gm².", "The force is well-defined and happens to be 0."]}, {"level": "Hard", "type": "number", "prompt": "g/a_m from R_m/R_E≈60 is about", "answer": 3600, "unit": "", "tolerance": 50, "hint": "(60)².", "solution": "Eq. (7.4) ≈ 3600."}]}, {"id": "g-variation", "nav": "g above and below", "title": "g is maximum at the surface: it falls as 1/r² above and as (R−d) below.", "deck": "g=GM_E/R_E². Above: g(h)≈g(1−2h/R_E). Below: g(d)=g(1−d/R_E). Same qualitative drop either way.", "minutes": 10, "section": "7.5–7.6", "pages": [6, 8], "print": "132–134", "sim": "gvar", "simTitle": "g(h) above and g(d) in a mine", "quick": ["Treat the Earth as concentric uniform shells. Outside, F=G M_E m / r², so on the surface <strong>g=G M_E / R_E²</strong> (Eq. 7.12). Measuring g, R_E and G ‘weighs the Earth’.", "<strong>Above:</strong> g(h)=G M_E/(R_E+h)². For h≪R_E, binomial: g(h)≈g(1−2h/R_E) (Eq. 7.15). <strong>Below</strong> (uniform density): only the inner sphere of radius (R_E−d) pulls, g(d)=g(1−d/R_E) (Eq. 7.19). The remarkable remark of the text: g is maximum at the surface — it decreases whether you go up or down."], "formulas": [{"label": "Surface g", "html": "g = G M_E / R_E²", "cond": "Eq. (7.12)"}, {"label": "Height h ≪ R_E", "html": "g(h) ≈ g (1 − 2h/R_E)", "cond": "Eq. (7.15)"}, {"label": "Depth d (uniform Earth)", "html": "g(d) = g (1 − d/R_E)", "cond": "Eq. (7.19)"}], "deeper": "Inside a uniform sphere F∝r (Eq. 7.10), like SHM through a tunnel — beyond this edition as a full problem, but the r-linear law is in Eq. (7.10). Real Earth is not uniform; this chapter’s mine formula assumes it is.", "worked": {"title": "Weighing the Earth — Example 7.6 (zoom p.12)", "problem": "g=9.81 m s⁻², R_E=6.37×10^6 m. (i) M_E from g. (ii) M_E from the Moon: R=3.84×10^8 m, T=27.3 d.", "steps": ["M_E=g R_E²/G=9.81×(6.37e6)²/6.67e-11=5.97×10^{24} kg", "T=27.3×86400 s; M_E=4π² R³/(G T²)=6.02×10^{24} kg", "The two agree to better than 1%"], "answer": "5.97×10^{24} kg from g; 6.02×10^{24} kg from the Moon."}, "prediction": {"prompt": "Take a 1 kg mass from the surface (i) up by R_E/2 (ii) down by R_E/2 (uniform Earth). Weight", "options": ["falls in both cases: (i) to 4/9 of mg, (ii) to ½ of mg", "is unchanged, because mass is unchanged", "increases in the mine because you are closer to the centre"], "answer": 0, "explanation": "g(h)=GM/(1.5 R)²=g×4/9; g(d)=g(1−½)=g/2. Surface is the maximum (Ex 7.15–7.16)."}, "connect": [["Kolar gold field vs Leh", "A mine kilometre down (d/R_E≈1.6×10^{-4}) drops g by that fraction — tiny. Leh at ~3.5 km drops g by ~2h/R_E≈0.11%. Surveyors care; a bathroom scale does not."], ["Wow — g is biggest under your feet", "The chapter’s one-liner: go up, 1/r² hurts you; go down, missing outer shells hurt you. The surface is the peak of g(r).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "Write g(h)≈g(1−2h/R) and g(d)=g(1−d/R).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Acceleration due to gravity (uniform Earth) is maximum", "options": ["at the surface", "at the centre", "at infinity"], "answer": 0, "hint": "§7.6 last paragraph.", "solution": "Decreases both above and below.", "wrong": ["", "g=0 at the centre by symmetry.", "g→0 at infinity."]}, {"level": "Medium", "type": "mcq", "map": "Ex 7.2", "prompt": "With increasing altitude, g", "options": ["decreases", "increases", "is independent of the Earth’s mass"], "answer": 0, "hint": "Ex 7.2(a).", "solution": "g(h)=GM/(R+h)² falls.", "wrong": ["", "That is never true above the surface.", "g does depend on M_E; it is independent of the test-mass."]}, {"level": "Hard", "type": "number", "map": "Ex 7.16", "prompt": "A body weighs 250 N on the surface. Halfway to the centre (uniform Earth) it weighs (N)", "answer": 125, "unit": "N", "tolerance": 0.5, "hint": "g(d)=g(1−d/R)=g/2.", "solution": "125 N."}]}, {"id": "grav-pe", "nav": "Gravitational potential energy", "title": "V = −G m1 m2 / r, zero at infinity; only differences are physical.", "deck": "Near Earth, mgh is the first-order difference of −GMm/r. Four masses on a square: W=−5.41 G m²/l.", "minutes": 10, "section": "7.7", "pages": [8, 9], "print": "134–135", "sim": "gravpe", "simTitle": "V(r) well and four-mass square", "quick": ["Gravity is conservative. Near the surface, W_{12}=mg(h_2−h_1) so V=mgh + const (zero often at the ground). At arbitrary r, F=G M_E m / r² inward, so W_{12}=−G M_E m (1/r_2−1/r_1) (Eq. 7.24). Convention: V(∞)=0, hence <strong>V(r)=−G M_E m / r</strong> (Eq. 7.25). The gravitational potential (per unit mass) is −G M_E / r.", "A system of particles: sum −G m_i m_j / r_{ij} over unique pairs (superposition). Example 7.3: four masses m at the vertices of a square of side l: four sides + two diagonals ⇒ W=−(2 G m² / l)(2 + 1/√2)=−5.41 G m²/l. At the centre, U=−4√2 G m / l."], "formulas": [{"label": "Pair PE (V(∞)=0)", "html": "V = − G m<sub>1</sub> m<sub>2</sub> / r", "cond": "Eq. after (7.25); always negative with this zero"}, {"label": "Near-Earth difference", "html": "mgh ≈ difference of −GMm/r when h≪R_E", "cond": "Points to Ponder 7"}], "deeper": "Only differences of potential energy are measurable (W1 in Eq. 7.25 is arbitrary). Choosing V(∞)=0 makes every bound system’s total E negative (Points to Ponder 6–7).", "worked": {"title": "Example 7.3 (zoom p.9)", "problem": "Four particles of mass m at the vertices of a square of side l. PE of the system, and potential at the centre.", "steps": ["4 pairs at l, 2 pairs at √2 l", "W=−4Gm²/l − 2Gm²/(√2 l)=−(2Gm²/l)(2+1/√2)=−5.41 Gm²/l", "Centre: r=l/√2 for each; U=−4 G m /(l/√2)=−4√2 G m / l"], "answer": "W=−5.41 G m²/l ; U_centre=−4√2 G m / l."}, "prediction": {"prompt": "With V(∞)=0, the gravitational potential energy of a bound pair is", "options": ["negative", "positive, because work was done to assemble it", "zero at the Earth’s surface always"], "answer": 0, "explanation": "V=−Gm1m2/r < 0. Assembling from infinity, gravity does positive work and the PE drops."}, "connect": [["Narmada dam vs −GMm/r", "mgh on a 100 m dam is the linearised difference of the Newtonian well. The zero is the riverbed, not infinity — Points to Ponder 7, same physics."], ["Wow — four corners already hide √2", "Example 7.3 is the first many-body PE a Class 11 student meets: four sides plus two diagonals, and 1/√2 that becomes 0.707 in the 5.41.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "Write V=−Gm1m2/r and the four-mass square result −5.41 Gm²/l.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "With the conventional zero at infinity, gravitational PE of two masses is", "options": ["−G m1 m2 / r", "+G m1 m2 / r", "mgh at all r"], "answer": 0, "hint": "§7.7.", "solution": "Negative, vanishing at infinity.", "wrong": ["", "That would make infinity a minimum.", "mgh is the near-Earth approximation."]}, {"level": "Medium", "type": "mcq", "map": "Ex 7.6", "prompt": "For an orbiting satellite with V(∞)=0, total energy is negative of its", "options": ["kinetic energy", "potential energy", "mass energy"], "answer": 0, "hint": "E=−K=V/2.", "solution": "E=−GMm/(2a)=−K.", "wrong": ["", "E=V/2, not −V.", "Rest energy is not in this chapter."]}, {"level": "Hard", "type": "number", "map": "Example 7.3", "prompt": "Four masses m on a square of side l. The factor in W=−(factor) G m²/l is", "answer": 5.41, "unit": "", "tolerance": 0.02, "hint": "2(2+1/√2).", "solution": "2(2+0.707)=5.41."}]}, {"id": "escape", "nav": "Escape speed", "title": "Leave Earth for good: v_e = √(2GM/R) = √(2gR) ≈ 11.2 km s⁻¹.", "deck": "From energy: ½m v_e² − GMm/R = 0. Moon: 2.3 km s⁻¹ — why it has no atmosphere. Example 7.4: v=√(3GM/5R).", "minutes": 9, "section": "7.8", "pages": [9, 11], "print": "135–137", "sim": "escape", "simTitle": "Escape from Earth and the two-sphere well", "quick": ["Can we throw a stone so that it never comes back? Conservation of energy, V(∞)=0: ½m v_i² − G M_E m /(R_E+h) ≥ 0. Minimum from the surface (h=0): <strong>v_e=√(2 G M_E / R_E)=√(2g R_E)≈11.2 km s⁻¹</strong> (Eqs. 7.31–7.32). Direction does not enter the energy condition (air is ignored).", "The Moon’s v_e≈2.3 km s⁻¹, about five times smaller. Thermal speeds of light gases exceed that, so the Moon has no atmosphere. Example 7.4: two fixed spheres M and 4M, radii R, centres 6R apart — project from M’s surface to just reach the neutral point at 2R from M’s centre, with v=√(3GM/5R)."], "formulas": [{"label": "Escape speed (surface)", "html": "v_e = √(2GM/R) = √(2gR)", "cond": "Eqs. (7.31)–(7.32); ≈11.2 km s⁻¹ Earth, 2.3 km s⁻¹ Moon"}, {"label": "From height h", "html": "v_e(h) = √[2GM/(R+h)]", "cond": "Eq. (7.30)"}], "deeper": "Escape speed is independent of the mass of the projectile and (in this idealisation) of direction. It does depend on the launch location (Ex 7.7). Reaching infinity with leftover speed: ½m(3v_e)² − GMm/R = ½m v_∞² ⇒ v_∞=√8 v_e (Ex 7.18).", "worked": {"title": "Example 7.4 (zoom p.10–11)", "problem": "Spheres M and 4M, radii R, centres 6R. Minimum launch speed from M’s surface toward 4M to reach 4M.", "steps": ["Neutral point: GM/r²=G(4M)/(6R−r)² ⇒ r=2R (the −6R root is discarded)", "E_i=½mv² − GMm/R − 4GMm/(5R)", "At N, v→0: E_N=−GMm/(2R)−4GMm/(4R)=−GMm/(2R)−GMm/R", "Equate: v²=(2GM/R)(4/5 − 1/2)=3GM/(5R); v=√(3GM/5R)"], "answer": "v = (3 G M / 5 R)^{1/2}. Speed at N is zero in this minimum-energy launch; it is nonzero on hitting 4M."}, "prediction": {"prompt": "Earth’s escape speed is about 11.2 km s⁻¹. Launching from a high mountain", "options": ["lowers v_e a little, because r=R+h is larger", "does not change v_e, which is a universal constant", "raises v_e, because you already spent energy climbing"], "answer": 0, "explanation": "v_e=√(2GM/r) falls slowly with r. Ex 7.7(d)."}, "connect": [["PSLV vs 11.2 km s⁻¹", "A satellite does not need 11.2 km s⁻¹ — it needs ~8 km s⁻¹ sideways for a low circular orbit (next lesson). Escape is the one-way ticket to infinity, not to INSAT."], ["Wow — the Moon’s air left at 2.3 km s⁻¹", "rms speed of H2 at lunar noon exceeds 2.3 km s⁻¹. The same molecules are bound on Earth (11.2). Atmosphere is an escape-speed story.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "Write v_e=√(2gR)≈11.2 km s⁻¹ and the Moon’s 2.3 km s⁻¹.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Escape speed from a planet’s surface depends on", "options": ["the planet’s M and R, not the projectile’s mass", "the mass of the projectile", "the direction of projection (in this chapter’s energy treatment)"], "answer": 0, "hint": "Ex 7.7.", "solution": "v_e=√(2GM/R).", "wrong": ["", "m cancels.", "Energy does not care about direction; air is ignored."]}, {"level": "Medium", "type": "number", "prompt": "v_e = √(2gR). With g=9.8 and R=6.4×10⁶ m, v_e (km s⁻¹) is about", "answer": 11.2, "unit": "km s⁻¹", "tolerance": 0.2, "hint": "√(2×9.8×6.4e6)/1000.", "solution": "√1.254e8 ≈ 11200 m s⁻¹ = 11.2 km s⁻¹."}, {"level": "Hard", "type": "mcq", "map": "Example 7.4", "prompt": "Example 7.4’s minimum launch speed from M toward 4M is", "options": ["√(3GM/5R)", "√(2GM/R)", "√(GM/R)"], "answer": 0, "hint": "Neutral point at 2R.", "solution": "Energy match at N gives √(3GM/5R).", "wrong": ["", "That is Earth’s escape, one body.", "That is circular-orbit speed on M."]}]}, {"id": "satellites", "nav": "Earth satellites", "title": "Circular orbit: v = √[GM/(R+h)], T = 2π (R+h)^{3/2}/√(GM). Low orbit ≈ 85 min.", "deck": "Moon ~27.3 d. Phobos gives M_Mars=6.48×10^{23} kg. Kepler III for satellites: T²=k (R+h)³.", "minutes": 10, "section": "7.9", "pages": [11, 12], "print": "137–138", "sim": "satellite", "simTitle": "Circular satellite: v(h) and period", "quick": ["Earth satellites (natural: the Moon; artificial: since 1957, including India) obey Kepler. For a circular orbit of radius r=R_E+h the centripetal force is gravity: m v²/r = G M_E m / r² ⇒ <strong>v=√(G M_E / r)</strong> (Eq. 7.35). Period T=2π r / v = 2π r^{3/2}/√(G M_E) (Eq. 7.37), i.e. Kepler III with k=4π²/(G M_E).", "For h≪R_E, T₀=2π √(R_E/g) (Eq. 7.39). With R_E=6400 km, g=9.8: T₀≈85 minutes — a low Earth-orbiting spacecraft’s ballpark. The Moon’s T≈27.3 d is also roughly its own rotation period."], "formulas": [{"label": "Circular orbital speed", "html": "v = √[G M_E / (R_E+h)]", "cond": "Eq. (7.35); falls as h rises"}, {"label": "Period", "html": "T = 2π (R_E+h)^{3/2} / √(G M_E)", "cond": "Eq. (7.37)"}, {"label": "Low-orbit period", "html": "T₀ = 2π √(R_E / g) ≈ 85 min", "cond": "Eq. (7.39)"}], "deeper": "Geostationary orbits (T=24 h) are not computed as a numbered example here; the tool is Eq. (7.37). Polar / remote-sensing orbits sit near the 85 min end.", "worked": {"title": "Example 7.5 (zoom p.11–12)", "problem": "Phobos: T=7 h 39 min, r=9.4×10³ km. Mass of Mars? Earth–Mars year if a_M=1.52 a_E.", "steps": ["T=459 min=2.754×10⁴ s; use T²=4π² r³/(G M) with π=3.14", "M_Mars=6.48×10^{23} kg", "T_M/T_E=(1.52)^{3/2} ⇒ T_M=365×(1.52)^{3/2}=684 days"], "answer": "M_Mars=6.48×10^{23} kg; Martian year=684 days."}, "prediction": {"prompt": "A satellite is raised to a higher circular orbit. Its orbital speed", "options": ["decreases (v=√(GM/r))", "increases, because it has more energy", "stays 8 km s⁻¹, a universal LEO number"], "answer": 0, "explanation": "Eq. (7.35). Total E rises (becomes less negative) even as v falls — next lesson."}, "connect": [["IRS and the 85-minute clock", "A remote-sensing satellite a few hundred kilometres up has T not far above T₀≈85 min. That is why an IRS craft sees a given district twice a day, not twice a month."], ["Wow — Phobos is a weighing scale for Mars", "Example 7.5 is Cavendish without a shed: one moon’s T and r give M_Mars=6.48×10^{23} kg, about 1/9 of Earth’s.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "Write v=√(GM/r), T=2π r^{3/2}/√(GM), and T₀≈85 min.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a satellite in circular orbit, the centripetal force is provided by", "options": ["Earth’s gravity GMm/r²", "a rocket engine that must keep firing", "the atmosphere"], "answer": 0, "hint": "Eqs. (7.33)–(7.34).", "solution": "Gravity is the centripetal force.", "wrong": ["", "Coasting: engines off.", "Drag is a perturbation, not the provider."]}, {"level": "Medium", "type": "number", "map": "Example 7.5", "prompt": "If a_Mars / a_Earth = 1.52, the Martian year in days is about", "answer": 684, "unit": "days", "tolerance": 2, "hint": "365×(1.52)^{3/2}.", "solution": "684 days."}, {"level": "Hard", "type": "mcq", "prompt": "A planet that went around the Sun twice as fast as Earth (T′=T/2) would have orbital size a′/a equal to", "options": ["(1/4)^{1/3} ≈ 0.63", "1/2", "1/4"], "answer": 0, "hint": "Ex 7.3; T²∝a³.", "solution": "a′/a=(T′/T)^{2/3}=(1/2)^{2/3}=1/4^{1/3}≈0.63.", "wrong": ["", "That would be T∝a.", "That is (T′/T)², not the axis ratio."]}]}, {"id": "orbit-energy", "nav": "Energy of an orbiting satellite", "title": "E = −GMm/(2r) : always negative, with |V|=2K. Raising the orbit costs energy even as K falls.", "deck": "K=+GMm/(2r), V=−GMm/r, E=−GMm/(2r). Example 7.8: 2R_E → 4R_E costs 3.13×10^9 J for 400 kg.", "minutes": 10, "section": "7.10", "pages": [12, 14], "print": "138–140", "sim": "orbitE", "simTitle": "K, V, E of a circular satellite", "quick": ["Circular orbit: K=½ m v²=G M_E m /(2r) (Eq. 7.40). With V(∞)=0, potential energy V=−G M_E m / r (Eq. 7.41). Total <strong>E=K+V=−G M_E m /(2r)</strong> (Eq. 7.42). E is negative — a bound system. |V|=2K, and E=−K. Weightlessness in orbit is free-fall of astronaut and cabin together, not a small g (Points to Ponder 4).", "To lift a satellite to a higher circular orbit you must supply energy (E becomes less negative) even though the kinetic energy falls. Example 7.8: 400 kg from r=2 R_E to r=4 R_E, ΔE=+G M_E m /(8 R_E)=+3.13×10^9 J; ΔK=−3.13×10^9 J; ΔV=+6.26×10^9 J (the reprint prints a minus on ΔV — inconsistent with V=−GMm/r becoming less negative)."], "formulas": [{"label": "Circular-orbit energies", "html": "K = GMm/(2r),  V = −GMm/r,  E = −GMm/(2r)", "cond": "Eqs. (7.40)–(7.42); V(∞)=0"}, {"label": "Bound orbit", "html": "E &lt; 0", "cond": "E≥0 would reach infinity"}], "deeper": "Elliptical orbits: K and V vary, E stays constant and negative. Atmospheric drag lowers E, the satellite spirals in, and — because K=−E — it speeds up (Ch. 5 Ex 5.5c, same theorem).", "worked": {"title": "Example 7.8 (zoom p.13)", "problem": "400 kg satellite, circular 2 R_E → 4 R_E. Energy to transfer; ΔK, ΔV. g=9.81, R_E=6.37×10^6 m.", "steps": ["E=−GMm/(2r) so E_i=−GMm/(4 R_E), E_f=−GMm/(8 R_E)", "ΔE=GMm/(8 R_E)=(g m R_E)/8=9.81×400×6.37e6 /8=3.13×10^9 J", "K=GMm/(2r)=−E so ΔK=−ΔE=−3.13×10^9 J", "V=−2K=2E so ΔV=2 ΔE=+6.26×10^9 J"], "answer": "ΔE=+3.13×10^9 J; ΔK=−3.13×10^9 J; ΔV=+6.26×10^9 J (reprint’s printed ΔV minus is a typesetting slip)."}, "prediction": {"prompt": "A circular satellite is lifted to a larger r. Its kinetic energy", "options": ["decreases, while total E increases (becomes less negative)", "increases, because you fired rockets", "stays constant by Kepler"], "answer": 0, "explanation": "K=GMm/(2r) falls; E=−GMm/(2r) rises. Rockets supply ΔE, not ΔK."}, "connect": [["Chandrayaan transfer", "Raising from a low Earth parking orbit to a lunar-transfer ellipse is Example 7.8’s move in a bigger sky: you buy potential energy and you watch circular speed drop."], ["Wow — add energy and you slow down", "The bound-orbit paradox: more E, less K. Drag does the opposite — steal E, gain speed, and burn. That is why a dying satellite heats up as it falls, not as it ‘runs out of steam’.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph107.pdf"}]]], "recall": "Write K, V, E for a circular orbit and the signs in Example 7.8.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Total mechanical energy of a circular satellite (V(∞)=0) is", "options": ["negative: E=−GMm/(2r)", "zero, because it does not fall", "positive, equal to K"], "answer": 0, "hint": "Eq. (7.42).", "solution": "Bound ⇒ E<0.", "wrong": ["", "Not falling is free-fall in orbit.", "K is positive; E=−K."]}, {"level": "Medium", "type": "number", "map": "Example 7.8", "prompt": "Example 7.8: energy to move 400 kg from r=2R_E to 4R_E, in 10^9 J, is", "answer": 3.13, "unit": "×10⁹ J", "tolerance": 0.05, "hint": "g m R_E / 8.", "solution": "3.13×10⁹ J."}, {"level": "Hard", "type": "mcq", "prompt": "Weightlessness in a satellite is because", "options": ["astronaut and cabin are both in free fall toward Earth", "gravity is negligible at that height", "the cabin is electrically shielded from gravity"], "answer": 0, "hint": "Points to Ponder 4 and 9.", "solution": "g is still several m s⁻²; both fall together. No gravitational shielding.", "wrong": ["", "g(h) is only a few percent down in LEO.", "Ponder 9: gravitational shielding is not possible."]}]}], "exercises": [{"number": "7.1", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 141, "question": "Answer the following:\n(a) You can shield a charge from electrical forces by putting it inside a hollow conductor. Can you shield a body from the gravitational influence of nearby matter by putting it inside a hollow sphere or by some other means?\n(b) An astronaut inside a small space ship orbiting around the earth cannot detect gravity. If the space station orbiting around the earth has a large size, can he hope to detect gravity?\n(c) If you compare the gravitational force on the earth due to the sun to that due to the moon, you would find that the Sun’s pull is greater than the moon’s pull. (you can check this yourself using the data available in the succeeding exercises). However, the tidal effect of the moon’s pull is greater than the tidal effect of sun. Why?", "steps": ["(a) No. Shell theorem: inside a uniform shell F from that shell is 0, but nearby matter outside still pulls; there is no gravitational Faraday cage (Ponder 9).", "(b) In a small ship, g is uniform over the cabin so everything free-falls together. A very large station has a measurable gravity gradient (tides) between feet and head.", "(c) Tides track ∇g, not g. The Moon is much closer, so its field gradient across the Earth is larger even though F_sun>F_moon."], "answer": "(a) No gravitational shielding. (b) Only a gradient/tide in a large station. (c) Tides ∝ gradient; Moon is closer."}, {"number": "7.2", "section": "Exercises", "conceptIdx": 2, "page": 16, "printPage": 142, "question": "Choose the correct alternative:\n(a) Acceleration due to gravity increases/decreases with increasing altitude.\n(b) Acceleration due to gravity increases/decreases with increasing depth (assume the earth to be a sphere of uniform density).\n(c) Acceleration due to gravity is independent of mass of the earth/mass of the body.\n(d) The formula −GMm(1/r2−1/r1) is more/less accurate than the formula mg(r2−r1) for the difference of potential energy between two points r2 and r1 distance away from the centre of the earth.", "steps": ["(a) decreases [g(h)=GM/(R+h)²].", "(b) decreases [g(d)=g(1−d/R)].", "(c) independent of mass of the body (depends on M_E).", "(d) more accurate (mgh is the h≪R approximation)."], "answer": "(a) decreases; (b) decreases; (c) mass of the body; (d) more."}, {"number": "7.3", "section": "Exercises", "conceptIdx": 5, "page": 16, "printPage": 142, "question": "Suppose there existed a planet that went around the Sun twice as fast as the earth. What would be its orbital size as compared to that of the earth?", "steps": ["T′=T/2, T²∝a³ ⇒ a′/a=(1/2)^{2/3}=(1/4)^{1/3}≈0.630."], "answer": "a′ ≈ 0.63 a_Earth"}, {"number": "7.4", "section": "Exercises", "conceptIdx": 5, "page": 16, "printPage": 142, "question": "Io, one of the satellites of Jupiter, has an orbital period of 1.769 days and the radius of the orbit is 4.22×10^8 m. Show that the mass of Jupiter is about one-thousandth that of the sun.", "given": "T=1.769 d, R=4.22×10^8 m, G=6.67×10^{-11}", "steps": ["M=4π² R³/(G T²) with T=1.769×86400 s", "M_J≈1.90×10^{27} kg", "M_sun≈2.0×10^{30} kg ⇒ M_J/M_sun≈9.5×10^{-4} ≈ 1/1000."], "answer": "M_Jupiter ≈ 1.9×10^{27} kg ≈ 10^{-3} M_sun."}, {"number": "7.5", "section": "Exercises", "conceptIdx": 5, "page": 16, "printPage": 142, "question": "Let us assume that our galaxy consists of 2.5×10^{11} stars each of one solar mass. How long will a star at a distance of 50,000 ly from the galactic centre take to complete one revolution? Take the diameter of the Milky Way to be 10^5 ly.", "given": "N=2.5×10^{11}, M_⊙=2×10^{30} kg, r=5×10^4 ly, 1 ly=9.46×10^{15} m", "steps": ["M=5.0×10^{41} kg; r=4.73×10^{20} m", "T=2π √(r³/GM) ≈ 3.5×10^8 y (order 10^8 y)."], "answer": "About 3.5×10^8 years (order 10^8 y)."}, {"number": "7.6", "section": "Exercises", "conceptIdx": 6, "page": 16, "printPage": 142, "question": "Choose the correct alternative:\n(a) If the zero of potential energy is at infinity, the total energy of an orbiting satellite is negative of its kinetic/potential energy.\n(b) The energy required to launch an orbiting satellite out of earth’s gravitational influence is more/less than the energy required to project a stationary object at the same height (as the satellite) out of earth’s influence.", "steps": ["(a) E=−K (negative of kinetic).", "(b) less: the satellite already has K=GMm/(2r); a stationary object at that r needs an extra K."], "answer": "(a) kinetic; (b) less."}, {"number": "7.7", "section": "Exercises", "conceptIdx": 4, "page": 16, "printPage": 142, "question": "Does the escape speed of a body from the earth depend on (a) the mass of the body, (b) the location from where it is projected, (c) the direction of projection, (d) the height of the location from where the body is launched?", "steps": ["(a) No (m cancels).", "(b) Yes (g and R_local, or r in √(2GM/r)).", "(c) No, in this energy treatment (no atmosphere).", "(d) Yes: v_e=√[2GM/(R+h)]."], "answer": "(a) no; (b) yes; (c) no; (d) yes."}, {"number": "7.8", "section": "Exercises", "conceptIdx": 0, "page": 16, "printPage": 142, "question": "A comet orbits the sun in a highly elliptical orbit. Does the comet have a constant (a) linear speed, (b) angular speed, (c) angular momentum, (d) kinetic energy, (e) potential energy, (f) total energy throughout its orbit? Neglect any mass loss of the comet when it comes very close to the Sun.", "steps": ["Central force: L conserved, E conserved.", "v and ω larger near perihelion. K and V trade."], "answer": "(a) no (b) no (c) yes (d) no (e) no (f) yes."}, {"number": "7.9", "section": "Exercises", "conceptIdx": 6, "page": 16, "printPage": 142, "question": "Which of the following symptoms is likely to afflict an astronaut in space (a) swollen feet, (b) swollen face, (c) headache, (d) orientational problem.", "steps": ["No hydrostatic gradient: fluids do not pool in the feet (so not (a)); they shift toward the head → puffy face, headache possible.", "Vestibular system loses a down-direction → orientational problem. Most characteristic: (d), also (b)(c)."], "answer": "(d) orientational problem (also puffy face / headache; not swollen feet)."}, {"number": "7.10", "section": "Exercises", "conceptIdx": 1, "page": 16, "printPage": 142, "question": "In the following two exercises, choose the correct answer from among the given ones: The gravitational intensity at the centre of a hemispherical shell of uniform mass density has the direction indicated by the arrow (see Fig. 7.11) (i) a, (ii) b, (iii) c, (iv) 0.", "steps": ["Fig. 7.11 (zoom p.16): hemispherical bowl, C at the centre of the rim.", "By symmetry the field is along the axis, toward the mass of the bowl (arrow c, into the shell), not zero (a full shell would be zero)."], "answer": "(iii) c"}, {"number": "7.11", "section": "Exercises", "conceptIdx": 1, "page": 16, "printPage": 142, "question": "For the above problem, the direction of the gravitational intensity at an arbitrary point P is indicated by the arrow (i) d, (ii) e, (iii) f, (iv) g.", "steps": ["P is off-axis on the rim side (Fig. 7.11). The nearest mass pulls more; the field is toward the bowl, along d in the figure."], "answer": "(i) d"}, {"number": "7.12", "section": "Exercises", "conceptIdx": 1, "page": 16, "printPage": 142, "question": "A rocket is fired from the earth towards the sun. At what distance from the earth’s centre is the gravitational force on the rocket zero? Mass of the sun = 2×10^{30} kg, mass of the earth = 6×10^{24} kg. Neglect the effect of other planets etc. (orbital radius = 1.5×10^{11} m).", "given": "M_s=2×10^{30} kg, M_e=6×10^{24} kg, R=1.5×10^{11} m", "steps": ["GMe/x² = GMs/(R−x)² ⇒ x/(R−x)=√(Me/Ms)=√(3×10^{-6})=1.732×10^{-3}", "x=2.59×10^8 m from Earth’s centre (toward the Sun)."], "answer": "2.59×10^8 m from the Earth toward the Sun"}, {"number": "7.13", "section": "Exercises", "conceptIdx": 5, "page": 16, "printPage": 142, "question": "How will you ‘weigh the sun’, that is estimate its mass? The mean orbital radius of the earth around the sun is 1.5×10^8 km.", "steps": ["M=4π² R³/(G T²) with T=1 y=3.156×10^7 s, R=1.5×10^{11} m.", "M_⊙≈2.0×10^{30} kg."], "answer": "M_sun ≈ 2.0×10^{30} kg"}, {"number": "7.14", "section": "Exercises", "conceptIdx": 0, "page": 16, "printPage": 142, "question": "A saturn year is 29.5 times the earth year. How far is the saturn from the sun if the earth is 1.50×10^8 km away from the sun?", "steps": ["a_s/a_e=(T_s/T_e)^{2/3}=(29.5)^{2/3}≈9.55", "a_s=9.55×1.50×10^8=1.43×10^9 km."], "answer": "1.43×10^9 km"}, {"number": "7.15", "section": "Exercises", "conceptIdx": 2, "page": 16, "printPage": 142, "question": "A body weighs 63 N on the surface of the earth. What is the gravitational force on it due to the earth at a height equal to half the radius of the earth?", "steps": ["r=R+R/2=3R/2; F=mg (R/r)²=63×(2/3)²=28 N."], "answer": "28 N"}, {"number": "7.16", "section": "Exercises", "conceptIdx": 2, "page": 17, "printPage": 143, "question": "Assuming the earth to be a sphere of uniform mass density, how much would a body weigh half way down to the centre of the earth if it weighed 250 N on the surface?", "steps": ["g(d)=g(1−d/R); d=R/2 ⇒ g′=g/2; weight=125 N."], "answer": "125 N"}, {"number": "7.17", "section": "Exercises", "conceptIdx": 4, "page": 17, "printPage": 143, "question": "A rocket is fired vertically with a speed of 5 km s^{-1} from the earth’s surface. How far from the earth does the rocket go before returning to the earth? Mass of the earth = 6.0×10^{24} kg; mean radius of the earth = 6.4×10^6 m; G=6.67×10^{-11} N m² kg^{-2}.", "given": "v=5.0×10^3 m s⁻¹, M=6.0×10^{24} kg, R=6.4×10^6 m", "steps": ["½v² − GM/R = −GM/r", "GM=4.002×10^{14}; GM/R=6.253×10^7; v²/2=1.25×10^7", "GM/r=5.003×10^7 ⇒ r=8.00×10^6 m", "height h=r−R=1.6×10^6 m."], "answer": "1.6×10^6 m from the surface (r=8.0×10^6 m from the centre)"}, {"number": "7.18", "section": "Exercises", "conceptIdx": 4, "page": 17, "printPage": 143, "question": "The escape speed of a projectile on the earth’s surface is 11.2 km s^{-1}. A body is projected out with thrice this speed. What is the speed of the body far away from the earth? Ignore the presence of the sun and other planets.", "steps": ["½m(3v_e)² − ½m v_e² = ½m v_∞²  (because GMm/R=½ m v_e²)", "v_∞²=8 v_e² ⇒ v_∞=√8 × 11.2=31.7 km s⁻¹."], "answer": "31.7 km s⁻¹"}, {"number": "7.19", "section": "Exercises", "conceptIdx": 6, "page": 17, "printPage": 143, "question": "A satellite orbits the earth at a height of 400 km above the surface. How much energy must be expended to rocket the satellite out of the earth’s gravitational influence? Mass of the satellite=200 kg; mass of the earth=6.0×10^{24} kg; radius of the earth=6.4×10^6 m; G=6.67×10^{-11} N m² kg^{-2}.", "given": "h=400 km, m=200 kg, M=6.0×10^{24} kg, R=6.4×10^6 m", "steps": ["r=6.8×10^6 m; E=−GMm/(2r)", "Energy to escape from the orbit = −E = GMm/(2r)", "=6.67e-11×6e24×200/(2×6.8e6)=5.89×10^9 J."], "answer": "5.89×10^9 J"}, {"number": "7.20", "section": "Exercises", "conceptIdx": 4, "page": 17, "printPage": 143, "question": "Two stars each of one solar mass (= 2×1030 kg) are approaching each other for a head on collision. When they are a distance 109 km, their speeds are negligible. What is the speed with which they collide ? The radius of each star is 104 km. Assume the stars to remain undistorted until they collide. (Use the known value of G).", "given": "M=2×10^{30} kg each, d_i=10^9 km=10^{12} m, R=10^4 km=10^7 m so d_f=2R=2×10^7 m", "steps": ["Energy: 0 − GM²/d_i = 2×(½ M v²) − GM²/d_f", "v² = GM(1/d_f − 1/d_i) ≈ GM/(2×10^7)", "v=√(6.67e-11×2e30 / 2e7)=√(6.67×10^{12})=2.58×10^6 m s⁻¹ each", "Relative speed 5.16×10^6 m s⁻¹."], "answer": "Each 2.58×10^6 m s⁻¹ (relative 5.16×10^6 m s⁻¹) at contact."}, {"number": "7.21", "section": "Exercises", "conceptIdx": 3, "page": 17, "printPage": 143, "question": "Two heavy spheres each of mass 100 kg and radius 0.10 m are placed 1.0 m apart on a horizontal table. What is the gravitational force and potential at the mid point of the line joining the centres of the spheres? Is an object placed at that point in equilibrium? If so, is the equilibrium stable or unstable?", "steps": ["Equal opposite forces on a test mass ⇒ F=0 at the midpoint.", "Potential U=−GM/r −GM/r=−2×6.67e-11×100/0.50=−2.67×10^{-8} J kg⁻¹.", "ΣF=0: equilibrium. Along the line, a small displacement makes the nearer sphere win ⇒ unstable along the join (stable in the perpendicular plane)."], "answer": "Force 0; potential −2.67×10^{-8} J kg⁻¹; unstable equilibrium along the joining line."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  // Initialize
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+
+window.SIMS.kepler = (function(){
+  var ecc = 0.6;
+  function mount(){
+    App.state.maxT = 8;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Sun (focus)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Planet</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="k1">Ellipse e=0.6</button>' +
+      '<button class="preset-btn" id="k2">Circle (e=0)</button>';
+    document.getElementById("k1").onclick = function(){ setActivePreset(this); ecc=0.6; App.resetTimeline(); App.play(); };
+    document.getElementById("k2").onclick = function(){ setActivePreset(this); ecc=0; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var a=180, b=a*Math.sqrt(1-ecc*ecc), cx=360, cy=150, c=a*ecc;
+    var M=t/8*2*Math.PI;
+    // crude Kepler: faster near periapsis
+    var E = M + ecc*Math.sin(M)*1.5;
+    var x=cx+a*Math.cos(E), y=cy+b*Math.sin(E);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+a+'" ry="'+b+'" fill="none" stroke="#334155"/>';
+    m += '<circle cx="'+(cx-c)+'" cy="'+cy+'" r="8" fill="#f59e0b"/>';
+    m += '<circle cx="'+x+'" cy="'+y+'" r="7" fill="#38bdf8"/>';
+    m += '<line x1="'+(cx-c)+'" y1="'+cy+'" x2="'+x+'" y2="'+y+'" stroke="#94a3b8" stroke-width="1"/>';
+    svg.innerHTML = m;
+    readout(cell("e", ecc.toFixed(1)) + cell("focus","Sun") + cell("Kepler II","equal areas") + cell("Table 7.1","Q≈3.0×10^{-34}"));
+    verdict(ecc>0
+      ? "<b>Fig. 7.1–7.2:</b> Sun at one focus. Perihelion = closest, fastest. Area law: dA/dt=L/(2m) constant because gravity is central."
+      : "<b>Circle:</b> the two foci merge; semi-major axis is the radius. Kepler III still holds: T² ∝ a³.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.newtonG = (function(){
+  var mode = "inv";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Masses</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Force</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="n1">1/r² vs distance</button>' +
+      '<button class="preset-btn" id="n2">Ex 7.2 three masses</button>' +
+      '<button class="preset-btn" id="n3">Shell: inside F=0</button>';
+    document.getElementById("n1").onclick = function(){ setActivePreset(this); mode="inv"; App.resetTimeline(); App.play(); };
+    document.getElementById("n2").onclick = function(){ setActivePreset(this); mode="tri"; App.resetTimeline(); };
+    document.getElementById("n3").onclick = function(){ setActivePreset(this); mode="shell"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="inv"){
+      var r=80+t*40;
+      var F=4000/(r*r);
+      m += '<circle cx="120" cy="150" r="16" fill="#f59e0b"/>';
+      m += '<circle cx="'+(120+r)+'" cy="150" r="8" fill="#38bdf8"/>';
+      svg.innerHTML = m;
+      readout(cell("r", r.toFixed(0)+" (arb)") + cell("F","∝ 1/r²") + cell("g/a_m","≈3600","#34d399"));
+      verdict("<b>Eq. (7.4):</b> g/a_m = R_m²/R_E² ≈ 60² = 3600. Same inverse-square on apple and Moon. G = 6.67×10^{-11} N m² kg⁻².");
+    } else if(mode==="tri"){
+      m += '<polygon points="360,50 200,230 520,230" fill="none" stroke="#475569"/>';
+      m += '<circle cx="360" cy="50" r="8" fill="#38bdf8"/>';
+      m += '<circle cx="200" cy="230" r="8" fill="#38bdf8"/>';
+      m += '<circle cx="520" cy="230" r="8" fill="#38bdf8"/>';
+      m += '<circle cx="360" cy="170" r="10" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("on 2m at G","F_R = 0") + cell("A doubled","2 G m² ĵ toward A"));
+      verdict("<b>Example 7.2:</b> three equal pulls 120° apart cancel. Double A and the leftover is 2Gm² toward A (AG=1 m).");
+    } else {
+      var x=360+80*Math.cos(t), y=150+80*Math.sin(t);
+      m += '<circle cx="360" cy="150" r="110" fill="none" stroke="#38bdf8" stroke-width="10"/>';
+      m += '<circle cx="'+x+'" cy="'+y+'" r="6" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("inside shell","F = 0","#34d399") + cell("outside","as a point mass"));
+      verdict("<b>Shell theorems (zoom p.5):</b> uniform hollow sphere — exterior like a point at the centre; interior net force zero. No gravitational shielding of outside matter.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.gvar = (function(){
+  var mode = "up";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Test mass</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Earth</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="g1">Above: g(1−2h/R)</button>' +
+      '<button class="preset-btn" id="g2">Mine: g(1−d/R)</button>';
+    document.getElementById("g1").onclick = function(){ setActivePreset(this); mode="up"; App.resetTimeline(); App.play(); };
+    document.getElementById("g2").onclick = function(){ setActivePreset(this); mode="down"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<circle cx="360" cy="200" r="90" fill="none" stroke="#f59e0b" stroke-width="3"/>';
+    if(mode==="up"){
+      var h=t/6, y=200-90-h*80;
+      var gfac=1/(1+h*0.5)/(1+h*0.5);
+      m += '<circle cx="360" cy="'+y+'" r="7" fill="#38bdf8"/>';
+      svg.innerHTML = m;
+      readout(cell("h/R", (h*0.5).toFixed(2)) + cell("g(h)/g", gfac.toFixed(3)) + cell("approx","1−2h/R"));
+      verdict("<b>Eq. (7.15):</b> g(h)=GM/(R+h)² ≈ g(1−2h/R) for h≪R. At h=R/2, exact ratio is (2/3)²=4/9 (Ex 7.15: 63 N → 28 N).");
+    } else {
+      var d=t/6, y=200-90+d*90;
+      var gfac=1-d;
+      m += '<circle cx="360" cy="'+y+'" r="7" fill="#38bdf8"/>';
+      svg.innerHTML = m;
+      readout(cell("d/R", d.toFixed(2)) + cell("g(d)/g", gfac.toFixed(3),"#34d399") + cell("centre","g=0"));
+      verdict("<b>Eq. (7.19):</b> uniform Earth, g(d)=g(1−d/R). Halfway to the centre a 250 N weight is 125 N (Ex 7.16). Surface is the maximum of g.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.gravpe = (function(){
+  var mode = "well";
+  function mount(){
+    App.state.maxT = 5;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>V(r)=−GMm/r</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p1">Newtonian well</button>' +
+      '<button class="preset-btn" id="p2">Ex 7.3 four-mass square</button>';
+    document.getElementById("p1").onclick = function(){ setActivePreset(this); mode="well"; App.resetTimeline(); App.play(); };
+    document.getElementById("p2").onclick = function(){ setActivePreset(this); mode="sq"; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="well"){
+      m += '<line x1="60" y1="40" x2="60" y2="260" stroke="#475569"/><line x1="60" y1="40" x2="680" y2="40" stroke="#475569"/>';
+      var d="";
+      for(var x=80;x<680;x+=4){
+        var r=(x-40)/40, V=-80/r;
+        d += (x===80?"M":"L")+" "+x+" "+(40-V);
+      }
+      m += '<path d="'+d+'" fill="none" stroke="#f59e0b" stroke-width="2"/>';
+      var px=80+t*80;
+      svg.innerHTML = m;
+      readout(cell("zero","V(∞)=0") + cell("V","−GMm/r < 0") + cell("mgh","first-order difference"));
+      verdict("<b>§7.7:</b> only differences of V are physical. mgh is the h≪R expansion of −GMm/r. Bound systems have E<0.");
+    } else {
+      m += '<rect x="220" y="70" width="200" height="160" fill="none" stroke="#475569"/>';
+      [[220,70],[420,70],[220,230],[420,230]].forEach(function(p){
+        m += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="10" fill="#38bdf8"/>';
+      });
+      m += '<circle cx="320" cy="150" r="6" fill="#f59e0b"/>';
+      svg.innerHTML = m;
+      readout(cell("W","−5.41 G m²/l") + cell("U_centre","−4√2 G m / l"));
+      verdict("<b>Example 7.3 (zoom p.9):</b> 4 sides + 2 diagonals. W=−(2Gm²/l)(2+1/√2)=−5.41 Gm²/l. Centre: r=l/√2, U=−4√2 Gm/l.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.escape = (function(){
+  var mode = "earth";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Projectile</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="e1">Earth v_e = 11.2 km/s</button>' +
+      '<button class="preset-btn" id="e2">Ex 7.4 two spheres</button>';
+    document.getElementById("e1").onclick = function(){ setActivePreset(this); mode="earth"; App.resetTimeline(); App.play(); };
+    document.getElementById("e2").onclick = function(){ setActivePreset(this); mode="two"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="earth"){
+      m += '<circle cx="160" cy="200" r="50" fill="#1e3a5f" stroke="#f59e0b"/>';
+      var y=150-t*20;
+      m += '<circle cx="160" cy="'+y+'" r="6" fill="#38bdf8"/>';
+      svg.innerHTML = m;
+      readout(cell("v_e","√(2gR) = 11.2 km/s","#34d399") + cell("Moon","2.3 km/s") + cell("3 v_e","v_∞ = 31.7 km/s"));
+      verdict("<b>Eq. (7.32):</b> ½mv_e² = GMm/R. Independent of projectile mass. Moon 2.3 km s⁻¹ — no atmosphere. Ex 7.18: 3v_e leaves v_∞=√8 v_e=31.7 km s⁻¹.");
+    } else {
+      m += '<circle cx="200" cy="160" r="30" fill="#1e3a5f"/><text x="200" y="165" fill="#94a3b8" font-size="11" text-anchor="middle">M</text>';
+      m += '<circle cx="520" cy="160" r="30" fill="#3b1d4a"/><text x="520" y="165" fill="#94a3b8" font-size="11" text-anchor="middle">4M</text>';
+      var x=230+t/6*140;
+      m += '<circle cx="'+x+'" cy="160" r="5" fill="#38bdf8"/>';
+      m += '<line x1="306" y1="140" x2="306" y2="180" stroke="#34d399"/>';
+      svg.innerHTML = m;
+      readout(cell("N at","2R from M") + cell("v_min","√(3GM/5R)","#34d399"));
+      verdict("<b>Example 7.4:</b> GM/r²=4GM/(6R−r)² ⇒ r=2R. Energy to rest at N gives v=√(3GM/5R). After N, 4M reels the projectile in.");
+    }
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.satellite = (function(){
+  function mount(){
+    App.state.maxT = 8;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Earth</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Satellite</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="s1">LEO T₀ ≈ 85 min</button>' +
+      '<button class="preset-btn" id="s2">Higher h, smaller v</button>';
+    document.getElementById("s1").onclick = function(){ setActivePreset(this); h=0.05; App.resetTimeline(); App.play(); };
+    document.getElementById("s2").onclick = function(){ setActivePreset(this); h=0.6; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  var h=0.05;
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var R=70, r=R*(1+h), cx=360, cy=160;
+    var ang=t/8*2*Math.PI;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="#1e3a5f" stroke="#f59e0b"/>';
+    m += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#334155" stroke-dasharray="4 3"/>';
+    m += '<circle cx="'+(cx+r*Math.cos(ang))+'" cy="'+(cy+r*Math.sin(ang))+'" r="6" fill="#38bdf8"/>';
+    svg.innerHTML = m;
+    readout(cell("v","√(GM/r)") + cell("T","2π r^{3/2}/√(GM)") + cell("T₀","2π√(R/g) ≈ 85 min","#34d399"));
+    verdict("<b>Eqs. (7.35)–(7.39):</b> gravity supplies mv²/r. Higher orbit, slower satellite, longer T. Phobos (Ex 7.5) weighs Mars: 6.48×10^{23} kg; Martian year 684 d.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.orbitE = (function(){
+  var rf = 2;
+  function mount(){
+    App.state.maxT = 4;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 4;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>K</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>V</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>E=K+V</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="o1">Ex 7.8 : 2R → 4R</button>' +
+      '<button class="preset-btn" id="o2">Bars of K, V, E</button>';
+    document.getElementById("o1").onclick = function(){ setActivePreset(this); rf=2; App.resetTimeline(); App.play(); };
+    document.getElementById("o2").onclick = function(){ setActivePreset(this); rf=1; App.resetTimeline(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    var frac=Math.min(1,t/4);
+    var r=2+2*frac; // in units of RE
+    var E=-1/r, K=1/r, V=-2/r;
+    function bar(x, val, color){
+      var h=Math.abs(val)*80, y = val<0 ? 150 : 150-h;
+      return '<rect x="'+x+'" y="'+y+'" width="40" height="'+h+'" fill="'+color+'"/>';
+    }
+    m += '<line x1="80" y1="150" x2="640" y2="150" stroke="#475569"/>';
+    m += bar(200, K, "#38bdf8");
+    m += bar(320, V, "#f59e0b");
+    m += bar(440, E, "#34d399");
+    m += '<text x="220" y="280" fill="#94a3b8" font-size="12" text-anchor="middle">K</text>';
+    m += '<text x="340" y="280" fill="#94a3b8" font-size="12" text-anchor="middle">V</text>';
+    m += '<text x="460" y="280" fill="#94a3b8" font-size="12" text-anchor="middle">E</text>';
+    svg.innerHTML = m;
+    readout(cell("r/R_E", r.toFixed(2)) + cell("K","+GMm/(2r)") + cell("V","−GMm/r") + cell("E","−GMm/(2r)","#34d399"));
+    verdict("<b>Example 7.8:</b> 400 kg, 2R_E→4R_E. ΔE=+3.13×10⁹ J, ΔK=−3.13×10⁹ J, ΔV=+6.26×10⁹ J. Reprint’s minus on ΔV is a slip: higher orbit, V less negative.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

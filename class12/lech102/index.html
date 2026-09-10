@@ -1,0 +1,2248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 2: Electrochemistry — Interactive Textbook</title>
+<style>
+:root {
+  --ink: #152637;
+  --muted: #536678;
+  --paper: #ffffff;
+  --paper-soft: #f7fafc;
+  --line: #dce4eb;
+  --blue: #254ad7;
+  --blue-dark: #1938a8;
+  --soft: #edf2ff;
+  --lab: #0d1b2a;
+  --lab-panel: #15263a;
+  --teal: #08766a;
+  --teal-light: #2dd4bf;
+  --amber: #b45309;
+  --amber-light: #f59e0b;
+  --amber-soft: #fef3c7;
+  --coral: #dc2626;
+  --coral-soft: #fee2e2;
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Top Navigation Bar */
+.topbar {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand-mark {
+  background: var(--blue);
+  color: #fff;
+  width: 28px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  font: italic bold 22px Georgia, serif;
+}
+.chapter-crumb {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin: 0;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue);
+}
+progress {
+  width: 72px;
+  height: 8px;
+  border-radius: 4px;
+  accent-color: var(--blue);
+}
+
+/* Layout Container */
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 64px);
+}
+@media (max-width: 960px) {
+  .app-layout { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+@media (max-width: 480px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .progress-pill { display: none; }
+  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
+  svg.diagram { max-width: 100%; height: auto; }
+  main, #main-content { overflow-x: hidden; max-width: 100%; }
+}
+
+/* Sidebar Concept Navigation */
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: var(--paper-soft);
+  padding: 20px 14px;
+  overflow-y: auto;
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+.sidebar-heading {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 750;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin: 0 10px 12px;
+}
+.nav-group {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  margin: 14px 10px 6px;
+  text-transform: uppercase;
+}
+.concept-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: 14px/1.35 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.concept-nav:hover {
+  background: rgba(37,74,215,0.06);
+}
+.concept-nav.active {
+  background: var(--soft);
+  color: var(--blue);
+  font-weight: 650;
+}
+.concept-nav .num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.concept-nav.active .num {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Main Content Area */
+main {
+  padding: 32px 36px 80px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (max-width: 640px) {
+  main { padding: 20px 16px 60px; }
+}
+
+/* Concept Header */
+.concept-header {
+  margin-bottom: 24px;
+}
+.concept-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.time-pill {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+h1.concept-title {
+  font: 36px/1.2 Georgia, serif;
+  margin: 0 0 10px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+p.concept-deck {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* 5-Block Section Tags */
+.block-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+
+/* Block 1: LEARN */
+.learn-section {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+}
+.quick-summary {
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.quick-summary p { margin: 0 0 10px; }
+.quick-summary p:last-child { margin: 0; }
+
+/* Key Equations Display (Fixed P1-6 & P1-7) */
+.key-equations-card {
+  background: #fdfefe;
+  border: 1.5px solid #d0dbe5;
+  border-left: 5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.equations-heading {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.eq-grid {
+  display: grid;
+  gap: 14px;
+}
+.eq-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--line);
+}
+.eq-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.eq-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+.eq-label {
+  font-weight: 700;
+  color: var(--ink);
+}
+.eq-cond {
+  font-style: italic;
+}
+.eq-math {
+  font: 26px/1.35 Georgia, serif;
+  color: #0b1e36;
+  letter-spacing: 0.5px;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+@media (max-width: 600px) {
+  .eq-math { font-size: 20px; }
+}
+/* Fractions formatting */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.85em;
+  line-height: 1;
+  padding: 0 4px;
+}
+.frac .num {
+  border-bottom: 1.5px solid currentColor;
+  padding-bottom: 2px;
+}
+.frac .den {
+  padding-top: 2px;
+}
+
+/* Expandable Deep Dives and Derivations */
+details.deep-dive, details.derivation {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+  margin-top: 14px;
+}
+details summary {
+  font-weight: 650;
+  color: var(--blue);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+}
+details summary:hover { text-decoration: underline; }
+details p {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+
+/* Block 2: PREDICT FIRST (Fixed P0-2) */
+.predict-card {
+  background: var(--soft);
+  border: 1.5px solid #c7d7fc;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.predict-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--blue);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.predict-prompt {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.predict-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.predict-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+.predict-option:hover {
+  border-color: var(--blue);
+}
+.predict-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.predict-feedback {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.predict-feedback.correct {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.predict-feedback.revealed {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* Block 2: PLAY (Interactive Simulation Lab) */
+.lab-card {
+  background: var(--lab);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: 22px 24px 26px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 32px rgba(13,27,42,0.18);
+}
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 10px;
+}
+.lab-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+.live-tag {
+  background: var(--teal);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.what-to-watch {
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--teal-light);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 14px;
+}
+.what-to-watch strong { color: #fff; }
+
+/* Simulation Canvas / SVG */
+.diagram-wrap {
+  position: relative;
+  background: #09131d;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 14px;
+}
+svg.diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  max-height: 320px;
+}
+
+/* Data-driven Legend (Fixed P1-5) */
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Timeline Controls Toolbar (Fixed P0-1) */
+.lab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--lab-panel);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.toolbar-btn {
+  background: #22374e;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.toolbar-btn:hover { background: #2f4b6a; border-color: rgba(255,255,255,0.3); }
+.toolbar-btn.primary { background: var(--blue); border-color: var(--blue); }
+.toolbar-btn.primary:hover { background: var(--blue-dark); }
+.time-display {
+  font-family: monospace;
+  font-size: 14px;
+  color: #38bdf8;
+  padding: 0 8px;
+  min-width: 80px;
+}
+.scrubber-wrap {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+input.timeline-scrubber {
+  width: 100%;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Interactive Sliders & Presets */
+.lab-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.control-label {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span.val {
+  color: #fff;
+  font-weight: 700;
+  font-family: monospace;
+}
+.preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.preset-btn {
+  background: transparent;
+  color: #cbd5e1;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover, .preset-btn.active {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Realtime Telemetry Readout & Dynamic Verdict */
+.lab-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.telemetry-cell {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.telemetry-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.telemetry-val {
+  font-size: 16px;
+  font-weight: 750;
+  color: #fff;
+  font-family: monospace;
+}
+.lab-verdict {
+  background: rgba(8,118,106,0.25);
+  border-left: 3px solid var(--teal-light);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+/* Block 3: CONNECT (Real-life India & Verified Wow cards) */
+.connect-section {
+  margin-bottom: 28px;
+}
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.connect-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: #fff;
+}
+.connect-card.wow {
+  border-color: #fbcfe8;
+  background: #fff5f8;
+}
+.wow-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 1px;
+  color: #db2777;
+  background: #fce7f3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.connect-card h3 {
+  font: 18px/1.3 Georgia, serif;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.connect-card p {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.video-facade {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
+}
+
+/* Block 4: PRACTICE (3-Tier Multi-concept) */
+.practice-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+.practice-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.level-tab {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.level-tab.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.question-prompt {
+  font: 18px/1.4 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+.quiz-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14.5px;
+  transition: border-color 0.15s;
+}
+.quiz-option:hover {
+  border-color: var(--blue);
+}
+.quiz-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button.btn-primary:hover { background: var(--blue-dark); }
+button.btn-secondary {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.quiz-feedback.success {
+  background: var(--green-soft);
+  border: 1px solid #86efac;
+  color: #14532d;
+}
+.quiz-feedback.retry {
+  background: var(--coral-soft);
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+}
+.quiz-hint {
+  background: var(--amber-soft);
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+/* Block 5: REVISE */
+.revise-callout {
+  background: #f8fafc;
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 32px;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.revise-callout strong { color: var(--blue); }
+
+/* Lesson Bottom Nav */
+.concept-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Chapter Revision & Exercise Mapping Table */
+.revision-page {
+  display: none;
+}
+.exercise-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+.exercise-table th, .exercise-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+.exercise-table th {
+  background: var(--paper-soft);
+  font-weight: 700;
+}
+
+/* Exercise Compendium Styling */
+.exercise-compendium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exercise-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.filter-chip {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.exercise-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 26px;
+  margin-bottom: 18px;
+  transition: box-shadow 0.15s;
+}
+.exercise-card:hover {
+  box-shadow: 0 4px 16px rgba(21,38,55,0.06);
+}
+.exercise-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.q-badge {
+  background: var(--soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.q-concept-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.q-concept-link:hover {
+  text-decoration: underline;
+}
+.exercise-question-text {
+  font: 17px/1.6 Georgia, serif;
+  color: var(--ink);
+  margin-bottom: 14px;
+  white-space: pre-line;
+}
+.exercise-drawer {
+  border-top: 1px dashed var(--line);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+.exercise-drawer summary {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  cursor: pointer;
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.exercise-drawer summary::-webkit-details-marker { display: none; }
+.exercise-drawer summary:before {
+  content: "▶";
+  font-size: 11px;
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.exercise-drawer[open] summary:before {
+  transform: rotate(90deg);
+}
+.exercise-solution-body {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+.given-data {
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+.solution-steps {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.solution-steps li {
+  margin-bottom: 6px;
+}
+.answer-box {
+  background: var(--green-soft);
+  border-left: 4px solid var(--green);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 10px;
+}
+.takeaway-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
+  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 02 · ELECTROCHEMISTRY</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="21"></progress>
+      <span id="progress-text">0 / 21</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <nav id="contents" aria-label="Concepts">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="concept-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises &amp; Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view"></div>
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 18 Exercises from NCERT Class 12 Chemistry Part I (pp. 31–60) mapped to core concepts with step-by-step solutions.</p>
+      </div>
+    </div>
+  </main>
+</div>
+<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
+
+<script>
+window.CHAPTER = {"code": "lech102", "chapterNumber": 2, "book_name": "Chemistry Part I", "title": "Electrochemistry", "subtitle": "Galvanic cells, Nernst equation, ΔG° and K, conductivity, Kohlrausch’s law, electrolysis, batteries and corrosion.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech102.pdf", "page_start": 31, "page_end": 60, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "galvanic-potential", "nav": "Galvanic cells & E°", "title": "A spontaneous redox reaction can do electrical work — the Daniell cell", "deck": "Oxidation at the anode, reduction at the cathode. E°_cell = E°_cathode − E°_anode, with SHE defined as 0.00 V. F₂ is the strongest oxidant in Table 2.1; Li metal the strongest reductant.", "minutes": 9, "section": "2.1, 2.2", "pages": [1, 8], "print": "31–38", "sim": "daniell", "simTitle": "Daniell cell: Zn | Zn²⁺ || Cu²⁺ | Cu", "quick": ["<strong>Electrochemistry</strong> studies electricity from spontaneous chemical reactions and the reverse: driving non-spontaneous change with current. A <strong>galvanic (voltaic)</strong> cell converts chemical energy to electrical work; an <strong>electrolytic</strong> cell does the opposite.", "In the Daniell cell Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s). Zinc is the anode (oxidation, negative); copper is the cathode (reduction, positive). Electrons travel in the external wire; ions complete the circuit through the salt bridge. E°_cell = 1.1 V when both ions are 1 M.", "The <strong>standard hydrogen electrode</strong> (Pt, H₂ at 1 bar, H⁺ at 1 M) is assigned E° = 0.00 V. Table 2.1 lists standard reduction potentials. Species high in the table (F₂, E° = +2.87 V) are strong oxidants; species low (Li⁺/Li, E° = −3.05 V) have strong reducing metals."], "formulas": [{"label": "Cell potential", "html": "E°<sub>cell</sub> = E°<sub>cathode</sub> − E°<sub>anode</sub>", "cond": "Both written as reduction potentials"}, {"label": "Daniell cell", "html": "Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s) &nbsp; E° = 1.1 V", "cond": "1 M ions, 298 K"}], "deeper": "Intext 2.2: you cannot store CuSO₄ in a zinc pot — Zn reduces Cu²⁺ (E°_cell = 1.1 V > 0) and the pot dissolves. Intext 2.3: oxidants of Fe²⁺ are species with E° > 0.77 V (the Fe³⁺/Fe²⁺ couple), e.g. F₂, Cl₂, MnO₄⁻, Cr₂O₇²⁻, Br₂, Ag⁺ in suitable conditions — not I₂ (0.54 V).", "worked": "Exercise 2.3: Zn(s) + 2Ag⁺(aq) → Zn²⁺(aq) + 2Ag(s). Cell: Zn | Zn²⁺ || Ag⁺ | Ag. (i) Zinc electrode is negative. (ii) Current carriers: electrons in the wire; Zn²⁺, Ag⁺ and anions in solution / salt bridge. (iii) Anode: Zn → Zn²⁺ + 2e⁻; cathode: Ag⁺ + e⁻ → Ag.", "prediction": {"prompt": "Can you store copper sulphate solution in a zinc pot (Intext 2.2)?", "options": ["No — Zn reduces Cu²⁺ (E°_cell = 1.1 V); the pot dissolves and copper plates out", "Yes — zinc is less reactive than copper", "Yes, provided the pot is dry on the outside"], "answer": 0, "explanation": "E°(Cu²⁺/Cu) > E°(Zn²⁺/Zn), so the Daniell reaction is spontaneous. The zinc vessel is the anode."}, "connect": [["Chittaranjan and the Daniell cell", "The Zn–Cu couple is still the school demonstration of a galvanic cell across Indian labs: a zinc rod in ZnSO₄, a copper rod in CuSO₄, a KCl salt bridge, and a 1.1 V reading on a cheap voltmeter."], ["Wow — lithium at the bottom of Table 2.1", "Li metal is the strongest aqueous reductant in the table (E° = −3.05 V). That is why Li-ion anodes store so much energy per gram — and why they must never meet water.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "Write E°_cell for the Daniell cell and state which electrode is negative.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In a galvanic cell, oxidation occurs at the", "options": ["anode (negative)", "cathode (positive)", "salt bridge only"], "answer": 0, "hint": "Anode = oxidation in both galvanic and electrolytic cells.", "solution": "Oxidation is always at the anode. In a galvanic cell that electrode is negative.", "wrong": ["Reduction is at the cathode.", "The salt bridge carries ions, not the redox."]}, {"level": "Medium", "type": "mcq", "map": "Intext 2.2", "prompt": "Copper sulphate cannot be stored in a zinc pot because", "options": ["Zn displaces Cu²⁺ (E°_cell > 0)", "ZnSO₄ is insoluble", "copper is a stronger reductant than zinc"], "answer": 0, "hint": "Compare E°(Zn²⁺/Zn) and E°(Cu²⁺/Cu).", "solution": "The Daniell reaction is spontaneous; the pot is consumed.", "wrong": ["ZnSO₄ is soluble.", "Zinc is the stronger reductant."]}, {"level": "Hard", "type": "mcq", "prompt": "The strongest oxidising agent in Table 2.1 is", "options": ["F₂(g)", "Li⁺(aq)", "K(s)"], "answer": 0, "hint": "Highest (most positive) reduction potential.", "solution": "F₂ has the largest E° and so the greatest tendency to be reduced.", "wrong": ["Li⁺ is a very weak oxidant.", "K(s) is a reductant."]}]}, {"id": "nernst-emf", "nav": "Nernst equation", "title": "E = E° − (0.059/n) log Q at 298 K", "deck": "When concentrations are not 1 M, Nernst corrects the cell potential. Example 2.1: Mg | Mg²⁺(0.130) || Ag⁺(0.0001) | Ag with E° = 3.17 V gives E = 2.96 V.", "minutes": 10, "section": "2.3", "pages": [8, 11], "print": "38–41", "sim": "nernst", "simTitle": "Nernst cell: E vs log Q (Example 2.1 & Intext 2.5)", "quick": ["For Mⁿ⁺ + n e⁻ → M, E = E° − (RT/nF) ln (1/[Mⁿ⁺]). For a full cell, E_cell = E°_cell − (RT/nF) ln Q, where Q is the reaction quotient of the cell reaction as written.", "At 298 K, 2.303 RT/F = 0.059 V, so <strong>E = E° − (0.059/n) log Q</strong>. Diluting the product or concentrating the reactant raises E; the reverse lowers it.", "Example 2.1 (zoom p.9): Mg(s) + 2Ag⁺(0.0001 M) → Mg²⁺(0.130 M) + 2Ag(s), E° = 3.17 V. Q = 0.130 / (0.0001)² = 1.30 × 10⁷. E = 3.17 − (0.059/2) log(1.30 × 10⁷) = 3.17 − 0.21 = 2.96 V."], "formulas": [{"label": "Nernst (298 K)", "html": "E = E° − (0.059 V / n) log Q", "cond": "Q from the cell reaction as written"}, {"label": "Hydrogen electrode", "html": "E(H⁺/H₂) = −0.059 pH  (P_H₂ = 1 bar)", "cond": "Intext 2.4: pH 10 ⇒ E = −0.59 V"}], "deeper": "Intext 2.5: Ni(s) + 2Ag⁺(0.002 M) → Ni²⁺(0.160 M) + 2Ag(s), E° = 1.05 V. Q = 0.160/(0.002)² = 4.00 × 10⁴. E = 1.05 − (0.059/2) log(4.00 × 10⁴) = 1.05 − 0.136 = 0.91 V (book key).", "worked": "Intext 2.4: hydrogen electrode in a solution of pH 10. E = 0 − 0.059 log(1/[H⁺]) = −0.059 × 10 = −0.59 V.", "prediction": {"prompt": "Example 2.1: E° = 3.17 V, Q = [Mg²⁺]/[Ag⁺]² = 0.130/(10⁻⁴)². What is E_cell?", "options": ["2.96 V — (0.059/2) log(1.3 × 10⁷) ≈ 0.21 V is subtracted", "3.17 V — concentrations never matter", "5.21 V — we add (0.059/n) log Q"], "answer": 0, "explanation": "Nernst subtracts (RT/nF) ln Q. Q ≫ 1 so E < E°. Book: 3.17 − 0.21 = 2.96 V."}, "connect": [["pH meters are Nernst electrodes", "A glass electrode is a hydrogen-ion Nernst probe: E = K − 0.059 pH at 25 °C. Every school pH meter is Eq. 2.8 in hardware."], ["Wow — tenfold dilution costs 59/n millivolts", "Changing Q by ×10 shifts E by 59/n mV at 298 K. For n = 1 that is a 59 mV decade — the same slope a pH meter is calibrated to.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "Write the 298 K Nernst equation and compute E for Intext 2.5 (book: 0.91 V).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "At 298 K the Nernst equation is", "options": ["E = E° − (0.059/n) log Q", "E = E° + n F log Q", "E = −n F E°"], "answer": 0, "hint": "2.303 RT/F = 0.059 V.", "solution": "The factor 0.059 V / n multiplies log Q.", "wrong": ["Wrong sign and missing 0.059.", "That is ΔG, not E."]}, {"level": "Medium", "type": "number", "map": "Example 2.1", "prompt": "E_cell (V) for Mg | Mg²⁺(0.130) || Ag⁺(0.0001) | Ag if E° = 3.17 V", "answer": 2.96, "unit": "V", "tolerance": 0.02, "hint": "n = 2; Q = 0.130 / (10⁻⁴)².", "solution": "E = 3.17 − 0.0295 log(1.30 × 10⁷) = 2.96 V."}, {"level": "Hard", "type": "number", "map": "Intext 2.5", "prompt": "E (V) for Ni + 2Ag⁺(0.002 M) → Ni²⁺(0.160 M) + 2Ag, E° = 1.05 V", "answer": 0.91, "unit": "V", "tolerance": 0.02, "hint": "Q = 0.160 / (0.002)² = 4 × 10⁴.", "solution": "E = 1.05 − (0.059/2) log(4 × 10⁴) = 0.91 V."}]}, {"id": "gibbs-k", "nav": "ΔG° and K from E°", "title": "Δ_r G° = −n F E°_cell  and  E° = (0.059/n) log K", "deck": "Electrical work at constant T, p is −ΔG. For the Daniell cell n = 2, E° = 1.1 V, Δ_r G° = −212.27 kJ mol⁻¹ and K is ~10³⁷.", "minutes": 8, "section": "2.3.1, 2.4", "pages": [9, 12], "print": "39–42", "sim": "gibbsk", "simTitle": "ΔG°–E°–K converter (Daniell & Intext 2.6)", "quick": ["The reversible electrical work of a galvanic cell equals the decrease in Gibbs energy: Δ_r G = −n F E_cell (Eq. 2.15). Under standard conditions Δ_r G° = −n F E°_cell.", "Combining with Δ_r G° = −RT ln K gives E°_cell = (2.303 RT / nF) log K, or at 298 K <strong>E° = (0.059/n) log K</strong> (Eq. 2.14). Huge K values (Daniell: ~2 × 10³⁷) follow from E° of only 1.1 V.", "Example 2.3 (zoom p.10): Daniell cell, n = 2, F = 96487 C mol⁻¹, E° = 1.1 V. Δ_r G° = −2 × 1.1 × 96487 = −212271 J mol⁻¹ = −212.27 kJ mol⁻¹."], "formulas": [{"label": "Standard Gibbs energy", "html": "Δ<sub>r</sub>G° = −n F E°<sub>cell</sub>", "cond": "Eq. 2.15; F = 96487 C mol⁻¹"}, {"label": "Equilibrium constant", "html": "E° = (0.059 V / n) log K &nbsp; (298 K)", "cond": "Eq. 2.14"}], "deeper": "Intext 2.6: 2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂, E° = 0.236 V, n = 2. Δ_r G° = −2 × 96500 × 0.236 = −45.54 kJ mol⁻¹. log K = nE°/0.059 = 8.00; K_c = 9.62 × 10⁷ (book key).", "worked": "Exercise 2.4(ii): Fe²⁺ + Ag⁺ → Fe³⁺ + Ag. E° = E°(Ag⁺/Ag) − E°(Fe³⁺/Fe²⁺) = 0.80 − 0.77 = 0.03 V. n = 1; Δ_r G° = −2895 J mol⁻¹; K = 10^(0.03/0.059) ≈ 3.2.", "prediction": {"prompt": "Daniell cell, n = 2, E° = 1.1 V. What is Δ_r G° (Example 2.3)?", "options": ["−212.27 kJ mol⁻¹", "+212.27 kJ mol⁻¹ because copper is deposited", "−1.1 kJ mol⁻¹ — ΔG equals E"], "answer": 0, "explanation": "ΔG° = −nFE° = −2 × 1.1 V × 96487 C mol⁻¹ = −212271 J mol⁻¹. 1 V·C = 1 J."}, "connect": [["Why Daniell cells ‘go to completion’", "K ≈ 2 × 10³⁷ means at equilibrium [Zn²⁺]/[Cu²⁺] is enormous: essentially all Cu²⁺ plates out. That is why a zinc rod in CuSO₄ is coated with copper in minutes."], ["Wow — 59 millivolts is a factor of ten in K", "For n = 1, E° = 0.059 V already means K = 10. A 1.1 V cell (n = 2) is 37 orders of magnitude — thermodynamics, not kinetics.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "Write Δ_r G° = −nFE° and compute it for the Daniell cell.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Δ_r G° and E°_cell are related by", "options": ["Δ_r G° = −n F E°_cell", "Δ_r G° = n F E°_cell", "Δ_r G° = E°_cell / nF"], "answer": 0, "hint": "Electrical work is −ΔG.", "solution": "Eq. 2.15.", "wrong": ["Wrong sign: a positive E° is spontaneous (ΔG° < 0).", "Dimensions fail."]}, {"level": "Medium", "type": "number", "map": "Example 2.3", "prompt": "Δ_r G° (kJ mol⁻¹) for the Daniell cell (n = 2, E° = 1.1 V, F = 96487 C mol⁻¹)", "answer": -212.27, "unit": "kJ mol⁻¹", "tolerance": 0.5, "hint": "ΔG° = −nFE°; convert J → kJ.", "solution": "−2 × 1.1 × 96487 = −212271 J mol⁻¹ = −212.27 kJ mol⁻¹."}, {"level": "Hard", "type": "number", "map": "Intext 2.6", "prompt": "K_c for 2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂ if E° = 0.236 V (n = 2, 298 K)", "answer": 96200000.0, "unit": "", "tolerance": 5000000.0, "hint": "log K = nE°/0.059.", "solution": "log K = 8.00; K = 9.62 × 10⁷."}]}, {"id": "conductivity", "nav": "Conductivity & Λ_m", "title": "κ falls on dilution; Λ_m = κ / c rises", "deck": "Resistivity ρ, conductivity κ = 1/ρ, molar conductivity Λ_m = κ/c. Example 2.4: 0.020 M KCl with κ = 0.0248 S cm⁻¹ has Λ_m = 124 S cm² mol⁻¹.", "minutes": 9, "section": "2.4, 2.5", "pages": [12, 17], "print": "42–47", "sim": "conduct", "simTitle": "κ and Λ_m vs concentration (KCl, Example 2.4 / Ex 2.8)", "quick": ["Resistance R = ρ ℓ / A. Conductivity κ = 1/ρ has SI unit S m⁻¹. The cell constant G* = ℓ/A is measured with a standard KCl solution: κ = G* / R.", "<strong>Molar conductivity</strong> Λ_m = κ / c. In common units Λ_m (S cm² mol⁻¹) = κ (S cm⁻¹) × 1000 / Molarity. κ decreases on dilution (fewer ions per cm³) but Λ_m increases (each mole of electrolyte contributes more, because interionic drag falls and, for weak electrolytes, α rises).", "Example 2.4 / Exercise 2.8: 0.20 M KCl, κ = 0.0248 S cm⁻¹. Λ_m = 0.0248 × 1000 / 0.20 = 124 S cm² mol⁻¹. Exercise 2.9: R = 1500 Ω, κ = 0.146 × 10⁻³ S cm⁻¹ ⇒ cell constant = κ R = 0.219 cm⁻¹."], "formulas": [{"label": "Conductivity", "html": "κ = 1/ρ = G* / R", "cond": "G* = ℓ/A is the cell constant"}, {"label": "Molar conductivity", "html": "Λ<sub>m</sub> = κ × 1000 / c", "cond": "κ in S cm⁻¹, c in mol L⁻¹ → Λ_m in S cm² mol⁻¹"}], "deeper": "Exercise 2.10 (Kohlrausch plot): Λ_m is computed at each c from 10² κ / S m⁻¹ data, then plotted against √c and extrapolated to Λ_m°. Strong electrolytes give a shallow straight line (Kohlrausch); weak electrolytes shoot up only at very high dilution.", "worked": "The electrical resistance of a 0.05 M NaOH column, diameter 1 cm, length 50 cm, is 5.55 × 10³ Ω (text after Example 2.4). A = π r² = 0.785 cm²; ρ = R A / ℓ = 87.1 Ω cm; κ = 0.0115 S cm⁻¹; Λ_m = 230 S cm² mol⁻¹.", "prediction": {"prompt": "0.20 M KCl has κ = 0.0248 S cm⁻¹ (Exercise 2.8). What is Λ_m?", "options": ["124 S cm² mol⁻¹", "0.00496 S cm² mol⁻¹ — forgot the 1000", "κ and Λ_m are the same number"], "answer": 0, "explanation": "Λ_m = κ × 1000 / c = 0.0248 × 1000 / 0.20 = 124 S cm² mol⁻¹."}, "connect": [["Conductivity meters in a sugar mill", "Online κ probes watch boiler-feed water and evaporator syrup: more ions ⇒ higher κ. Molar conductivity is what the chemist reports; the plant engineer reads millisiemens."], ["Wow — dilution makes each mole ‘more conducting’", "κ falls (fewer ions per mL) but Λ_m rises. For acetic acid the rise is steep because HA ⇌ H⁺ + A⁻ shifts right on dilution (Ostwald).", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "Write Λ_m = κ × 1000 / c and compute it for 0.20 M KCl, κ = 0.0248 S cm⁻¹.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "On dilution of a strong electrolyte, conductivity κ", "options": ["decreases", "increases", "is invariant"], "answer": 0, "hint": "Intext 2.7.", "solution": "Ions per unit volume fall, so κ falls. Λ_m nevertheless rises.", "wrong": ["That is Λ_m.", "κ depends on concentration."]}, {"level": "Medium", "type": "number", "map": "Exercise 2.8", "prompt": "Λ_m (S cm² mol⁻¹) of 0.20 M KCl if κ = 0.0248 S cm⁻¹", "answer": 124, "unit": "S cm² mol⁻¹", "tolerance": 0.5, "hint": "Λ_m = κ × 1000 / c.", "solution": "0.0248 × 1000 / 0.20 = 124."}, {"level": "Hard", "type": "number", "map": "Exercise 2.9", "prompt": "Cell constant (cm⁻¹) if R = 1500 Ω and κ = 0.146 × 10⁻³ S cm⁻¹", "answer": 0.219, "unit": "cm⁻¹", "tolerance": 0.002, "hint": "G* = κ R.", "solution": "0.146 × 10⁻³ × 1500 = 0.219 cm⁻¹."}]}, {"id": "kohlrausch", "nav": "Kohlrausch’s law", "title": "Λ_m° = ν₊ λ₊° + ν₋ λ₋° — and a back-door to K_a of a weak acid", "deck": "Ionic contributions add at infinite dilution. For methanoic acid (Intext 2.9) Λ_m° = 404.2 S cm² mol⁻¹, α = 0.114, K_a = 3.67 × 10⁻⁴.", "minutes": 8, "section": "2.5.1", "pages": [17, 21], "print": "47–51", "sim": "kohlrausch", "simTitle": "Kohlrausch: Λ_m° of acetic / formic acid and α(c)", "quick": ["<strong>Kohlrausch’s law of independent migration of ions:</strong> Λ_m° = ν₊ λ₊° + ν₋ λ₋°. Limiting ionic conductivities add. Applications: Λ_m° of a weak electrolyte from strong ones, e.g. Λ_m°(CH₃COOH) = λ°(H⁺) + λ°(CH₃COO⁻) = Λ_m°(HCl) + Λ_m°(NaOAc) − Λ_m°(NaCl).", "Degree of dissociation α = Λ_m / Λ_m°. For a 1–1 weak acid K_a = c α² / (1 − α).", "Intext 2.9: 0.025 M HCOOH, Λ_m = 46.1 S cm² mol⁻¹; λ°(H⁺) = 349.6, λ°(HCOO⁻) = 54.6 so Λ_m° = 404.2. α = 46.1/404.2 = 0.114; K_a = 3.67 × 10⁻⁴."], "formulas": [{"label": "Kohlrausch", "html": "Λ<sub>m</sub>° = ν₊ λ₊° + ν₋ λ₋°", "cond": "Infinite dilution"}, {"label": "Weak electrolyte", "html": "α = Λ<sub>m</sub> / Λ<sub>m</sub>°;  K<sub>a</sub> = c α² / (1 − α)", "cond": "Ostwald dilution law"}], "deeper": "Exercise 2.11: 0.00241 M acetic acid, κ = 7.896 × 10⁻⁵ S cm⁻¹, Λ_m° = 390.5 S cm² mol⁻¹. Λ_m = 7.896 × 10⁻⁵ × 1000 / 0.00241 = 32.76 S cm² mol⁻¹; α = 0.0839; K_a = 1.85 × 10⁻⁵.", "worked": "Intext 2.8: Λ_m°(H₂O) = λ°(H⁺) + λ°(OH⁻) = Λ_m°(HCl) + Λ_m°(NaOH) − Λ_m°(NaCl).", "prediction": {"prompt": "0.025 M methanoic acid, Λ_m = 46.1, Λ_m° = 404.2 S cm² mol⁻¹ (Intext 2.9). What is α?", "options": ["0.114", "1.00 — all weak acids are fully dissociated at 0.025 M", "46.1"], "answer": 0, "explanation": "α = Λ_m / Λ_m° = 46.1/404.2 = 0.114. Then K_a = cα²/(1−α) = 3.67 × 10⁻⁴."}, "connect": [["Why we never measure Λ_m° of acetic acid directly", "You would need an impossibly dilute solution whose resistance is that of the solvent. Kohlrausch lets us steal λ°(H⁺) and λ°(Ac⁻) from strong electrolytes."], ["Wow — H⁺ is a conductivity superstar", "λ°(H⁺) = 349.6 S cm² mol⁻¹, ~5× Na⁺. Grotthuss hopping along water wires, not ordinary ionic drift, is why acid solutions scream on a conductivity meter.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "State Kohlrausch’s law and compute α and K_a for Intext 2.9.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Kohlrausch’s law says that at infinite dilution", "options": ["Λ_m° is the sum of ionic contributions", "κ is independent of identity", "weak electrolytes do not conduct"], "answer": 0, "hint": "Independent migration of ions.", "solution": "Λ_m° = ν₊ λ₊° + ν₋ λ₋°.", "wrong": ["κ still depends on the electrolyte.", "They do, via Λ_m° built from strong salts."]}, {"level": "Medium", "type": "number", "map": "Intext 2.9", "prompt": "α of 0.025 M HCOOH if Λ_m = 46.1 and Λ_m° = 404.2 S cm² mol⁻¹", "answer": 0.114, "unit": "", "tolerance": 0.003, "hint": "α = Λ_m / Λ_m°.", "solution": "46.1/404.2 = 0.114."}, {"level": "Hard", "type": "number", "map": "Exercise 2.11", "prompt": "K_a of acetic acid if c = 0.00241 M, Λ_m = 32.76, Λ_m° = 390.5 S cm² mol⁻¹", "answer": 1.85e-05, "unit": "", "tolerance": 2e-06, "hint": "α = Λ_m/Λ_m°; K_a = cα²/(1−α).", "solution": "α = 0.0839; K_a = 1.85 × 10⁻⁵."}]}, {"id": "electrolysis-faraday", "nav": "Electrolysis & Faraday", "title": "Q = n F  — one mole of electrons is 96500 C", "deck": "Faraday’s laws: mass deposited ∝ Q, and chemical equivalents of different species are liberated by the same Q. 1 F = 96487 C mol⁻¹ ≈ 96500 C mol⁻¹.", "minutes": 9, "section": "2.5.2, 2.6", "pages": [21, 24], "print": "51–54", "sim": "faraday", "simTitle": "Faraday electrolysis: Ag, Cu, Ni and series cells", "quick": ["Charge of 1 mol of electrons: N_A × 1.6021 × 10⁻¹⁹ C = 96487 C mol⁻¹ ≡ 1 Faraday. For Ag⁺ + e⁻ → Ag, 1 F deposits 108 g Ag. For Cu²⁺ + 2e⁻ → Cu, 2 F deposit 63.5 g Cu.", "Q = I t. Exercise 2.15: 5 A for 20 min through Ni(NO₃)₂ deposits n = (5 × 1200)/(2 × 96500) = 0.0311 mol Ni = 1.83 g (M = 58.7).", "Cells in series share Q. Exercise 2.16: 1.45 g Ag (0.0134 mol = 0.0134 F) at 1.5 A takes 864 s; the same Q deposits 0.426 g Cu and 0.439 g Zn."], "formulas": [{"label": "Faraday", "html": "1 F = 96487 C mol⁻¹ ≈ 96500 C mol⁻¹", "cond": "Charge of 1 mol of electrons"}, {"label": "Charge for reduction", "html": "Q = n F  (n = moles of electrons)", "cond": "Also Q = I t"}], "deeper": "Intext 2.10: 0.5 A for 2 h ⇒ Q = 3600 C; number of electrons = 3600 / 1.602 × 10⁻¹⁹ = 2.25 × 10²². Intext 2.12: Cr₂O₇²⁻ + 14 H⁺ + 6 e⁻ → 2 Cr³⁺ + 7 H₂O needs 6 F = 5.79 × 10⁵ C per mole of dichromate.", "worked": "Exercise 2.13: (i) 20.0 g Ca from CaCl₂: n(Ca) = 0.500 mol, 2 e⁻ each ⇒ 1.00 F. (ii) 40.0 g Al from Al₂O₃: n(Al) = 40/27 mol, 3 e⁻ each ⇒ 4.44 F.", "prediction": {"prompt": "How much charge is required to reduce 1 mol Al³⁺ to Al (Exercise 2.12)?", "options": ["3 F = 2.895 × 10⁵ C", "1 F", "Al³⁺ cannot be reduced"], "answer": 0, "explanation": "Al³⁺ + 3 e⁻ → Al; three moles of electrons = 3 × 96500 C."}, "connect": [["Aluminium from Odisha bauxite", "Hall–Héroult cells at Angul and Hirakud pass ~300 kA through cryolite–alumina. Each tonne of Al costs 3 F per mole — about 3 kAh kg⁻¹ — which is why aluminium is ‘congealed electricity’."], ["Wow — the same coulomb plates three metals", "Exercise 2.16 is Faraday’s second law: one Q, three baths in series, masses in the ratio of equivalent weights Ag : Cu/2 : Zn/2.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "State 1 F in coulombs and compute the mass of Ni deposited by 5 A in 20 min (Ex 2.15).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Charge required to reduce 1 mol Cu²⁺ to Cu is", "options": ["2 F", "1 F", "0.5 F"], "answer": 0, "hint": "Cu²⁺ + 2 e⁻ → Cu.", "solution": "Two moles of electrons = 2 F.", "wrong": ["That would be Ag⁺.", "Half a faraday is 0.25 mol Cu."]}, {"level": "Medium", "type": "number", "map": "Exercise 2.15", "prompt": "Mass of Ni (g) deposited by 5 A for 20 min (M = 58.7; 2 e⁻)", "answer": 1.825, "unit": "g", "tolerance": 0.04, "hint": "Q = 6000 C; n = Q/(2F).", "solution": "n = 6000/(2×96500) = 0.0311 mol; m = 1.825 g."}, {"level": "Hard", "type": "number", "map": "Intext 2.12", "prompt": "Charge (C) to reduce 1 mol Cr₂O₇²⁻ to Cr³⁺", "answer": 579000, "unit": "C", "tolerance": 500, "hint": "6 electrons; F = 96500 C mol⁻¹.", "solution": "6 × 96500 = 5.79 × 10⁵ C."}]}, {"id": "batteries-corrosion", "nav": "Batteries, fuel cells, rust", "title": "Primary cells, lead–acid, H₂–O₂ fuel cells — and rust as a galvanic cell", "deck": "Dry cell and mercury button cell are primary. Lead storage is rechargeable. Fuel cells run as long as fuel is fed. Rusting of iron is 2 Fe + O₂ + 4 H⁺ → 2 Fe²⁺ + 2 H₂O with E° = 1.67 V.", "minutes": 8, "section": "2.6, 2.7, 2.8", "pages": [24, 28], "print": "54–58", "sim": "corrosion", "simTitle": "Rust cell: anodic pit, cathodic O₂ reduction, sacrificial Zn", "quick": ["<strong>Primary batteries</strong> (Leclanché dry cell: Zn anode, MnO₂/C cathode; mercury button: Zn | ZnO || HgO | Hg) are discarded after one discharge. Exercise 2.6: Zn + Ag₂O + H₂O → Zn²⁺ + 2 Ag + 2 OH⁻ in a watch cell.", "<strong>Lead storage battery:</strong> Pb(s) + PbO₂(s) + 2 H₂SO₄(aq) → 2 PbSO₄(s) + 2 H₂O(l), E° ≈ 2 V per cell. Recharging is the reverse (Intext 2.13). <strong>Fuel cells</strong> (H₂–O₂) produce water and electricity as long as gases are supplied (Intext 2.14: methanol, methane as alternate fuels).", "<strong>Corrosion</strong> of iron: anodic spot 2 Fe → 2 Fe²⁺ + 4 e⁻ (E° = −0.44 V); cathodic spot O₂ + 4 H⁺ + 4 e⁻ → 2 H₂O (E° = 1.23 V); E°_cell = 1.67 V. Rust is Fe₂O₃·xH₂O. Prevention: paint, tinning, galvanising, sacrificial Mg/Zn anodes."], "formulas": [{"label": "Lead–acid discharge", "html": "Pb + PbO₂ + 2 H₂SO₄ → 2 PbSO₄ + 2 H₂O", "cond": "Recharge = reverse"}, {"label": "Rust cell", "html": "2 Fe + O₂ + 4 H⁺ → 2 Fe²⁺ + 2 H₂O &nbsp; E° = 1.67 V", "cond": "Section 2.8"}], "deeper": "The Hydrogen Economy box (p.58): combustion of H₂ yields only water. Production by solar-driven electrolysis plus fuel-cell combustion is a closed electrochemical cycle — and a reason this Unit exists beyond batteries.", "worked": "Exercise 2.6 button cell. Using E°(Ag₂O/Ag,OH⁻) ≈ 0.344 V and E°(Zn²⁺/Zn) = −0.76 V, E° ≈ 1.10 V; Δ_r G° = −2 F E° ≈ −213 kJ mol⁻¹. (Exact table values as used in your reprint’s appendix.)", "prediction": {"prompt": "Rusting of iron is envisaged as a galvanic cell (Intext 2.15). What is E° of 2 Fe + O₂ + 4 H⁺ → 2 Fe²⁺ + 2 H₂O?", "options": ["1.67 V", "0 V because rust is slow", "−0.44 V — only the iron couple matters"], "answer": 0, "explanation": "E° = 1.23 − (−0.44) = 1.67 V (Section 2.8). Kinetics, not thermodynamics, make rusting slow."}, "connect": [["Howrah Bridge and sacrificial anodes", "Steel structures in the Hooghly are protected by zinc/magnesium blocks that corrode in preference to iron — the electrochemical method named in Section 2.8."], ["Wow — Maldives and the hydrogen economy", "NCERT explicitly names island nations such as Maldives facing submergence from fossil-fuel warming, then offers hydrogen from solar electrolysis as the electrochemical way out.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech102.pdf"}]]], "recall": "Write the rust cell reaction and E° = 1.67 V. Name two ways of preventing corrosion from the text.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The overall rusting reaction in Section 2.8 has E°_cell", "options": ["1.67 V", "−0.44 V", "0 V"], "answer": 0, "hint": "1.23 − (−0.44).", "solution": "Cathode O₂/H₂O 1.23 V minus anode Fe²⁺/Fe −0.44 V.", "wrong": ["That is only the iron couple.", "A positive E° means spontaneous."]}, {"level": "Medium", "type": "mcq", "prompt": "Recharging a lead storage battery", "options": ["converts PbSO₄ back to Pb and PbO₂, consuming water’s reverse products", "dissolves the PbO₂ plates completely", "is impossible because ΔG° > 0 on discharge"], "answer": 0, "hint": "Intext 2.13.", "solution": "Electrolysis reverses Pb + PbO₂ + 2 H₂SO₄ → 2 PbSO₄ + 2 H₂O.", "wrong": ["Plates are restored, not destroyed.", "Discharge has ΔG° < 0; recharge is driven by external E."]}, {"level": "Hard", "type": "mcq", "prompt": "A sacrificial anode for iron should have", "options": ["a more negative E° than Fe²⁺/Fe (Zn, Mg)", "a more positive E° (Cu, Ag)", "E° exactly 0"], "answer": 0, "hint": "Section 2.8 last paragraph.", "solution": "Mg and Zn oxidise in preference to iron.", "wrong": ["Those would be protected, and iron would rust.", "SHE is a reference, not a sacrificial metal."]}]}], "exercises": [{"number": "2.1", "conceptIdx": 0, "page": 59, "printPage": 59, "question": "Arrange the following metals in the order in which they displace each other from the solution of their salts. Al, Cu, Fe, Mg and Zn.", "steps": ["More negative E° metal displaces a less negative one.", "E°: Mg −2.37, Al −1.66, Zn −0.76, Fe −0.44, Cu +0.34 V.", "Order of displacement: Mg, Al, Zn, Fe, Cu."], "answer": "Mg > Al > Zn > Fe > Cu."}, {"number": "2.2", "conceptIdx": 0, "page": 59, "printPage": 59, "question": "Given the standard electrode potentials, K⁺/K = –2.93V, Ag⁺/Ag = 0.80V, Hg²⁺/Hg = 0.79V, Mg²⁺/Mg = –2.37 V, Cr³⁺/Cr = – 0.74V. Arrange these metals in their increasing order of reducing power.", "steps": ["Reducing power of the metal increases as E° becomes more negative.", "Ag (0.80) < Hg (0.79) < Cr (−0.74) < Mg (−2.37) < K (−2.93)."], "answer": "Ag < Hg < Cr < Mg < K."}, {"number": "2.3", "conceptIdx": 0, "page": 59, "printPage": 59, "question": "Depict the galvanic cell in which the reaction Zn(s)+2Ag⁺(aq) → Zn²⁺(aq)+2Ag(s) takes place. Further show: (i) Which of the electrode is negatively charged? (ii) The carriers of the current in the cell. (iii) Individual reaction at each electrode.", "steps": ["Cell: Zn(s)|Zn²⁺(aq)||Ag⁺(aq)|Ag(s).", "(i) Zinc electrode is negative (anode).", "(ii) Electrons in the external wire; ions in solution and the salt bridge.", "(iii) Anode: Zn → Zn²⁺ + 2e⁻; cathode: Ag⁺ + e⁻ → Ag."], "answer": "Zn|Zn²⁺||Ag⁺|Ag; Zn negative; e⁻ and ions as carriers; half-cells as above."}, {"number": "2.4", "conceptIdx": 2, "page": 59, "printPage": 59, "question": "Calculate the standard cell potentials of galvanic cell in which the following reactions take place: (i) 2Cr(s) + 3Cd²⁺(aq) → 2Cr³⁺(aq) + 3Cd (ii) Fe²⁺(aq) + Ag⁺(aq) → Fe³⁺(aq) + Ag(s). Calculate the ΔrG° and equilibrium constant of the reactions.", "steps": ["(i) E° = E°(Cd²⁺/Cd) − E°(Cr³⁺/Cr) = −0.40 − (−0.74) = 0.34 V; n = 6; ΔG° = −6×96500×0.34 = −196.86 kJ mol⁻¹; log K = 6×0.34/0.059 = 34.58; K = 3.8 × 10³⁴.", "(ii) E° = 0.80 − 0.77 = 0.03 V; n = 1; ΔG° = −2895 J mol⁻¹; K = 10^(0.03/0.059) = 3.2."], "answer": "(i) 0.34 V, −196.9 kJ mol⁻¹, K ≈ 10³⁴.⁶; (ii) 0.03 V, −2.90 kJ mol⁻¹, K ≈ 3.2."}, {"number": "2.5", "conceptIdx": 1, "page": 59, "printPage": 59, "question": "Write the Nernst equation and emf of the following cells at 298 K: (i) Mg(s)|Mg²⁺(0.001M)||Cu²⁺(0.0001 M)|Cu(s) (ii) Fe(s)|Fe²⁺(0.001M)||H⁺(1M)|H₂(g)(1bar)| Pt(s) (iii) Sn(s)|Sn²⁺(0.050 M)||H⁺(0.020 M)|H₂(g) (1 bar)|Pt(s) (iv) Pt(s)|Br⁻(0.010 M)|Br₂(l)||H⁺(0.030 M)| H₂(g) (1 bar)|Pt(s).", "steps": ["(i) E° = 0.34 − (−2.37) = 2.71 V; E = 2.71 − (0.059/2) log(0.001/0.0001) = 2.68 V.", "(ii) E° = 0.44 V; Q = [Fe²⁺]P_H₂/[H⁺]² = 0.001; E = 0.44 − (0.059/2) log(0.001) = 0.53 V.", "(iii) E° = 0.14 V; Q = 0.050/(0.020)² = 125; E = 0.14 − (0.059/2) log 125 = 0.08 V.", "(iv) E° = 0 − 1.09 = −1.09 V; Q = 1/[(0.010)²(0.030)²]; E ≈ −1.30 V."], "answer": "(i) 2.68 V; (ii) 0.53 V; (iii) 0.08 V; (iv) −1.30 V."}, {"number": "2.6", "conceptIdx": 6, "page": 59, "printPage": 59, "question": "In the button cells widely used in watches and other devices the following reaction takes place: Zn(s) + Ag₂O(s) + H₂O(l) → Zn²⁺(aq) + 2Ag(s) + 2OH⁻(aq). Determine ΔrG° and E° for the reaction.", "steps": ["Using E°(Ag₂O/Ag,OH⁻) = 0.344 V and E°(Zn²⁺/Zn) = −0.76 V, E°_cell = 1.104 V.", "n = 2; Δ_r G° = −2 × 96500 × 1.104 = −213.1 kJ mol⁻¹."], "answer": "E° ≈ 1.10 V; Δ_r G° ≈ −213 kJ mol⁻¹."}, {"number": "2.7", "conceptIdx": 3, "page": 59, "printPage": 59, "question": "Define conductivity and molar conductivity for the solution of an electrolyte. Discuss their variation with concentration.", "steps": ["κ is the conductance of a 1 m cube of solution (S m⁻¹). Λ_m = κ/c is the conductance of a volume containing 1 mol of electrolyte.", "κ decreases with dilution (fewer ions per volume). Λ_m increases: slowly and linearly with √c for strong electrolytes (Kohlrausch); steeply at high dilution for weak electrolytes as α → 1."], "answer": "κ falls, Λ_m rises on dilution; strong vs weak as above."}, {"number": "2.8", "conceptIdx": 3, "page": 59, "printPage": 59, "question": "The conductivity of 0.20 M solution of KCl at 298 K is 0.0248 S cm⁻¹. Calculate its molar conductivity.", "steps": ["Λ_m = κ × 1000 / c = 0.0248 × 1000 / 0.20 = 124 S cm² mol⁻¹."], "answer": "124 S cm² mol⁻¹."}, {"number": "2.9", "conceptIdx": 3, "page": 59, "printPage": 59, "question": "The resistance of a conductivity cell containing 0.001M KCl solution at 298 K is 1500 Ω. What is the cell constant if conductivity of 0.001M KCl solution at 298 K is 0.146 × 10⁻³ S cm⁻¹.", "steps": ["G* = κ R = 0.146 × 10⁻³ × 1500 = 0.219 cm⁻¹."], "answer": "0.219 cm⁻¹."}, {"number": "2.10", "conceptIdx": 4, "page": 60, "printPage": 60, "question": "The conductivity of sodium chloride at 298 K has been determined at different concentrations and the results are given below: Concentration/M 0.001, 0.010, 0.020, 0.050, 0.100; 10² × κ/S m⁻¹ = 1.237, 11.85, 23.15, 55.53, 106.74. Calculate Λ_m for all concentrations and draw a plot between Λ_m and c½. Find the value of Λ_m°.", "steps": ["c in mol m⁻³ = 1, 10, 20, 50, 100. Λ_m = κ/c in S m² mol⁻¹: 0.01237, 0.01185, 0.01158, 0.01111, 0.01067 (i.e. 123.7, 118.5, 115.8, 111.1, 106.7 S cm² mol⁻¹).", "Plot vs √c and extrapolate to √c = 0: Λ_m° ≈ 126.4 S cm² mol⁻¹."], "answer": "Λ_m = 123.7, 118.5, 115.8, 111.1, 106.7 S cm² mol⁻¹; Λ_m° ≈ 126 S cm² mol⁻¹."}, {"number": "2.11", "conceptIdx": 4, "page": 60, "printPage": 60, "question": "Conductivity of 0.00241 M acetic acid is 7.896 × 10⁻⁵ S cm⁻¹. Calculate its molar conductivity. If Λ_m° for acetic acid is 390.5 S cm² mol⁻¹, what is its dissociation constant?", "steps": ["Λ_m = 7.896e-5 × 1000 / 0.00241 = 32.76 S cm² mol⁻¹.", "α = 32.76/390.5 = 0.0839.", "K_a = c α²/(1−α) = 1.85 × 10⁻⁵."], "answer": "Λ_m = 32.76 S cm² mol⁻¹; K_a = 1.85 × 10⁻⁵."}, {"number": "2.12", "conceptIdx": 5, "page": 60, "printPage": 60, "question": "How much charge is required for the following reductions: (i) 1 mol of Al³⁺ to Al? (ii) 1 mol of Cu²⁺ to Cu? (iii) 1 mol of MnO₄⁻ to Mn²⁺?", "steps": ["(i) 3 F = 2.895 × 10⁵ C.", "(ii) 2 F = 1.930 × 10⁵ C.", "(iii) Mn(VII) → Mn(II) is 5 e⁻: 5 F = 4.825 × 10⁵ C."], "answer": "(i) 3 F; (ii) 2 F; (iii) 5 F."}, {"number": "2.13", "conceptIdx": 5, "page": 60, "printPage": 60, "question": "How much electricity in terms of Faraday is required to produce (i) 20.0 g of Ca from molten CaCl₂? (ii) 40.0 g of Al from molten Al₂O₃?", "steps": ["(i) 20 g Ca = 0.50 mol; Ca²⁺ + 2e⁻ → Ca ⇒ 1.00 F.", "(ii) 40 g Al = 40/27 mol; 3e⁻ each ⇒ 4.44 F."], "answer": "(i) 1 F; (ii) 4.44 F."}, {"number": "2.14", "conceptIdx": 5, "page": 60, "printPage": 60, "question": "How much electricity is required in coulomb for the oxidation of (i) 1 mol of H₂O to O₂? (ii) 1 mol of FeO to Fe₂O₃?", "steps": ["(i) 2 H₂O → O₂ + 4 H⁺ + 4 e⁻ so 1 mol H₂O needs 2 F = 1.93 × 10⁵ C.", "(ii) Fe²⁺ → Fe³⁺ + e⁻; 1 mol FeO needs 1 F = 9.65 × 10⁴ C."], "answer": "(i) 1.93 × 10⁵ C; (ii) 9.65 × 10⁴ C."}, {"number": "2.15", "conceptIdx": 5, "page": 60, "printPage": 60, "question": "A solution of Ni(NO₃)₂ is electrolysed between platinum electrodes using a current of 5 amperes for 20 minutes. What mass of Ni is deposited at the cathode?", "steps": ["Q = 5 × 20 × 60 = 6000 C.", "Ni²⁺ + 2e⁻ → Ni; n = 6000 / (2 × 96500) = 0.03109 mol.", "Mass = 0.03109 × 58.7 = 1.825 g."], "answer": "1.83 g Ni."}, {"number": "2.16", "conceptIdx": 5, "page": 60, "printPage": 60, "question": "Three electrolytic cells A,B,C containing solutions of ZnSO₄, AgNO₃ and CuSO₄, respectively are connected in series. A steady current of 1.5 amperes was passed through them until 1.45 g of silver deposited at the cathode of cell B. How long did the current flow? What mass of copper and zinc were deposited?", "steps": ["n(Ag) = 1.45/108 = 0.01343 mol = 0.01343 F.", "t = Q/I = 0.01343 × 96500 / 1.5 = 864 s = 14.4 min.", "m(Cu) = (0.01343/2)×63.5 = 0.426 g; m(Zn) = (0.01343/2)×65.4 = 0.439 g."], "answer": "864 s; 0.426 g Cu; 0.439 g Zn."}, {"number": "2.17", "conceptIdx": 0, "page": 60, "printPage": 60, "question": "Using the standard electrode potentials given in Table 3.1, predict if the reaction between the following is feasible: (i) Fe³⁺(aq) and I⁻(aq) (ii) Ag⁺ (aq) and Cu(s) (iii) Fe³⁺ (aq) and Br⁻ (aq) (iv) Ag(s) and Fe³⁺ (aq) (v) Br₂ (aq) and Fe²⁺ (aq).", "steps": ["Feasible if E°_cell > 0.", "(i) 0.77 − 0.54 = +0.23 V yes; (ii) 0.80 − 0.34 = +0.46 V yes;", "(iii) 0.77 − 1.09 = −0.32 V no; (iv) 0.77 − 0.80 = −0.03 V no;", "(v) 1.09 − 0.77 = +0.32 V yes."], "answer": "Feasible: (i), (ii), (v). Not feasible: (iii), (iv)."}, {"number": "2.18", "conceptIdx": 5, "page": 60, "printPage": 60, "question": "Predict the products of electrolysis in each of the following: (i) An aqueous solution of AgNO₃ with silver electrodes. (ii) An aqueous solution of AgNO₃ with platinum electrodes. (iii) A dilute solution of H₂SO₄ with platinum electrodes. (iv) An aqueous solution of CuCl₂ with platinum electrodes.", "steps": ["(i) Ag dissolves at anode, Ag deposits at cathode (electrorefining).", "(ii) O₂ at Pt anode (H₂O easier than NO₃⁻), Ag at cathode.", "(iii) O₂ at anode, H₂ at cathode (electrolysis of water); dilute H₂SO₄ is the electrolyte.", "(iv) Cl₂ at anode (Cl⁻ easier than water at moderate [Cl⁻]), Cu at cathode."], "answer": "(i) Ag/Ag; (ii) O₂ / Ag; (iii) O₂ / H₂; (iv) Cl₂ / Cu."}]};
+</script>
+<script>
+(function(){
+  var C = window.CHAPTER;
+  if (!C) {
+    console.error("No CHAPTER data object found on window.");
+    return;
+  }
+
+  var state = {
+    conceptIndex: 0,
+    level: 0,
+    answers: {},
+    correct: {},
+    t: 0,
+    maxT: 6,
+    playing: false,
+    rafId: null,
+    stepMode: false,
+    speed: 1.0,
+    simState: {}
+  };
+
+  var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
+
+  function initStorage(){
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        var d = JSON.parse(saved);
+        if(d && d.answers) state.answers = d.answers;
+        if(d && d.correct) state.correct = d.correct;
+      }
+    } catch(e){}
+  }
+
+  function saveStorage(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        answers: state.answers,
+        correct: state.correct
+      }));
+    } catch(e){}
+  }
+
+  function updateProgress(){
+    var count = Object.keys(state.correct).length;
+    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
+    var total = totalLessons * 3;
+    var bar = document.getElementById("progress-bar");
+    var txt = document.getElementById("progress-text");
+    if(bar) bar.value = count;
+    if(txt) txt.textContent = count + " / " + total;
+    saveStorage();
+  }
+
+  function qKey(cIdx, lvl){
+    return cIdx + "_" + lvl;
+  }
+
+  // --- Legacy Animation Loop for window.SIMS ---
+  var lastTs = 0;
+  function animLoop(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    if(dt > 0.1) dt = 0.1;
+
+    if(state.playing){
+      state.t += dt * state.speed;
+      if(state.t >= state.maxT){
+        state.t = state.maxT;
+        state.playing = false;
+        updatePlayBtn();
+      }
+      syncTimelineUI();
+      renderActiveFrame(state.t);
+    }
+    if(state.playing){
+      state.rafId = requestAnimationFrame(animLoop);
+    }
+  }
+
+  function play(){
+    if(state.t >= state.maxT) state.t = 0;
+    state.playing = true;
+    lastTs = 0;
+    updatePlayBtn();
+    state.rafId = requestAnimationFrame(animLoop);
+  }
+
+  function pause(){
+    state.playing = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+    updatePlayBtn();
+  }
+
+  function step(delta){
+    pause();
+    state.t = Math.max(0, Math.min(state.maxT, state.t + delta));
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function resetTimeline(){
+    pause();
+    state.t = 0;
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function seekTimeline(val){
+    pause();
+    state.t = Number(val);
+    syncTimelineUI();
+    renderActiveFrame(state.t);
+  }
+
+  function updatePlayBtn(){
+    var btn = document.getElementById("btn-play-pause");
+    if(btn){
+      btn.innerHTML = state.playing ? "⏸ Pause" : "▶ Play";
+      btn.setAttribute("aria-label", state.playing ? "Pause animation" : "Play animation");
+    }
+  }
+
+  function syncTimelineUI(){
+    var scrubber = document.getElementById("time-scrubber");
+    var disp = document.getElementById("time-display");
+    if(scrubber) scrubber.value = state.t;
+    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+  }
+
+  function renderActiveFrame(t){
+    if(!C.lessons) return;
+    var l = C.lessons[state.conceptIndex];
+    if(l && window.SIMS && l.sim && window.SIMS[l.sim] && typeof window.SIMS[l.sim].draw === 'function'){
+      window.SIMS[l.sim].draw(t);
+    }
+  }
+
+  // --- Render Concept View ---
+  function renderConcept(idx){
+    pause();
+    state.conceptIndex = idx;
+    state.t = 0;
+    state.level = 0;
+
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[idx];
+    if(!l) return;
+
+    var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
+
+    // Update sidebar navigation active state
+    var navBtns = document.querySelectorAll(".concept-nav");
+    navBtns.forEach(function(b, i){
+      if(b.id === "nav-revision") b.classList.remove("active");
+      else b.classList.toggle("active", i === idx);
+    });
+
+    // Update top crumb
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+
+    // Show concept view, hide revision
+    var cView = document.getElementById("concept-view");
+    var rView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "block";
+    if(rView) rView.style.display = "none";
+
+    var html = "";
+
+    // Concept Header
+    var minutes = l.minutes || 10;
+    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    html += '<div class="concept-header">' +
+      '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '</div>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
+      '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
+      '</div>';
+
+    // 01 LEARN BLOCK
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
+      '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
+
+    var quickItems = [];
+    if(Array.isArray(l.quick)) {
+      quickItems = l.quick;
+    } else if(typeof l.quick === 'string' && l.quick) {
+      quickItems = [l.quick];
+    } else if(Array.isArray(l.summary)) {
+      quickItems = l.summary;
+    } else if(l.reading_content) {
+      quickItems = [l.reading_content];
+    } else if(l.summary || l.deck) {
+      quickItems = [l.summary || l.deck];
+    }
+
+    html += '<div class="quick-summary">' + quickItems.map(function(p){
+      if(typeof p !== 'string') return '';
+      if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
+      var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
+                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                       .replace(/\n\n/g, '</p><p>');
+      return '<p>' + formatted + '</p>';
+    }).join("") + '</div>';
+
+    // Semantic Equations Card
+    var formulas = l.formulas || [];
+    if(formulas.length){
+      html += '<div class="key-equations-card">' +
+        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="eq-grid">' +
+        formulas.map(function(eq){
+          var label = eq.label || eq.name || "Relation";
+          var cond = eq.cond || "";
+          var math = eq.html || eq.formula || "";
+          return '<div class="eq-row">' +
+            '<div class="eq-meta"><span class="eq-label">' + label + '</span>' + (cond ? '<span class="eq-cond">' + cond + '</span>' : '') + '</div>' +
+            '<div class="eq-math">' + math + '</div>' +
+            '</div>';
+        }).join("") +
+        '</div></div>';
+    }
+
+    // Deeper dive / core takeaways
+    if(l.deeper){
+      html += '<details class="deep-dive"><summary>Go deeper into the conceptual foundation</summary><p>' + l.deeper + '</p></details>';
+    } else if(l.takeaways && l.takeaways.length){
+      html += '<details class="deep-dive"><summary>Key Conceptual Takeaways</summary><ul>' +
+        l.takeaways.map(function(t){ return '<li>' + t + '</li>'; }).join("") +
+        '</ul></details>';
+    }
+
+    // Worked Example
+    var worked = l.worked || l.worked_example;
+    if(worked){
+      var workedHtml = typeof worked === 'object' && worked !== null
+        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
+          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
+          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
+          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
+          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
+        : String(worked);
+      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+    }
+
+    html += '</section>';
+
+    // 02 PREDICT FIRST BLOCK
+    var pred = l.prediction || l.predict || l.predict_first;
+    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
+      var promptText = pred.prompt || pred.scenario || "";
+      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
+        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+        '<div class="predict-options" id="predict-options">' +
+        pred.options.map(function(opt, oi){
+          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>' +
+        '<div class="predict-actions">' +
+        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+        '</div>' +
+        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+        '</section>';
+    }
+
+    // 03 PLAY / LAB BLOCK
+    var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
+    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+      '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
+      '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
+      '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
+        '<div class="diagram-wrap"><svg id="diagram" class="diagram" viewBox="0 0 720 300" role="img" aria-label="' + simTitle + '"></svg></div>' +
+        '<div class="lab-legend" id="lab-legend"></div>' +
+        '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
+          '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
+          '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
+          '<div class="scrubber-wrap">' +
+            '<input type="range" id="time-scrubber" class="timeline-scrubber" min="0" max="6" step="0.1" value="0" aria-label="Timeline time scrubber">' +
+          '</div>' +
+        '</div>' +
+        '<div class="preset-bar" id="preset-bar"></div>' +
+        '<div class="lab-controls-grid" id="lab-controls"></div>' +
+        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
+      '</div>' +
+      '</section>';
+
+    // 04 CONNECT BLOCK
+    var rawConnect = l.connect || [];
+    var connectItems = [];
+    if (typeof rawConnect === 'string' && rawConnect.trim()) {
+      connectItems = [{ title: "Real-World Application", text: rawConnect }];
+    } else if (Array.isArray(rawConnect)) {
+      connectItems = rawConnect;
+    } else if (rawConnect && typeof rawConnect === 'object') {
+      connectItems = [rawConnect];
+    }
+
+    if(connectItems.length){
+      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
+        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+        '<div class="connect-grid">' +
+        connectItems.map(function(item){
+          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
+          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
+          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
+          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
+          var wow = /^Wow/i.test(title);
+
+          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
+          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
+          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+          if(v && v.id){
+            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
+              '<span class="play-btn">▶</span>' +
+              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
+              '</button>';
+          }
+          if(links && links.length){
+            links.forEach(function(a){
+              var href = a.u || a.link || "#";
+              var lab = a.t || a.label || "Read Deeply";
+              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
+              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
+                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
+            });
+          }
+          cHtml += '</div>';
+          return cHtml;
+        }).join("") +
+        '</div></section>';
+    }
+
+    // 05 PRACTICE BLOCK
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(quizzes.length){
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
+        '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
+        '<div class="practice-nav">';
+      for(var qi = 0; qi < quizzes.length; qi++){
+        var tierName = qi === 0 ? "Tier 1: Easy" : (qi === 1 ? "Tier 2: Medium" : (qi === 2 ? "Tier 3: Hard" : "Question " + (qi + 1)));
+        html += '<button class="level-tab' + (qi === 0 ? ' active' : '') + '" data-lvl="' + qi + '">' + tierName + '</button>';
+      }
+      html += '</div>' +
+        '<div id="quiz-container"></div>' +
+        '</section>';
+    }
+
+    // 06 REVISE CALLOUT
+    var recall = l.recall || (l.takeaways && l.takeaways.length ? l.takeaways[0] : (l.core_takeaways && l.core_takeaways.length ? l.core_takeaways[0] : "Reflect on how this concept connects to physical reality."));
+    html += '<div class="revise-callout"><strong>06 · REVISE · SAY IT IN YOUR OWN WORDS:</strong> ' + recall + '</div>';
+
+    // Footer Navigation
+    var nextNav = idx < lessons.length - 1 ? (lessons[idx + 1].nav || lessons[idx + 1].navTitle || lessons[idx + 1].title || ("Concept " + (idx + 2))) : "";
+    html += '<div class="concept-footer-nav">' +
+      (idx > 0 ? '<button class="btn-secondary" id="btn-prev-concept">← Concept ' + ("0" + idx).slice(-2) + '</button>' : '<span></span>') +
+      (idx < lessons.length - 1 ? '<button class="btn-primary" id="btn-next-concept">Concept ' + ("0" + (idx + 2)).slice(-2) + ': ' + nextNav + ' →</button>' : '<button class="btn-primary" id="btn-goto-revision">Chapter Revision & Exercises →</button>') +
+      '</div>';
+
+    cView.innerHTML = html;
+
+    // Attach Prediction Listeners
+    var btnCheckPred = document.getElementById("btn-check-prediction");
+    var btnSkipPred = document.getElementById("btn-skip-prediction");
+    if(btnCheckPred && pred){
+      btnCheckPred.addEventListener("click", function(){
+        var sel = document.querySelector('input[name="predict_ans"]:checked');
+        var fb = document.getElementById("predict-feedback-box");
+        if(!sel){
+          fb.style.display = "block";
+          fb.className = "predict-feedback revealed";
+          fb.textContent = "Please select one of the predictions first.";
+          return;
+        }
+        var chosen = Number(sel.value);
+        var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
+        var isRight = chosen === expectedAns;
+        fb.style.display = "block";
+        fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
+        fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
+      });
+    }
+    if(btnSkipPred && pred){
+      btnSkipPred.addEventListener("click", function(){
+        var fb = document.getElementById("predict-feedback-box");
+        fb.style.display = "block";
+        fb.className = "predict-feedback revealed";
+        fb.innerHTML = "<b>Key Principle:</b> " + (pred.explanation || "");
+      });
+    }
+
+    // Attach Timeline Controls for legacy SIMS
+    var btnPP = document.getElementById("btn-play-pause");
+    if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    var btnResTime = document.getElementById("btn-reset-time");
+    if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
+    var scrub = document.getElementById("time-scrubber");
+    if(scrub) scrub.addEventListener("input", function(e){ seekTimeline(e.target.value); });
+
+    // Footer Next/Prev listeners
+    var btnPrev = document.getElementById("btn-prev-concept");
+    var btnNext = document.getElementById("btn-next-concept");
+    var btnRev = document.getElementById("btn-goto-revision");
+    if(btnPrev) btnPrev.addEventListener("click", function(){ renderConcept(idx - 1); window.scrollTo(0,0); });
+    if(btnNext) btnNext.addEventListener("click", function(){ renderConcept(idx + 1); window.scrollTo(0,0); });
+    if(btnRev) btnRev.addEventListener("click", function(){ renderRevision(); window.scrollTo(0,0); });
+
+    // Mount Active Simulation Engine
+    var simMount = document.getElementById("sim-mount-point");
+    if(simMount){
+      var cKey = "c" + (idx + 1);
+      var conceptId = l.id || ("concept-" + (idx + 1));
+      var simId = l.sim || conceptId;
+
+      // 1. window.mountSimulation (iemh101, iemh102)
+      if(typeof window.mountSimulation === 'function'){
+        simMount.innerHTML = "";
+        window.mountSimulation(cKey, simMount);
+      }
+      // 2. window.SIM_ENGINES (iemh101-iemh105)
+      else if(window.SIM_ENGINES && window.SIM_ENGINES[cKey] && typeof window.SIM_ENGINES[cKey].init === 'function'){
+        simMount.innerHTML = "";
+        window.SIM_ENGINES[cKey].init(simMount);
+      }
+      // 3. window.SimEngine (iemh106-iemh108)
+      else if(window.SimEngine && typeof window.SimEngine.init === 'function'){
+        var targetKey = null;
+        var candidateKeys = [conceptId, "sim-" + conceptId, "sim-concept-" + (idx + 1), "concept-" + (idx + 1), simId, cKey];
+        for(var k = 0; k < candidateKeys.length; k++){
+          if(candidateKeys[k] && window.SimEngine.getEngine(candidateKeys[k])){
+            targetKey = candidateKeys[k];
+            break;
+          }
+        }
+        if(targetKey){
+          simMount.innerHTML = "";
+          window.SimEngine.init(targetKey, simMount);
+        }
+      }
+      // 4. window.SIMS (iesc101-iesc113)
+      else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
+        var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
+        if(typeof simObj.mount === 'function'){
+          if(simObj.mount.length >= 1 && !simObj.draw){
+            simMount.innerHTML = "";
+            simObj.mount(simMount);
+          } else {
+            simObj.mount(l);
+          }
+        }
+      }
+    }
+
+    // Render Quiz for current level
+    renderQuiz();
+
+    // Attach Practice Level Tabs
+    var lvlTabs = document.querySelectorAll(".level-tab");
+    lvlTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        lvlTabs.forEach(function(t){ t.classList.remove("active"); });
+        tab.classList.add("active");
+        state.level = Number(tab.getAttribute("data-lvl"));
+        renderQuiz();
+      });
+    });
+
+    // Update URL hash
+    window.location.hash = "#concept-" + (idx + 1);
+  }
+
+  // --- Render Quiz ---
+  function renderQuiz(){
+    var lessons = C.lessons || C.concepts || [];
+    var l = lessons[state.conceptIndex];
+    if(!l) return;
+    var quizzes = l.quizzes || l.practice_quizzes || [];
+    if(!quizzes.length) return;
+    var q = quizzes[state.level] || quizzes[0];
+    if(!q) return;
+
+    var qk = qKey(state.conceptIndex, state.level);
+    var old = state.answers[qk] || {};
+
+    var box = document.getElementById("quiz-container");
+    if(!box) return;
+
+    var promptText = q.prompt || q.question || "";
+    var isMcq = q.type === "mcq" || (q.options && q.options.length > 0);
+    var correctAns = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : 0);
+    var solutionText = q.solution || q.explanation || "";
+    var hintText = q.hint || "Review the key relationships in the concept overview above.";
+
+    var html = '<div class="question-prompt">' + promptText + '</div>';
+    if(isMcq && q.options){
+      html += '<div class="quiz-options">' +
+        q.options.map(function(opt, oi){
+          var checked = old.value === String(oi) ? " checked" : "";
+          return '<label class="quiz-option"><input type="radio" name="quiz_ans" value="' + oi + '"' + checked + '><span>' + opt + '</span></label>';
+        }).join("") +
+        '</div>';
+    } else {
+      html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
+        '</div>';
+    }
+
+    html += '<div class="quiz-actions">' +
+      '<button class="btn-primary" id="btn-submit-quiz">Submit Answer</button>' +
+      '<button class="btn-secondary" id="btn-toggle-hint">Show Hint</button>' +
+      '</div>' +
+      '<div id="quiz-hint-box" class="quiz-hint" style="display:none;">' + hintText + '</div>' +
+      '<div id="quiz-feedback-box" class="quiz-feedback" style="display:none;"></div>';
+
+    box.innerHTML = html;
+
+    // Hint toggle
+    var hintBtn = document.getElementById("btn-toggle-hint");
+    if(hintBtn){
+      hintBtn.addEventListener("click", function(){
+        var hb = document.getElementById("quiz-hint-box");
+        if(hb) hb.style.display = hb.style.display === "none" ? "block" : "none";
+      });
+    }
+
+    // Submit listener
+    var submitBtn = document.getElementById("btn-submit-quiz");
+    if(submitBtn){
+      submitBtn.addEventListener("click", function(){
+        var fb = document.getElementById("quiz-feedback-box");
+        if(!fb) return;
+        var isRight = false;
+        var userVal = "";
+
+        if(isMcq){
+          var sel = document.querySelector('input[name="quiz_ans"]:checked');
+          if(!sel){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please select an answer choice first.";
+            return;
+          }
+          userVal = sel.value;
+          isRight = Number(userVal) === Number(correctAns);
+        } else {
+          var inp = document.getElementById("quiz_num_ans");
+          if(!inp || inp.value.trim() === ""){
+            fb.style.display = "block";
+            fb.className = "quiz-feedback retry";
+            fb.textContent = "Please enter a numerical answer.";
+            return;
+          }
+          userVal = inp.value.trim();
+          var num = parseFloat(userVal);
+          isRight = Math.abs(num - parseFloat(correctAns)) <= (q.tolerance || 0.05);
+        }
+
+        state.answers[qk] = { value: userVal, checked: true };
+        if(isRight){
+          state.correct[qk] = true;
+          fb.style.display = "block";
+          fb.className = "quiz-feedback success";
+          fb.innerHTML = "<b>That’s right!</b> " + solutionText;
+        } else {
+          fb.style.display = "block";
+          fb.className = "quiz-feedback retry";
+          var wrongMsg = (isMcq && q.wrong && q.wrong[Number(userVal)]) ? q.wrong[Number(userVal)] : hintText;
+          fb.innerHTML = "<b>Not quite.</b> " + wrongMsg + "<br><small style=\"margin-top:6px;display:block;\"><b>Full explanation:</b> " + solutionText + "</small>";
+        }
+        updateProgress();
+      });
+    }
+
+    if(old.checked && submitBtn){
+      submitBtn.click();
+    }
+  }
+
+  // --- Render Revision View ---
+  var currentExFilter = -1;
+
+  function renderRevision(){
+    pause();
+    document.querySelectorAll(".concept-nav").forEach(function(b){ b.classList.remove("active"); });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.add("active");
+
+    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
+    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
+    var crumb = document.getElementById("chapter-crumb");
+    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+
+    var cView = document.getElementById("concept-view");
+    var revView = document.getElementById("revision-view");
+    if(cView) cView.style.display = "none";
+    if(revView) revView.style.display = "block";
+
+    var exList = C.exercises || [];
+    if(!exList.length && C.exerciseMap){
+      exList = C.exerciseMap.map(function(m){
+        return {
+          q: m[0],
+          number: String(m[0]),
+          title: m[1],
+          conceptIdx: m[2],
+          page: m[3],
+          printPage: 47 + m[3],
+          question: m[4] || m[1],
+          steps: [m[5] || "Refer to concept explanation."],
+          answer: m[5] || ""
+        };
+      });
+    }
+
+    var totalEx = exList.length;
+    var html = '<div class="concept-header">' +
+      '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '</div>';
+
+    // Filter Bar & Expand/Collapse All
+    var lessons = C.lessons || C.concepts || [];
+    html += '<div class="exercise-compendium-header">' +
+      '<div class="exercise-filter-bar">' +
+      '<button class="filter-chip ' + (currentExFilter === -1 ? 'active' : '') + '" data-cfilter="-1">All Exercises (' + totalEx + ')</button>' +
+      lessons.map(function(l, li){
+        var nav = l.nav || l.navTitle || l.title || ("C0" + (li+1));
+        return '<button class="filter-chip ' + (currentExFilter === li ? 'active' : '') + '" data-cfilter="' + li + '">C0' + (li+1) + ': ' + nav + '</button>';
+      }).join("") +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-secondary" id="btn-expand-all" style="padding:6px 12px;font-size:13px;">Expand All Guidance</button>' +
+      '<button class="btn-secondary" id="btn-collapse-all" style="padding:6px 12px;font-size:13px;">Collapse All</button>' +
+      '</div>' +
+      '</div>';
+
+    // Exercise Cards List
+    html += '<div id="exercise-cards-container">';
+    var filtered = currentExFilter === -1 ? exList : exList.filter(function(e){
+      return e.conceptIdx === currentExFilter || (e.section && e.section.includes(String(currentExFilter + 1)));
+    });
+
+    html += filtered.map(function(ex, eIdx){
+      var qNum = ex.number || ex.q || (eIdx + 1);
+      var sectionLabel = ex.section ? ('<span class="q-badge" style="background:#e0f2fe;color:#0369a1;margin-right:6px;">' + ex.section + '</span>') : '';
+      var l = (ex.conceptIdx !== undefined && lessons[ex.conceptIdx]) ? lessons[ex.conceptIdx] : null;
+      var conceptLink = l ? ('<a href="#concept-' + (ex.conceptIdx + 1) + '" class="q-concept-link" data-idx="' + ex.conceptIdx + '">Explore in Concept ' + ("0" + (ex.conceptIdx + 1)).slice(-2) + ' (' + (l.nav || l.navTitle || l.title) + ') ↗</a>') : '';
+
+      var guidanceHtml = "";
+      if(ex.guidance){
+        if(typeof ex.guidance === 'string'){
+          guidanceHtml = ex.guidance;
+        } else if(Array.isArray(ex.guidance)){
+          guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+            (ex.answer ? '<p><strong>Answer:</strong> ' + ex.answer + '</p>' : '') +
+            '<ol>' + ex.guidance.map(function(g){ return '<li>' + g + '</li>'; }).join('') + '</ol></div>';
+        }
+      } else if(ex.steps && ex.steps.length){
+        guidanceHtml = '<div class="guidance-content"><h4>Step-by-Step Pedagogical Guidance:</h4>' +
+          (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
+          '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+          (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          '</div>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+        '<div class="exercise-card-meta">' +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        sectionLabel +
+        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '</div>' +
+        conceptLink +
+        '</div>' +
+        
+        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
+        
+        '<details class="exercise-drawer">' +
+        '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
+        '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
+        guidanceHtml +
+        '</div>' +
+        '</details>' +
+        '</article>';
+    }).join("");
+
+    html += '</div>';
+
+    revView.innerHTML = html;
+
+    // Attach Filter Listeners
+    revView.querySelectorAll(".filter-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        currentExFilter = Number(chip.getAttribute("data-cfilter"));
+        renderRevision();
+      });
+    });
+
+    // Attach Expand/Collapse All Listeners
+    var btnExp = document.getElementById("btn-expand-all");
+    var btnCol = document.getElementById("btn-collapse-all");
+    if(btnExp){
+      btnExp.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = true; });
+      });
+    }
+    if(btnCol){
+      btnCol.addEventListener("click", function(){
+        revView.querySelectorAll("details.exercise-drawer").forEach(function(d){ d.open = false; });
+      });
+    }
+
+    // Concept Navigation Links
+    revView.querySelectorAll(".q-concept-link").forEach(function(a){
+      a.addEventListener("click", function(e){
+        e.preventDefault();
+        var cIdx = Number(a.getAttribute("data-idx"));
+        renderConcept(cIdx);
+        window.scrollTo(0, 0);
+      });
+    });
+
+    window.location.hash = "#revision";
+  }
+
+  // --- Build Sidebar Nav ---
+  function buildSidebar(){
+    var navContainer = document.getElementById("sidebar-nav");
+    if(!navContainer) return;
+    var lessons = C.lessons || C.concepts || [];
+    navContainer.innerHTML = lessons.map(function(l, i){
+      var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
+      return '<button class="concept-nav" data-cidx="' + i + '">' +
+        '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
+        '<span>' + nav + '</span>' +
+        '</button>';
+    }).join("");
+
+    navContainer.querySelectorAll(".concept-nav").forEach(function(b){
+      b.addEventListener("click", function(){
+        var idx = Number(b.getAttribute("data-cidx"));
+        renderConcept(idx);
+      });
+    });
+
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.addEventListener("click", renderRevision);
+  }
+
+  // --- Reset Progress Button ---
+  var resetProgBtn = document.getElementById("btn-reset-progress");
+  if(resetProgBtn){
+    resetProgBtn.addEventListener("click", function(){
+      if(confirm("Reset all quiz answers and mastery progress for this chapter?")){
+        state.answers = {};
+        state.correct = {};
+        saveStorage();
+        updateProgress();
+        renderQuiz();
+      }
+    });
+  }
+
+  // --- Handle Video Facades (No preloaded iframes) ---
+  document.addEventListener("click", function(e){
+    var btn = e.target.closest(".video-facade");
+    if(!btn) return;
+    var href = btn.getAttribute("data-href");
+    if(href){
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+    var vid = btn.getAttribute("data-yt");
+    var parent = btn.parentElement;
+    if(parent && vid){
+      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    }
+  });
+
+  // --- URL Routing ---
+  function routeFromHash(){
+    var hash = window.location.hash;
+    var lessons = C.lessons || C.concepts || [];
+    if(hash === "#revision"){
+      renderRevision();
+    } else if(/^#concept-\d+$/.test(hash)){
+      var cNum = parseInt(hash.replace("#concept-", ""), 10);
+      if(cNum >= 1 && cNum <= lessons.length){
+        renderConcept(cNum - 1);
+        return;
+      }
+      renderConcept(0);
+    } else {
+      renderConcept(0);
+    }
+  }
+  window.addEventListener("hashchange", routeFromHash);
+
+  window.App = {
+    state: state,
+    play: play,
+    pause: pause,
+    step: step,
+    resetTimeline: resetTimeline,
+    seekTimeline: seekTimeline,
+    renderConcept: renderConcept,
+    renderRevision: renderRevision,
+    routeFromHash: routeFromHash
+  };
+  if (typeof globalThis !== "undefined") {
+    globalThis.App = window.App;
+  }
+
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
+    if(e.key === "Escape"){ resetTimeline(); }
+    if(e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if(state.playing) pause(); else play();
+    }
+    if(e.key === "ArrowRight"){ step(0.5); }
+    if(e.key === "ArrowLeft"){ step(-0.5); }
+  });
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    state.speed = 0.25;
+  }
+
+  // Initialize
+  initStorage();
+  buildSidebar();
+  updateProgress();
+  routeFromHash();
+})();
+
+</script>
+<script>
+var App = window.App;
+window.SIMS = {};
+
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+}
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
+}
+function numEl(id, fb){ var n = document.getElementById(id); return n ? Number(n.value) : fb; }
+
+window.SIMS.daniell = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Zn anode (−)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Cu cathode (+)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-dan">Daniell E° = 1.1 V</button>' +
+      '<button class="preset-btn" id="p-znag">Ex 2.3: Zn | Ag⁺</button>';
+    document.getElementById("p-dan").onclick = function(){ setActivePreset(this); mode="dan"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-znag").onclick = function(){ setActivePreset(this); mode="znag"; App.resetTimeline(); App.play(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  var mode = "dan";
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<rect x="60" y="70" width="220" height="180" rx="8" fill="#1e293b" stroke="#64748b"/>';
+    m += '<rect x="360" y="70" width="220" height="180" rx="8" fill="#1e293b" stroke="#64748b"/>';
+    m += '<rect x="150" y="90" width="24" height="140" fill="#94a3b8"/>';
+    m += '<rect x="470" y="90" width="24" height="140" fill="#f59e0b"/>';
+    var e = 80 + (t/6)*200;
+    m += '<path d="M 162 80 C 200 20, 440 20, 482 80" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+    m += '<circle cx="'+ (162 + (t/6)*320) +'" cy="'+(40 + 10*Math.sin(t*3))+'" r="5" fill="#e2e8f0"/>';
+    m += '<text x="170" y="50" fill="#38bdf8" font-size="12">e⁻ →</text>';
+    m += '<text x="170" y="270" fill="#94a3b8" font-size="12">Zn → Zn²⁺ + 2e⁻</text>';
+    m += '<text x="400" y="270" fill="#f59e0b" font-size="12">'+(mode==="dan"?"Cu²⁺ + 2e⁻ → Cu":"Ag⁺ + e⁻ → Ag")+'</text>';
+    svg.innerHTML = m;
+    var E = mode==="dan" ? 1.10 : (0.80 - (-0.76));
+    readout(cell("E°_cell", E.toFixed(2)+" V", "#34d399") + cell("anode", "Zn (−)") + cell("cathode", mode==="dan"?"Cu (+)":"Ag (+)"));
+    if(mode==="dan") verdict("<b>Daniell cell:</b> Zn(s) + Cu²⁺ → Zn²⁺ + Cu(s), E° = 1.1 V. You cannot store CuSO₄ in a zinc pot (Intext 2.2) — this reaction eats the pot.");
+    else verdict("<b>Exercise 2.3:</b> Zn | Zn²⁺ || Ag⁺ | Ag. Zinc is negative. Carriers: electrons in the wire, ions in the salt bridge.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.nernst = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>E vs log Q</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ex">Example 2.1 Mg–Ag</button>' +
+      '<button class="preset-btn" id="p-in">Intext 2.5 Ni–Ag</button>' +
+      '<button class="preset-btn" id="p-ph">Intext 2.4 SHE pH</button>';
+    document.getElementById("p-ex").onclick = function(){ setActivePreset(this); kind="ex"; draw(App.state.t); };
+    document.getElementById("p-in").onclick = function(){ setActivePreset(this); kind="in"; draw(App.state.t); };
+    document.getElementById("p-ph").onclick = function(){ setActivePreset(this); kind="ph"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>log₁₀ Q (or pH)</span><span class="val" id="ctrl-q">7.11</span></div>' +
+      '<input type="range" id="ctrl-q-range" min="-3" max="12" step="0.01" value="7.11"></div>';
+    document.getElementById("ctrl-q-range").oninput = function(){ draw(App.state.t); };
+    draw(0);
+  }
+  var kind = "ex";
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var lg = numEl("ctrl-q-range", 7.11);
+    var el = document.getElementById("ctrl-q"); if(el) el.textContent = lg.toFixed(2);
+    var E0, n, E, note;
+    if(kind==="ex"){ E0=3.17; n=2; E = E0 - (0.059/n)*lg; note="Example 2.1: Q = 1.30×10⁷, E = 2.96 V"; }
+    else if(kind==="in"){ E0=1.05; n=2; E = E0 - (0.059/n)*lg; note="Intext 2.5: Q = 4.00×10⁴, E = 0.91 V"; }
+    else { E0=0; n=1; E = -0.059*lg; note="SHE: E = −0.059 pH. At pH 10, E = −0.59 V"; }
+    function X(v){ return 80 + (v+3)/15 * 520; }
+    function Y(e){ return 200 - e*40; }
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<line x1="80" y1="200" x2="640" y2="200" stroke="#475569"/><line x1="80" y1="260" x2="80" y2="40" stroke="#475569"/>';
+    var d="";
+    for(var q=-3;q<=12;q+=0.2){
+      var ee = (kind==="ph"?0:E0) - (0.059/(kind==="ph"?1:n))*q;
+      d += (q===-3?"M":"L")+" "+X(q)+" "+Y(ee);
+    }
+    m += '<path d="'+d+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<circle cx="'+X(lg)+'" cy="'+Y(E)+'" r="6" fill="#f8fafc"/>';
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">E = E° − (0.059/n) log Q &nbsp;· 298 K</text>';
+    svg.innerHTML = m;
+    readout(cell("E°", E0.toFixed(2)+" V") + cell("n", String(n)) + cell("log Q", lg.toFixed(2)) + cell("E", E.toFixed(3)+" V", "#34d399"));
+    verdict("<b>Nernst:</b> "+note+". Diluting products (smaller Q) raises E; the 59/n mV decade is the same slope a pH meter uses.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.gibbsk = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>spontaneous E° > 0</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-dan">Example 2.3 Daniell</button>' +
+      '<button class="preset-btn" id="p-fe">Intext 2.6 Fe³⁺/I⁻</button>';
+    document.getElementById("p-dan").onclick = function(){ setActivePreset(this); kind="dan"; draw(); };
+    document.getElementById("p-fe").onclick = function(){ setActivePreset(this); kind="fe"; draw(); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>E° / V</span><span class="val" id="ctrl-e">1.10</span></div>' +
+      '<input type="range" id="ctrl-e-range" min="0.05" max="3.2" step="0.01" value="1.10"></div>';
+    document.getElementById("ctrl-e-range").oninput = function(){ draw(); };
+    draw();
+  }
+  var kind = "dan";
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var E = numEl("ctrl-e-range", 1.10);
+    var el = document.getElementById("ctrl-e"); if(el) el.textContent = E.toFixed(2);
+    var n = 2;
+    var dG = -n * 96487 * E / 1000;
+    var logK = n * E / 0.059;
+    var K = Math.pow(10, Math.min(logK, 300));
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="50" fill="#e2e8f0" font-size="18" text-anchor="middle">Δ<sub>r</sub>G° = −nFE° = '+dG.toFixed(2)+' kJ mol⁻¹</text>';
+    m += '<text x="360" y="90" fill="#34d399" font-size="16" text-anchor="middle">log K = nE°/0.059 = '+logK.toFixed(2)+'</text>';
+    m += '<text x="360" y="130" fill="#f59e0b" font-size="16" text-anchor="middle">K = 10^'+logK.toFixed(1)+'</text>';
+    var bar = Math.min(500, Math.abs(dG)*2);
+    m += '<rect x="110" y="180" width="'+bar+'" height="40" fill="#34d399" opacity="0.8"/>';
+    m += '<text x="360" y="250" fill="#94a3b8" font-size="13" text-anchor="middle">'+(kind==="dan"?"Daniell n=2, book ΔG° = −212.27 kJ mol⁻¹":"Intext 2.6: ΔG° = −45.54 kJ mol⁻¹, K = 9.62×10⁷")+'</text>';
+    svg.innerHTML = m;
+    readout(cell("n","2") + cell("E°", E.toFixed(2)+" V") + cell("ΔG°", dG.toFixed(2)+" kJ mol⁻¹", "#34d399") + cell("K", logK>12 ? "10^"+logK.toFixed(1) : K.toExponential(2)));
+    verdict("<b>Eqs. 2.14–2.15:</b> a 1.1 V cell with n = 2 already has K ~ 10³⁷ — the Daniell reaction goes to completion. 1 V·C = 1 J.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.conduct = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>κ</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Λ_m</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-kcl">Ex 2.8: 0.20 M KCl</button>' +
+      '<button class="preset-btn" id="p-cell">Ex 2.9: cell constant</button>';
+    document.getElementById("p-kcl").onclick = function(){ setActivePreset(this); kind="kcl"; draw(); };
+    document.getElementById("p-cell").onclick = function(){ setActivePreset(this); kind="cell"; draw(); };
+    document.getElementById("lab-controls").innerHTML =
+      '<div class="control-item"><div class="control-label"><span>c / mol L⁻¹</span><span class="val" id="ctrl-c">0.20</span></div>' +
+      '<input type="range" id="ctrl-c-range" min="0.001" max="0.5" step="0.001" value="0.20"></div>';
+    document.getElementById("ctrl-c-range").oninput = function(){ draw(); };
+    draw();
+  }
+  var kind = "kcl";
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var c = numEl("ctrl-c-range", 0.20);
+    var el = document.getElementById("ctrl-c"); if(el) el.textContent = c.toFixed(3);
+    var kappa = 0.124 * c; // 0.20 M → 0.0248
+    var Lm = kappa * 1000 / c;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    function X(cc){ return 80 + Math.sqrt(cc/0.5)*520; }
+    var d1="", d2="";
+    for(var cc=0.001; cc<=0.5; cc+=0.005){
+      var k = 0.124*cc, L = k*1000/cc;
+      d1 += (cc===0.001?"M":"L")+" "+X(cc)+" "+(250-k*4000);
+      d2 += (cc===0.001?"M":"L")+" "+X(cc)+" "+(250-L*1.2);
+    }
+    m += '<path d="'+d1+'" fill="none" stroke="#f59e0b" stroke-width="2"/>';
+    m += '<path d="'+d2+'" fill="none" stroke="#38bdf8" stroke-width="2"/>';
+    m += '<circle cx="'+X(c)+'" cy="'+(250-kappa*4000)+'" r="5" fill="#f59e0b"/>';
+    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">κ falls on dilution; Λ_m = κ×1000/c rises</text>';
+    svg.innerHTML = m;
+    readout(cell("c", c.toFixed(3)+" M") + cell("κ", kappa.toFixed(4)+" S cm⁻¹", "#f59e0b") + cell("Λ_m", Lm.toFixed(1)+" S cm² mol⁻¹", "#38bdf8"));
+    if(kind==="cell") verdict("<b>Exercise 2.9:</b> G* = κ R = 0.146×10⁻³ × 1500 = <b>0.219 cm⁻¹</b>. Cell constant is a hardware number, independent of the unknown solution.");
+    else verdict("<b>Exercise 2.8:</b> 0.20 M KCl, κ = 0.0248 S cm⁻¹ ⇒ Λ_m = <b>124 S cm² mol⁻¹</b>. Intext 2.7: κ decreases with dilution because ions per cm³ fall.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.kohlrausch = (function(){
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>strong (Kohlrausch line)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>weak acid (Ostwald rise)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-f">Intext 2.9 HCOOH</button>' +
+      '<button class="preset-btn" id="p-ac">Ex 2.11 acetic acid</button>';
+    document.getElementById("p-f").onclick = function(){ setActivePreset(this); kind="f"; draw(); };
+    document.getElementById("p-ac").onclick = function(){ setActivePreset(this); kind="ac"; draw(); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw();
+  }
+  var kind = "f";
+  function draw(){
+    var svg = svgEl(); if(!svg) return;
+    var L0, Lm, c, name;
+    if(kind==="f"){ L0=404.2; Lm=46.1; c=0.025; name="HCOOH"; }
+    else { L0=390.5; Lm=32.76; c=0.00241; name="CH₃COOH"; }
+    var a = Lm/L0;
+    var Ka = c*a*a/(1-a);
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    m += '<text x="360" y="50" fill="#e2e8f0" font-size="16" text-anchor="middle">'+name+'  Λ_m° = '+L0.toFixed(1)+' S cm² mol⁻¹</text>';
+    m += '<text x="360" y="90" fill="#38bdf8" font-size="15" text-anchor="middle">α = Λ_m / Λ_m° = '+a.toFixed(4)+'</text>';
+    m += '<text x="360" y="130" fill="#f59e0b" font-size="15" text-anchor="middle">K_a = c α² /(1−α) = '+Ka.toExponential(2)+'</text>';
+    m += '<rect x="80" y="180" width="'+Math.min(560,a*2000)+'" height="36" fill="#34d399"/>';
+    m += '<text x="360" y="250" fill="#94a3b8" font-size="12" text-anchor="middle">Kohlrausch: Λ_m°(HA) = λ°(H⁺)+λ°(A⁻) from strong electrolytes</text>';
+    svg.innerHTML = m;
+    readout(cell("Λ_m", Lm.toFixed(2)) + cell("Λ_m°", L0.toFixed(1), "#38bdf8") + cell("α", a.toFixed(4), "#34d399") + cell("K_a", Ka.toExponential(2), "#f59e0b"));
+    verdict(kind==="f"
+      ? "<b>Intext 2.9:</b> λ°(H⁺)+λ°(HCOO⁻)=404.2; α = 0.114; K_a = 3.67×10⁻⁴."
+      : "<b>Exercise 2.11:</b> Λ_m = 32.76; α = 0.0839; K_a = 1.85×10⁻⁵.");
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.faraday = (function(){
+  function mount(){
+    App.state.maxT = 8;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>metal deposit</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-ni">Ex 2.15 Ni 5 A, 20 min</button>' +
+      '<button class="preset-btn" id="p-ser">Ex 2.16 series Ag/Cu/Zn</button>' +
+      '<button class="preset-btn" id="p-cr">Intext 2.12 Cr₂O₇²⁻</button>';
+    document.getElementById("p-ni").onclick = function(){ setActivePreset(this); kind="ni"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-ser").onclick = function(){ setActivePreset(this); kind="ser"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-cr").onclick = function(){ setActivePreset(this); kind="cr"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  var kind = "ni";
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var F = 96500;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(kind==="ni"){
+      var Q = 5 * Math.min(t,6)/6 * 1200;
+      var mass = Q / (2*F) * 58.7;
+      m += '<rect x="200" y="60" width="80" height="180" fill="#334155"/>';
+      m += '<rect x="210" y="'+(220-mass*40)+'" width="60" height="'+(mass*40)+'" fill="#a3e635"/>';
+      m += '<text x="360" y="50" fill="#e2e8f0" font-size="14">Ni²⁺ + 2e⁻ → Ni &nbsp; Q = It</text>';
+      readout(cell("I","5 A") + cell("t", (Math.min(t,6)/6*20).toFixed(1)+" min") + cell("Q", Q.toFixed(0)+" C") + cell("m(Ni)", mass.toFixed(3)+" g", "#a3e635"));
+      verdict("<b>Exercise 2.15:</b> 5 A × 1200 s = 6000 C; n = 6000/(2×96500) = 0.0311 mol; m = <b>1.83 g</b> Ni.");
+    } else if(kind==="ser"){
+      var frac = Math.min(t,6)/6;
+      var nF = 0.01343 * frac;
+      m += '<text x="360" y="70" fill="#e2e8f0" font-size="14" text-anchor="middle">same Q through ZnSO₄ | AgNO₃ | CuSO₄</text>';
+      m += '<text x="160" y="150" fill="#94a3b8">Ag '+(nF*108).toFixed(2)+' g</text>';
+      m += '<text x="320" y="150" fill="#f59e0b">Cu '+((nF/2)*63.5).toFixed(3)+' g</text>';
+      m += '<text x="480" y="150" fill="#38bdf8">Zn '+((nF/2)*65.4).toFixed(3)+' g</text>';
+      readout(cell("Q", (nF*F).toFixed(0)+" C") + cell("t", (864*frac).toFixed(0)+" s") + cell("Ag", (nF*108).toFixed(2)+" g"));
+      verdict("<b>Exercise 2.16:</b> 1.45 g Ag = 0.0134 F at 1.5 A takes 864 s; same Q deposits 0.426 g Cu and 0.439 g Zn.");
+    } else {
+      m += '<text x="360" y="80" fill="#e2e8f0" font-size="16" text-anchor="middle">Cr₂O₇²⁻ + 14 H⁺ + 6 e⁻ → 2 Cr³⁺ + 7 H₂O</text>';
+      m += '<text x="360" y="130" fill="#34d399" font-size="20" text-anchor="middle">Q = 6 F = 5.79 × 10⁵ C</text>';
+      readout(cell("n_e","6 mol") + cell("Q", "579000 C", "#34d399"));
+      verdict("<b>Intext 2.12:</b> six moles of electrons per mole of dichromate. Charge is conserved: 6 × 96500 C.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+window.SIMS.corrosion = (function(){
+  var mode = "rust";
+  function mount(){
+    App.state.maxT = 6;
+    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>anodic pit (Fe → Fe²⁺)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>cathodic O₂ reduction</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-r">Rust cell E° = 1.67 V</button>' +
+      '<button class="preset-btn" id="p-z">Sacrificial zinc</button>' +
+      '<button class="preset-btn" id="p-pb">Lead–acid discharge</button>';
+    document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode="rust"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-z").onclick = function(){ setActivePreset(this); mode="zn"; App.resetTimeline(); App.play(); };
+    document.getElementById("p-pb").onclick = function(){ setActivePreset(this); mode="pb"; draw(App.state.t); };
+    document.getElementById("lab-controls").innerHTML = "";
+    draw(0);
+  }
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="720" height="300" fill="#09131d"/>';
+    if(mode==="pb"){
+      m += '<rect x="80" y="70" width="560" height="160" rx="8" fill="#1e293b" stroke="#64748b"/>';
+      m += '<text x="360" y="120" fill="#e2e8f0" font-size="14" text-anchor="middle">Pb + PbO₂ + 2 H₂SO₄ → 2 PbSO₄ + 2 H₂O</text>';
+      m += '<text x="360" y="160" fill="#34d399" font-size="13" text-anchor="middle">~2 V per cell · recharge is the reverse (Intext 2.13)</text>';
+      readout(cell("E°","~2.0 V") + cell("n","2"));
+      verdict("<b>Lead storage:</b> discharging consumes H₂SO₄ (density falls). Recharging restores Pb, PbO₂ and acid — Faraday in reverse.");
+    } else {
+      m += '<rect x="80" y="100" width="560" height="80" fill="#57534e"/>';
+      var pit = 120 + t*15;
+      m += '<ellipse cx="200" cy="140" rx="'+ (20+t*3) +'" ry="18" fill="#7f1d1d"/>';
+      m += '<circle cx="480" cy="110" r="10" fill="#38bdf8" opacity="0.6"/>';
+      m += '<text x="200" y="210" fill="#f87171" font-size="12" text-anchor="middle">anode  Fe → Fe²⁺ + 2e⁻</text>';
+      m += '<text x="480" y="210" fill="#38bdf8" font-size="12" text-anchor="middle">cathode  O₂ + 4H⁺ + 4e⁻ → 2H₂O</text>';
+      if(mode==="zn"){
+        m += '<rect x="300" y="80" width="40" height="30" fill="#94a3b8"/>';
+        m += '<text x="320" y="70" fill="#e2e8f0" font-size="11" text-anchor="middle">Zn sacrifice</text>';
+      }
+      readout(cell("E°_Fe","−0.44 V") + cell("E°_O₂","1.23 V") + cell("E°_cell","1.67 V", "#34d399"));
+      verdict(mode==="zn"
+        ? "<b>Section 2.8:</b> a Zn or Mg block oxidises in preference to iron (more negative E°). Howrah Bridge steel uses this trick."
+        : "<b>Rust cell:</b> 2 Fe + O₂ + 4 H⁺ → 2 Fe²⁺ + 2 H₂O, E° = 1.67 V. Thermodynamically eager; kinetically slow — until a salt splash.");
+    }
+    svg.innerHTML = m;
+  }
+  return { mount: mount, draw: draw };
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
+</body>
+</html>

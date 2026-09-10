@@ -1,0 +1,39 @@
+# COVERAGE — kemh113 Statistics
+
+**Source:** `books/originals/Class11-Maths_kemh113.pdf` (32 pdf pages, printed pp. 257–288, Reprint 2026–27).  
+**SHA-256:** `a49176920c5960318e0912b79de0190e55f3d4f6d9d2a0af3d7623bad5244a6a`  
+**Extraction:** PyMuPDF `page.get_text("dict")` + 1.6× PNG zooms in `extracted/zooms/`. **pdftotext was not used.**  
+**NCERT:** https://ncert.nic.in/textbook/pdf/kemh113.pdf
+
+## Concepts
+
+| ID | Section | PDF pp | Status |
+|---|---|---|---|
+| intro-range | 13.1–13.3 | 1–3 | Complete; batsmen A/B, range 117 vs 14 |
+| md-ungrouped | 13.4.1 | 3–6 | Complete; Example 1 zoom p.5, M.D. = 2.75 |
+| md-grouped | 13.4.2 | 7–15 | Complete; median-class formula, Example 7 |
+| variance-ungrouped | 13.5–13.5.1 | 15–19 | Complete; set A vs B, Example 8 σ² = 33 |
+| sd-frequency | 13.5.2–13.5.3 | 19–23 | Complete; Example 9, σ² = 45.8 |
+| shortcut-scale | 13.5.4 + Misc. | 23–30 | Complete; y = (x−A)/h |
+| md-limit-vs-sd | 13.4.3 + History | 15, 31 | Complete; why squares beat the modulus |
+
+## Examples (zoom-verified)
+
+| Item | Result |
+|---|---|
+| Batsmen | mean = median = 53 both; Range A = 117, B = 14 |
+| Example 1 | M.D.(x̄) = 2.75 |
+| Example 7 | M = 28, M.D.(M) = 10.16 |
+| Example 8 | mean 15, σ² = 33, σ = √33 ≈ 5.74 |
+| Example 9 | N = 30, x̄ = 14, σ² = 45.8 |
+
+## Exercises
+
+- **13.1 Q1–Q12** (pdf pp. 14–15, print 270–271) — all mapped. This reprint has no Exercise 13.2 / 13.3; variance lives in the Miscellaneous Exercise.
+- **Miscellaneous Exercise Q1–Q6** (pdf p. 30, print 286) — all mapped.
+
+Independent recomputation in `tests/verify.cjs`.
+
+## Edition note
+
+Quartile deviation is named in §13.2 and then explicitly postponed. Correlation / index numbers of older Class 11 prints are not in this 32-page 2026–27 chapter. Not invented.
