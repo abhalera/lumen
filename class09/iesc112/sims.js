@@ -1,1410 +1,344 @@
-// Chapter 12: Patterns in Life: Diversity and Classification - Interactive Simulation Suite
-window.SIMS = window.SIMS || {};
+// iesc112 labs: Patterns in Life — Diversity and Classification. Drawings are schematic; values marked illustrative are not from the textbook.
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function clamp12(x, a, b){ return Math.max(a, Math.min(b, x)); }
+function card12(L, x, y, w, h, title, sub, col, op){ return '<g opacity="' + (op === undefined ? 1 : op).toFixed(2) + '">' + L.rect(x, y, w, h, "#1e293b", ' rx="10" stroke="' + col + '" stroke-width="2"') + L.text(x + w / 2, y + 24, title, {size: 14, color: col, weight: 700}) + (sub ? L.text(x + w / 2, y + 46, sub, {size: 11, color: L.C.muted}) : "") + '</g>'; }
 
-function createSimState(container, onUpdate) {
-    const state = {
-        running: false,
-        time: 0,
-        speed: 1.0,
-        animId: null,
-        presets: {},
-        custom: {}
-    };
-
-    function loop() {
-        if (state.running) {
-            state.time += 0.03 * state.speed;
-            if (state.time > 10.0) state.time = 0.0;
-            const scrubber = container.querySelector('.sim-scrubber');
-            if (scrubber) scrubber.value = state.time.toFixed(2);
-            onUpdate(state);
-            state.animId = requestAnimationFrame(loop);
+// Lab 1 — Biodiversity, endemic species and hotspots
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "roles"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 0.6});
+    L.legend(id === "crops" ? [[C.ok, "healthy plant"], [C.danger, "failed plant"]] : [[C.path, "highlighted"]]);
+    L.watch({roles: "Chapter introduction: what different organisms do for life on the Earth.", endemic: "Fig. 12.1: four species found naturally only in India.", hotspots: "Section 12.1: global biodiversity hotspots that include parts of India (schematic positions).", crops: "A dry year with a pest outbreak hits a single-variety field and a mixed-variety field (numbers illustrative)."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, i, f = clamp12(t / 2, 0, 1);
+    if(st.preset === "roles"){
+      m += L.circle(360, 150, 55, "#0f172a", ' stroke="#94a3b8" stroke-width="2"') + L.text(360, 146, "life on", {size: 13, color: C.text}) + L.text(360, 164, "the Earth", {size: 13, color: C.text});
+      [["ocean algae", "most of our oxygen", 140, 60], ["fungi and bacteria", "fertile soil", 580, 60], ["bees, birds, bats", "pollination", 140, 240], ["plants", "food for nearly all life", 580, 240]].forEach(function(r, j){
+        var op = clamp12(t * 1.6 - j * 0.5, 0, 1);
+        m += card12(L, r[2] - 110, r[3] - 35, 220, 64, r[0], r[1], C.path, op) + (op > 0.5 ? L.line(r[2] + (r[2] < 360 ? 110 : -110), r[3], 360 + (r[2] < 360 ? -50 : 50), 150 + (r[3] < 150 ? -25 : 25), C.faint, 2) : "");
+      });
+      L.svg(m, "Roles of organisms", 290);
+      L.readout([["Ocean algae", "release most of the oxygen we breathe"], ["Fungi and bacteria", "decompose leaves into manure"], ["Birds, bees and bats", "pollinate flowers"], ["Plants", "make food that supports nearly all life", C.path]]);
+      msg = t < 3 ? "Connecting…" : "Every organism has a role: <b>algae give most of our oxygen</b>, decomposers make soil fertile, pollinators help plants reproduce, and plants feed nearly all life.";
+    } else if(st.preset === "endemic"){
+      [["Nilgiri tahr", "Nilgiri Hills, Western Ghats"], ["Lion-tailed macaque", "Western Ghats forests"], ["Nepenthes khasiana", "pitcher plant of Meghalaya"], ["Neelakurinji", "Western Ghats hills"]].forEach(function(r, j){
+        var op = clamp12(t * 1.6 - j * 0.5, 0, 1);
+        m += card12(L, 40 + (j % 2) * 340, 30 + Math.floor(j / 2) * 120, 300, 90, r[0], r[1], C.ok, op);
+      });
+      L.svg(m, "Endemic species of India", 280);
+      L.readout([["Endemic species", "found naturally only in one region"], ["Examples (Fig. 12.1)", "Nilgiri tahr, lion-tailed macaque, Nepenthes khasiana, Neelakurinji", C.ok]]);
+      msg = t < 3 ? "Showing species…" : "These four are <b>found naturally only in India</b>: they are endemic species.";
+    } else if(st.preset === "hotspots"){
+      m += '<ellipse cx="360" cy="160" rx="120" ry="110" fill="#1e293b" stroke="#475569" stroke-dasharray="6 5"/>' + L.text(360, 165, "India (schematic)", {size: 13, color: C.muted});
+      [["Himalayas", 360, 40], ["Indo-Burma (incl. North East India)", 590, 110], ["Western Ghats", 170, 210], ["Sundaland (incl. Nicobar Islands)", 580, 250]].forEach(function(r, j){
+        if(t < j * 0.6) return;
+        m += L.circle(r[1], r[2], 12, C.path) + L.text(r[1], r[2] + (r[2] < 60 ? -18 : 30), r[0], {size: 13, color: C.path, weight: 700});
+      });
+      L.svg(m, "Biodiversity hotspots", 300);
+      L.readout([["A hotspot has", "many endemic species + major habitat loss"], ["Examples", "Western Ghats, Indo-Burma, Himalayas, Sundaland", C.path]]);
+      msg = t < 3 ? "Marking hotspots…" : "Hotspots including parts of India: <b>Western Ghats, Indo-Burma</b>, the Himalayas and Sundaland. Protecting them keeps food webs healthy.";
+    } else {
+      var hit = t >= 1.2, variety = ["#16a34a", "#65a30d", "#0d9488", "#ca8a04"];
+      [[40, "one variety only", false], [380, "four varieties", true]].forEach(function(fld){
+        var alive = 0;
+        for(i = 0; i < 16; i++){
+          var x = fld[0] + 30 + (i % 4) * 75, y = 70 + Math.floor(i / 4) * 55, v = fld[2] ? i % 4 : 0, survives = !hit || (fld[2] && (v === 1 || v === 2));
+          if(survives) alive++;
+          m += L.line(x, y + 20, x, y, survives ? variety[v] : "#78716c", 4) + '<ellipse cx="' + x + '" cy="' + (y - 4) + '" rx="12" ry="7" fill="' + (survives ? variety[v] : "#a8a29e") + '"/>';
         }
+        m += L.text(fld[0] + 150, 290, fld[1] + ": " + alive + " of 16 survive", {size: 13, color: C.text});
+      });
+      if(hit) m += L.text(360, 35, "dry year + pest outbreak", {size: 14, color: C.danger, weight: 700});
+      L.svg(m, "Single-variety and diverse fields", 300);
+      L.readout([["Single variety", hit ? "0 of 16 plants survive" : "16 healthy", C.danger], ["Four varieties", hit ? "8 of 16 survive (drought-tolerant and pest-resistant)" : "16 healthy", C.ok]]);
+      msg = t < 3 ? "Growing season…" : "The single-variety field failed all at once, while the <b>diverse field kept part of its harvest</b>. Diversity reduces the risk of crop failure.";
     }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["roles", "Roles in nature"], ["endemic", "Fig. 12.1: endemic species"], ["hotspots", "Biodiversity hotspots"], ["crops", "Why farmers keep varieties"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.biodiversity = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-    state.play = function() {
-        if (!state.running) {
-            state.running = true;
-            state.animId = requestAnimationFrame(loop);
-            const playBtn = container.querySelector('.btn-play');
-            if (playBtn) { playBtn.textContent = '⏸ Pause'; playBtn.classList.add('active'); }
-        }
-    };
-
-    state.pause = function() {
-        state.running = false;
-        if (state.animId) cancelAnimationFrame(state.animId);
-        const playBtn = container.querySelector('.btn-play');
-        if (playBtn) { playBtn.textContent = '▶ Play'; playBtn.classList.remove('active'); }
-    };
-
-    state.step = function() {
-        state.pause();
-        state.time += 0.2;
-        if (state.time > 10.0) state.time = 0.0;
-        const scrubber = container.querySelector('.sim-scrubber');
-        if (scrubber) scrubber.value = state.time.toFixed(2);
-        onUpdate(state);
-    };
-
-    state.reset = function() {
-        state.pause();
-        state.time = 0;
-        const scrubber = container.querySelector('.sim-scrubber');
-        if (scrubber) scrubber.value = '0';
-        onUpdate(state);
-    };
-
-    state.bindControls = function() {
-        const playBtn = container.querySelector('.btn-play');
-        const stepBtn = container.querySelector('.btn-step');
-        const resetBtn = container.querySelector('.btn-reset');
-        const scrubber = container.querySelector('.sim-scrubber');
-        const speedSel = container.querySelector('.sim-speed');
-
-        if (playBtn) playBtn.addEventListener('click', () => {
-            if (state.running) state.pause(); else state.play();
-        });
-        if (stepBtn) stepBtn.addEventListener('click', () => state.step());
-        if (resetBtn) resetBtn.addEventListener('click', () => state.reset());
-        if (scrubber) scrubber.addEventListener('input', (e) => {
-            state.pause();
-            state.time = parseFloat(e.target.value) || 0;
-            onUpdate(state);
-        });
-        if (speedSel) speedSel.addEventListener('change', (e) => {
-            state.speed = parseFloat(e.target.value) || 1.0;
-        });
-    };
-
-    return state;
-}
-
-// 1. Taxonomic Hierarchy Explorer (sim-taxonomic-hierarchy)
-window.SIMS['sim-taxonomic-hierarchy'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Taxonomic Hierarchy & Binomial Nomenclature Explorer</h3>
-    <div class="sim-controls-top">
-      <label>Select Organism:
-        <select class="organism-select form-select">
-          <option value="human">Human (Homo sapiens)</option>
-          <option value="tiger">Bengal Tiger (Panthera tigris)</option>
-          <option value="mango">Mango Tree (Mangifera indica)</option>
-          <option value="pea">Garden Pea (Pisum sativum)</option>
-        </select>
-      </label>
-      <label>Hierarchy Depth:
-        <input type="range" class="depth-slider form-range" min="1" max="8" value="4" step="1">
-        <span class="depth-val">4 (Class)</span>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 420" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const orgData = {
-            human: {
-                common: 'Human',
-                scientific: 'Homo sapiens',
-                levels: [
-                    { rank: 'Domain', name: 'Eukarya', count: '~8.7M species', desc: 'Cells have true membrane-bound nucleus and organelles' },
-                    { rank: 'Kingdom', name: 'Animalia', count: '~1.5M species', desc: 'Multicellular heterotrophs lacking cell walls' },
-                    { rank: 'Phylum', name: 'Chordata', count: '~65,000 species', desc: 'Notochord, dorsal nerve cord, pharyngeal gill slits' },
-                    { rank: 'Class', name: 'Mammalia', count: '~6,400 species', desc: 'Mammary glands, hair, homeothermic 4-chambered heart' },
-                    { rank: 'Order', name: 'Primates', count: '~500 species', desc: 'Grasping hands with opposable thumbs, forward vision' },
-                    { rank: 'Family', name: 'Hominidae', count: '~8 living species', desc: 'Great apes, high cognitive brain encephalisation' },
-                    { rank: 'Genus', name: 'Homo', count: '1 living species', desc: 'Bipedal upright posture, complex tool fabrication' },
-                    { rank: 'Species', name: 'Homo sapiens', count: '1 single species', desc: 'Modern humans capable of symbolic thought and speech' }
-                ]
-            },
-            tiger: {
-                common: 'Bengal Tiger',
-                scientific: 'Panthera tigris',
-                levels: [
-                    { rank: 'Domain', name: 'Eukarya', count: '~8.7M species', desc: 'Eukaryotic cellular architecture' },
-                    { rank: 'Kingdom', name: 'Animalia', count: '~1.5M species', desc: 'Multicellular, motile ingestive heterotroph' },
-                    { rank: 'Phylum', name: 'Chordata', count: '~65,000 species', desc: 'Dorsal tubular nerve cord, vertebral column' },
-                    { rank: 'Class', name: 'Mammalia', count: '~6,400 species', desc: 'Fur, mammary milk glands, warm-blooded metabolism' },
-                    { rank: 'Order', name: 'Carnivora', count: '~280 species', desc: 'Enlarged shearing carnassial teeth, acute hunting senses' },
-                    { rank: 'Family', name: 'Felidae', count: '~40 species', desc: 'Retractile claws, flexible muscular agile bodies' },
-                    { rank: 'Genus', name: 'Panthera', count: '5 species (Tiger, Lion, Leopard, Jaguar, Snow Leopard)', desc: 'Modified hyoid apparatus enabling mighty roar' },
-                    { rank: 'Species', name: 'Panthera tigris', count: '1 specific apex species', desc: 'Striped apex predator of Indian deciduous & mangrove forests' }
-                ]
-            },
-            mango: {
-                common: 'Mango Tree',
-                scientific: 'Mangifera indica',
-                levels: [
-                    { rank: 'Domain', name: 'Eukarya', count: '~8.7M species', desc: 'Eukaryotic cells with plastids and mitochondria' },
-                    { rank: 'Kingdom', name: 'Plantae', count: '~390,000 species', desc: 'Multicellular photosynthetic autotrophs with cellulose walls' },
-                    { rank: 'Division', name: 'Angiospermae', count: '~300,000 species', desc: 'Flowering plants with seeds enclosed within an ovary fruit' },
-                    { rank: 'Class', name: 'Dicotyledonae', count: '~200,000 species', desc: 'Two seed cotyledons, reticulate leaf veins, taproot system' },
-                    { rank: 'Order', name: 'Sapindales', count: '~6,000 species', desc: 'Woody plants producing resin and essential aromatic oils' },
-                    { rank: 'Family', name: 'Anacardiaceae', count: '~800 species', desc: 'Cashew and sumac family; resinous drupe fruits' },
-                    { rank: 'Genus', name: 'Mangifera', count: '~69 species', desc: 'Dense canopy trees producing fleshy edible drupes' },
-                    { rank: 'Species', name: 'Mangifera indica', count: '1 single species', desc: 'National fruit of India, sweet mesocarp drupe' }
-                ]
-            },
-            pea: {
-                common: 'Garden Pea',
-                scientific: 'Pisum sativum',
-                levels: [
-                    { rank: 'Domain', name: 'Eukarya', count: '~8.7M species', desc: 'Eukaryotic plant cells' },
-                    { rank: 'Kingdom', name: 'Plantae', count: '~390,000 species', desc: 'Autotrophic photosynthetic plants' },
-                    { rank: 'Division', name: 'Angiospermae', count: '~300,000 species', desc: 'Flowering plants with ovules protected in ovary' },
-                    { rank: 'Class', name: 'Dicotyledonae', count: '~200,000 species', desc: '2 cotyledons, reticulate venation, taproot system' },
-                    { rank: 'Order', name: 'Fabales', count: '~20,000 species', desc: 'Symbiotic root nodules with nitrogen-fixing Rhizobium' },
-                    { rank: 'Family', name: 'Fabaceae', count: '~19,000 species', desc: 'Papilionaceous flower, pod/legume fruit' },
-                    { rank: 'Genus', name: 'Pisum', count: '~3 species', desc: 'Climbing annual herbs with leaf tendrils' },
-                    { rank: 'Species', name: 'Pisum sativum', count: '1 species', desc: 'Mendel classic experimental subject with distinct allelic traits' }
-                ]
-            }
-        };
-
-        const sel = container.querySelector('.organism-select');
-        const slider = container.querySelector('.depth-slider');
-        const depthVal = container.querySelector('.depth-val');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        function update(state) {
-            const orgKey = sel.value;
-            const org = orgData[orgKey];
-            const maxDepth = parseInt(slider.value, 10);
-            depthVal.textContent = maxDepth + ' (' + org.levels[maxDepth - 1].rank + ')';
-
-            // Pulse animation
-            const pulse = Math.sin(state.time * 2) * 3;
-
-            let svgContent = `
-            <defs>
-              <linearGradient id="pyrGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#1e3a8a"/>
-                <stop offset="50%" stop-color="#3b82f6"/>
-                <stop offset="100%" stop-color="#60a5fa"/>
-              </linearGradient>
-              <linearGradient id="activeGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#047857"/>
-                <stop offset="100%" stop-color="#10b981"/>
-              </linearGradient>
-            </defs>
-            <rect width="800" height="420" fill="#0f172a" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              TAXONOMIC HIERARCHY: ${org.common.toUpperCase()} (${org.scientific})
-            </text>
-            <text x="50" y="60" fill="#94a3b8" font-size="12">Broadest Category (Kingdom/Domain) &darr; Highest Specificity (Genus & Species)</text>
-            `;
-
-            // Draw hierarchy steps
-            const totalSteps = 8;
-            for (let i = 0; i < totalSteps; i++) {
-                const lvl = org.levels[i];
-                const isActive = i < maxDepth;
-                const isCurrent = i === maxDepth - 1;
-                const y = 80 + i * 38;
-                const barWidth = 650 - i * 50;
-                const x = 75 + (i * 25);
-
-                const fill = isCurrent ? 'url(#activeGrad)' : (isActive ? 'url(#pyrGrad)' : '#334155');
-                const stroke = isCurrent ? '#34d399' : (isActive ? '#60a5fa' : '#475569');
-                const strokeWidth = isCurrent ? 2.5 : 1;
-                const barHeight = isCurrent ? 30 + pulse * 0.4 : 28;
-
-                svgContent += `
-                <g class="tier-group" opacity="${isActive ? '1' : '0.4'}">
-                  <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="5" 
-                        fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
-                  <text x="${x + 15}" y="${y + 19}" fill="#ffffff" font-size="13" font-weight="${isCurrent ? 'bold' : 'normal'}">
-                    ${lvl.rank}: <tspan fill="#fef08a" font-style="${lvl.rank === 'Genus' || lvl.rank === 'Species' ? 'italic' : 'normal'}">${lvl.name}</tspan>
-                  </text>
-                  <text x="${x + barWidth - 15}" y="${y + 19}" fill="#cbd5e1" font-size="11" text-anchor="end">
-                    ${lvl.count}
-                  </text>
-                </g>`;
-            }
-
-            svg.innerHTML = svgContent;
-
-            const curr = org.levels[maxDepth - 1];
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Current Rank:</strong> ${curr.rank}</div>
-              <div><strong>Taxon Name:</strong> <em>${curr.name}</em></div>
-              <div><strong>Estimated Diversity:</strong> ${curr.count}</div>
-              <div><strong>Shared Similarities:</strong> ${Math.round((maxDepth / 8) * 100)}%</div>
-            </div>`;
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-note" style="margin-top: 10px;">
-              <strong>Taxonomic Principle:</strong> As we descend from ${org.levels[0].rank} down to ${org.levels[7].rank}, 
-              the total number of species decreases drastically, but the degree of mutual morphological, anatomical, and genomic 
-              similarity increases exponentially. <strong>${curr.rank} (${curr.name}):</strong> ${curr.desc}.
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        sel.addEventListener('change', () => update(state));
-        slider.addEventListener('input', () => update(state));
-        update(state);
+// Lab 2 — Grouping by different criteria (Activity 12.1) and Pakke (Activity 12.2)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "habitat"};
+  var ORG = [["eagle", "air", "day", "meat"], ["owl", "tree", "night", "meat"], ["bat", "air", "night", "insects"], ["butterfly", "air", "day", "plants"], ["deer", "forest floor", "day", "plants"], ["leopard", "forest floor", "night", "meat"], ["frog", "water", "night", "insects"]];
+  var GROUPS = {habitat: ["air", "tree", "forest floor", "water"], active: ["day", "night"], diet: ["meat", "insects", "plants"]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.05, speed: 0.6});
+    L.legend([[C.path, "animals"], [C.muted, "groups"]]);
+    L.watch({habitat: "Activity 12.1: group the same seven animals by where they are usually seen.", active: "Activity 12.1: group them by when they are usually active.", diet: "Table 12.2: group them by what they mainly eat.", pakke: "Activity 12.2: the Pakke Tiger Reserve and its four hornbill species."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, f = clamp12(t / 1.5, 0, 1);
+    if(st.preset === "pakke"){
+      m += L.rect(60, 60, 600, 30, "#1e293b", ' rx="6"') + L.rect(60, 60, 600 * 300 / 1300 * f, 30, C.path, ' rx="6"') + L.text(60, 50, "bird species: Pakke ≈ 300 of India's ≈ 1,300", {size: 13, color: C.text, anchor: "start"});
+      ["Rufous-necked", "Oriental Pied", "Great", "Wreathed"].forEach(function(h, j){ var op = clamp12(t * 2 - j * 0.35, 0, 1); m += card12(L, 40 + j * 165, 130, 150, 70, h, "hornbill", C.ok, op); });
+      m += L.text(360, 250, "nest only in large, old trees · eat specific fruits", {size: 13, color: C.muted});
+      L.svg(m, "Pakke Tiger Reserve birds", 280);
+      L.readout([["Bird species in Pakke", "≈ 300"], ["Share of India's birds", "300 ÷ 1300 ≈ 23%", C.path], ["Hornbill species", "4", C.ok]]);
+      msg = t < 2 ? "Surveying…" : "Pakke holds nearly 300 of India's about 1,300 bird species (about 23%), including <b>four hornbill species</b> that need large, old trees.";
+    } else {
+      var key = {habitat: 1, active: 2, diet: 3}[st.preset], gs = GROUPS[st.preset], w = 640 / gs.length;
+      gs.forEach(function(g, j){ m += L.rect(40 + j * w, 150, w - 12, 130, "#0f172a", ' rx="10" stroke="#475569" stroke-dasharray="5 4"') + L.text(40 + j * w + (w - 12) / 2, 172, g, {size: 13, color: C.muted, weight: 700}); });
+      var count = {};
+      ORG.forEach(function(o, j){
+        var gi = gs.indexOf(o[key]), slot = count[gi] = (count[gi] || 0) + 1;
+        var x0 = 70 + j * 95, y0 = 60, x1 = 40 + gi * w + 20 + ((slot - 1) % 2) * ((w - 52) / 2), y1 = 190 + Math.floor((slot - 1) / 2) * 38;
+        var x = x0 + (x1 - x0) * f, y = y0 + (y1 - y0) * f;
+        m += L.rect(x - 2, y, 84, 28, C.path, ' rx="14"') + L.text(x + 40, y + 19, o[0], {size: 12, color: "#0f172a", weight: 700});
+      });
+      L.svg(m, "Grouping animals", 300);
+      L.readout(gs.map(function(g){ return [g, ORG.filter(function(o){ return o[key] === g; }).map(function(o){ return o[0]; }).join(", "), C.path]; }));
+      var what = {habitat: "where they live", active: "when they are active", diet: "what they eat"}[st.preset];
+      msg = t < 2 ? "Sorting…" : "Grouped by " + what + ": the same animals fall into <b>different groups</b> for each criterion (for example, the owl joins the eagle as a meat-eater but the bat as a night-flier).";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["habitat", "Where they live"], ["active", "When they are active"], ["diet", "What they eat"], ["pakke", "Activity 12.2: Pakke"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.grouping = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// 2. Five Kingdom Classifier Decision Tree (sim-kingdom-classifier)
-window.SIMS['sim-kingdom-classifier'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Whittaker's Five Kingdom Interactive Dichotomous Key</h3>
-    <div class="sim-controls-top">
-      <label>Cell Type:
-        <select class="sel-cell form-select">
-          <option value="prokaryote">Prokaryotic (No true nucleus)</option>
-          <option value="eukaryote" selected>Eukaryotic (Membrane nucleus)</option>
-          <option value="acellular">Acellular (Non-cellular entity)</option>
-        </select>
-      </label>
-      <label>Cellularity:
-        <select class="sel-cellularity form-select">
-          <option value="unicellular">Unicellular (Solitary cell)</option>
-          <option value="multicellular" selected>Multicellular (Tissue/Organs)</option>
-        </select>
-      </label>
-      <label>Cell Wall:
-        <select class="sel-wall form-select">
-          <option value="cellulose">Present (Cellulose)</option>
-          <option value="chitin">Present (Chitin)</option>
-          <option value="peptidoglycan">Present (Peptidoglycan)</option>
-          <option value="absent" selected>Absent (Naked membrane)</option>
-        </select>
-      </label>
-      <label>Nutrition:
-        <select class="sel-nutrition form-select">
-          <option value="autotroph">Autotrophic (Photosynthetic)</option>
-          <option value="saprotroph">Heterotrophic Absorptive (Saprotrophic)</option>
-          <option value="holozoic" selected>Heterotrophic Ingestive (Holozoic)</option>
-        </select>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 380" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const selCell = container.querySelector('.sel-cell');
-        const selCellularity = container.querySelector('.sel-cellularity');
-        const selWall = container.querySelector('.sel-wall');
-        const selNutrition = container.querySelector('.sel-nutrition');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        function evaluateClassification() {
-            const cell = selCell.value;
-            const mult = selCellularity.value;
-            const wall = selWall.value;
-            const nut = selNutrition.value;
-
-            if (cell === 'acellular') {
-                return {
-                    kingdom: 'Acellular Entities (Viruses / Viroids / Prions)',
-                    status: 'Excluded from Five Kingdoms',
-                    color: '#ef4444',
-                    icon: '🔬 Non-Living / Borderline',
-                    rationale: 'Viruses lack protoplasm, ribosomes, and ATP generation. They cannot be placed in any cellular kingdom.'
-                };
-            }
-            if (cell === 'prokaryote') {
-                return {
-                    kingdom: 'Kingdom Monera',
-                    status: 'Valid Whittaker Kingdom',
-                    color: '#eab308',
-                    icon: '🦠 Bacteria & Cyanobacteria',
-                    rationale: 'Prokaryotic cell architecture (nucleoid, 70S ribosomes, peptidoglycan wall). Includes Archaebacteria and Eubacteria.'
-                };
-            }
-            if (cell === 'eukaryote' && mult === 'unicellular') {
-                return {
-                    kingdom: 'Kingdom Protista',
-                    status: 'Valid Whittaker Kingdom',
-                    color: '#06b6d4',
-                    icon: '🧫 Amoeba, Paramecium, Euglena',
-                    rationale: 'Unicellular eukaryotes. Can be autotrophic (Diatoms), heterotrophic (Protozoa), or mixotrophic (Euglena).'
-                };
-            }
-            if (cell === 'eukaryote' && mult === 'multicellular') {
-                if (nut === 'autotroph' && wall === 'cellulose') {
-                    return {
-                        kingdom: 'Kingdom Plantae',
-                        status: 'Valid Whittaker Kingdom',
-                        color: '#22c55e',
-                        icon: '🌿 Algae, Moss, Fern, Gymno, Angiosperms',
-                        rationale: 'Multicellular eukaryotic autotrophs with cellulose cell walls and chlorophyll in chloroplasts.'
-                    };
-                }
-                if (nut === 'saprotroph' || wall === 'chitin') {
-                    return {
-                        kingdom: 'Kingdom Fungi',
-                        status: 'Valid Whittaker Kingdom',
-                        color: '#f97316',
-                        icon: '🍄 Moulds, Mushrooms, Yeasts',
-                        rationale: 'Multicellular eukaryotic heterotrophs with chitin cell walls and absorptive saprophytic digestion.'
-                    };
-                }
-                if (nut === 'holozoic' && wall === 'absent') {
-                    return {
-                        kingdom: 'Kingdom Animalia',
-                        status: 'Valid Whittaker Kingdom',
-                        color: '#8b5cf6',
-                        icon: '🦁 Invertebrates & Vertebrates',
-                        rationale: 'Multicellular eukaryotic heterotrophs lacking cell walls with ingestive nutrition and sensory motility.'
-                    };
-                }
-                return {
-                    kingdom: 'Unconventional Mosaic Combination',
-                    status: 'Key Conflict',
-                    color: '#ec4899',
-                    icon: '⚠️ Synthetic Phenotype',
-                    rationale: `This combination (${mult} + ${wall} cell wall + ${nut} nutrition) does not match standard Whittaker taxonomy.`
-                };
-            }
-            return { kingdom: 'Unclassified', status: 'Unknown', color: '#94a3b8', icon: '❓', rationale: 'Check inputs.' };
-        }
-
-        function update(state) {
-            const res = evaluateClassification();
-            const pulse = Math.sin(state.time * 2.5) * 5;
-
-            let svgContent = `
-            <rect width="800" height="380" fill="#0b132b" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              WHITTAKER'S DICHOTOMOUS CLASSIFICATION ENGINE
-            </text>
-
-            <!-- Kingdom Hubs -->
-            <g transform="translate(60, 70)">
-              <!-- Monera -->
-              <rect x="0" y="0" width="120" height="70" rx="6" fill="${res.kingdom.includes('Monera') ? '#ca8a04' : '#1e293b'}" 
-                    stroke="${res.kingdom.includes('Monera') ? '#facc15' : '#475569'}" stroke-width="${res.kingdom.includes('Monera') ? 3 : 1}"/>
-              <text x="60" y="30" fill="#ffffff" text-anchor="middle" font-size="13" font-weight="bold">MONERA</text>
-              <text x="60" y="52" fill="#cbd5e1" text-anchor="middle" font-size="10">Prokaryotes</text>
-
-              <!-- Protista -->
-              <rect x="140" y="0" width="120" height="70" rx="6" fill="${res.kingdom.includes('Protista') ? '#0891b2' : '#1e293b'}"
-                    stroke="${res.kingdom.includes('Protista') ? '#38bdf8' : '#475569'}" stroke-width="${res.kingdom.includes('Protista') ? 3 : 1}"/>
-              <text x="200" y="30" fill="#ffffff" text-anchor="middle" font-size="13" font-weight="bold">PROTISTA</text>
-              <text x="200" y="52" fill="#cbd5e1" text-anchor="middle" font-size="10">Unicellular Eukaryote</text>
-
-              <!-- Fungi -->
-              <rect x="280" y="0" width="120" height="70" rx="6" fill="${res.kingdom.includes('Fungi') ? '#ea580c' : '#1e293b'}"
-                    stroke="${res.kingdom.includes('Fungi') ? '#fb923c' : '#475569'}" stroke-width="${res.kingdom.includes('Fungi') ? 3 : 1}"/>
-              <text x="340" y="30" fill="#ffffff" text-anchor="middle" font-size="13" font-weight="bold">FUNGI</text>
-              <text x="340" y="52" fill="#cbd5e1" text-anchor="middle" font-size="10">Chitin / Saprotrophic</text>
-
-              <!-- Plantae -->
-              <rect x="420" y="0" width="120" height="70" rx="6" fill="${res.kingdom.includes('Plantae') ? '#16a34a' : '#1e293b'}"
-                    stroke="${res.kingdom.includes('Plantae') ? '#4ade80' : '#475569'}" stroke-width="${res.kingdom.includes('Plantae') ? 3 : 1}"/>
-              <text x="480" y="30" fill="#ffffff" text-anchor="middle" font-size="13" font-weight="bold">PLANTAE</text>
-              <text x="480" y="52" fill="#cbd5e1" text-anchor="middle" font-size="10">Cellulose / Autotroph</text>
-
-              <!-- Animalia -->
-              <rect x="560" y="0" width="120" height="70" rx="6" fill="${res.kingdom.includes('Animalia') ? '#7c3aed' : '#1e293b'}"
-                    stroke="${res.kingdom.includes('Animalia') ? '#a78bfa' : '#475569'}" stroke-width="${res.kingdom.includes('Animalia') ? 3 : 1}"/>
-              <text x="620" y="30" fill="#ffffff" text-anchor="middle" font-size="13" font-weight="bold">ANIMALIA</text>
-              <text x="620" y="52" fill="#cbd5e1" text-anchor="middle" font-size="10">No Wall / Ingestive</text>
-            </g>
-
-            <!-- Result Showcase Card -->
-            <g transform="translate(150, 180)">
-              <rect x="0" y="0" width="500" height="160" rx="10" fill="#1e293b" stroke="${res.color}" stroke-width="2.5"/>
-              <circle cx="60" cy="80" r="${35 + pulse * 0.3}" fill="${res.color}" opacity="0.2"/>
-              <text x="60" y="86" fill="${res.color}" font-size="28" text-anchor="middle">${res.icon.slice(0,2)}</text>
-              
-              <text x="120" y="45" fill="#f8fafc" font-size="18" font-weight="bold">${res.kingdom}</text>
-              <text x="120" y="70" fill="${res.color}" font-size="13" font-weight="600">${res.status}</text>
-              <foreignObject x="120" y="80" width="360" height="70">
-                <p style="color: #cbd5e1; font-size: 12px; margin: 0; line-height: 1.4;">
-                  ${res.rationale}
-                </p>
-              </foreignObject>
-            </g>`;
-
-            svg.innerHTML = svgContent;
-
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Cell Architecture:</strong> ${selCell.value}</div>
-              <div><strong>Body Complexity:</strong> ${selCellularity.value}</div>
-              <div><strong>Cell Wall Nature:</strong> ${selWall.value}</div>
-              <div><strong>Trophic Mode:</strong> ${selNutrition.value}</div>
-            </div>`;
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-note" style="margin-top: 10px; border-left-color: ${res.color};">
-              <strong>Systematic Classification Verdict:</strong> Based on Whittaker's four core criteria 
-              (cell structure, body organization, cell wall presence, and nutrition mode), the specimen maps directly to 
-              <strong>${res.kingdom}</strong>.
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        [selCell, selCellularity, selWall, selNutrition].forEach(el => el.addEventListener('change', () => update(state)));
-        update(state);
+// Lab 3 — Classification systems and the five kingdoms (Figs. 12.4–12.8)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "timeline"};
+  var PATHS = {keyMushroom: {name: "Mushroom", ans: [true, false, false, true], kingdom: "Fungi"}, keyAmoeba: {name: "Amoeba", ans: [true, true], kingdom: "Protista"}};
+  var Q = ["True (membrane-bound) nucleus?", "Unicellular?", "Makes its own food (autotrophic)?", "Chitin cell wall; absorbs food?"];
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline(id === "timeline" ? {maxT: 4, step: 1, speed: 1} : {maxT: 3, step: 0.05, speed: 0.6});
+    L.legend([[C.path, "path followed"], [C.muted, "other branches"]]);
+    L.watch({timeline: "Fig. 12.4: how classification systems changed over time.", keyMushroom: "Fig. 12.5: using the five-kingdom criteria on a mushroom.", keyAmoeba: "Fig. 12.5: using the five-kingdom criteria on an amoeba.", sort: "Sorting ten organisms into the five kingdoms."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, i;
+    if(st.preset === "timeline"){
+      var k = Math.floor(t + 1e-9), ev = [["4th c. BCE", "Aristotle", "habitat: land, water, air"], ["1758", "Linnaeus", "two kingdoms"], ["1866", "Haeckel", "three: + Protista"], ["1938", "Copeland", "four: + Monera"], ["1969", "Whittaker", "five: + Fungi"]];
+      m += L.line(50, 150, 670, 150, "#475569", 3);
+      ev.forEach(function(e, j){ var x = 70 + j * 145, on = j <= k; m += L.circle(x, 150, 10, on ? C.path : "#334155") + (on ? L.text(x, 110, e[0], {size: 13, color: C.path, weight: 700}) + L.text(x, 190, e[1], {size: 13, color: C.text, weight: 700}) + L.text(x, 210, e[2], {size: 11, color: C.muted}) : ""); });
+      L.svg(m, "Timeline of classification systems", 260);
+      L.readout(ev.filter(function(e, j){ return j <= k; }).map(function(e){ return [e[0] + " · " + e[1], e[2]]; }));
+      msg = t < 4 ? "Moving through history…" : "From Aristotle's habitat groups to <b>Whittaker's five kingdoms (1969)</b>: Monera, Protista, Fungi, Plantae, Animalia.";
+    } else if(st.preset === "sort"){
+      var K = ["Monera", "Protista", "Fungi", "Plantae", "Animalia"], items = [["bacteria", 0], ["cyanobacteria", 0], ["Amoeba", 1], ["Euglena", 1], ["yeast", 2], ["mushroom", 2], ["moss", 3], ["fern", 3], ["ant", 4], ["frog", 4]], f = clamp12(t / 2, 0, 1);
+      K.forEach(function(k2, j){ m += L.rect(20 + j * 140, 150, 125, 130, "#0f172a", ' rx="10" stroke="#475569"') + L.text(82 + j * 140, 172, k2, {size: 13, color: C.path, weight: 700}); });
+      items.forEach(function(it, j){ var x0 = 30 + j * 68, y0 = 50, n = j % 2, x1 = 30 + it[1] * 140, y1 = 190 + n * 40, x = x0 + (x1 - x0) * f, y = y0 + (y1 - y0) * f; m += L.rect(x, y, 105, 28, "#334155", ' rx="14"') + L.text(x + 52, y + 19, it[0], {size: 11, color: C.text}); });
+      L.svg(m, "Sorting organisms into kingdoms", 300);
+      L.readout(K.map(function(k2, j){ return [k2, items.filter(function(it){ return it[1] === j; }).map(function(it){ return it[0]; }).join(", ")]; }));
+      msg = t < 2 ? "Sorting…" : "All ten sorted: <b>2 in each kingdom</b>, using cell type, cell wall, number of cells and mode of nutrition. (Yeast is single-celled but has a chitin wall.)";
+    } else {
+      var P = PATHS[st.preset], step = Math.min(P.ans.length, Math.floor(t * P.ans.length / 2.5 + 1e-9));
+      var ends = [["Monera", 0, false], ["Protista", 1, true], ["Plantae", 2, true], ["Fungi", 3, true], ["Animalia", 3, false]];
+      Q.forEach(function(q, j){ var y = 40 + j * 62, on = j < step, active = j === step && step < P.ans.length; m += L.rect(160, y, 300, 40, "#1e293b", ' rx="8" stroke="' + (on || active ? C.path : "#475569") + '" stroke-width="2"') + L.text(310, y + 25, q, {size: 13, color: C.text}); if(j < P.ans.length && on) m += L.text(475, y + 25, P.ans[j] ? "yes" : "no", {size: 13, color: C.path, weight: 700, anchor: "start"}); });
+      ends.forEach(function(e){ var y = 40 + e[1] * 62 + 25, x = e[2] ? 600 : 90; var reached = step >= P.ans.length && e[0] === P.kingdom; m += L.text(x, y, e[0] + (e[0] === "Monera" ? " (no)" : e[0] === "Protista" ? " (yes)" : e[0] === "Plantae" ? " (yes)" : e[0] === "Fungi" ? " (yes)" : " (no)"), {size: 13, color: reached ? C.ok : C.muted, weight: reached ? 700 : 400}); });
+      L.svg(m, "Five kingdom key", 290);
+      L.readout([["Organism", P.name], ["Answers", P.ans.slice(0, step).map(function(a){ return a ? "yes" : "no"; }).join(" → ") || "…", C.path], ["Kingdom", step >= P.ans.length ? P.kingdom : "…", C.ok]]);
+      msg = step < P.ans.length ? "Following the key…" : P.name + ": " + (P.kingdom === "Fungi" ? "true nucleus, many cells, cannot make food, chitin wall and absorbs food, so " : "true nucleus and a single cell, so ") + "<b>Kingdom " + P.kingdom + "</b>.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["timeline", "Fig. 12.4: timeline"], ["keyMushroom", "Key: mushroom"], ["keyAmoeba", "Key: amoeba"], ["sort", "Sort ten organisms"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.kingdoms = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// 3. Cryptogam Morphology Lab (sim-cryptogam-morphology)
-window.SIMS['sim-cryptogam-morphology'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Plant Evolution: Seedless Cryptogams Laboratory</h3>
-    <div class="sim-controls-top">
-      <label>Plant Division:
-        <select class="sel-division form-select">
-          <option value="thallophyta" selected>Thallophyta (Algae: Spirogyra)</option>
-          <option value="bryophyta">Bryophyta (Moss: Funaria)</option>
-          <option value="pteridophyta">Pteridophyta (Fern: Marsilea)</option>
-        </select>
-      </label>
-      <label>Vascular Activation:
-        <input type="range" class="vasc-slider form-range" min="0" max="1" value="0" step="1">
-        <span class="vasc-val">Absent (0)</span>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 380" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const selDiv = container.querySelector('.sel-division');
-        const vascSlider = container.querySelector('.vasc-slider');
-        const vascVal = container.querySelector('.vasc-val');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        function update(state) {
-            const div = selDiv.value;
-            // auto-sync slider with biological reality
-            if (div === 'pteridophyta') {
-                vascSlider.value = '1';
-                vascVal.textContent = 'Present (Xylem & Phloem)';
-            } else {
-                vascSlider.value = '0';
-                vascVal.textContent = 'Absent (Diffusion Only)';
-            }
-
-            const wave = Math.sin(state.time * 2) * 8;
-            let svgContent = `
-            <rect width="800" height="380" fill="#031926" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              MORPHOLOGICAL EVOLUTION: ${div.toUpperCase()}
-            </text>`;
-
-            if (div === 'thallophyta') {
-                // Spirogyra water ribbon
-                svgContent += `
-                <!-- Water background -->
-                <rect x="50" y="60" width="700" height="280" rx="8" fill="#0c4a6e" opacity="0.4"/>
-                <text x="60" y="85" fill="#38bdf8" font-size="12">Aquatic Freshwater Medium</text>
-                
-                <!-- Filament ribbon -->
-                <g transform="translate(100, 180)">
-                  <!-- Filament cells -->
-                  <rect x="0" y="-30" width="180" height="60" fill="none" stroke="#22c55e" stroke-width="3" rx="2"/>
-                  <rect x="180" y="-30" width="180" height="60" fill="none" stroke="#22c55e" stroke-width="3" rx="2"/>
-                  <rect x="360" y="-30" width="180" height="60" fill="none" stroke="#22c55e" stroke-width="3" rx="2"/>
-                  
-                  <!-- Spiral Chloroplast Ribbons -->
-                  <path d="M 10,-20 Q 50,${20 + wave} 90,-20 T 170,-20" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round"/>
-                  <path d="M 190,-20 Q 230,${20 + wave} 270,-20 T 350,-20" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round"/>
-                  <path d="M 370,-20 Q 410,${20 + wave} 450,-20 T 530,-20" fill="none" stroke="#16a34a" stroke-width="6" stroke-linecap="round"/>
-                  
-                  <!-- Nucleus -->
-                  <circle cx="90" cy="0" r="10" fill="#fbbf24" opacity="0.8"/>
-                  <circle cx="270" cy="0" r="10" fill="#fbbf24" opacity="0.8"/>
-                  <circle cx="450" cy="0" r="10" fill="#fbbf24" opacity="0.8"/>
-                </g>
-                
-                <text x="400" y="270" fill="#93c5fd" text-anchor="middle" font-size="13">
-                  Undifferentiated Thallus: No true root, stem, or leaf. Absorbs water & nutrients directly by diffusion.
-                </text>`;
-            } else if (div === 'bryophyta') {
-                // Moss Funaria
-                svgContent += `
-                <!-- Soil substrate -->
-                <rect x="50" y="290" width="700" height="60" fill="#451a03" rx="4"/>
-                <text x="60" y="320" fill="#d97706" font-size="12">Moist Shaded Terrestrial Soil</text>
-
-                <!-- Moss plant -->
-                <g transform="translate(400, 290)">
-                  <!-- Rhizoids -->
-                  <path d="M 0,0 Q -15,20 -30,40 M 0,0 Q 10,20 20,40 M 0,0 Q 0,25 -5,50" fill="none" stroke="#92400e" stroke-width="2.5"/>
-                  <text x="-50" y="35" fill="#d97706" font-size="11">Rhizoids</text>
-
-                  <!-- Gametophyte leafy shoot -->
-                  <path d="M 0,0 L 0,-100" stroke="#15803d" stroke-width="6"/>
-                  <!-- Leaves -->
-                  <path d="M 0,-20 Q -25,-30 -40,-20 M 0,-40 Q 25,-50 40,-40 M 0,-60 Q -25,-70 -40,-60 M 0,-80 Q 25,-90 40,-80" 
-                        fill="none" stroke="#22c55e" stroke-width="4"/>
-                  <text x="60" y="-50" fill="#22c55e" font-size="12" font-weight="bold">Gametophyte (Haploid dominant)</text>
-
-                  <!-- Dependent Sporophyte Seta & Capsule -->
-                  <path d="M 0,-100 C ${wave * 2},-150 ${-wave * 2},-180 0,-210" fill="none" stroke="#ca8a04" stroke-width="3"/>
-                  <ellipse cx="0" cy="-215" rx="12" ry="8" fill="#ea580c"/>
-                  <!-- Calyptra / Operculum -->
-                  <path d="M -10,-218 Q 0,-230 10,-218 Z" fill="#b45309"/>
-                  <text x="25" y="-210" fill="#f97316" font-size="12" font-weight="bold">Sporophyte (Spore capsule)</text>
-                </g>`;
-            } else {
-                // Pteridophyta Marsilea / Fern
-                svgContent += `
-                <!-- Substrate -->
-                <rect x="50" y="290" width="700" height="60" fill="#365314" rx="4"/>
-                <text x="60" y="320" fill="#a3e635" font-size="12">Marshy / Damp Substrate</text>
-
-                <!-- Fern anatomy -->
-                <g transform="translate(380, 290)">
-                  <!-- True Roots -->
-                  <path d="M -80,10 L -90,40 M -40,10 L -30,50 M 20,10 L 30,45 M 70,10 L 80,40" stroke="#78350f" stroke-width="3"/>
-                  <text x="-120" y="35" fill="#b45309" font-size="11">True Adventitious Roots</text>
-
-                  <!-- Underground Rhizome stem -->
-                  <rect x="-100" y="-10" width="200" height="20" rx="6" fill="#713f12" stroke="#a16207" stroke-width="2"/>
-                  <text x="110" y="5" fill="#eab308" font-size="11">Rhizome (Stem with Xylem/Phloem)</text>
-
-                  <!-- Large Frond with Sori -->
-                  <path d="M 0,-10 C -20,-80 -10,-150 ${wave},-220" fill="none" stroke="#15803d" stroke-width="5"/>
-                  <!-- Pinnae leaflets -->
-                  <g stroke="#16a34a" stroke-width="4" fill="none">
-                    <path d="M -5,-60 Q -50,-80 -70,-60 M 0,-60 Q 40,-80 65,-60"/>
-                    <path d="M -8,-110 Q -50,-130 -65,-110 M 0,-110 Q 45,-130 65,-110"/>
-                    <path d="M -5,-160 Q -40,-180 -55,-160 M 0,-160 Q 35,-180 50,-160"/>
-                  </g>
-                  
-                  <!-- Sori clusters (sporangia) under leaves -->
-                  <circle cx="-35" cy="-68" r="4" fill="#ea580c"/>
-                  <circle cx="35" cy="-68" r="4" fill="#ea580c"/>
-                  <circle cx="-30" cy="-118" r="4" fill="#ea580c"/>
-                  <circle cx="30" cy="-118" r="4" fill="#ea580c"/>
-                  <text x="75" y="-115" fill="#f97316" font-size="11">Sori (Spore clusters)</text>
-                </g>`;
-            }
-
-            svg.innerHTML = svgContent;
-
-            const readouts = {
-                thallophyta: { organs: 'No root/stem/leaf', vascular: 'Absent', dominant: 'Gametophyte', rep: 'Zygotic spores' },
-                bryophyta: { organs: 'Rhizoids & false stem/leaf', vascular: 'Absent', dominant: 'Gametophyte (independent)', rep: 'Capsule spores' },
-                pteridophyta: { organs: 'True roots, stem (rhizome) & fronds', vascular: 'Present (Xylem/Phloem)', dominant: 'Sporophyte (independent)', rep: 'Sori sporangia' }
-            };
-
-            const r = readouts[div];
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Body Differentiation:</strong> ${r.organs}</div>
-              <div><strong>Vascular Tissues:</strong> ${r.vascular}</div>
-              <div><strong>Dominant Generation:</strong> ${r.dominant}</div>
-              <div><strong>Spore Formation:</strong> ${r.rep}</div>
-            </div>`;
-
-            const verdicts = {
-                thallophyta: 'Thallophytes (Algae) thrive in aquatic habitats without structural tissues. Every cell handles its own water and nutrient exchange.',
-                bryophyta: 'Bryophytes are the "amphibians of the plant kingdom". They inhabit damp land but require external water films for flagellated antherozoids to swim to archegonia.',
-                pteridophyta: 'Pteridophytes are the earliest true vascular plants (Tracheophytes). Vascular bundles allow tall erect growth and colonization of dry terrestrial environments.'
-            };
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-tip" style="margin-top: 10px;">
-              <strong>Evolutionary Milestone:</strong> ${verdicts[div]}
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        selDiv.addEventListener('change', () => update(state));
-        update(state);
+// Lab 4 — Kingdom Plantae: five classes (Section 12.6.4, Table 12.3)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "thallophyta"};
+  var FEAT = ["true roots, stems, leaves", "vascular tissue", "seeds", "flowers and fruits", "needs water for reproduction"];
+  var G = {thallophyta: ["Thallophyta (algae)", [0, 0, 0, 0, 1], "<b>Thallophyta</b> (e.g. Spirogyra): a <b>simple thallus</b> living in water, exchanging gases and nutrients directly."], bryophyta: ["Bryophyta (mosses)", [0, 0, 0, 0, 1], "<b>Bryophyta</b>: rhizoids and simple parts, no vascular tissue, water needed for reproduction: the <b>amphibians of the plant kingdom</b>."], pteridophyta: ["Pteridophyta (ferns)", [1, 1, 0, 0, 1], "<b>Pteridophyta</b>: true roots, stems and leaves with xylem and phloem: <b>vascular tissue but no seeds</b>."], gymnosperm: ["Gymnosperms (pines)", [1, 1, 1, 0, 0], "<b>Gymnosperms</b>: needle leaves, no water needed for fertilisation, and <b>naked seeds on cones</b>."], angiosperm: ["Angiosperms (flowering)", [1, 1, 1, 1, 0], "<b>Angiosperms</b>: the most diverse group, with <b>flowers and fruits</b> enclosing their seeds."]};
+  var ORDER = ["thallophyta", "bryophyta", "pteridophyta", "gymnosperm", "angiosperm"];
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.05, speed: 0.6});
+    L.legend([[C.ok, "feature present"], [C.danger, "feature absent"]]);
+    L.watch(id === "compare" ? "Table 12.3: all five classes side by side." : "Section 12.6.4: " + G[id][0] + " and its features.");
+    L.controls(""); L.restart(true);
+  }
+  function plant(id, x, y, s){
+    var m = "", i;
+    if(id === "thallophyta"){ m += L.rect(x - 60 * s, y - 50 * s, 120 * s, 60 * s, "#0369a1", ' opacity="0.4" rx="6"'); for(i = 0; i < 3; i++) m += '<path d="M' + (x - 50 * s) + ' ' + (y - 35 * s + i * 15 * s) + ' q25 -8 50 0 t50 0" fill="none" stroke="#22c55e" stroke-width="3"/>'; }
+    else if(id === "bryophyta"){ m += L.rect(x - 60 * s, y - 8 * s, 120 * s, 10 * s, "#4d7c0f"); for(i = 0; i < 9; i++) m += L.line(x - 50 * s + i * 12 * s, y - 8 * s, x - 50 * s + i * 12 * s, y - 28 * s, "#84cc16", 3); }
+    else if(id === "pteridophyta"){ for(i = 0; i < 5; i++){ var a = -150 + i * 30; m += '<path d="M' + x + ' ' + y + ' q' + (40 * s * Math.cos(a * Math.PI / 180)) + ' ' + (-60 * s) + ' ' + (80 * s * Math.cos(a * Math.PI / 180)) + ' ' + (-40 * s) + '" fill="none" stroke="#16a34a" stroke-width="4"/>'; } }
+    else if(id === "gymnosperm"){ m += L.rect(x - 5 * s, y - 20 * s, 10 * s, 20 * s, "#78350f") + '<polygon points="' + x + ',' + (y - 110 * s) + ' ' + (x - 45 * s) + ',' + (y - 20 * s) + ' ' + (x + 45 * s) + ',' + (y - 20 * s) + '" fill="#166534"/>' + '<ellipse cx="' + (x + 20 * s) + '" cy="' + (y - 40 * s) + '" rx="' + (6 * s) + '" ry="' + (10 * s) + '" fill="#a16207"/>'; }
+    else { m += L.rect(x - 6 * s, y - 40 * s, 12 * s, 40 * s, "#78350f") + L.circle(x, y - 75 * s, 45 * s, "#15803d"); for(i = 0; i < 5; i++) m += L.circle(x - 30 * s + i * 15 * s, y - 90 * s + (i % 2) * 25 * s, 5 * s, i % 2 ? "#f97316" : "#ef4444"); }
+    return m;
+  }
+  function draw(t){
+    var m = "", msg, f = clamp12(t / 1.5, 0, 1);
+    if(st.preset === "compare"){
+      FEAT.forEach(function(ft, j){ m += L.text(210, 70 + j * 42, ft, {size: 12, color: C.text, anchor: "end"}); });
+      ORDER.forEach(function(g, gi){
+        var x = 260 + gi * 95, op = clamp12(t * 2.5 - gi * 0.4, 0, 1);
+        m += '<g opacity="' + op.toFixed(2) + '">' + L.text(x, 40, G[g][0].split(" ")[0], {size: 11, color: C.path, weight: 700});
+        G[g][1].forEach(function(v, j){ m += L.circle(x, 66 + j * 42, 11, v ? C.ok : C.danger) + L.text(x, 71 + j * 42, v ? "✓" : "✗", {size: 12, color: "#0f172a", weight: 700}); });
+        m += '</g>';
+      });
+      L.svg(m, "Plant classes compared", 290);
+      L.readout([["Vascular tissue first appears", "Pteridophyta", C.ok], ["Seeds first appear", "Gymnosperms", C.ok], ["Flowers and fruits", "Angiosperms only", C.ok], ["Free of water for reproduction", "Gymnosperms and angiosperms"]]);
+      msg = t < 2 ? "Comparing…" : "Each group adds a new feature: vascular tissue (ferns), seeds (gymnosperms), then flowers and fruits (angiosperms), freeing plants from water step by step.";
+    } else {
+      var g2 = G[st.preset];
+      m += L.line(40, 250, 300, 250, "#475569", 2) + plant(st.preset, 170, 250, 1.3);
+      FEAT.forEach(function(ft, j){ var on = t >= 0.3 + j * 0.3, v = g2[1][j]; if(on) m += L.circle(360, 60 + j * 42, 12, v ? C.ok : C.danger) + L.text(360, 65 + j * 42, v ? "✓" : "✗", {size: 13, color: "#0f172a", weight: 700}) + L.text(385, 65 + j * 42, ft, {size: 13, color: v ? C.text : C.muted, anchor: "start"}); });
+      m += L.text(170, 40, g2[0], {size: 15, color: C.path, weight: 700});
+      L.svg(m, g2[0], 280);
+      L.readout(FEAT.map(function(ft, j){ return [ft, g2[1][j] ? "yes" : "no", g2[1][j] ? C.ok : C.danger]; }));
+      msg = t < 2 ? "Checking features…" : g2[2];
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["thallophyta", "Thallophyta"], ["bryophyta", "Bryophyta"], ["pteridophyta", "Pteridophyta"], ["gymnosperm", "Gymnosperms"], ["angiosperm", "Angiosperms"], ["compare", "Table 12.3: compare"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.plantGroups = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// 4. Phanerogam Seeds Lab (sim-phanerogam-seeds)
-window.SIMS['sim-phanerogam-seeds'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Seed Plants: Gymnosperms vs Angiosperms (Monocots & Dicots)</h3>
-    <div class="sim-controls-top">
-      <label>Select Specimen:
-        <select class="sel-specimen form-select">
-          <option value="gymno">Gymnosperm (Pinus - Naked Cone Seed)</option>
-          <option value="dicot" selected>Dicot Angiosperm (Gram / Pea - 2 Cotyledons)</option>
-          <option value="monocot">Monocot Angiosperm (Maize - 1 Cotyledon)</option>
-        </select>
-      </label>
-      <label>Dissection Layer:
-        <select class="sel-layer form-select">
-          <option value="seed" selected>Seed Architecture</option>
-          <option value="leaf">Leaf Venation & Stem Bundle</option>
-          <option value="root">Root System Morphology</option>
-        </select>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 380" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const selSpec = container.querySelector('.sel-specimen');
-        const selLayer = container.querySelector('.sel-layer');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        function update(state) {
-            const spec = selSpec.value;
-            const layer = selLayer.value;
-            const pulse = Math.sin(state.time * 2) * 4;
-
-            let svgContent = `
-            <rect width="800" height="380" fill="#0f172a" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              PHANEROGAM MORPHOMETRICS: ${spec.toUpperCase()} [${layer.toUpperCase()} VIEW]
-            </text>`;
-
-            if (layer === 'seed') {
-                if (spec === 'gymno') {
-                    svgContent += `
-                    <!-- Naked seed on cone scale -->
-                    <g transform="translate(300, 80)">
-                      <!-- Woody cone scale -->
-                      <path d="M 0,150 C 40,80 120,40 180,20 C 140,80 80,180 0,200 Z" fill="#78350f" stroke="#b45309" stroke-width="2"/>
-                      <text x="180" y="15" fill="#d97706" font-size="12">Woody Megasporophyll Scale</text>
-                      
-                      <!-- Naked winged seed -->
-                      <ellipse cx="60" cy="140" rx="30" ry="18" fill="#ca8a04" stroke="#facc15" stroke-width="2"/>
-                      <path d="M 85,135 C 130,120 180,110 210,95 C 180,130 140,150 85,145 Z" fill="#fde047" opacity="0.7"/>
-                      <text x="50" y="145" fill="#78350f" font-size="11" font-weight="bold">Naked Seed</text>
-                      <text x="150" y="90" fill="#fef08a" font-size="11">Wing (Wind dispersal)</text>
-                    </g>
-                    <text x="400" y="330" fill="#93c5fd" text-anchor="middle" font-size="13">
-                      Gymnosperm: Seeds develop openly on scale surfaces without an enclosing ovary fruit wall.
-                    </text>`;
-                } else if (spec === 'dicot') {
-                    svgContent += `
-                    <!-- Dicot Seed Dissection (Bean / Gram) -->
-                    <g transform="translate(250, 90)">
-                      <!-- Two Split Cotyledons -->
-                      <path d="M 120,130 C 70,50 0,70 10,140 C 20,200 90,200 120,160 Z" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
-                      <path d="M 140,130 C 190,50 260,70 250,140 C 240,200 170,200 140,160 Z" fill="#22c55e" stroke="#15803d" stroke-width="2"/>
-                      
-                      <!-- Embryo axis -->
-                      <path d="M 130,135 Q 125,110 120,95" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
-                      <circle cx="120" cy="92" r="5" fill="#eab308"/>
-                      <path d="M 130,135 Q 132,160 135,175" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
-                      <circle cx="135" cy="178" r="5" fill="#ea580c"/>
-                      
-                      <text x="35" y="130" fill="#ffffff" font-size="12" font-weight="bold">Cotyledon 1</text>
-                      <text x="185" y="130" fill="#ffffff" font-size="12" font-weight="bold">Cotyledon 2</text>
-                      <text x="80" y="90" fill="#facc15" font-size="11">Plumule (Shoot)</text>
-                      <text x="150" y="180" fill="#fb923c" font-size="11">Radicle (Root)</text>
-                    </g>
-                    <text x="400" y="330" fill="#86efac" text-anchor="middle" font-size="13">
-                      Dicot Seed: 2 fleshy cotyledons containing stored starch and protein for embryonic germination.
-                    </text>`;
-                } else {
-                    svgContent += `
-                    <!-- Monocot Grain Dissection (Maize) -->
-                    <g transform="translate(300, 80)">
-                      <rect x="0" y="0" width="200" height="230" rx="30" fill="#fef08a" stroke="#ca8a04" stroke-width="2.5"/>
-                      
-                      <!-- Endosperm Region -->
-                      <path d="M 10,20 C 60,10 140,10 190,20 L 190,130 C 130,120 70,120 10,130 Z" fill="#fde047"/>
-                      <text x="100" y="80" fill="#854d0e" font-size="14" font-weight="bold" text-anchor="middle">Starchy Endosperm</text>
-                      
-                      <!-- Single Cotyledon (Scutellum) -->
-                      <path d="M 10,135 C 70,130 130,130 190,135 L 190,210 C 140,225 60,225 10,210 Z" fill="#86efac"/>
-                      <text x="100" y="170" fill="#166534" font-size="12" font-weight="bold" text-anchor="middle">Scutellum (1 Cotyledon)</text>
-                      <circle cx="100" cy="195" r="8" fill="#3b82f6"/>
-                      <text x="100" y="220" fill="#1e3a8a" font-size="10" text-anchor="middle">Embryo Axis</text>
-                    </g>
-                    <text x="400" y="330" fill="#fef08a" text-anchor="middle" font-size="13">
-                      Monocot Grain: Single shield-shaped cotyledon (scutellum) adjacent to massive nutritive endosperm.
-                    </text>`;
-                }
-            } else if (layer === 'leaf') {
-                if (spec === 'gymno') {
-                    svgContent += `
-                    <g transform="translate(300, 100)">
-                      <!-- Needle-like leaves -->
-                      <path d="M 100,200 L 30,50 M 100,200 L 70,30 M 100,200 L 110,20 M 100,200 L 150,30 M 100,200 L 180,60" 
-                            stroke="#15803d" stroke-width="6" stroke-linecap="round"/>
-                      <text x="100" y="230" fill="#4ade80" font-size="12" text-anchor="middle">Needle-like Foliage (Low Surface Area, Sunken Stomata)</text>
-                    </g>`;
-                } else if (spec === 'dicot') {
-                    svgContent += `
-                    <g transform="translate(300, 80)">
-                      <!-- Broad leaf with reticulate network -->
-                      <path d="M 100,220 C 20,180 10,80 100,20 C 190,80 180,180 100,220 Z" fill="#22c55e" stroke="#14532d" stroke-width="2"/>
-                      <!-- Midrib -->
-                      <path d="M 100,220 L 100,20" stroke="#facc15" stroke-width="3.5"/>
-                      <!-- Reticulate lateral veins -->
-                      <path d="M 100,180 Q 60,160 30,170 M 100,180 Q 140,160 170,170" stroke="#fef08a" stroke-width="2"/>
-                      <path d="M 100,140 Q 50,110 25,120 M 100,140 Q 150,110 175,120" stroke="#fef08a" stroke-width="2"/>
-                      <path d="M 100,90 Q 60,70 40,75 M 100,90 Q 140,70 160,75" stroke="#fef08a" stroke-width="2"/>
-                      <text x="100" y="250" fill="#facc15" font-size="13" font-weight="bold" text-anchor="middle">Reticulate (Net-like) Venation</text>
-                    </g>`;
-                } else {
-                    svgContent += `
-                    <g transform="translate(350, 70)">
-                      <!-- Long blade with parallel veins -->
-                      <path d="M 50,230 L 30,30 C 50,10 50,10 70,30 L 50,230 Z" fill="#84cc16" stroke="#4d7c0f" stroke-width="2"/>
-                      <!-- Parallel lines -->
-                      <line x1="42" y1="220" x2="42" y2="40" stroke="#fef08a" stroke-width="1.5"/>
-                      <line x1="50" y1="230" x2="50" y2="25" stroke="#facc15" stroke-width="2.5"/>
-                      <line x1="58" y1="220" x2="58" y2="40" stroke="#fef08a" stroke-width="1.5"/>
-                      <text x="50" y="260" fill="#bef264" font-size="13" font-weight="bold" text-anchor="middle">Parallel Venation</text>
-                    </g>`;
-                }
-            } else {
-                // Root view
-                if (spec === 'dicot') {
-                    svgContent += `
-                    <g transform="translate(400, 100)">
-                      <!-- Taproot system -->
-                      <path d="M 0,0 L 0,180" stroke="#b45309" stroke-width="7" stroke-linecap="round"/>
-                      <!-- Secondary branch roots -->
-                      <path d="M 0,30 Q -40,50 -70,70 M 0,30 Q 40,50 70,70" stroke="#d97706" stroke-width="3"/>
-                      <path d="M 0,80 Q -30,100 -60,120 M 0,80 Q 30,100 60,120" stroke="#d97706" stroke-width="2.5"/>
-                      <path d="M 0,130 Q -20,140 -40,160 M 0,130 Q 20,140 40,160" stroke="#d97706" stroke-width="2"/>
-                      <text x="0" y="210" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">Taproot System (Deep Primary Root + Laterals)</text>
-                    </g>`;
-                } else {
-                    svgContent += `
-                    <g transform="translate(400, 100)">
-                      <!-- Fibrous root cluster -->
-                      <path d="M 0,0 Q -60,80 -90,170 M 0,0 Q -30,100 -40,180 M 0,0 Q -10,120 -10,185 M 0,0 Q 10,120 10,185 M 0,0 Q 30,100 40,180 M 0,0 Q 60,80 90,170"
-                            stroke="#ca8a04" stroke-width="2.5" fill="none"/>
-                      <text x="0" y="210" fill="#facc15" font-size="13" font-weight="bold" text-anchor="middle">Fibrous Root System (Cluster of Slender Roots from Stem Base)</text>
-                    </g>`;
-                }
-            }
-
-            svg.innerHTML = svgContent;
-
-            const summary = {
-                gymno: { seeds: 'Naked (in woody female cones)', leaves: 'Needle-like / xerophytic', roots: 'Taproot (mycorrhizal)', cot: 'Multiple (polyembryony)' },
-                dicot: { seeds: 'Enclosed inside fruit wall', leaves: 'Reticulate (net) venation', roots: 'Taproot system', cot: '2 cotyledons' },
-                monocot: { seeds: 'Enclosed inside grain/caryopsis', leaves: 'Parallel venation', roots: 'Fibrous root cluster', cot: '1 cotyledon (scutellum)' }
-            };
-
-            const s = summary[spec];
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Seed Protection:</strong> ${s.seeds}</div>
-              <div><strong>Cotyledon Count:</strong> ${s.cot}</div>
-              <div><strong>Leaf Venation:</strong> ${s.leaves}</div>
-              <div><strong>Root Architecture:</strong> ${s.roots}</div>
-            </div>`;
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-note" style="margin-top: 10px;">
-              <strong>Morphological Correlation:</strong> The number of cotyledons in angiosperms reliably predicts leaf venation and root structure:
-              <strong>Dicot</strong> = 2 cotyledons + reticulate venation + taproots; <strong>Monocot</strong> = 1 cotyledon + parallel venation + fibrous roots.
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        selSpec.addEventListener('change', () => update(state));
-        selLayer.addEventListener('change', () => update(state));
-        update(state);
+// Lab 5 — Kingdom Animalia (Figs. 12.14–12.16, Section 12.7)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "phyla"};
+  var PHY = [["Porifera", "sponges", "cellular", "none"], ["Cnidaria", "Hydra, jellyfish", "tissue", "none"], ["Platyhelminthes", "flatworms", "organ", "none"], ["Nematoda", "roundworms", "organ system", "none"], ["Annelida", "earthworm", "organ system", "none"], ["Arthropoda", "insects, crabs", "organ system", "exoskeleton"], ["Mollusca", "snail, octopus", "organ system", "shell (exoskeleton)"], ["Echinodermata", "starfish", "organ system", "endoskeleton"]];
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline(id === "phyla" ? {maxT: 8, step: 1, speed: 1.5} : {maxT: 3, step: 0.05, speed: 0.6});
+    L.legend([[C.path, "highlighted"], [C.ok, "result"]]);
+    L.watch({phyla: "Fig. 12.16: the eight invertebrate phyla, with level of organisation and skeleton.", key: "A simple key for an earthworm, a crab and a starfish.", vertebrates: "Section 12.6.5: the five groups of vertebrates.", adaptations: "Section 12.7: structures that suit animals to their environments."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, i;
+    if(st.preset === "phyla"){
+      var k = Math.floor(t + 1e-9);
+      PHY.forEach(function(p, j){ if(j > k) return; var x = 20 + (j % 4) * 172, y = 20 + Math.floor(j / 4) * 135; m += L.rect(x, y, 160, 120, "#1e293b", ' rx="10" stroke="' + C.path + '"') + L.text(x + 80, y + 24, p[0], {size: 13, color: C.path, weight: 700}) + L.text(x + 80, y + 46, p[1], {size: 12, color: C.text}) + L.text(x + 80, y + 76, "level: " + p[2], {size: 11, color: C.muted}) + L.text(x + 80, y + 98, "skeleton: " + p[3], {size: 11, color: C.muted}); });
+      L.svg(m, "Invertebrate phyla", 300);
+      L.readout([["Phyla shown", String(Math.min(8, k + 1)) + " of 8"], ["Simplest", "Porifera: cellular level, no tissues"], ["Internal skeleton without a notochord", "Echinodermata", C.path]]);
+      msg = t < 8 ? "Adding phyla…" : "From sponges (cellular level) to starfish (endoskeleton), <b>body organisation becomes more complex</b>: tissues, organs, organ systems, segments and skeletons.";
+    } else if(st.preset === "key"){
+      var s = Math.floor(t / 0.75 + 1e-9), cols = [["earthworm", ["no", "yes", "no"], "Annelida"], ["crab", ["no", "yes", "yes"], "Arthropoda"], ["starfish", ["no", "no", "yes"], "Echinodermata"]], qs = ["Notochord?", "Segmented body?", "Jointed legs / spiny skin with endoskeleton?"];
+      qs.forEach(function(q, j){ m += L.text(20, 80 + j * 60, q, {size: 12, color: C.muted, anchor: "start"}); });
+      cols.forEach(function(c, j){ var x = 390 + j * 115; m += L.text(x, 40, c[0], {size: 14, color: C.text, weight: 700}); c[1].forEach(function(a, q){ if(q < s) m += L.text(x, 85 + q * 60, a, {size: 14, color: C.path, weight: 700}); }); if(s >= 4) m += L.text(x, 275, c[2], {size: 13, color: C.ok, weight: 700}); });
+      L.svg(m, "Invertebrate key", 290);
+      L.readout(cols.map(function(c){ return [c[0], s >= 4 ? c[2] : "…", C.ok]; }));
+      msg = t < 3 ? "Answering the key…" : "No notochord for any of them. Earthworm → <b>Annelida</b> (segmented, no jointed legs); crab → Arthropoda (jointed legs, exoskeleton); starfish → Echinodermata (spiny skin, endoskeleton).";
+    } else if(st.preset === "vertebrates"){
+      [["Fish", "fins, gills; water"], ["Amphibians", "water and land"], ["Reptiles", "scaly skin; mostly land"], ["Birds", "feathers, hollow bones"], ["Mammals", "hair, mammary glands"]].forEach(function(v, j){ var op = clamp12(t * 2 - j * 0.35, 0, 1), x = 20 + j * 140; m += '<g opacity="' + op.toFixed(2) + '">' + L.rect(x, 60, 128, 150, "#1e293b", ' rx="10" stroke="' + C.ok + '"') + L.text(x + 64, 88, v[0], {size: 14, color: C.ok, weight: 700}) + L.text(x + 64, 112, v[1], {size: 10, color: C.muted}); for(i = 0; i < 6; i++) m += L.rect(x + 34 + i * 11, 160, 8, 14, "#e2e8f0", ' rx="2"'); m += L.text(x + 64, 195, "backbone", {size: 10, color: C.text}) + '</g>'; });
+      L.svg(m, "Vertebrate groups", 250);
+      L.readout([["Shared by all five", "a vertebral column (backbone)", C.ok], ["Protects", "brain and spinal cord"], ["Before them", "protochordates with a notochord (e.g. Amphioxus)"]]);
+      msg = t < 3 ? "Showing groups…" : "Fish, amphibians, reptiles, birds and mammals all have a <b>backbone</b> protecting the brain and spinal cord.";
+    } else {
+      [["fish", "fins and gills", "swim and breathe in water"], ["birds", "feathers, hollow bones", "flight"], ["camel", "fat storage", "survive the desert"], ["polar bear", "thick fur", "survive extreme cold"]].forEach(function(a, j){ var op = clamp12(t * 2 - j * 0.35, 0, 1); m += card12(L, 20 + j * 172, 80, 160, 110, a[0], a[1], C.path, op) + (op > 0.5 ? L.text(100 + j * 172, 170, a[2], {size: 11, color: C.text}) : ""); });
+      L.svg(m, "Adaptations", 260);
+      L.readout([["Mammals", "mammary glands improve survival of the young", C.path], ["Pattern", "body structure fits the environment"]]);
+      msg = t < 3 ? "Showing adaptations…" : "Structures suit environments: fins and gills, feathers and hollow bones, <b>fat stores and thick fur</b>, and mammary glands in mammals.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["phyla", "Fig. 12.16: invertebrate phyla"], ["key", "A classification key"], ["vertebrates", "Vertebrates"], ["adaptations", "Adaptations"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.animalGroups = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// 5. Invertebrate Phyla Architect (sim-invertebrate-phyla)
-window.SIMS['sim-invertebrate-phyla'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Kingdom Animalia: Invertebrate Body Plan Architect</h3>
-    <div class="sim-controls-top">
-      <label>Phylum:
-        <select class="sel-phylum form-select">
-          <option value="porifera">Porifera (Sponges - Sycon)</option>
-          <option value="cnidaria">Cnidaria (Hydra / Jellyfish)</option>
-          <option value="platy">Platyhelminthes (Tapeworm / Planaria)</option>
-          <option value="nematoda">Nematoda (Ascaris Roundworm)</option>
-          <option value="annelida" selected>Annelida (Earthworm)</option>
-          <option value="arthropoda">Arthropoda (Insect / Prawn)</option>
-          <option value="mollusca">Mollusca (Pila / Snail)</option>
-          <option value="echinodermata">Echinodermata (Starfish)</option>
-        </select>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 380" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const selPhy = container.querySelector('.sel-phylum');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        const phylaDetails = {
-            porifera: { name: 'Porifera', level: 'Cellular Level', sym: 'Asymmetrical', coelom: 'Acoelomate', layers: 'Diploblastic-like / Cellular', trait: 'Ostia pores & spongocoel canal system', ex: 'Sycon, Spongilla' },
-            cnidaria: { name: 'Cnidaria', level: 'Tissue Level', sym: 'Radial Symmetry', coelom: 'Acoelomate (gastrovascular cavity)', layers: 'Diploblastic (Ecto + Endo)', trait: 'Cnidocyte stinging tentacles', ex: 'Hydra, Aurelia' },
-            platy: { name: 'Platyhelminthes', level: 'Organ Level', sym: 'Bilateral Symmetry', coelom: 'Acoelomate (solid mesoderm)', layers: 'Triploblastic', trait: 'Dorsoventrally flattened, flame cells', ex: 'Planaria, Taenia' },
-            nematoda: { name: 'Nematoda', level: 'Organ System', sym: 'Bilateral Symmetry', coelom: 'Pseudocoelomate', layers: 'Triploblastic', trait: 'Cylindrical body, hydrostatic pseudocoel', ex: 'Ascaris, Wuchereria' },
-            annelida: { name: 'Annelida', level: 'Organ System', sym: 'Bilateral Symmetry', coelom: 'True Coelomate', layers: 'Triploblastic', trait: 'Metameric segmentation & chitinous setae', ex: 'Earthworm, Leech' },
-            arthropoda: { name: 'Arthropoda', level: 'Organ System', sym: 'Bilateral Symmetry', coelom: 'Coelomate (Haemocoel)', layers: 'Triploblastic', trait: 'Jointed appendages & chitinous exoskeleton', ex: 'Cockroach, Butterfly, Prawn' },
-            mollusca: { name: 'Mollusca', level: 'Organ System', sym: 'Bilateral Symmetry', coelom: 'True Coelomate', layers: 'Triploblastic', trait: 'Calcareous shell, mantle, muscular foot', ex: 'Pila, Octopus, Unio' },
-            echinodermata: { name: 'Echinodermata', level: 'Organ System', sym: 'Radial (adult) / Bilateral (larva)', coelom: 'True Enterocoelomate', layers: 'Triploblastic', trait: 'Water vascular ambulacral tube feet', ex: 'Asterias (Starfish), Sea Urchin' }
-        };
-
-        function update(state) {
-            const p = phylaDetails[selPhy.value];
-            const pulse = Math.sin(state.time * 2.5) * 5;
-
-            let svgContent = `
-            <rect width="800" height="380" fill="#0b0f19" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              PHYLUM ${p.name.toUpperCase()} — BODY PLAN ARCHITECTURE
-            </text>
-
-            <!-- Cross Section Graphic -->
-            <g transform="translate(180, 180)">
-              <!-- Body Wall Outer -->
-              <circle cx="0" cy="0" r="90" fill="#1e293b" stroke="#38bdf8" stroke-width="4"/>
-              <text x="0" y="-98" fill="#38bdf8" font-size="11" text-anchor="middle">Outer Ectoderm / Epicuticle</text>
-              
-              <!-- Mesoderm / Coelom Region -->`;
-            
-            if (p.coelom === 'Acoelomate (solid mesoderm)' || p.name === 'Platyhelminthes') {
-                svgContent += `
-                <!-- Solid Mesoderm -->
-                <circle cx="0" cy="0" r="70" fill="#b45309" opacity="0.8"/>
-                <text x="0" y="-45" fill="#fef08a" font-size="11" text-anchor="middle">Solid Mesodermal Parenchyma (No Cavity)</text>`;
-            } else if (p.coelom === 'Pseudocoelomate') {
-                svgContent += `
-                <!-- Pseudocoelom with loose mesodermal patches -->
-                <circle cx="0" cy="0" r="70" fill="#0284c7" opacity="0.3"/>
-                <circle cx="-35" cy="-30" r="14" fill="#b45309"/>
-                <circle cx="35" cy="-30" r="14" fill="#b45309"/>
-                <circle cx="-35" cy="30" r="14" fill="#b45309"/>
-                <circle cx="35" cy="30" r="14" fill="#b45309"/>
-                <text x="0" y="-45" fill="#38bdf8" font-size="11" text-anchor="middle">Pseudocoelom (Persistent Blastocoel)</text>`;
-            } else if (p.coelom.includes('Coelomate') || p.coelom.includes('Enterocoelomate')) {
-                svgContent += `
-                <!-- True Coelom lined by Peritoneum -->
-                <circle cx="0" cy="0" r="70" fill="#15803d" stroke="#22c55e" stroke-width="2.5" opacity="0.4"/>
-                <path d="M -70,0 A 70,70 0 0,0 70,0" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,4"/>
-                <text x="0" y="-45" fill="#4ade80" font-size="11" text-anchor="middle">True Coelom Lined by Mesodermal Peritoneum</text>`;
-            }
-
-            // Gut tube in centre
-            svgContent += `
-              <!-- Endoderm / Gut tube -->
-              <circle cx="0" cy="0" r="${25 + pulse * 0.3}" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
-              <circle cx="0" cy="0" r="12" fill="#0f172a"/>
-              <text x="0" y="4" fill="#ffffff" font-size="10" text-anchor="middle">Lumen</text>
-              <text x="0" y="45" fill="#fca5a5" font-size="11" text-anchor="middle">Endoderm / Alimentary Canal</text>
-            </g>
-
-            <!-- Diagnostic Trait Panel -->
-            <g transform="translate(420, 80)">
-              <rect x="0" y="0" width="330" height="230" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-              <text x="20" y="30" fill="#38bdf8" font-size="14" font-weight="bold">Key Diagnostic Hallmark:</text>
-              <text x="20" y="55" fill="#fef08a" font-size="13" font-weight="600">${p.trait}</text>
-              
-              <line x1="20" y1="75" x2="310" y2="75" stroke="#334155" stroke-width="1"/>
-              
-              <text x="20" y="100" fill="#94a3b8" font-size="12">Symmetry: <tspan fill="#ffffff">${p.sym}</tspan></text>
-              <text x="20" y="125" fill="#94a3b8" font-size="12">Organization: <tspan fill="#ffffff">${p.level}</tspan></text>
-              <text x="20" y="150" fill="#94a3b8" font-size="12">Germ Layers: <tspan fill="#ffffff">${p.layers}</tspan></text>
-              <text x="20" y="175" fill="#94a3b8" font-size="12">Coelom Type: <tspan fill="#ffffff">${p.coelom}</tspan></text>
-              <text x="20" y="205" fill="#34d399" font-size="12">Representative Taxa: <tspan font-style="italic">${p.ex}</tspan></text>
-            </g>`;
-
-            svg.innerHTML = svgContent;
-
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Phylum:</strong> ${p.name}</div>
-              <div><strong>Symmetry:</strong> ${p.sym}</div>
-              <div><strong>Coelom:</strong> ${p.coelom}</div>
-              <div><strong>Organ Level:</strong> ${p.level}</div>
-            </div>`;
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-note" style="margin-top: 10px;">
-              <strong>Body Plan Evolutionary Principle:</strong> The transition from acoelomate flatworms to pseudocoelomate roundworms and 
-              subsequently true coelomate annelids and arthropods enabled internal organs to develop independently of outer body contractions.
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        selPhy.addEventListener('change', () => update(state));
-        update(state);
+// Lab 6 — Hierarchy and binomial names (Figs. 12.17–12.19, Table 12.3)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "tiger"};
+  var LEVELS = ["Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"];
+  var TAX = {tiger: ["Animalia", "Chordata", "Mammalia", "Carnivora", "Felidae", "Panthera", "P. tigris"], pea: ["Plantae", "Magnoliophyta", "Magnoliopsida", "Fabales", "Fabaceae", "Pisum", "P. sativum"]};
+  var NAMES = [["Panthera tigris", true, "correct"], ["panthera tigris", false, "genus needs a capital letter"], ["Panthera Tigris", false, "species must be in small letters"], ["Mangifera indica", true, "correct"], ["indica Mangifera", false, "genus must come first"]];
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline(id === "tiger" || id === "pea" ? {maxT: 7, step: 1, speed: 1.5} : id === "names" ? {maxT: 5, step: 1, speed: 1.2} : {maxT: 2, step: 0.05, speed: 0.6});
+    L.legend(id === "names" ? [[C.ok, "follows the rules"], [C.danger, "breaks a rule"]] : [[C.path, "level"]]);
+    L.watch({tiger: "Fig. 12.17: the tiger from kingdom to species (the tiger's list also has sub-phylum Vertebrata).", pea: "Fig. 12.17: the pea plant from kingdom to species.", names: "Section 12.8: which of these scientific names are written correctly?", domains: "Ready to Go Beyond (Fig. 12.19): Carl Woese's three domains."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, k = Math.floor(t + 1e-9);
+    if(st.preset === "tiger" || st.preset === "pea"){
+      var tx = TAX[st.preset];
+      LEVELS.forEach(function(lv, j){ if(j > k - 1 && !(t >= 7)) return; var w = 620 - j * 70, x = 360 - w / 2, y = 20 + j * 38; m += L.rect(x, y, w, 32, "#1e293b", ' rx="6" stroke="' + C.path + '"') + L.text(x + 12, y + 21, lv, {size: 12, color: C.muted, anchor: "start"}) + '<text x="' + (x + w - 12) + '" y="' + (y + 21) + '" fill="' + C.text + '" font-size="14" text-anchor="end"' + (j >= 5 ? ' font-style="italic"' : '') + ' font-weight="700">' + tx[j] + '</text>'; });
+      L.svg(m, "Classification hierarchy", 300);
+      L.readout([["Levels shown", Math.min(7, k) + " of 7"], ["Going down", "fewer members, more shared features", C.path], ["Scientific name", st.preset === "tiger" ? "Panthera tigris" : "Pisum sativum", C.ok]]);
+      msg = t < 7 ? "Going down the levels…" : "Seven levels down to the species <b>" + (st.preset === "tiger" ? "Panthera tigris" : "Pisum sativum") + "</b>: each level holds fewer members that share more features.";
+    } else if(st.preset === "names"){
+      NAMES.forEach(function(nm, j){ var y = 45 + j * 50; m += '<text x="200" y="' + y + '" fill="' + C.text + '" font-size="20" font-style="italic" text-anchor="middle">' + nm[0] + '</text>'; if(j < k || t >= 5) m += L.text(360, y, nm[1] ? "✓" : "✗", {size: 20, color: nm[1] ? C.ok : C.danger, weight: 700}) + L.text(400, y, nm[2], {size: 13, color: nm[1] ? C.ok : C.danger, anchor: "start"}); });
+      L.svg(m, "Checking scientific names", 280);
+      L.readout([["Rule 1", "two parts: genus, then species"], ["Rule 2", "genus with a capital, species in small letters"], ["Rule 3", "italics in print, underlined by hand"]]);
+      msg = t < 5 ? "Checking…" : "Correct: Panthera tigris and Mangifera indica, with the <b>genus first with a capital</b> and the species in small letters, in italics.";
+    } else {
+      var f = clamp12(t / 1.5, 0, 1);
+      m += L.line(360, 280, 360, 200, "#94a3b8", 6);
+      [["Bacteria", 140], ["Archaea", 360], ["Eukarya", 580]].forEach(function(d, j){ var ex = 360 + (d[1] - 360) * f, ey = 200 - 110 * f; m += L.line(360, 200, ex, ey, "#94a3b8", 5) + L.circle(ex, ey, 10, C.path) + (f >= 1 ? L.text(d[1], 70, d[0], {size: 16, color: C.path, weight: 700}) : ""); });
+      if(f >= 1) m += L.text(580, 50, "protists, fungi, plants, animals", {size: 11, color: C.muted});
+      L.svg(m, "Three domains of life", 290);
+      L.readout([["Proposed by", "Carl Woese, 1977"], ["Based on", "comparing genetic material (DNA)"], ["Domains", "Bacteria, Archaea, Eukarya", C.path]]);
+      msg = t < 2 ? "Branching…" : "Comparing DNA, Carl Woese (1977) proposed three domains: <b>Bacteria, Archaea and Eukarya</b>, showing that microscopic life is far more diverse than once thought.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["tiger", "Fig. 12.17: tiger"], ["pea", "Fig. 12.17: pea"], ["names", "Writing scientific names"], ["domains", "Three domains"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.hierarchy = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// 6. Vertebrate Classes & Heart Chambers (sim-vertebrate-classes)
-window.SIMS['sim-vertebrate-classes'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Subphylum Vertebrata: Heart Chambers & Thermoregulation</h3>
-    <div class="sim-controls-top">
-      <label>Vertebrate Class:
-        <select class="sel-class form-select">
-          <option value="pisces">Pisces (Rohu Fish - 2 Chambers)</option>
-          <option value="amphibia">Amphibia (Frog - 3 Chambers)</option>
-          <option value="reptilia" selected>Reptilia (Lizard - Incomplete 3 Chambers)</option>
-          <option value="crocodile">Reptilia Exception (Crocodile - 4 Chambers)</option>
-          <option value="aves">Aves (Pigeon - 4 Chambers)</option>
-          <option value="mammalia">Mammalia (Human - 4 Chambers)</option>
-        </select>
-      </label>
-      <label>Ambient Temperature:
-        <input type="range" class="temp-slider form-range" min="0" max="45" value="25" step="1">
-        <span class="temp-val">25°C</span>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 380" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const selClass = container.querySelector('.sel-class');
-        const tempSlider = container.querySelector('.temp-slider');
-        const tempVal = container.querySelector('.temp-val');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        function update(state) {
-            const vclass = selClass.value;
-            const ambient = parseFloat(tempSlider.value);
-            tempVal.textContent = ambient + '°C';
-
-            // Calculate core temperature & metabolism
-            let coreTemp = ambient;
-            let thermoType = 'Poikilothermic (Cold-blooded)';
-            let heartChambers = 3;
-            let mixing = 'Partial blood mixing';
-
-            if (vclass === 'pisces') {
-                coreTemp = ambient;
-                heartChambers = 2;
-                mixing = 'Single circulation (all venous)';
-            } else if (vclass === 'amphibia') {
-                coreTemp = ambient;
-                heartChambers = 3;
-                mixing = 'High blood mixing in single ventricle';
-            } else if (vclass === 'reptilia') {
-                coreTemp = ambient;
-                heartChambers = 3;
-                mixing = 'Partial mixing (incomplete septum)';
-            } else if (vclass === 'crocodile') {
-                coreTemp = ambient;
-                heartChambers = 4;
-                mixing = 'Minimal mixing (Panizza foramen shunt)';
-            } else if (vclass === 'aves') {
-                coreTemp = 41.5; // constant avian temp
-                thermoType = 'Homeothermic (Warm-blooded)';
-                heartChambers = 4;
-                mixing = 'Zero mixing (Complete Double Circulation)';
-            } else if (vclass === 'mammalia') {
-                coreTemp = 37.0; // constant mammalian temp
-                thermoType = 'Homeothermic (Warm-blooded)';
-                heartChambers = 4;
-                mixing = 'Zero mixing (Complete Double Circulation)';
-            }
-
-            const beat = Math.sin(state.time * (thermoType.includes('Warm') ? 6 : 3)) * 4;
-
-            let svgContent = `
-            <rect width="800" height="380" fill="#080e1a" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              VERTEBRATE CARDIAC BLUEPRINT & THERMOREGULATORY THERMOSTAT
-            </text>
-
-            <!-- Heart Diagram -->
-            <g transform="translate(180, 180)">
-              <rect x="-110" y="-100" width="220" height="200" rx="14" fill="#1e293b" stroke="#475569" stroke-width="2"/>
-              <text x="0" y="-80" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">
-                ${heartChambers}-CHAMBERED HEART
-              </text>`;
-
-            if (heartChambers === 2) {
-                // Fish 2 chamber
-                svgContent += `
-                <!-- 1 Atrium (Blue venous) -->
-                <rect x="-80" y="-60" width="160" height="60" rx="8" fill="#1d4ed8" stroke="#3b82f6" stroke-width="2"/>
-                <text x="0" y="-25" fill="#ffffff" font-size="12" text-anchor="middle">Single Atrium (Deox)</text>
-
-                <!-- 1 Ventricle -->
-                <rect x="-80" y="10" width="160" height="${70 + beat}" rx="8" fill="#2563eb" stroke="#60a5fa" stroke-width="2"/>
-                <text x="0" y="48" fill="#ffffff" font-size="12" text-anchor="middle">Single Ventricle &rarr; Gills</text>`;
-            } else if (heartChambers === 3 && vclass !== 'crocodile') {
-                // Amphibian / Reptile 3 chamber
-                svgContent += `
-                <!-- Right Atrium (Deox blue) -->
-                <rect x="-95" y="-60" width="85" height="60" rx="6" fill="#1d4ed8" stroke="#3b82f6" stroke-width="2"/>
-                <text x="-52" y="-25" fill="#ffffff" font-size="11" text-anchor="middle">Right Atrium</text>
-
-                <!-- Left Atrium (Ox red) -->
-                <rect x="10" y="-60" width="85" height="60" rx="6" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>
-                <text x="52" y="-25" fill="#ffffff" font-size="11" text-anchor="middle">Left Atrium</text>
-
-                <!-- Common Ventricle (Purple mixing) -->
-                <rect x="-95" y="10" width="190" height="${70 + beat}" rx="8" fill="#7e22ce" stroke="#a855f7" stroke-width="2"/>
-                <text x="0" y="48" fill="#ffffff" font-size="12" text-anchor="middle">Common Ventricle (Mixed Blood)</text>`;
-            } else {
-                // 4 Chamber (Crocodile, Aves, Mammalia)
-                svgContent += `
-                <!-- Right Atrium -->
-                <rect x="-95" y="-60" width="85" height="60" rx="6" fill="#1d4ed8" stroke="#3b82f6" stroke-width="2"/>
-                <text x="-52" y="-25" fill="#ffffff" font-size="11" text-anchor="middle">Right Atrium</text>
-
-                <!-- Left Atrium -->
-                <rect x="10" y="-60" width="85" height="60" rx="6" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>
-                <text x="52" y="-25" fill="#ffffff" font-size="11" text-anchor="middle">Left Atrium</text>
-
-                <!-- Right Ventricle (Pulmonary blue) -->
-                <rect x="-95" y="10" width="85" height="${70 + beat}" rx="6" fill="#2563eb" stroke="#60a5fa" stroke-width="2"/>
-                <text x="-52" y="48" fill="#ffffff" font-size="10" text-anchor="middle">Right Vent (To Lungs)</text>
-
-                <!-- Left Ventricle (Systemic red) -->
-                <rect x="10" y="10" width="85" height="${70 + beat}" rx="6" fill="#dc2626" stroke="#f87171" stroke-width="2"/>
-                <text x="52" y="48" fill="#ffffff" font-size="10" text-anchor="middle">Left Vent (To Body)</text>`;
-            }
-
-            svgContent += `</g>
-
-            <!-- Thermoregulation Thermometer & Response -->
-            <g transform="translate(420, 80)">
-              <rect x="0" y="0" width="330" height="230" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-              <text x="20" y="30" fill="#facc15" font-size="14" font-weight="bold">Thermoregulatory Status:</text>
-              <text x="20" y="55" fill="${thermoType.includes('Warm') ? '#4ade80' : '#38bdf8'}" font-size="13" font-weight="600">${thermoType}</text>
-
-              <line x1="20" y1="75" x2="310" y2="75" stroke="#334155" stroke-width="1"/>
-
-              <text x="20" y="105" fill="#cbd5e1" font-size="12">Ambient Air Temp: <tspan font-weight="bold" fill="#f59e0b">${ambient}°C</tspan></text>
-              <text x="20" y="130" fill="#cbd5e1" font-size="12">Core Internal Temp: <tspan font-weight="bold" fill="${thermoType.includes('Warm') ? '#4ade80' : '#38bdf8'}">${coreTemp.toFixed(1)}°C</tspan></text>
-              <text x="20" y="155" fill="#cbd5e1" font-size="12">Heart Partition: <tspan fill="#ffffff">${heartChambers} Chambers</tspan></text>
-              <text x="20" y="180" fill="#cbd5e1" font-size="12">Blood Circuit: <tspan fill="#ffffff">${mixing}</tspan></text>
-
-              <!-- Thermometer visual -->
-              <rect x="20" y="195" width="280" height="14" rx="4" fill="#334155"/>
-              <rect x="20" y="195" width="${(coreTemp / 50) * 280}" height="14" rx="4" fill="${thermoType.includes('Warm') ? '#22c55e' : '#0284c7'}"/>
-            </g>`;
-
-            svg.innerHTML = svgContent;
-
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Vertebrate Class:</strong> ${selClass.options[selClass.selectedIndex].text.split(' ')[0]}</div>
-              <div><strong>Heart Structure:</strong> ${heartChambers} Chambers</div>
-              <div><strong>Ambient vs Core:</strong> ${ambient}°C &rarr; ${coreTemp.toFixed(1)}°C</div>
-              <div><strong>Metabolic Mode:</strong> ${thermoType.split(' ')[0]}</div>
-            </div>`;
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-tip" style="margin-top: 10px;">
-              <strong>Physiological Verdict:</strong> ${thermoType.includes('Warm') ? 
-                'Birds and mammals sustain high metabolic rates powered by complete double circulation, maintaining constant core temperature regardless of arctic cold or desert heat.' : 
-                'Cold-blooded vertebrates experience temperature-dependent metabolic rates; in extreme cold or heat they must hibernate or aestivate to survive.'}
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        selClass.addEventListener('change', () => update(state));
-        tempSlider.addEventListener('input', () => update(state));
-        update(state);
+// Lab 7 — Fossils and threats to biodiversity (Sections 12.9–12.10)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "fossils"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline(id === "fossils" ? {maxT: 5, step: 1, speed: 1.2} : {maxT: 3, step: 0.05, speed: 0.6});
+    L.legend(id === "fossils" ? [[C.path, "fossils"]] : [[C.ok, "healthy"], [C.danger, "declining"]]);
+    L.watch({fossils: "Section 12.9: layers of rock laid down over time (schematic).", foodweb: "Section 12.10: a forest where a bee pollinates a fruit tree (illustrative).", sangai: "Bridging Science and Society: the Sangai deer and the phumdis of Loktak Lake.", shield: "Bridging Science and Society: villages with and without mangroves in a super cyclone (bars illustrative)."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, i;
+    if(st.preset === "fossils"){
+      var k = Math.floor(t + 1e-9), layers = [["#78716c", "single-celled life (stromatolites)"], ["#a8a29e", "shelled sea animals"], ["#d6d3d1", "fish"], ["#a16207", "reptiles, dinosaurs"], ["#ca8a04", "mammals, early humans"]];
+      layers.forEach(function(l, j){ if(j > k) return; var y = 250 - j * 45; m += L.rect(120, y, 480, 45, l[0]) + L.text(620, y + 28, l[1], {size: 12, color: C.text, anchor: "start"}); m += L.circle(200 + j * 60, y + 22, 6 + j * 2, "#1f2937", ' opacity="0.8"'); });
+      m += L.arrow(90, 290, 90, 60, C.faint, 2) + L.text(80, 60, "newer", {size: 11, color: C.muted, anchor: "end"}) + L.text(80, 285, "older", {size: 11, color: C.muted, anchor: "end"});
+      L.svg(m, "Fossil layers", 300);
+      L.readout([["Layers laid down", String(Math.min(5, k + 1))], ["Oldest (bottom)", "simplest organisms", C.path], ["Newest (top)", "more complex forms"]]);
+      msg = t < 5 ? "Layers building up…" : "Deeper, older layers generally hold <b>simpler organisms</b>; newer layers hold more complex forms. Fossils record how life has changed.";
+    } else if(st.preset === "foodweb"){
+      var lost = clamp12((t - 0.8) / 1.5, 0, 1), nodes = [["bee", 120, 80, 1], ["fruit tree", 360, 80, 0.8], ["monkeys", 600, 60, 0.6], ["hornbills", 600, 170, 0.6], ["new seedlings", 360, 240, 0.7]];
+      [[0, 1], [1, 2], [1, 3], [3, 4]].forEach(function(e){ m += L.line(nodes[e[0]][1], nodes[e[0]][2], nodes[e[1]][1], nodes[e[1]][2], "#475569", 3); });
+      nodes.forEach(function(n, j){ var health = j === 0 ? 1 - lost : 1 - lost * n[3]; m += L.circle(n[1], n[2], 34, health > 0.6 ? "#14532d" : "#7f1d1d", ' opacity="' + (0.3 + 0.7 * health).toFixed(2) + '" stroke="' + (health > 0.6 ? C.ok : C.danger) + '" stroke-width="3"') + L.text(n[1], n[2] + 5, n[0], {size: 12, color: C.text, weight: 700}); });
+      L.svg(m, "Food web losing a pollinator", 290);
+      L.readout([["Bee", lost >= 1 ? "gone" : "declining", C.danger], ["Fruits and seeds", lost > 0.5 ? "far fewer" : "normal"], ["Monkeys, hornbills, seedlings", lost >= 1 ? "declining" : "…", C.danger]]);
+      msg = t < 3 ? "Losing the pollinator…" : "Losing the bee cut fruit and seed production, so <b>the animals and new trees that depended on it declined</b>.";
+    } else if(st.preset === "sangai"){
+      var f = clamp12(t / 3, 0, 1);
+      m += L.rect(60, 60, 600, 160, "#0e7490", ' rx="20" opacity="0.6"');
+      for(i = 0; i < 6; i++){ var r = (46 - 18 * f) * (0.7 + (i % 3) * 0.2); m += '<ellipse cx="' + (140 + i * 95) + '" cy="' + (140 + (i % 2 ? 30 : -30)) + '" rx="' + r.toFixed(1) + '" ry="' + (r * 0.55).toFixed(1) + '" fill="#65a30d" opacity="0.9"/>'; }
+      m += L.text(360, 45, "Loktak Lake phumdis (floating grasslands)", {size: 13, color: C.text});
+      [["1951", "declared extinct"], ["1953", "rediscovered"], ["today", "IUCN Red List; phumdis degenerating"]].forEach(function(e, j){ if(t >= j * 0.9) m += L.text(120 + j * 240, 260, e[0] + ": " + e[1], {size: 12, color: j === 2 ? C.danger : C.path, weight: 700}); });
+      L.svg(m, "Sangai and the phumdis", 280);
+      L.readout([["Species", "Sangai, the dancing deer (endemic to Manipur)"], ["Home", "phumdis, Keibul Lamjao National Park"], ["Threat", "habitat loss as phumdis degenerate", C.danger]]);
+      msg = t < 3 ? "Time passing…" : "Declared extinct in 1951 and rediscovered in 1953, the Sangai <b>depends on the phumdis</b> of Loktak Lake, which are now degenerating, so saving the habitat is key.";
+    } else {
+      var hitT = clamp12((t - 0.5) / 1.5, 0, 1);
+      [[40, true, "with mangroves"], [380, false, "without mangroves"]].forEach(function(p){
+        m += L.rect(p[0], 190, 300, 60, "#0e7490", ' opacity="0.6"') + L.rect(p[0], 150, 300, 40, "#a16207", ' opacity="0.5"');
+        if(p[1]) for(i = 0; i < 8; i++) m += L.circle(p[0] + 20 + i * 38, 185, 14, "#15803d");
+        for(i = 0; i < 4; i++) m += L.rect(p[0] + 40 + i * 65, 110, 40, 40, "#e2e8f0", ' opacity="' + (p[1] ? 1 : 1 - 0.7 * hitT).toFixed(2) + '"');
+        for(i = 0; i < 3; i++) m += '<path d="M' + (p[0] + 300 - hitT * (p[1] ? 60 : 250) - i * 30) + ' ' + (215 + i * 10) + ' q15 -12 30 0" fill="none" stroke="#e0f2fe" stroke-width="3"/>';
+        m += L.text(p[0] + 150, 280, p[2] + ": damage " + (p[1] ? "low" : "high"), {size: 13, color: p[1] ? C.ok : C.danger, weight: 700});
+      });
+      L.svg(m, "Mangroves as a shield", 300);
+      L.readout([["1999 super cyclone, Odisha", "villages with more mangroves suffered less"], ["Other shields", "diverse forests lower disease risk; soils trap pollutants", C.ok]]);
+      msg = t < 3 ? "Storm arriving…" : "Villages behind mangroves suffered <b>less destruction</b> in the 1999 super cyclone in Odisha: diverse forests act as natural shields.";
     }
-};
-
-// 7. Ecosystem Stability & Keystone Food Web (sim-ecosystem-stability)
-window.SIMS['sim-ecosystem-stability'] = {
-    mount: function(container) {
-        container.innerHTML = `
-<div class="sim-wrapper">
-  <div class="sim-header">
-    <h3>Biodiversity & Ecosystem Stability Food Web Simulator</h3>
-    <div class="sim-controls-top">
-      <label>Species Richness:
-        <input type="range" class="richness-slider form-range" min="3" max="15" value="12" step="1">
-        <span class="richness-val">12 Species</span>
-      </label>
-      <label>Keystone Species:
-        <select class="sel-keystone form-select">
-          <option value="present" selected>Present (Apex Predator Intact)</option>
-          <option value="removed">Removed (Habitat Disturbance / Poaching)</option>
-        </select>
-      </label>
-      <label>Environmental Shock:
-        <select class="sel-shock form-select">
-          <option value="none" selected>Normal Equilibrium</option>
-          <option value="drought">Severe Drought (Producers -40%)</option>
-          <option value="invasive">Invasive Weed Invasion</option>
-        </select>
-      </label>
-    </div>
-  </div>
-  <div class="sim-canvas-box">
-    <svg class="sim-svg" viewBox="0 0 800 380" width="100%" height="320"></svg>
-  </div>
-  <div class="sim-controls-bar">
-    <div class="btn-group">
-      <button class="btn btn-sm btn-play">▶ Play</button>
-      <button class="btn btn-sm btn-step">⏭ Step</button>
-      <button class="btn btn-sm btn-reset">↺ Reset</button>
-    </div>
-    <input type="range" class="sim-scrubber form-range" min="0" max="10" step="0.05" value="0">
-    <select class="sim-speed form-select">
-      <option value="0.5">0.5×</option>
-      <option value="1.0" selected>1.0×</option>
-      <option value="2.0">2.0×</option>
-    </select>
-  </div>
-  <div id="lab-readout" class="sim-readout"></div>
-  <div id="lab-verdict" class="sim-verdict"></div>
-</div>`;
-
-        const richSlider = container.querySelector('.richness-slider');
-        const richVal = container.querySelector('.richness-val');
-        const selKey = container.querySelector('.sel-keystone');
-        const selShock = container.querySelector('.sel-shock');
-        const svg = container.querySelector('.sim-svg');
-        const readout = container.querySelector('#lab-readout');
-        const verdict = container.querySelector('#lab-verdict');
-
-        function update(state) {
-            const richness = parseInt(richSlider.value, 10);
-            richVal.textContent = richness + ' Species';
-            const hasKeystone = selKey.value === 'present';
-            const shock = selShock.value;
-
-            // Calculate stability index
-            let stability = (richness / 15) * 60 + (hasKeystone ? 30 : 5);
-            if (shock === 'drought') stability -= 20;
-            if (shock === 'invasive') stability -= 25;
-            stability = Math.max(10, Math.min(100, Math.round(stability)));
-
-            const pulse = Math.sin(state.time * 3) * 3;
-
-            let svgContent = `
-            <rect width="800" height="380" fill="#0b1120" rx="8"/>
-            <text x="400" y="30" fill="#f8fafc" text-anchor="middle" font-size="16" font-weight="bold">
-              FOOD WEB RESILIENCE: ${richness} SPECIES (${hasKeystone ? 'KEYSTONE INTACT' : 'KEYSTONE ABSENT'})
-            </text>
-
-            <!-- Food Web Network Graph -->
-            <g transform="translate(80, 70)">
-              <!-- Trophic Levels -->
-              <text x="-20" y="40" fill="#ef4444" font-size="12" font-weight="bold">Tertiary (Apex)</text>
-              <text x="-20" y="120" fill="#fb923c" font-size="12" font-weight="bold">Secondary</text>
-              <text x="-20" y="190" fill="#facc15" font-size="12" font-weight="bold">Primary Herbivores</text>
-              <text x="-20" y="260" fill="#4ade80" font-size="12" font-weight="bold">Producers</text>
-
-              <!-- Network Links -->`;
-            
-            // Draw links
-            const nodes = [];
-            // Producers (y=260)
-            const prodCount = Math.min(5, Math.max(2, Math.floor(richness * 0.4)));
-            for (let i = 0; i < prodCount; i++) {
-                nodes.push({ id: `p${i}`, x: 150 + i * 90, y: 260, color: '#22c55e', role: 'Producer' });
-            }
-            // Herbivores (y=190)
-            const herbCount = Math.min(4, Math.max(1, Math.floor(richness * 0.3)));
-            for (let i = 0; i < herbCount; i++) {
-                nodes.push({ id: `h${i}`, x: 180 + i * 110, y: 190, color: '#eab308', role: 'Herbivore' });
-            }
-            // Secondary (y=120)
-            const carnCount = Math.min(3, Math.max(1, Math.floor(richness * 0.2)));
-            for (let i = 0; i < carnCount; i++) {
-                nodes.push({ id: `c${i}`, x: 220 + i * 120, y: 120, color: '#f97316', role: 'Carnivore' });
-            }
-            // Apex (y=40)
-            if (hasKeystone) {
-                nodes.push({ id: 'apex', x: 300, y: 40, color: '#ef4444', role: 'Keystone Apex' });
-            }
-
-            // Draw connecting web lines
-            for (let i = 0; i < nodes.length; i++) {
-                for (let j = i + 1; j < nodes.length; j++) {
-                    if (Math.abs(nodes[i].y - nodes[j].y) < 90) {
-                        svgContent += `<line x1="${nodes[i].x}" y1="${nodes[i].y}" x2="${nodes[j].x}" y2="${nodes[j].y}" 
-                                             stroke="#334155" stroke-width="1.5" stroke-opacity="0.6"/>`;
-                    }
-                }
-            }
-
-            // Draw node circles
-            nodes.forEach(n => {
-                const r = n.id === 'apex' ? 14 + pulse * 0.4 : 10;
-                svgContent += `
-                <circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${n.color}" stroke="#ffffff" stroke-width="2"/>
-                <text x="${n.x}" y="${n.y + 4}" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">${n.id.toUpperCase()}</text>`;
-            });
-
-            svgContent += `</g>
-
-            <!-- Stability Gauge Box -->
-            <g transform="translate(560, 80)">
-              <rect x="0" y="0" width="200" height="230" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
-              <text x="100" y="30" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">ECOSYSTEM RESILIENCE</text>
-              
-              <circle cx="100" cy="100" r="50" fill="none" stroke="#334155" stroke-width="10"/>
-              <circle cx="100" cy="100" r="50" fill="none" 
-                      stroke="${stability > 70 ? '#22c55e' : (stability > 40 ? '#facc15' : '#ef4444')}" 
-                      stroke-width="10" stroke-dasharray="314" stroke-dashoffset="${314 - (stability / 100) * 314}" stroke-linecap="round"/>
-              <text x="100" y="108" fill="#f8fafc" font-size="22" font-weight="bold" text-anchor="middle">${stability}%</text>
-
-              <text x="100" y="170" fill="#cbd5e1" font-size="11" text-anchor="middle">
-                ${stability > 70 ? 'High Resilience' : (stability > 40 ? 'Moderate Fragility' : 'High Extinction Risk')}
-              </text>
-              <text x="100" y="195" fill="#94a3b8" font-size="10" text-anchor="middle">
-                ${hasKeystone ? 'Trophic Cascade Prevented' : 'Mesopredator Release Warning'}
-              </text>
-            </g>`;
-
-            svg.innerHTML = svgContent;
-
-            readout.innerHTML = `
-            <div class="readout-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px;">
-              <div><strong>Species Count:</strong> ${richness}</div>
-              <div><strong>Keystone State:</strong> ${hasKeystone ? 'Present' : 'Removed'}</div>
-              <div><strong>Disturbance Shock:</strong> ${shock}</div>
-              <div><strong>Resilience Score:</strong> ${stability}%</div>
-            </div>`;
-
-            verdict.innerHTML = `
-            <div class="alert-box alert-tip" style="margin-top: 10px;">
-              <strong>Ecological Law of Diversity & Stability:</strong> More complex, biodiverse food webs possess redundant pathways. 
-              If one herbivore or producer experiences population stress, interconnected species buffer against collapse, maintaining 
-              steady bio-geochemical cycles.
-            </div>`;
-        }
-
-        const state = createSimState(container, update);
-        state.bindControls();
-        richSlider.addEventListener('input', () => update(state));
-        selKey.addEventListener('change', () => update(state));
-        selShock.addEventListener('change', () => update(state));
-        update(state);
-    }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["fossils", "Fossil layers"], ["foodweb", "Losing one species"], ["sangai", "The Sangai and phumdis"], ["shield", "Forests as shields"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.threats = {mount: mount, draw: draw, select: select, state: st};
+})();

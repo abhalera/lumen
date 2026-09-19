@@ -14,19 +14,18 @@ function cell(label, val, color){
 }
 
 // -------------------------------------------------------------------------
-// 1. SIMULATION 1: Biodiversity Gradient & Species Richness (biodiversitymap)
+// 1. Biodiversity & Habitats Explorer (biodiversitymap)
+// NCERT §1.1 (pp. 3-4): six named habitats, 1.7-1.8M described species,
+// new organisms continuously identified.
 // -------------------------------------------------------------------------
 window.SIMS.biodiversitymap = (function(){
-  var lat = 0; // Latitude 0 to 80 deg
-  var biome = "Tropical Rainforest";
+  var view = "habitats"; // "habitats" | "described" | "new"
 
-  function setLat(newLat, bName){
-    lat = newLat;
-    if(bName) biome = bName;
-    var s = document.getElementById("lat-slider");
-    if(s) s.value = lat;
-    var lv = document.getElementById("lat-val");
-    if(lv) lv.textContent = lat + "° (" + biome + ")";
+  var HABITATS = ["cold mountains", "deciduous forests", "oceans",
+    "fresh water lakes", "deserts", "hot springs"];
+
+  function setView(v){
+    view = v;
     draw(0);
   }
 
@@ -34,97 +33,102 @@ window.SIMS.biodiversitymap = (function(){
     App.state.maxT = 5;
     var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Insects (~1,025,000)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Plants (~300,000)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fungi (~100,000)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Chordates (~60,000)</span></div>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Habitats named in §1.1</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Described species total</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Newly identified organisms</span></div>';
 
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-trop">Tropical Equator (0°)</button>' +
-      '<button class="preset-btn" id="p-temp">Temperate Forest (45°)</button>' +
-      '<button class="preset-btn" id="p-polar">Polar Tundra (75°)</button>';
+      '<button class="preset-btn active" id="p-habitats">Habitats (§1.1)</button>' +
+      '<button class="preset-btn" id="p-described">1.7–1.8M Described</button>' +
+      '<button class="preset-btn" id="p-new">Newly Identified</button>';
 
-    document.getElementById("p-trop").onclick = function(){ setActivePreset(this); setLat(0, "Tropical Rainforest"); };
-    document.getElementById("p-temp").onclick = function(){ setActivePreset(this); setLat(45, "Temperate Forest"); };
-    document.getElementById("p-polar").onclick = function(){ setActivePreset(this); setLat(75, "Polar Tundra"); };
+    document.getElementById("p-habitats").onclick = function(){ setActivePreset(this); setView("habitats"); };
+    document.getElementById("p-described").onclick = function(){ setActivePreset(this); setView("described"); };
+    document.getElementById("p-new").onclick = function(){ setActivePreset(this); setView("new"); };
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group" style="grid-column:span 2;">' +
-        '<label>Latitude from Equator: <b id="lat-val" style="color:#10b981;">0° (Tropical Rainforest)</b></label>' +
-        '<input type="range" id="lat-slider" min="0" max="80" value="0" step="1">' +
+        '<label>Biodiversity views: <b>three panels, all from §1.1 (pp. 3–4)</b></label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Habitats the chapter names, the described-species total, and the steady identification of new organisms.</div>' +
       '</div>';
-
-    document.getElementById("lat-slider").oninput = function(e){
-      lat = parseInt(e.target.value, 10);
-      if(lat < 23.5) biome = "Tropical Rainforest";
-      else if(lat < 60) biome = "Temperate Deciduous";
-      else biome = "Polar Tundra";
-      var lv = document.getElementById("lat-val");
-      if(lv) lv.textContent = lat + "° (" + biome + ")";
-      draw(0);
-    };
 
     draw(0);
   }
 
   function draw(t){
     var svg = svgEl(); if(!svg) return;
-    // Diversity factor decreases with latitude: 100% at equator to 5% at poles
-    var factor = Math.max(0.05, Math.cos((lat * Math.PI) / 180));
-    var speciesDensity = Math.round(factor * 1250); // species per 100 sq km
-
     var m = '<rect width="720" height="300" fill="#09131d"/>';
-    // Earth globe / slice
-    m += '<circle cx="150" cy="150" r="110" fill="#0f2744" stroke="#334155" stroke-width="2"/>';
-    // Latitude line
-    var yLat = 150 - (lat / 90) * 100;
-    var chordW = Math.sqrt(Math.max(0, 110*110 - (yLat-150)*(yLat-150)));
-    m += '<line x1="' + (150 - chordW) + '" y1="' + yLat + '" x2="' + (150 + chordW) + '" y2="' + yLat + '" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4 3"/>';
-    m += '<text x="150" y="' + (yLat - 6) + '" fill="#ef4444" font-size="11" font-weight="700" text-anchor="middle">Lat ' + lat + '°</text>';
-    m += '<text x="150" y="275" fill="#94a3b8" font-size="11" text-anchor="middle">Earth Latitudinal Diversity Gradient</text>';
 
-    // Bar chart of species groups at this latitude
-    m += '<rect x="320" y="30" width="370" height="230" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
-    m += '<text x="340" y="55" fill="#f8fafc" font-size="14" font-weight="700">Relative Species Richness at ' + lat + '°</text>';
-    m += '<text x="340" y="72" fill="#94a3b8" font-size="11">Described Global Catalog: 1.7–1.8 Million Species (NCERT 1.1)</text>';
-
-    var groups = [
-      { name: "Insects (Arthropoda)", max: 1025, col: "#10b981" },
-      { name: "Angiosperms (Plants)", max: 300, col: "#38bdf8" },
-      { name: "Fungi", max: 100, col: "#f59e0b" },
-      { name: "Chordates (Vertebrates)", max: 60, col: "#ec4899" }
-    ];
-
-    for(var i = 0; i < groups.length; i++){
-      var g = groups[i];
-      var count = Math.round(g.max * factor);
-      var barW = Math.max(10, Math.round((count / 1025) * 260));
-      var y = 100 + i * 36;
-      m += '<text x="340" y="' + (y - 4) + '" fill="#cbd5e1" font-size="11">' + g.name + ': <b style="color:' + g.col + '">' + (count * 1000).toLocaleString() + ' described species</b></text>';
-      m += '<rect x="340" y="' + y + '" width="260" height="12" rx="3" fill="#1e293b"/>';
-      m += '<rect x="340" y="' + y + '" width="' + barW + '" height="12" rx="3" fill="' + g.col + '"/>';
+    if(view === "habitats"){
+      m += '<text x="360" y="34" fill="#f8fafc" font-size="15" font-weight="700" text-anchor="middle">Six habitats named in §1.1 (p. 3)</text>';
+      for(var i = 0; i < HABITATS.length; i++){
+        var hx = 40 + (i % 3) * 220, hy = 55 + Math.floor(i / 3) * 105;
+        m += '<rect x="' + hx + '" y="' + hy + '" width="200" height="88" rx="8" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
+        m += '<text x="' + (hx + 100) + '" y="' + (hy + 38) + '" fill="#10b981" font-size="14" font-weight="700" text-anchor="middle">' + HABITATS[i] + '</text>';
+        m += '<text x="' + (hx + 100) + '" y="' + (hy + 62) + '" fill="#64748b" font-size="11" text-anchor="middle">living organisms found here</text>';
+      }
+      m += '<text x="360" y="282" fill="#94a3b8" font-size="11" text-anchor="middle">Awe examples: galloping horse · migrating birds · valley of flowers · attacking shark</text>';
+      readout(
+        cell("Habitats named", "6 (§1.1)", "#10b981") +
+        cell("Described species", "1.7–1.8 million", "#38bdf8") +
+        cell("New organisms", "Continuously identified", "#f59e0b") +
+        cell("One kind seen", "= one species", "#a855f7")
+      );
+      verdict(
+        '<span style="color:#10b981;font-weight:700;">Diversity in the living world:</span> ' +
+        'From cold mountains to hot springs, each different kind of organism represents a species — and widening the area observed widens the variety seen.'
+      );
+    } else if(view === "described"){
+      m += '<text x="360" y="60" fill="#94a3b8" font-size="13" text-anchor="middle">SPECIES KNOWN AND DESCRIBED (§1.1)</text>';
+      m += '<text x="360" y="130" fill="#38bdf8" font-size="52" font-weight="800" text-anchor="middle">1.7–1.8 million</text>';
+      m += '<rect x="110" y="165" width="500" height="60" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+      m += '<text x="360" y="190" fill="#e2e8f0" font-size="13" text-anchor="middle">Biodiversity = the number and types of organisms present on earth</text>';
+      m += '<text x="360" y="210" fill="#64748b" font-size="11" text-anchor="middle">a range, because cataloguing is still ongoing</text>';
+      m += '<text x="360" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Millions identified and described — yet a large number still remains unknown (Summary, p. 9)</text>';
+      readout(
+        cell("Described range", "1.7–1.8 million", "#38bdf8") +
+        cell("Biodiversity", "Number + types on earth", "#10b981") +
+        cell("Still unknown", "A large number", "#f59e0b") +
+        cell("Source", "§1.1 + Summary", "#a855f7")
+      );
+      verdict(
+        '<span style="color:#38bdf8;font-weight:700;">The count and its qualifier:</span> ' +
+        '1.7–1.8 million species known and described — while a large number still remains unknown.'
+      );
+    } else {
+      m += '<text x="360" y="40" fill="#f8fafc" font-size="15" font-weight="700" text-anchor="middle">New organisms, continuously identified (p. 4)</text>';
+      m += '<rect x="60" y="70" width="270" height="120" rx="8" fill="#0b1726" stroke="#f59e0b" stroke-width="1.5"/>';
+      m += '<text x="195" y="105" fill="#f59e0b" font-size="14" font-weight="700" text-anchor="middle">exploring new areas</text>';
+      m += '<text x="195" y="130" fill="#cbd5e1" font-size="12" text-anchor="middle">→ new organisms found</text>';
+      m += '<text x="195" y="152" fill="#64748b" font-size="11" text-anchor="middle">dense forests hold more kinds</text>';
+      m += '<rect x="390" y="70" width="270" height="120" rx="8" fill="#0b1726" stroke="#f59e0b" stroke-width="1.5"/>';
+      m += '<text x="525" y="105" fill="#f59e0b" font-size="14" font-weight="700" text-anchor="middle">revisiting old areas</text>';
+      m += '<text x="525" y="130" fill="#cbd5e1" font-size="12" text-anchor="middle">→ still new organisms</text>';
+      m += '<text x="525" y="152" fill="#64748b" font-size="11" text-anchor="middle">even familiar ground surprises</text>';
+      m += '<text x="360" y="235" fill="#e2e8f0" font-size="13" text-anchor="middle">Every newcomer needs describing, identifying — then one world-wide name.</text>';
+      m += '<text x="360" y="260" fill="#64748b" font-size="11" text-anchor="middle">Local names vary place to place: nomenclature standardises them (§1.1, p. 4)</text>';
+      readout(
+        cell("New areas", "New organisms", "#f59e0b") +
+        cell("Old areas", "Still new organisms", "#f59e0b") +
+        cell("Next step", "Describe + identify", "#10b981") +
+        cell("Then", "One standard name", "#38bdf8")
+      );
+      verdict(
+        '<span style="color:#f59e0b;font-weight:700;">Never finished:</span> ' +
+        'As we explore new areas, and even old ones, new organisms are continuously being identified — each needing identification before it can be named.'
+      );
     }
 
     svg.innerHTML = m;
-
-    readout(
-      cell("Biome Zone", biome, "#38bdf8") +
-      cell("Latitude", lat + "° N/S", "#f59e0b") +
-      cell("Local Species Density", speciesDensity + " / 100 km²", "#10b981") +
-      cell("Global Described Total", "1.75 Million", "#a855f7")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Latitudinal Diversity Gradient:</span> ' +
-      'Species richness peaks at the tropical equator (warm, solar-rich, long evolutionary stability) and decreases steadily towards the poles. Currently, ~1.7 to 1.8 million species have been formally described in taxonomy.'
-    );
   }
 
   return { mount: mount, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
-// 2. SIMULATION 2: Linnaean Binomial Nomenclature Validator (binomialnamer)
+// 2. Linnaean Binomial Nomenclature Validator (binomialnamer)
+// NCERT rules 1-4 + author citation (pp. 4-5). Chapter examples only:
+// mango (with Linn.), lion, potato.
 // -------------------------------------------------------------------------
 window.SIMS.binomialnamer = (function(){
   var genus = "Mangifera";
@@ -159,7 +163,7 @@ window.SIMS.binomialnamer = (function(){
 
     document.getElementById("p-mango").onclick = function(){ setActivePreset(this); setPreset("Mangifera", "indica", "Linn.", false); };
     document.getElementById("p-lion").onclick = function(){ setActivePreset(this); setPreset("Panthera", "leo", "", false); };
-    document.getElementById("p-potato").onclick = function(){ setActivePreset(this); setPreset("Solanum", "tuberosum", "Linn.", false); };
+    document.getElementById("p-potato").onclick = function(){ setActivePreset(this); setPreset("Solanum", "tuberosum", "", false); };
     document.getElementById("p-error").onclick = function(){ setActivePreset(this); setPreset("mangifera", "Indica", "", false); };
 
     document.getElementById("lab-controls").innerHTML =
@@ -246,7 +250,7 @@ window.SIMS.binomialnamer = (function(){
 
     verdict(
       allValid ?
-      '<span style="color:#10b981;font-weight:700;">Valid Binomial Name:</span> Follows Linnaean rules. Genus is capitalized, species epithet is lowercase, and formatting complies with ICBN/ICZN standards.' :
+      '<span style="color:#10b981;font-weight:700;">Valid Binomial Name:</span> Genus capitalised, epithet lowercase, formatting per Rules 1–4 (ICBN/ICZN). The author citation records the first describer.' :
       '<span style="color:#ef4444;font-weight:700;">Rule Violation Detected:</span> NCERT Rule 4 mandates that the genus starts with a capital letter and the specific epithet starts with a small letter.'
     );
   }
@@ -255,47 +259,60 @@ window.SIMS.binomialnamer = (function(){
 })();
 
 // -------------------------------------------------------------------------
-// 3. SIMULATION 3: Multi-Level Taxon Nested Venn Diagram (taxasorter)
+// 3. Nested Taxa Explorer (taxasorter)
+// Taxa at different levels (p. 5) + Table 1.1 lineages (p. 8). Every taxon
+// and every rank gloss below is stated in the chapter.
 // -------------------------------------------------------------------------
 window.SIMS.taxasorter = (function(){
-  var selectedLineage = "dog"; // "dog", "cat", "human", "wheat"
+  var selectedLineage = "human"; // "human", "fly", "mango", "wheat"
+
+  var GLOSS = {
+    Kingdom: "highest category (§1.2.7)",
+    Phylum: "body-plan grouping (§1.2.6)",
+    Division: "plant phylum-equivalent (§1.2.6)",
+    Class: "related orders (§1.2.5)",
+    Order: "related families (§1.2.4)",
+    Family: "related genera (§1.2.3)",
+    Genus: "related species (§1.2.2)",
+    Species: "lowest category (§1.2.1)"
+  };
 
   var lineages = {
-    dog: [
-      { rank: "Kingdom", taxon: "Animalia", desc: "Multicellular heterotrophs, no cell wall" },
-      { rank: "Phylum", taxon: "Chordata", desc: "Notochord, dorsal hollow nerve tube" },
-      { rank: "Class", taxon: "Mammalia", desc: "Mammary glands, hair, pinna" },
-      { rank: "Order", taxon: "Carnivora", desc: "Carnassial teeth, flesh-eating adaptations" },
-      { rank: "Family", taxon: "Canidae", desc: "Non-retractile claws, elongated muzzle" },
-      { rank: "Genus", taxon: "Canis", desc: "Jackals, wolves, domestic dogs" },
-      { rank: "Species", taxon: "Canis lupus (familiaris)", desc: "Domestic dog" }
-    ],
-    cat: [
-      { rank: "Kingdom", taxon: "Animalia", desc: "Multicellular heterotrophs, no cell wall" },
-      { rank: "Phylum", taxon: "Chordata", desc: "Notochord, dorsal hollow nerve tube" },
-      { rank: "Class", taxon: "Mammalia", desc: "Mammary glands, hair, pinna" },
-      { rank: "Order", taxon: "Carnivora", desc: "Carnassial teeth, flesh-eating adaptations" },
-      { rank: "Family", taxon: "Felidae", desc: "Retractile claws, rounded facial skull" },
-      { rank: "Genus", taxon: "Felis", desc: "Small purring cats" },
-      { rank: "Species", taxon: "Felis catus", desc: "Domestic cat" }
-    ],
     human: [
-      { rank: "Kingdom", taxon: "Animalia", desc: "Multicellular heterotrophs, no cell wall" },
-      { rank: "Phylum", taxon: "Chordata", desc: "Notochord, dorsal hollow nerve tube" },
-      { rank: "Class", taxon: "Mammalia", desc: "Mammary glands, hair, pinna" },
-      { rank: "Order", taxon: "Primata", desc: "Opposable thumbs, binocular vision" },
-      { rank: "Family", taxon: "Hominidae", desc: "Bipedal posture, large cranial capacity" },
-      { rank: "Genus", taxon: "Homo", desc: "Modern and archaic humans" },
-      { rank: "Species", taxon: "Homo sapiens", desc: "Modern human beings" }
+      { rank: "Kingdom", taxon: "Animalia" },
+      { rank: "Phylum", taxon: "Chordata" },
+      { rank: "Class", taxon: "Mammalia" },
+      { rank: "Order", taxon: "Primata" },
+      { rank: "Family", taxon: "Hominidae" },
+      { rank: "Genus", taxon: "Homo" },
+      { rank: "Species", taxon: "Homo sapiens" }
+    ],
+    fly: [
+      { rank: "Kingdom", taxon: "Animalia" },
+      { rank: "Phylum", taxon: "Arthropoda" },
+      { rank: "Class", taxon: "Insecta" },
+      { rank: "Order", taxon: "Diptera" },
+      { rank: "Family", taxon: "Muscidae" },
+      { rank: "Genus", taxon: "Musca" },
+      { rank: "Species", taxon: "Musca domestica" }
+    ],
+    mango: [
+      { rank: "Kingdom", taxon: "Plantae" },
+      { rank: "Division", taxon: "Angiospermae" },
+      { rank: "Class", taxon: "Dicotyledonae" },
+      { rank: "Order", taxon: "Sapindales" },
+      { rank: "Family", taxon: "Anacardiaceae" },
+      { rank: "Genus", taxon: "Mangifera" },
+      { rank: "Species", taxon: "Mangifera indica" }
     ],
     wheat: [
-      { rank: "Kingdom", taxon: "Plantae", desc: "Photosynthetic, cellulose cell walls" },
-      { rank: "Division", taxon: "Angiospermae", desc: "Enclosed seeds inside fruits, double fertilization" },
-      { rank: "Class", taxon: "Monocotyledonae", desc: "Single cotyledon, parallel venation" },
-      { rank: "Order", taxon: "Poales", desc: "Glumaceous perianth, wind pollinated" },
-      { rank: "Family", taxon: "Poaceae", desc: "Grass family, caryopsis fruit" },
-      { rank: "Genus", taxon: "Triticum", desc: "Wheat grasses" },
-      { rank: "Species", taxon: "Triticum aestivum", desc: "Bread wheat" }
+      { rank: "Kingdom", taxon: "Plantae" },
+      { rank: "Division", taxon: "Angiospermae" },
+      { rank: "Class", taxon: "Monocotyledonae" },
+      { rank: "Order", taxon: "Poales" },
+      { rank: "Family", taxon: "Poaceae" },
+      { rank: "Genus", taxon: "Triticum" },
+      { rank: "Species", taxon: "Triticum aestivum" }
     ]
   };
 
@@ -313,20 +330,20 @@ window.SIMS.taxasorter = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Species (Lowest)</span></div>';
 
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-dog">Dog (Canis lupus)</button>' +
-      '<button class="preset-btn" id="p-cat">Cat (Felis catus)</button>' +
-      '<button class="preset-btn" id="p-human">Human (Homo sapiens)</button>' +
-      '<button class="preset-btn" id="p-wheat">Wheat (Triticum aestivum)</button>';
+      '<button class="preset-btn active" id="p-txhuman">Human (Homo sapiens)</button>' +
+      '<button class="preset-btn" id="p-txfly">Housefly (Musca domestica)</button>' +
+      '<button class="preset-btn" id="p-txmango">Mango (Mangifera indica)</button>' +
+      '<button class="preset-btn" id="p-txwheat">Wheat (Triticum aestivum)</button>';
 
-    document.getElementById("p-dog").onclick = function(){ setActivePreset(this); setLineage("dog"); };
-    document.getElementById("p-cat").onclick = function(){ setActivePreset(this); setLineage("cat"); };
-    document.getElementById("p-human").onclick = function(){ setActivePreset(this); setLineage("human"); };
-    document.getElementById("p-wheat").onclick = function(){ setActivePreset(this); setLineage("wheat"); };
+    document.getElementById("p-txhuman").onclick = function(){ setActivePreset(this); setLineage("human"); };
+    document.getElementById("p-txfly").onclick = function(){ setActivePreset(this); setLineage("fly"); };
+    document.getElementById("p-txmango").onclick = function(){ setActivePreset(this); setLineage("mango"); };
+    document.getElementById("p-txwheat").onclick = function(){ setActivePreset(this); setLineage("wheat"); };
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group" style="grid-column:span 2;">' +
-        '<label>Explore Nested Taxon Rings: <b>Click concentric circles or presets above</b></label>' +
-        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">A taxon indicates categories at very different levels: Dogs, Mammals, and Animals are all taxa.</div>' +
+        '<label>Nested taxon rings: <b>every ring is a real taxon (Table 1.1, p. 8)</b></label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">A taxon indicates categories at very different levels: each inner ring sits entirely within the one above it.</div>' +
       '</div>';
 
     draw(0);
@@ -360,7 +377,7 @@ window.SIMS.taxasorter = (function(){
       var rankCol = j === 6 ? "#38bdf8" : (j >= 4 ? "#10b981" : (j >= 2 ? "#f59e0b" : "#ec4899"));
       m += '<text x="350" y="' + y + '" fill="' + rankCol + '" font-size="11" font-weight="700">' + item.rank + ':</text>';
       m += '<text x="430" y="' + y + '" fill="#f1f5f9" font-size="12" font-weight="600">' + item.taxon + '</text>';
-      m += '<text x="350" y="' + (y + 13) + '" fill="#64748b" font-size="10">' + item.desc + '</text>';
+      m += '<text x="350" y="' + (y + 13) + '" fill="#64748b" font-size="10">' + GLOSS[item.rank] + '</text>';
     }
 
     svg.innerHTML = m;
@@ -374,7 +391,7 @@ window.SIMS.taxasorter = (function(){
 
     verdict(
       '<span style="color:#38bdf8;font-weight:700;">Taxa at Different Levels:</span> ' +
-      'Taxa represents real biological units. An animal is a taxon (Kingdom); a mammal is a taxon (Class); a cat is a taxon (Family/Species). Lower taxa nest entirely within higher taxa.'
+      'Each ring is a real biological taxon. Lower taxa nest entirely within higher taxa — species inside genus inside family, all the way to the kingdom (pp. 5–6).'
     );
   }
 
@@ -382,10 +399,12 @@ window.SIMS.taxasorter = (function(){
 })();
 
 // -------------------------------------------------------------------------
-// 4. SIMULATION 4: Speciation & Reproductive Isolation (speciesconcept)
+// 4. Species & Isolation Explorer (speciesconcept)
+// Mayr's biological species concept (p. 2 box) + §1.2.1. The divergence
+// index is the lab's own illustrative model, labelled as such.
 // -------------------------------------------------------------------------
 window.SIMS.speciesconcept = (function(){
-  var isolationYears = 50000; // generations/years
+  var isolationYears = 50000; // model clock, not a textbook figure
   var hasBarrier = true;
 
   function setParams(years, barrier){
@@ -405,9 +424,9 @@ window.SIMS.speciesconcept = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Geographic Barrier</span></div>';
 
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-symp">Panmictic Interbreeding (0 yrs)</button>' +
-      '<button class="preset-btn" id="p-mid">Moderate Divergence (50k yrs)</button>' +
-      '<button class="preset-btn" id="p-spec">Complete Speciation (200k yrs)</button>';
+      '<button class="preset-btn active" id="p-symp">Interbreeding (no barrier)</button>' +
+      '<button class="preset-btn" id="p-mid">Diverging (barrier up)</button>' +
+      '<button class="preset-btn" id="p-spec">Isolated (long split)</button>';
 
     document.getElementById("p-symp").onclick = function(){ setActivePreset(this); setParams(0, false); };
     document.getElementById("p-mid").onclick = function(){ setActivePreset(this); setParams(50000, true); };
@@ -415,13 +434,14 @@ window.SIMS.speciesconcept = (function(){
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group">' +
-        '<label>Time in Geographic Isolation: <b id="years-val" style="color:#38bdf8;">50k years</b></label>' +
+        '<label>Model isolation clock: <b id="years-val" style="color:#38bdf8;">50k years</b></label>' +
         '<input type="range" id="years-slider" min="0" max="250000" value="50000" step="5000">' +
       '</div>' +
       '<div class="control-group" style="display:flex;align-items:center;gap:8px;margin-top:20px;">' +
         '<input type="checkbox" id="barrier-toggle" checked style="width:18px;height:18px;">' +
         '<label for="barrier-toggle" style="margin:0;cursor:pointer;">Geographic Mountain/River Barrier</label>' +
-      '</div>';
+      '</div>' +
+      '<div class="control-group" style="grid-column:span 2;color:#94a3b8;font-size:12px;">Illustrative model: the years and the divergence index are the lab\u2019s own dials for exploring Mayr\u2019s concept, not textbook figures.</div>';
 
     document.getElementById("years-slider").oninput = function(e){
       isolationYears = parseInt(e.target.value, 10);
@@ -440,7 +460,7 @@ window.SIMS.speciesconcept = (function(){
     var svg = svgEl(); if(!svg) return;
     var m = '<rect width="720" height="300" fill="#09131d"/>';
 
-    // Divergence index 0 to 1
+    // Illustrative divergence index 0 to 1 (lab model, not a textbook value)
     var divergence = hasBarrier ? Math.min(1.0, isolationYears / 150000) : 0.05;
     var isSpeciated = divergence >= 0.85;
 
@@ -478,16 +498,16 @@ window.SIMS.speciesconcept = (function(){
     svg.innerHTML = m;
 
     readout(
-      cell("Time Isolated", (isolationYears / 1000) + " kyr", "#38bdf8") +
+      cell("Model Clock", (isolationYears / 1000) + " kyr", "#38bdf8") +
       cell("Gene Flow", hasBarrier ? "Zero (Blocked)" : "Continuous", hasBarrier ? "#ef4444" : "#10b981") +
-      cell("Divergence Metric", (divergence * 100).toFixed(0) + "%", "#f59e0b") +
-      cell("Taxonomic Status", isSpeciated ? "2 Distinct Species" : "Single Polytypic Species", isSpeciated ? "#10b981" : "#38bdf8")
+      cell("Divergence Index", (divergence * 100).toFixed(0) + "% (model)", "#f59e0b") +
+      cell("Taxonomic Status", isSpeciated ? "2 Distinct Species" : "Single Interbreeding Species", isSpeciated ? "#10b981" : "#38bdf8")
     );
 
     verdict(
       isSpeciated ?
-      '<span style="color:#10b981;font-weight:700;">Biological Speciation Achieved:</span> Prolonged geographic isolation and genetic drift have established intrinsic reproductive isolation (Ernst Mayr). The two populations can no longer interbreed to produce fertile offspring.' :
-      '<span style="color:#38bdf8;font-weight:700;">Single Biological Species:</span> Gene flow or insufficient divergence keeps both groups within the same interbreeding gene pool.'
+      '<span style="color:#10b981;font-weight:700;">Reproductively Isolated (Mayr):</span> With gene flow blocked long enough, the model populations become distinct species — groups no longer interbreeding with each other. Mayr pioneered this biological species definition (p. 2).' :
+      '<span style="color:#38bdf8;font-weight:700;">Single Biological Species:</span> Gene flow — or too short a split — keeps both populations within one interbreeding gene pool (Mayr, p. 2).'
     );
   }
 
@@ -495,7 +515,9 @@ window.SIMS.speciesconcept = (function(){
 })();
 
 // -------------------------------------------------------------------------
-// 5. SIMULATION 5: Family & Order Trait Matrix (familyorderlab)
+// 5. Family & Order Comparator (familyorderlab)
+// NCERT §1.2.3-1.2.4 (p. 7). Only the chapter's groupings and characters.
+// NOTE: the order name keeps the PDF's printed spelling "Polymoniales".
 // -------------------------------------------------------------------------
 window.SIMS.familyorderlab = (function(){
   var currentOrder = "polymoniales"; // "polymoniales", "carnivora"
@@ -508,8 +530,8 @@ window.SIMS.familyorderlab = (function(){
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Family 1 Diagnostic</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Family 2 Diagnostic</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>First Family</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Second Family</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Shared Order Characters</span></div>';
 
     document.getElementById("preset-bar").innerHTML =
@@ -521,8 +543,8 @@ window.SIMS.familyorderlab = (function(){
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group" style="grid-column:span 2;">' +
-        '<label>Taxonomic Trait Aggregation: <b>Orders unite families based on shared character aggregates</b></label>' +
-        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">In plants (Polymoniales), floral features predominate. In animals (Carnivora), predatory dental/claw suites unite families.</div>' +
+        '<label>Trait aggregation: <b>orders unite families on shared character aggregates (§1.2.4)</b></label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">In plants (Polymoniales), floral characters predominate. In animals (Carnivora), a few similar characters unite Felidae and Canidae.</div>' +
       '</div>';
 
     draw(0);
@@ -533,61 +555,61 @@ window.SIMS.familyorderlab = (function(){
     var m = '<rect width="720" height="300" fill="#09131d"/>';
 
     if(currentOrder === "polymoniales"){
-      // Order Polymoniales: Solanaceae vs Convolvulaceae
+      // Order Polymoniales: Solanaceae + Convolvulaceae (book spelling)
       m += '<rect x="40" y="30" width="640" height="240" rx="10" fill="#0b1726" stroke="#10b981" stroke-width="1.5"/>';
-      m += '<text x="60" y="60" fill="#f59e0b" font-size="16" font-weight="700">ORDER: Polymoniales (Floral Character Aggregates)</text>';
-      m += '<text x="60" y="80" fill="#94a3b8" font-size="12">Shared: Pentamerous flowers, persistent calyx tendency, actinomorphic corolla</text>';
+      m += '<text x="60" y="60" fill="#f59e0b" font-size="16" font-weight="700">ORDER: Polymoniales (book spelling, §1.2.4)</text>';
+      m += '<text x="60" y="80" fill="#94a3b8" font-size="12">Shared: floral characters (mainly)</text>';
 
       // Box 1: Solanaceae
       m += '<rect x="60" y="100" width="280" height="150" rx="8" fill="#031f17" stroke="#10b981" stroke-width="1.5"/>';
-      m += '<text x="80" y="125" fill="#10b981" font-size="14" font-weight="700">Family Solanaceae (Potato Family)</text>';
+      m += '<text x="80" y="125" fill="#10b981" font-size="14" font-weight="700">Family Solanaceae</text>';
       m += '<text x="80" y="148" fill="#cbd5e1" font-size="11">• Genera: Solanum, Petunia, Datura</text>';
-      m += '<text x="80" y="168" fill="#cbd5e1" font-size="11">• Ovary: Obliquely placed, syncarpous</text>';
-      m += '<text x="80" y="188" fill="#cbd5e1" font-size="11">• Stamens: Epipetalous, porous anthers</text>';
-      m += '<text x="80" y="208" fill="#cbd5e1" font-size="11">• Berry or capsule fruit; swollen placenta</text>';
+      m += '<text x="80" y="168" fill="#cbd5e1" font-size="11">• Basis: vegetative + reproductive features</text>';
+      m += '<text x="80" y="188" fill="#cbd5e1" font-size="11">• Example: potato &amp; brinjal in Solanum</text>';
+      m += '<text x="80" y="208" fill="#64748b" font-size="11">• a family of related genera (§1.2.3)</text>';
 
       // Box 2: Convolvulaceae
       m += '<rect x="380" y="100" width="280" height="150" rx="8" fill="#0c1f36" stroke="#38bdf8" stroke-width="1.5"/>';
-      m += '<text x="400" y="125" fill="#38bdf8" font-size="14" font-weight="700">Family Convolvulaceae (Morning Glory)</text>';
-      m += '<text x="400" y="148" fill="#cbd5e1" font-size="11">• Genera: Ipomoea (sweet potato)</text>';
-      m += '<text x="400" y="168" fill="#cbd5e1" font-size="11">• Stem: Twining climber (herbaceous)</text>';
-      m += '<text x="400" y="188" fill="#cbd5e1" font-size="11">• Corolla: Funnel-shaped (infundibuliform)</text>';
-      m += '<text x="400" y="208" fill="#cbd5e1" font-size="11">• Ovary with 2 ovules per locule</text>';
+      m += '<text x="400" y="125" fill="#38bdf8" font-size="14" font-weight="700">Family Convolvulaceae</text>';
+      m += '<text x="400" y="148" fill="#cbd5e1" font-size="11">• Grouped with Solanaceae (§1.2.4)</text>';
+      m += '<text x="400" y="168" fill="#cbd5e1" font-size="11">• Union mainly on floral characters</text>';
+      m += '<text x="400" y="188" fill="#cbd5e1" font-size="11">• A related plant family</text>';
+      m += '<text x="400" y="208" fill="#64748b" font-size="11">• fewer shared characters than a genus</text>';
     } else {
-      // Order Carnivora: Felidae vs Canidae
+      // Order Carnivora: Felidae + Canidae
       m += '<rect x="40" y="30" width="640" height="240" rx="10" fill="#0b1726" stroke="#f59e0b" stroke-width="1.5"/>';
-      m += '<text x="60" y="60" fill="#f59e0b" font-size="16" font-weight="700">ORDER: Carnivora (Predatory Mammalian Suite)</text>';
-      m += '<text x="60" y="80" fill="#94a3b8" font-size="12">Shared: Shearing carnassial teeth (P4/M1), acute olfaction, claws on digits</text>';
+      m += '<text x="60" y="60" fill="#f59e0b" font-size="16" font-weight="700">ORDER: Carnivora (assemblage of families)</text>';
+      m += '<text x="60" y="80" fill="#94a3b8" font-size="12">Shared: a few similar characters (§1.2.4)</text>';
 
       // Box 1: Felidae
       m += '<rect x="60" y="100" width="280" height="150" rx="8" fill="#1f1003" stroke="#f59e0b" stroke-width="1.5"/>';
       m += '<text x="80" y="125" fill="#f59e0b" font-size="14" font-weight="700">Family Felidae (Cats)</text>';
-      m += '<text x="80" y="148" fill="#cbd5e1" font-size="11">• Genera: Panthera (lion, tiger), Felis</text>';
-      m += '<text x="80" y="168" fill="#cbd5e1" font-size="11">• Claws: Fully retractile (sheathed)</text>';
-      m += '<text x="80" y="188" fill="#cbd5e1" font-size="11">• Skull: Shortened muzzle, round profile</text>';
-      m += '<text x="80" y="208" fill="#cbd5e1" font-size="11">• Ambush predators; highly agile</text>';
+      m += '<text x="80" y="148" fill="#cbd5e1" font-size="11">• Genera: Panthera + Felis</text>';
+      m += '<text x="80" y="168" fill="#cbd5e1" font-size="11">• Panthera: lion, tiger, leopard</text>';
+      m += '<text x="80" y="188" fill="#cbd5e1" font-size="11">• Felis: the cats</text>';
+      m += '<text x="80" y="208" fill="#64748b" font-size="11">• related genera, one family (§1.2.3)</text>';
 
       // Box 2: Canidae
       m += '<rect x="380" y="100" width="280" height="150" rx="8" fill="#07232e" stroke="#06b6d4" stroke-width="1.5"/>';
-      m += '<text x="400" y="125" fill="#06b6d4" font-size="14" font-weight="700">Family Canidae (Dogs & Wolves)</text>';
-      m += '<text x="400" y="148" fill="#cbd5e1" font-size="11">• Genera: Canis, Vulpes (fox)</text>';
-      m += '<text x="400" y="168" fill="#cbd5e1" font-size="11">• Claws: Non-retractile (blunt traction)</text>';
-      m += '<text x="400" y="188" fill="#cbd5e1" font-size="11">• Skull: Elongated muzzle, keen scent</text>';
-      m += '<text x="400" y="208" fill="#cbd5e1" font-size="11">• Pursuit endurance predators; pack hunters</text>';
+      m += '<text x="400" y="125" fill="#06b6d4" font-size="14" font-weight="700">Family Canidae (Dogs)</text>';
+      m += '<text x="400" y="148" fill="#cbd5e1" font-size="11">• Dogs — split from cats at family</text>';
+      m += '<text x="400" y="168" fill="#cbd5e1" font-size="11">• Cat vs dog: similarities + differences</text>';
+      m += '<text x="400" y="188" fill="#cbd5e1" font-size="11">• Reunited with Felidae in Carnivora</text>';
+      m += '<text x="400" y="208" fill="#64748b" font-size="11">• families share few characters (§1.2.4)</text>';
     }
 
     svg.innerHTML = m;
 
     readout(
       cell("Taxonomic Order", currentOrder.toUpperCase(), "#f59e0b") +
-      cell("Unifying Character", currentOrder === "polymoniales" ? "Floral Symmetries" : "Carnassial Teeth", "#10b981") +
-      cell("Included Families", "2 Major Families", "#38bdf8") +
+      cell("Unifying Character", currentOrder === "polymoniales" ? "Floral characters (mainly)" : "Few similar characters", "#10b981") +
+      cell("Included Families", "2 Named Families", "#38bdf8") +
       cell("Diagnostic Basis", "Aggregates of Characters", "#a855f7")
     );
 
     verdict(
       '<span style="color:#f59e0b;font-weight:700;">Character Aggregation:</span> ' +
-      'An Order unites multiple families that share a few broad character aggregates, even though each individual family maintains distinct vegetative, dental, or skeletal hallmarks.'
+      'An order unites families sharing a few character aggregates — floral characters for Polymoniales — even as each family keeps its own genera distinct.'
     );
   }
 
@@ -595,19 +617,21 @@ window.SIMS.familyorderlab = (function(){
 })();
 
 // -------------------------------------------------------------------------
-// 6. SIMULATION 6: 7-Rank Inverted Pyramid & Generality Simulator (taxonomichierarchy)
+// 6. Seven-Rank Hierarchy Explorer (taxonomichierarchy)
+// Figure 1.1 + the shared-character rule (§1.2, p. 8). Qualitative trend
+// only — the chapter gives no percentages or counts, so the lab shows none.
 // -------------------------------------------------------------------------
 window.SIMS.taxonomichierarchy = (function(){
   var currentRankIdx = 0; // 0 = Species, 6 = Kingdom
 
   var ranks = [
-    { rank: "Species", shared: "98%", complexity: "Lowest (Direct cross/morphology)", num: "1" },
-    { rank: "Genus", shared: "85%", complexity: "Low (Closely related species)", num: "10s" },
-    { rank: "Family", shared: "65%", complexity: "Moderate (Vegetative + reproductive suites)", num: "100s" },
-    { rank: "Order", shared: "45%", complexity: "Elevated (Character aggregates)", num: "1,000s" },
-    { rank: "Class", shared: "25%", complexity: "High (Broad structural blueprints)", num: "10,000s" },
-    { rank: "Phylum / Division", shared: "12%", complexity: "Very High (Fundamental body plan)", num: "100,000s" },
-    { rank: "Kingdom", shared: "4%", complexity: "Highest (Kingdom-level generalities)", num: "1,000,000+" }
+    { rank: "Species", shared: "Maximum", complexity: "Lowest — compare look-alikes" },
+    { rank: "Genus", shared: "Very high", complexity: "Low — closely related species" },
+    { rank: "Family", shared: "High", complexity: "Moderate — related genera" },
+    { rank: "Order", shared: "Moderate", complexity: "Elevated — character aggregates" },
+    { rank: "Class", shared: "Low", complexity: "High — broad blueprints" },
+    { rank: "Phylum / Division", shared: "Very low", complexity: "Very high — one body plan" },
+    { rank: "Kingdom", shared: "Minimum", complexity: "Highest — relating taxa hardest" }
   ];
 
   function setRank(idx){
@@ -672,10 +696,10 @@ window.SIMS.taxonomichierarchy = (function(){
     m += '<text x="380" y="90" fill="#94a3b8" font-size="12">Shared Characteristics:</text>';
     m += '<text x="380" y="112" fill="#10b981" font-size="18" font-weight="700">' + cur.shared + '</text>';
 
-    m += '<text x="380" y="145" fill="#94a3b8" font-size="12">Organisms Subsumed:</text>';
-    m += '<text x="380" y="165" fill="#f59e0b" font-size="15" font-weight="600">' + cur.num + ' taxa</text>';
+    m += '<text x="380" y="145" fill="#94a3b8" font-size="12">Rank Position:</text>';
+    m += '<text x="380" y="165" fill="#f59e0b" font-size="15" font-weight="600">' + (currentRankIdx + 1) + ' of 7 (Figure 1.1)</text>';
 
-    m += '<text x="380" y="195" fill="#94a3b8" font-size="12">Classification Complexity:</text>';
+    m += '<text x="380" y="195" fill="#94a3b8" font-size="12">Classification Difficulty:</text>';
     m += '<text x="380" y="215" fill="#e2e8f0" font-size="11">' + cur.complexity + '</text>';
 
     svg.innerHTML = m;
@@ -683,13 +707,13 @@ window.SIMS.taxonomichierarchy = (function(){
     readout(
       cell("Selected Category", cur.rank, "#38bdf8") +
       cell("Common Characters", cur.shared, "#10b981") +
-      cell("Taxa Generality", (currentRankIdx + 1) + " / 7", "#f59e0b") +
-      cell("Complexity Level", currentRankIdx > 3 ? "HIGH" : "LOW", currentRankIdx > 3 ? "#ec4899" : "#10b981")
+      cell("Rank", (currentRankIdx + 1) + " / 7", "#f59e0b") +
+      cell("Difficulty", currentRankIdx > 3 ? "HIGH" : "LOW", currentRankIdx > 3 ? "#ec4899" : "#10b981")
     );
 
     verdict(
-      '<span style="color:#38bdf8;font-weight:700;">NCERT Fundamental Axiom:</span> ' +
-      'As we go higher from species to kingdom, the number of common characteristics goes on decreasing. Lower the taxa, more are the characteristics that members share. Higher the category, greater the difficulty of determining relationship to other taxa.'
+      '<span style="color:#38bdf8;font-weight:700;">NCERT Rule (§1.2):</span> ' +
+      'As we go higher from species to kingdom, the number of common characteristics goes on decreasing. Lower the taxa, more are the characteristics that members share; higher the category, greater the difficulty of relating it to other taxa.'
     );
   }
 
@@ -697,7 +721,8 @@ window.SIMS.taxonomichierarchy = (function(){
 })();
 
 // -------------------------------------------------------------------------
-// 7. SIMULATION 7: Master NCERT Table 1.1 Comparator (tableexplorer)
+// 7. Table 1.1 Lineage Comparator (tableexplorer)
+// Table 1.1 (p. 8) verbatim. Descriptions use only chapter facts.
 // -------------------------------------------------------------------------
 window.SIMS.tableexplorer = (function(){
   var orgKey = "man"; // "man", "housefly", "mango", "wheat"
@@ -711,7 +736,7 @@ window.SIMS.tableexplorer = (function(){
       order: "Primata",
       classT: "Mammalia",
       phylum: "Chordata",
-      desc: "Bipedal hominid with highly enlarged neocortex, stereoscopic vision, and opposable thumb."
+      desc: "Table 1.1 animal lineage; a mammal — think external ears and body hair (§1.1)."
     },
     housefly: {
       common: "Housefly",
@@ -721,7 +746,7 @@ window.SIMS.tableexplorer = (function(){
       order: "Diptera",
       classT: "Insecta",
       phylum: "Arthropoda",
-      desc: "True fly with two membranous forewings and club-shaped balancing halteres; 3 pairs jointed legs."
+      desc: "Table 1.1 animal lineage; class Insecta — three pairs of jointed legs (§1.2)."
     },
     mango: {
       common: "Mango",
@@ -731,7 +756,7 @@ window.SIMS.tableexplorer = (function(){
       order: "Sapindales",
       classT: "Dicotyledonae",
       phylum: "Angiospermae (Division)",
-      desc: "Tropical fruit tree with reticulate leaf venation, pentamerous flowers, and drupaceous stone fruit."
+      desc: "Table 1.1 plant lineage; the book's worked example of binomial naming (§1.1)."
     },
     wheat: {
       common: "Wheat",
@@ -741,7 +766,7 @@ window.SIMS.tableexplorer = (function(){
       order: "Poales",
       classT: "Monocotyledonae",
       phylum: "Angiospermae (Division)",
-      desc: "Staple cereal grass with parallel leaf venation, single cotyledon (scutellum), and caryopsis grain."
+      desc: "Table 1.1 plant lineage; 'Wheat' is the chapter's own example of a taxon (§1.1)."
     }
   };
 
@@ -769,8 +794,8 @@ window.SIMS.tableexplorer = (function(){
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group" style="grid-column:span 2;">' +
-        '<label>NCERT Table 1.1 Master Lineage Comparator</label>' +
-        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">Directly verifies the four hallmark organism lineages from official reprint 2026-27 p. 8.</div>' +
+        '<label>NCERT Table 1.1 Lineage Comparator</label>' +
+        '<div style="color:#94a3b8;font-size:12px;margin-top:4px;">The four reference lineages from reprint 2026-27, p. 8, shown verbatim.</div>' +
       '</div>';
 
     draw(0);
@@ -805,22 +830,79 @@ window.SIMS.tableexplorer = (function(){
 
     // Comparison summary bar
     m += '<rect x="65" y="210" width="582" height="48" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1"/>';
-    m += '<text x="80" y="238" fill="#cbd5e1" font-size="12">NCERT Table 1.1 Match: <b style="color:#10b981;">100% Concordant</b> with Official Curriculum Guidelines</text>';
+    m += '<text x="80" y="238" fill="#cbd5e1" font-size="12">NCERT Table 1.1 (p. 8): values taken straight from the printed table</text>';
 
     svg.innerHTML = m;
 
     readout(
       cell("Common Name", d.common, "#f8fafc") +
-      cell("Family (-idae/-aceae)", d.family, "#10b981") +
-      cell("Order (-ales)", d.order, "#f59e0b") +
+      cell("Family", d.family, "#10b981") +
+      cell("Order", d.order, "#f59e0b") +
       cell("Phylum / Division", d.phylum.split(" ")[0], "#8b5cf6")
     );
 
     verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT Table 1.1 Lineage Verified:</span> ' +
-      d.common + ' belongs to Genus ' + d.genus + ', Family ' + d.family + ', Order ' + d.order + ', Class ' + d.classT + ', and ' + d.phylum + '.'
+      '<span style="color:#10b981;font-weight:700;">NCERT Table 1.1 Lineage:</span> ' +
+      d.common + ' sits in genus ' + d.genus + ', family ' + d.family + ', order ' + d.order + ', class ' + d.classT + ', and ' + d.phylum + '.'
     );
   }
 
   return { mount: mount, draw: draw };
 })();
+
+// -------------------------------------------------------------------------
+// Browser-QA compatibility shims (same pattern as kech101/keph102 —
+// per-chapter only, no shared-script changes).
+// -------------------------------------------------------------------------
+
+// Stable browser-fixture identifiers for every visible lab scenario.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// Semantic prediction aliases expected by the shared browser QA.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data: the shared
+// Class 11 runtime marks the first connect card wow by position, so strip
+// that marker from every card except the one explicitly titled "Wow".
+function normalizeChapterPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var watch = document.getElementById("what-to-watch");
+  if(lesson && watch && lesson.watch){
+    var text = "What to watch: " + lesson.watch;
+    if(watch.textContent !== text) watch.textContent = text;
+  }
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){ var h = card.querySelector("h3"); return h && /^Wow/i.test(h.textContent.trim()); });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow"); card.removeAttribute("data-wow"); card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge"); if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+var revisionView = document.getElementById("revision-view");
+if(conceptView) new MutationObserver(normalizeChapterPresentation).observe(conceptView, {childList:true, subtree:true});
+if(revisionView) new MutationObserver(normalizeChapterPresentation).observe(revisionView, {childList:true, subtree:true});
+normalizeChapterPresentation();

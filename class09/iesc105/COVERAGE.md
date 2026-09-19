@@ -1,51 +1,21 @@
-# Chapter 5: Exploring Mixtures and their Separation (iesc105)
-## NCERT Class 9 Science (Exploration 2026-27)
+# COVERAGE — iesc105 Exploring Mixtures and their Separation
 
-### 1. Curriculum Coverage & Section Mapping
-| Section | Title | Textbook Pages | Pedagogy Concept ID | Interactive Lab |
-| :--- | :--- | :--- | :--- | :--- |
-| **5.1** | How Can We Classify Mixtures? | 72–75 | `c1`: Mixtures Classification | `lab_mixtures` |
-| **5.2 & 5.2.1** | Solutions & Concentration of a Solution | 75–77 | `c2`: Solution Concentration | `lab_concentration` |
-| **5.2.2** | How Do We Express Concentration? | 77–78 | `c2`: Solution Concentration | `lab_concentration` |
-| **5.2.3** | Solubility of Substances (Table 5.4) | 78–81 | `c3`: Solubility & Saturation | `lab_solubility` |
-| **5.4.3 & 5.4.4** | Suspensions and Colloids | 81–83 | `c4`: Tyndall Effect & Colloids | `lab_tyndall` |
-| **5.5** | Tyndall Effect | 83–85 | `c4`: Tyndall Effect & Colloids | `lab_tyndall` |
-| **5.3 & 5.4.1** | Immiscible Liquids & Sublimation | 85–87 | `c5`: Funnel & Sublimation | `lab_funnel_sublimation` |
-| **5.3.2 & 5.4** | Simple & Fractional Distillation | 87–90 | `c6`: Distillation Techniques | `lab_distillation` |
-| **5.3.1 & 5.3.3** | Crystallization & Paper Chromatography | 90–93 | `c7`: Chromatography & Crystals | `lab_chromatography` |
+**Source:** `books/originals/Class09-Science_iesc105.pdf`, 22 PDF pages. Printed page = PDF page + 71.
+**Build:** `python3 scripts/build_chapter.py iesc105`.
+**Checks:**
+- `node output/Class09/iesc105/tests/verify.cjs`
+- `browser_qa.cjs output/Class09/iesc105`
 
-### 2. Activities & Experiments Mapped
-- **Activity 5.1 (p. 73):** Preparing true solution, suspension, and colloid & laser testing $\to$ Simulated in `lab_mixtures` & `lab_tyndall`.
-- **Activity 5.2 (p. 79):** Plotting solubility curves for various salts $\to$ Modeled in `lab_solubility`.
-- **Activity 5.3 (p. 80):** Cooling hot saturated solutions to grow crystals $\to$ Simulated in `lab_solubility`.
-- **Activity 5.4 (p. 82):** Chalk powder in water filtration $\to$ Simulated in `lab_mixtures`.
-- **Activity 5.5 (p. 83):** Dilute milk and starch laser scattering $\to$ Simulated in `lab_tyndall`.
-- **Activity 5.6 (p. 86):** Separating kerosene/oil from water using separating funnel $\to$ Simulated in `lab_funnel_sublimation`.
-- **Activity 5.7 (p. 87):** Sublimation of ammonium chloride / camphor $\to$ Simulated in `lab_funnel_sublimation`.
-- **Activity 5.8 (p. 89):** Simple distillation of acetone and water $\to$ Simulated in `lab_distillation`.
-- **Activity 5.9 (p. 91):** Black ink paper chromatography $\to$ Simulated in `lab_chromatography`.
+| # | Concept | PDF pp. | NCERT items | Lab |
+|---|---|---|---|---|
+| 1 | Classifying mixtures | 1–3 | Think It Over, 5.1, Activity 5.1, Figs. 5.1–5.3 | `mixtureTests`: laser, settle, filter for beakers A, B, C |
+| 2 | Concentration | 3–5 | 5.2–5.2.2, ORS, Meet a Scientist (Dilip Mahalanabis), Eqs. 5.1–5.3, Examples 5.1–5.3, Fig. 5.4, saline (Fig. 5.5), Pause & Ponder 1–3 | `concentration`: Examples 5.1–5.3 and 0.9% saline |
+| 3 | Solubility & crystallization | 5–8 | 5.2.3, Activity 5.2 (Fig. 5.6), 5.3.1, Activities 5.3–5.4, Figs. 5.7–5.10, Think as a Scientist, Pause & Ponder 4–5 | `solubility`: Fig. 5.6 (B from 60 °C to 40 °C = 46 g; curve values read from the graph), Table 5.4 |
+| 4 | Distillation & chromatography | 9–11 | 5.3.2, Figs. 5.11–5.14, India's Scientific Contributions (salt, Mitti ka Ittar), fractional distillation and LPG, 5.3.3, Activity 5.5, Pause & Ponder 6 | `distillation`: acetone–water, alcohol–benzene, ink chromatography (dye colours illustrative) |
+| 5 | Immiscible liquids, sublimation & alloys | 12–13 | 5.4, 5.4.1, Activity 5.6, Fig. 5.16, gas mixtures, 5.4.2, Activity 5.7, Fig. 5.17, alloys, Pause & Ponder 7–8 | `funnelSublime` |
+| 6 | Suspensions | 14–15 | 5.4.3, centrifugation (Figs. 5.18–5.19), paperfuge (Fig. 5.20), Activity 5.8, coagulation (Fig. 5.21), paneer | `suspension`: settle, centrifuge, alum |
+| 7 | Colloids & the Tyndall effect | 15–18 | 5.4.4, blood donation (Fig. 5.22), particle sizes (Fig. 5.23), 5.5 Tyndall effect (Fig. 5.24), emulsions, Pause & Ponder 9–10, Activity 5.9 / Table 5.1, separation for sustainability | `tyndall`: particle-size slider and the Q2 mixtures |
 
-### 3. Worked Examples Mapped
-- **Worked Concentration 1 (p. 77):** 40 g common salt in 320 g water (Mass % = 11.1%) $\to$ Incorporated in Concept 2.
-- **Worked Concentration 2 (p. 78):** Liquid volume % calculations $\to$ Incorporated in Concept 2.
-- **Example Table 5.4 Analysis (p. 80):** KNO₃ vs NaCl temperature sensitivity $\to$ Worked in Concept 3.
-- **Cake Recipe Problem (p. 91):** Sugar 15%, flour 84%, soda 1% $\to$ Worked in Concept 2.
-- **Brass 120 g Problem (p. 91):** 84 g Cu, 36 g Zn $\to$ Worked in Concept 1.
-- **Acetone-Water Separation (p. 92):** Distillation mechanism $\to$ Worked in Concept 6.
-
-### 4. End-of-Chapter Exercises (All 15 Mapped with Full Solutions)
-- Q1: Homogeneous vs Heterogeneous classification (Muddy water Ht, Milk Ht, Blood Ht, Brass Hm)
-- Q2: Tyndall effect candidate identification (Air + dust, Starch + water)
-- Q3: Comparative properties table: Solution, Suspension, and Colloid
-- Q4: Calculations: Cake recipe concentrations & Brass alloy components
-- Q5: Cooking oil and water: Layer identification and Separating Funnel
-- Q6: Assertion & Reason on True Solutions and Tyndall effect
-- Q7: Separation techniques selection table for 7 real-world mixtures
-- Q8: Separating miscible liquids A (60°C) and B (90°C) with ΔBP = 30°C
-- Q9: Comparison and selection criteria: Evaporation vs Crystallization vs Distillation
-- Q10: Blood as biological colloid: Suspension failure consequences and phase ID
-- Q11: Sequence of separation for Sand + Common Salt + Naphthalene mixture
-- Q12: Why distillation effectively separates water and acetone (ΔBP = 44°C)
-- Q13: Solubility Table 5.4: KNO₃ mass, KCl cooling crystals, temperature curves
-- Q14: Sugar solutions A (20%), B (16.7%), C (27.3%): Mass % concentration calculation
-- Q15: Fractional distillation apparatus identification & candidate mixtures
+**Exercises:** all 15, with Figs. 5.25 and 5.26 redrawn.
+- **Q11:** the sequence 1 → 3 → 2 was read from the Fig. 5.25b images (sublimation, filtration, evaporation).
+- **Q15:** A = distillation flask, B = condenser, C = receiving flask, read from Fig. 5.26.

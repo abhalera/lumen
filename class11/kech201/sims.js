@@ -18,10 +18,10 @@ window.SIMS.electrontransfer = {
     var pair = 'zn_cu'; // zn_cu, cu_ag, cu_zn
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-pair-zncu">Zn in CuSO4 (Blue Fades)</button>' +
-      '    <button class="filter-chip" id="btn-pair-cuag">Cu in AgNO3 (Silver Needles)</button>' +
-      '    <button class="filter-chip" id="btn-pair-cuzn">Cu in ZnSO4 (No Reaction)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-pair-zncu">Zn in CuSO4 (Blue Fades)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-pair-cuag">Cu in AgNO3 (Silver Needles)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-pair-cuzn">Cu in ZnSO4 (No Reaction)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-et" viewBox="0 0 700 280" style="width:100%;height:auto;max-height:280px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -101,14 +101,14 @@ window.SIMS.oxnumberlab = {
     var compound = 'h2so5'; // h2so5, cr2o7, cro5, c3o2, s4o6, fe3o4, ko2
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-h2so5">H2SO5 (Caro&#39;s Acid)</button>' +
-      '    <button class="filter-chip" id="btn-cr2o7">Cr2O7²⁻ (Dichromate)</button>' +
-      '    <button class="filter-chip" id="btn-cro5">CrO5 (Butterfly)</button>' +
-      '    <button class="filter-chip" id="btn-c3o2">C3O2 (Carbon Suboxide)</button>' +
-      '    <button class="filter-chip" id="btn-s4o6">S4O6²⁻ (Tetrathionate)</button>' +
-      '    <button class="filter-chip" id="btn-fe3o4">Fe3O4 (Magnetite)</button>' +
-      '    <button class="filter-chip" id="btn-ko2">KO2 (Superoxide)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-h2so5">H2SO5 (Caro&#39;s Acid)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-cr2o7">Cr2O7²⁻ (Dichromate)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-cro5">CrO5 (Butterfly)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-c3o2">C3O2 (Carbon Suboxide)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-s4o6">S4O6²⁻ (Tetrathionate)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-fe3o4">Fe3O4 (Magnetite)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-ko2">KO2 (Superoxide)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:16px;border-radius:8px;border:1px solid var(--line);">' +
       '    <div id="ox-structure" style="background:#0f172a;border-radius:6px;padding:20px;text-align:center;color:#f8fafc;font-family:monospace;font-size:16px;min-height:90px;display:flex;flex-direction:column;justify-content:center;align-items:center;"></div>' +
@@ -207,11 +207,11 @@ window.SIMS.redoxtypes = {
     var type = 'disprop'; // disprop, metal_disp, nonmetal_disp, decomp
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-type-disprop">Disproportionation (P4 / H2O2)</button>' +
-      '    <button class="filter-chip" id="btn-type-mdisp">Metal Displacement (Zn + CuSO4)</button>' +
-      '    <button class="filter-chip" id="btn-type-nmdisp">Non-Metal Displacement (Cl2 + KBr)</button>' +
-      '    <button class="filter-chip" id="btn-type-decomp">Decomposition (2KClO3 vs CaCO3)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-type-disprop">Disproportionation (P4 / H2O2)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-type-mdisp">Metal Displacement (Zn + CuSO4)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-type-nmdisp">Non-Metal Displacement (Cl2 + KBr)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-type-decomp">Decomposition (2KClO3 vs CaCO3)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:16px;border-radius:8px;border:1px solid var(--line);">' +
       '    <div id="rt-equation" style="background:#0f172a;border-radius:6px;padding:16px;color:#f8fafc;font-family:monospace;font-size:16px;text-align:center;"></div>' +
@@ -279,11 +279,11 @@ window.SIMS.balancerlab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-rxn-mno4">MnO4⁻ + Fe²⁺ (Acidic)</button>' +
-      '    <button class="filter-chip" id="btn-rxn-cr2o7">Cr2O7²⁻ + SO2 (Acidic)</button>' +
-      '    <button class="filter-chip" id="btn-rxn-mno4i">MnO4⁻ + I⁻ (Basic)</button>' +
-      '    <button class="filter-chip" id="btn-rxn-p4">P4 Disproportionation (Basic)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-rxn-mno4">MnO4⁻ + Fe²⁺ (Acidic)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rxn-cr2o7">Cr2O7²⁻ + SO2 (Acidic)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rxn-mno4i">MnO4⁻ + I⁻ (Basic)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rxn-p4">P4 Disproportionation (Basic)</button>' +
       '  </div>' +
       '  <div style="display:flex;gap:8px;margin-bottom:12px;">' +
       '    <button class="btn-secondary" id="btn-step-prev">← Prev Step</button>' +
@@ -396,9 +396,9 @@ window.SIMS.redoxtitration = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-mode-perm">Permanganometry (Self-Indicator)</button>' +
-      '    <button class="filter-chip" id="btn-mode-iod">Iodometry (Starch Indicator)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-mode-perm">Permanganometry (Self-Indicator)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-mode-iod">Iodometry (Starch Indicator)</button>' +
       '  </div>' +
       '  <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">' +
       '    <button class="btn-primary" id="btn-add-drop">+0.5 mL Titrant</button>' +
@@ -486,10 +486,10 @@ window.SIMS.daniellcell = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-vext-zero">Discharging (V_ext = 0 V)</button>' +
-      '    <button class="filter-chip" id="btn-vext-eq">Equilibrium (V_ext = 1.10 V)</button>' +
-      '    <button class="filter-chip" id="btn-vext-rev">Reversed / Electrolytic (V_ext = 1.40 V)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-vext-zero">Discharging (V_ext = 0 V)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-vext-eq">Equilibrium (V_ext = 1.10 V)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-vext-rev">Reversed / Electrolytic (V_ext = 1.40 V)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-dc" viewBox="0 0 700 300" style="width:100%;height:auto;max-height:300px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -587,7 +587,7 @@ window.SIMS.ecserieslab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">' +
+      '  <div id="lab-controls" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;">' +
       '    <div>' +
       '      <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;">Anode Couple (Oxidation):</label>' +
       '      <select id="sel-anode" class="select-input" style="padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink);">' +
@@ -664,3 +664,105 @@ window.SIMS.c4 = window.SIMS.balancerlab;
 window.SIMS.c5 = window.SIMS.redoxtitration;
 window.SIMS.c6 = window.SIMS.daniellcell;
 window.SIMS.c7 = window.SIMS.ecserieslab;
+
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function" || sim.mount._qaWrapped) return;
+  var originalMount = sim.mount;
+  // One-arg wrapper: the runtime passes simMount only when mount.length >= 1
+  // on a sim without .draw, so this wrapper must keep that arity (else the
+  // runtime passes the lesson object and container.querySelector explodes).
+  // _qaWrapped also skips the c1..c7 aliases (same objects, no double wrap).
+  var wrapped = function(container){
+    if(!(container && typeof container.querySelector === "function")){
+      container = document.getElementById("sim-mount-point") || document.body;
+    }
+    originalMount.call(sim, container);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+    bridgeLab();
+  };
+  wrapped._qaWrapped = true;
+  sim.mount = wrapped;
+});
+
+// Lab bridge: these sims render private readouts (et-readout, svg-et, ...)
+// instead of the runtime's #lab-readout/#lab-verdict/#diagram, which their
+// innerHTML mount wipes. Mirror the sim text into runtime-expected elements
+// so browser QA (a shared script) can read end states. Mirrors sit off-screen
+// (display:none would make innerText read back empty).
+var labBridgeObserver = null, labBridgeWrap = null;
+function bridgeLab(){
+  var mount = document.getElementById("sim-mount-point");
+  if(!mount) return;
+  var wrap = mount.querySelector(".sim-wrapper");
+  if(!wrap) return;
+  function ensure(id, ns){
+    var el = document.getElementById(id);
+    if(!el){
+      el = ns ? document.createElementNS(ns, "svg") : document.createElement("div");
+      el.id = id;
+      el.style.cssText = "position:absolute;left:-9999px;top:0;";
+      mount.appendChild(el);
+    }
+    return el;
+  }
+  var ro = ensure("lab-readout"), vd = ensure("lab-verdict"),
+      dg = ensure("diagram", "http://www.w3.org/2000/svg");
+  ro.textContent = wrap.innerText || "";
+  var svg = wrap.querySelector("svg");
+  dg.textContent = svg ? (svg.textContent || "") : "";
+  if(wrap !== labBridgeWrap){
+    if(labBridgeObserver) labBridgeObserver.disconnect();
+    labBridgeObserver = new MutationObserver(function(){ bridgeLab(); });
+    labBridgeObserver.observe(wrap, { childList: true, subtree: true, characterData: true });
+    labBridgeWrap = wrap;
+  }
+}
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

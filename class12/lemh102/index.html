@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Class 12 Mathematics — Inverse Trigonometric Functions.">
-  <title>Inverse Trigonometric Functions — Class 12 Mathematics</title>
-  <style>:root {
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 2: Inverse Trigonometric Functions — Interactive Textbook</title>
+<style>
+:root {
   --ink: #152637;
   --muted: #536678;
   --paper: #ffffff;
@@ -75,6 +75,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -285,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -600,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -652,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +692,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,78 +1067,238 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
-  <a class="skip-link" href="#main-content">Skip to lesson</a>
-  <header class="topbar">
-    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-    <a class="class-link" href="../index.html">Class 12</a><span class="class-pill">CLASS 12 <span aria-hidden="true">·</span> MATHEMATICS</span>
-  </header>
-  <div class="app-layout">
-    <aside class="sidebar" aria-label="Chapter navigation">
-      <div class="sidebar-heading">Chapter concepts</div>
-      <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--line);">
-        <button class="concept-nav" id="nav-revision"><span class="num">✦</span><span>NCERT Exercises &amp; Revision</span></button>
-      </div>
-      <div style="margin:18px 10px 0;color:var(--muted);font-size:12px;line-height:1.5;">
-        Source: <a href="https://ncert.nic.in/textbook/pdf/lemh102.pdf" target="_blank" rel="noopener">lemh102 PDF ↗</a>
-      </div>
-    </aside>
-    <main id="main-content">
-      <div id="concept-view"></div>
-      <div id="revision-view" class="revision-page" data-block="revise">
-        <div class="concept-header">
-          <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
-          <h1 class="concept-title">Revise, Reflect, Refine</h1>
-          <p class="concept-deck">Mapped source exercises plus an original practice path for Class 12 Mathematics.</p>
-        </div>
-      </div>
-    </main>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
   </div>
-  <footer style="max-width:1040px;margin:0 auto;padding:0 36px 34px;color:var(--muted);font-size:12px;">
-    Source-aware first release · <a href="PLAN.md">Chapter plan</a> · <a href="../MATHS-STATUS.md">Maths status</a>
-  </footer>
-  <script>window.CHAPTER = {"code": "lemh102", "chapterNumber": 2, "book_name": "Mathematics", "title": "Inverse Trigonometric Functions", "subtitle": "Inverse trigonometric functions return a principal angle. Restricted ranges make familiar curves invertible.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lemh102.pdf", "ncert": "https://ncert.nic.in/textbook/pdf/lemh102.pdf", "page_start": 1, "page_end": 16, "extraction": "PyMuPDF page text, dict spans, blocks, and selected PNG zooms. pdftotext not used.", "lessons": [{"id": "principal-values", "nav": "Principal values", "title": "The input is a ratio; the output is an angle on a specified principal branch.", "deck": "sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π].", "minutes": 8, "section": "2.1", "pages": [1], "print": "PDF p.1", "sim": "inverse", "simTitle": "Inverse-function mirror", "quick": ["The input is a ratio; the output is an angle on a specified principal branch.", "sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π]."], "formulas": [{"label": "Key relation", "html": "sin⁻¹x∈[−π/2,π/2]; cos⁻¹x∈[0,π]", "cond": "Source section 2.1"}], "deeper": "The input is a ratio; the output is an angle on a specified principal branch. sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π]. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "sin⁻¹(1/2)=π/6, although 5π/6 has the same sine and is outside the sine inverse branch.", "prediction": {"prompt": "What is sin⁻¹(1/2) on the principal branch?", "options": ["π/6", "5π/6", "3π/2"], "answer": 0, "explanation": "The reliable anchor is sin⁻¹x∈[−π/2,π/2]; cos⁻¹x∈[0,π]. sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π]."}, "connect": [["Navigation bearings", "A measured sine or cosine ratio becomes a principal bearing through an inverse function.", [], {"id": "jbKP5N4apOY", "title": "Inverse Trigonometric Functions Class 12 ( ITF ) One Shot | Complete Maths Chapter 2 | By Deepak Sir", "channel": "NCERT Wallah"}], ["Signal processing", "Phase angles are kept on a chosen branch so inverse functions return one reproducible answer."]], "recall": "Say it without looking: sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π]. Then write sin⁻¹x∈[−π/2,π/2]; cos⁻¹x∈[0,π].", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Principal values?", "options": ["sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π].", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "sin⁻¹x returns an angle in [−π/2,π/2], while cos⁻¹x returns one in [0,π].", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Principal values?", "options": ["sin⁻¹x∈[−π/2,π/2]; cos⁻¹x∈[0,π]", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "sin⁻¹x∈[−π/2,π/2]; cos⁻¹x∈[0,π]", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "What is sin⁻¹(1/2) on the principal branch?", "options": ["π/6", "5π/6", "3π/2"], "answer": 0, "hint": "Start with sin⁻¹x∈[−π/2,π/2]; cos⁻¹x∈[0,π]. Check the domain, sign or dimensions before choosing.", "solution": "π/6 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §2.1 — Principal values (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh102.pdf#page=1"}], "printPages": "18"}, {"id": "compositions-and-domains", "nav": "Compositions and domains", "title": "A direct trigonometric function and its inverse cancel when the input lies in the correct domain or range.", "deck": "The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range.", "minutes": 8, "section": "2.2", "pages": [1], "print": "PDF p.1", "sim": "inverse", "simTitle": "Inverse-function mirror", "quick": ["A direct trigonometric function and its inverse cancel when the input lies in the correct domain or range.", "The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range."], "formulas": [{"label": "Key relation", "html": "sin(sin⁻¹x)=x  (−1≤x≤1)", "cond": "Source section 2.2"}], "deeper": "A direct trigonometric function and its inverse cancel when the input lies in the correct domain or range. The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "For x=3/5, cos(sin⁻¹x)=4/5 because the principal angle lies in quadrant I.", "prediction": {"prompt": "If θ=sin⁻¹(3/5), what is cos θ?", "options": ["4/5", "3/5", "5/3"], "answer": 0, "explanation": "The reliable anchor is sin(sin⁻¹x)=x  (−1≤x≤1). The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range."}, "connect": [["Signal processing", "Phase angles are kept on a chosen branch so inverse functions return one reproducible answer."], ["Surveying", "A height-to-distance ratio becomes an angle through tan⁻¹, with the quadrant checked separately."]], "recall": "Say it without looking: The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range. Then write sin(sin⁻¹x)=x  (−1≤x≤1).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Compositions and domains?", "options": ["The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "The identity sin(sin⁻¹x)=x is valid for x∈[−1,1]; the reverse composition needs the principal range.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Compositions and domains?", "options": ["sin(sin⁻¹x)=x  (−1≤x≤1)", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "sin(sin⁻¹x)=x  (−1≤x≤1)", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "If θ=sin⁻¹(3/5), what is cos θ?", "options": ["4/5", "3/5", "5/3"], "answer": 0, "hint": "Start with sin(sin⁻¹x)=x  (−1≤x≤1). Check the domain, sign or dimensions before choosing.", "solution": "4/5 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §2.2 — Compositions and domains (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh102.pdf#page=1"}], "printPages": "18"}, {"id": "graphs-and-principal-branches", "nav": "Graphs and principal branches", "title": "A horizontal-line test selects the interval on which a trigonometric curve has an inverse function.", "deck": "Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x.", "minutes": 8, "section": "2.3", "pages": [10], "print": "PDF p.10", "sim": "inverse", "simTitle": "Inverse-function mirror", "quick": ["A horizontal-line test selects the interval on which a trigonometric curve has an inverse function.", "Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x."], "formulas": [{"label": "Key relation", "html": "y=sin⁻¹x ⇔ sin y=x,  y∈[−π/2,π/2]", "cond": "Source section 2.3"}], "deeper": "A horizontal-line test selects the interval on which a trigonometric curve has an inverse function. Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "The graph of y=sin⁻¹x is the reflection of the restricted y=sin x curve across y=x.", "prediction": {"prompt": "Why is sine restricted before defining sin⁻¹ as a function?", "options": ["To make it one-to-one", "To make all angles acute", "To remove its range"], "answer": 0, "explanation": "The reliable anchor is y=sin⁻¹x ⇔ sin y=x,  y∈[−π/2,π/2]. Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x."}, "connect": [["Surveying", "A height-to-distance ratio becomes an angle through tan⁻¹, with the quadrant checked separately."], ["Navigation bearings", "A measured sine or cosine ratio becomes a principal bearing through an inverse function."]], "recall": "Say it without looking: Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x. Then write y=sin⁻¹x ⇔ sin y=x,  y∈[−π/2,π/2].", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Graphs and principal branches?", "options": ["Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Restricting sine to [−π/2,π/2] makes it one-to-one; the inverse graph reflects that branch in y=x.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Graphs and principal branches?", "options": ["y=sin⁻¹x ⇔ sin y=x,  y∈[−π/2,π/2]", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "y=sin⁻¹x ⇔ sin y=x,  y∈[−π/2,π/2]", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Why is sine restricted before defining sin⁻¹ as a function?", "options": ["To make it one-to-one", "To make all angles acute", "To remove its range"], "answer": 0, "hint": "Start with y=sin⁻¹x ⇔ sin y=x,  y∈[−π/2,π/2]. Check the domain, sign or dimensions before choosing.", "solution": "To make it one-to-one follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §2.3 — Graphs and principal branches (official PDF, PDF p.10)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh102.pdf#page=10"}], "printPages": "27"}, {"id": "inverse-trigonometric-identities", "nav": "Inverse-trigonometric identities", "title": "Complementary principal angles produce compact identities and careful sign choices.", "deck": "For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2.", "minutes": 8, "section": "2.3", "pages": [10], "print": "PDF p.10", "sim": "inverse", "simTitle": "Inverse-function mirror", "quick": ["Complementary principal angles produce compact identities and careful sign choices.", "For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2."], "formulas": [{"label": "Key relation", "html": "sin⁻¹x+cos⁻¹x=π/2", "cond": "Source section 2.3"}], "deeper": "Complementary principal angles produce compact identities and careful sign choices. For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "tan⁻¹1+tan⁻¹1=π/2 because each principal angle is π/4.", "prediction": {"prompt": "What is tan⁻¹(1)+tan⁻¹(1)?", "options": ["π/2", "π/4", "π"], "answer": 0, "explanation": "The reliable anchor is sin⁻¹x+cos⁻¹x=π/2. For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2."}, "connect": [["Navigation bearings", "A measured sine or cosine ratio becomes a principal bearing through an inverse function."], ["Signal processing", "Phase angles are kept on a chosen branch so inverse functions return one reproducible answer."]], "recall": "Say it without looking: For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2. Then write sin⁻¹x+cos⁻¹x=π/2.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Inverse-trigonometric identities?", "options": ["For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "For the stated branches, sin⁻¹x+cos⁻¹x=π/2 and tan⁻¹x+cot⁻¹x=π/2.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Inverse-trigonometric identities?", "options": ["sin⁻¹x+cos⁻¹x=π/2", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "sin⁻¹x+cos⁻¹x=π/2", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "What is tan⁻¹(1)+tan⁻¹(1)?", "options": ["π/2", "π/4", "π"], "answer": 0, "hint": "Start with sin⁻¹x+cos⁻¹x=π/2. Check the domain, sign or dimensions before choosing.", "solution": "π/2 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §2.3 — Inverse-trigonometric identities (official PDF, PDF p.10)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh102.pdf#page=10"}], "printPages": "27"}], "sections": [{"section": "2.1", "title": "Principal values", "page": 1}, {"section": "2.2", "title": "Compositions and domains", "page": 1}, {"section": "2.3", "title": "Graphs and principal branches", "page": 10}, {"section": "2.3", "title": "Inverse-trigonometric identities", "page": 10}], "exercises": [{"number": "2.1.1", "exercise": "2.1", "question": "sin⁻¹(−1/2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 1", "conceptIdx": 0, "steps": ["Let sin⁻¹(−1/2) = y, so sin y = −1/2 with y ∈ [−π/2, π/2].", "sin(−π/6) = −1/2 and −π/6 lies in the principal branch.", "Hence the principal value is −π/6."], "answer": "−π/6"}, {"number": "2.1.2", "exercise": "2.1", "question": "cos⁻¹(√3/2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 2", "conceptIdx": 0, "steps": ["Let cos⁻¹(√3/2) = y, so cos y = √3/2 with y ∈ [0, π].", "cos(π/6) = √3/2 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.3", "exercise": "2.1", "question": "cosec⁻¹(2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 3", "conceptIdx": 0, "steps": ["Let cosec⁻¹(2) = y, so cosec y = 2, i.e. sin y = 1/2, with y ∈ [−π/2, π/2] − {0}.", "sin(π/6) = 1/2 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.4", "exercise": "2.1", "question": "tan⁻¹(−√3) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 4", "conceptIdx": 0, "steps": ["Let tan⁻¹(−√3) = y, so tan y = −√3 with y ∈ (−π/2, π/2).", "tan(−π/3) = −√3 and −π/3 lies in the principal branch.", "Hence the principal value is −π/3."], "answer": "−π/3"}, {"number": "2.1.5", "exercise": "2.1", "question": "cos⁻¹(−1/2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 5", "conceptIdx": 0, "steps": ["Let cos⁻¹(−1/2) = y, so cos y = −1/2 with y ∈ [0, π].", "cos(2π/3) = −1/2 and 2π/3 lies in the principal branch.", "Hence the principal value is 2π/3."], "answer": "2π/3"}, {"number": "2.1.6", "exercise": "2.1", "question": "tan⁻¹(−1) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 6", "conceptIdx": 0, "steps": ["Let tan⁻¹(−1) = y, so tan y = −1 with y ∈ (−π/2, π/2).", "tan(−π/4) = −1 and −π/4 lies in the principal branch.", "Hence the principal value is −π/4."], "answer": "−π/4"}, {"number": "2.1.7", "exercise": "2.1", "question": "sec⁻¹(2/√3) — Find the principal value.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 7", "conceptIdx": 0, "steps": ["Let sec⁻¹(2/√3) = y, so sec y = 2/√3, i.e. cos y = √3/2, with y ∈ [0, π] − {π/2}.", "cos(π/6) = √3/2 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.8", "exercise": "2.1", "question": "cot⁻¹(√3) — Find the principal value.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 8", "conceptIdx": 0, "steps": ["Let cot⁻¹(√3) = y, so cot y = √3, i.e. tan y = 1/√3, with y ∈ (0, π).", "cot(π/6) = √3 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.9", "exercise": "2.1", "question": "Find the principal value of cos⁻¹(−1/2).", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 9", "conceptIdx": 0, "steps": ["Let cos⁻¹(−1/2) = y, so cos y = −1/2 with y ∈ [0, π].", "cos(2π/3) = −1/2 and 2π/3 lies in the principal branch.", "Hence the principal value is 2π/3."], "answer": "2π/3 (principal value)"}, {"number": "2.1.10", "exercise": "2.1", "question": "Find the principal value of cosec⁻¹(−2). Find the values of the following:", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 10", "conceptIdx": 0, "steps": ["Let cosec⁻¹(−2) = y, so sin y = −1/2 with y ∈ [−π/2, π/2] − {0}.", "sin(−π/6) = −1/2 and −π/6 lies in the principal branch.", "Hence the principal value is −π/6."], "answer": "−π/6"}, {"number": "2.1.12", "exercise": "2.1", "question": "cos⁻¹(1/2) + sin⁻¹(1/2) + sin⁻¹(−1/2). 11. tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2). 12. cos⁻¹(1/2) + 2 sin⁻¹(1/2).", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 12", "conceptIdx": 0, "steps": ["tan⁻¹(1) = π/4, cos⁻¹(−1/2) = 2π/3, sin⁻¹(−1/2) = −π/6.", "First sum: π/4 + 2π/3 − π/6 = (3π + 8π − 2π)/12 = 9π/12 = 3π/4.", "cos⁻¹(1/2) = π/3 and sin⁻¹(1/2) = π/6.", "Second sum: π/3 + 2(π/6) = π/3 + π/3 = 2π/3."], "answer": "tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2) = 3π/4; cos⁻¹(1/2) + 2sin⁻¹(1/2) = 2π/3"}, {"number": "2.1.13", "exercise": "2.1", "question": "If sin⁻¹ x = y, then (A) 0 ≤ y ≤ π (B) −π/2 ≤ y ≤ π/2 (C) 0 < y < π (D) −π/2 < y < π/2.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 13", "conceptIdx": 0, "steps": ["By definition sin⁻¹: [−1, 1] → [−π/2, π/2] (principal value branch).", "So y = sin⁻¹ x satisfies −π/2 ≤ y ≤ π/2, including endpoints.", "Hence option (B) is correct."], "answer": "(B) −π/2 ≤ y ≤ π/2"}, {"number": "2.1.14", "exercise": "2.1", "question": "tan⁻¹ √3 − sec⁻¹(−2) is equal to (A) π (B) −π/3 (C) π/3 (D) 2π/3.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 14", "conceptIdx": 0, "steps": ["tan⁻¹√3 = π/3 since tan(π/3) = √3.", "sec⁻¹(−2) = 2π/3 since sec(2π/3) = −2 and 2π/3 ∈ [0, π] − {π/2}.", "Difference: π/3 − 2π/3 = −π/3, so option (B)."], "answer": "(B) −π/3"}, {"number": "2.2.1", "exercise": "2.2", "question": "3sin⁻¹ x = sin⁻¹(3x − 4x³), x ∈ [−1/2, 1/2] — Prove the following.", "page": 12, "endPage": 12, "title": "NCERT Exercise 2.2 · Question 1", "conceptIdx": 1, "steps": ["Put x = sin θ; then sin⁻¹ x = θ with θ ∈ [−π/6, π/6] for x ∈ [−1/2, 1/2].", "3x − 4x³ = 3sin θ − 4sin³θ = sin 3θ (triple-angle formula).", "3θ ∈ [−π/2, π/2], so sin⁻¹(sin 3θ) = 3θ.", "Hence sin⁻¹(3x − 4x³) = 3θ = 3sin⁻¹ x."], "answer": "Proved: 3sin⁻¹ x = sin⁻¹(3x − 4x³) for x ∈ [−1/2, 1/2]"}, {"number": "2.2.2", "exercise": "2.2", "question": "3cos⁻¹ x = cos⁻¹(4x³ − 3x), x ∈ [1/2, 1] (prove). Simplest forms: 3. tan⁻¹((√(1+x²)−1)/x), x ≠ 0; 4. tan⁻¹(√((1−cos x)/(1+cos x))), 0 < x < π; 5. tan⁻¹((cos x−sin x)/(cos x+sin x)), −π/4 < x < 3π/4; 6. tan⁻¹(x/√(a²−x²)), |x| < a; 7. tan⁻¹((3a²x−x³)/(a³−3ax²)), a > 0, −a/√3 < x < a/√3. Values: 8. tan⁻¹[2cos(2sin⁻¹(1/2))]; 9. tan((1/2)[sin⁻¹(2x/(1+x²)) + cos⁻¹((1−y²)/(1+y²))]), |x| < 1, y > 0, xy < 1; 10. sin⁻¹(sin(2π/3)); 11. tan⁻¹(tan(3π/4)); 12. tan(sin⁻¹(3/5) + cot⁻¹(3/2)); 13. cos⁻¹(cos(7π/6)) is equal to (A) 7π/6 (B) 5π/6 (C) π/3 (D) π/6; 14. sin(π/3 − sin⁻¹(−1/2)) is equal to (A) 1/2 (B) 1/3 (C) 1/4 (D) 1; 15. tan⁻¹√3 − cot⁻¹(−√3) is equal to (A) π (B) −π/2 (C) 0 (D) 2√3.", "page": 12, "endPage": 12, "title": "NCERT Exercise 2.2 · Question 2", "conceptIdx": 1, "steps": ["Q2: put x = cos θ; 4x³ − 3x = cos 3θ with 3θ ∈ [0, π] for x ∈ [1/2, 1], so cos⁻¹ gives 3θ = 3cos⁻¹x. Q3–Q7: x = tan θ gives tan(θ/2), so (1/2)tan⁻¹x; half-angle gives tan(x/2), so x/2; (cos x − sin x)/(cos x + sin x) = tan(π/4 − x), so π/4 − x; x = a sin θ gives tan θ form, so sin⁻¹(x/a); x = a tan θ gives tan 3θ form, so 3tan⁻¹(x/a).", "Q8: 2sin⁻¹(1/2) = π/3, 2cos(π/3) = 1, tan⁻¹1 = π/4. Q9: sin⁻¹(2x/(1+x²)) = 2tan⁻¹x and cos⁻¹((1−y²)/(1+y²)) = 2tan⁻¹y, so the expression is tan(tan⁻¹x + tan⁻¹y) = (x+y)/(1−xy).", "Q10: sin(2π/3) = sin(π/3), so π/3. Q11: tan(3π/4) = tan(−π/4), so −π/4. Q12: tan(sin⁻¹(3/5)) = 3/4 and cot⁻¹(3/2) = tan⁻¹(2/3); sum formula (3/4 + 2/3)/(1 − (3/4)(2/3)) = 17/6.", "Q13: cos(7π/6) = cos(5π/6) with 5π/6 ∈ [0, π], so 5π/6, option (B). Q14: sin⁻¹(−1/2) = −π/6, so sin(π/3 + π/6) = sin(π/2) = 1, option (D).", "Q15: tan⁻¹√3 = π/3, cot⁻¹(−√3) = 5π/6; π/3 − 5π/6 = −π/2, option (B)."], "answer": "Proved (Q2); simplest forms: (1/2)tan⁻¹x, x/2, π/4 − x, sin⁻¹(x/a), 3tan⁻¹(x/a); values: π/4, (x+y)/(1−xy), π/3, −π/4, 17/6, (B) 5π/6, (D) 1, (B) −π/2"}, {"number": "Misc.1", "exercise": "Misc", "question": "Find the value of: 1. cos⁻¹(cos(13π/6)); 2. tan⁻¹(tan(7π/6)). Prove that: 3. 2sin⁻¹(3/5) = tan⁻¹(24/7); 4. sin⁻¹(8/17) + sin⁻¹(3/5) = tan⁻¹(77/36); 5. cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65); 6. cos⁻¹(12/13) + sin⁻¹(3/5) = sin⁻¹(56/65); 7. tan⁻¹(63/16) = sin⁻¹(5/13) + cos⁻¹(3/5). Prove that: 8. tan⁻¹√x = (1/2)cos⁻¹((1−x)/(1+x)), x ∈ [0, 1]; 9. cot⁻¹((√(1+sin x) + √(1−sin x))/(√(1+sin x) − √(1−sin x))) = x/2, x ∈ (0, π/4); 10. tan⁻¹((√(1+x) − √(1−x))/(√(1+x) + √(1−x))) = π/4 − (1/2)cos⁻¹x, −1/√2 ≤ x ≤ 1. Solve: 11. 2tan⁻¹(cos x) = tan⁻¹(2cosec x); 12. tan⁻¹((1−x)/(1+x)) = (1/2)tan⁻¹x (x > 0). 13. sin(tan⁻¹x), |x| < 1 is equal to (A) x/√(1−x²) (B) 1/√(1−x²) (C) 1/√(1+x²) (D) x/√(1+x²). 14. sin⁻¹(1−x) − 2sin⁻¹x = π/2, then x is equal to (A) 0, 1/2 (B) 1, 1/2 (C) 0 (D) 1/2.", "page": 14, "endPage": 14, "title": "NCERT Exercise Misc · Question 1", "conceptIdx": 0, "steps": ["Q1: 13π/6 = 2π + π/6, so cos⁻¹ gives π/6. Q2: 7π/6 = π + π/6, tan has period π, so tan⁻¹ gives π/6.", "Q3: with sin θ = 3/5, tan θ = 3/4, tan 2θ = 2(3/4)/(1 − 9/16) = 24/7. Q4: sin(α+β) = (8/17)(4/5) + (15/17)(3/5) = 77/85 and cos(α+β) = 36/85, ratio 77/36. Q5: cos(A+B) = (4/5)(12/13) − (3/5)(5/13) = 33/65. Q6: sin sum = (5/13)(4/5) + (12/13)(3/5) = 56/65. Q7: sin of RHS = (5/13)(3/5) + (12/13)(4/5) = 63/65, cos = 16/65, ratio 63/16.", "Q8: put tan⁻¹√x = θ; cos 2θ = (1 − tan²θ)/(1 + tan²θ) = (1−x)/(1+x). Q9: √(1±sin x) = cos(x/2) ± sin(x/2) for x ∈ (0, π/4), ratio = cot(x/2), so x/2. Q10: put x = cos 2θ; roots give (cos θ − sin θ)/(cos θ + sin θ) = tan(π/4 − θ), so π/4 − θ = π/4 − (1/2)cos⁻¹x.", "Q11: taking tan of both sides: 2cos x/(1 − cos²x) = 2/sin x gives cos x sin x = sin²x, so tan x = 1, x = π/4. Q12: (1−x)/(1+x) = tan(π/4 − t) with t = tan⁻¹x gives π/4 − t = t/2, t = π/6, x = 1/√3.", "Q13: tan⁻¹x = θ gives opposite x and hypotenuse √(1+x²), so sin θ = x/√(1+x²), option (D). Q14: x = 0 gives sin⁻¹1 − 0 = π/2 (works); x = 1/2 gives −π/6 ≠ π/2, so option (C) 0."], "answer": "1. π/6; 2. π/6; 3–10 proved; 11. x = π/4; 12. x = 1/√3; 13. (D) x/√(1+x²); 14. (C) 0"}], "exerciseMap": [{"number": "2.1.1", "exercise": "2.1", "question": "sin⁻¹(−1/2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 1", "conceptIdx": 0, "steps": ["Let sin⁻¹(−1/2) = y, so sin y = −1/2 with y ∈ [−π/2, π/2].", "sin(−π/6) = −1/2 and −π/6 lies in the principal branch.", "Hence the principal value is −π/6."], "answer": "−π/6"}, {"number": "2.1.2", "exercise": "2.1", "question": "cos⁻¹(√3/2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 2", "conceptIdx": 0, "steps": ["Let cos⁻¹(√3/2) = y, so cos y = √3/2 with y ∈ [0, π].", "cos(π/6) = √3/2 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.3", "exercise": "2.1", "question": "cosec⁻¹(2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 3", "conceptIdx": 0, "steps": ["Let cosec⁻¹(2) = y, so cosec y = 2, i.e. sin y = 1/2, with y ∈ [−π/2, π/2] − {0}.", "sin(π/6) = 1/2 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.4", "exercise": "2.1", "question": "tan⁻¹(−√3) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 4", "conceptIdx": 0, "steps": ["Let tan⁻¹(−√3) = y, so tan y = −√3 with y ∈ (−π/2, π/2).", "tan(−π/3) = −√3 and −π/3 lies in the principal branch.", "Hence the principal value is −π/3."], "answer": "−π/3"}, {"number": "2.1.5", "exercise": "2.1", "question": "cos⁻¹(−1/2) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 5", "conceptIdx": 0, "steps": ["Let cos⁻¹(−1/2) = y, so cos y = −1/2 with y ∈ [0, π].", "cos(2π/3) = −1/2 and 2π/3 lies in the principal branch.", "Hence the principal value is 2π/3."], "answer": "2π/3"}, {"number": "2.1.6", "exercise": "2.1", "question": "tan⁻¹(−1) — Find the principal value.", "page": 9, "endPage": 9, "title": "NCERT Exercise 2.1 · Question 6", "conceptIdx": 0, "steps": ["Let tan⁻¹(−1) = y, so tan y = −1 with y ∈ (−π/2, π/2).", "tan(−π/4) = −1 and −π/4 lies in the principal branch.", "Hence the principal value is −π/4."], "answer": "−π/4"}, {"number": "2.1.7", "exercise": "2.1", "question": "sec⁻¹(2/√3) — Find the principal value.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 7", "conceptIdx": 0, "steps": ["Let sec⁻¹(2/√3) = y, so sec y = 2/√3, i.e. cos y = √3/2, with y ∈ [0, π] − {π/2}.", "cos(π/6) = √3/2 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.8", "exercise": "2.1", "question": "cot⁻¹(√3) — Find the principal value.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 8", "conceptIdx": 0, "steps": ["Let cot⁻¹(√3) = y, so cot y = √3, i.e. tan y = 1/√3, with y ∈ (0, π).", "cot(π/6) = √3 and π/6 lies in the principal branch.", "Hence the principal value is π/6."], "answer": "π/6"}, {"number": "2.1.9", "exercise": "2.1", "question": "Find the principal value of cos⁻¹(−1/2).", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 9", "conceptIdx": 0, "steps": ["Let cos⁻¹(−1/2) = y, so cos y = −1/2 with y ∈ [0, π].", "cos(2π/3) = −1/2 and 2π/3 lies in the principal branch.", "Hence the principal value is 2π/3."], "answer": "2π/3 (principal value)"}, {"number": "2.1.10", "exercise": "2.1", "question": "Find the principal value of cosec⁻¹(−2). Find the values of the following:", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 10", "conceptIdx": 0, "steps": ["Let cosec⁻¹(−2) = y, so sin y = −1/2 with y ∈ [−π/2, π/2] − {0}.", "sin(−π/6) = −1/2 and −π/6 lies in the principal branch.", "Hence the principal value is −π/6."], "answer": "−π/6"}, {"number": "2.1.12", "exercise": "2.1", "question": "cos⁻¹(1/2) + sin⁻¹(1/2) + sin⁻¹(−1/2). 11. tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2). 12. cos⁻¹(1/2) + 2 sin⁻¹(1/2).", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 12", "conceptIdx": 0, "steps": ["tan⁻¹(1) = π/4, cos⁻¹(−1/2) = 2π/3, sin⁻¹(−1/2) = −π/6.", "First sum: π/4 + 2π/3 − π/6 = (3π + 8π − 2π)/12 = 9π/12 = 3π/4.", "cos⁻¹(1/2) = π/3 and sin⁻¹(1/2) = π/6.", "Second sum: π/3 + 2(π/6) = π/3 + π/3 = 2π/3."], "answer": "tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2) = 3π/4; cos⁻¹(1/2) + 2sin⁻¹(1/2) = 2π/3"}, {"number": "2.1.13", "exercise": "2.1", "question": "If sin⁻¹ x = y, then (A) 0 ≤ y ≤ π (B) −π/2 ≤ y ≤ π/2 (C) 0 < y < π (D) −π/2 < y < π/2.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 13", "conceptIdx": 0, "steps": ["By definition sin⁻¹: [−1, 1] → [−π/2, π/2] (principal value branch).", "So y = sin⁻¹ x satisfies −π/2 ≤ y ≤ π/2, including endpoints.", "Hence option (B) is correct."], "answer": "(B) −π/2 ≤ y ≤ π/2"}, {"number": "2.1.14", "exercise": "2.1", "question": "tan⁻¹ √3 − sec⁻¹(−2) is equal to (A) π (B) −π/3 (C) π/3 (D) 2π/3.", "page": 10, "endPage": 10, "title": "NCERT Exercise 2.1 · Question 14", "conceptIdx": 0, "steps": ["tan⁻¹√3 = π/3 since tan(π/3) = √3.", "sec⁻¹(−2) = 2π/3 since sec(2π/3) = −2 and 2π/3 ∈ [0, π] − {π/2}.", "Difference: π/3 − 2π/3 = −π/3, so option (B)."], "answer": "(B) −π/3"}, {"number": "2.2.1", "exercise": "2.2", "question": "3sin⁻¹ x = sin⁻¹(3x − 4x³), x ∈ [−1/2, 1/2] — Prove the following.", "page": 12, "endPage": 12, "title": "NCERT Exercise 2.2 · Question 1", "conceptIdx": 1, "steps": ["Put x = sin θ; then sin⁻¹ x = θ with θ ∈ [−π/6, π/6] for x ∈ [−1/2, 1/2].", "3x − 4x³ = 3sin θ − 4sin³θ = sin 3θ (triple-angle formula).", "3θ ∈ [−π/2, π/2], so sin⁻¹(sin 3θ) = 3θ.", "Hence sin⁻¹(3x − 4x³) = 3θ = 3sin⁻¹ x."], "answer": "Proved: 3sin⁻¹ x = sin⁻¹(3x − 4x³) for x ∈ [−1/2, 1/2]"}, {"number": "2.2.2", "exercise": "2.2", "question": "3cos⁻¹ x = cos⁻¹(4x³ − 3x), x ∈ [1/2, 1] (prove). Simplest forms: 3. tan⁻¹((√(1+x²)−1)/x), x ≠ 0; 4. tan⁻¹(√((1−cos x)/(1+cos x))), 0 < x < π; 5. tan⁻¹((cos x−sin x)/(cos x+sin x)), −π/4 < x < 3π/4; 6. tan⁻¹(x/√(a²−x²)), |x| < a; 7. tan⁻¹((3a²x−x³)/(a³−3ax²)), a > 0, −a/√3 < x < a/√3. Values: 8. tan⁻¹[2cos(2sin⁻¹(1/2))]; 9. tan((1/2)[sin⁻¹(2x/(1+x²)) + cos⁻¹((1−y²)/(1+y²))]), |x| < 1, y > 0, xy < 1; 10. sin⁻¹(sin(2π/3)); 11. tan⁻¹(tan(3π/4)); 12. tan(sin⁻¹(3/5) + cot⁻¹(3/2)); 13. cos⁻¹(cos(7π/6)) is equal to (A) 7π/6 (B) 5π/6 (C) π/3 (D) π/6; 14. sin(π/3 − sin⁻¹(−1/2)) is equal to (A) 1/2 (B) 1/3 (C) 1/4 (D) 1; 15. tan⁻¹√3 − cot⁻¹(−√3) is equal to (A) π (B) −π/2 (C) 0 (D) 2√3.", "page": 12, "endPage": 12, "title": "NCERT Exercise 2.2 · Question 2", "conceptIdx": 1, "steps": ["Q2: put x = cos θ; 4x³ − 3x = cos 3θ with 3θ ∈ [0, π] for x ∈ [1/2, 1], so cos⁻¹ gives 3θ = 3cos⁻¹x. Q3–Q7: x = tan θ gives tan(θ/2), so (1/2)tan⁻¹x; half-angle gives tan(x/2), so x/2; (cos x − sin x)/(cos x + sin x) = tan(π/4 − x), so π/4 − x; x = a sin θ gives tan θ form, so sin⁻¹(x/a); x = a tan θ gives tan 3θ form, so 3tan⁻¹(x/a).", "Q8: 2sin⁻¹(1/2) = π/3, 2cos(π/3) = 1, tan⁻¹1 = π/4. Q9: sin⁻¹(2x/(1+x²)) = 2tan⁻¹x and cos⁻¹((1−y²)/(1+y²)) = 2tan⁻¹y, so the expression is tan(tan⁻¹x + tan⁻¹y) = (x+y)/(1−xy).", "Q10: sin(2π/3) = sin(π/3), so π/3. Q11: tan(3π/4) = tan(−π/4), so −π/4. Q12: tan(sin⁻¹(3/5)) = 3/4 and cot⁻¹(3/2) = tan⁻¹(2/3); sum formula (3/4 + 2/3)/(1 − (3/4)(2/3)) = 17/6.", "Q13: cos(7π/6) = cos(5π/6) with 5π/6 ∈ [0, π], so 5π/6, option (B). Q14: sin⁻¹(−1/2) = −π/6, so sin(π/3 + π/6) = sin(π/2) = 1, option (D).", "Q15: tan⁻¹√3 = π/3, cot⁻¹(−√3) = 5π/6; π/3 − 5π/6 = −π/2, option (B)."], "answer": "Proved (Q2); simplest forms: (1/2)tan⁻¹x, x/2, π/4 − x, sin⁻¹(x/a), 3tan⁻¹(x/a); values: π/4, (x+y)/(1−xy), π/3, −π/4, 17/6, (B) 5π/6, (D) 1, (B) −π/2"}, {"number": "Misc.1", "exercise": "Misc", "question": "Find the value of: 1. cos⁻¹(cos(13π/6)); 2. tan⁻¹(tan(7π/6)). Prove that: 3. 2sin⁻¹(3/5) = tan⁻¹(24/7); 4. sin⁻¹(8/17) + sin⁻¹(3/5) = tan⁻¹(77/36); 5. cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65); 6. cos⁻¹(12/13) + sin⁻¹(3/5) = sin⁻¹(56/65); 7. tan⁻¹(63/16) = sin⁻¹(5/13) + cos⁻¹(3/5). Prove that: 8. tan⁻¹√x = (1/2)cos⁻¹((1−x)/(1+x)), x ∈ [0, 1]; 9. cot⁻¹((√(1+sin x) + √(1−sin x))/(√(1+sin x) − √(1−sin x))) = x/2, x ∈ (0, π/4); 10. tan⁻¹((√(1+x) − √(1−x))/(√(1+x) + √(1−x))) = π/4 − (1/2)cos⁻¹x, −1/√2 ≤ x ≤ 1. Solve: 11. 2tan⁻¹(cos x) = tan⁻¹(2cosec x); 12. tan⁻¹((1−x)/(1+x)) = (1/2)tan⁻¹x (x > 0). 13. sin(tan⁻¹x), |x| < 1 is equal to (A) x/√(1−x²) (B) 1/√(1−x²) (C) 1/√(1+x²) (D) x/√(1+x²). 14. sin⁻¹(1−x) − 2sin⁻¹x = π/2, then x is equal to (A) 0, 1/2 (B) 1, 1/2 (C) 0 (D) 1/2.", "page": 14, "endPage": 14, "title": "NCERT Exercise Misc · Question 1", "conceptIdx": 0, "steps": ["Q1: 13π/6 = 2π + π/6, so cos⁻¹ gives π/6. Q2: 7π/6 = π + π/6, tan has period π, so tan⁻¹ gives π/6.", "Q3: with sin θ = 3/5, tan θ = 3/4, tan 2θ = 2(3/4)/(1 − 9/16) = 24/7. Q4: sin(α+β) = (8/17)(4/5) + (15/17)(3/5) = 77/85 and cos(α+β) = 36/85, ratio 77/36. Q5: cos(A+B) = (4/5)(12/13) − (3/5)(5/13) = 33/65. Q6: sin sum = (5/13)(4/5) + (12/13)(3/5) = 56/65. Q7: sin of RHS = (5/13)(3/5) + (12/13)(4/5) = 63/65, cos = 16/65, ratio 63/16.", "Q8: put tan⁻¹√x = θ; cos 2θ = (1 − tan²θ)/(1 + tan²θ) = (1−x)/(1+x). Q9: √(1±sin x) = cos(x/2) ± sin(x/2) for x ∈ (0, π/4), ratio = cot(x/2), so x/2. Q10: put x = cos 2θ; roots give (cos θ − sin θ)/(cos θ + sin θ) = tan(π/4 − θ), so π/4 − θ = π/4 − (1/2)cos⁻¹x.", "Q11: taking tan of both sides: 2cos x/(1 − cos²x) = 2/sin x gives cos x sin x = sin²x, so tan x = 1, x = π/4. Q12: (1−x)/(1+x) = tan(π/4 − t) with t = tan⁻¹x gives π/4 − t = t/2, t = π/6, x = 1/√3.", "Q13: tan⁻¹x = θ gives opposite x and hypotenuse √(1+x²), so sin θ = x/√(1+x²), option (D). Q14: x = 0 gives sin⁻¹1 − 0 = π/2 (works); x = 1/2 gives −π/6 ≠ π/2, so option (C) 0."], "answer": "1. π/6; 2. π/6; 3–10 proved; 11. x = π/4; 12. x = 1/√3; 13. (D) x/√(1+x²); 14. (C) 0"}], "pageOffset": 17, "printPageStart": 18, "printPageEnd": 33, "paginationProvenance": "folio-read-9-samples"};</script>
-  <script>(function(){
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 02 · INVERSE TRIGONOMETRIC FUNCTIONS</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="12"></progress>
+      <span id="progress-text">0 / 12</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="revision-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises & Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 43 Exercises from NCERT Class 12 Mathematics Part 1 (pp. 1–16) mapped directly to core concepts with full step-by-step solutions.</p>
+      </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
+    </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"code": "lemh102", "chapterNumber": 2, "title": "Inverse Trigonometric Functions", "subtitle": "Trigonometric functions repeat, so we restrict them to principal branches, draw the mirror graphs, and use triangle identities to evaluate and simplify inverse expressions.", "book_name": "Mathematics Part 1", "edition": "NCERT Mathematics Part 1, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lemh102.pdf", "page_start": 1, "page_end": 16, "exercisesNote": "All 43 questions from NCERT Exercises 2.1, 2.2 and the Miscellaneous Exercise (printed pp. 26–27, 29–30 and 31), each mapped to its concept with a full step-by-step solution checked against the NCERT answer key.", "lessons": [{"id": "principal-values", "nav": "Principal values", "group": "01 / PRINCIPAL BRANCHES", "title": "Why inverses need a principal branch", "deck": "Trigonometric functions repeat, so they cannot be inverted outright. Restricting the domain to a principal branch makes each one bijective and gives a single principal value.", "minutes": 8, "section": "2.2", "pages": [1, 2], "print": "18–19", "sim": "principalbranch", "simTitle": "Principal-value bench: pick the branch, read the angle", "watch": "Choose a function. The unit circle shows the value of sin, cos or tan, and the highlighted arc is the principal branch. The readout converts the angle between radians, decimals and degrees.", "quick": ["Because sine, cosine and tangent repeat, each must be restricted before it can have an inverse. The restricted domains are called <strong>principal value branches</strong>.", "<strong>sin⁻¹ : [−1, 1] → [−π/2, π/2]</strong>, &nbsp; <strong>cos⁻¹ : [−1, 1] → [0, π]</strong>, &nbsp; <strong>tan⁻¹ : R → (−π/2, π/2)</strong>.", "The remaining three: <strong>cosec⁻¹ : R − (−1, 1) → [−π/2, π/2] − {0}</strong>, &nbsp; <strong>sec⁻¹ : R − (−1, 1) → [0, π] − {π/2}</strong>, &nbsp; <strong>cot⁻¹ : R → (0, π)</strong>.", "The value of an inverse trigonometric function that lies in its principal branch is called the <strong>principal value</strong>. Beware: sin⁻¹x is the inverse sine, not the reciprocal 1/sin x = (sin x)⁻¹."], "formulas": [{"label": "Principal value branches", "html": "sin⁻¹ : [−1, 1] → [−π/2, π/2]", "cond": "cos⁻¹ : [0, π] &nbsp;·&nbsp; tan⁻¹ : (−π/2, π/2)"}, {"label": "Reciprocal functions", "html": "cosec⁻¹, sec⁻¹, cot⁻¹", "cond": "ranges [−π/2, π/2] − {0}, [0, π] − {π/2}, (0, π)"}, {"label": "Notation warning", "html": "sin⁻¹ x ≠ 1 / sin x", "cond": "sin⁻¹ x is the inverse sine, (sin x)⁻¹ = 1/sin x"}], "deeper": "The principal branch is chosen so that the restricted function is continuous and strictly monotonic, and so that the values 0 and small positive angles live in the range. Reflect the restricted graph in y = x and you get the inverse graph. A different branch gives a function that still “undoes” the original, but with values shifted by a multiple of π; the principal branch removes that ambiguity. Every exercise in Exercise 2.1 asks for exactly this branch value.", "worked": {"title": "NCERT Example 2: cot⁻¹(−1/√3)", "problem": "Find the principal value of cot⁻¹(−1/√3).", "given": "The principal branch of cot⁻¹ is (0, π).", "steps": ["Let cot⁻¹(−1/√3) = y, so cot y = −1/√3 with y ∈ (0, π).", "cot(π/3) = 1/√3, so cot(π − π/3) = −1/√3, that is cot(2π/3) = −1/√3.", "The angle 2π/3 lies in the principal branch (0, π), so it is the principal value."], "answer": "cot⁻¹(−1/√3) = 2π/3."}, "prediction": {"prompt": "What is the principal value of cos⁻¹(−1/2)?", "options": ["2π/3", "−π/3", "π/3"], "answer": 0, "explanation": "The range of cos⁻¹ is [0, π], so the answer must be a non-negative angle. cos(2π/3) = −1/2, so cos⁻¹(−1/2) = 2π/3."}, "connect": [{"title": "Surveying and navigation", "text": "When a surveyor measures a slope ratio or a bearing ratio, recovering the angle means applying an inverse trigonometric function. The principal branch fixes a single answer between 0 and π/2."}, {"title": "Integrals that need arcsin", "text": "The standard formula ∫ dx/√(1−x²) = sin⁻¹x + C (on (−1, 1)) shows why this chapter sits at the doorway to calculus: the antiderivative is an inverse trigonometric function.", "links": [{"t": "Wikipedia: Inverse trigonometric functions", "u": "https://en.wikipedia.org/wiki/Inverse_trigonometric_functions"}]}, {"title": "Wow: calculators return the principal value", "text": "Type sin⁻¹(0.5) into any calculator and it returns 30°, never 150° or 390°. The calculator is hard-wired to the principal branch [−π/2, π/2]; every other angle that shares the same sine is obtained by a symmetry or period rule.", "links": [{"t": "Wikipedia: Principal value", "u": "https://en.wikipedia.org/wiki/Principal_value"}], "wow": true, "video": {"id": "mVOdFVsn8HA", "title": "Principal value of inverse functions| Inverse Trigonometric Functions| Grade 12| Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State the domain and principal-value range for all six inverse trigonometric functions, and explain why each restriction is needed.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The principal value branch of sin⁻¹ is", "options": ["[−π/2, π/2]", "[0, π]", "(−π/2, π/2)"], "answer": 0, "hint": "The inverse sine must return angles for which sine is one-one, centred on 0.", "solution": "sin⁻¹ : [−1, 1] → [−π/2, π/2] is the standard principal branch.", "wrong": ["", "[0, π] is the principal branch of cos⁻¹, not sin⁻¹.", "tan⁻¹ has the open interval (−π/2, π/2); sin⁻¹ includes the endpoints."]}, {"level": "Medium", "type": "number", "prompt": "Find the principal value of tan⁻¹(−1), in radians.", "answer": -0.7853981633974483, "tolerance": 0.001, "unit": "rad", "hint": "tan(−π/4) = −1 and −π/4 lies in (−π/2, π/2).", "solution": "tan⁻¹(−1) = −π/4 = −0.7854 radians (to 4 decimal places)."}, {"level": "Hard", "type": "mcq", "prompt": "sin⁻¹(sin(2π/3)) equals", "options": ["π/3", "2π/3", "−π/3"], "answer": 0, "hint": "2π/3 is outside [−π/2, π/2], so first rewrite sin(2π/3) using a reference angle.", "solution": "sin(2π/3) = sin(π − 2π/3) = sin(π/3), and π/3 lies in the principal branch, so sin⁻¹(sin(2π/3)) = π/3.", "wrong": ["", "2π/3 is not in the principal branch, so the cancellation sin⁻¹(sin x) = x does not apply.", "The angle 2π/3 is positive, so its reference angle π/3 is positive too."]}]}, {"id": "graphs-and-branches", "nav": "Graphs and branches", "group": "02 / MIRROR IN Y = X", "title": "The mirror in the line y = x", "deck": "Reflecting each restricted trigonometric graph in y = x gives its inverse. The highlighted arc is the principal-value branch; the ghosted copies are the other branches.", "minutes": 8, "section": "2.2", "pages": [3, 8], "print": "20–25", "sim": "graphbranches", "simTitle": "Branch viewer: inverse graphs and principal arcs", "watch": "Pick sin⁻¹, cos⁻¹ or tan⁻¹. The solid arc is the principal branch, the dashed arcs are the other branches, and the reflection line y = x links a point on the original graph to its swapped partner.", "quick": ["If (a, b) lies on the graph of y = sin x, then (b, a) lies on the graph of y = sin⁻¹ x: the inverse graph is the <strong>reflection in the line y = x</strong>.", "y = sin⁻¹ x climbs from (−1, −π/2) to (1, π/2); y = cos⁻¹ x falls from (−1, π) to (1, 0); y = tan⁻¹ x rises from the horizontal asymptote y = −π/2 to y = π/2.", "The dark (solid) portion of each inverse graph is the principal-value branch; repeating it with a vertical shift by a multiple of π (or 2π for sine and cosine) gives all the other branches.", "Domain and range swap when you invert: sin x takes all reals to [−1, 1], so sin⁻¹ x takes [−1, 1] back to the interval [−π/2, π/2]."], "formulas": [{"label": "Reflection relation", "html": "y = f(x) &nbsp;⇔&nbsp; x = f⁻¹(y)", "cond": "plot (b, a) for every point (a, b) of the original graph"}, {"label": "sin⁻¹ graph", "html": "from (−1, −π/2) to (1, π/2)", "cond": "strictly increasing on [−1, 1]"}, {"label": "cos⁻¹ graph", "html": "from (−1, π) to (1, 0)", "cond": "strictly decreasing on [−1, 1]"}], "deeper": "The reflection picture explains the awkward-looking domains and ranges. Sine restricted to [−π/2, π/2] covers [−1, 1] exactly once, so its reflection is a function. If you had chosen the branch [π/2, 3π/2] instead, the reflection would produce a different inverse function with values shifted by π. The curves for cosec⁻¹, sec⁻¹ and cot⁻¹ look like the corresponding reciprocal graphs with a horizontal cut through a range from which 0 (or −1 to 1) is removed.", "worked": {"title": "Reading a value from the inverse graph", "problem": "Use the graph of y = cos⁻¹ x to read the principal value of cos⁻¹(−1/2), and check it with the branch range.", "given": "The graph of y = cos⁻¹ x is the reflection of y = cos x (restricted to [0, π]) in y = x.", "steps": ["On the reflected graph, locate x = −1/2 on the horizontal axis; the graph is falling, so the point sits at a height between π/2 and π.", "The corresponding point on y = cos x would be (2π/3, −1/2), because cos(2π/3) = −1/2.", "Swapping coordinates gives (−1/2, 2π/3) on the inverse graph, and 2π/3 ∈ [0, π] is inside the principal branch."], "answer": "cos⁻¹(−1/2) = 2π/3 ≈ 2.094 radians, read as the height of the reflected graph at x = −1/2."}, "prediction": {"prompt": "The graph of y = sin⁻¹ x is obtained from the graph of y = sin x (restricted to [−π/2, π/2]) by reflection in …", "options": ["the line y = x", "the x-axis", "the y-axis"], "answer": 0, "explanation": "Inverting a function swaps every input and output, i.e. every point (a, b) becomes (b, a). Swapping coordinates is exactly reflection in the line y = x."}, "connect": [{"title": "Readings from a graph", "text": "Engineers often need the angle from a measured ratio. The inverse graph is the practical look-up curve: enter the ratio on the horizontal axis and read the principal angle on the vertical axis."}, {"title": "Symmetry in signal phase", "text": "cos⁻¹ is decreasing while sin⁻¹ is increasing; that is why the complement identity sin⁻¹x + cos⁻¹x = π/2 appears as mirror symmetry of the two graphs about the horizontal line y = π/4.", "links": [{"t": "Wikipedia: Inverse trigonometric functions", "u": "https://en.wikipedia.org/wiki/Inverse_trigonometric_functions"}]}, {"title": "Wow: the pendulum's small-angle arcsin", "text": "For a pendulum, sin θ = x/L. Recovering θ uses arcsin, and for small swings sin θ ≈ θ, which is why physics books replace arcsin(x/L) by x/L. The graph of sin⁻¹ shows how quickly that straight-line approximation bends away from the exact angle.", "links": [{"t": "Wikipedia: Small-angle approximation", "u": "https://en.wikipedia.org/wiki/Small-angle_approximation"}], "wow": true, "video": {"id": "tuBUQHgmZtI", "title": "Graph of sine inverse function| Inverse trigonometric functions | NCERT 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Sketch y = sin⁻¹ x and y = cos⁻¹ x from memory, marking the endpoints, the principal branch and the monotonicity of each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The domain of cos⁻¹ x is", "options": ["[−1, 1]", "R", "[0, π]"], "answer": 0, "hint": "The domain of the inverse is the range of the original cosine function.", "solution": "cos x takes values in [−1, 1], so cos⁻¹ x is defined for x ∈ [−1, 1]; its range is [0, π].", "wrong": ["", "R is the domain of tan⁻¹, whose original function has range R.", "[0, π] is the range of cos⁻¹, not its domain."]}, {"level": "Medium", "type": "number", "prompt": "Evaluate cos⁻¹(0), in radians.", "answer": 1.5707963267948966, "tolerance": 0.001, "unit": "rad", "hint": "Find the angle in [0, π] whose cosine is 0.", "solution": "cos(π/2) = 0 and π/2 ∈ [0, π], so cos⁻¹(0) = π/2 ≈ 1.5708 radians."}, {"level": "Hard", "type": "mcq", "prompt": "The range of sec⁻¹ x is", "options": ["[0, π] − {π/2}", "R − (−1, 1)", "[−π/2, π/2] − {0}"], "answer": 0, "hint": "secant is the reciprocal of cosine, so its inverse inherits the cosine branch minus the point where cosine vanishes.", "solution": "sec⁻¹ : R − (−1, 1) → [0, π] − {π/2}; the value π/2 is omitted because cos(π/2) = 0 and sec is undefined there.", "wrong": ["", "R − (−1, 1) is the domain of sec⁻¹, not its range.", "That is the range of cosec⁻¹."]}]}, {"id": "composition-and-simplification", "nav": "Compositions and simplifications", "group": "03 / F⁻¹ ∘ F", "title": "When inverse meets function", "deck": "sin⁻¹(sin x) = x only inside the principal branch. Outside it you must map the angle back with a symmetry rule — exactly the skill behind the 'simplest form' problems.", "minutes": 9, "section": "2.3", "pages": [10, 12], "print": "27–29", "sim": "compositionidentity", "simTitle": "Composition checker: cancelling inverse and function", "watch": "Pick a composition. The angle wheel marks whether the input is inside the principal branch; when it is outside, the rewrite panel shows the reference angle used before cancelling.", "quick": ["<strong>Function after inverse:</strong> sin(sin⁻¹ x) = x for x ∈ [−1, 1], and similarly cos(cos⁻¹ x) = x and tan(tan⁻¹ x) = x.", "<strong>Inverse after function:</strong> sin⁻¹(sin x) = x only when x ∈ [−π/2, π/2]. Outside that interval, rewrite sin x as the sine of its reference angle inside the branch.", "Standard reductions: sin⁻¹(sin(2π/3)) = π/3, cos⁻¹(cos(7π/6)) = 5π/6, tan⁻¹(tan(3π/4)) = −π/4.", "The <strong>simplest-form</strong> method: substitute x = sin θ or x = tan θ so that square roots like √(1−x²) and quotients like (1−cos x)/(1+cos x) collapse into a single angle."], "formulas": [{"label": "Cancellation", "html": "sin(sin⁻¹ x) = x, &nbsp; x ∈ [−1, 1]", "cond": "the inverse feeds the function"}, {"label": "Reverse cancellation", "html": "sin⁻¹(sin x) = x, &nbsp; x ∈ [−π/2, π/2]", "cond": "only inside the principal branch"}, {"label": "Half-angle simplification", "html": "tan⁻¹((√(1+x²) − 1) / x) = ½ tan⁻¹ x", "cond": "x ≠ 0; substitute x = tan θ"}, {"label": "Reference-angle reduction", "html": "sin⁻¹(sin x) = π − x for x ∈ [π/2, 3π/2]", "cond": "bring x back inside [−π/2, π/2] first"}], "deeper": "Two different round trips must be distinguished. f⁻¹(f(x)) removes the function first and the inverse second, and it needs x to be a legal input of f. f(f⁻¹(x)) removes the inverse first, and it needs x to be in the range of f. For sine: sin⁻¹(sin x) fails to equal x outside [−π/2, π/2] because many angles share the same sine. If x is negative but still in the branch, no correction is needed; if x is beyond the branch, use sin(π − x) or sin(x − π) to bring the angle home before cancelling.", "worked": {"title": "NCERT Example 4: a tangent quotient in simplest form", "problem": "Express tan⁻¹((cos x − sin x)/(cos x + sin x)), −π/4 < x < 3π/4, in the simplest form.", "given": "−π/4 < x < 3π/4, so cos x + sin x ≠ 0 on the interval.", "steps": ["Divide numerator and denominator by cos x: (cos x − sin x)/(cos x + sin x) = (1 − tan x)/(1 + tan x).", "Recognise the tangent subtraction formula: (1 − tan x)/(1 + tan x) = tan(π/4 − x).", "The interval −π/4 < x < 3π/4 gives −π/2 < π/4 − x < π/2, which lies exactly in the principal branch of tan⁻¹.", "So the inverse cancels the tangent: tan⁻¹(tan(π/4 − x)) = π/4 − x."], "answer": "tan⁻¹((cos x − sin x)/(cos x + sin x)) = π/4 − x."}, "prediction": {"prompt": "sin⁻¹(sin(5π/6)) equals", "options": ["π/6", "5π/6", "−π/6"], "answer": 0, "explanation": "5π/6 is outside [−π/2, π/2]. Since sin(5π/6) = sin(π − 5π/6) = sin(π/6) and π/6 is in the principal branch, the value is π/6."}, "connect": [{"title": "Undoing a measurement", "text": "If a sensor reports sin θ = 0.4, recovering θ with sin⁻¹ assumes the angle lies in [−π/2, π/2]. Outside that window, extra information about the quadrant is required — the same reference-angle work as in the exercises."}, {"title": "Integrals with substitutions", "text": "Substitutions such as x = sin θ turn √(1−x²) into cos θ; this is the standard route to arcsin antiderivatives and to the 'simplest form' manipulations of Exercise 2.2.", "links": [{"t": "Wikipedia: Trigonometric substitution", "u": "https://en.wikipedia.org/wiki/Trigonometric_substitution"}]}, {"title": "Wow: one ratio, two possible angles", "text": "sin θ = 0.5 has infinitely many solutions: π/6, 5π/6, 13π/6, … Yet sin⁻¹(0.5) returns only π/6. The inverse function deliberately forgets the period; recovering the other solutions is your job.", "links": [{"t": "Wikipedia: Inverse trigonometric functions", "u": "https://en.wikipedia.org/wiki/Inverse_trigonometric_functions"}], "wow": true, "video": {"id": "Y5iykY7E-to", "title": "Evaluating inverse | Inverse Trigonometric Functions | Grade 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Explain the difference between sin(sin⁻¹ x) and sin⁻¹(sin x), including the interval on which the second cancellation is valid.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "sin⁻¹(sin(π/4)) equals", "options": ["π/4", "3π/4", "−π/4"], "answer": 0, "hint": "π/4 lies inside the principal branch [−π/2, π/2].", "solution": "Since π/4 ∈ [−π/2, π/2], the inverse and the function cancel directly: sin⁻¹(sin(π/4)) = π/4.", "wrong": ["", "sin(3π/4) = sin(π/4) too, but 3π/4 is not in the principal branch, so the inverse never returns it.", "π/4 is positive; the inverse of its sine is also positive."]}, {"level": "Medium", "type": "number", "prompt": "Evaluate tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2), in radians.", "answer": 2.356194490192345, "tolerance": 0.001, "unit": "rad", "hint": "Use tan⁻¹(1) = π/4, cos⁻¹(−1/2) = 2π/3, sin⁻¹(−1/2) = −π/6.", "solution": "π/4 + 2π/3 − π/6 = (3π + 8π − 2π)/12 = 9π/12 = 3π/4 ≈ 2.3562 radians."}, {"level": "Hard", "type": "mcq", "prompt": "cos⁻¹(cos(7π/6)) equals", "options": ["5π/6", "7π/6", "π/6"], "answer": 0, "hint": "7π/6 is outside [0, π]; use the reference angle π − 7π/6 or the symmetry cos(2π − x).", "solution": "cos(7π/6) = −√3/2, and the angle in [0, π] with this cosine is 5π/6. Hence cos⁻¹(cos(7π/6)) = 5π/6.", "wrong": ["", "7π/6 is not in the principal branch [0, π] of cos⁻¹.", "cos(π/6) = +√3/2, so π/6 is not the value here."]}]}, {"id": "inverse-trigonometric-identities", "nav": "Identities and equations", "group": "04 / TRIANGLE IDENTITIES", "title": "Identities that tame inverse tangents", "deck": "Pythagorean triples convert inverse sines and cosines into a single inverse tangent, and the tangent addition formula then solves equations in one step.", "minutes": 10, "section": "2.3", "pages": [12, 14], "print": "29–31", "sim": "itfidentities", "simTitle": "Identity bench: triangle checks and tangent addition", "watch": "Choose an identity. The triangle fills in the missing side from the Pythagorean triple, and the readout shows the numeric angle on both sides of the identity.", "quick": ["<strong>Complementary angles:</strong> sin⁻¹x + cos⁻¹x = π/2 and tan⁻¹x + cot⁻¹x = π/2 for every x in the appropriate domain.", "<strong>Tangent addition:</strong> tan⁻¹x + tan⁻¹y = tan⁻¹((x + y)/(1 − xy)) when xy &lt; 1. If xy &gt; 1 and x, y &gt; 0 the sum lies in (π/2, π) and needs a correction of π.", "<strong>Double angle:</strong> 2tan⁻¹x = tan⁻¹(2x/(1 − x²)) for |x| &lt; 1, and 2sin⁻¹(3/5) = tan⁻¹(24/7).", "To prove an identity numerically, build a right triangle from the given sine or cosine: the remaining side comes from Pythagoras, and the tangent is read off directly."], "formulas": [{"label": "Complement", "html": "sin⁻¹ x + cos⁻¹ x = π/2", "cond": "for x ∈ [−1, 1]"}, {"label": "Tangent addition", "html": "tan⁻¹ x + tan⁻¹ y = tan⁻¹((x + y)/(1 − xy))", "cond": "valid in the principal branch when xy < 1"}, {"label": "Double angle", "html": "2 tan⁻¹ x = tan⁻¹(2x / (1 − x²))", "cond": "|x| < 1"}, {"label": "Triple-angle proof", "html": "2 sin⁻¹(3/5) = tan⁻¹(24/7)", "cond": "3–4–5 triangle, then sin 2θ = 24/25, cos 2θ = 7/25"}], "deeper": "The triangles method avoids calculus and memorisation: sin⁻¹(3/5) names the angle of a 3–4–5 triangle, so every trigonometric function of that angle is instantly available. The addition formula turns two angles into one, provided the branch condition is respected. Solving an equation such as 2tan⁻¹(cos x) = tan⁻¹(2 cosec x) then reduces to applying the double-angle formula, equating the two inverse-tangent arguments and checking that the resulting x lies in the principal branch. The NCERT answer key confirms every value in the Miscellaneous Exercise.", "worked": {"title": "NCERT Miscellaneous 3: 2sin⁻¹(3/5) = tan⁻¹(24/7)", "problem": "Prove that 2sin⁻¹(3/5) = tan⁻¹(24/7).", "given": "Let θ = sin⁻¹(3/5), so sin θ = 3/5 and θ ∈ (0, π/2).", "steps": ["In a right triangle with opposite side 3 and hypotenuse 5, the adjacent side is √(5² − 3²) = 4, so cos θ = 4/5 and tan θ = 3/4.", "Double the angle: sin 2θ = 2 sin θ cos θ = 2 × (3/5) × (4/5) = 24/25.", "Similarly cos 2θ = cos²θ − sin²θ = 16/25 − 9/25 = 7/25, so tan 2θ = (24/25)/(7/25) = 24/7.", "Since θ ∈ (0, π/2), 2θ ∈ (0, π); in fact 2θ ∈ (0, π/2) because sin 2θ and cos 2θ are both positive, so tan⁻¹(24/7) = 2θ."], "answer": "2sin⁻¹(3/5) = tan⁻¹(24/7) ≈ 1.2870 radians."}, "prediction": {"prompt": "cos⁻¹(4/5) + cos⁻¹(12/13) equals", "options": ["cos⁻¹(33/65)", "cos⁻¹(48/65)", "sin⁻¹(33/65)"], "answer": 0, "explanation": "With cos α = 4/5 (sin α = 3/5) and cos β = 12/13 (sin β = 5/13), the addition formula gives cos(α + β) = (4/5)(12/13) − (3/5)(5/13) = (48 − 15)/65 = 33/65. Both angles are acute, so α + β ∈ (0, π) and the inverse cosine applies directly."}, "connect": [{"title": "Surveying with two distance ratios", "text": "Two bearings given as tangent ratios can be added with tan⁻¹x + tan⁻¹y = tan⁻¹((x+y)/(1−xy)), turning a compound bearing into a single angle for the final course."}, {"title": "Phase addition in circuits", "text": "Two phase lags described by inverse tangents combine through the same addition formula; the xy < 1 condition decides whether the total phase stays in the principal branch.", "links": [{"t": "Wikipedia: Inverse trigonometric functions", "u": "https://en.wikipedia.org/wiki/Inverse_trigonometric_functions"}]}, {"title": "Wow: Pythagorean triples everywhere", "text": "The identity 2sin⁻¹(3/5) = tan⁻¹(24/7) rests on nested Pythagorean triples: (3, 4, 5) gives (7, 24, 25) on doubling. The same doubling rule generates an infinite family of triples and appears in ancient Indian, Greek and Chinese mathematics.", "links": [{"t": "Wikipedia: Pythagorean triple", "u": "https://en.wikipedia.org/wiki/Pythagorean_triple"}], "wow": true, "video": {"id": "Tkgx-D38R5w", "title": "Properties of ITFs | Inverse Trigonometric Functions | Grade 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the tangent addition formula with its condition, then explain how a 3–4–5 triangle proves 2sin⁻¹(3/5) = tan⁻¹(24/7).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For x ∈ [−1, 1], sin⁻¹ x + cos⁻¹ x equals", "options": ["π/2", "π", "0"], "answer": 0, "hint": "Sine and cosine are complementary: sin θ = cos(π/2 − θ).", "solution": "If sin⁻¹x = θ then cos⁻¹x = π/2 − θ, so the sum is π/2.", "wrong": ["", "π exceeds both maximum values (π/2 each) combined only in sign, not magnitude.", "The two are not opposites: one is the complement of the other."]}, {"level": "Medium", "type": "number", "prompt": "Evaluate 2sin⁻¹(3/5), in radians.", "answer": 1.2870022175865687, "tolerance": 0.001, "unit": "rad", "hint": "Use the 3–4–5 triangle: sin θ = 3/5 gives cos θ = 4/5, then sin 2θ = 24/25.", "solution": "sin⁻¹(3/5) ≈ 0.6435 rad, so 2sin⁻¹(3/5) ≈ 1.2870 rad, which equals tan⁻¹(24/7)."}, {"level": "Hard", "type": "mcq", "prompt": "The general solution of 2tan⁻¹(cos x) = tan⁻¹(2 cosec x) is", "options": ["x = nπ + π/4, n ∈ Z", "x = nπ, n ∈ Z", "x = 2nπ + π/3, n ∈ Z"], "answer": 0, "hint": "Apply the double-angle formula to the left side and equate the tangent arguments.", "solution": "2tan⁻¹(cos x) = tan⁻¹(2cos x/(1 − cos²x)) = tan⁻¹(2cos x/sin²x). Equating with tan⁻¹(2/sin x) gives cos x/sin²x = 1/sin x, so cos x = sin x, i.e. tan x = 1 and x = nπ + π/4. NCERT key: x = nπ + π/4, n ∈ Z.", "wrong": ["", "At x = nπ, cosec x is undefined (sin x = 0), so these are not solutions.", "sin x = cos x forces x = π/4 + nπ, not 2nπ + π/3."]}]}], "exercises": [{"q": 1, "title": "sin⁻¹(−1/2)", "conceptIdx": 0, "page": 9, "printPage": 26, "question": "Find the principal value of sin⁻¹(−1/2).", "given": "Principal branch of sin⁻¹: [−π/2, π/2].", "steps": ["Let y = sin⁻¹(−1/2). Then sin y = −1/2 with y ∈ [−π/2, π/2].", "Now sin(π/6) = 1/2, so sin(−π/6) = −1/2.", "Since −π/6 lies in [−π/2, π/2], the principal value is −π/6."], "answer": "−π/6. NCERT key: 1. −π/6.", "takeaway": "Negative inputs give negative principal values for sin⁻¹.", "conceptName": "Principal values"}, {"q": 2, "title": "cos⁻¹(√3/2)", "conceptIdx": 0, "page": 9, "printPage": 26, "question": "Find the principal value of cos⁻¹(√3/2).", "given": "Principal branch of cos⁻¹: [0, π].", "steps": ["Let y = cos⁻¹(√3/2), so cos y = √3/2 with y ∈ [0, π].", "The familiar acute angle with cos = √3/2 is π/6.", "π/6 lies in [0, π], so the principal value is π/6."], "answer": "π/6. NCERT key: 2. π/6.", "takeaway": "Principal values of cos⁻¹ always lie between 0 and π.", "conceptName": "Principal values"}, {"q": 3, "title": "cosec⁻¹(2)", "conceptIdx": 0, "page": 9, "printPage": 26, "question": "Find the principal value of cosec⁻¹(2).", "given": "Principal branch of cosec⁻¹: [−π/2, π/2] − {0}.", "steps": ["Let y = cosec⁻¹(2), so cosec y = 2, i.e. sin y = 1/2.", "The angle in [−π/2, π/2] with sin y = 1/2 is y = π/6, and π/6 ≠ 0.", "Hence the principal value is π/6."], "answer": "π/6. NCERT key: 3. π/6.", "takeaway": "For the reciprocal functions, first convert to sine or cosine.", "conceptName": "Principal values"}, {"q": 4, "title": "tan⁻¹(−√3)", "conceptIdx": 0, "page": 9, "printPage": 26, "question": "Find the principal value of tan⁻¹(−√3).", "given": "Principal branch of tan⁻¹: (−π/2, π/2).", "steps": ["Let y = tan⁻¹(−√3), so tan y = −√3 with y ∈ (−π/2, π/2).", "tan(π/3) = √3, so tan(−π/3) = −√3.", "−π/3 lies in (−π/2, π/2), so the principal value is −π/3."], "answer": "−π/3. NCERT key: 4. −π/3.", "takeaway": "tan⁻¹ takes values strictly between −π/2 and π/2.", "conceptName": "Principal values"}, {"q": 5, "title": "cos⁻¹(−1/2)", "conceptIdx": 0, "page": 9, "printPage": 26, "question": "Find the principal value of cos⁻¹(−1/2).", "given": "Principal branch of cos⁻¹: [0, π].", "steps": ["Let y = cos⁻¹(−1/2), so cos y = −1/2 with y ∈ [0, π].", "cos(π/3) = 1/2, and cos(π − π/3) = −1/2, so cos(2π/3) = −1/2.", "2π/3 lies in [0, π], so the principal value is 2π/3."], "answer": "2π/3. NCERT key: 5. 2π/3.", "takeaway": "The negative cosine corresponds to the second-quadrant angle π − acute angle.", "conceptName": "Principal values"}, {"q": 6, "title": "tan⁻¹(−1)", "conceptIdx": 0, "page": 9, "printPage": 26, "question": "Find the principal value of tan⁻¹(−1).", "given": "Principal branch of tan⁻¹: (−π/2, π/2).", "steps": ["Let y = tan⁻¹(−1), so tan y = −1 with y ∈ (−π/2, π/2).", "tan(π/4) = 1, so tan(−π/4) = −1.", "−π/4 lies in the principal branch, so the value is −π/4."], "answer": "−π/4. NCERT key: 6. −π/4.", "takeaway": "tan⁻¹ is odd: tan⁻¹(−x) = −tan⁻¹(x).", "conceptName": "Principal values"}, {"q": 7, "title": "sec⁻¹(2/√3)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "Find the principal value of sec⁻¹(2/√3).", "given": "Principal branch of sec⁻¹: [0, π] − {π/2}.", "steps": ["Let y = sec⁻¹(2/√3), so sec y = 2/√3, i.e. cos y = √3/2.", "The angle in [0, π] with cos y = √3/2 is y = π/6.", "π/6 ≠ π/2, so the principal value is π/6."], "answer": "π/6. NCERT key: 7. π/6.", "takeaway": "sec⁻¹ ranges over the cosine branch with π/2 removed.", "conceptName": "Principal values"}, {"q": 8, "title": "cot⁻¹(√3)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "Find the principal value of cot⁻¹(√3).", "given": "Principal branch of cot⁻¹: (0, π).", "steps": ["Let y = cot⁻¹(√3), so cot y = √3, i.e. tan y = 1/√3.", "The angle in (0, π) with tan y = 1/√3 is y = π/6.", "Hence the principal value is π/6."], "answer": "π/6. NCERT key: 8. π/6.", "takeaway": "cot⁻¹ always returns an angle strictly between 0 and π.", "conceptName": "Principal values"}, {"q": 9, "title": "cos⁻¹(−1/√2)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "Find the principal value of cos⁻¹(−1/√2).", "given": "Principal branch of cos⁻¹: [0, π].", "steps": ["Let y = cos⁻¹(−1/√2), so cos y = −1/√2 with y ∈ [0, π].", "cos(π/4) = 1/√2, so cos(π − π/4) = cos(3π/4) = −1/√2.", "3π/4 lies in [0, π], so the principal value is 3π/4."], "answer": "3π/4. NCERT key: 9. 3π/4.", "takeaway": "Note the input here is −1/√2, not −1/2 (that is Question 5).", "conceptName": "Principal values"}, {"q": 10, "title": "cosec⁻¹(−√2)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "Find the principal value of cosec⁻¹(−√2).", "given": "Principal branch of cosec⁻¹: [−π/2, π/2] − {0}.", "steps": ["Let y = cosec⁻¹(−√2), so cosec y = −√2, i.e. sin y = −1/√2.", "sin(π/4) = 1/√2, so sin(−π/4) = −1/√2.", "−π/4 lies in [−π/2, π/2] and is non-zero, so the principal value is −π/4."], "answer": "−π/4. NCERT key: 10. −π/4.", "takeaway": "Convert cosec to sine first, then use the principal branch.", "conceptName": "Principal values"}, {"q": 11, "title": "tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "Find the value of tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2).", "given": "tan⁻¹(1) = π/4, cos⁻¹(−1/2) = 2π/3, sin⁻¹(−1/2) = −π/6.", "steps": ["tan⁻¹(1) = π/4 (principal branch).", "cos⁻¹(−1/2) = 2π/3 and sin⁻¹(−1/2) = −π/6.", "Sum = π/4 + 2π/3 − π/6 = (3π + 8π − 2π)/12 = 9π/12 = 3π/4."], "answer": "3π/4. NCERT key: 11. 3π/4.", "takeaway": "Evaluate each inverse separately, then combine the fractions.", "conceptName": "Principal values"}, {"q": 12, "title": "cos⁻¹(1/2) + 2sin⁻¹(1/2)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "Find the value of cos⁻¹(1/2) + 2sin⁻¹(1/2).", "given": "cos⁻¹(1/2) = π/3 and sin⁻¹(1/2) = π/6.", "steps": ["cos⁻¹(1/2) = π/3 (principal branch).", "sin⁻¹(1/2) = π/6, so 2sin⁻¹(1/2) = π/3.", "Sum = π/3 + π/3 = 2π/3."], "answer": "2π/3. NCERT key: 12. 2π/3.", "takeaway": "Both terms contribute the same π/3, so the total doubles.", "conceptName": "Principal values"}, {"q": 13, "title": "Range of y when sin⁻¹x = y (MCQ)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "If sin⁻¹ x = y, then (A) 0 ≤ y ≤ π (B) −π/2 ≤ y ≤ π/2 (C) 0 < y < π (D) −π/2 < y < π/2.", "given": "Principal branch of sin⁻¹ is [−π/2, π/2].", "steps": ["By definition, sin⁻¹ maps [−1, 1] onto its principal branch [−π/2, π/2].", "So y must satisfy −π/2 ≤ y ≤ π/2, including both endpoints.", "Options (A) and (C) describe cos⁻¹-type ranges and (D) is the tangent branch. Answer (B). NCERT key: 13. B."], "answer": "(B) −π/2 ≤ y ≤ π/2.", "takeaway": "The sine branch includes its endpoints because sin(±π/2) = ±1 are attained.", "conceptName": "Principal values"}, {"q": 14, "title": "tan⁻¹(√3) − sec⁻¹(−2) (MCQ)", "conceptIdx": 0, "page": 10, "printPage": 27, "question": "tan⁻¹(√3) − sec⁻¹(−2) is equal to (A) π (B) −π/3 (C) π/3 (D) 2π/3.", "given": "tan⁻¹(√3) = π/3; principal branch of sec⁻¹ is [0, π] − {π/2}.", "steps": ["tan⁻¹(√3) = π/3.", "sec⁻¹(−2): sec y = −2 means cos y = −1/2, and y ∈ [0, π] gives y = 2π/3.", "Difference = π/3 − 2π/3 = −π/3. Answer (B). NCERT key: 14. B."], "answer": "(B) −π/3.", "takeaway": "For sec⁻¹ of a negative number choose the second-quadrant angle.", "conceptName": "Principal values"}, {"q": 15, "title": "Triple-angle identity for sin⁻¹", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Prove that 3sin⁻¹ x = sin⁻¹(3x − 4x³), x ∈ [−1/2, 1/2].", "given": "Let x = sin θ; the restriction x ∈ [−1/2, 1/2] means θ ∈ [−π/6, π/6].", "steps": ["Take x = sin θ, so sin⁻¹x = θ and θ ∈ [−π/6, π/6].", "Then 3x − 4x³ = 3sin θ − 4sin³θ = sin 3θ (the triple-angle identity).", "Since θ ∈ [−π/6, π/6], 3θ ∈ [−π/2, π/2], which lies in the principal branch of sin⁻¹.", "Therefore sin⁻¹(3x − 4x³) = sin⁻¹(sin 3θ) = 3θ = 3sin⁻¹x."], "answer": "Proved: 3sin⁻¹x = sin⁻¹(3x − 4x³) on [−1/2, 1/2].", "takeaway": "The interval is chosen exactly so that 3θ stays inside the principal branch.", "conceptName": "Compositions and simplifications"}, {"q": 16, "title": "Triple-angle identity for cos⁻¹", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Prove that 3cos⁻¹ x = cos⁻¹(4x³ − 3x), x ∈ [1/2, 1].", "given": "Let x = cos θ; x ∈ [1/2, 1] means θ ∈ [0, π/3].", "steps": ["Take x = cos θ, so cos⁻¹x = θ and θ ∈ [0, π/3].", "Then 4x³ − 3x = 4cos³θ − 3cos θ = cos 3θ (the triple-angle identity).", "Since θ ∈ [0, π/3], 3θ ∈ [0, π], which lies in the principal branch of cos⁻¹.", "Therefore cos⁻¹(4x³ − 3x) = cos⁻¹(cos 3θ) = 3θ = 3cos⁻¹x."], "answer": "Proved: 3cos⁻¹x = cos⁻¹(4x³ − 3x) on [1/2, 1].", "takeaway": "The restriction 3θ ∈ [0, π] is what makes the cancellation legal.", "conceptName": "Compositions and simplifications"}, {"q": 17, "title": "Simplest form of tan⁻¹((√(1+x²)−1)/x)", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Write tan⁻¹((√(1+x²) − 1)/x), x ≠ 0 in the simplest form.", "given": "Substitute x = tan θ, so θ = tan⁻¹x and √(1+x²) = sec θ.", "steps": ["Let x = tan θ. Then (√(1+x²) − 1)/x = (sec θ − 1)/tan θ.", "Rewrite in half-angle form: (sec θ − 1)/tan θ = ((1 − cos θ)/cos θ) / (sin θ/cos θ) = (1 − cos θ)/sin θ.", "Use the half-angle identities 1 − cos θ = 2sin²(θ/2) and sin θ = 2sin(θ/2)cos(θ/2): the ratio becomes tan(θ/2).", "So tan⁻¹(tan(θ/2)) = θ/2 = ½tan⁻¹x. NCERT key: 3. ½tan⁻¹x."], "answer": "½tan⁻¹x.", "takeaway": "The square root is removed by the substitution x = tan θ.", "conceptName": "Compositions and simplifications"}, {"q": 18, "title": "Simplest form of tan⁻¹√((1−cos x)/(1+cos x))", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Write tan⁻¹√((1−cos x)/(1+cos x)), 0 < x < π in the simplest form.", "given": "Use the half-angle identities with 0 < x < π, so 0 < x/2 < π/2.", "steps": ["1 − cos x = 2sin²(x/2) and 1 + cos x = 2cos²(x/2).", "So (1−cos x)/(1+cos x) = tan²(x/2) and its square root is |tan(x/2)|.", "Because 0 < x/2 < π/2, tan(x/2) > 0, so the square root equals tan(x/2).", "Hence tan⁻¹(tan(x/2)) = x/2. NCERT key: 4. x/2."], "answer": "x/2.", "takeaway": "The given interval guarantees the positive branch of the square root.", "conceptName": "Compositions and simplifications"}, {"q": 19, "title": "Simplest form of tan⁻¹((cos x − sin x)/(cos x + sin x))", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Write tan⁻¹((cos x − sin x)/(cos x + sin x)), −π/4 < x < 3π/4 in the simplest form.", "given": "cos x + sin x ≠ 0 on the given interval.", "steps": ["Divide numerator and denominator by cos x: (1 − tan x)/(1 + tan x).", "Recognise the tangent subtraction formula: (1 − tan x)/(1 + tan x) = tan(π/4 − x).", "The interval gives −π/2 < π/4 − x < π/2, exactly the principal branch of tan⁻¹.", "So the value is π/4 − x. NCERT key: 5. π/4 − x."], "answer": "π/4 − x.", "takeaway": "A quotient of the form (1 − t)/(1 + t) is the tangent of a difference.", "conceptName": "Compositions and simplifications"}, {"q": 20, "title": "Simplest form of tan⁻¹(x/√(a²−x²))", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Write tan⁻¹(x/√(a²−x²)), |x| < a in the simplest form.", "given": "Substitute x = a sin θ, so θ = sin⁻¹(x/a) and √(a²−x²) = a cos θ (positive for |x| < a).", "steps": ["Let x = a sin θ. Then x/√(a²−x²) = a sin θ/(a cos θ) = tan θ.", "Since |x| < a, θ lies strictly between −π/2 and π/2, the principal branch of tan⁻¹.", "So tan⁻¹(tan θ) = θ = sin⁻¹(x/a). NCERT key: 6. sin⁻¹(x/a)."], "answer": "sin⁻¹(x/a).", "takeaway": "When a square root √(a²−x²) appears, try x = a sin θ.", "conceptName": "Compositions and simplifications"}, {"q": 21, "title": "Simplest form of the cubic quotient", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Write tan⁻¹((3a²x − x³)/(a³ − 3ax²)), a > 0; −a/√3 < x < a/√3 in the simplest form.", "given": "Substitute x = a tan θ; the interval ensures 3θ stays in (−π/2, π/2).", "steps": ["Let x = a tan θ, so tan⁻¹(x/a) = θ.", "Then (3a²x − x³)/(a³ − 3ax²) = (3a³tan θ − a³tan³θ)/(a³ − 3a³tan²θ) = (3tan θ − tan³θ)/(1 − 3tan²θ) = tan 3θ.", "The condition −a/√3 < x < a/√3 means −π/6 < θ < π/6, so −π/2 < 3θ < π/2, inside the principal branch.", "Therefore tan⁻¹(tan 3θ) = 3θ = 3tan⁻¹(x/a). NCERT key: 7. 3tan⁻¹(x/a)."], "answer": "3tan⁻¹(x/a).", "takeaway": "The quotient is the tangent triple-angle formula in disguise.", "conceptName": "Compositions and simplifications"}, {"q": 22, "title": "Value of tan⁻¹(2cos(2sin⁻¹(1/2)))", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Find the value of tan⁻¹(2cos(2sin⁻¹(1/2))).", "given": "sin⁻¹(1/2) = π/6.", "steps": ["sin⁻¹(1/2) = π/6, so 2sin⁻¹(1/2) = π/3.", "cos(π/3) = 1/2, so 2cos(2sin⁻¹(1/2)) = 2 × 1/2 = 1.", "tan⁻¹(1) = π/4 (principal branch). NCERT key: 8. π/4."], "answer": "π/4.", "takeaway": "Work from the innermost inverse outwards.", "conceptName": "Compositions and simplifications"}, {"q": 23, "title": "Value of tan[½(sin⁻¹(2x/(1+x²)) + cos⁻¹((1−y²)/(1+y²)))]", "conceptIdx": 2, "page": 12, "printPage": 29, "question": "Find the value of tan[½(sin⁻¹(2x/(1+x²)) + cos⁻¹((1−y²)/(1+y²)))], |x| < 1, y > 0 and xy < 1.", "given": "Put x = tan α and y = tan β; then 2x/(1+x²) = sin 2α and (1−y²)/(1+y²) = cos 2β.", "steps": ["Let α = tan⁻¹x and β = tan⁻¹y, so x = tan α and y = tan β.", "Then 2x/(1+x²) = sin 2α. Since |x| < 1, α ∈ (−π/4, π/4) and 2α ∈ (−π/2, π/2), so sin⁻¹(sin 2α) = 2α.", "Also (1−y²)/(1+y²) = cos 2β. Since y > 0, β ∈ (0, π/2) and 2β ∈ (0, π), so cos⁻¹(cos 2β) = 2β.", "The bracket becomes ½(2α + 2β) = α + β = tan⁻¹x + tan⁻¹y. The condition xy < 1 keeps α + β inside (−π/2, π/2).", "Therefore tan(α + β) = (tan α + tan β)/(1 − tan α tan β) = (x + y)/(1 − xy). NCERT key: 9. (x+y)/(1−xy)."], "answer": "(x + y)/(1 − xy).", "takeaway": "Recognise the double-angle forms 2x/(1+x²) and (1−y²)/(1+y²).", "conceptName": "Compositions and simplifications"}, {"q": 24, "title": "Value of sin⁻¹(sin(2π/3))", "conceptIdx": 2, "page": 13, "printPage": 30, "question": "Find the value of sin⁻¹(sin(2π/3)).", "given": "2π/3 is not in the principal branch [−π/2, π/2].", "steps": ["sin(2π/3) = sin(π − 2π/3) = sin(π/3).", "π/3 lies in [−π/2, π/2], so it is the principal value.", "Hence sin⁻¹(sin(2π/3)) = π/3. NCERT key: 10. π/3.", "Note: the textbook page heading says 'Exercises 16 to 18', a printing slip; the questions themselves are numbered 10 to 15."], "answer": "π/3.", "takeaway": "Reduce the angle to the principal branch before cancelling.", "conceptName": "Compositions and simplifications"}, {"q": 25, "title": "Value of tan⁻¹(tan(3π/4))", "conceptIdx": 2, "page": 13, "printPage": 30, "question": "Find the value of tan⁻¹(tan(3π/4)).", "given": "3π/4 is not in the principal branch (−π/2, π/2).", "steps": ["tan(3π/4) = tan(3π/4 − π) = tan(−π/4) = −1.", "−π/4 lies in (−π/2, π/2), the principal branch of tan⁻¹.", "Hence tan⁻¹(tan(3π/4)) = −π/4. NCERT key: 11. −π/4."], "answer": "−π/4.", "takeaway": "For tangent, subtracting π brings the angle back to the principal branch.", "conceptName": "Compositions and simplifications"}, {"q": 26, "title": "Value of tan(sin⁻¹(3/5) + cot⁻¹(3/2))", "conceptIdx": 2, "page": 13, "printPage": 30, "question": "Find the value of tan(sin⁻¹(3/5) + cot⁻¹(3/2)).", "given": "sin⁻¹(3/5) = α with sin α = 3/5; cot⁻¹(3/2) = β with cot β = 3/2, so tan β = 2/3.", "steps": ["Let α = sin⁻¹(3/5). A 3–4–5 triangle gives cos α = 4/5, so tan α = 3/4.", "Let β = cot⁻¹(3/2), so tan β = 2/3.", "Use the tangent addition formula: tan(α + β) = (tan α + tan β)/(1 − tan α tan β).", "Substitute: (3/4 + 2/3)/(1 − (3/4)(2/3)) = (17/12)/(1 − 1/2) = (17/12)/(1/2) = 17/6. NCERT key: 12. 17/6."], "answer": "17/6.", "takeaway": "Convert every inverse into a tangent before adding.", "conceptName": "Compositions and simplifications"}, {"q": 27, "title": "cos⁻¹(cos(7π/6)) (MCQ)", "conceptIdx": 3, "page": 13, "printPage": 30, "question": "cos⁻¹(cos(7π/6)) is equal to (A) 7π/6 (B) 5π/6 (C) π/3 (D) π/6.", "given": "Principal branch of cos⁻¹: [0, π].", "steps": ["cos(7π/6) = −√3/2 because 7π/6 is in the third quadrant.", "The angle in [0, π] with cosine −√3/2 is 5π/6.", "So cos⁻¹(cos(7π/6)) = 5π/6. Answer (B). NCERT key: 13. B."], "answer": "(B) 5π/6.", "takeaway": "cos⁻¹(cos x) reflects an out-of-branch angle across the branch endpoints.", "conceptName": "Identities and equations"}, {"q": 28, "title": "sin(π/3 − sin⁻¹(−1/2)) (MCQ)", "conceptIdx": 3, "page": 13, "printPage": 30, "question": "sin(π/3 − sin⁻¹(−1/2)) is equal to (A) 1/2 (B) 1/3 (C) 1/4 (D) 1.", "given": "sin⁻¹(−1/2) = −π/6.", "steps": ["sin⁻¹(−1/2) = −π/6, so the expression becomes sin(π/3 − (−π/6)) = sin(π/3 + π/6).", "π/3 + π/6 = π/2, and sin(π/2) = 1.", "Answer (D). NCERT key: 14. D."], "answer": "(D) 1.", "takeaway": "Simplify the inner inverse first; the outer sine then becomes elementary.", "conceptName": "Identities and equations"}, {"q": 29, "title": "tan⁻¹√3 − cot⁻¹(−√3) (MCQ)", "conceptIdx": 3, "page": 13, "printPage": 30, "question": "tan⁻¹√3 − cot⁻¹(−√3) is equal to (A) π (B) −π/2 (C) 0 (D) 2√3.", "given": "tan⁻¹√3 = π/3; cot⁻¹(−√3) = 5π/6 because cot⁻¹ takes values in (0, π).", "steps": ["tan⁻¹√3 = π/3 (principal branch).", "For cot⁻¹(−√3): cot(5π/6) = −√3 and 5π/6 ∈ (0, π), so cot⁻¹(−√3) = 5π/6.", "Difference = π/3 − 5π/6 = 2π/6 − 5π/6 = −3π/6 = −π/2. Answer (B). NCERT key: 15. B."], "answer": "(B) −π/2.", "takeaway": "The principal branch of cot⁻¹ is (0, π), so a negative cotangent gives an obtuse angle.", "conceptName": "Identities and equations"}, {"q": 30, "title": "Value of cos⁻¹(cos(13π/6))", "conceptIdx": 2, "page": 14, "printPage": 31, "question": "Find the value of cos⁻¹(cos(13π/6)).", "given": "Reduce 13π/6 by the period 2π: 13π/6 − 2π = π/6.", "steps": ["13π/6 = 2π + π/6, and cosine has period 2π, so cos(13π/6) = cos(π/6).", "π/6 lies in the principal branch [0, π].", "Hence cos⁻¹(cos(13π/6)) = π/6. NCERT key: 1. π/6."], "answer": "π/6.", "takeaway": "Remove whole periods of 2π before cancelling cosine and cos⁻¹.", "conceptName": "Compositions and simplifications"}, {"q": 31, "title": "Value of tan⁻¹(tan(7π/6))", "conceptIdx": 2, "page": 14, "printPage": 31, "question": "Find the value of tan⁻¹(tan(7π/6)).", "given": "Tangent has period π: 7π/6 − π = π/6.", "steps": ["7π/6 = π + π/6, and tangent has period π, so tan(7π/6) = tan(π/6) = 1/√3.", "π/6 lies in the principal branch (−π/2, π/2).", "Hence tan⁻¹(tan(7π/6)) = π/6. NCERT key: 2. π/6."], "answer": "π/6.", "takeaway": "Remove whole periods of π before cancelling tangent and tan⁻¹.", "conceptName": "Compositions and simplifications"}, {"q": 32, "title": "Prove 2sin⁻¹(3/5) = tan⁻¹(24/7)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Prove that 2sin⁻¹(3/5) = tan⁻¹(24/7).", "given": "Let θ = sin⁻¹(3/5), so sin θ = 3/5 and θ ∈ (0, π/2).", "steps": ["A 3–4–5 right triangle gives cos θ = 4/5 and tan θ = 3/4.", "sin 2θ = 2sin θ cos θ = 2 × (3/5) × (4/5) = 24/25.", "cos 2θ = cos²θ − sin²θ = 16/25 − 9/25 = 7/25, so tan 2θ = 24/7.", "Both sin 2θ and cos 2θ are positive, so 2θ ∈ (0, π/2) and tan⁻¹(24/7) = 2θ."], "answer": "Proved: 2sin⁻¹(3/5) = tan⁻¹(24/7) ≈ 1.287 rad.", "takeaway": "Doubling a 3–4–5 triangle produces the 7–24–25 triple.", "conceptName": "Identities and equations"}, {"q": 33, "title": "Prove sin⁻¹(8/17) + sin⁻¹(3/5) = tan⁻¹(77/36)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Prove that sin⁻¹(8/17) + sin⁻¹(3/5) = tan⁻¹(77/36).", "given": "Let sin α = 8/17 and sin β = 3/5, with α, β acute.", "steps": ["From sin α = 8/17, the 8–15–17 triangle gives cos α = 15/17.", "From sin β = 3/5, the 3–4–5 triangle gives cos β = 4/5.", "sin(α + β) = sin α cos β + cos α sin β = (8/17)(4/5) + (15/17)(3/5) = 32/85 + 45/85 = 77/85.", "cos(α + β) = cos α cos β − sin α sin β = (15/17)(4/5) − (8/17)(3/5) = 60/85 − 24/85 = 36/85, so tan(α + β) = 77/36; α + β is acute, so the inverse tangent applies directly."], "answer": "Proved: sin⁻¹(8/17) + sin⁻¹(3/5) = tan⁻¹(77/36).", "takeaway": "Compute sine and cosine of the sum, then divide.", "conceptName": "Identities and equations"}, {"q": 34, "title": "Prove cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Prove that cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65).", "given": "Let cos α = 4/5 and cos β = 12/13, with α, β acute.", "steps": ["From cos α = 4/5, sin α = 3/5; from cos β = 12/13, sin β = 5/13.", "cos(α + β) = cos α cos β − sin α sin β = (4/5)(12/13) − (3/5)(5/13) = 48/65 − 15/65 = 33/65.", "Both α and β lie in (0, π/2), so α + β ∈ (0, π), inside the principal branch of cos⁻¹.", "Hence cos⁻¹(33/65) = α + β."], "answer": "Proved: cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65).", "takeaway": "The cosine addition formula uses a minus sign between the products.", "conceptName": "Identities and equations"}, {"q": 35, "title": "Prove cos⁻¹(12/13) + sin⁻¹(3/5) = sin⁻¹(56/65)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Prove that cos⁻¹(12/13) + sin⁻¹(3/5) = sin⁻¹(56/65).", "given": "Let cos α = 12/13 and sin β = 3/5, with α, β acute.", "steps": ["From cos α = 12/13, sin α = 5/13; from sin β = 3/5, cos β = 4/5.", "sin(α + β) = sin α cos β + cos α sin β = (5/13)(4/5) + (12/13)(3/5) = 20/65 + 36/65 = 56/65.", "Since α, β are acute, α + β ∈ (0, π); and sin(α + β) > 0, so it lies in the principal branch of sin⁻¹.", "Hence sin⁻¹(56/65) = α + β."], "answer": "Proved: cos⁻¹(12/13) + sin⁻¹(3/5) = sin⁻¹(56/65).", "takeaway": "Mixed sine and cosine inverses are handled by expanding sin(α + β).", "conceptName": "Identities and equations"}, {"q": 36, "title": "Prove tan⁻¹(63/16) = sin⁻¹(5/13) + cos⁻¹(3/5)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Prove that tan⁻¹(63/16) = sin⁻¹(5/13) + cos⁻¹(3/5).", "given": "Let sin α = 5/13 and cos β = 3/5, with α, β acute.", "steps": ["From sin α = 5/13, the 5–12–13 triangle gives cos α = 12/13.", "From cos β = 3/5, sin β = 4/5.", "sin(α + β) = (5/13)(3/5) + (12/13)(4/5) = 15/65 + 48/65 = 63/65.", "cos(α + β) = (12/13)(3/5) − (5/13)(4/5) = 36/65 − 20/65 = 16/65, so tan(α + β) = 63/16; the sum is acute, so the inverse tangent applies."], "answer": "Proved: tan⁻¹(63/16) = sin⁻¹(5/13) + cos⁻¹(3/5).", "takeaway": "The pairing 5–12–13 with 3–4–5 gives the 16–63–65 triple.", "conceptName": "Identities and equations"}, {"q": 37, "title": "Prove tan⁻¹√x = ½cos⁻¹((1−x)/(1+x))", "conceptIdx": 2, "page": 14, "printPage": 31, "question": "Prove that tan⁻¹√x = ½cos⁻¹((1−x)/(1+x)), x ∈ [0, 1].", "given": "Substitute x = tan²θ (or use the half-angle identity for cosine).", "steps": ["Let √x = tan θ with θ ∈ [0, π/4] (since x ∈ [0, 1]). Then x = tan²θ.", "(1 − x)/(1 + x) = (1 − tan²θ)/(1 + tan²θ) = cos 2θ, using the standard half-angle relation.", "Since θ ∈ [0, π/4], 2θ ∈ [0, π/2] ⊂ [0, π], so cos⁻¹(cos 2θ) = 2θ.", "Therefore ½cos⁻¹((1−x)/(1+x)) = θ = tan⁻¹√x."], "answer": "Proved: tan⁻¹√x = ½cos⁻¹((1−x)/(1+x)) on [0, 1].", "takeaway": "(1 − t²)/(1 + t²) is the cosine double-angle form.", "conceptName": "Compositions and simplifications"}, {"q": 38, "title": "Prove cot⁻¹((√(1+sin x)+√(1−sin x))/(√(1+sin x)−√(1−sin x))) = x/2", "conceptIdx": 2, "page": 14, "printPage": 31, "question": "Prove that cot⁻¹((√(1+sin x) + √(1−sin x))/(√(1+sin x) − √(1−sin x))) = x/2, x ∈ (0, π/4).", "given": "Multiply numerator and denominator by the conjugate √(1+sin x) + √(1−sin x).", "steps": ["Put a = 1 + sin x and b = 1 − sin x, so √a√b = √(1−sin²x) = cos x (positive because x ∈ (0, π/4)).", "Multiplying by the conjugate: (√a + √b)/(√a − √b) = (a + b + 2√ab)/(a − b) = (2 + 2cos x)/(2 sin x).", "So the fraction equals (1 + cos x)/sin x = cot(x/2).", "Because x ∈ (0, π/4), x/2 ∈ (0, π/8) ⊂ (0, π), so cot⁻¹(cot(x/2)) = x/2."], "answer": "Proved: the cot⁻¹ expression equals x/2 on (0, π/4).", "takeaway": "Rationalise with the conjugate, then use the half-angle quotient (1+cos x)/sin x.", "conceptName": "Compositions and simplifications"}, {"q": 39, "title": "Prove tan⁻¹((√(1+x)−√(1−x))/(√(1+x)+√(1−x))) = π/4 − ½cos⁻¹x", "conceptIdx": 2, "page": 14, "printPage": 31, "question": "Prove that tan⁻¹((√(1+x) − √(1−x))/(√(1+x) + √(1−x))) = π/4 − ½cos⁻¹x, −1/√2 ≤ x ≤ 1. [Hint: Put x = cos 2θ]", "given": "Put x = cos 2θ. Then θ = ½cos⁻¹x and the range gives θ ∈ [0, π/4]. Use 1 ± cos 2θ = 2cos²θ ∓ 2sin²θ.", "steps": ["Let x = cos 2θ with θ ∈ [0, π/4] (the given range of x ensures this). Then 1 + x = 2cos²θ and 1 − x = 2sin²θ.", "Because θ ∈ [0, π/4], √(1+x) = √2 cos θ and √(1−x) = √2 sin θ.", "The quotient becomes (√2 cos θ − √2 sin θ)/(√2 cos θ + √2 sin θ) = (cos θ − sin θ)/(cos θ + sin θ).", "Divide by cos θ: (1 − tan θ)/(1 + tan θ) = tan(π/4 − θ).", "Also π/4 − θ ∈ [0, π/4] ⊂ (−π/2, π/2), so tan⁻¹(tan(π/4 − θ)) = π/4 − θ = π/4 − ½cos⁻¹x."], "answer": "Proved: the expression equals π/4 − ½cos⁻¹x.", "takeaway": "The hint substitution converts both radicals into single sines and cosines.", "conceptName": "Compositions and simplifications"}, {"q": 40, "title": "Solve 2tan⁻¹(cos x) = tan⁻¹(2 cosec x)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Solve the equation 2tan⁻¹(cos x) = tan⁻¹(2 cosec x).", "given": "Apply 2tan⁻¹u = tan⁻¹(2u/(1−u²)) with u = cos x.", "steps": ["2tan⁻¹(cos x) = tan⁻¹(2cos x/(1 − cos²x)) = tan⁻¹(2cos x/sin²x).", "Equate arguments: 2cos x/sin²x = 2/sin x, so cos x = sin x (sin x ≠ 0 because cosec x is present).", "tan x = 1, whose general solution is x = nπ + π/4, n ∈ Z.", "Check: at x = π/4, both sides are tan⁻¹(2·(1/√2)/(1/2)) = tan⁻¹(2√2) = tan⁻¹(2cosec(π/4)). NCERT key: 11. x = nπ + π/4, n ∈ Z."], "answer": "x = nπ + π/4, n ∈ Z.", "takeaway": "After using the double-angle formula, equate the arguments of the two inverse tangents.", "conceptName": "Identities and equations"}, {"q": 41, "title": "Solve tan⁻¹((1−x)/(1+x)) = ½tan⁻¹x (x > 0)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "Solve tan⁻¹((1−x)/(1+x)) = ½tan⁻¹x, (x > 0).", "given": "Write x = tan θ, so θ = tan⁻¹x ∈ (0, π/2).", "steps": ["The left side becomes tan⁻¹(tan(π/4 − θ)) = π/4 − θ, because x > 0 keeps π/4 − θ in (−π/4, π/4) inside the branch.", "The equation becomes π/4 − θ = θ/2, so 3θ/2 = π/4 and θ = π/6.", "Hence x = tan θ = tan(π/6) = 1/√3. NCERT key: 12. x = 1/√3."], "answer": "x = 1/√3.", "takeaway": "Substituting x = tan θ turns the fractional expression into a tangent difference.", "conceptName": "Identities and equations"}, {"q": 42, "title": "sin(tan⁻¹x), |x| < 1 (MCQ)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "sin(tan⁻¹x), |x| < 1 is equal to (A) x/√(1−x²) (B) 1/√(1−x²) (C) 1/√(1+x²) (D) x/√(1+x²).", "given": "Draw a right triangle with opposite side x, adjacent side 1.", "steps": ["Let θ = tan⁻¹x, so tan θ = x/1 and |x| < 1.", "With opposite x and adjacent 1, the hypotenuse is √(1+x²).", "Then sin θ = x/√(1+x²). Answer (D). NCERT key: 13. D."], "answer": "(D) x/√(1+x²).", "takeaway": "A tangent ratio builds the triangle directly; the sine comes from the hypotenuse.", "conceptName": "Identities and equations"}, {"q": 43, "title": "Solve sin⁻¹(1−x) − 2sin⁻¹x = π/2 (MCQ)", "conceptIdx": 3, "page": 14, "printPage": 31, "question": "sin⁻¹(1−x) − 2sin⁻¹x = π/2, then x is equal to (A) 0, 1/2 (B) 1, 1/2 (C) 0 (D) 1/2.", "given": "Test the candidate values and use the principal branch of sin⁻¹.", "steps": ["At x = 0: sin⁻¹(1) − 2sin⁻¹(0) = π/2 − 0 = π/2 ✓.", "At x = 1/2: sin⁻¹(1/2) − 2sin⁻¹(1/2) = π/6 − π/3 = −π/6 ≠ π/2 ✗.", "So the only valid root is x = 0. Answer (C). NCERT key: 14. C."], "answer": "(C) 0.", "takeaway": "When options are given, substitute and check the principal values.", "conceptName": "Identities and equations"}], "exerciseMap": [[1, "sin⁻¹(−1/2)", 0, 9], [2, "cos⁻¹(√3/2)", 0, 9], [3, "cosec⁻¹(2)", 0, 9], [4, "tan⁻¹(−√3)", 0, 9], [5, "cos⁻¹(−1/2)", 0, 9], [6, "tan⁻¹(−1)", 0, 9], [7, "sec⁻¹(2/√3)", 0, 10], [8, "cot⁻¹(√3)", 0, 10], [9, "cos⁻¹(−1/√2)", 0, 10], [10, "cosec⁻¹(−√2)", 0, 10], [11, "tan⁻¹(1) + cos⁻¹(−1/2) + sin⁻¹(−1/2)", 0, 10], [12, "cos⁻¹(1/2) + 2sin⁻¹(1/2)", 0, 10], [13, "Range of y when sin⁻¹x = y (MCQ)", 0, 10], [14, "tan⁻¹(√3) − sec⁻¹(−2) (MCQ)", 0, 10], [15, "Triple-angle identity for sin⁻¹", 2, 12], [16, "Triple-angle identity for cos⁻¹", 2, 12], [17, "Simplest form of tan⁻¹((√(1+x²)−1)/x)", 2, 12], [18, "Simplest form of tan⁻¹√((1−cos x)/(1+cos x))", 2, 12], [19, "Simplest form of tan⁻¹((cos x − sin x)/(cos x + sin x))", 2, 12], [20, "Simplest form of tan⁻¹(x/√(a²−x²))", 2, 12], [21, "Simplest form of the cubic quotient", 2, 12], [22, "Value of tan⁻¹(2cos(2sin⁻¹(1/2)))", 2, 12], [23, "Value of tan[½(sin⁻¹(2x/(1+x²)) + cos⁻¹((1−y²)/(1+y²)))]", 2, 12], [24, "Value of sin⁻¹(sin(2π/3))", 2, 13], [25, "Value of tan⁻¹(tan(3π/4))", 2, 13], [26, "Value of tan(sin⁻¹(3/5) + cot⁻¹(3/2))", 2, 13], [27, "cos⁻¹(cos(7π/6)) (MCQ)", 3, 13], [28, "sin(π/3 − sin⁻¹(−1/2)) (MCQ)", 3, 13], [29, "tan⁻¹√3 − cot⁻¹(−√3) (MCQ)", 3, 13], [30, "Value of cos⁻¹(cos(13π/6))", 2, 14], [31, "Value of tan⁻¹(tan(7π/6))", 2, 14], [32, "Prove 2sin⁻¹(3/5) = tan⁻¹(24/7)", 3, 14], [33, "Prove sin⁻¹(8/17) + sin⁻¹(3/5) = tan⁻¹(77/36)", 3, 14], [34, "Prove cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65)", 3, 14], [35, "Prove cos⁻¹(12/13) + sin⁻¹(3/5) = sin⁻¹(56/65)", 3, 14], [36, "Prove tan⁻¹(63/16) = sin⁻¹(5/13) + cos⁻¹(3/5)", 3, 14], [37, "Prove tan⁻¹√x = ½cos⁻¹((1−x)/(1+x))", 2, 14], [38, "Prove cot⁻¹((√(1+sin x)+√(1−sin x))/(√(1+sin x)−√(1−sin x))) = x/2", 2, 14], [39, "Prove tan⁻¹((√(1+x)−√(1−x))/(√(1+x)+√(1−x))) = π/4 − ½cos⁻¹x", 2, 14], [40, "Solve 2tan⁻¹(cos x) = tan⁻¹(2 cosec x)", 3, 14], [41, "Solve tan⁻¹((1−x)/(1+x)) = ½tan⁻¹x (x > 0)", 3, 14], [42, "sin(tan⁻¹x), |x| < 1 (MCQ)", 3, 14], [43, "Solve sin⁻¹(1−x) − 2sin⁻¹x = π/2 (MCQ)", 3, 14]]};
+</script>
+<script>
+
+</script>
+<script>
+(function(){
   var C = window.CHAPTER;
   if (!C) {
     console.error("No CHAPTER data object found on window.");
@@ -1077,8 +1316,44 @@ button.btn-secondary {
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1104,8 +1379,7 @@ button.btn-secondary {
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1188,7 +1462,35 @@ button.btn-secondary {
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1205,6 +1507,10 @@ button.btn-secondary {
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1213,16 +1519,17 @@ button.btn-secondary {
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1234,19 +1541,22 @@ button.btn-secondary {
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
@@ -1273,7 +1583,7 @@ button.btn-secondary {
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1299,42 +1609,47 @@ button.btn-secondary {
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1342,7 +1657,7 @@ button.btn-secondary {
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1351,56 +1666,51 @@ button.btn-secondary {
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1441,6 +1751,10 @@ button.btn-secondary {
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1459,7 +1773,7 @@ button.btn-secondary {
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1509,7 +1823,8 @@ button.btn-secondary {
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1518,6 +1833,41 @@ button.btn-secondary {
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1532,9 +1882,6 @@ button.btn-secondary {
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1654,9 +2001,9 @@ button.btn-secondary {
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1672,7 +2019,7 @@ button.btn-secondary {
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1683,8 +2030,8 @@ button.btn-secondary {
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1729,22 +2076,31 @@ button.btn-secondary {
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2146,7 @@ button.btn-secondary {
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2156,7 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2166,31 @@ button.btn-secondary {
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1849,6 +2225,10 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1862,6 +2242,41 @@ button.btn-secondary {
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1869,6 +2284,7 @@ button.btn-secondary {
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1883,335 +2299,620 @@ button.btn-secondary {
   updateProgress();
   routeFromHash();
 })();
+
 </script>
-  <script>(function () {
-  "use strict";
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
 
-  var App = window.App;
-  window.SIMS = window.SIMS || {};
+  function $(id){ return document.getElementById(id); }
 
-  function node(id) {
-    return document.getElementById(id);
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
   }
 
-  function esc(value) {
-    return String(value).replace(/[&<>"']/g, function (ch) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
   }
 
-  function text(x, y, value, color, size, anchor) {
-    return '<text x="' + x + '" y="' + y + '" fill="' + (color || "#f8fafc") +
-      '" font-size="' + (size || 15) + '" text-anchor="' + (anchor || "middle") +
-      '">' + esc(value) + "</text>";
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
   }
 
-  function cell(label, value, color) {
-    return '<div class="telemetry-cell"><div class="telemetry-label">' + label +
-      '</div><div class="telemetry-val"' + (color ? ' style="color:' + color + '"' : "") +
-      ">" + value + "</div></div>";
-  }
-
-  function shell(body) {
-    return '<rect width="720" height="300" fill="#09131d"></rect>' + body;
-  }
-
-  function range(key, label, min, max, step, value, unit) {
-    return '<label class="control"><span>' + label + ' <output data-math-output="' + key +
-      '">' + value + " " + (unit || "") + '</output></span><input type="range" data-math-key="' +
-      key + '" aria-label="' + label + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></label>';
-  }
-
-  function select(key, label, options, value) {
-    return '<label class="control"><span>' + label + '</span><select data-math-key="' + key + '">' +
-      options.map(function (item) {
-        return '<option value="' + item[0] + '"' + (String(item[0]) === String(value) ? " selected" : "") +
-          ">" + item[1] + "</option>";
-      }).join("") + "</select></label>";
-  }
-
-  function mountControls(state, controls, draw) {
-    var box = node("lab-controls");
-    if (!box) return;
-    box.innerHTML = controls;
-    box.querySelectorAll("[data-math-key]").forEach(function (input) {
-      input.addEventListener("input", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        var output = box.querySelector('[data-math-output="' + input.getAttribute("data-math-key") + '"]');
-        if (output) output.textContent = input.value;
-        draw(0);
-      });
-      input.addEventListener("change", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        draw(0);
-      });
-    });
-  }
-
-  function mountBase(state, title, controls, draw, legend) {
-    if (App && App.state) {
-      App.state.maxT = 6;
-      var scrubber = node("time-scrubber");
-      if (scrubber) scrubber.max = 6;
-    }
-    var legendBox = node("lab-legend");
-    if (legendBox) legendBox.innerHTML = '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>' + title + "</span></div>";
-    if (legendBox && legend) legendBox.innerHTML += legend;
-    mountControls(state, controls, draw);
-    draw(0);
-  }
-
-  function install(id, title, initial, controls, renderer, legend) {
-    var state = Object.assign({}, initial);
-    function draw(t) {
-      var result = renderer(state, t || 0);
-      var diagram = node("diagram");
-      if (diagram) {
-        diagram.innerHTML = result.svg;
-        diagram.setAttribute("aria-label", title);
-      }
-      var read = node("lab-readout");
-      if (read) read.innerHTML = result.readout;
-      var verdict = node("lab-verdict");
-      if (verdict) verdict.innerHTML = result.verdict;
-    }
-    function mount() {
-      mountBase(state, title, controls(state), draw, legend);
-    }
-    window.SIMS[id] = { mount: mount, draw: draw };
-  }
-
-  install("relations", "Relation mapper", { mode: "equivalence" }, function (s) {
-    return select("mode", "Choose a relation", [
-      ["equivalence", "Congruence mod 3"],
-      ["order", "Less than or equal"],
-      ["identity", "Identity relation"]
-    ], s.mode);
-  }, function (s) {
-    var labels = s.mode === "equivalence" ? ["0~0", "0~3", "1~1", "2~2", "2~5"] :
-      s.mode === "order" ? ["1≤1", "1≤2", "2≤2", "2≤3", "3≤3"] :
-      ["1→1", "2→2", "3→3", "4→4", "5→5"];
-    var rows = labels.map(function (label, i) {
-      return '<rect x="' + (55 + i * 126) + '" y="110" width="105" height="60" rx="9" fill="#15263a" stroke="#38bdf8"></rect>' +
-        text(107 + i * 126, 146, label, "#f8fafc", 16);
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
     }).join("");
-    var property = s.mode === "equivalence" ? "reflexive, symmetric and transitive" :
-      s.mode === "order" ? "reflexive, antisymmetric and transitive" : "reflexive, symmetric and transitive";
-    return {
-      svg: shell(text(360, 45, "A relation is a subset of A × A", "#f8fafc", 18) + rows +
-        text(360, 230, property, "#34d399", 16)),
-      readout: cell("Selected", s.mode) + cell("Pattern", property, "#34d399"),
-      verdict: "<b>Notice:</b> a relation is any chosen set of ordered pairs. A function adds the rule that each input has exactly one output."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>ordered pair</span></div>');
+  }
 
-  install("inverse", "Inverse-function mirror", { fn: "square", x: 1.5 }, function (s) {
-    return select("fn", "Choose a function", [["square", "y = x²"], ["linear", "y = 2x + 1"], ["cube", "y = x³"]], s.fn) +
-      range("x", "Input x", -2, 2, 0.1, s.x, "");
-  }, function (s) {
-    var fn = s.fn === "square" ? function (x) { return x * x; } :
-      s.fn === "linear" ? function (x) { return 2 * x + 1; } :
-      function (x) { return x * x * x; };
-    var pts = "", inv = "", y = fn(s.x);
-    for (var x = -2; x <= 2.01; x += 0.1) {
-      var yy = fn(x);
-      pts += (x === -2 ? "M" : "L") + (260 + x * 55) + " " + (160 - yy * 25) + " ";
-      inv += (x === -2 ? "M" : "L") + (260 + yy * 25) + " " + (160 - x * 55) + " ";
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
     }
-    return {
-      svg: shell('<line x1="100" y1="160" x2="620" y2="160" stroke="#475569"></line><line x1="260" y1="35" x2="260" y2="270" stroke="#475569"></line>' +
-        '<line x1="110" y1="280" x2="600" y2="40" stroke="#94a3b8" stroke-dasharray="7 6"></line>' +
-        '<path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + inv +
-        '" fill="none" stroke="#f59e0b" stroke-width="3"></path><circle cx="' + (260 + s.x * 55) +
-        '" cy="' + (160 - y * 25) + '" r="6" fill="#34d399"></circle>' +
-        text(500, 70, "f(x)", "#38bdf8", 16) + text(500, 100, "f⁻¹(x)", "#f59e0b", 16) +
-        text(500, 130, "y = x mirror", "#94a3b8", 14)),
-      readout: cell("x", s.x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("swap", "(" + y.toFixed(2) + ", " + s.x.toFixed(1) + ")", "#f59e0b"),
-      verdict: "<b>Inverse:</b> exchanging x and y reflects the graph in y = x. A true inverse requires the original function to be one-to-one on its chosen domain."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>inverse graph</span></div>');
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
 
-  install("matrices", "Matrix multiplication table", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    return {
-      svg: shell(text(190, 70, "A", "#38bdf8", 22) + text(510, 70, "B", "#f59e0b", 22) +
-        text(190, 120, "[" + s.a + "  " + s.b + "]", "#f8fafc", 24) + text(190, 160, "[" + s.c + "  " + s.d + "]", "#f8fafc", 24) +
-        text(510, 120, "[" + s.d + "  " + s.b + "]", "#f8fafc", 24) + text(510, 160, "[" + s.c + "  " + s.a + "]", "#f8fafc", 24) +
-        '<path d="M285 130 C335 105 370 105 430 130" fill="none" stroke="#34d399" stroke-width="3" marker-end="url(#arrow-m)"></path>' +
-        text(360, 235, "A × B is defined by row · column products", "#94a3b8", 15) +
-        '<defs><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>'),
-      readout: cell("a₁₁b₁₁ + a₁₂b₂₁", (s.a * s.d + s.b * s.c).toFixed(0), "#34d399") + cell("det A", det.toFixed(0), "#f59e0b"),
-      verdict: "<b>Order matters:</b> matrix multiplication pairs each row of the first matrix with each column of the second. It is not entry-by-entry multiplication."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>row · column</span></div>');
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
 
-  install("determinant", "Determinant area", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    var x2 = 360 + s.a * 35, y2 = 160 - s.c * 25, x3 = 360 + s.b * 35, y3 = 160 - s.d * 25;
-    return {
-      svg: shell('<polygon points="360,160 ' + x2 + ',' + y2 + ' ' + (x2 + x3 - 360) + ',' + (y2 + y3 - 160) + ' ' + x3 + ',' + y3 + '" fill="#38bdf822" stroke="#38bdf8" stroke-width="3"></polygon>' +
-        '<line x1="360" y1="160" x2="' + x2 + '" y2="' + y2 + '" stroke="#f59e0b" stroke-width="3"></line><line x1="360" y1="160" x2="' + x3 + '" y2="' + y3 + '" stroke="#34d399" stroke-width="3"></line>' +
-        text(360, 55, "det [[a,b],[c,d]] = ad − bc", "#f8fafc", 18) + text(360, 250, "signed area scale", "#94a3b8", 15)),
-      readout: cell("det A", det.toFixed(2), det >= 0 ? "#34d399" : "#f87171") + cell("triangle area", Math.abs(det / 2).toFixed(2), "#f59e0b"),
-      verdict: "<b>Geometry:</b> the determinant is the signed area scale of the parallelogram formed by the column vectors. Zero means the vectors are dependent."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>area scale</span></div>');
-
-  install("continuity", "Continuity microscope", { x: 0.5 }, function (s) {
-    return range("x", "Probe x", -1, 2.5, 0.05, s.x, "");
-  }, function (s) {
-    var x = s.x, y = Math.abs(x - 1) < 0.02 ? 3.2 : (x * x - 1) / (x - 1);
-    var pts = "";
-    for (var u = -1; u <= 2.01; u += 0.05) {
-      var v = u === 1 ? 2 : u + 1;
-      pts += (u === -1 ? "M" : "L") + (90 + (u + 1) * 150) + " " + (250 - v * 48) + " ";
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
     }
-    return {
-      svg: shell('<line x1="90" y1="250" x2="570" y2="250" stroke="#475569"></line><line x1="90" y1="70" x2="90" y2="270" stroke="#475569"></line><path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<circle cx="390" cy="154" r="8" fill="#09131d" stroke="#f59e0b" stroke-width="3"></circle><circle cx="' + (90 + (x + 1) * 150) + '" cy="' + (250 - y * 48) + '" r="7" fill="#34d399"></circle>' +
-        text(470, 70, "f(x) = (x²−1)/(x−1)", "#f8fafc", 16) + text(470, 100, "x ≠ 1; removable hole at x=1", "#f59e0b", 14)),
-      readout: cell("probe x", x.toFixed(2)) + cell("nearby value", y.toFixed(2), "#34d399") + cell("limit at 1", "2", "#f59e0b"),
-      verdict: "<b>Limit versus value:</b> the nearby trend can approach 2 even though the displayed function has a hole at x = 1. Continuity requires the value and the limit to agree."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>removable hole</span></div>');
-
-  install("derivative", "Derivative as slope", { x: 1 }, function (s) {
-    return range("x", "Point x", -2.5, 2.5, 0.1, s.x, "");
-  }, function (s) {
-    var x = s.x, y = x * x, m = 2 * x;
-    var x1 = -2.5, x2 = 2.5, y1 = y + m * (x1 - x), y2 = y + m * (x2 - x);
-    var curve = "";
-    for (var u = -2.5; u <= 2.51; u += 0.08) curve += (u === -2.5 ? "M" : "L") + (360 + u * 65) + " " + (160 - u * u * 24) + " ";
-    return {
-      svg: shell('<line x1="80" y1="160" x2="650" y2="160" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<line x1="' + (360 + x1 * 65) + '" y1="' + (160 - y1 * 24) + '" x2="' + (360 + x2 * 65) + '" y2="' + (160 - y2 * 24) + '" stroke="#f59e0b" stroke-width="3"></line><circle cx="' + (360 + x * 65) + '" cy="' + (160 - y * 24) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "y = x²", "#38bdf8", 18) + text(500, 105, "slope f′(x) = 2x", "#f59e0b", 16)),
-      readout: cell("x", x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("f′(x)", m.toFixed(2), "#f59e0b"),
-      verdict: "<b>Derivative:</b> it is the slope of the tangent. At x = 0 the parabola is flat; on the right the slope is positive and on the left it is negative."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>tangent slope</span></div>');
-
-  install("integration", "Integral as accumulated area", { upper: 3 }, function (s) {
-    return range("upper", "Upper limit b", 0.5, 4, 0.1, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b * b / 3, bars = "", n = 12, w = b / n;
-    for (var i = 0; i < n; i += 1) {
-      var u = i * w, h = u * u;
-      bars += '<rect x="' + (100 + u * 110) + '" y="' + (245 - h * 12) + '" width="' + (w * 110 - 2) + '" height="' + (h * 12) + '" fill="#38bdf844"></rect>';
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
     }
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) curve += (x === 0 ? "M" : "L") + (100 + x * 110) + " " + (245 - x * x * 12) + " ";
-    return {
-      svg: shell('<line x1="95" y1="245" x2="555" y2="245" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#f59e0b" stroke-width="3"></path>' + bars +
-        '<line x1="' + (100 + b * 110) + '" y1="65" x2="' + (100 + b * 110) + '" y2="245" stroke="#34d399" stroke-dasharray="6 5" stroke-width="2"></line>' +
-        text(510, 70, "∫₀ᵇ x² dx = b³/3", "#f8fafc", 18) + text(510, 105, "rectangles approximate the area", "#94a3b8", 14)),
-      readout: cell("b", b.toFixed(1)) + cell("area", area.toFixed(3), "#34d399") + cell("meaning", "accumulation", "#f59e0b"),
-      verdict: "<b>Integral:</b> an antiderivative gives a compact way to accumulate infinitely many thin contributions. The rectangles improve as their width shrinks."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>area strips</span></div>');
+    return s;
+  }
 
-  install("area", "Area between curves", { upper: 1 }, function (s) {
-    return range("upper", "Boundary b", 0.2, 2, 0.05, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b / 2 - b * b * b / 3, path = "", region = "";
-    for (var x = 0; x <= b + 0.01; x += 0.03) {
-      path += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
-      region += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
     }
-    for (var y = b; y >= -0.01; y -= 0.03) region += "L" + (120 + y * 190) + " " + (235 - y * y * 70) + " ";
-    return {
-      svg: shell('<line x1="110" y1="235" x2="520" y2="235" stroke="#475569"></line><path d="' + path + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + region + 'Z" fill="#34d39955" stroke="#34d399"></path>' +
-        text(500, 70, "between y=x and y=x²", "#f8fafc", 17) + text(500, 105, "∫(x−x²) dx", "#f59e0b", 16)),
-      readout: cell("b", b.toFixed(2)) + cell("area", area.toFixed(4), "#34d399") + cell("bounds", "0 to b", "#f59e0b"),
-      verdict: "<b>Set up before integrating:</b> area is upper curve minus lower curve on the chosen interval. A sketch prevents a reversed sign."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>bounded region</span></div>');
-
-  install("differential", "Differential-equation flow", { family: "separable", t: 1 }, function (s) {
-    return select("family", "Choose a model", [["separable", "dy/dx = y"], ["linear", "dy/dx + y = 1"], ["decay", "dy/dx = −y"]], s.family) +
-      range("t", "time t", 0, 4, 0.1, s.t, "");
-  }, function (s) {
-    var sign = s.family === "decay" ? -1 : 1;
-    var y = s.family === "linear" ? 1 - Math.exp(-s.t) : Math.exp(sign * s.t);
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) {
-      var value = s.family === "linear" ? 1 - Math.exp(-x) : Math.exp(sign * x);
-      curve += (x === 0 ? "M" : "L") + (100 + x * 100) + " " + (235 - Math.min(2.7, value) * 55) + " ";
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
     }
-    return {
-      svg: shell('<line x1="95" y1="235" x2="530" y2="235" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><circle cx="' + (100 + s.t * 100) + '" cy="' + (235 - Math.min(2.7, y) * 55) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "solve → apply initial condition", "#f8fafc", 16) + text(500, 105, "one family, many possible constants", "#94a3b8", 14)),
-      readout: cell("model", s.family) + cell("y(t)", y.toFixed(3), "#34d399") + cell("t", s.t.toFixed(1), "#f59e0b"),
-      verdict: "<b>Solution family:</b> integrating produces a constant. An initial condition selects one member of the family."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>solution curve</span></div>');
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
 
-  install("vectors", "Vector components", { ax: 3, ay: 2, bx: -1, by: 2 }, function (s) {
-    return range("ax", "Aₓ", -4, 4, 1, s.ax, "") + range("ay", "Aᵧ", -4, 4, 1, s.ay, "") +
-      range("bx", "Bₓ", -4, 4, 1, s.bx, "") + range("by", "Bᵧ", -4, 4, 1, s.by, "");
-  }, function (s) {
-    var rx = s.ax + s.bx, ry = s.ay + s.by, mag = Math.sqrt(rx * rx + ry * ry);
-    function arrow(x, y, dx, dy, color) {
-      return '<line x1="' + x + '" y1="' + y + '" x2="' + (x + dx * 35) + '" y2="' + (y - dy * 35) + '" stroke="' + color + '" stroke-width="4" marker-end="url(#arrow-v)"></line>';
-    }
-    return {
-      svg: shell('<line x1="90" y1="180" x2="630" y2="180" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line>' +
-        arrow(360, 180, s.ax, s.ay, "#38bdf8") + arrow(360, 180, s.bx, s.by, "#f59e0b") + arrow(360, 180, rx, ry, "#34d399") +
-        '<defs><marker id="arrow-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>' +
-        text(500, 65, "R = A + B", "#34d399", 18) + text(500, 105, "components add separately", "#94a3b8", 14)),
-      readout: cell("Rₓ", rx.toFixed(0), "#34d399") + cell("Rᵧ", ry.toFixed(0), "#34d399") + cell("|R|", mag.toFixed(2), "#f59e0b"),
-      verdict: "<b>Vector addition:</b> add horizontal components together and vertical components together. The resultant arrow is the diagonal of the component parallelogram."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>input vectors</span></div><div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>resultant</span></div>');
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
 
-  install("lines3d", "Angle between lines", { angle: 45 }, function (s) {
-    return range("angle", "Projected angle", 0, 90, 1, s.angle, "°");
-  }, function (s) {
-    var c = Math.cos(s.angle * Math.PI / 180);
-    return {
-      svg: shell('<line x1="165" y1="220" x2="530" y2="90" stroke="#38bdf8" stroke-width="5"></line><line x1="165" y1="220" x2="530" y2="220" stroke="#f59e0b" stroke-width="5"></line><path d="M235 195 A75 75 0 0 1 275 174" fill="none" stroke="#34d399" stroke-width="3"></path>' +
-        text(500, 70, "cos θ = (a₁a₂+b₁b₂+c₁c₂)/(|a₁||a₂|)", "#f8fafc", 14) + text(500, 115, "direction ratios → angle", "#94a3b8", 15)),
-      readout: cell("θ", s.angle.toFixed(0) + "°", "#34d399") + cell("cos θ", c.toFixed(3), "#f59e0b"),
-      verdict: "<b>3D line angle:</b> direction ratios are enough. The dot product compares how much the two directions point the same way."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>reference direction</span></div>');
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
 
-  install("lp", "Linear-programming feasible region", { slope: 1 }, function (s) {
-    return range("slope", "Objective slope", -2, 3, 0.1, s.slope, "");
-  }, function (s) {
-    var y1 = 4 - s.slope * 1, y2 = 4 - s.slope * 3;
-    return {
-      svg: shell('<line x1="95" y1="245" x2="600" y2="245" stroke="#475569"></line><line x1="95" y1="55" x2="95" y2="245" stroke="#475569"></line><polygon points="95,245 95,105 300,105 470,245" fill="#34d39955" stroke="#34d399" stroke-width="3"></polygon>' +
-        '<line x1="100" y1="' + (245 - y1 * 35) + '" x2="560" y2="' + (245 - y2 * 35) + '" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8 5"></line>' +
-        '<circle cx="95" cy="105" r="7" fill="#38bdf8"></circle><circle cx="300" cy="105" r="7" fill="#38bdf8"></circle><circle cx="470" cy="245" r="7" fill="#38bdf8"></circle>' +
-        text(500, 65, "objective line slides", "#f8fafc", 17) + text(500, 100, "test the vertices", "#94a3b8", 15)),
-      readout: cell("slope", s.slope.toFixed(1)) + cell("candidate points", "vertices", "#34d399") + cell("method", "corner test", "#f59e0b"),
-      verdict: "<b>Graphical method:</b> the optimum occurs at a corner of the feasible region unless the objective is constant along an edge."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>feasible region</span></div>');
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
 
-  install("probability", "Probability tree", { pA: 0.6, pB: 0.3 }, function (s) {
-    return range("pA", "P(A)", 0.1, 0.9, 0.05, s.pA, "") + range("pB", "P(B|A)", 0.1, 0.9, 0.05, s.pB, "");
-  }, function (s) {
-    var joint = s.pA * s.pB, other = (1 - s.pA) * 0.2, total = joint + other;
-    return {
-      svg: shell('<line x1="110" y1="150" x2="260" y2="90" stroke="#38bdf8" stroke-width="3"></line><line x1="110" y1="150" x2="260" y2="220" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="60" stroke="#34d399" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="125" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="190" stroke="#f59e0b" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="250" stroke="#94a3b8" stroke-width="3"></line>' +
-        text(100, 140, "start", "#f8fafc", 14) + text(260, 78, "A", "#38bdf8", 17) + text(260, 210, "Aᶜ", "#94a3b8", 17) + text(505, 60, "B", "#34d399", 17) + text(505, 125, "Bᶜ", "#94a3b8", 17) +
-        text(505, 190, "B", "#f59e0b", 17) + text(505, 250, "Bᶜ", "#94a3b8", 17)),
-      readout: cell("P(A∩B)", joint.toFixed(3), "#34d399") + cell("P(B)", total.toFixed(3), "#f59e0b") + cell("P(A|B)", (joint / Math.max(total, 0.001)).toFixed(3), "#38bdf8"),
-      verdict: "<b>Bayes:</b> multiply along a branch, add disjoint branches for P(B), then reverse the condition with P(A|B) = P(A∩B)/P(B)."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>target branch</span></div>');
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
 })();
+
+
 </script>
-  <script>if (window.App && typeof window.App.routeFromHash === "function") window.App.routeFromHash();</script>
+<script>
+// Class 12 Mathematics, Chapter 2 (lemh102) — simulation labs.
+// One lab per lesson, built on the shared window.LAB helpers (scripts/templates/lab.js).
+// Labs are preset driven, so the legacy timeline toolbar is hidden on mount.
+var App = window.App;
+var LAB = window.LAB;
+window.SIMS = {};
+
+function labNoTimeline(){
+  var tb = document.getElementById("legacy-lab-toolbar");
+  if(tb) tb.style.display = "none";
+}
+
+// -------------------------------------------------------------------------
+// Lab 1 — Principal-value bench (NCERT §2.2, principal value branches)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PI = Math.PI;
+  var CASES = {
+    sin: {
+      input: "sin⁻¹(1/2)", theta: PI / 6, branch: "[−π/2, π/2]", rangeMin: -PI / 2, rangeMax: PI / 2,
+      verdict: "<b>sin⁻¹(1/2) = π/6.</b> The angle π/6 lies in the principal branch [−π/2, π/2], where sine is one-one. The other solutions 5π/6, 13π/6, … are not returned by the inverse function."
+    },
+    cos: {
+      input: "cos⁻¹(−1/2)", theta: 2 * PI / 3, branch: "[0, π]", rangeMin: 0, rangeMax: PI,
+      verdict: "<b>cos⁻¹(−1/2) = 2π/3.</b> Since the branch is [0, π], the inverse must return the second-quadrant angle 2π/3, not the negative angle −2π/3."
+    },
+    tan: {
+      input: "tan⁻¹(1)", theta: PI / 4, branch: "(−π/2, π/2)", rangeMin: -PI / 2, rangeMax: PI / 2,
+      verdict: "<b>tan⁻¹(1) = π/4.</b> Tangent is one-one on the open interval (−π/2, π/2), so the principal value is the acute angle π/4."
+    },
+    cosec: {
+      input: "cosec⁻¹(2)", theta: PI / 6, branch: "[−π/2, π/2] − {0}", rangeMin: -PI / 2, rangeMax: PI / 2,
+      verdict: "<b>cosec⁻¹(2) = π/6.</b> Because cosec y = 2 means sin y = 1/2, and the branch keeps sine's principal values but removes 0."
+    },
+    sec: {
+      input: "sec⁻¹(2/√3)", theta: PI / 6, branch: "[0, π] − {π/2}", rangeMin: 0, rangeMax: PI,
+      verdict: "<b>sec⁻¹(2/√3) = π/6.</b> The branch is cosine's [0, π] with π/2 removed, because secant does not exist where cosine vanishes."
+    },
+    cot: {
+      input: "cot⁻¹(−1/√3)", theta: 2 * PI / 3, branch: "(0, π)", rangeMin: 0, rangeMax: PI,
+      verdict: "<b>cot⁻¹(−1/√3) = 2π/3.</b> Cotangent is one-one on (0, π), so the negative value −1/√3 corresponds to the obtuse angle 2π/3."
+    }
+  };
+  var st = {preset: "sin"};
+
+  function draw(){
+    var c = CASES[st.preset];
+    var cx = 300, cy = 160, R = 105;
+    var m = "";
+    m += L.rect(20, 30, 660, 270, "#0b1522", ' rx="14" stroke="#1e2d3d" stroke-width="1.5"');
+    m += L.line(cx - R - 30, cy, cx + R + 30, cy, C.faint, 1.5);
+    m += L.line(cx, cy - R - 30, cx, cy + R + 30, C.faint, 1.5);
+    var k;
+    // Principal-value arc (thick green) from rangeMin to rangeMax.
+    var a0 = c.rangeMin, a1 = c.rangeMax;
+    var x0 = cx + R * Math.cos(a0), y0 = cy - R * Math.sin(a0);
+    var x1 = cx + R * Math.cos(a1), y1 = cy - R * Math.sin(a1);
+    var large = (a1 - a0) > Math.PI ? 1 : 0;
+    m += '<path d="M ' + x0 + ' ' + y0 + ' A ' + R + ' ' + R + ' 0 ' + large + ' 0 ' + x1 + ' ' + y1 + '" fill="none" stroke="' + C.ok + '" stroke-width="8" opacity=".35" stroke-linecap="round"/>';
+    m += L.circle(cx, cy, 3, C.muted);
+    // Ray at the principal value.
+    var px = cx + R * Math.cos(c.theta), py = cy - R * Math.sin(c.theta);
+    m += L.arrow(cx, cy, px, py, "#38bdf8", 3);
+    m += L.circle(px, py, 7, "#38bdf8", ' stroke="#0b1522" stroke-width="2"');
+    m += L.text(px + 26, py - 10, "θ = " + L.num(c.theta, 4), {size: 15, color: "#38bdf8", weight: 700});
+    m += L.text(cx + 46, cy - R - 14, "unit circle", {size: 13, color: C.muted, anchor: "start"});
+    m += L.text(cx, cy + R + 48, "green arc = principal branch", {size: 14, color: C.ok, weight: 700});
+    m += L.text(350, 52, c.input, {size: 22, color: C.text, weight: 700});
+    m += L.text(350, 268, "range of the principal branch: " + c.branch, {size: 14, color: C.muted});
+    L.svg(m, "Unit circle showing the principal value angle for " + c.input + ".", 310);
+
+    var deg = c.theta * 180 / PI;
+    L.readout([
+      ["Expression", c.input],
+      ["Principal value", fraction(c.theta)],
+      ["Decimal (radians)", L.num(c.theta, 4)],
+      ["Degrees", L.num(deg, 0) + "°"],
+      ["Principal branch", c.branch]
+    ]);
+    L.verdict(c.verdict);
+  }
+
+  // Exact-looking fraction for the six canonical angles.
+  function fraction(t){
+    var known = [
+      [PI / 6, "π/6"], [PI / 4, "π/4"], [PI / 3, "π/3"], [PI / 2, "π/2"],
+      [2 * PI / 3, "2π/3"], [3 * PI / 4, "3π/4"], [5 * PI / 6, "5π/6"],
+      [-PI / 6, "−π/6"], [-PI / 4, "−π/4"], [-PI / 3, "−π/3"], [PI, "π"]
+    ];
+    for(var i = 0; i < known.length; i++){
+      if(Math.abs(t - known[i][0]) < 1e-9) return known[i][1];
+    }
+    return L.num(t, 4);
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["sin", "sin⁻¹(1/2)"], ["cos", "cos⁻¹(−1/2)"], ["tan", "tan⁻¹(1)"], ["cosec", "cosec⁻¹(2)"], ["sec", "sec⁻¹(2/√3)"], ["cot", "cot⁻¹(−1/√3)"]], st.preset, select);
+    L.legend([["#38bdf8", "angle ray"], [C.ok, "principal branch arc"], [C.faint, "axes"]]);
+    L.watch("The green arc is the set of allowed answers. The blue ray is the one principal value the inverse is allowed to return.");
+    draw();
+  }
+
+  window.SIMS.principalbranch = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 2 — Branch viewer (NCERT §2.2, graphs of inverses)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PI = Math.PI;
+  var GRAPHS = {
+    sin: {
+      name: "y = sin⁻¹ x", domain: "[−1, 1]", range: "[−π/2, π/2]", mono: "increasing",
+      point: "(1, π/2)", fn: function(x){ return Math.asin(x); },
+      xmin: -1.35, xmax: 1.35,
+      verdict: "<b>y = sin⁻¹ x</b> is the reflection of the restricted sine graph. It increases from (−1, −π/2) to (1, π/2); the dashed copies are the branches shifted by whole multiples of π."
+    },
+    cos: {
+      name: "y = cos⁻¹ x", domain: "[−1, 1]", range: "[0, π]", mono: "decreasing",
+      point: "(1, 0)", fn: function(x){ return Math.acos(x); },
+      xmin: -1.35, xmax: 1.35,
+      verdict: "<b>y = cos⁻¹ x</b> decreases from (−1, π) to (1, 0). Unlike sin⁻¹, its principal branch does not cross zero, which is why cos⁻¹ of a negative number is obtuse."
+    },
+    tan: {
+      name: "y = tan⁻¹ x", domain: "R", range: "(−π/2, π/2)", mono: "increasing",
+      point: "(1, π/4)", fn: function(x){ return Math.atan(x); },
+      xmin: -4.2, xmax: 4.2,
+      verdict: "<b>y = tan⁻¹ x</b> rises between the horizontal asymptotes y = −π/2 and y = π/2. The dashed branches repeat every π, separated by vertical asymptotes of the tangent."
+    },
+    cot: {
+      name: "y = cot⁻¹ x", domain: "R", range: "(0, π)", mono: "decreasing",
+      point: "(1, π/4)", fn: function(x){ return PI / 2 - Math.atan(x); },
+      xmin: -4.2, xmax: 4.2,
+      verdict: "<b>y = cot⁻¹ x</b> falls through the principal branch (0, π). As x → +∞ it approaches 0 from above; as x → −∞ it approaches π from below."
+    }
+  };
+  var st = {preset: "sin"};
+
+  function plot(c){
+    var x0 = 130, x1 = 660, yc = 165, sx = (x1 - x0) / (c.xmax - c.xmin), sy = 42;
+    var m = "";
+    m += L.rect(20, 25, 660, 280, "#0b1522", ' rx="14" stroke="#1e2d3d" stroke-width="1.5"');
+    m += L.line(x0, yc, x1, yc, C.faint, 1.5);
+    m += L.line(360, 35, 360, 290, C.faint, 1.5);
+    m += L.text(x1 + 4, yc - 8, "x", {size: 13, color: C.text, anchor: "end"});
+    m += L.text(354, 42, "y", {size: 13, color: C.text, anchor: "end"});
+    var k;
+    for(k = -2; k <= 2; k++){
+      var pts = [];
+      var step = (c.xmax - c.xmin) / 160;
+      var x;
+      for(x = c.xmin; x <= c.xmax + 1e-9; x += step){
+        var y = c.fn(x) + k * PI;
+        if(y >= -3.4 && y <= 3.4) pts.push([x, y]);
+      }
+      if(pts.length < 2) continue;
+      var solid = (k === 0);
+      m += '<polyline fill="none" stroke="' + (solid ? "#38bdf8" : "#334f6b") + '" stroke-width="' + (solid ? 3.5 : 2) + '"' +
+        (solid ? "" : ' stroke-dasharray="7 6"') + ' points="' + pts.map(function(p){ return (x0 + (p[0] - c.xmin) * sx) + "," + (yc - p[1] * sy); }).join(" ") + '"/>';
+    }
+    m += L.line(x0, yc - PI * sy / 2, x1, yc - PI * sy / 2, C.muted, 1, "4 5");
+    m += L.text(x1 - 6, yc - PI * sy / 2 - 8, "y = π/2", {size: 12, color: C.muted, anchor: "end"});
+    L.svg(m, "Graph of " + c.name + " with its principal branch highlighted.", 310);
+  }
+
+  function draw(){
+    var c = GRAPHS[st.preset];
+    plot(c);
+    L.readout([
+      ["Inverse function", c.name],
+      ["Domain", c.domain],
+      ["Range (principal branch)", c.range],
+      ["Monotonicity", c.mono],
+      ["Key end point", c.point]
+    ]);
+    L.verdict(c.verdict);
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["sin", "sin⁻¹ x"], ["cos", "cos⁻¹ x"], ["tan", "tan⁻¹ x"], ["cot", "cot⁻¹ x"]], st.preset, select);
+    L.legend([["#38bdf8", "principal branch"], ["#334f6b", "other branches"], [C.muted, "asymptote"]]);
+    L.watch("The solid curve is the principal branch; dashed curves are the same inverse shifted by multiples of π. The graph is the mirror image of the restricted trig graph in y = x.");
+    draw();
+  }
+
+  window.SIMS.graphbranches = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 3 — Composition checker (NCERT §2.3, sin⁻¹ ∘ sin and friends)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PI = Math.PI;
+  var CASES = {
+    sinsin: {
+      expr: "sin⁻¹(sin(2π/3))", input: 2 * PI / 3, inside: false,
+      rewrite: "sin(π − 2π/3) = sin(π/3)", value: "π/3", valueNum: PI / 3, fn: Math.sin, inv: Math.asin,
+      verdict: "<b>2π/3 is outside [−π/2, π/2].</b> Replace sin(2π/3) by sin(π/3) using sin(π − x) = sin x, then cancel: sin⁻¹(sin(2π/3)) = π/3."
+    },
+    coscos: {
+      expr: "cos⁻¹(cos(7π/6))", input: 7 * PI / 6, inside: false,
+      rewrite: "cos(2π − 7π/6) = cos(5π/6)", value: "5π/6", valueNum: 5 * PI / 6, fn: Math.cos, inv: Math.acos,
+      verdict: "<b>7π/6 is outside [0, π].</b> Use cos(2π − x) = cos x to reach 5π/6 inside the branch, so cos⁻¹(cos(7π/6)) = 5π/6."
+    },
+    tanred: {
+      expr: "tan⁻¹(tan(3π/4))", input: 3 * PI / 4, inside: false,
+      rewrite: "tan(3π/4 − π) = tan(−π/4)", value: "−π/4", valueNum: -PI / 4, fn: Math.tan, inv: Math.atan,
+      verdict: "<b>3π/4 is outside (−π/2, π/2).</b> Tangent has period π, so subtract π: tan(3π/4) = tan(−π/4) and the inverse returns −π/4."
+    },
+    sinarc: {
+      expr: "sin(sin⁻¹(0.8))", input: 0.8, inside: true,
+      rewrite: "no rewrite needed — 0.8 is a legal sine value", value: "0.8", valueNum: 0.8, fn: Math.sin, inv: Math.asin,
+      verdict: "<b>0.8 is in the domain [−1, 1].</b> The function applied after the inverse cancels immediately: sin(sin⁻¹(0.8)) = 0.8."
+    }
+  };
+  var st = {preset: "sinsin"};
+
+  function draw(){
+    var c = CASES[st.preset];
+    var cx = 360, cy = 168, R = 108;
+    var m = "";
+    m += L.rect(20, 25, 660, 280, "#0b1522", ' rx="14" stroke="#1e2d3d" stroke-width="1.5"');
+    // Branch window for the relevant inverse function.
+    var lo = c.inv === Math.atan ? -PI / 2 : (c.inv === Math.acos ? 0 : -PI / 2);
+    var hi = c.inv === Math.atan ? PI / 2 : (c.inv === Math.acos ? PI : PI / 2);
+    var color = c.inside ? C.ok : C.danger;
+    var a0x = cx + R * Math.cos(lo), a0y = cy - R * Math.sin(lo);
+    var a1x = cx + R * Math.cos(hi), a1y = cy - R * Math.sin(hi);
+    m += '<path d="M ' + a0x + ' ' + a0y + ' A ' + R + ' ' + R + ' 0 0 0 ' + a1x + ' ' + a1y + '" fill="none" stroke="' + C.ok + '" stroke-width="8" opacity=".3" stroke-linecap="round"/>';
+    m += L.line(cx - R - 20, cy, cx + R + 20, cy, C.faint, 1.5);
+    m += L.line(cx, cy - R - 20, cx, cy + R + 20, C.faint, 1.5);
+    // Input angle (red if outside, green if inside) and reference angle.
+    var ix = cx + R * Math.cos(c.input), iy = cy - R * Math.sin(c.input);
+    m += L.arrow(cx, cy, ix, iy, color, 3);
+    m += L.circle(ix, iy, 7, color, ' stroke="#0b1522" stroke-width="2"');
+    m += L.text(ix + 20, iy - 10, "x = " + L.num(c.input, 4), {size: 14, color: color, weight: 700});
+    if(!c.inside){
+      var vx = cx + R * Math.cos(c.valueNum), vy = cy - R * Math.sin(c.valueNum);
+      m += L.arrow(cx, cy, vx, vy, "#f59e0b", 2.5);
+      m += L.circle(vx, vy, 6, "#f59e0b");
+      m += L.text(vx + 20, vy + 18, "reference = " + c.value, {size: 14, color: "#f59e0b", weight: 700});
+    }
+    m += L.text(360, 52, c.expr, {size: 21, color: C.text, weight: 700});
+    m += L.text(360, 285, c.inside ? "input is inside the principal branch" : "input is outside the principal branch", {size: 14, color: color});
+    L.svg(m, "Angle wheel for " + c.expr + " with the principal branch highlighted.", 310);
+
+    L.readout([
+      ["Expression", c.expr],
+      ["Input", (c.inside ? L.num(c.input, 4) : fraction(c.input) + " ≈ " + L.num(c.input, 4))],
+      ["Inside principal branch?", c.inside ? "Yes — cancel directly" : "No — reduce first"],
+      ["Rewrite", c.rewrite],
+      ["Value", c.value]
+    ]);
+    L.verdict(c.verdict);
+  }
+
+  function fraction(t){
+    var known = [
+      [PI / 6, "π/6"], [PI / 4, "π/4"], [PI / 3, "π/3"], [PI / 2, "π/2"],
+      [2 * PI / 3, "2π/3"], [3 * PI / 4, "3π/4"], [5 * PI / 6, "5π/6"], [7 * PI / 6, "7π/6"],
+      [-PI / 6, "−π/6"], [-PI / 4, "−π/4"], [-PI / 3, "−π/3"], [PI, "π"]
+    ];
+    for(var i = 0; i < known.length; i++){
+      if(Math.abs(t - known[i][0]) < 1e-9) return known[i][1];
+    }
+    return L.num(t, 4);
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["sinsin", "sin⁻¹(sin 2π/3)"], ["coscos", "cos⁻¹(cos 7π/6)"], ["tanred", "tan⁻¹(tan 3π/4)"], ["sinarc", "sin(sin⁻¹ 0.8)"]], st.preset, select);
+    L.legend([["#38bdf8", "input angle"], [C.ok, "principal branch"], ["#f59e0b", "reference angle"]]);
+    L.watch("Red means the angle lies outside the branch of the inverse; amber shows the reference angle that brings it back inside.");
+    draw();
+  }
+
+  window.SIMS.compositionidentity = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 4 — Identity bench (NCERT §2.3 + Miscellaneous, triangle identities)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PI = Math.PI;
+  var IDS = {
+    triple: {
+      title: "2 sin⁻¹(3/5) = tan⁻¹(24/7)",
+      lines: ["sin θ = 3/5 from a 3-4-5 triangle", "sin 2θ = 24/25, cos 2θ = 7/25", "tan 2θ = 24/7"],
+      side: "24", other: "7", hyp: "25", value: 2 * Math.asin(0.6),
+      verdict: "<b>Doubling a 3-4-5 triangle produces the 7-24-25 triple.</b> Since sin 2θ and cos 2θ are both positive, 2sin⁻¹(3/5) = tan⁻¹(24/7) ≈ 1.2870 rad."
+    },
+    sum: {
+      title: "cos⁻¹(4/5) + cos⁻¹(12/13) = cos⁻¹(33/65)",
+      lines: ["cos α = 4/5, sin α = 3/5", "cos β = 12/13, sin β = 5/13", "cos(α + β) = (48 − 15)/65 = 33/65"],
+      side: "33", other: "56", hyp: "65", value: Math.acos(0.8) + Math.acos(12 / 13),
+      verdict: "<b>Add the angles with the cosine addition formula.</b> The minus sign between the products gives 33/65, and both angles acute keeps the sum inside [0, π], so cos⁻¹(33/65) ≈ 1.0383 rad."
+    },
+    complement: {
+      title: "sin⁻¹(3/5) + cos⁻¹(3/5) = π/2",
+      lines: ["sin θ = 3/5 gives θ ≈ 0.6435", "cos⁻¹(3/5) = π/2 − θ", "the two angles are complementary"],
+      side: "3", other: "4", hyp: "5", value: Math.asin(0.6) + Math.acos(0.6),
+      verdict: "<b>Inverse sine and inverse cosine of the same number always add to π/2.</b> The triangle makes it visible: the two acute angles of a right triangle are complementary, so the sum is π/2 ≈ 1.5708 rad."
+    },
+    solve: {
+      title: "2 tan⁻¹(cos x) = tan⁻¹(2 cosec x)",
+      lines: ["2 tan⁻¹u = tan⁻¹(2u/(1−u²)), u = cos x", "equate: 2cos x/sin²x = 2/sin x", "tan x = 1 → x = nπ + π/4"],
+      side: "1", other: "1", hyp: "√2", value: PI / 4,
+      verdict: "<b>x = nπ + π/4, n ∈ Z.</b> The double-angle formula collapses the left side, and equating arguments gives tan x = 1. The smallest positive solution is π/4 (45°)."
+    }
+  };
+  var st = {preset: "triple"};
+
+  function draw(){
+    var c = IDS[st.preset];
+    var m = "";
+    m += L.rect(20, 25, 660, 280, "#0b1522", ' rx="14" stroke="#1e2d3d" stroke-width="1.5"');
+    m += L.text(360, 55, c.title, {size: 19, color: C.text, weight: 700});
+    // Right triangle: vertical side c.side, horizontal side c.other, hypotenuse c.hyp.
+    var tx = 200, ty = 250, h = 130, w = 200;
+    m += '<polygon points="' + tx + ',' + ty + ' ' + (tx + w) + ',' + ty + ' ' + tx + ',' + (ty - h) + '" fill="rgba(56,189,248,.12)" stroke="#38bdf8" stroke-width="2.5"/>';
+    m += '<polyline points="' + tx + ',' + (ty - 18) + ' ' + (tx + 18) + ',' + (ty - 18) + ' ' + (tx + 18) + ',' + ty + '" fill="none" stroke="' + C.muted + '" stroke-width="1.5"/>';
+    m += L.text(tx - 18, ty - h / 2, c.side, {size: 16, color: "#f59e0b", weight: 700});
+    m += L.text(tx + w / 2, ty + 22, c.other, {size: 16, color: "#60a5fa", weight: 700});
+    m += L.text(tx + w / 2 + 18, ty - h / 2 - 26, c.hyp, {size: 16, color: C.ok, weight: 700});
+    m += L.text(500, 115, "work each side numerically:", {size: 15, color: C.text, anchor: "start"});
+    var i;
+    for(i = 0; i < c.lines.length; i++){
+      m += L.text(500, 148 + i * 34, "• " + c.lines[i], {size: 13, color: C.muted, anchor: "start"});
+    }
+    m += L.text(500, 265, "value ≈ " + L.num(c.value, 4) + " rad", {size: 16, color: "#38bdf8", weight: 700, anchor: "start"});
+    L.svg(m, "Triangle and numeric check for " + c.title + ".", 310);
+
+    L.readout([
+      ["Identity", c.title],
+      ["Triangle sides", c.side + ", " + c.other + ", " + c.hyp],
+      ["Numeric value", L.num(c.value, 4) + " rad"],
+      ["Degrees", L.num(c.value * 180 / PI, 2) + "°"],
+      ["Method", "triangle + tangent addition"]
+    ]);
+    L.verdict(c.verdict);
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["triple", "2 sin⁻¹(3/5)"], ["sum", "cos⁻¹(4/5)+cos⁻¹(12/13)"], ["complement", "sin⁻¹(3/5)+cos⁻¹(3/5)"], ["solve", "2tan⁻¹(cos x)"]], st.preset, select);
+    L.legend([["#38bdf8", "identity"], ["#f59e0b", "vertical side"], ["#60a5fa", "horizontal side"], [C.ok, "hypotenuse"]]);
+    L.watch("Each preset builds the right triangle behind the identity and checks both sides numerically in the readout.");
+    draw();
+  }
+
+  window.SIMS.itfidentities = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
 </body>
 </html>

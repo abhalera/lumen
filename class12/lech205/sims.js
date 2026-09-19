@@ -22,9 +22,9 @@ window.SIMS.carbclass = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>carbohydrate</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>not a carbohydrate</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c-def">Cₓ(H₂O)ᵧ myth</button>' +
-      '<button class="preset-btn" id="c-hy">Hydrolysis class</button>' +
-      '<button class="preset-btn" id="c-red">Reducing vs not</button>';
+      '<button class="preset-btn active" data-preset="definition" id="c-def">Cₓ(H₂O)ᵧ myth</button>' +
+      '<button class="preset-btn" data-preset="hydrolysis" id="c-hy">Hydrolysis class</button>' +
+      '<button class="preset-btn" data-preset="reducing" id="c-red">Reducing vs not</button>';
     document.getElementById("c-def").onclick = function(){ setActivePreset(this); mode="def"; draw(0); };
     document.getElementById("c-hy").onclick = function(){ setActivePreset(this); mode="hy"; draw(0); };
     document.getElementById("c-red").onclick = function(){ setActivePreset(this); mode="red"; draw(0); };
@@ -80,9 +80,9 @@ window.SIMS.carblab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>open-chain D-(+)-glucose</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>anomeric C1</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="g-o">Six open-chain proofs</button>' +
-      '<button class="preset-btn" id="g-f">Three failures → hemiacetal</button>' +
-      '<button class="preset-btn" id="g-a">α 419 K / β 423 K anomers</button>';
+      '<button class="preset-btn active" data-preset="open-chain" id="g-o">Six open-chain proofs</button>' +
+      '<button class="preset-btn" data-preset="hemiacetal" id="g-f">Three failures → hemiacetal</button>' +
+      '<button class="preset-btn" data-preset="anomers" id="g-a">α 419 K / β 423 K anomers</button>';
     document.getElementById("g-o").onclick = function(){ setActivePreset(this); mode="open"; draw(0); };
     document.getElementById("g-f").onclick = function(){ setActivePreset(this); mode="fail"; draw(0); };
     document.getElementById("g-a").onclick = function(){ setActivePreset(this); mode="anom"; draw(0); };
@@ -150,9 +150,9 @@ window.SIMS.invertlab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sucrose (dextro)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>invert sugar (laevo)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="i-s">Sucrose linkage</button>' +
-      '<button class="preset-btn" id="i-p">Polarimeter +52.5° / −92.4°</button>' +
-      '<button class="preset-btn" id="i-m">Maltose & lactose (reducing)</button>';
+      '<button class="preset-btn active" data-preset="linkage" id="i-s">Sucrose linkage</button>' +
+      '<button class="preset-btn" data-preset="polarimeter" id="i-p">Polarimeter +52.5° / −92.4°</button>' +
+      '<button class="preset-btn" data-preset="maltose-lactose" id="i-m">Maltose & lactose (reducing)</button>';
     document.getElementById("i-s").onclick = function(){ setActivePreset(this); hydrolysed=0; draw(0); };
     document.getElementById("i-p").onclick = function(){ setActivePreset(this); hydrolysed=1; App.resetTimeline(); App.play(); };
     document.getElementById("i-m").onclick = function(){ setActivePreset(this); hydrolysed=2; draw(0); };
@@ -226,10 +226,10 @@ window.SIMS.polylab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>α(1→6) branch</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>β(1→4) cellulose</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-a">Amylose 15–20%</button>' +
-      '<button class="preset-btn" id="p-p">Amylopectin 80–85%</button>' +
-      '<button class="preset-btn" id="p-c">Cellulose β</button>' +
-      '<button class="preset-btn" id="p-g">Glycogen</button>';
+      '<button class="preset-btn active" data-preset="amylose" id="p-a">Amylose 15–20%</button>' +
+      '<button class="preset-btn" data-preset="amylopectin" id="p-p">Amylopectin 80–85%</button>' +
+      '<button class="preset-btn" data-preset="cellulose" id="p-c">Cellulose β</button>' +
+      '<button class="preset-btn" data-preset="glycogen" id="p-g">Glycogen</button>';
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); mode="amy"; draw(0); };
     document.getElementById("p-p").onclick = function(){ setActivePreset(this); mode="pec"; draw(0); };
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); mode="cel"; draw(0); };
@@ -298,9 +298,9 @@ window.SIMS.zwitterion = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>zwitterion</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>anion (base)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="z-z">Zwitterion (neutral pH)</button>' +
-      '<button class="preset-btn" id="z-e">Table 10.2 essential ten</button>';
-    document.getElementById("z-z").onclick = function(){ setActivePreset(this); pH=7; draw(0); };
+      '<button class="preset-btn active" data-preset="zwitterion" id="z-z">Zwitterion (neutral pH)</button>' +
+      '<button class="preset-btn" data-preset="essential" id="z-e">Table 10.2 essential ten</button>';
+    document.getElementById("z-z").onclick = function(){ setActivePreset(this); pH=1; draw(0); };
     document.getElementById("z-e").onclick = function(){ setActivePreset(this); pH=-1; draw(0); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Medium</span><span class="val" id="ctrl-ph">zwitterion</span></div>' +
@@ -350,9 +350,9 @@ window.SIMS.peptidelab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>peptide –CO–NH–</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>H-bond in α-helix</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-d">Glycylalanine</button>' +
-      '<button class="preset-btn" id="p-h">α-helix / β-sheet</button>' +
-      '<button class="preset-btn" id="p-n">Denaturation (egg / milk)</button>';
+      '<button class="preset-btn active" data-preset="dipeptide" id="p-d">Glycylalanine</button>' +
+      '<button class="preset-btn" data-preset="helix" id="p-h">α-helix / β-sheet</button>' +
+      '<button class="preset-btn" data-preset="denaturation" id="p-n">Denaturation (egg / milk)</button>';
     document.getElementById("p-d").onclick = function(){ setActivePreset(this); mode="di"; App.resetTimeline(); App.play(); };
     document.getElementById("p-h").onclick = function(){ setActivePreset(this); mode="helix"; draw(0); };
     document.getElementById("p-n").onclick = function(){ setActivePreset(this); mode="den"; App.resetTimeline(); App.play(); };
@@ -445,9 +445,9 @@ window.SIMS.vitaminlab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>fat-soluble A,D,E,K</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>water-soluble B, C</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="v-t">Table 10.3</button>' +
-      '<button class="preset-btn" id="v-e">Sucrase Ea 6.22 → 2.15</button>' +
-      '<button class="preset-btn" id="v-h">Hormones (insulin / I₂ salt)</button>';
+      '<button class="preset-btn active" data-preset="table" id="v-t">Table 10.3</button>' +
+      '<button class="preset-btn" data-preset="enzyme" id="v-e">Sucrase Ea 6.22 → 2.15</button>' +
+      '<button class="preset-btn" data-preset="hormone" id="v-h">Hormones (insulin / I₂ salt)</button>';
     document.getElementById("v-t").onclick = function(){ setActivePreset(this); mode="table"; draw(0); };
     document.getElementById("v-e").onclick = function(){ setActivePreset(this); mode="enz"; draw(0); };
     document.getElementById("v-h").onclick = function(){ setActivePreset(this); mode="horm"; draw(0); };
@@ -512,9 +512,9 @@ window.SIMS.dnapair = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A–T</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>C–G</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="n-p">Fig. 10.7 complementary pairs</button>' +
-      '<button class="preset-btn" id="n-u">Nucleoside vs nucleotide</button>' +
-      '<button class="preset-btn" id="n-r">DNA vs RNA</button>';
+      '<button class="preset-btn active" data-preset="pairing" id="n-p">Fig. 10.7 complementary pairs</button>' +
+      '<button class="preset-btn" data-preset="nucleoside" id="n-u">Nucleoside vs nucleotide</button>' +
+      '<button class="preset-btn" data-preset="dna-rna" id="n-r">DNA vs RNA</button>';
     document.getElementById("n-p").onclick = function(){ setActivePreset(this); mode="pair"; App.resetTimeline(); App.play(); };
     document.getElementById("n-u").onclick = function(){ setActivePreset(this); mode="nuc"; draw(0); };
     document.getElementById("n-r").onclick = function(){ setActivePreset(this); mode="rna"; draw(0); };

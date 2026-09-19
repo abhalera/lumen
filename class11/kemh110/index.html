@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 10: Conic Sections — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -109,16 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +312,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +497,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +629,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +681,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +770,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +964,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,14 +1067,168 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
 
 </style>
 </head>
@@ -1063,9 +1275,11 @@ button.btn-secondary {
 <footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathematics", "title": "Conic Sections", "subtitle": "Circles, parabolas, ellipses and hyperbolas as plane sections of a cone, with standard equations, eccentricity and latus rectum.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh110.pdf", "page_start": 176, "page_end": 207, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "cone-sections", "nav": "Sections of a cone", "title": "A plane slicing a double-napped cone: circle, ellipse, parabola, hyperbola", "deck": "Apollonius named parabola and hyperbola. The angle β between the cutting plane and the cone’s axis decides the curve — including the degenerate point, line and pair of lines through the vertex.", "minutes": 8, "section": "10.1, 10.2", "pages": [1, 4], "print": "176–179", "sim": "conecut", "simTitle": "Double-napped cone — vary β against generator angle α", "quick": ["A double-napped right circular cone is generated by rotating a line m (the generator) about a fixed axis ℓ, keeping the angle α constant. The vertex V splits the surface into two nappes.", "A <strong>conic section</strong> is the intersection of a plane with this cone. If β is the angle between the plane and the axis: β=90° gives a <strong>circle</strong>; α&lt;β&lt;90° an <strong>ellipse</strong>; β=α a <strong>parabola</strong> (plane parallel to a generator); 0≤β&lt;α a <strong>hyperbola</strong> (both nappes).", "Through the vertex: a point (α&lt;β≤90°), a generator-line (β=α, degenerate parabola), or a pair of lines (β&lt;α, degenerate hyperbola)."], "formulas": [{"label": "Circle", "html": "β = 90°", "cond": "Plane ⟂ axis; one nappe (Fig 10.4)"}, {"label": "Ellipse", "html": "α &lt; β &lt; 90°", "cond": "Plane cuts entirely across one nappe"}, {"label": "Parabola", "html": "β = α", "cond": "Plane ∥ a generator"}, {"label": "Hyperbola", "html": "0 ≤ β &lt; α", "cond": "Plane meets both nappes"}], "deeper": "The names are Apollonius’s (c. 200 BCE). ‘Para’ + ‘bola’ = throwing beside (the generator); ‘hyper’ = beyond. Planetary orbits (Kepler) are ellipses with the Sun at a focus; a flashlight reflector is a parabola with the bulb at the focus; a cooling-tower silhouette is a hyperbola. Degenerate cases are not curiosities: two intersecting lines are a hyperbola with a=0 in a limiting sense.", "worked": "No numerical example in §10.2 — the classification is by β versus α. Remember: only the hyperbola uses both nappes. A plane through V never produces a ‘proper’ conic.", "prediction": {"prompt": "A plane cuts both nappes of a double-napped cone (and misses V). The section is", "options": ["a hyperbola, because 0 ≤ β < α", "an ellipse, because every oval slice is an ellipse", "two circles, one per nappe"], "answer": 0, "explanation": "§10.2.1(d): 0 ≤ β < α, plane cuts both nappes → hyperbola (Fig 10.7)."}, "connect": [["Headlights, dishes and Kepler", "A torch reflector is a parabola (β=α) so rays from the focus leave parallel. Planetary orbits are ellipses (α&lt;β&lt;90°) with the Sun at a focus — the same slicing dictionary."], ["Wow — a cooling tower is a hyperbola of revolution", "The hyperbolic silhouette of a concrete cooling tower is Fig 10.7 spun about its axis. Two nappes, one visible above the throat.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "List the four proper conics by comparing β with α, and name the three degenerates through V.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "When β=90° the section is a", "options": ["circle", "parabola", "hyperbola"], "answer": 0, "hint": "Plane perpendicular to the axis.", "solution": "Fig 10.4: β=90° ⇒ circle.", "wrong": ["", "That is β=α.", "That uses both nappes."]}, {"level": "Medium", "type": "mcq", "prompt": "A parabola arises when the cutting plane", "options": ["is parallel to a generator (β=α)", "is perpendicular to the axis", "passes through the vertex"], "answer": 0, "hint": "§10.2.1(c).", "solution": "β=α: plane ∥ generator.", "wrong": ["", "That is a circle.", "Through V with β=α is a degenerate line."]}, {"level": "Hard", "type": "mcq", "prompt": "Two intersecting straight lines through V are the degenerate case of a", "options": ["hyperbola (0≤β&lt;α at the vertex)", "ellipse", "circle"], "answer": 0, "hint": "§10.2.2(c), Fig 10.10.", "solution": "Plane through V with β&lt;α meets both nappes in a pair of generators.", "wrong": ["", "Degenerate ellipse is a point.", "Same — a point."]}]}, {"id": "circle", "nav": "Circle", "title": "A circle is (x − h)² + (y − k)² = r²", "deck": "All points at a fixed distance r from C(h,k). Completing the square reads off the centre and radius from the general equation.", "minutes": 9, "section": "10.3", "pages": [4, 6], "print": "179–181", "sim": "circlehk", "simTitle": "Circle (h,k,r) — Examples 2 and 3", "quick": ["<strong>Definition 1.</strong> A circle is the set of all points in a plane equidistant from a fixed point (the centre). That common distance is the radius.", "With C(h,k) and P(x,y) on the circle, |CP|=r becomes <strong>(x−h)²+(y−k)²=r²</strong> (zoom p.5). Centre at the origin: x²+y²=r².", "Given x²+y²+8x+10y−8=0, complete the square: (x+4)²+(y+5)²=49, so centre (−4,−5), radius 7 (Example 3)."], "formulas": [{"label": "Circle, centre (h,k), radius r", "html": "(x − h)² + (y − k)² = r²", "cond": "Zoom p.5"}, {"label": "Centre origin", "html": "x² + y² = r²", "cond": "h=k=0"}], "deeper": "Example 4 forces the centre onto a given line and the circle through two points — three conditions for the three unknowns (h,k,r). The expanded form x²+y²+2gx+2fy+c=0 is the same circle with centre (−g,−f) and r=√(g²+f²−c), used freely in later classes but not required by name in this reprint.", "worked": "Example 2: centre (−3,2), r=4 ⇒ (x+3)²+(y−2)²=16. Example 3: x²+y²+8x+10y−8=0 ⇒ (x+4)²+(y+5)²=49, centre (−4,−5), r=7. Example 4: through (2,−2),(3,4), centre on x+y=2 gives h=0.7, k=1.3, r²=12.58.", "prediction": {"prompt": "The circle x² + y² + 8x + 10y − 8 = 0 has centre and radius", "options": ["(−4, −5) and 7", "(4, 5) and 7", "(−8, −10) and √8"], "answer": 0, "explanation": "Example 3 (zoom p.5): complete the square to (x+4)²+(y+5)²=49."}, "connect": [["Roundabouts and turning radii", "A 36 m inscribed-circle roundabout is (x−h)²+(y−k)²=18². Completing the square is how a GIS layer stores the centre from a general quadratic."], ["Wow — three GPS pins determine a unique circle", "Example 4 is the surveyor’s resection: two known towers and a constraint line for the centre. Three independent conditions fix (h,k,r).", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "Write the standard equation. Complete the square for Example 3 from memory.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Equation of the circle with centre (0,0) and radius r is", "options": ["x² + y² = r²", "(x−r)²+(y−r)²=0", "x+y=r"], "answer": 0, "hint": "Example 1.", "solution": "h=k=0.", "wrong": ["", "That is a point, not a circle of radius r.", "A line."]}, {"level": "Medium", "type": "mcq", "map": "Example 2", "prompt": "Centre (−3,2), radius 4 gives", "options": ["(x+3)²+(y−2)²=16", "(x−3)²+(y+2)²=16", "x²+y²=16"], "answer": 0, "hint": "h=−3 so (x−(−3)).", "solution": "(x+3)²+(y−2)²=16.", "wrong": ["", "Signs of h,k flipped.", "Origin centre."]}, {"level": "Hard", "type": "number", "map": "Example 3", "prompt": "Radius of x²+y²+8x+10y−8=0 is", "answer": 7, "unit": "", "tolerance": 0.05, "hint": "(x+4)²+(y+5)²=49.", "solution": "8+16+25=49, r=7."}]}, {"id": "parabola", "nav": "Parabola", "title": "PF = PB writes y² = 4ax — four standard openings", "deck": "A parabola is the set of points equidistant from a focus and a directrix. Vertex at the origin and axis along a coordinate axis give y²=±4ax or x²=±4ay. The latus rectum has length 4a.", "minutes": 10, "section": "10.4", "pages": [7, 12], "print": "182–187", "sim": "parabola", "simTitle": "Four standard parabolas — focus, directrix, latus rectum", "quick": ["<strong>Definition 2.</strong> A parabola is the set of all points in a plane equidistant from a fixed line (directrix) and a fixed point not on the line (focus). The axis is the line through the focus perpendicular to the directrix; the vertex is where the curve meets the axis.", "Focus (a,0), a&gt;0, directrix x=−a: PF=PB expands to <strong>y²=4ax</strong> (zoom p.8). The four standard forms: y²=4ax (opens right), y²=−4ax (left), x²=4ay (up), x²=−4ay (down).", "<strong>Latus rectum:</strong> the chord through the focus, perpendicular to the axis, with ends on the curve. For y²=4ax its length is <strong>4a</strong>."], "formulas": [{"label": "Opens right", "html": "y² = 4ax &nbsp; (a&gt;0)", "cond": "Focus (a,0), directrix x=−a"}, {"label": "Opens left", "html": "y² = −4ax", "cond": "Focus (−a,0), directrix x=a"}, {"label": "Opens up / down", "html": "x² = 4ay &nbsp;/&nbsp; x² = −4ay", "cond": "Focus (0,±a)"}, {"label": "Latus rectum", "html": "length = 4a", "cond": "Through the focus, ⟂ axis"}], "deeper": "If the ‘focus’ lies on the ‘directrix’, PF=PB describes the perpendicular through that point — the degenerate parabola of §10.2.2. Standard forms keep the vertex at the origin; shifted parabolas wait for Class 12. The sign of the linear term is the opening direction: y²=+4ax opens toward +x.", "worked": "Example 5: y²=8x ⇒ 4a=8, a=2, focus (2,0), directrix x=−2, LR=8. Example 6: focus (2,0), directrix x=−2 ⇒ y²=8x. Example 7: vertex (0,0), focus (0,2) ⇒ x²=8y. Example 8: symmetric about y-axis, through (2,−3) ⇒ x²=−4ay, 4=−4a(−3), a=1/3, 3x²=−4y.", "prediction": {"prompt": "For y² = 8x the focus, directrix and latus rectum are", "options": ["(2,0), x=−2, length 8", "(8,0), x=−8, length 8", "(0,2), y=−2, length 4"], "answer": 0, "explanation": "Example 5: 4a=8 so a=2. Axis is the x-axis (y² term)."}, "connect": [["Parabolic reflector of a torch", "Example 17: a=5 cm, depth 45 cm, rim AB=60 cm. Place the LED at the focus and the beam leaves parallel to the axis — the same PF=PB geometry."], ["Wow — a cricket ball’s path is a parabola (no air)", "x²=4ay (or y=ax² in physics) is the trajectory with uniform g. NCERT’s ‘para + bola’ is literally that throw.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "State Definition 2, the four standard equations, and the length of the latus rectum.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Length of the latus rectum of y²=4ax is", "options": ["4a", "2a", "a"], "answer": 0, "hint": "AF=2a and symmetry.", "solution": "AB=4a.", "wrong": ["", "That is AF.", "That is the focal length."]}, {"level": "Medium", "type": "mcq", "map": "Example 5", "prompt": "y²=8x has focus", "options": ["(2, 0)", "(8, 0)", "(0, 2)"], "answer": 0, "hint": "4a=8.", "solution": "a=2, focus (a,0)=(2,0).", "wrong": ["", "That is 4a, not a.", "Axis is x, not y."]}, {"level": "Hard", "type": "mcq", "map": "Example 8", "prompt": "Symmetric about the y-axis and through (2,−3): the equation is", "options": ["3x² = −4y", "x²=8y", "y²=−8x"], "answer": 0, "hint": "Opens down, x²=−4ay, plug (2,−3).", "solution": "4=−4a(−3)⇒a=1/3; 3x²=−4y.", "wrong": ["", "Opens up, and misses (2,−3).", "Opens left, axis x."]}]}, {"id": "ellipse-std", "nav": "Ellipse: definition and axes", "title": "PF₁ + PF₂ = 2a, with a² = b² + c² and eccentricity e = c/a < 1", "deck": "An ellipse is the set of points the sum of whose distances from two foci is a constant 2a (greater than the interfocal 2c). Semi-minor b satisfies c=√(a²−b²). The eccentricity e=c/a is less than 1.", "minutes": 9, "section": "10.5, 10.5.1–10.5.2", "pages": [12, 14], "print": "187–189", "sim": "ellipse", "simTitle": "Ellipse a,b sliders — foci, e, latus rectum", "quick": ["<strong>Definition 4.</strong> An ellipse is the set of all points in a plane the sum of whose distances from two fixed points (foci) is a constant. That constant is greater than the distance between the foci.", "Centre = mid-point of the foci. Major axis through the foci (length 2a); minor axis through the centre, perpendicular (length 2b). Vertices = ends of the major axis.", "Taking P at a vertex and at an end of the minor axis gives <strong>a² = b² + c²</strong>, so c=√(a²−b²). <strong>Eccentricity</strong> e=c/a &lt; 1; foci at (±ae, 0) when the major axis is the x-axis."], "formulas": [{"label": "Definition", "html": "PF₁ + PF₂ = 2a &nbsp; (2a &gt; 2c)", "cond": "Foci F₁, F₂"}, {"label": "Axis relation", "html": "c = √(a² − b²) &nbsp; i.e. a² = b² + c²", "cond": "§10.5.1"}, {"label": "Eccentricity", "html": "e = c/a &nbsp; (e &lt; 1)", "cond": "Foci at distance ae from centre"}], "deeper": "A circle is the ellipse with c=0, e=0, a=b. As e→1 the ellipse flattens toward a line segment joining the foci. The gardener’s construction — a loop of string of length 2a around two pins 2c apart — is Definition 4 in rope.", "worked": "From P a vertex: F₁P+F₂P=(a+c)+(a−c)=2a, consistent. From Q an end of the minor axis: 2√(b²+c²)=2a ⇒ a²=b²+c².", "prediction": {"prompt": "For an ellipse, the eccentricity e = c/a is", "options": ["strictly less than 1, because c = √(a²−b²) < a", "equal to 1, like a parabola", "greater than 1, like a hyperbola"], "answer": 0, "explanation": "b&gt;0 ⇒ c&lt;a ⇒ e&lt;1. Parabola e=1 and hyperbola e&gt;1 wait for later sections."}, "connect": [["Kepler’s first law is Definition 4", "A planet traces an ellipse with the Sun at one focus. Earth’s e≈0.017 — almost a circle. Halley’s comet has e≈0.97, a long thin ellipse."], ["Wow — the string-and-pins construction", "A loop of string 2a around two nails 2c apart, pencil taut: every point of the curve satisfies PF₁+PF₂=2a. NCERT’s definition is a classroom activity.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "Define an ellipse. Write a²=b²+c² and e=c/a, and state why e&lt;1.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The constant sum PF₁+PF₂ equals", "options": ["2a, the major axis", "2b, the minor axis", "2c, the interfocal distance"], "answer": 0, "hint": "Evaluated at a vertex.", "solution": "At a vertex the sum is (a+c)+(a−c)=2a.", "wrong": ["", "Minor axis is 2b.", "2c is F₁F₂, strictly less than 2a."]}, {"level": "Medium", "type": "mcq", "prompt": "c in terms of a, b is", "options": ["√(a² − b²)", "√(a² + b²)", "a − b"], "answer": 0, "hint": "§10.5.1.", "solution": "a²=b²+c².", "wrong": ["", "That is the hyperbola.", "Linear, not Pythagorean."]}, {"level": "Hard", "type": "number", "prompt": "If a=5 and b=3, the eccentricity e is", "answer": 0.8, "unit": "", "tolerance": 0.01, "hint": "c=√(25−9)=4; e=c/a.", "solution": "e=4/5=0.8 (Example 9)."}]}, {"id": "ellipse-eq", "nav": "Ellipse: standard equations", "title": "x²/a² + y²/b² = 1, or with the major axis along y", "deck": "Foci on the x-axis give x²/a² + y²/b² = 1. Foci on the y-axis swap a and b in the denominators. Latus rectum = 2b²/a. The larger denominator names the major axis.", "minutes": 10, "section": "10.5.3–10.5.4", "pages": [14, 20], "print": "189–195", "sim": "ellipse", "simTitle": "Standard ellipse — Example 9 (a=5,b=3) and Example 10", "quick": ["Foci (±c,0), PF₁+PF₂=2a: isolating a square root twice yields <strong>x²/a² + y²/b² = 1</strong> with b²=a²−c² (zoom p.14–15).", "If the larger denominator sits under y², the major axis is along the y-axis: x²/b² + y²/a² = 1, foci (0,±c).", "Latus rectum through a focus, perpendicular to the major axis, has length <strong>2b²/a</strong>. Example 9: x²/25+y²/9=1 ⇒ a=5,b=3,c=4, e=4/5, LR=18/5."], "formulas": [{"label": "Major axis along x", "html": "x²/a² + y²/b² = 1 &nbsp; (a&gt;b)", "cond": "Foci (±c,0), c=√(a²−b²)"}, {"label": "Major axis along y", "html": "x²/b² + y²/a² = 1 &nbsp; (a&gt;b)", "cond": "Foci (0,±c)"}, {"label": "Latus rectum", "html": "2b²/a", "cond": "Both orientations"}], "deeper": "To decide the major axis, compare denominators after writing =1: the larger denominator is a² and sits on the major axis. Example 10: 9x²+4y²=36 becomes x²/4+y²/9=1, so a=3 along y. Passing through two points (Example 13) gives two linear equations in 1/a² and 1/b².", "worked": "Example 9: a=5,b=3,c=4, vertices (±5,0), foci (±4,0), major 10, minor 6, e=4/5, LR=18/5. Example 11: vertices (±13,0), foci (±5,0) ⇒ b=12, x²/169+y²/144=1. Example 13: through (4,3),(−1,4) ⇒ 7x²+15y²=247.", "prediction": {"prompt": "For x²/25 + y²/9 = 1 the foci and eccentricity are", "options": ["(±4, 0) and 4/5", "(±3, 0) and 3/5", "(0, ±4) and 4/5"], "answer": 0, "explanation": "Example 9: larger denominator 25 is a² on x; c=√(25−9)=4; e=4/5."}, "connect": [["Semi-elliptical arch of a railway bridge", "Ex Misc 4: 8 m wide, 2 m high. That is x²/16+y²/4=1. Height 1.5 m from one end is the y of the ellipse at x=2.5."], ["Wow — a running track of constant sum", "Ex Misc 7: two flag posts 8 m apart, sum of distances always 10 m — the runner traces the ellipse x²/25+y²/9=1. Definition 4 as a racecourse.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In x²/a² + y²/b² = 1 with a&gt;b, the major axis is", "options": ["along the x-axis of length 2a", "along the y-axis of length 2a", "the latus rectum"], "answer": 0, "hint": "Larger denominator under x².", "solution": "Vertices (±a,0).", "wrong": ["", "That is the other standard form.", "LR is 2b²/a."]}, {"level": "Medium", "type": "mcq", "map": "Example 10", "prompt": "9x²+4y²=36 rewritten in standard form is", "options": ["x²/4 + y²/9 = 1 (major along y)", "x²/9 + y²/4 = 1", "x²/36 + y²/36 = 1"], "answer": 0, "hint": "Divide by 36.", "solution": "x²/4 + y²/9 = 1; 9&gt;4 so major on y, a=3,b=2.", "wrong": ["", "Denominators swapped.", "Not divided."]}, {"level": "Hard", "type": "number", "map": "Example 9", "prompt": "Latus rectum of x²/25 + y²/9 = 1 equals", "answer": 3.6, "unit": "", "tolerance": 0.05, "hint": "2b²/a=18/5.", "solution": "18/5=3.6."}]}, {"id": "hyperbola", "nav": "Hyperbola", "title": "|PF₁ − PF₂| = 2a, with c² = a² + b² and e = c/a > 1", "deck": "A hyperbola is the set of points the difference of whose distances from two foci is 2a. Transverse axis 2a, conjugate 2b, c=√(a²+b²), e&gt;1. Standard: x²/a² − y²/b² = 1 or y²/a² − x²/b² = 1.", "minutes": 10, "section": "10.6", "pages": [20, 27], "print": "195–202", "sim": "hyperbola", "simTitle": "Standard hyperbolas — Example 14 a=3,b=4,c=5", "quick": ["<strong>Definition 7.</strong> A hyperbola is the set of all points in a plane the difference of whose distances from two fixed points (foci) is a constant. ‘Difference’ means farther minus closer. That constant equals the transverse axis 2a.", "c is half the interfocal distance, b=√(c²−a²), so <strong>c²=a²+b²</strong>. Eccentricity e=c/a ≥ 1 (never less). Foci at (±ae,0) or (0,±ae).", "Standard: <strong>x²/a² − y²/b² = 1</strong> (transverse along x) and <strong>y²/a² − x²/b² = 1</strong> (transverse along y). No curve between x=±a. Latus rectum 2b²/a. If a=b, the hyperbola is equilateral."], "formulas": [{"label": "Definition", "html": "|PF₁ − PF₂| = 2a", "cond": "Foci F₁, F₂; 2c &gt; 2a"}, {"label": "Axis relation", "html": "c = √(a² + b²)", "cond": "e = c/a &gt; 1"}, {"label": "Transverse along x", "html": "x²/a² − y²/b² = 1", "cond": "Vertices (±a,0), foci (±c,0)"}, {"label": "Transverse along y", "html": "y²/a² − x²/b² = 1", "cond": "Vertices (0,±a)"}, {"label": "Latus rectum", "html": "2b²/a", "cond": "Same formula as the ellipse"}], "deeper": "The positive term’s denominator identifies the transverse axis: x²/9 − y²/16=1 has transverse length 6 along x; y²/25 − x²/16=1 has transverse length 10 along y. Asymptotes (not named in this reprint’s summary, but visible in the figure) are the lines the branches hug. A rectangular/equilateral hyperbola has a=b, asymptotes perpendicular.", "worked": "Example 14(i): x²/9 − y²/16=1 ⇒ a=3,b=4,c=5, foci(±5,0), vertices(±3,0), e=5/3, LR=32/3. (ii) y²−16x²=16 ⇒ y²/16 − x²/1=1, a=4,b=1,c=√17, e=√17/4, LR=1/2. Example 16: foci (0,±12), LR=36 ⇒ a=6, b²=108, 3y²−x²=108.", "prediction": {"prompt": "For x²/9 − y²/16 = 1 the eccentricity and latus rectum are", "options": ["5/3 and 32/3", "4/3 and 8", "5/4 and 18/4"], "answer": 0, "explanation": "Example 14(i): c=√(9+16)=5, e=5/3, LR=2·16/3=32/3."}, "connect": [["LORAN navigation was a hyperbola", "A ship measuring the time-difference of two radio stations traces a hyperbola with those stations as foci — Definition 7 as a wartime navigation grid."], ["Wow — e=1 is the missing boundary", "Ellipse e&lt;1, parabola e=1, hyperbola e&gt;1. The same focus–directrix ratio e, postponed to later classes, is why the cone-slice dictionary is one family.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a hyperbola, e = c/a is", "options": ["greater than 1", "less than 1", "equal to 0"], "answer": 0, "hint": "c²=a²+b² &gt; a².", "solution": "c&gt;a so e&gt;1.", "wrong": ["", "That is the ellipse.", "That is a circle."]}, {"level": "Medium", "type": "mcq", "map": "Example 14i", "prompt": "x²/9 − y²/16 = 1 has foci", "options": ["(±5, 0)", "(±3, 0)", "(0, ±5)"], "answer": 0, "hint": "c=√(9+16)=5, transverse on x.", "solution": "Foci (±c,0)=(±5,0).", "wrong": ["", "Those are the vertices.", "Transverse is x, not y."]}, {"level": "Hard", "type": "number", "map": "Example 16", "prompt": "Foci (0,±12), latus rectum 36. Then a =", "answer": 6, "unit": "", "tolerance": 0.05, "hint": "2b²/a=36, c²=a²+b²=144.", "solution": "b²=18a; 144=a²+18a ⇒ a=6 (a&gt;0)."}]}, {"id": "conic-apps", "nav": "Conic applications", "title": "Mirrors, beams and a sliding rod: conics that earn their keep", "deck": "A parabolic mirror of depth 45 cm and a=5 cm has rim 60 cm. A 12 m beam sagging 3 cm is a parabola. A rod of length 15 cm with a marked point 6 cm from one end traces an ellipse.", "minutes": 9, "section": "Miscellaneous Examples 17–19", "pages": [27, 29], "print": "202–204", "sim": "conicapp", "simTitle": "Example 17 mirror and Example 18 deflected beam", "quick": ["Example 17: parabolic mirror, focus 5 cm from vertex (a=5), depth 45 cm. y²=20x; at x=45, y=±30, so AB=60 cm.", "Example 18: beam supported 12 m apart, centre deflection 3 cm. Vertex at the lowest point, x²=4ay through (6, 0.03) gives a=300 m. Deflection 1 cm at x=2√6 m from the centre.", "Example 19: rod AB=15 cm, A on x-axis, B on y-axis, P on the rod with AP=6. Then x²/81 + y²/36 = 1 — an ellipse. The sliding-ladder locus is the same construction."], "formulas": [{"label": "Mirror (Ex 17)", "html": "y² = 20x, &nbsp; AB = 60 cm", "cond": "a=5, x=45"}, {"label": "Beam (Ex 18)", "html": "x² = 4ay, &nbsp; a = 300 m", "cond": "Through (6, 0.03)"}, {"label": "Rod locus (Ex 19)", "html": "x²/81 + y²/36 = 1", "cond": "AP=6, PB=9, AB=15"}], "deeper": "All three examples are ‘standard form plus one extra point’. Units must match: Example 18 converts 3 cm to 0.03 m before substituting. The rod produces an ellipse because cos²θ+sin²θ=1 after x=9 cos θ, y=6 sin θ.", "worked": "Ex 17: a=5, y²=20x, x=45, y²=900, y=±30, AB=60 cm. Ex 18: (6)²=4a(3/100), a=36×100/12=300. At y=2/100, x²=4·300·0.02=24, x=2√6 m. Ex 19: x=9 cos θ, y=6 sin θ ⇒ x²/81+y²/36=1.", "prediction": {"prompt": "A parabolic mirror has a=5 cm and is 45 cm deep. The rim diameter AB is", "options": ["60 cm", "45 cm", "20 cm"], "answer": 0, "explanation": "Example 17: y²=20·45=900, y=±30, AB=60 cm."}, "connect": [["Howrah Bridge cables and Example 18", "A uniformly loaded cable hangs as a parabola (not a catenary — that is uniform self-weight). The 3 cm sag on a 12 m beam is the same x²=4ay used for a suspension span."], ["Wow — a ladder sliding down a wall is an ellipse", "Example 19 is every Class 11 student’s falling ladder: a point at a fixed distance from one end traces x²/p²+y²/q²=1. Descartes would have recognised it immediately.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh110.pdf"}]]], "recall": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1.", "quizzes": [{"level": "Easy", "type": "number", "map": "Example 17", "prompt": "Parabolic mirror, a=5 cm, depth 45 cm. AB in cm =", "answer": 60, "unit": "cm", "tolerance": 0.05, "hint": "y²=20x at x=45.", "solution": "y=±30, AB=60."}, {"level": "Medium", "type": "mcq", "map": "Example 19", "prompt": "Rod 15 cm, AP=6, A on x-axis, B on y-axis. Locus of P is", "options": ["x²/81 + y²/36 = 1", "a circle of radius 15", "a parabola y²=15x"], "answer": 0, "hint": "x=9 cos θ, y=6 sin θ.", "solution": "PB=9, cos θ=x/9, sin θ=y/6.", "wrong": ["", "AB is not a radius from P.", "Wrong curve."]}, {"level": "Hard", "type": "number", "map": "Example 18", "prompt": "12 m beam, 3 cm centre sag. Distance from centre where sag is 1 cm, in metres (enter 2√6 ≈ 4.899)", "answer": 4.899, "unit": "m", "tolerance": 0.02, "hint": "a=300, y=0.02, x²=24.", "solution": "x=√24=2√6≈4.899 m."}]}], "exercises": [{"number": "10.1.1", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with centre (0,2) and radius 2.", "steps": ["(x−0)²+(y−2)²=4 ⇒ x²+(y−2)²=4, or x²+y²−4y=0."], "answer": "x² + (y−2)² = 4", "section": "10.1"}, {"number": "10.1.2", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (−2,3), radius 4.", "steps": ["(x+2)²+(y−3)²=16."], "answer": "(x+2)² + (y−3)² = 16", "section": "10.1"}, {"number": "10.1.3", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (1/2, 1/4) and radius 1/12.", "steps": ["(x−1/2)²+(y−1/4)²=1/144."], "answer": "(x − 1/2)² + (y − 1/4)² = 1/144", "section": "10.1"}, {"number": "10.1.4", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (1,1) and radius √2.", "steps": ["(x−1)²+(y−1)²=2."], "answer": "(x−1)² + (y−1)² = 2", "section": "10.1"}, {"number": "10.1.5", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (−a, −b) and radius √(a²−b²).", "steps": ["(x+a)²+(y+b)²=a²−b²."], "answer": "(x+a)² + (y+b)² = a² − b²", "section": "10.1"}, {"number": "10.1.6", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle Find the centre and radius of (x+5)²+(y−3)²=36.", "steps": ["Centre (−5,3), r=6."], "answer": "centre (−5, 3), radius 6", "section": "10.1"}, {"number": "10.1.7", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle x²+y²−4x−8y−45=0.", "steps": ["(x−2)²+(y−4)²=4+16+45=65. Centre (2,4), r=√65."], "answer": "centre (2, 4), radius √65", "section": "10.1"}, {"number": "10.1.8", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle x²+y²−8x+10y−12=0.", "steps": ["(x−4)²+(y+5)²=16+25+12=53. Centre (4,−5), r=√53."], "answer": "centre (4, −5), radius √53", "section": "10.1"}, {"number": "10.1.9", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle 2x²+2y²−x=0.", "steps": ["x²+y²−x/2=0 ⇒ (x−1/4)²+y²=1/16. Centre (1/4, 0), r=1/4."], "answer": "centre (1/4, 0), radius 1/4", "section": "10.1"}, {"number": "10.1.10", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Circle through (4,1) and (6,5) with centre on 4x+y=16.", "steps": ["(h−4)²+(k−1)²=(h−6)²+(k−5)² ⇒ h+2k=11. Also 4h+k=16.", "h=3, k=4, r²=10. (x−3)²+(y−4)²=10."], "answer": "(x−3)² + (y−4)² = 10", "section": "10.1"}, {"number": "10.1.11", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Circle through (2,3) and (−1,1) with centre on x−3y−11=0.", "steps": ["Equal radii ⇒ 6h+4k=11 and h−3k=11 ⇒ k=−5/2, h=7/2, r²=65/2.", "(x−7/2)²+(y+5/2)²=65/2."], "answer": "(x − 7/2)² + (y + 5/2)² = 65/2", "section": "10.1"}, {"number": "10.1.12", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Radius 5, centre on the x-axis, through (2,3).", "steps": ["Centre (h,0): (h−2)²+9=25 ⇒ (h−2)²=16 ⇒ h=6 or −2.", "(x−6)²+y²=25 or (x+2)²+y²=25."], "answer": "(x−6)² + y² = 25  or  (x+2)² + y² = 25", "section": "10.1"}, {"number": "10.1.13", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Circle through (0,0) making intercepts a and b on the axes.", "steps": ["Meets axes at (a,0),(0,b) and origin: x²+y²−ax−by=0."], "answer": "x² + y² − a x − b y = 0", "section": "10.1"}, {"number": "10.1.14", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of a circle with Centre (2,2) and passing through (4,5).", "steps": ["r²=(4−2)²+(5−2)²=13. (x−2)²+(y−2)²=13."], "answer": "(x−2)² + (y−2)² = 13", "section": "10.1"}, {"number": "10.1.15", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Does (−2.5, 3.5) lie inside, outside or on x²+y²=25?", "steps": ["(−2.5)²+(3.5)²=6.25+12.25=18.5&lt;25, so inside."], "answer": "inside the circle", "section": "10.1"}, {"number": "10.2.1", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=12x: focus, axis, directrix, latus rectum.", "steps": ["4a=12, a=3. Focus (3,0), axis x-axis, directrix x=−3, LR=12."], "answer": "focus (3,0); axis x-axis; directrix x=−3; LR=12", "section": "10.2"}, {"number": "10.2.2", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=6y.", "steps": ["4a=6, a=3/2. Focus (0,3/2), axis y-axis, directrix y=−3/2, LR=6."], "answer": "focus (0, 3/2); axis y-axis; directrix y=−3/2; LR=6", "section": "10.2"}, {"number": "10.2.3", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=−8x.", "steps": ["4a=8, a=2. Focus (−2,0), axis x-axis, directrix x=2, LR=8."], "answer": "focus (−2,0); axis x-axis; directrix x=2; LR=8", "section": "10.2"}, {"number": "10.2.4", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=−16y.", "steps": ["a=4. Focus (0,−4), axis y-axis, directrix y=4, LR=16."], "answer": "focus (0,−4); axis y-axis; directrix y=4; LR=16", "section": "10.2"}, {"number": "10.2.5", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=10x.", "steps": ["a=5/2. Focus (5/2,0), axis x-axis, directrix x=−5/2, LR=10."], "answer": "focus (5/2, 0); axis x-axis; directrix x=−5/2; LR=10", "section": "10.2"}, {"number": "10.2.6", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=−9y.", "steps": ["a=9/4. Focus (0,−9/4), axis y-axis, directrix y=9/4, LR=9."], "answer": "focus (0, −9/4); axis y-axis; directrix y=9/4; LR=9", "section": "10.2"}, {"number": "10.2.7", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Focus (6,0); directrix x=−6.", "steps": ["a=6, opens right: y²=24x."], "answer": "y² = 24x", "section": "10.2"}, {"number": "10.2.8", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Focus (0,−3); directrix y=3.", "steps": ["a=3, opens down: x²=−12y."], "answer": "x² = −12y", "section": "10.2"}, {"number": "10.2.9", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0); focus (3,0).", "steps": ["y²=12x."], "answer": "y² = 12x", "section": "10.2"}, {"number": "10.2.10", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0); focus (−2,0).", "steps": ["y²=−8x."], "answer": "y² = −8x", "section": "10.2"}, {"number": "10.2.11", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0), through (2,3), axis along x-axis.", "steps": ["y²=4ax, 9=8a, a=9/8, y²=(9/2)x."], "answer": "y² = (9/2) x", "section": "10.2"}, {"number": "10.2.12", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0), through (5,2), symmetric about y-axis.", "steps": ["x²=4ay, 25=8a, a=25/8, x²=(25/2)y."], "answer": "x² = (25/2) y", "section": "10.2"}, {"number": "10.3.1", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/36 + y²/16 = 1: foci, vertices, axes, e, LR.", "steps": ["a=6,b=4,c=√20=2√5. Foci (±2√5,0), vertices (±6,0), major 12, minor 8, e=√5/3, LR=16/3."], "answer": "foci (±2√5,0); vertices (±6,0); major 12; minor 8; e=√5/3; LR=16/3", "section": "10.3"}, {"number": "10.3.2", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/4 + y²/25 = 1.", "steps": ["Major on y: a=5,b=2,c=√21. Foci (0,±√21), vertices (0,±5), major 10, minor 4, e=√21/5, LR=8/5."], "answer": "foci (0,±√21); vertices (0,±5); major 10; minor 4; e=√21/5; LR=8/5", "section": "10.3"}, {"number": "10.3.3", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/16 + y²/9 = 1.", "steps": ["a=4,b=3,c=√7. Foci (±√7,0), vertices (±4,0), major 8, minor 6, e=√7/4, LR=9/2."], "answer": "foci (±√7,0); vertices (±4,0); major 8; minor 6; e=√7/4; LR=9/2", "section": "10.3"}, {"number": "10.3.4", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/25 + y²/100 = 1.", "steps": ["Major on y: a=10,b=5,c=5√3. Foci (0,±5√3), vertices (0,±10), major 20, minor 10, e=√3/2, LR=5."], "answer": "foci (0,±5√3); vertices (0,±10); major 20; minor 10; e=√3/2; LR=5", "section": "10.3"}, {"number": "10.3.5", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/49 + y²/36 = 1.", "steps": ["a=7,b=6,c=√13. Foci (±√13,0), vertices (±7,0), major 14, minor 12, e=√13/7, LR=72/7."], "answer": "foci (±√13,0); vertices (±7,0); major 14; minor 12; e=√13/7; LR=72/7", "section": "10.3"}, {"number": "10.3.6", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/100 + y²/400 = 1.", "steps": ["Major on y: a=20,b=10,c=10√3. Foci (0,±10√3), vertices (0,±20), major 40, minor 20, e=√3/2, LR=10."], "answer": "foci (0,±10√3); vertices (0,±20); major 40; minor 20; e=√3/2; LR=10", "section": "10.3"}, {"number": "10.3.7", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 36x² + 4y² = 144.", "steps": ["x²/4 + y²/36 = 1. a=6,b=2,c=4√2. Foci (0,±4√2), vertices (0,±6), major 12, minor 4, e=2√2/3, LR=4/3."], "answer": "foci (0,±4√2); vertices (0,±6); major 12; minor 4; e=2√2/3; LR=4/3", "section": "10.3"}, {"number": "10.3.8", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 16x² + y² = 16.", "steps": ["x²/1 + y²/16 = 1. a=4,b=1,c=√15. Foci (0,±√15), vertices (0,±4), major 8, minor 2, e=√15/4, LR=1/2."], "answer": "foci (0,±√15); vertices (0,±4); major 8; minor 2; e=√15/4; LR=1/2", "section": "10.3"}, {"number": "10.3.9", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 4x² + 9y² = 36.", "steps": ["x²/9 + y²/4 = 1. a=3,b=2,c=√5. Foci (±√5,0), vertices (±3,0), major 6, minor 4, e=√5/3, LR=8/3."], "answer": "foci (±√5,0); vertices (±3,0); major 6; minor 4; e=√5/3; LR=8/3", "section": "10.3"}, {"number": "10.3.10", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Vertices (±5,0), foci (±4,0).", "steps": ["a=5,c=4,b=3. x²/25 + y²/9 = 1."], "answer": "x²/25 + y²/9 = 1", "section": "10.3"}, {"number": "10.3.11", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Vertices (0,±13), foci (0,±5).", "steps": ["a=13,c=5,b=12. x²/144 + y²/169 = 1."], "answer": "x²/144 + y²/169 = 1", "section": "10.3"}, {"number": "10.3.12", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Vertices (±6,0), foci (±4,0).", "steps": ["a=6,c=4,b=√20=2√5. x²/36 + y²/20 = 1."], "answer": "x²/36 + y²/20 = 1", "section": "10.3"}, {"number": "10.3.13", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Ends of major axis (±3,0), ends of minor axis (0,±2).", "steps": ["x²/9 + y²/4 = 1."], "answer": "x²/9 + y²/4 = 1", "section": "10.3"}, {"number": "10.3.14", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Ends of major axis (0,±√5), ends of minor axis (±1,0).", "steps": ["x²/1 + y²/5 = 1."], "answer": "x² + y²/5 = 1", "section": "10.3"}, {"number": "10.3.15", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Length of major axis 26, foci (±5,0).", "steps": ["2a=26,a=13,c=5,b=12. x²/169 + y²/144 = 1."], "answer": "x²/169 + y²/144 = 1", "section": "10.3"}, {"number": "10.3.16", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Length of minor axis 16, foci (0,±6).", "steps": ["2b=16,b=8,c=6,a=10. x²/64 + y²/100 = 1."], "answer": "x²/64 + y²/100 = 1", "section": "10.3"}, {"number": "10.3.17", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse satisfying the given conditions: Foci (±3,0), a=4.", "steps": ["c=3,b=√7. x²/16 + y²/7 = 1."], "answer": "x²/16 + y²/7 = 1", "section": "10.3"}, {"number": "10.3.18", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: b=3, c=4, centre origin, foci on the x-axis.", "steps": ["a=5. x²/25 + y²/9 = 1."], "answer": "x²/25 + y²/9 = 1", "section": "10.3"}, {"number": "10.3.19", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Centre (0,0), major axis on the y-axis, through (3,2) and (1,6).", "steps": ["x²/b² + y²/a² = 1. 9/b²+4/a²=1 and 1/b²+36/a²=1.", "a²=40, b²=10. x²/10 + y²/40 = 1."], "answer": "x²/10 + y²/40 = 1", "section": "10.3"}, {"number": "10.3.20", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Major axis on the x-axis, through (4,3) and (6,2).", "steps": ["16/a²+9/b²=1, 36/a²+4/b²=1 ⇒ a²=52, b²=13.", "x²/52 + y²/13 = 1."], "answer": "x²/52 + y²/13 = 1", "section": "10.3"}, {"number": "10.4.1", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola x²/16 − y²/9 = 1: foci, vertices, e, LR.", "steps": ["a=4,b=3,c=5. Foci (±5,0), vertices (±4,0), e=5/4, LR=9/2."], "answer": "foci (±5,0); vertices (±4,0); e=5/4; LR=9/2", "section": "10.4"}, {"number": "10.4.2", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola y²/9 − x²/27 = 1.", "steps": ["a=3,b=3√3,c=6. Foci (0,±6), vertices (0,±3), e=2, LR=18."], "answer": "foci (0,±6); vertices (0,±3); e=2; LR=18", "section": "10.4"}, {"number": "10.4.3", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 9y² − 4x² = 36.", "steps": ["y²/4 − x²/9 = 1. a=2,b=3,c=√13. Foci (0,±√13), vertices (0,±2), e=√13/2, LR=9."], "answer": "foci (0,±√13); vertices (0,±2); e=√13/2; LR=9", "section": "10.4"}, {"number": "10.4.4", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 16x² − 9y² = 576.", "steps": ["x²/36 − y²/64 = 1. a=6,b=8,c=10. Foci (±10,0), vertices (±6,0), e=5/3, LR=64/3."], "answer": "foci (±10,0); vertices (±6,0); e=5/3; LR=64/3", "section": "10.4"}, {"number": "10.4.5", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 5y² − 9x² = 36.", "steps": ["y²/(36/5) − x²/4 = 1. a=6/√5, b=2, c=√(56/5), e=√14/3, LR=4√5/3.", "Vertices (0, ±6/√5), foci (0, ±√(56/5))."], "answer": "foci (0, ±√(56/5)); vertices (0, ±6/√5); e=√14/3; LR=4√5/3", "section": "10.4"}, {"number": "10.4.6", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 49y² − 16x² = 784.", "steps": ["y²/16 − x²/49 = 1. a=4,b=7,c=√65. Foci (0,±√65), vertices (0,±4), e=√65/4, LR=49/2."], "answer": "foci (0,±√65); vertices (0,±4); e=√65/4; LR=49/2", "section": "10.4"}, {"number": "10.4.7", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (±2,0), foci (±3,0).", "steps": ["a=2,c=3,b=√5. x²/4 − y²/5 = 1."], "answer": "x²/4 − y²/5 = 1", "section": "10.4"}, {"number": "10.4.8", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (0,±5), foci (0,±8).", "steps": ["a=5,c=8,b=√39. y²/25 − x²/39 = 1."], "answer": "y²/25 − x²/39 = 1", "section": "10.4"}, {"number": "10.4.9", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (0,±3), foci (0,±5).", "steps": ["a=3,c=5,b=4. y²/9 − x²/16 = 1."], "answer": "y²/9 − x²/16 = 1", "section": "10.4"}, {"number": "10.4.10", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (±5,0), transverse axis of length 8.", "steps": ["2a=8,a=4,c=5,b=3. x²/16 − y²/9 = 1."], "answer": "x²/16 − y²/9 = 1", "section": "10.4"}, {"number": "10.4.11", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (0,±13), conjugate axis of length 24.", "steps": ["2b=24,b=12,c=13,a=5. y²/25 − x²/144 = 1."], "answer": "y²/25 − x²/144 = 1", "section": "10.4"}, {"number": "10.4.12", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (±3√5, 0), latus rectum of length 8.", "steps": ["c=3√5, 2b²/a=8 ⇒ b²=4a. a²+4a=45, a=5, b²=20. x²/25 − y²/20 = 1."], "answer": "x²/25 − y²/20 = 1", "section": "10.4"}, {"number": "10.4.13", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (±4,0), latus rectum of length 12.", "steps": ["c=4, b²=6a. a²+6a=16, a=2, b²=12. x²/4 − y²/12 = 1."], "answer": "x²/4 − y²/12 = 1", "section": "10.4"}, {"number": "10.4.14", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (±7,0), e=4/3. (zoom p.27)", "steps": ["a=7, c=ae=28/3, b²=c²−a²=343/9. x²/49 − 9y²/343 = 1."], "answer": "x²/49 − 9y²/343 = 1", "section": "10.4"}, {"number": "10.4.15", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (0, ±√10), passing through (2,3).", "steps": ["c²=10=a²+b², form y²/a² − x²/b²=1, and 9/a²−4/b²=1.", "a²=5, b²=5. y²−x²=5."], "answer": "y² − x² = 5", "section": "10.4"}, {"number": "10.M.1", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "A parabolic reflector is 20 cm in diameter and 5 cm deep. Find the focus.", "steps": ["y²=4ax, at x=5, y=±10 ⇒ 100=20a ⇒ a=5. Focus is 5 cm from the vertex."], "answer": "focus 5 cm from the vertex", "section": "Misc."}, {"number": "10.M.2", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "A parabolic arch is 10 m high and 5 m wide at the base. How wide is it 2 m from the vertex?", "steps": ["x²=4ay (vertex at top, y down). At y=10, x=±2.5 ⇒ 6.25=40a, 4a=5/8.", "At y=2, x²=2·5/8=5/4, width=√5 m."], "answer": "√5 m", "section": "Misc."}, {"number": "10.M.3", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Suspension-bridge cable: roadway 100 m, longest vertical wire 30 m, shortest 6 m. Length of a wire 18 m from the middle?", "steps": ["Sag 24 m over 50 m: 2500=4a·24, 4a=2500/24.", "At x=18, y=324·24/2500=1944/625 m. Wire=6+1944/625=5694/625 m."], "answer": "5694/625 m  (≈ 9.11 m)", "section": "Misc."}, {"number": "10.M.4", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Semi-elliptical arch 8 m wide and 2 m high. Height 1.5 m from one end?", "steps": ["a=4,b=2. x from centre=4−1.5=2.5. (2.5)²/16 + y²/4=1 ⇒ y=√39 / 4 m."], "answer": "√39 / 4 m  (≈ 1.56 m)", "section": "Misc."}, {"number": "10.M.5", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "A rod of length 12 cm moves with ends on the axes. Locus of P, 3 cm from the x-axis end?", "steps": ["AP=3, PB=9. x=9 cos θ, y=3 sin θ ⇒ x²/81 + y²/9 = 1."], "answer": "x²/81 + y²/9 = 1", "section": "Misc."}, {"number": "10.M.6", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Area of the triangle formed by the vertex of x²=12y and the ends of its latus rectum.", "steps": ["a=3, LR ends (±6,3). Triangle (0,0),(6,3),(−6,3). Area=½·12·3=18."], "answer": "18", "section": "Misc."}, {"number": "10.M.7", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Sum of distances from two flag posts always 10 m; posts 8 m apart. Equation of the path?", "steps": ["2a=10,a=5,2c=8,c=4,b=3. Ellipse x²/25 + y²/9 = 1."], "answer": "x²/25 + y²/9 = 1", "section": "Misc."}, {"number": "10.M.8", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Equilateral triangle inscribed in y²=4ax with one vertex at the parabola’s vertex. Side length?", "steps": ["Other vertices (at², ±2at). Base=4at equals side from origin at√(t²+4).", "√(t²+4)=4, t²=12, side=4a√12=8√3 a."], "answer": "8√3 a", "section": "Misc."}]};
+window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathematics", "title": "Conic Sections", "subtitle": "Circles, parabolas, ellipses and hyperbolas as plane sections of a cone, with standard equations, eccentricity and latus rectum.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh110.pdf", "page_start": 176, "page_end": 207, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "cone-sections", "nav": "Sections of a cone", "title": "A plane slicing a double-napped cone: circle, ellipse, parabola, hyperbola", "deck": "Apollonius named parabola and hyperbola. The angle β between the cutting plane and the cone’s axis decides the curve — including the degenerate point, line and pair of lines through the vertex.", "minutes": 8, "section": "10.1, 10.2", "pages": [1, 4], "print": "176–179", "sim": "conecut", "simTitle": "Double-napped cone — vary β against generator angle α", "quick": ["A double-napped right circular cone is generated by rotating a line m (the generator) about a fixed axis ℓ, keeping the angle α constant. The vertex V splits the surface into two nappes.", "A <strong>conic section</strong> is the intersection of a plane with this cone. If β is the angle between the plane and the axis: β=90° gives a <strong>circle</strong>; α&lt;β&lt;90° an <strong>ellipse</strong>; β=α a <strong>parabola</strong> (plane parallel to a generator); 0≤β&lt;α a <strong>hyperbola</strong> (both nappes).", "Through the vertex: a point (α&lt;β≤90°), a generator-line (β=α, degenerate parabola), or a pair of lines (β&lt;α, degenerate hyperbola)."], "formulas": [{"label": "Circle", "html": "β = 90°", "cond": "Plane ⟂ axis; one nappe (Fig 10.4)"}, {"label": "Ellipse", "html": "α &lt; β &lt; 90°", "cond": "Plane cuts entirely across one nappe"}, {"label": "Parabola", "html": "β = α", "cond": "Plane ∥ a generator"}, {"label": "Hyperbola", "html": "0 ≤ β &lt; α", "cond": "Plane meets both nappes"}], "deeper": "The names are Apollonius’s (c. 200 BCE). ‘Para’ + ‘bola’ = throwing beside (the generator); ‘hyper’ = beyond. Planetary orbits (Kepler) are ellipses with the Sun at a focus; a flashlight reflector is a parabola with the bulb at the focus; a cooling-tower silhouette is a hyperbola. Degenerate cases are not curiosities: two intersecting lines are a hyperbola with a=0 in a limiting sense.", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the equation of the circle with centre (0,2) and radius 2.", "given": "Find the equation of the circle with centre (0,2) and radius 2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−0)²+(y−2)²=4 ⇒ x²+(y−2)²=4, or x²+y²−4y=0.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² + (y−2)² = 4"}, "prediction": {"prompt": "A plane cuts both nappes of a double-napped cone (and misses V). The section is", "options": ["a hyperbola, because 0 ≤ β < α", "an ellipse, because every oval slice is an ellipse", "two circles, one per nappe"], "answer": 0, "explanation": "§10.2.1(d): 0 ≤ β < α, plane cuts both nappes → hyperbola (Fig 10.7)."}, "connect": [["Headlights, dishes and Kepler", "A torch reflector is a parabola (β=α) so rays from the focus leave parallel. Planetary orbits are ellipses (α&lt;β&lt;90°) with the Sun at a focus — the same slicing dictionary."], ["Wow — a cooling tower is a hyperbola of revolution", "The hyperbolic silhouette of a concrete cooling tower is Fig 10.7 spun about its axis. Two nappes, one visible above the throat.", null, {"id": "57oZ_tXl8c0", "title": "Sections of a cone | Conic sections | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "List the four proper conics by comparing β with α, and name the three degenerates through V.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "When β=90° the section is a", "options": ["circle", "parabola", "hyperbola"], "answer": 0, "hint": "Plane perpendicular to the axis.", "solution": "Fig 10.4: β=90° ⇒ circle.", "wrong": ["", "That is β=α.", "That uses both nappes."]}, {"level": "Medium", "type": "mcq", "prompt": "A parabola arises when the cutting plane", "options": ["is parallel to a generator (β=α)", "is perpendicular to the axis", "passes through the vertex"], "answer": 0, "hint": "§10.2.1(c).", "solution": "β=α: plane ∥ generator.", "wrong": ["", "That is a circle.", "Through V with β=α is a degenerate line."]}, {"level": "Hard", "type": "mcq", "prompt": "Two intersecting straight lines through V are the degenerate case of a", "options": ["hyperbola (0≤β&lt;α at the vertex)", "ellipse", "circle"], "answer": 0, "hint": "§10.2.2(c), Fig 10.10.", "solution": "Plane through V with β&lt;α meets both nappes in a pair of generators.", "wrong": ["", "Degenerate ellipse is a point.", "Same — a point."]}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "circle", "nav": "Circle", "title": "A circle is (x − h)² + (y − k)² = r²", "deck": "All points at a fixed distance r from C(h,k). Completing the square reads off the centre and radius from the general equation.", "minutes": 9, "section": "10.3", "pages": [4, 6], "print": "179–181", "sim": "circlehk", "simTitle": "Circle (h,k,r) — Examples 2 and 3", "quick": ["<strong>Definition 1.</strong> A circle is the set of all points in a plane equidistant from a fixed point (the centre). That common distance is the radius.", "With C(h,k) and P(x,y) on the circle, |CP|=r becomes <strong>(x−h)²+(y−k)²=r²</strong> (zoom p.5). Centre at the origin: x²+y²=r².", "Given x²+y²+8x+10y−8=0, complete the square: (x+4)²+(y+5)²=49, so centre (−4,−5), radius 7 (Example 3)."], "formulas": [{"label": "Circle, centre (h,k), radius r", "html": "(x − h)² + (y − k)² = r²", "cond": "Zoom p.5"}, {"label": "Centre origin", "html": "x² + y² = r²", "cond": "h=k=0"}], "deeper": "Example 4 forces the centre onto a given line and the circle through two points — three conditions for the three unknowns (h,k,r). The expanded form x²+y²+2gx+2fy+c=0 is the same circle with centre (−g,−f) and r=√(g²+f²−c), used freely in later classes but not required by name in this reprint.", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the equation of the circle with Centre (−2,3), radius 4.", "given": "Find the equation of the circle with Centre (−2,3), radius 4.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x+2)²+(y−3)²=16.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x+2)² + (y−3)² = 16"}, "prediction": {"prompt": "The circle x² + y² + 8x + 10y − 8 = 0 has centre and radius", "options": ["(−4, −5) and 7", "(4, 5) and 7", "(−8, −10) and √8"], "answer": 0, "explanation": "Example 3 (zoom p.5): complete the square to (x+4)²+(y+5)²=49."}, "connect": [["Roundabouts and turning radii", "A 36 m inscribed-circle roundabout is (x−h)²+(y−k)²=18². Completing the square is how a GIS layer stores the centre from a general quadratic."], ["Wow — three GPS pins determine a unique circle", "Example 4 is the surveyor’s resection: two known towers and a constraint line for the centre. Three independent conditions fix (h,k,r).", null, {"id": "RXIUDg6Re0E", "title": "Writing standard equation of a circle | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Write the standard equation. Complete the square for Example 3 from memory.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Equation of the circle with centre (0,0) and radius r is", "options": ["x² + y² = r²", "(x−r)²+(y−r)²=0", "x+y=r"], "answer": 0, "hint": "Example 1.", "solution": "h=k=0.", "wrong": ["", "That is a point, not a circle of radius r.", "A line."]}, {"level": "Medium", "type": "mcq", "map": "Example 2", "prompt": "Centre (−3,2), radius 4 gives", "options": ["(x+3)²+(y−2)²=16", "(x−3)²+(y+2)²=16", "x²+y²=16"], "answer": 0, "hint": "h=−3 so (x−(−3)).", "solution": "(x+3)²+(y−2)²=16.", "wrong": ["", "Signs of h,k flipped.", "Origin centre."]}, {"level": "Hard", "type": "number", "map": "Example 3", "prompt": "Radius of x²+y²+8x+10y−8=0 is", "answer": 7, "unit": "", "tolerance": 0.05, "hint": "(x+4)²+(y+5)²=49.", "solution": "8+16+25=49, r=7."}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "parabola", "nav": "Parabola", "title": "PF = PB writes y² = 4ax — four standard openings", "deck": "A parabola is the set of points equidistant from a focus and a directrix. Vertex at the origin and axis along a coordinate axis give y²=±4ax or x²=±4ay. The latus rectum has length 4a.", "minutes": 10, "section": "10.4", "pages": [7, 12], "print": "182–187", "sim": "parabola", "simTitle": "Four standard parabolas — focus, directrix, latus rectum", "quick": ["<strong>Definition 2.</strong> A parabola is the set of all points in a plane equidistant from a fixed line (directrix) and a fixed point not on the line (focus). The axis is the line through the focus perpendicular to the directrix; the vertex is where the curve meets the axis.", "Focus (a,0), a&gt;0, directrix x=−a: PF=PB expands to <strong>y²=4ax</strong> (zoom p.8). The four standard forms: y²=4ax (opens right), y²=−4ax (left), x²=4ay (up), x²=−4ay (down).", "<strong>Latus rectum:</strong> the chord through the focus, perpendicular to the axis, with ends on the curve. For y²=4ax its length is <strong>4a</strong>."], "formulas": [{"label": "Opens right", "html": "y² = 4ax &nbsp; (a&gt;0)", "cond": "Focus (a,0), directrix x=−a"}, {"label": "Opens left", "html": "y² = −4ax", "cond": "Focus (−a,0), directrix x=a"}, {"label": "Opens up / down", "html": "x² = 4ay &nbsp;/&nbsp; x² = −4ay", "cond": "Focus (0,±a)"}, {"label": "Latus rectum", "html": "length = 4a", "cond": "Through the focus, ⟂ axis"}], "deeper": "If the ‘focus’ lies on the ‘directrix’, PF=PB describes the perpendicular through that point — the degenerate parabola of §10.2.2. Standard forms keep the vertex at the origin; shifted parabolas wait for Class 12. The sign of the linear term is the opening direction: y²=+4ax opens toward +x.", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the equation of the circle with Centre (1/2, 1/4) and radius 1/12.", "given": "Find the equation of the circle with Centre (1/2, 1/4) and radius 1/12.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−1/2)²+(y−1/4)²=1/144.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x − 1/2)² + (y − 1/4)² = 1/144"}, "prediction": {"prompt": "For y² = 8x the focus, directrix and latus rectum are", "options": ["(2,0), x=−2, length 8", "(8,0), x=−8, length 8", "(0,2), y=−2, length 4"], "answer": 0, "explanation": "Example 5: 4a=8 so a=2. Axis is the x-axis (y² term)."}, "connect": [["Parabolic reflector of a torch", "Example 17: a=5 cm, depth 45 cm, rim AB=60 cm. Place the LED at the focus and the beam leaves parallel to the axis — the same PF=PB geometry."], ["Wow — a cricket ball’s path is a parabola (no air)", "x²=4ay (or y=ax² in physics) is the trajectory with uniform g. NCERT’s ‘para + bola’ is literally that throw.", null, {"id": "eQVhAG03Ye8", "title": "Intro to focus & directrix | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "State Definition 2, the four standard equations, and the length of the latus rectum.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Length of the latus rectum of y²=4ax is", "options": ["4a", "2a", "a"], "answer": 0, "hint": "AF=2a and symmetry.", "solution": "AB=4a.", "wrong": ["", "That is AF.", "That is the focal length."]}, {"level": "Medium", "type": "mcq", "map": "Example 5", "prompt": "y²=8x has focus", "options": ["(2, 0)", "(8, 0)", "(0, 2)"], "answer": 0, "hint": "4a=8.", "solution": "a=2, focus (a,0)=(2,0).", "wrong": ["", "That is 4a, not a.", "Axis is x, not y."]}, {"level": "Hard", "type": "mcq", "map": "Example 8", "prompt": "Symmetric about the y-axis and through (2,−3): the equation is", "options": ["3x² = −4y", "x²=8y", "y²=−8x"], "answer": 0, "hint": "Opens down, x²=−4ay, plug (2,−3).", "solution": "4=−4a(−3)⇒a=1/3; 3x²=−4y.", "wrong": ["", "Opens up, and misses (2,−3).", "Opens left, axis x."]}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "ellipse-std", "nav": "Ellipse: definition and axes", "title": "PF₁ + PF₂ = 2a, with a² = b² + c² and eccentricity e = c/a < 1", "deck": "An ellipse is the set of points the sum of whose distances from two foci is a constant 2a (greater than the interfocal 2c). Semi-minor b satisfies c=√(a²−b²). The eccentricity e=c/a is less than 1.", "minutes": 9, "section": "10.5, 10.5.1–10.5.2", "pages": [12, 14], "print": "187–189", "sim": "ellipse", "simTitle": "Ellipse a,b sliders — foci, e, latus rectum", "quick": ["<strong>Definition 4.</strong> An ellipse is the set of all points in a plane the sum of whose distances from two fixed points (foci) is a constant. That constant is greater than the distance between the foci.", "Centre = mid-point of the foci. Major axis through the foci (length 2a); minor axis through the centre, perpendicular (length 2b). Vertices = ends of the major axis.", "Taking P at a vertex and at an end of the minor axis gives <strong>a² = b² + c²</strong>, so c=√(a²−b²). <strong>Eccentricity</strong> e=c/a &lt; 1; foci at (±ae, 0) when the major axis is the x-axis."], "formulas": [{"label": "Definition", "html": "PF₁ + PF₂ = 2a &nbsp; (2a &gt; 2c)", "cond": "Foci F₁, F₂"}, {"label": "Axis relation", "html": "c = √(a² − b²) &nbsp; i.e. a² = b² + c²", "cond": "§10.5.1"}, {"label": "Eccentricity", "html": "e = c/a &nbsp; (e &lt; 1)", "cond": "Foci at distance ae from centre"}], "deeper": "A circle is the ellipse with c=0, e=0, a=b. As e→1 the ellipse flattens toward a line segment joining the foci. The gardener’s construction — a loop of string of length 2a around two pins 2c apart — is Definition 4 in rope.", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the equation of the circle with Centre (1,1) and radius √2.", "given": "Find the equation of the circle with Centre (1,1) and radius √2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−1)²+(y−1)²=2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x−1)² + (y−1)² = 2"}, "prediction": {"prompt": "For an ellipse, the eccentricity e = c/a is", "options": ["strictly less than 1, because c = √(a²−b²) < a", "equal to 1, like a parabola", "greater than 1, like a hyperbola"], "answer": 0, "explanation": "b&gt;0 ⇒ c&lt;a ⇒ e&lt;1. Parabola e=1 and hyperbola e&gt;1 wait for later sections."}, "connect": [["Kepler’s first law is Definition 4", "A planet traces an ellipse with the Sun at one focus. Earth’s e≈0.017 — almost a circle. Halley’s comet has e≈0.97, a long thin ellipse."], ["Wow — the string-and-pins construction", "A loop of string 2a around two nails 2c apart, pencil taut: every point of the curve satisfies PF₁+PF₂=2a. NCERT’s definition is a classroom activity.", null, {"id": "8NUikXQtaew", "title": "Intro to ellipses | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Define an ellipse. Write a²=b²+c² and e=c/a, and state why e&lt;1.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The constant sum PF₁+PF₂ equals", "options": ["2a, the major axis", "2b, the minor axis", "2c, the interfocal distance"], "answer": 0, "hint": "Evaluated at a vertex.", "solution": "At a vertex the sum is (a+c)+(a−c)=2a.", "wrong": ["", "Minor axis is 2b.", "2c is F₁F₂, strictly less than 2a."]}, {"level": "Medium", "type": "mcq", "prompt": "c in terms of a, b is", "options": ["√(a² − b²)", "√(a² + b²)", "a − b"], "answer": 0, "hint": "§10.5.1.", "solution": "a²=b²+c².", "wrong": ["", "That is the hyperbola.", "Linear, not Pythagorean."]}, {"level": "Hard", "type": "number", "prompt": "If a=5 and b=3, the eccentricity e is", "answer": 0.8, "unit": "", "tolerance": 0.01, "hint": "c=√(25−9)=4; e=c/a.", "solution": "e=4/5=0.8 (Example 9)."}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "ellipse-eq", "nav": "Ellipse: standard equations", "title": "x²/a² + y²/b² = 1, or with the major axis along y", "deck": "Foci on the x-axis give x²/a² + y²/b² = 1. Foci on the y-axis swap a and b in the denominators. Latus rectum = 2b²/a. The larger denominator names the major axis.", "minutes": 10, "section": "10.5.3–10.5.4", "pages": [14, 20], "print": "189–195", "sim": "ellipse", "simTitle": "Standard ellipse — Example 9 (a=5,b=3) and Example 10", "quick": ["Foci (±c,0), PF₁+PF₂=2a: isolating a square root twice yields <strong>x²/a² + y²/b² = 1</strong> with b²=a²−c² (zoom p.14–15).", "If the larger denominator sits under y², the major axis is along the y-axis: x²/b² + y²/a² = 1, foci (0,±c).", "Latus rectum through a focus, perpendicular to the major axis, has length <strong>2b²/a</strong>. Example 9: x²/25+y²/9=1 ⇒ a=5,b=3,c=4, e=4/5, LR=18/5."], "formulas": [{"label": "Major axis along x", "html": "x²/a² + y²/b² = 1 &nbsp; (a&gt;b)", "cond": "Foci (±c,0), c=√(a²−b²)"}, {"label": "Major axis along y", "html": "x²/b² + y²/a² = 1 &nbsp; (a&gt;b)", "cond": "Foci (0,±c)"}, {"label": "Latus rectum", "html": "2b²/a", "cond": "Both orientations"}], "deeper": "To decide the major axis, compare denominators after writing =1: the larger denominator is a² and sits on the major axis. Example 10: 9x²+4y²=36 becomes x²/4+y²/9=1, so a=3 along y. Passing through two points (Example 13) gives two linear equations in 1/a² and 1/b².", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the equation of the circle with Centre (−a, −b) and radius √(a²−b²).", "given": "Find the equation of the circle with Centre (−a, −b) and radius √(a²−b²).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x+a)²+(y+b)²=a²−b².", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x+a)² + (y+b)² = a² − b²"}, "prediction": {"prompt": "For x²/25 + y²/9 = 1 the foci and eccentricity are", "options": ["(±4, 0) and 4/5", "(±3, 0) and 3/5", "(0, ±4) and 4/5"], "answer": 0, "explanation": "Example 9: larger denominator 25 is a² on x; c=√(25−9)=4; e=4/5."}, "connect": [["Semi-elliptical arch of a railway bridge", "Ex Misc 4: 8 m wide, 2 m high. That is x²/16+y²/4=1. Height 1.5 m from one end is the y of the ellipse at x=2.5."], ["Wow — a running track of constant sum", "Ex Misc 7: two flag posts 8 m apart, sum of distances always 10 m — the runner traces the ellipse x²/25+y²/9=1. Definition 4 as a racecourse.", null, {"id": "9OhDD1dOl6I", "title": "Foci of an ellipse from equation | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In x²/a² + y²/b² = 1 with a&gt;b, the major axis is", "options": ["along the x-axis of length 2a", "along the y-axis of length 2a", "the latus rectum"], "answer": 0, "hint": "Larger denominator under x².", "solution": "Vertices (±a,0).", "wrong": ["", "That is the other standard form.", "LR is 2b²/a."]}, {"level": "Medium", "type": "mcq", "map": "Example 10", "prompt": "9x²+4y²=36 rewritten in standard form is", "options": ["x²/4 + y²/9 = 1 (major along y)", "x²/9 + y²/4 = 1", "x²/36 + y²/36 = 1"], "answer": 0, "hint": "Divide by 36.", "solution": "x²/4 + y²/9 = 1; 9&gt;4 so major on y, a=3,b=2.", "wrong": ["", "Denominators swapped.", "Not divided."]}, {"level": "Hard", "type": "number", "map": "Example 9", "prompt": "Latus rectum of x²/25 + y²/9 = 1 equals", "answer": 3.6, "unit": "", "tolerance": 0.05, "hint": "2b²/a=18/5.", "solution": "18/5=3.6."}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "hyperbola", "nav": "Hyperbola", "title": "|PF₁ − PF₂| = 2a, with c² = a² + b² and e = c/a > 1", "deck": "A hyperbola is the set of points the difference of whose distances from two foci is 2a. Transverse axis 2a, conjugate 2b, c=√(a²+b²), e&gt;1. Standard: x²/a² − y²/b² = 1 or y²/a² − x²/b² = 1.", "minutes": 10, "section": "10.6", "pages": [20, 27], "print": "195–202", "sim": "hyperbola", "simTitle": "Standard hyperbolas — Example 14 a=3,b=4,c=5", "quick": ["<strong>Definition 7.</strong> A hyperbola is the set of all points in a plane the difference of whose distances from two fixed points (foci) is a constant. ‘Difference’ means farther minus closer. That constant equals the transverse axis 2a.", "c is half the interfocal distance, b=√(c²−a²), so <strong>c²=a²+b²</strong>. Eccentricity e=c/a ≥ 1 (never less). Foci at (±ae,0) or (0,±ae).", "Standard: <strong>x²/a² − y²/b² = 1</strong> (transverse along x) and <strong>y²/a² − x²/b² = 1</strong> (transverse along y). No curve between x=±a. Latus rectum 2b²/a. If a=b, the hyperbola is equilateral."], "formulas": [{"label": "Definition", "html": "|PF₁ − PF₂| = 2a", "cond": "Foci F₁, F₂; 2c &gt; 2a"}, {"label": "Axis relation", "html": "c = √(a² + b²)", "cond": "e = c/a &gt; 1"}, {"label": "Transverse along x", "html": "x²/a² − y²/b² = 1", "cond": "Vertices (±a,0), foci (±c,0)"}, {"label": "Transverse along y", "html": "y²/a² − x²/b² = 1", "cond": "Vertices (0,±a)"}, {"label": "Latus rectum", "html": "2b²/a", "cond": "Same formula as the ellipse"}], "deeper": "The positive term’s denominator identifies the transverse axis: x²/9 − y²/16=1 has transverse length 6 along x; y²/25 − x²/16=1 has transverse length 10 along y. Asymptotes (not named in this reprint’s summary, but visible in the figure) are the lines the branches hug. A rectangular/equilateral hyperbola has a=b, asymptotes perpendicular.", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the centre and radius of the circle Find the centre and radius of (x+5)²+(y−3)²=36.", "given": "Find the centre and radius of the circle Find the centre and radius of (x+5)²+(y−3)²=36.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Centre (−5,3), r=6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "centre (−5, 3), radius 6"}, "prediction": {"prompt": "For x²/9 − y²/16 = 1 the eccentricity and latus rectum are", "options": ["5/3 and 32/3", "4/3 and 8", "5/4 and 18/4"], "answer": 0, "explanation": "Example 14(i): c=√(9+16)=5, e=5/3, LR=2·16/3=32/3."}, "connect": [["LORAN navigation was a hyperbola", "A ship measuring the time-difference of two radio stations traces a hyperbola with those stations as foci — Definition 7 as a wartime navigation grid."], ["Wow — e=1 is the missing boundary", "Ellipse e&lt;1, parabola e=1, hyperbola e&gt;1. The same focus–directrix ratio e, postponed to later classes, is why the cone-slice dictionary is one family.", null, {"id": "ACCMn8go3bM", "title": "Intro to hyperbolas | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a hyperbola, e = c/a is", "options": ["greater than 1", "less than 1", "equal to 0"], "answer": 0, "hint": "c²=a²+b² &gt; a².", "solution": "c&gt;a so e&gt;1.", "wrong": ["", "That is the ellipse.", "That is a circle."]}, {"level": "Medium", "type": "mcq", "map": "Example 14i", "prompt": "x²/9 − y²/16 = 1 has foci", "options": ["(±5, 0)", "(±3, 0)", "(0, ±5)"], "answer": 0, "hint": "c=√(9+16)=5, transverse on x.", "solution": "Foci (±c,0)=(±5,0).", "wrong": ["", "Those are the vertices.", "Transverse is x, not y."]}, {"level": "Hard", "type": "number", "map": "Example 16", "prompt": "Foci (0,±12), latus rectum 36. Then a =", "answer": 6, "unit": "", "tolerance": 0.05, "hint": "2b²/a=36, c²=a²+b²=144.", "solution": "b²=18a; 144=a²+18a ⇒ a=6 (a&gt;0)."}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "conic-apps", "nav": "Conic applications", "title": "Mirrors, beams and a sliding rod: conics that earn their keep", "deck": "A parabolic mirror of depth 45 cm and a=5 cm has rim 60 cm. A 12 m beam sagging 3 cm is a parabola. A rod of length 15 cm with a marked point 6 cm from one end traces an ellipse.", "minutes": 9, "section": "Miscellaneous Examples 17–19", "pages": [27, 29], "print": "202–204", "sim": "conicapp", "simTitle": "Example 17 mirror and Example 18 deflected beam", "quick": ["Example 17: parabolic mirror, focus 5 cm from vertex (a=5), depth 45 cm. y²=20x; at x=45, y=±30, so AB=60 cm.", "Example 18: beam supported 12 m apart, centre deflection 3 cm. Vertex at the lowest point, x²=4ay through (6, 0.03) gives a=300 m. Deflection 1 cm at x=2√6 m from the centre.", "Example 19: rod AB=15 cm, A on x-axis, B on y-axis, P on the rod with AP=6. Then x²/81 + y²/36 = 1 — an ellipse. The sliding-ladder locus is the same construction."], "formulas": [{"label": "Mirror (Ex 17)", "html": "y² = 20x, &nbsp; AB = 60 cm", "cond": "a=5, x=45"}, {"label": "Beam (Ex 18)", "html": "x² = 4ay, &nbsp; a = 300 m", "cond": "Through (6, 0.03)"}, {"label": "Rod locus (Ex 19)", "html": "x²/81 + y²/36 = 1", "cond": "AP=6, PB=9, AB=15"}], "deeper": "All three examples are ‘standard form plus one extra point’. Units must match: Example 18 converts 3 cm to 0.03 m before substituting. The rod produces an ellipse because cos²θ+sin²θ=1 after x=9 cos θ, y=6 sin θ.", "worked": {"title": "Worked source example · PDF p.6", "problem": "Find the centre and radius of the circle x²+y²−4x−8y−45=0.", "given": "Find the centre and radius of the circle x²+y²−4x−8y−45=0.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−2)²+(y−4)²=4+16+45=65. Centre (2,4), r=√65.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "centre (2, 4), radius √65"}, "prediction": {"prompt": "A parabolic mirror has a=5 cm and is 45 cm deep. The rim diameter AB is", "options": ["60 cm", "45 cm", "20 cm"], "answer": 0, "explanation": "Example 17: y²=20·45=900, y=±30, AB=60 cm."}, "connect": [["Howrah Bridge cables and Example 18", "A uniformly loaded cable hangs as a parabola (not a catenary — that is uniform self-weight). The 3 cm sag on a 12 m beam is the same x²=4ay used for a suspension span."], ["Wow — a ladder sliding down a wall is an ellipse", "Example 19 is every Class 11 student’s falling ladder: a point at a fixed distance from one end traces x²/p²+y²/q²=1. Descartes would have recognised it immediately.", null, {"id": "rLkmIeIskxk", "title": "A rod of length 12 cm moves with its ends always touching the coordinate axes. Determine the equ...", "channel": "Doubtnut"}]], "recall": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1.", "quizzes": [{"level": "Easy", "type": "number", "map": "Example 17", "prompt": "Parabolic mirror, a=5 cm, depth 45 cm. AB in cm =", "answer": 60, "unit": "cm", "tolerance": 0.05, "hint": "y²=20x at x=45.", "solution": "y=±30, AB=60."}, {"level": "Medium", "type": "mcq", "map": "Example 19", "prompt": "Rod 15 cm, AP=6, A on x-axis, B on y-axis. Locus of P is", "options": ["x²/81 + y²/36 = 1", "a circle of radius 15", "a parabola y²=15x"], "answer": 0, "hint": "x=9 cos θ, y=6 sin θ.", "solution": "PB=9, cos θ=x/9, sin θ=y/6.", "wrong": ["", "AB is not a radius from P.", "Wrong curve."]}, {"level": "Hard", "type": "number", "map": "Example 18", "prompt": "12 m beam, 3 cm centre sag. Distance from centre where sag is 1 cm, in metres (enter 2√6 ≈ 4.899)", "answer": 4.899, "unit": "m", "tolerance": 0.02, "hint": "a=300, y=0.02, x²=24.", "solution": "x=√24=2√6≈4.899 m."}], "group": "Conic Sections", "watch": "Change the scenario and verify the displayed result against the definition."}], "exercises": [{"number": "10.1.1", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with centre (0,2) and radius 2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−0)²+(y−2)²=4 ⇒ x²+(y−2)²=4, or x²+y²−4y=0.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² + (y−2)² = 4", "section": "10.1", "q": 1, "title": "Exercise Q1", "given": "Find the equation of the circle with centre (0,2) and radius 2.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.2", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (−2,3), radius 4.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x+2)²+(y−3)²=16.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x+2)² + (y−3)² = 16", "section": "10.1", "q": 2, "title": "Exercise Q2", "given": "Find the equation of the circle with Centre (−2,3), radius 4.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.3", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (1/2, 1/4) and radius 1/12.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−1/2)²+(y−1/4)²=1/144.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x − 1/2)² + (y − 1/4)² = 1/144", "section": "10.1", "q": 3, "title": "Exercise Q3", "given": "Find the equation of the circle with Centre (1/2, 1/4) and radius 1/12.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.4", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (1,1) and radius √2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−1)²+(y−1)²=2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x−1)² + (y−1)² = 2", "section": "10.1", "q": 4, "title": "Exercise Q4", "given": "Find the equation of the circle with Centre (1,1) and radius √2.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.5", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of the circle with Centre (−a, −b) and radius √(a²−b²).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x+a)²+(y+b)²=a²−b².", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x+a)² + (y+b)² = a² − b²", "section": "10.1", "q": 5, "title": "Exercise Q5", "given": "Find the equation of the circle with Centre (−a, −b) and radius √(a²−b²).", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.6", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle Find the centre and radius of (x+5)²+(y−3)²=36.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Centre (−5,3), r=6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "centre (−5, 3), radius 6", "section": "10.1", "q": 6, "title": "Exercise Q6", "given": "Find the centre and radius of the circle Find the centre and radius of (x+5)²+(y−3)²=36.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.7", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle x²+y²−4x−8y−45=0.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−2)²+(y−4)²=4+16+45=65. Centre (2,4), r=√65.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "centre (2, 4), radius √65", "section": "10.1", "q": 7, "title": "Exercise Q7", "given": "Find the centre and radius of the circle x²+y²−4x−8y−45=0.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.8", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle x²+y²−8x+10y−12=0.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(x−4)²+(y+5)²=16+25+12=53. Centre (4,−5), r=√53.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "centre (4, −5), radius √53", "section": "10.1", "q": 8, "title": "Exercise Q8", "given": "Find the centre and radius of the circle x²+y²−8x+10y−12=0.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.9", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the centre and radius of the circle 2x²+2y²−x=0.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²+y²−x/2=0 ⇒ (x−1/4)²+y²=1/16. Centre (1/4, 0), r=1/4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "centre (1/4, 0), radius 1/4", "section": "10.1", "q": 9, "title": "Exercise Q9", "given": "Find the centre and radius of the circle 2x²+2y²−x=0.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.10", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Circle through (4,1) and (6,5) with centre on 4x+y=16.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(h−4)²+(k−1)²=(h−6)²+(k−5)² ⇒ h+2k=11. Also 4h+k=16.", "h=3, k=4, r²=10. (x−3)²+(y−4)²=10.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x−3)² + (y−4)² = 10", "section": "10.1", "q": 10, "title": "Exercise Q10", "given": "Circle through (4,1) and (6,5) with centre on 4x+y=16.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.11", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Circle through (2,3) and (−1,1) with centre on x−3y−11=0.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Equal radii ⇒ 6h+4k=11 and h−3k=11 ⇒ k=−5/2, h=7/2, r²=65/2.", "(x−7/2)²+(y+5/2)²=65/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x − 7/2)² + (y + 5/2)² = 65/2", "section": "10.1", "q": 11, "title": "Exercise Q11", "given": "Circle through (2,3) and (−1,1) with centre on x−3y−11=0.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.12", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Radius 5, centre on the x-axis, through (2,3).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Centre (h,0): (h−2)²+9=25 ⇒ (h−2)²=16 ⇒ h=6 or −2.", "(x−6)²+y²=25 or (x+2)²+y²=25.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x−6)² + y² = 25  or  (x+2)² + y² = 25", "section": "10.1", "q": 12, "title": "Exercise Q12", "given": "Radius 5, centre on the x-axis, through (2,3).", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.13", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Circle through (0,0) making intercepts a and b on the axes.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Meets axes at (a,0),(0,b) and origin: x²+y²−ax−by=0.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² + y² − a x − b y = 0", "section": "10.1", "q": 13, "title": "Exercise Q13", "given": "Circle through (0,0) making intercepts a and b on the axes.", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.14", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Find the equation of a circle with Centre (2,2) and passing through (4,5).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "r²=(4−2)²+(5−2)²=13. (x−2)²+(y−2)²=13.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(x−2)² + (y−2)² = 13", "section": "10.1", "q": 14, "title": "Exercise Q14", "given": "Find the equation of a circle with Centre (2,2) and passing through (4,5).", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.1.15", "conceptIdx": 1, "page": 6, "printPage": 181, "question": "Does (−2.5, 3.5) lie inside, outside or on x²+y²=25?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(−2.5)²+(3.5)²=6.25+12.25=18.5&lt;25, so inside.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "inside the circle", "section": "10.1", "q": 15, "title": "Exercise Q15", "given": "Does (−2.5, 3.5) lie inside, outside or on x²+y²=25?", "conceptName": "Circle", "takeaway": "Write the standard equation. Complete the square for Example 3 from memory."}, {"number": "10.2.1", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=12x: focus, axis, directrix, latus rectum.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4a=12, a=3. Focus (3,0), axis x-axis, directrix x=−3, LR=12.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus (3,0); axis x-axis; directrix x=−3; LR=12", "section": "10.2", "q": 16, "title": "Exercise Q1", "given": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=12x: focus, axis, directrix, latus rectum.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.2", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=6y.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4a=6, a=3/2. Focus (0,3/2), axis y-axis, directrix y=−3/2, LR=6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus (0, 3/2); axis y-axis; directrix y=−3/2; LR=6", "section": "10.2", "q": 17, "title": "Exercise Q2", "given": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=6y.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.3", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=−8x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4a=8, a=2. Focus (−2,0), axis x-axis, directrix x=2, LR=8.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus (−2,0); axis x-axis; directrix x=2; LR=8", "section": "10.2", "q": 18, "title": "Exercise Q3", "given": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=−8x.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.4", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=−16y.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=4. Focus (0,−4), axis y-axis, directrix y=4, LR=16.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus (0,−4); axis y-axis; directrix y=4; LR=16", "section": "10.2", "q": 19, "title": "Exercise Q4", "given": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=−16y.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.5", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=10x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=5/2. Focus (5/2,0), axis x-axis, directrix x=−5/2, LR=10.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus (5/2, 0); axis x-axis; directrix x=−5/2; LR=10", "section": "10.2", "q": 20, "title": "Exercise Q5", "given": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for y²=10x.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.6", "conceptIdx": 2, "page": 11, "printPage": 186, "question": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=−9y.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=9/4. Focus (0,−9/4), axis y-axis, directrix y=9/4, LR=9.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus (0, −9/4); axis y-axis; directrix y=9/4; LR=9", "section": "10.2", "q": 21, "title": "Exercise Q6", "given": "Find the coordinates of the focus, axis of the parabola, the equation of the directrix and the length of the latus rectum for x²=−9y.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.7", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Focus (6,0); directrix x=−6.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=6, opens right: y²=24x.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y² = 24x", "section": "10.2", "q": 22, "title": "Exercise Q7", "given": "Find the equation of the parabola that satisfies the given conditions: Focus (6,0); directrix x=−6.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.8", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Focus (0,−3); directrix y=3.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=3, opens down: x²=−12y.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² = −12y", "section": "10.2", "q": 23, "title": "Exercise Q8", "given": "Find the equation of the parabola that satisfies the given conditions: Focus (0,−3); directrix y=3.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.9", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0); focus (3,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²=12x.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y² = 12x", "section": "10.2", "q": 24, "title": "Exercise Q9", "given": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0); focus (3,0).", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.10", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0); focus (−2,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²=−8x.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y² = −8x", "section": "10.2", "q": 25, "title": "Exercise Q10", "given": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0); focus (−2,0).", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.11", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0), through (2,3), axis along x-axis.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²=4ax, 9=8a, a=9/8, y²=(9/2)x.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y² = (9/2) x", "section": "10.2", "q": 26, "title": "Exercise Q11", "given": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0), through (2,3), axis along x-axis.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.2.12", "conceptIdx": 2, "page": 12, "printPage": 187, "question": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0), through (5,2), symmetric about y-axis.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²=4ay, 25=8a, a=25/8, x²=(25/2)y.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² = (25/2) y", "section": "10.2", "q": 27, "title": "Exercise Q12", "given": "Find the equation of the parabola that satisfies the given conditions: Vertex (0,0), through (5,2), symmetric about y-axis.", "conceptName": "Parabola", "takeaway": "State Definition 2, the four standard equations, and the length of the latus rectum."}, {"number": "10.3.1", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/36 + y²/16 = 1: foci, vertices, axes, e, LR.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=6,b=4,c=√20=2√5. Foci (±2√5,0), vertices (±6,0), major 12, minor 8, e=√5/3, LR=16/3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (±2√5,0); vertices (±6,0); major 12; minor 8; e=√5/3; LR=16/3", "section": "10.3", "q": 28, "title": "Exercise Q1", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/36 + y²/16 = 1: foci, vertices, axes, e, LR.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.2", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/4 + y²/25 = 1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Major on y: a=5,b=2,c=√21. Foci (0,±√21), vertices (0,±5), major 10, minor 4, e=√21/5, LR=8/5.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±√21); vertices (0,±5); major 10; minor 4; e=√21/5; LR=8/5", "section": "10.3", "q": 29, "title": "Exercise Q2", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/4 + y²/25 = 1.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.3", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/16 + y²/9 = 1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=4,b=3,c=√7. Foci (±√7,0), vertices (±4,0), major 8, minor 6, e=√7/4, LR=9/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (±√7,0); vertices (±4,0); major 8; minor 6; e=√7/4; LR=9/2", "section": "10.3", "q": 30, "title": "Exercise Q3", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/16 + y²/9 = 1.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.4", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/25 + y²/100 = 1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Major on y: a=10,b=5,c=5√3. Foci (0,±5√3), vertices (0,±10), major 20, minor 10, e=√3/2, LR=5.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±5√3); vertices (0,±10); major 20; minor 10; e=√3/2; LR=5", "section": "10.3", "q": 31, "title": "Exercise Q4", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/25 + y²/100 = 1.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.5", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/49 + y²/36 = 1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=7,b=6,c=√13. Foci (±√13,0), vertices (±7,0), major 14, minor 12, e=√13/7, LR=72/7.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (±√13,0); vertices (±7,0); major 14; minor 12; e=√13/7; LR=72/7", "section": "10.3", "q": 32, "title": "Exercise Q5", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/49 + y²/36 = 1.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.6", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/100 + y²/400 = 1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Major on y: a=20,b=10,c=10√3. Foci (0,±10√3), vertices (0,±20), major 40, minor 20, e=√3/2, LR=10.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±10√3); vertices (0,±20); major 40; minor 20; e=√3/2; LR=10", "section": "10.3", "q": 33, "title": "Exercise Q6", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse x²/100 + y²/400 = 1.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.7", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 36x² + 4y² = 144.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/4 + y²/36 = 1. a=6,b=2,c=4√2. Foci (0,±4√2), vertices (0,±6), major 12, minor 4, e=2√2/3, LR=4/3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±4√2); vertices (0,±6); major 12; minor 4; e=2√2/3; LR=4/3", "section": "10.3", "q": 34, "title": "Exercise Q7", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 36x² + 4y² = 144.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.8", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 16x² + y² = 16.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/1 + y²/16 = 1. a=4,b=1,c=√15. Foci (0,±√15), vertices (0,±4), major 8, minor 2, e=√15/4, LR=1/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±√15); vertices (0,±4); major 8; minor 2; e=√15/4; LR=1/2", "section": "10.3", "q": 35, "title": "Exercise Q8", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 16x² + y² = 16.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.9", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 4x² + 9y² = 36.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/9 + y²/4 = 1. a=3,b=2,c=√5. Foci (±√5,0), vertices (±3,0), major 6, minor 4, e=√5/3, LR=8/3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (±√5,0); vertices (±3,0); major 6; minor 4; e=√5/3; LR=8/3", "section": "10.3", "q": 36, "title": "Exercise Q9", "given": "Find the coordinates of the foci, the vertices, the length of major axis, the minor axis, the eccentricity and the length of the latus rectum of the ellipse 4x² + 9y² = 36.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.10", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Vertices (±5,0), foci (±4,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=5,c=4,b=3. x²/25 + y²/9 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/25 + y²/9 = 1", "section": "10.3", "q": 37, "title": "Exercise Q10", "given": "Find the equation of the ellipse that satisfies the given conditions: Vertices (±5,0), foci (±4,0).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.11", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Vertices (0,±13), foci (0,±5).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=13,c=5,b=12. x²/144 + y²/169 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/144 + y²/169 = 1", "section": "10.3", "q": 38, "title": "Exercise Q11", "given": "Find the equation of the ellipse that satisfies the given conditions: Vertices (0,±13), foci (0,±5).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.12", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Vertices (±6,0), foci (±4,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=6,c=4,b=√20=2√5. x²/36 + y²/20 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/36 + y²/20 = 1", "section": "10.3", "q": 39, "title": "Exercise Q12", "given": "Find the equation of the ellipse that satisfies the given conditions: Vertices (±6,0), foci (±4,0).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.13", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Ends of major axis (±3,0), ends of minor axis (0,±2).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/9 + y²/4 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/9 + y²/4 = 1", "section": "10.3", "q": 40, "title": "Exercise Q13", "given": "Find the equation of the ellipse that satisfies the given conditions: Ends of major axis (±3,0), ends of minor axis (0,±2).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.14", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Ends of major axis (0,±√5), ends of minor axis (±1,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/1 + y²/5 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² + y²/5 = 1", "section": "10.3", "q": 41, "title": "Exercise Q14", "given": "Find the equation of the ellipse that satisfies the given conditions: Ends of major axis (0,±√5), ends of minor axis (±1,0).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.15", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Length of major axis 26, foci (±5,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2a=26,a=13,c=5,b=12. x²/169 + y²/144 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/169 + y²/144 = 1", "section": "10.3", "q": 42, "title": "Exercise Q15", "given": "Find the equation of the ellipse that satisfies the given conditions: Length of major axis 26, foci (±5,0).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.16", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Length of minor axis 16, foci (0,±6).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2b=16,b=8,c=6,a=10. x²/64 + y²/100 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/64 + y²/100 = 1", "section": "10.3", "q": 43, "title": "Exercise Q16", "given": "Find the equation of the ellipse that satisfies the given conditions: Length of minor axis 16, foci (0,±6).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.17", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse satisfying the given conditions: Foci (±3,0), a=4.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "c=3,b=√7. x²/16 + y²/7 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/16 + y²/7 = 1", "section": "10.3", "q": 44, "title": "Exercise Q17", "given": "Find the equation of the ellipse satisfying the given conditions: Foci (±3,0), a=4.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.18", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: b=3, c=4, centre origin, foci on the x-axis.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=5. x²/25 + y²/9 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/25 + y²/9 = 1", "section": "10.3", "q": 45, "title": "Exercise Q18", "given": "Find the equation of the ellipse that satisfies the given conditions: b=3, c=4, centre origin, foci on the x-axis.", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.19", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Centre (0,0), major axis on the y-axis, through (3,2) and (1,6).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/b² + y²/a² = 1. 9/b²+4/a²=1 and 1/b²+36/a²=1.", "a²=40, b²=10. x²/10 + y²/40 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/10 + y²/40 = 1", "section": "10.3", "q": 46, "title": "Exercise Q19", "given": "Find the equation of the ellipse that satisfies the given conditions: Centre (0,0), major axis on the y-axis, through (3,2) and (1,6).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.3.20", "conceptIdx": 4, "page": 20, "printPage": 195, "question": "Find the equation of the ellipse that satisfies the given conditions: Major axis on the x-axis, through (4,3) and (6,2).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "16/a²+9/b²=1, 36/a²+4/b²=1 ⇒ a²=52, b²=13.", "x²/52 + y²/13 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/52 + y²/13 = 1", "section": "10.3", "q": 47, "title": "Exercise Q20", "given": "Find the equation of the ellipse that satisfies the given conditions: Major axis on the x-axis, through (4,3) and (6,2).", "conceptName": "Ellipse: standard equations", "takeaway": "Write both standard equations, the rule for the major axis, and LR=2b²/a. Recite Example 9’s numbers."}, {"number": "10.4.1", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola x²/16 − y²/9 = 1: foci, vertices, e, LR.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=4,b=3,c=5. Foci (±5,0), vertices (±4,0), e=5/4, LR=9/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (±5,0); vertices (±4,0); e=5/4; LR=9/2", "section": "10.4", "q": 48, "title": "Exercise Q1", "given": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola x²/16 − y²/9 = 1: foci, vertices, e, LR.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.2", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola y²/9 − x²/27 = 1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=3,b=3√3,c=6. Foci (0,±6), vertices (0,±3), e=2, LR=18.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±6); vertices (0,±3); e=2; LR=18", "section": "10.4", "q": 49, "title": "Exercise Q2", "given": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola y²/9 − x²/27 = 1.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.3", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 9y² − 4x² = 36.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²/4 − x²/9 = 1. a=2,b=3,c=√13. Foci (0,±√13), vertices (0,±2), e=√13/2, LR=9.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±√13); vertices (0,±2); e=√13/2; LR=9", "section": "10.4", "q": 50, "title": "Exercise Q3", "given": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 9y² − 4x² = 36.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.4", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 16x² − 9y² = 576.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²/36 − y²/64 = 1. a=6,b=8,c=10. Foci (±10,0), vertices (±6,0), e=5/3, LR=64/3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (±10,0); vertices (±6,0); e=5/3; LR=64/3", "section": "10.4", "q": 51, "title": "Exercise Q4", "given": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 16x² − 9y² = 576.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.5", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 5y² − 9x² = 36.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²/(36/5) − x²/4 = 1. a=6/√5, b=2, c=√(56/5), e=√14/3, LR=4√5/3.", "Vertices (0, ±6/√5), foci (0, ±√(56/5)).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0, ±√(56/5)); vertices (0, ±6/√5); e=√14/3; LR=4√5/3", "section": "10.4", "q": 52, "title": "Exercise Q5", "given": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 5y² − 9x² = 36.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.6", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 49y² − 16x² = 784.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²/16 − x²/49 = 1. a=4,b=7,c=√65. Foci (0,±√65), vertices (0,±4), e=√65/4, LR=49/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "foci (0,±√65); vertices (0,±4); e=√65/4; LR=49/2", "section": "10.4", "q": 53, "title": "Exercise Q6", "given": "Find the coordinates of the foci and the vertices, the eccentricity and the length of the latus rectum of the hyperbola 49y² − 16x² = 784.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.7", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (±2,0), foci (±3,0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=2,c=3,b=√5. x²/4 − y²/5 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/4 − y²/5 = 1", "section": "10.4", "q": 54, "title": "Exercise Q7", "given": "Vertices (±2,0), foci (±3,0).", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.8", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (0,±5), foci (0,±8).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=5,c=8,b=√39. y²/25 − x²/39 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y²/25 − x²/39 = 1", "section": "10.4", "q": 55, "title": "Exercise Q8", "given": "Vertices (0,±5), foci (0,±8).", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.9", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (0,±3), foci (0,±5).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=3,c=5,b=4. y²/9 − x²/16 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y²/9 − x²/16 = 1", "section": "10.4", "q": 56, "title": "Exercise Q9", "given": "Vertices (0,±3), foci (0,±5).", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.10", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (±5,0), transverse axis of length 8.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2a=8,a=4,c=5,b=3. x²/16 − y²/9 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/16 − y²/9 = 1", "section": "10.4", "q": 57, "title": "Exercise Q10", "given": "Foci (±5,0), transverse axis of length 8.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.11", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (0,±13), conjugate axis of length 24.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2b=24,b=12,c=13,a=5. y²/25 − x²/144 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y²/25 − x²/144 = 1", "section": "10.4", "q": 58, "title": "Exercise Q11", "given": "Foci (0,±13), conjugate axis of length 24.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.12", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (±3√5, 0), latus rectum of length 8.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "c=3√5, 2b²/a=8 ⇒ b²=4a. a²+4a=45, a=5, b²=20. x²/25 − y²/20 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/25 − y²/20 = 1", "section": "10.4", "q": 59, "title": "Exercise Q12", "given": "Foci (±3√5, 0), latus rectum of length 8.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.13", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (±4,0), latus rectum of length 12.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "c=4, b²=6a. a²+6a=16, a=2, b²=12. x²/4 − y²/12 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/4 − y²/12 = 1", "section": "10.4", "q": 60, "title": "Exercise Q13", "given": "Foci (±4,0), latus rectum of length 12.", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.14", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Vertices (±7,0), e=4/3. (zoom p.27)", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=7, c=ae=28/3, b²=c²−a²=343/9. x²/49 − 9y²/343 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/49 − 9y²/343 = 1", "section": "10.4", "q": 61, "title": "Exercise Q14", "given": "Vertices (±7,0), e=4/3. (zoom p.27)", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.4.15", "conceptIdx": 5, "page": 27, "printPage": 202, "question": "Foci (0, ±√10), passing through (2,3).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "c²=10=a²+b², form y²/a² − x²/b²=1, and 9/a²−4/b²=1.", "a²=5, b²=5. y²−x²=5.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y² − x² = 5", "section": "10.4", "q": 62, "title": "Exercise Q15", "given": "Foci (0, ±√10), passing through (2,3).", "conceptName": "Hyperbola", "takeaway": "Define a hyperbola. Write c²=a²+b², both standard equations, e=c/a, and LR=2b²/a."}, {"number": "10.M.1", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "A parabolic reflector is 20 cm in diameter and 5 cm deep. Find the focus.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "y²=4ax, at x=5, y=±10 ⇒ 100=20a ⇒ a=5. Focus is 5 cm from the vertex.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "focus 5 cm from the vertex", "section": "Misc.", "q": 63, "title": "Exercise Q1", "given": "A parabolic reflector is 20 cm in diameter and 5 cm deep. Find the focus.", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.2", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "A parabolic arch is 10 m high and 5 m wide at the base. How wide is it 2 m from the vertex?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²=4ay (vertex at top, y down). At y=10, x=±2.5 ⇒ 6.25=40a, 4a=5/8.", "At y=2, x²=2·5/8=5/4, width=√5 m.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "√5 m", "section": "Misc.", "q": 64, "title": "Exercise Q2", "given": "A parabolic arch is 10 m high and 5 m wide at the base. How wide is it 2 m from the vertex?", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.3", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Suspension-bridge cable: roadway 100 m, longest vertical wire 30 m, shortest 6 m. Length of a wire 18 m from the middle?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Sag 24 m over 50 m: 2500=4a·24, 4a=2500/24.", "At x=18, y=324·24/2500=1944/625 m. Wire=6+1944/625=5694/625 m.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "5694/625 m  (≈ 9.11 m)", "section": "Misc.", "q": 65, "title": "Exercise Q3", "given": "Suspension-bridge cable: roadway 100 m, longest vertical wire 30 m, shortest 6 m. Length of a wire 18 m from the middle?", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.4", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Semi-elliptical arch 8 m wide and 2 m high. Height 1.5 m from one end?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=4,b=2. x from centre=4−1.5=2.5. (2.5)²/16 + y²/4=1 ⇒ y=√39 / 4 m.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "√39 / 4 m  (≈ 1.56 m)", "section": "Misc.", "q": 66, "title": "Exercise Q4", "given": "Semi-elliptical arch 8 m wide and 2 m high. Height 1.5 m from one end?", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.5", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "A rod of length 12 cm moves with ends on the axes. Locus of P, 3 cm from the x-axis end?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "AP=3, PB=9. x=9 cos θ, y=3 sin θ ⇒ x²/81 + y²/9 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/81 + y²/9 = 1", "section": "Misc.", "q": 67, "title": "Exercise Q5", "given": "A rod of length 12 cm moves with ends on the axes. Locus of P, 3 cm from the x-axis end?", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.6", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Area of the triangle formed by the vertex of x²=12y and the ends of its latus rectum.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=3, LR ends (±6,3). Triangle (0,0),(6,3),(−6,3). Area=½·12·3=18.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "18", "section": "Misc.", "q": 68, "title": "Exercise Q6", "given": "Area of the triangle formed by the vertex of x²=12y and the ends of its latus rectum.", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.7", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Sum of distances from two flag posts always 10 m; posts 8 m apart. Equation of the path?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2a=10,a=5,2c=8,c=4,b=3. Ellipse x²/25 + y²/9 = 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x²/25 + y²/9 = 1", "section": "Misc.", "q": 69, "title": "Exercise Q7", "given": "Sum of distances from two flag posts always 10 m; posts 8 m apart. Equation of the path?", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}, {"number": "10.M.8", "conceptIdx": 6, "page": 29, "printPage": 204, "question": "Equilateral triangle inscribed in y²=4ax with one vertex at the parabola’s vertex. Side length?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Other vertices (at², ±2at). Base=4at equals side from origin at√(t²+4).", "√(t²+4)=4, t²=12, side=4a√12=8√3 a.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "8√3 a", "section": "Misc.", "q": 70, "title": "Exercise Q8", "given": "Equilateral triangle inscribed in y²=4ax with one vertex at the parabola’s vertex. Side length?", "conceptName": "Conic applications", "takeaway": "Recite the three miscellaneous models: mirror AB=60 cm, beam x=2√6 m, rod ellipse x²/81+y²/36=1."}], "exerciseMap": [[1, "Exercise Q1", 1, 6], [2, "Exercise Q2", 1, 6], [3, "Exercise Q3", 1, 6], [4, "Exercise Q4", 1, 6], [5, "Exercise Q5", 1, 6], [6, "Exercise Q6", 1, 6], [7, "Exercise Q7", 1, 6], [8, "Exercise Q8", 1, 6], [9, "Exercise Q9", 1, 6], [10, "Exercise Q10", 1, 6], [11, "Exercise Q11", 1, 6], [12, "Exercise Q12", 1, 6], [13, "Exercise Q13", 1, 6], [14, "Exercise Q14", 1, 6], [15, "Exercise Q15", 1, 6], [16, "Exercise Q1", 2, 11], [17, "Exercise Q2", 2, 11], [18, "Exercise Q3", 2, 11], [19, "Exercise Q4", 2, 11], [20, "Exercise Q5", 2, 11], [21, "Exercise Q6", 2, 11], [22, "Exercise Q7", 2, 12], [23, "Exercise Q8", 2, 12], [24, "Exercise Q9", 2, 12], [25, "Exercise Q10", 2, 12], [26, "Exercise Q11", 2, 12], [27, "Exercise Q12", 2, 12], [28, "Exercise Q1", 4, 20], [29, "Exercise Q2", 4, 20], [30, "Exercise Q3", 4, 20], [31, "Exercise Q4", 4, 20], [32, "Exercise Q5", 4, 20], [33, "Exercise Q6", 4, 20], [34, "Exercise Q7", 4, 20], [35, "Exercise Q8", 4, 20], [36, "Exercise Q9", 4, 20], [37, "Exercise Q10", 4, 20], [38, "Exercise Q11", 4, 20], [39, "Exercise Q12", 4, 20], [40, "Exercise Q13", 4, 20], [41, "Exercise Q14", 4, 20], [42, "Exercise Q15", 4, 20], [43, "Exercise Q16", 4, 20], [44, "Exercise Q17", 4, 20], [45, "Exercise Q18", 4, 20], [46, "Exercise Q19", 4, 20], [47, "Exercise Q20", 4, 20], [48, "Exercise Q1", 5, 27], [49, "Exercise Q2", 5, 27], [50, "Exercise Q3", 5, 27], [51, "Exercise Q4", 5, 27], [52, "Exercise Q5", 5, 27], [53, "Exercise Q6", 5, 27], [54, "Exercise Q7", 5, 27], [55, "Exercise Q8", 5, 27], [56, "Exercise Q9", 5, 27], [57, "Exercise Q10", 5, 27], [58, "Exercise Q11", 5, 27], [59, "Exercise Q12", 5, 27], [60, "Exercise Q13", 5, 27], [61, "Exercise Q14", 5, 27], [62, "Exercise Q15", 5, 27], [63, "Exercise Q1", 6, 29], [64, "Exercise Q2", 6, 29], [65, "Exercise Q3", 6, 29], [66, "Exercise Q4", 6, 29], [67, "Exercise Q5", 6, 29], [68, "Exercise Q6", 6, 29], [69, "Exercise Q7", 6, 29], [70, "Exercise Q8", 6, 29]], "exercisesNote": "All 70 source questions are included with exact source page mapping and expanded worked guidance. PDF pages 1–32 correspond to printed pages 176–206."};
 </script>
 <script>
+// Shared Class 11 Maths runtime, adapted from verified lemh101.
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1084,8 +1298,44 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1361,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1444,35 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1489,10 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,16 +1501,17 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1241,10 +1523,15 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1278,7 +1565,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1304,42 +1591,47 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1347,7 +1639,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1356,48 +1648,46 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1443,6 +1733,10 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1461,7 +1755,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1511,7 +1805,8 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1520,6 +1815,41 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1534,9 +1864,6 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1571,7 +1898,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1656,9 +1983,9 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1686,7 +2013,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1731,20 +2058,31 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + (ex.q || qNum) + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2128,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2138,7 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2148,31 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1834,16 +2192,12 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1853,6 +2207,10 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1866,6 +2224,41 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1873,27 +2266,13 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
   };
   if (typeof globalThis !== "undefined") {
     globalThis.App = window.App;
-  }
-
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
   }
 
   // Initialize
@@ -1903,8 +2282,233 @@ window.CHAPTER = {"code": "kemh110", "chapterNumber": 10, "book_name": "Mathemat
   routeFromHash();
 })();
 
+
 </script>
 <script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
+
+
 var App = window.App;
 window.SIMS = {};
 
@@ -1943,11 +2547,11 @@ window.SIMS.conecut = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Double-napped cone</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Cutting plane</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="k-c">β=90° circle</button>' +
-      '<button class="preset-btn" id="k-e">α&lt;β&lt;90° ellipse</button>' +
-      '<button class="preset-btn" id="k-p">β=α parabola</button>' +
-      '<button class="preset-btn" id="k-h">β&lt;α hyperbola</button>' +
-      '<button class="preset-btn" id="k-d">vertex: degenerate</button>';
+      '<button class="preset-btn active" data-preset="k-c" id="k-c">β=90° circle</button>' +
+      '<button class="preset-btn" data-preset="k-e" id="k-e">α&lt;β&lt;90° ellipse</button>' +
+      '<button class="preset-btn" data-preset="k-p" id="k-p">β=α parabola</button>' +
+      '<button class="preset-btn" data-preset="k-h" id="k-h">β&lt;α hyperbola</button>' +
+      '<button class="preset-btn" data-preset="k-d" id="k-d">vertex: degenerate</button>';
     [["k-c","circle"],["k-e","ellipse"],["k-p","parabola"],["k-h","hyperbola"],["k-d","degen"]].forEach(function(p){
       document.getElementById(p[0]).onclick = function(){ setActivePreset(this); kind=p[1]; draw(0); };
     });
@@ -1996,9 +2600,9 @@ window.SIMS.circlehk = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Circle</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Centre (h,k)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="c0">x²+y²=r² origin</button>' +
-      '<button class="preset-btn active" id="c1">Ex 2: (−3,2), r=4</button>' +
-      '<button class="preset-btn" id="c2">Ex 3: complete the square</button>';
+      '<button class="preset-btn" data-preset="c0" id="c0">x²+y²=r² origin</button>' +
+      '<button class="preset-btn active" data-preset="c1" id="c1">Ex 2: (−3,2), r=4</button>' +
+      '<button class="preset-btn" data-preset="c2" id="c2">Ex 3: complete the square</button>';
     document.getElementById("c0").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-h").value=0; document.getElementById("ctrl-k").value=0; document.getElementById("ctrl-r").value=4; draw(0); };
     document.getElementById("c1").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-h").value=-3; document.getElementById("ctrl-k").value=2; document.getElementById("ctrl-r").value=4; draw(0); };
     document.getElementById("c2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-h").value=-4; document.getElementById("ctrl-k").value=-5; document.getElementById("ctrl-r").value=7; draw(0); };
@@ -2035,10 +2639,10 @@ window.SIMS.parabola = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Directrix</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Latus rectum</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="f-yp">y²=4ax (right)</button>' +
-      '<button class="preset-btn" id="f-yn">y²=−4ax (left)</button>' +
-      '<button class="preset-btn" id="f-xp">x²=4ay (up)</button>' +
-      '<button class="preset-btn" id="f-xn">x²=−4ay (down)</button>';
+      '<button class="preset-btn active" data-preset="f-yp" id="f-yp">y²=4ax (right)</button>' +
+      '<button class="preset-btn" data-preset="f-yn" id="f-yn">y²=−4ax (left)</button>' +
+      '<button class="preset-btn" data-preset="f-xp" id="f-xp">x²=4ay (up)</button>' +
+      '<button class="preset-btn" data-preset="f-xn" id="f-xn">x²=−4ay (down)</button>';
     document.getElementById("f-yp").onclick = function(){ setActivePreset(this); form="y2p"; draw(0); };
     document.getElementById("f-yn").onclick = function(){ setActivePreset(this); form="y2n"; draw(0); };
     document.getElementById("f-xp").onclick = function(){ setActivePreset(this); form="x2p"; draw(0); };
@@ -2085,8 +2689,8 @@ window.SIMS.ellipse = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Foci</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Latus rectum</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-x">Ex 9: x²/25 + y²/9 = 1</button>' +
-      '<button class="preset-btn" id="e-y">Ex 10: major on y-axis</button>';
+      '<button class="preset-btn active" data-preset="e-x" id="e-x">Ex 9: x²/25 + y²/9 = 1</button>' +
+      '<button class="preset-btn" data-preset="e-y" id="e-y">Ex 10: major on y-axis</button>';
     document.getElementById("e-x").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-a").value=5; document.getElementById("ctrl-b").value=3; document.getElementById("ctrl-ax").value=0; draw(0); };
     document.getElementById("e-y").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-a").value=3; document.getElementById("ctrl-b").value=2; document.getElementById("ctrl-ax").value=1; draw(0); };
     document.getElementById("lab-controls").innerHTML =
@@ -2132,8 +2736,8 @@ window.SIMS.hyperbola = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Hyperbola</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Foci</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-x">x²/a² − y²/b² = 1</button>' +
-      '<button class="preset-btn" id="h-y">y²/a² − x²/b² = 1</button>';
+      '<button class="preset-btn active" data-preset="h-x" id="h-x">x²/a² − y²/b² = 1</button>' +
+      '<button class="preset-btn" data-preset="h-y" id="h-y">y²/a² − x²/b² = 1</button>';
     document.getElementById("h-x").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-or").value=0; draw(0); };
     document.getElementById("h-y").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-or").value=1; draw(0); };
     document.getElementById("lab-controls").innerHTML =
@@ -2198,8 +2802,8 @@ window.SIMS.conicapp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Parabolic mirror y²=20x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Focus</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="ap-m">Ex 17: mirror a=5, depth 45</button>' +
-      '<button class="preset-btn" id="ap-b">Ex 18: beam sag</button>';
+      '<button class="preset-btn active" data-preset="ap-m" id="ap-m">Ex 17: mirror a=5, depth 45</button>' +
+      '<button class="preset-btn" data-preset="ap-b" id="ap-b">Ex 18: beam sag</button>';
     document.getElementById("ap-m").onclick = function(){ setActivePreset(this); mode="m"; draw(0); };
     document.getElementById("ap-b").onclick = function(){ setActivePreset(this); mode="b"; draw(0); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2216,8 +2820,8 @@ window.SIMS.conicapp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Application parabola</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Focus / vertex</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="ap-m">Ex 17 mirror AB=60 cm</button>' +
-      '<button class="preset-btn" id="ap-b">Ex 18 beam 2√6 m</button>';
+      '<button class="preset-btn active" data-preset="ap-m" id="ap-m">Ex 17 mirror AB=60 cm</button>' +
+      '<button class="preset-btn" data-preset="ap-b" id="ap-b">Ex 18 beam 2√6 m</button>';
     document.getElementById("ap-m").onclick = function(){ setActivePreset(this); mode="m"; draw(0); };
     document.getElementById("ap-b").onclick = function(){ setActivePreset(this); mode="b"; draw(0); };
     document.getElementById("lab-controls").innerHTML = "";

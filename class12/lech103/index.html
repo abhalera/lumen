@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 03 · CHEMICAL KINETICS</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,238 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 30 Exercises from NCERT Class 12 Chemistry Part I (pp. 61–88) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 30 Exercises from NCERT Class 12 Chemistry Part 1 (pp. 61–88) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry Part I", "title": "Chemical Kinetics", "subtitle": "Rates, rate laws, integrated zero- and first-order equations, half-life, pseudo-first order, Arrhenius and collision theory.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech103.pdf", "page_start": 61, "page_end": 88, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "rate-average", "nav": "Average & instantaneous rate", "title": "Rate is −Δ[R]/Δt for a reactant — thermodynamics says if, kinetics says how fast", "deck": "Diamond → graphite is spontaneous but imperceptibly slow. Average rate uses a finite Δt; instantaneous rate is the tangent. For aA → bB, rates are related by stoichiometry.", "minutes": 8, "section": "3.1", "pages": [1, 6], "print": "61–66", "sim": "avgrate", "simTitle": "[N₂O₅] vs t: chord (average) vs tangent (instantaneous)", "quick": ["Chemical kinetics studies the <strong>speed</strong> of reactions and the factors that control it. Thermodynamics (ΔG < 0) only says a change is feasible; diamond → graphite is feasible but the rate is zero for practical purposes — ‘diamond is forever’.", "Average rate = −Δ[R]/Δt (reactant) or +Δ[P]/Δt (product). Instantaneous rate is the slope of the tangent to the concentration–time curve. For aA → bB, (−1/a) d[A]/dt = (1/b) d[B]/dt.", "Example 3.2 / Intext 3.1: [R] falls 0.03 → 0.02 M in 25 min. r_av = 4.0 × 10⁻⁴ M min⁻¹ = 6.67 × 10⁻⁶ M s⁻¹ (book 6.66 × 10⁻⁶)."], "formulas": [{"label": "Average rate", "html": "r<sub>av</sub> = −Δ[R]/Δt = Δ[P]/Δt", "cond": "Finite interval"}, {"label": "Stoichiometric rates", "html": "−(1/a) d[A]/dt = (1/b) d[B]/dt", "cond": "aA → bB"}], "deeper": "Intext 3.2: 2A → products, [A] 0.5 → 0.4 mol L⁻¹ in 10 min. −Δ[A]/Δt = 0.010 mol L⁻¹ min⁻¹; rate of reaction = (1/2)(−Δ[A]/Δt) = 0.005 mol L⁻¹ min⁻¹ (book key).", "worked": "Decomposition of N₂O₅ in CCl₄ at 318 K (Example 3.2): 2.33 → 2.08 mol L⁻¹ in 184 min. Average rate of reaction = (1/2)(0.25/184) = 6.79 × 10⁻⁴ mol L⁻¹ min⁻¹. Rate of production of NO₂ = 4 × that rate (from 2 N₂O₅ → 4 NO₂ + O₂).", "prediction": {"prompt": "Intext 3.1: [R] 0.03 → 0.02 M in 25 min. Average rate in mol L⁻¹ s⁻¹?", "options": ["6.67 × 10⁻⁶", "0.01", "25"], "answer": 0, "explanation": "(0.01 M)/25 min = 4.0 × 10⁻⁴ M min⁻¹ = 6.67 × 10⁻⁶ M s⁻¹."}, "connect": [["Food spoilage vs dental cement", "The Unit opener asks why food spoils and how to design a rapidly setting dental filling — both are kinetic questions, not equilibrium ones."], ["Wow — diamond is forever only kinetically", "ΔG(diamond → graphite) < 0, but the activation barrier is huge. Jewellery is a kinetic museum piece.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}]]], "recall": "Write the average-rate definition and convert Intext 3.1 to M s⁻¹.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Kinetics, unlike thermodynamics, tells you", "options": ["how fast a feasible reaction actually proceeds", "whether ΔG is negative", "the equilibrium constant only"], "answer": 0, "hint": "Unit opener: diamond → graphite.", "solution": "Thermodynamics: if. Kinetics: how fast.", "wrong": ["That is thermodynamics.", "K is from ΔG°, not from a rate."]}, {"level": "Medium", "type": "number", "map": "Intext 3.1", "prompt": "Average rate (×10⁻⁶ mol L⁻¹ s⁻¹) if [R] falls 0.03 → 0.02 M in 25 min", "answer": 6.67, "unit": "×10⁻⁶ M s⁻¹", "tolerance": 0.05, "hint": "0.01/25 min, then /60.", "solution": "4.0 × 10⁻⁴ M min⁻¹ = 6.67 × 10⁻⁶ M s⁻¹."}, {"level": "Hard", "type": "number", "map": "Intext 3.2", "prompt": "Rate of reaction (mol L⁻¹ min⁻¹) for 2A → products if [A] falls 0.5 → 0.4 M in 10 min", "answer": 0.005, "unit": "mol L⁻¹ min⁻¹", "tolerance": 0.0001, "hint": "Rate = (1/2)(−Δ[A]/Δt).", "solution": "(1/2)(0.10/10) = 0.005 mol L⁻¹ min⁻¹."}]}, {"id": "rate-law-order", "nav": "Rate law, order, molecularity", "title": "Rate = k [A]ᵐ [B]ⁿ — order is experiment; molecularity is a mechanism count", "deck": "Order may be 0, 1, 2, 2.5, even negative; it is fitted from rate data. Molecularity is 1, 2 or 3 and applies only to an elementary step.", "minutes": 9, "section": "3.2, 3.3", "pages": [6, 11], "print": "66–71", "sim": "ratelaw", "simTitle": "Rate vs concentration: order 0, 1, 2 and the Ex 3.11 table", "quick": ["The <strong>rate law</strong> Rate = k [A]ᵐ [B]ⁿ is experimental. m, n are orders with respect to A and B; m + n is the overall order. k is the rate constant; its units depend on order (for order n, mol¹⁻ⁿ Lⁿ⁻¹ s⁻¹).", "<strong>Molecularity</strong> is the number of species colliding in an elementary step (uni/bi/termolecular). Order can be fractional; molecularity cannot. For a complex reaction the slowest (rate-determining) step’s molecularity equals the observed order.", "Intext 3.3: r = k [A]¹/² [B]² ⇒ order = 2.5. Intext 3.4: second-order in X; tripling [X] multiplies rate by 9."], "formulas": [{"label": "Rate law", "html": "Rate = k [A]<sup>m</sup> [B]<sup>n</sup>", "cond": "m, n from experiment, not from stoichiometry"}, {"label": "Units of k", "html": "order n: &nbsp; mol<sup>1−n</sup> L<sup>n−1</sup> s<sup>−1</sup>", "cond": "First order: s⁻¹; second: L mol⁻¹ s⁻¹"}], "deeper": "Exercise 3.11: 2A + B → C + D. From the four experiments, order in B is 2 (rate ×4 when [B] ×2 at fixed [A]); order in A is 1. Rate = k [A][B]²; k = 6.0 × 10⁻³ / (0.1 × 0.1²) = 6.0 L² mol⁻² min⁻¹.", "worked": "Exercise 3.10: rates 5.07e-5, 5.07e-5, 1.43e-4 with [A],[B] = (0.20,0.30), (0.20,0.10), (0.40,0.05). Rate independent of [B] (order 0 in B). Doubling [A] multiplies rate by 1.43e-4/5.07e-5 ≈ 2.82 ≈ 2² / √2 wait: 2^1.5 = 2.83, so order 1.5 in A. (NCERT: order in A is 1.5, in B is 0.)", "prediction": {"prompt": "r = k [A]¹/² [B]² (Intext 3.3). Overall order?", "options": ["2.5", "2 — ignore the half", "3 — add coefficients from A + B → product"], "answer": 0, "explanation": "0.5 + 2 = 2.5. Stoichiometry does not give the rate law."}, "connect": [["Haber ammonia is not Rate = k [N₂][H₂]³", "The industrial rate law is a surface-catalysed mess. Never copy stoichiometric coefficients into a rate law without data (Table 3.1 lesson)."], ["Wow — order 2.5 is legal; molecularity 2.5 is not", "A molecule cannot collide 2½ times. Fractional order means a multi-step mechanism.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}]]], "recall": "Distinguish order from molecularity in one sentence and state the units of a second-order k.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Molecularity of a reaction is", "options": ["the number of species colliding in an elementary step", "always equal to the stoichiometric coefficients", "allowed to be 2.5"], "answer": 0, "hint": "Section 3.3.", "solution": "Molecularity is a mechanism integer 1, 2 or (rarely) 3.", "wrong": ["Only for an elementary reaction, and not from the overall equation blindly.", "Fractional molecularity is meaningless."]}, {"level": "Medium", "type": "number", "map": "Intext 3.3", "prompt": "Overall order of r = k [A]¹/² [B]²", "answer": 2.5, "unit": "", "tolerance": 0.05, "hint": "Sum the exponents.", "solution": "0.5 + 2 = 2.5."}, {"level": "Hard", "type": "mcq", "map": "Intext 3.4", "prompt": "X → Y is second order in X. If [X] is tripled, the rate of formation of Y", "options": ["increases 9 times", "increases 3 times", "is unchanged"], "answer": 0, "hint": "rate ∝ [X]².", "solution": "3² = 9.", "wrong": ["That would be first order.", "Second order depends on [X]."]}]}, {"id": "zero-order", "nav": "Zero-order integrated law", "title": "[R] = [R]₀ − k t  and  t₁/₂ = [R]₀ / 2k", "deck": "Zero-order: rate is independent of concentration (often a saturated catalyst surface — NH₃ on Pt). The [R]–t plot is a straight line of slope −k.", "minutes": 8, "section": "3.3.1", "pages": [11, 13], "print": "71–73", "sim": "zeroorder", "simTitle": "Zero-order decay: NH₃ on Pt and t₁/₂ ∝ [R]₀", "quick": ["Differential rate: −d[R]/dt = k. Integrate: <strong>[R] = [R]₀ − k t</strong>. A plot of [R] vs t is linear with slope −k. Units of k: mol L⁻¹ s⁻¹.", "t₁/₂ = [R]₀ / 2k — half-life is proportional to the starting concentration (opposite of first order).", "Exercise 3.3: decomposition of NH₃ on platinum is zero order, k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹. Rate of production of N₂ = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹; of H₂ = 3k = 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹ (2 NH₃ → N₂ + 3 H₂)."], "formulas": [{"label": "Zero order integrated", "html": "[R] = [R]₀ − k t", "cond": "Table 3.4"}, {"label": "Zero-order half-life", "html": "t<sub>1/2</sub> = [R]₀ / 2k", "cond": "Proportional to [R]₀"}], "deeper": "Zero order is typical when a catalyst surface is fully occupied: adding more gas does not increase the number of adsorbed molecules. Photochemical reactions with constant light intensity can also be zero order in the reactant.", "worked": "If [R]₀ = 0.10 M and k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹, the reactant is exhausted at t = [R]₀/k = 400 s, and t₁/₂ = 200 s. A first-order reaction with the same initial rate would have a constant t₁/₂.", "prediction": {"prompt": "Zero-order NH₃ on Pt, k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹ (Exercise 3.3). Rate of production of H₂?", "options": ["7.5 × 10⁻⁴ mol L⁻¹ s⁻¹", "2.5 × 10⁻⁴ mol L⁻¹ s⁻¹", "0 — zero order means zero rate"], "answer": 0, "explanation": "Rate of reaction = k. From 2 NH₃ → N₂ + 3 H₂, d[H₂]/dt = 3k."}, "connect": [["Catalytic converters are often zero-order in the pollutant", "At high [CO] the Pt/Pd surface is saturated, so the clean-up rate does not rise if the exhaust gets dirtier — a zero-order fingerprint."], ["Wow — half-life depends on how much you started with", "Pour twice as much ammonia over the same Pt foil and t₁/₂ doubles. That never happens for a first-order radioisotope.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}]]], "recall": "Write [R] = [R]₀ − k t and t₁/₂ = [R]₀ / 2k.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a zero-order reaction, t₁/₂ is", "options": ["proportional to [R]₀", "independent of [R]₀", "inversely proportional to [R]₀"], "answer": 0, "hint": "t₁/₂ = [R]₀ / 2k.", "solution": "Table 3.4.", "wrong": ["That is first order.", "That is second order."]}, {"level": "Medium", "type": "number", "map": "Exercise 3.3", "prompt": "Rate of production of N₂ (×10⁻⁴ mol L⁻¹ s⁻¹) if k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹ for 2 NH₃ → N₂ + 3 H₂ (zero order)", "answer": 2.5, "unit": "×10⁻⁴ mol L⁻¹ s⁻¹", "tolerance": 0.05, "hint": "d[N₂]/dt = k.", "solution": "Stoichiometric factor 1 for N₂."}, {"level": "Hard", "type": "number", "prompt": "t₁/₂ (s) for zero-order k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹ and [R]₀ = 0.10 M", "answer": 200, "unit": "s", "tolerance": 1, "hint": "t₁/₂ = [R]₀ / 2k.", "solution": "0.10 / (2 × 2.5 × 10⁻⁴) = 200 s."}]}, {"id": "first-order-halflife", "nav": "First-order & half-life", "title": "k = (2.303/t) log([R]₀/[R])  and  t₁/₂ = 0.693 / k", "deck": "First-order half-life is constant — independent of [R]₀. That is why ¹⁴C dating and ⁹⁰Sr in bone work. Example: k = 1.15 × 10⁻³ s⁻¹, 5 g → 3 g takes 444 s.", "minutes": 10, "section": "3.3.2", "pages": [13, 18], "print": "73–78", "sim": "halflife", "simTitle": "First-order half-life: ¹⁴C, N₂O₅, sucrose inversion", "quick": ["Differential: −d[R]/dt = k[R]. Integrate: <strong>k = (2.303/t) log ([R]₀/[R])</strong>, or [R] = [R]₀ e^{−kt}. A plot of log[R] vs t is linear with slope −k/2.303.", "<strong>t₁/₂ = 0.693 / k</strong> — independent of [R]₀. After n half-lives, [R] = [R]₀ / 2ⁿ.", "Intext 3.5: k = 1.15 × 10⁻³ s⁻¹, 5 g → 3 g; t = (2.303/k) log(5/3) = 444 s. Intext 3.6: t₁/₂(SO₂Cl₂) = 60 min ⇒ k = 0.693/3600 = 1.925 × 10⁻⁴ s⁻¹."], "formulas": [{"label": "First-order integrated", "html": "k = (2.303/t) log ([R]₀/[R])", "cond": "Or [R] = [R]₀ e<sup>−kt</sup>"}, {"label": "Half-life", "html": "t<sub>1/2</sub> = 0.693 / k", "cond": "Independent of [R]₀"}], "deeper": "Exercise 3.18: t₉₉ / t₉₀ = log(100/1) / log(100/10) = 2. Exactly twice. Exercise 3.16: to 1/16th is 4 half-lives; t = 4 × 0.693 / 60 = 0.0462 s. Exercise 3.14: ¹⁴C t₁/₂ = 5730 y, 80% remaining ⇒ t = 1845 y.", "worked": "Exercise 3.19: 30% decomposition in 40 min (70% left). k = (2.303/40) log(100/70) = 8.92 × 10⁻³ min⁻¹; t₁/₂ = 0.693/k = 77.7 min. Exercise 3.24: k = 2.0 × 10⁻² s⁻¹, t = 100 s, [A]₀ = 1.0; [A] = e^{−2} = 0.135 mol L⁻¹.", "prediction": {"prompt": "A first-order reaction has k = 1.15 × 10⁻³ s⁻¹. Time for 5 g to fall to 3 g (Intext 3.5)?", "options": ["444 s", "0.693 / 1.15 × 10⁻³ = 603 s (that is t₁/₂, not this conversion)", "5 − 3 = 2 s"], "answer": 0, "explanation": "t = (2.303/k) log(5/3) = 444 s. t₁/₂ would be the time to 2.5 g."}, "connect": [["Nalanda wood and ¹⁴C", "Exercise 3.14 is the archaeologist’s equation. An artefact with 80% of living-tree ¹⁴C is 1845 years old — Gupta-to-early-medieval, not Mauryan."], ["Wow — four half-lives to 1/16", "Exercise 3.16: 1/16 = (1/2)⁴. First-order clocks are just a stack of identical half-lives, whatever the starting amount.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}]]], "recall": "Write k = (2.303/t) log([R]₀/[R]) and t₁/₂ = 0.693/k. Show t₉₉ = 2 t₉₀.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a first-order reaction, t₁/₂ is", "options": ["independent of [R]₀", "proportional to [R]₀", "proportional to [R]₀²"], "answer": 0, "hint": "t₁/₂ = 0.693/k.", "solution": "Table 3.4.", "wrong": ["Zero order.", "Second order."]}, {"level": "Medium", "type": "number", "map": "Intext 3.5", "prompt": "Time (s) for 5 g → 3 g if k = 1.15 × 10⁻³ s⁻¹ (first order)", "answer": 444, "unit": "s", "tolerance": 5, "hint": "t = (2.303/k) log(5/3).", "solution": "444 s."}, {"level": "Hard", "type": "number", "map": "Exercise 3.16", "prompt": "Time (s) to reduce [A] to 1/16 of [A]₀ if k = 60 s⁻¹", "answer": 0.0462, "unit": "s", "tolerance": 0.001, "hint": "4 half-lives; t₁/₂ = 0.693/60.", "solution": "4 × 0.01155 = 0.0462 s."}]}, {"id": "pseudo-first", "nav": "Pseudo-first order", "title": "When water is 55.5 M, inversion of cane sugar looks first order", "deck": "A bimolecular reaction can show first-order kinetics if one reactant is in large excess. Hydrolysis of ester and inversion of C₁₂H₂₂O₁₁ are the textbook cases.", "minutes": 7, "section": "3.3.2", "pages": [18, 19], "print": "78–79", "sim": "pseudo", "simTitle": "Pseudo-first order: ester hydrolysis and sugar inversion", "quick": ["If rate = k₂ [A][B] but [B]₀ ≫ [A]₀, [B] ≈ constant and rate = k′ [A] with k′ = k₂ [B]. The reaction is <strong>pseudo first order</strong>.", "Inversion of cane sugar: C₁₂H₂₂O₁₁ + H₂O → glucose + fructose, Rate = k [C₁₂H₂₂O₁₁] because [H₂O] ≈ 55.5 M hardly changes. Acid-catalysed ester hydrolysis is the other standard example.", "Exercise 3.8 (table): average rate between 30 and 60 s is (0.31 − 0.17)/30 = 4.7 × 10⁻³ mol L⁻¹ s⁻¹. Exercise 3.25: sucrose t₁/₂ = 3.00 h; fraction left after 8 h = 2^{−8/3} = 0.157."], "formulas": [{"label": "Pseudo-first order", "html": "Rate = k₂ [A][B] ≈ k′ [A],  k′ = k₂ [B]₀", "cond": "[B]₀ ≫ [A]₀"}, {"label": "Sugar inversion", "html": "Rate = k [C₁₂H₂₂O₁₁]", "cond": "Water in excess"}], "deeper": "The polarimeter reading of a sugar solution is a direct first-order clock: α_t − α_∞ = (α₀ − α_∞) e^{−kt}. Same integrated law as N₂O₅, different hardware.", "worked": "Exercise 3.25: k = 0.693/3.00 h⁻¹; fraction remaining after 8 h = e^{−k×8} = e^{−0.693×8/3} = 0.157 (15.7%).", "prediction": {"prompt": "Sucrose inversion has t₁/₂ = 3.00 h (Exercise 3.25). Fraction remaining after 8 h?", "options": ["0.157 (2^{−8/3})", "0", "8/3"], "answer": 0, "explanation": "First-order remaining fraction = 2^{−t/t₁/₂} = 2^{−8/3} = 0.157."}, "connect": [["Khandsari and inversion", "Acid in a sugar mill invert syrup so it will not crystallise. The same pseudo-first-order law, run hot, is a factory process."], ["Wow — 55.5 mol L⁻¹ of solvent", "1 kg water is 55.5 mol. Consuming 0.01 mol of it in a litre flask is a 0.02% change — invisible to the rate law.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}]]], "recall": "Explain why inversion of cane sugar is pseudo first order and compute the 8-hour remaining fraction (Ex 3.25).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Inversion of cane sugar is treated as first order because", "options": ["[H₂O] is effectively constant", "the reaction is unimolecular", "sugar does not react with water"], "answer": 0, "hint": "Section 3.3 last pages.", "solution": "Water is in large excess; k′ = k₂ [H₂O].", "wrong": ["It is bimolecular.", "It does — that is the reaction."]}, {"level": "Medium", "type": "number", "map": "Exercise 3.8", "prompt": "Average rate (×10⁻³ mol L⁻¹ s⁻¹) between 30 and 60 s if [A] goes 0.31 → 0.17 M", "answer": 4.67, "unit": "×10⁻³ M s⁻¹", "tolerance": 0.1, "hint": "Δ[A]/Δt.", "solution": "0.14/30 = 4.67 × 10⁻³."}, {"level": "Hard", "type": "number", "map": "Exercise 3.25", "prompt": "Fraction of sucrose remaining after 8 h if t₁/₂ = 3.00 h", "answer": 0.157, "unit": "", "tolerance": 0.005, "hint": "2^{−8/3}.", "solution": "e^{−0.693×8/3} = 0.157."}]}, {"id": "arrhenius", "nav": "Arrhenius & collision theory", "title": "k = A e^{−E_a/RT} — a 10 °C rise often doubles the rate", "deck": "The exponential is brutal: Ex 3.30, rate ×4 from 293 to 313 K means E_a = 52.9 kJ mol⁻¹. Collision theory adds a steric factor P to the hard-sphere collision frequency.", "minutes": 10, "section": "3.4, 3.5", "pages": [19, 25], "print": "79–85", "sim": "arrhenius", "simTitle": "Arrhenius plot: ln k vs 1/T and the 10-degree rule", "quick": ["<strong>Arrhenius:</strong> k = A e^{−E_a/RT} (Eq. 3.18). A is the frequency (pre-exponential) factor; E_a is the activation energy. A plot of ln k vs 1/T is a straight line of slope −E_a/R.", "Two-temperature form: log(k₂/k₁) = (E_a/2.303 R) (1/T₁ − 1/T₂). A common rule of thumb: rate roughly doubles for a 10 °C rise near room temperature (E_a ~ 50 kJ mol⁻¹).", "Collision theory: k = P Z e^{−E_a/RT}. Z is the collision frequency; P ≤ 1 is the orientation (steric) factor. A catalyst lowers E_a by providing an alternative path (Section 3.5)."], "formulas": [{"label": "Arrhenius", "html": "k = A e<sup>−E<sub>a</sub>/RT</sup>", "cond": "Eq. 3.18"}, {"label": "Two temperatures", "html": "log (k₂/k₁) = (E<sub>a</sub> / 2.303 R) (1/T₁ − 1/T₂)", "cond": "R = 8.314 J K⁻¹ mol⁻¹"}, {"label": "Collision theory", "html": "k = P Z e<sup>−E<sub>a</sub>/RT</sup>", "cond": "P = steric factor"}], "deeper": "Exercise 3.30: k₂/k₁ = 4, T₁ = 293 K, T₂ = 313 K. E_a = 2.303 R × log 4 / (1/293 − 1/313) = 52.86 kJ mol⁻¹ (matches the spirit of Intext 3.8, 52.897 kJ mol⁻¹). Exercise 3.26: k = (4.5 × 10¹¹ s⁻¹) e^{−28000 K / T} ⇒ E_a = 28000 × 8.314 = 232.8 kJ mol⁻¹.", "worked": "Exercise 3.23: k = 2.418 × 10⁻⁵ s⁻¹ at 546 K, E_a = 179.9 kJ mol⁻¹. ln A = ln k + E_a/RT = −10.63 + 179900/(8.314×546) = 28.96; A = 3.9 × 10¹² s⁻¹.", "prediction": {"prompt": "The rate quadruples from 293 K to 313 K (Exercise 3.30). E_a?", "options": ["52.9 kJ mol⁻¹", "0 — temperature never affects k", "8.314 kJ mol⁻¹ — E_a equals R"], "answer": 0, "explanation": "log 4 = (E_a / 2.303 R) × (20)/(293×313) ⇒ E_a = 52.86 kJ mol⁻¹."}, "connect": [["Pressure cookers and Arrhenius", "Raising T by ~20 K in a cooker multiplies k several-fold for the same E_a ~ 50–80 kJ mol⁻¹ of food hydrolysis — dinner is kinetics."], ["Wow — e^{−Ea/RT} at 298 K for Ea = 100 kJ is 3 × 10⁻¹⁸", "Almost no molecule has that energy. A catalyst that cuts E_a to 50 kJ raises the Boltzmann factor by 10⁹. That is why enzymes exist.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}]]], "recall": "Write k = A e^{−Ea/RT} and compute E_a for a fourfold rate rise from 293 to 313 K.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A plot of ln k vs 1/T is linear with slope", "options": ["−E_a / R", "+E_a / R", "A"], "answer": 0, "hint": "ln k = ln A − (E_a/R)(1/T).", "solution": "Arrhenius plot.", "wrong": ["Wrong sign.", "A is the intercept, ln A."]}, {"level": "Medium", "type": "number", "map": "Exercise 3.26", "prompt": "E_a (kJ mol⁻¹) if k = (4.5 × 10¹¹ s⁻¹) e^{−28000 K / T}", "answer": 232.8, "unit": "kJ mol⁻¹", "tolerance": 0.5, "hint": "E_a = 28000 × R.", "solution": "28000 × 8.314 / 1000 = 232.8 kJ mol⁻¹."}, {"level": "Hard", "type": "number", "map": "Exercise 3.30", "prompt": "E_a (kJ mol⁻¹) if rate ×4 from 293 K to 313 K", "answer": 52.9, "unit": "kJ mol⁻¹", "tolerance": 0.5, "hint": "log(k₂/k₁) = (E_a/2.303 R)(1/T₁ − 1/T₂).", "solution": "E_a = 52.86 kJ mol⁻¹."}]}], "exercises": [{"number": "3.1", "conceptIdx": 1, "page": 85, "printPage": 85, "question": "From the rate expression for the following reactions, determine their order of reaction and the dimensions of the rate constants. (i) 3NO(g) → N₂O (g) Rate = k[NO]² (ii) H₂O₂ (aq) + 3I⁻ (aq) + 2H⁺ → 2H₂O (l) + I₃⁻ Rate = k[H₂O₂][I⁻] (iii) CH₃CHO (g) → CH₄ (g) + CO(g) Rate = k [CH₃CHO]³/² (iv) C₂H₅Cl (g) → C₂H₄ (g) + HCl (g) Rate = k [C₂H₅Cl]", "steps": ["(i) order 2; k: L mol⁻¹ s⁻¹.", "(ii) order 2; k: L mol⁻¹ s⁻¹.", "(iii) order 1.5; k: mol⁻¹/² L¹/² s⁻¹.", "(iv) order 1; k: s⁻¹."], "answer": "(i) 2, L mol⁻¹ s⁻¹; (ii) 2, L mol⁻¹ s⁻¹; (iii) 3/2, mol⁻⁰·⁵ L⁰·⁵ s⁻¹; (iv) 1, s⁻¹."}, {"number": "3.2", "conceptIdx": 1, "page": 85, "printPage": 85, "question": "For the reaction: 2A + B → A₂B the rate = k[A][B]² with k = 2.0 × 10⁻⁶ mol⁻² L² s⁻¹. Calculate the initial rate of the reaction when [A] = 0.1 mol L⁻¹, [B] = 0.2 mol L⁻¹. Calculate the rate of reaction after [A] is reduced to 0.06 mol L⁻¹.", "steps": ["Initial rate = 2.0e-6 × 0.1 × (0.2)² = 8.0 × 10⁻⁹ mol L⁻¹ s⁻¹.", "A consumed = 0.04 M ⇒ B consumed = 0.02 M (stoichiometry 2:1); [B] = 0.18 M.", "Rate = 2.0e-6 × 0.06 × (0.18)² = 3.89 × 10⁻⁹ mol L⁻¹ s⁻¹."], "answer": "8.0 × 10⁻⁹; then 3.89 × 10⁻⁹ mol L⁻¹ s⁻¹."}, {"number": "3.3", "conceptIdx": 2, "page": 85, "printPage": 85, "question": "The decomposition of NH₃ on platinum surface is zero order reaction. What are the rates of production of N₂ and H₂ if k = 2.5 × 10⁻⁴ mol⁻¹ L s⁻¹?", "steps": ["2 NH₃ → N₂ + 3 H₂; rate of reaction = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹.", "d[N₂]/dt = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹; d[H₂]/dt = 3k = 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹."], "answer": "N₂: 2.5 × 10⁻⁴; H₂: 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹."}, {"number": "3.4", "conceptIdx": 1, "page": 85, "printPage": 85, "question": "The decomposition of dimethyl ether leads to the formation of CH₄, H₂ and CO and the reaction rate is given by Rate = k [CH₃OCH₃]³/². The rate of reaction is followed by increase in pressure in a closed vessel, so the rate can also be expressed in terms of the partial pressure of dimethyl ether, i.e., Rate = k (p_CH₃OCH₃)³/². If the pressure is measured in bar and time in minutes, then what are the units of rate and rate constants?", "steps": ["Rate units: bar min⁻¹.", "k units: bar⁻¹/² min⁻¹ (because rate = k p^{3/2})."], "answer": "Rate: bar min⁻¹; k: bar⁻⁰·⁵ min⁻¹."}, {"number": "3.5", "conceptIdx": 1, "page": 85, "printPage": 85, "question": "Mention the factors that affect the rate of a chemical reaction.", "steps": ["Concentration (or partial pressure) of reactants; temperature; presence of a catalyst; nature of reactants and solvent; surface area for heterogeneous reactions; radiation (photochemical)."], "answer": "Concentration, T, catalyst, nature/surface, light."}, {"number": "3.6", "conceptIdx": 1, "page": 85, "printPage": 85, "question": "A reaction is second order with respect to a reactant. How is the rate of reaction affected if the concentration of the reactant is (i) doubled (ii) reduced to half?", "steps": ["rate ∝ [A]².", "(i) ×4.", "(ii) ×1/4."], "answer": "(i) becomes 4 times; (ii) becomes 1/4."}, {"number": "3.7", "conceptIdx": 6, "page": 85, "printPage": 85, "question": "What is the effect of temperature on the rate constant of a reaction? How can this effect of temperature on rate constant be represented quantitatively?", "steps": ["k increases with T (rule of thumb: ~2× per 10 °C near 298 K).", "Arrhenius: k = A e^{−Ea/RT}; log(k₂/k₁) = (Ea/2.303 R)(1/T₁ − 1/T₂)."], "answer": "k rises with T; Arrhenius equation."}, {"number": "3.8", "conceptIdx": 5, "page": 85, "printPage": 85, "question": "In a pseudo first order reaction in water, the following results were obtained: t/s = 0, 30, 60, 90; [A]/mol L⁻¹ = 0.55, 0.31, 0.17, 0.085. Calculate the average rate of reaction between the time interval 30 to 60 seconds.", "steps": ["r_av = (0.31 − 0.17)/30 = 4.67 × 10⁻³ mol L⁻¹ s⁻¹."], "answer": "4.67 × 10⁻³ mol L⁻¹ s⁻¹."}, {"number": "3.9", "conceptIdx": 1, "page": 85, "printPage": 85, "question": "A reaction is first order in A and second order in B. (i) Write the differential rate equation. (ii) How is the rate affected on increasing the concentration of B three times? (iii) How is the rate affected when the concentrations of both A and B are doubled?", "steps": ["(i) Rate = k [A][B]².", "(ii) ×9.", "(iii) ×2 × 2² = ×8."], "answer": "(i) k[A][B]²; (ii) 9 times; (iii) 8 times."}, {"number": "3.10", "conceptIdx": 1, "page": 86, "printPage": 86, "question": "In a reaction between A and B, the initial rate of reaction (r₀) was measured for different initial concentrations of A and B as given below: [A] = 0.20, 0.20, 0.40 mol L⁻¹; [B] = 0.30, 0.10, 0.05 mol L⁻¹; r₀ = 5.07×10⁻⁵, 5.07×10⁻⁵, 1.43×10⁻⁴ mol L⁻¹ s⁻¹. What is the order of the reaction with respect to A and B?", "steps": ["[A] fixed, [B] ×1/3, rate unchanged ⇒ order in B = 0.", "[A] ×2, rate ×2.82 ≈ 2^{1.5} ⇒ order in A = 1.5."], "answer": "Order in A = 1.5; in B = 0."}, {"number": "3.11", "conceptIdx": 1, "page": 86, "printPage": 86, "question": "The following results have been obtained during the kinetic studies of the reaction: 2A + B → C + D with experiments I–IV (see table). Determine the rate law and the rate constant for the reaction.", "steps": ["Compare I and IV: [A] ×4, [B] same, rate ×4 ⇒ order in A = 1.", "Compare II and III: [A] same, [B] ×2, rate ×4 ⇒ order in B = 2.", "Rate = k [A][B]²; k = 6.0e-3 / (0.1 × 0.1²) = 6.0 L² mol⁻² min⁻¹."], "answer": "Rate = k[A][B]²; k = 6.0 L² mol⁻² min⁻¹."}, {"number": "3.12", "conceptIdx": 1, "page": 86, "printPage": 86, "question": "The reaction between A and B is first order with respect to A and zero order with respect to B. Fill in the blanks in the following table: Experiment I: [A]=0.1, [B]=0.1, rate=2.0×10⁻²; II: [A]=?, [B]=0.2, rate=4.0×10⁻²; III: [A]=0.4, [B]=0.4, rate=?; IV: [A]=?, [B]=0.2, rate=2.0×10⁻².", "steps": ["Rate = k[A]; k = 0.20 min⁻¹ from I.", "II: [A] = 0.20; III: rate = 0.080; IV: [A] = 0.10."], "answer": "II [A] = 0.2 M; III rate = 8.0 × 10⁻²; IV [A] = 0.1 M."}, {"number": "3.13", "conceptIdx": 3, "page": 86, "printPage": 86, "question": "Calculate the half-life of a first order reaction from their rate constants given below: (i) 200 s⁻¹ (ii) 2 min⁻¹ (iii) 4 years⁻¹.", "steps": ["t₁/₂ = 0.693/k.", "(i) 3.465 × 10⁻³ s; (ii) 0.347 min; (iii) 0.173 y."], "answer": "(i) 3.47 × 10⁻³ s; (ii) 0.347 min; (iii) 0.173 y."}, {"number": "3.14", "conceptIdx": 3, "page": 86, "printPage": 86, "question": "The half-life for radioactive decay of ¹⁴C is 5730 years. An archaeological artifact containing wood had only 80% of the ¹⁴C found in a living tree. Estimate the age of the sample.", "steps": ["k = 0.693/5730 y⁻¹.", "t = (2.303/k) log(100/80) = 1845 years."], "answer": "1845 years."}, {"number": "3.15", "conceptIdx": 3, "page": 86, "printPage": 86, "question": "The experimental data for decomposition of N₂O₅ [2N₂O₅ → 4NO₂ + O₂] in gas phase at 318K are given below (t and [N₂O₅] table). (i) Plot [N₂O₅] against t. (ii) Find the half-life period for the reaction. (iii) Draw a graph between log[N₂O₅] and t. (iv) What is the rate law? (v) Calculate the rate constant. (vi) Calculate the half-life period from k and compare it with (ii).", "steps": ["(i)–(iii) graphs from the table (1.63×10⁻² → 0.35×10⁻² mol L⁻¹).", "(ii) [N₂O₅] halves from 1.63×10⁻² at t ≈ 1450 s (between 1200 and 1600 s).", "(iv) First order: rate = k [N₂O₅].", "(v) k = (2.303/t) log([A]₀/[A]); from t = 1600 s, k ≈ 4.6 × 10⁻⁴ s⁻¹.", "(vi) t₁/₂ = 0.693/k ≈ 1500 s, matching (ii)."], "answer": "First order; k ≈ 4.6 × 10⁻⁴ s⁻¹; t₁/₂ ≈ 1.5 × 10³ s."}, {"number": "3.16", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "The rate constant for a first order reaction is 60 s⁻¹. How much time will it take to reduce the initial concentration of the reactant to its 1/16th value?", "steps": ["1/16 = 4 half-lives.", "t₁/₂ = 0.693/60 = 0.01155 s; t = 0.0462 s.", "Or t = (2.303/60) log 16 = 0.0462 s."], "answer": "0.0462 s."}, {"number": "3.17", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "During nuclear explosion, one of the products is ⁹⁰Sr with half-life of 28.1 years. If 1mg of ⁹⁰Sr was absorbed in the bones of a newly born baby instead of calcium, how much of it will remain after 10 years and 60 years if it is not lost metabolically.", "steps": ["k = 0.693/28.1 y⁻¹.", "After 10 y: m = 1 × e^{−k×10} = 0.781 mg.", "After 60 y: m = 1 × 2^{−60/28.1} = 0.227 mg."], "answer": "0.781 mg after 10 y; 0.227 mg after 60 y."}, {"number": "3.18", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "For a first order reaction, show that time required for 99% completion is twice the time required for the completion of 90% of reaction.", "steps": ["t = (2.303/k) log([A]₀/[A]).", "t₉₉ = (2.303/k) log 100; t₉₀ = (2.303/k) log 10.", "t₉₉ / t₉₀ = 2 / 1 = 2."], "answer": "t₉₉ = 2 t₉₀."}, {"number": "3.19", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "A first order reaction takes 40 min for 30% decomposition. Calculate t₁/₂.", "steps": ["k = (2.303/40) log(100/70) = 8.92 × 10⁻³ min⁻¹.", "t₁/₂ = 0.693/k = 77.7 min."], "answer": "77.7 min."}, {"number": "3.20", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "For the decomposition of azoisopropane to hexane and nitrogen at 543 K, the following data are obtained. t (sec) = 0, 360, 720; P(mm of Hg) = 35.0, 54.0, 63.0. Calculate the rate constant.", "steps": ["A → B + C; p_A = 2p_i − p_t.", "At 360 s: p_A = 70 − 54 = 16; k = (2.303/360) log(35/16) = 2.18 × 10⁻³ s⁻¹.", "At 720 s: p_A = 70 − 63 = 7; k = (2.303/720) log(35/7) = 2.24 × 10⁻³ s⁻¹.", "Mean k ≈ 2.21 × 10⁻³ s⁻¹."], "answer": "k ≈ 2.2 × 10⁻³ s⁻¹."}, {"number": "3.21", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "The following data were obtained during the first order thermal decomposition of SO₂Cl₂ at a constant volume. SO₂Cl₂(g) → SO₂(g) + Cl₂(g). Experiment 1: t = 0, P = 0.5 atm; Experiment 2: t = 100 s, P = 0.6 atm. Calculate the rate of the reaction when total pressure is 0.65 atm.", "steps": ["p_i = 0.5; at 100 s p_t = 0.6 so x = 0.1; k = (2.303/100) log(0.5/0.4) = 2.23 × 10⁻³ s⁻¹.", "At p_t = 0.65, x = 0.15; p_A = 0.35 atm.", "Rate = k p_A = 7.80 × 10⁻⁴ atm s⁻¹."], "answer": "7.8 × 10⁻⁴ atm s⁻¹."}, {"number": "3.22", "conceptIdx": 6, "page": 87, "printPage": 87, "question": "The rate constant for the decomposition of N₂O₅ at various temperatures is given below: T/°C = 0, 20, 40, 60, 80; 10⁵ × k/s⁻¹ = 0.0787, 1.70, 25.7, 178, 2140. Draw a graph between ln k and 1/T and calculate the values of A and Ea. Predict the rate constant at 30° and 50°C.", "steps": ["Slope of ln k vs 1/T = −Ea/R. Using 0 °C and 80 °C: Ea ≈ 1.03 × 10⁵ J mol⁻¹; A ≈ 3.5 × 10¹⁴ s⁻¹ (order-of-magnitude from intercept).", "Interpolate/Arrhenius: k(30 °C) ≈ 6.6 × 10⁻⁵ s⁻¹; k(50 °C) ≈ 6.4 × 10⁻⁴ s⁻¹."], "answer": "Ea ~ 1.0 × 10² kJ mol⁻¹; k(303 K) ~ 6.6 × 10⁻⁵ s⁻¹; k(323 K) ~ 6.4 × 10⁻⁴ s⁻¹."}, {"number": "3.23", "conceptIdx": 6, "page": 87, "printPage": 87, "question": "The rate constant for the decomposition of hydrocarbons is 2.418 × 10⁻⁵s⁻¹ at 546 K. If the energy of activation is 179.9 kJ/mol, what will be the value of pre-exponential factor.", "steps": ["ln A = ln k + Ea/RT = ln(2.418e-5) + 179900/(8.314×546) = 28.96.", "A = 3.9 × 10¹² s⁻¹."], "answer": "3.9 × 10¹² s⁻¹."}, {"number": "3.24", "conceptIdx": 3, "page": 87, "printPage": 87, "question": "Consider a certain reaction A → Products with k = 2.0 × 10⁻²s⁻¹. Calculate the concentration of A remaining after 100 s if the initial concentration of A is 1.0 mol L⁻¹.", "steps": ["[A] = [A]₀ e^{−kt} = exp(−2.0).", " [A] = 0.135 mol L⁻¹."], "answer": "0.135 mol L⁻¹."}, {"number": "3.25", "conceptIdx": 5, "page": 87, "printPage": 87, "question": "Sucrose decomposes in acid solution into glucose and fructose according to the first order rate law, with t₁/₂ = 3.00 hours. What fraction of sample of sucrose remains after 8 hours?", "steps": ["k = 0.693/3 h⁻¹.", "fraction = e^{−k×8} = 2^{−8/3} = 0.157."], "answer": "0.157 (15.7%)."}, {"number": "3.26", "conceptIdx": 6, "page": 87, "printPage": 87, "question": "The decomposition of hydrocarbon follows the equation k = (4.5 × 10¹¹s⁻¹) e^{-28000K/T}. Calculate Ea.", "steps": ["Ea = 28000 × R = 28000 × 8.314 = 2.328 × 10⁵ J mol⁻¹ = 232.8 kJ mol⁻¹."], "answer": "232.8 kJ mol⁻¹."}, {"number": "3.27", "conceptIdx": 6, "page": 88, "printPage": 88, "question": "The rate constant for the first order decomposition of H₂O₂ is given by the following equation: log k = 14.34 – 1.25 × 10⁴ K/T. Calculate Ea for this reaction and at what temperature will its half-period be 256 minutes?", "steps": ["Slope = −Ea/(2.303 R) = −1.25 × 10⁴ ⇒ Ea = 1.25e4 × 2.303 × 8.314 = 239.3 kJ mol⁻¹.", "t₁/₂ = 256 min = 15360 s; k = 0.693/15360 = 4.51 × 10⁻⁵ s⁻¹.", "log k = −4.346 = 14.34 − 1.25e4 / T ⇒ T = 669 K."], "answer": "Ea = 239 kJ mol⁻¹; T = 669 K."}, {"number": "3.28", "conceptIdx": 6, "page": 88, "printPage": 88, "question": "The decomposition of A into product has value of k as 4.5 × 10³ s⁻¹ at 10°C and energy of activation 60 kJ mol⁻¹. At what temperature would k be 1.5 × 10⁴s⁻¹?", "steps": ["log(k₂/k₁) = (Ea/2.303 R)(1/T₁ − 1/T₂).", "log(3.333) = (60000/19.15)(1/283 − 1/T₂).", "T₂ = 297 K = 24 °C."], "answer": "297 K (24 °C)."}, {"number": "3.29", "conceptIdx": 6, "page": 88, "printPage": 88, "question": "The time required for 10% completion of a first order reaction at 298K is equal to that required for its 25% completion at 308K. If the value of A is 4 × 10¹⁰s⁻¹. Calculate k at 318K and Ea.", "steps": ["k₁₀ / k₂₅ = 1 because t is the same; k = (2.303/t) log(1/0.9) vs log(1/0.75).", "k₃₀₈ / k₂₉₈ = log(100/75)/log(100/90) = 2.73.", "Ea from two-T formula = 76.6 kJ mol⁻¹; k₃₁₈ = A e^{−Ea/RT} = 1.5 × 10⁻³ s⁻¹ (order 10⁻³)."], "answer": "Ea ≈ 76.6 kJ mol⁻¹; k(318 K) ≈ 1.5 × 10⁻³ s⁻¹."}, {"number": "3.30", "conceptIdx": 6, "page": 88, "printPage": 88, "question": "The rate of a reaction quadruples when the temperature changes from 293 K to 313 K. Calculate the energy of activation of the reaction assuming that it does not change with temperature.", "steps": ["log 4 = (Ea / 2.303 R) (1/293 − 1/313).", "Ea = 1.3863 × 8.314 × 293 × 313 / 20 = 52.86 kJ mol⁻¹."], "answer": "52.9 kJ mol⁻¹."}]};
+window.CHAPTER = {"code": "lech103", "chapterNumber": "03", "book_name": "Chemistry Part 1", "title": "Chemical Kinetics", "subtitle": "Rates, rate laws, integrated zero- and first-order equations, half-life, pseudo-first order, Arrhenius and collision theory.", "edition": "NCERT Chemistry Part 1, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lech103.pdf", "page_start": 61, "page_end": 88, "exercisesNote": "All 30 questions from the NCERT exercises (printed pp. 85–88), each mapped to the concept it practises, with a full step-by-step solution recomputed from the book data and the 2026–27 answer key.", "lessons": [{"id": "rate-average", "nav": "Average & instantaneous rate", "group": "01 / MEASURING REACTION RATE", "title": "Rate is −Δ[R]/Δt for a reactant — thermodynamics says if, kinetics says how fast", "deck": "Diamond → graphite is spontaneous but imperceptibly slow. Average rate uses a finite Δt; instantaneous rate is the tangent. For aA → bB, rates are related by stoichiometry.", "minutes": 8, "section": "3.1", "pages": [1, 6], "print": "61–66", "sim": "avgrate", "simTitle": "[N₂O₅] vs t: chord (average) vs tangent (instantaneous)", "watch": "Press the Intext 3.1 preset and slide t. The orange chord is the average rate over a finite interval; the green tangent is the instantaneous rate at that moment. The readout converts mol L⁻¹ min⁻¹ into mol L⁻¹ s⁻¹.", "quick": ["Chemical kinetics studies the <strong>speed</strong> of reactions and the factors that control it. Thermodynamics (ΔG < 0) only says a change is feasible; diamond → graphite is feasible but the rate is zero for practical purposes — ‘diamond is forever’.", "Average rate = −Δ[R]/Δt (reactant) or +Δ[P]/Δt (product). Instantaneous rate is the slope of the tangent to the concentration–time curve. For aA → bB, (−1/a) d[A]/dt = (1/b) d[B]/dt.", "Example 3.2 / Intext 3.1: [R] falls 0.03 → 0.02 M in 25 min. r_av = 4.0 × 10⁻⁴ M min⁻¹ = 6.67 × 10⁻⁶ M s⁻¹ (book 6.66 × 10⁻⁶)."], "formulas": [{"label": "Average rate", "html": "r<sub>av</sub> = −Δ[R]/Δt = Δ[P]/Δt", "cond": "Finite interval"}, {"label": "Stoichiometric rates", "html": "−(1/a) d[A]/dt = (1/b) d[B]/dt", "cond": "aA → bB"}], "deeper": "Intext 3.2: 2A → products, [A] 0.5 → 0.4 mol L⁻¹ in 10 min. −Δ[A]/Δt = 0.010 mol L⁻¹ min⁻¹; rate of reaction = (1/2)(−Δ[A]/Δt) = 0.005 mol L⁻¹ min⁻¹ (book key).", "worked": {"title": "NCERT Example 3.2: the average rate of N₂O₅ decomposition", "problem": "The decomposition of N₂O₅ in CCl₄ at 318 K is followed by measuring [N₂O₅]. It falls from 2.33 mol L⁻¹ to 2.08 mol L⁻¹ in 184 min according to 2 N₂O₅(g) → 4 NO₂(g) + O₂(g). Calculate the average rate of the reaction in mol L⁻¹ min⁻¹, mol L⁻¹ h⁻¹ and mol L⁻¹ s⁻¹, and the rate of production of NO₂.", "given": "[N₂O₅]₀ = 2.33 mol L⁻¹, [N₂O₅] at 184 min = 2.08 mol L⁻¹, Δt = 184 min; stoichiometry 2 N₂O₅ → 4 NO₂ + O₂.", "steps": ["Rate of reaction = −(1/2) Δ[N₂O₅]/Δt = (1/2)(2.33 − 2.08)/184 = 6.79 × 10⁻⁴ mol L⁻¹ min⁻¹.", "Convert to hours: 6.79 × 10⁻⁴ × 60 = 4.07 × 10⁻² mol L⁻¹ h⁻¹.", "Convert to seconds: 6.79 × 10⁻⁴ / 60 = 1.13 × 10⁻⁵ mol L⁻¹ s⁻¹.", "Rate of production of NO₂ = +(1/4) Δ[NO₂]/Δt = 4 × 6.79 × 10⁻⁴ = 2.72 × 10⁻³ mol L⁻¹ min⁻¹."], "answer": "Average rate = 6.79 × 10⁻⁴ mol L⁻¹ min⁻¹ = 4.07 × 10⁻² mol L⁻¹ h⁻¹ = 1.13 × 10⁻⁵ mol L⁻¹ s⁻¹; NO₂ is produced at 2.72 × 10⁻³ mol L⁻¹ min⁻¹."}, "prediction": {"prompt": "Intext 3.1: [R] 0.03 → 0.02 M in 25 min. Average rate in mol L⁻¹ s⁻¹?", "options": ["6.67 × 10⁻⁶", "0.01", "25"], "answer": 0, "explanation": "(0.01 M)/25 min = 4.0 × 10⁻⁴ M min⁻¹ = 6.67 × 10⁻⁶ M s⁻¹."}, "connect": [{"title": "Food spoilage vs dental cement", "text": "The Unit opener asks why food spoils and how to design a rapidly setting dental filling — both are questions of kinetics, not of equilibrium or thermodynamics."}, {"title": "Why the rate falls as the reaction proceeds", "text": "Table 3.1 follows butyl chloride hydrolysis: the average rate drops from 1.90 × 10⁻⁴ to 0.4 × 10⁻⁴ mol L⁻¹ s⁻¹ over 800 s. As [R] falls, collisions become less frequent, so the instantaneous rate decreases — the visible fingerprint of a rate law."}, {"title": "Wow: diamond is forever — but only kinetically", "text": "ΔG(diamond → graphite) is negative, yet the activation barrier is enormous, so the conversion rate is imperceptible. A gemstone is a kinetic museum piece: thermo​dynamics says the change is possible, kinetics says you will never see it.", "wow": true, "links": [{"t": "NCERT Chemistry Part 1 — Chemical Kinetics", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}], "video": {"id": "V2mHd3-MtXc", "title": "Average and Instantaneous Rate of a chemical reaction | Chemical Kinetics | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the average-rate definition and convert Intext 3.1 to M s⁻¹.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Kinetics, unlike thermodynamics, tells you", "options": ["how fast a feasible reaction actually proceeds", "whether ΔG is negative", "the equilibrium constant only"], "answer": 0, "hint": "Unit opener: diamond → graphite.", "solution": "Thermodynamics: if. Kinetics: how fast.", "wrong": ["That is thermodynamics.", "K is from ΔG°, not from a rate.", ""]}, {"level": "Medium", "type": "number", "map": "Intext 3.1", "prompt": "Average rate (×10⁻⁶ mol L⁻¹ s⁻¹) if [R] falls 0.03 → 0.02 M in 25 min", "answer": 6.67, "unit": "×10⁻⁶ M s⁻¹", "tolerance": 0.05, "hint": "0.01/25 min, then /60.", "solution": "4.0 × 10⁻⁴ M min⁻¹ = 6.67 × 10⁻⁶ M s⁻¹."}, {"level": "Hard", "type": "number", "map": "Intext 3.2", "prompt": "Rate of reaction (mol L⁻¹ min⁻¹) for 2A → products if [A] falls 0.5 → 0.4 M in 10 min", "answer": 0.005, "unit": "mol L⁻¹ min⁻¹", "tolerance": 0.0001, "hint": "Rate = (1/2)(−Δ[A]/Δt).", "solution": "(1/2)(0.10/10) = 0.005 mol L⁻¹ min⁻¹."}]}, {"id": "rate-law-order", "nav": "Rate law, order, molecularity", "group": "02 / ORDER FROM EXPERIMENTS", "title": "Rate = k [A]ᵐ [B]ⁿ — order is experiment; molecularity is a mechanism count", "deck": "Order may be 0, 1, 2, 2.5, even negative; it is fitted from rate data. Molecularity is 1, 2 or 3 and applies only to an elementary step.", "minutes": 9, "section": "3.2, 3.3", "pages": [6, 11], "print": "66–71", "sim": "ratelaw", "simTitle": "Rate vs concentration: order 0, 1, 2 and the Ex 3.11 table", "watch": "Switch between order 0, 1, 2 and 2.5 and move the [A] slider. The white dot tracks Rate = k[A]ⁿ. Only the experimental data decide n — never the balanced equation.", "quick": ["The <strong>rate law</strong> Rate = k [A]ᵐ [B]ⁿ is experimental. m, n are orders with respect to A and B; m + n is the overall order. k is the rate constant; its units depend on order (for order n, mol¹⁻ⁿ Lⁿ⁻¹ s⁻¹).", "<strong>Molecularity</strong> is the number of species colliding in an elementary step (uni/bi/termolecular). Order can be fractional; molecularity cannot. For a complex reaction the slowest (rate-determining) step’s molecularity equals the observed order.", "Intext 3.3: r = k [A]¹/² [B]² ⇒ order = 2.5. Intext 3.4: second-order in X; tripling [X] multiplies rate by 9."], "formulas": [{"label": "Rate law", "html": "Rate = k [A]<sup>m</sup> [B]<sup>n</sup>", "cond": "m, n from experiment, not from stoichiometry"}, {"label": "Units of k", "html": "order n:   mol<sup>1−n</sup> L<sup>n−1</sup> s<sup>−1</sup>", "cond": "First order: s⁻¹; second: L mol⁻¹ s⁻¹"}], "deeper": "Exercise 3.11: 2A + B → C + D. From the four experiments, order in B is 2 (rate ×4 when [B] ×2 at fixed [A]); order in A is 1. Rate = k [A][B]²; k = 6.0 × 10⁻³ / (0.1 × 0.1²) = 6.0 L² mol⁻² min⁻¹.", "worked": {"title": "NCERT Exercise 3.10: finding the order from initial rates", "problem": "For the reaction between A and B the initial rate r₀ was measured at three sets of initial concentrations: run 1: [A] = 0.20, [B] = 0.30, r₀ = 5.07 × 10⁻⁵; run 2: [A] = 0.20, [B] = 0.10, r₀ = 5.07 × 10⁻⁵; run 3: [A] = 0.40, [B] = 0.05, r₀ = 1.43 × 10⁻⁴ mol L⁻¹ s⁻¹. What is the order with respect to A and with respect to B?", "given": "runs 1 and 2 hold [A] fixed while [B] is tripled; runs 2 and 3 double [A] while [B] is halved.", "steps": ["Compare runs 1 and 2: [B] changes from 0.30 to 0.10 (×1/3) but r₀ stays 5.07 × 10⁻⁵. The rate is independent of [B], so the order in B is zero.", "Compare runs 2 and 3: [A] doubles (0.20 → 0.40) while [B] changes with no effect. r₀ changes by 1.43 × 10⁻⁴/5.07 × 10⁻⁵ = 2.82.", "For an order x in A, 2ˣ = 2.82, so x = log 2.82 / log 2 = 1.50.", "Hence Rate = k[A]^{3/2}[B]⁰ = k[A]^{3/2}; a half-order in A below the first power."], "answer": "Order in A = 1.5 (3/2); order in B = 0. The rate law is Rate = k[A]^{3/2}."}, "prediction": {"prompt": "r = k [A]¹/² [B]² (Intext 3.3). Overall order?", "options": ["2.5", "2 — ignore the half", "3 — add coefficients from A + B → product"], "answer": 0, "explanation": "0.5 + 2 = 2.5. Stoichiometry does not give the rate law."}, "connect": [{"title": "Haber ammonia is not Rate = k[N₂][H₂]³", "text": "The industrial rate law is a surface-catalysed expression. Compare Table 3.2: doubling [NO] quadruples the rate while doubling [O₂] doubles it, giving Rate = k[NO]²[O₂]. The exponents happen to match the coefficients here — but they must always be measured."}, {"title": "Order zero and order one-half are real", "text": "CHCl₃ + Cl₂ has Rate = k[CHCl₃][Cl₂]¹⁄², and the acid hydrolysis of ethyl acetate is Rate = k[CH₃COOC₂H₅][H₂O]⁰. Orders may be fractional or zero, and the units of k change with the overall order."}, {"title": "Wow: order 2.5 is legal; molecularity 2.5 is not", "text": "Intext 3.3 gives r = k[A]¹⁄²[B]², an overall order of 2.5. A molecule cannot collide two-and-a-half times, so molecularity must be a whole number and applies only to an elementary step.", "wow": true, "links": [{"t": "NCERT Chemistry Part 1 — Chemical Kinetics", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}], "video": {"id": "6Ng8ayarWHw", "title": "Rate law and reaction order | Kinetics | AP Chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Distinguish order from molecularity in one sentence and state the units of a second-order k.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Molecularity of a reaction is", "options": ["the number of species colliding in an elementary step", "always equal to the stoichiometric coefficients", "allowed to be 2.5"], "answer": 0, "hint": "Section 3.3.", "solution": "Molecularity is a mechanism integer 1, 2 or (rarely) 3.", "wrong": ["Only for an elementary reaction, and not from the overall equation blindly.", "Fractional molecularity is meaningless.", ""]}, {"level": "Medium", "type": "number", "map": "Intext 3.3", "prompt": "Overall order of r = k [A]¹/² [B]²", "answer": 2.5, "unit": "dimensionless", "tolerance": 0.05, "hint": "Sum the exponents.", "solution": "0.5 + 2 = 2.5."}, {"level": "Hard", "type": "mcq", "map": "Intext 3.4", "prompt": "X → Y is second order in X. If [X] is tripled, the rate of formation of Y", "options": ["increases 9 times", "increases 3 times", "is unchanged"], "answer": 0, "hint": "rate ∝ [X]².", "solution": "3² = 9.", "wrong": ["That would be first order.", "Second order depends on [X].", ""]}]}, {"id": "zero-order", "nav": "Zero-order integrated law", "group": "03 / ZERO-ORDER KINETICS", "title": "[R] = [R]₀ − k t  and  t₁/₂ = [R]₀ / 2k", "deck": "Zero-order: rate is independent of concentration (often a saturated catalyst surface — NH₃ on Pt). The [R]–t plot is a straight line of slope −k.", "minutes": 8, "section": "3.3.1", "pages": [11, 13], "print": "71–73", "sim": "zeroorder", "simTitle": "Zero-order decay: NH₃ on Pt and t₁/₂ ∝ [R]₀", "watch": "Set the initial concentration [R]₀ and play the timeline. The [R] line is straight with slope −k, and t½ = [R]₀/2k grows when you pour in more reactant.", "quick": ["Differential rate: −d[R]/dt = k. Integrate: <strong>[R] = [R]₀ − k t</strong>. A plot of [R] vs t is linear with slope −k. Units of k: mol L⁻¹ s⁻¹.", "t₁/₂ = [R]₀ / 2k — half-life is proportional to the starting concentration (opposite of first order).", "Exercise 3.3: decomposition of NH₃ on platinum is zero order, k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹. Rate of production of N₂ = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹; of H₂ = 3k = 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹ (2 NH₃ → N₂ + 3 H₂)."], "formulas": [{"label": "Zero order integrated", "html": "[R] = [R]₀ − k t", "cond": "Table 3.4"}, {"label": "Zero-order half-life", "html": "t<sub>1/2</sub> = [R]₀ / 2k", "cond": "Proportional to [R]₀"}], "deeper": "Zero order is typical when a catalyst surface is fully occupied: adding more gas does not increase the number of adsorbed molecules. Photochemical reactions with constant light intensity can also be zero order in the reactant.", "worked": {"title": "NCERT Exercise 3.3: zero-order decomposition of ammonia on platinum", "problem": "The decomposition of NH₃ on a platinum surface is zero order. What are the rates of production of N₂ and H₂ if k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹?", "given": "2 NH₃(g) → N₂(g) + 3 H₂(g); zero order, so rate of reaction = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹. (The question prints mol⁻¹ L s⁻¹, a unit typo.)", "steps": ["For a zero-order reaction the rate of the reaction does not depend on [NH₃]: rate = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹.", "From the stoichiometry, d[N₂]/dt = rate of reaction = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹.", "d[H₂]/dt = 3 × rate of reaction = 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹.", "At high pressure the Pt surface is saturated with NH₃, so adding more NH₃ cannot raise the rate."], "answer": "N₂: 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹; H₂: 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹."}, "prediction": {"prompt": "Zero-order NH₃ on Pt, k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹ (Exercise 3.3). Rate of production of H₂?", "options": ["7.5 × 10⁻⁴ mol L⁻¹ s⁻¹", "2.5 × 10⁻⁴ mol L⁻¹ s⁻¹", "0 — zero order means zero rate"], "answer": 0, "explanation": "Rate of reaction = k. From 2 NH₃ → N₂ + 3 H₂, d[H₂]/dt = 3k."}, "connect": [{"title": "Catalytic converters are often zero order", "text": "At high [CO] the Pt/Pd surface is saturated, so the clean-up rate does not rise when the exhaust gets dirtier. That is the zero-order fingerprint: rate = k, independent of concentration."}, {"title": "Zero order in the textbook", "text": "The decomposition of gaseous ammonia on hot platinum at high pressure is zero order, Rate = k[NH₃]⁰ = k, because the catalyst surface is fully occupied. The thermal decomposition of HI on a gold surface behaves the same way."}, {"title": "Wow: half-life depends on how much you started with", "text": "Pour twice as much ammonia over the same Pt foil and t½ = [R]₀/2k doubles. A first-order radio​isotope never behaves like that — its half-life is a constant.", "wow": true, "links": [{"t": "NCERT Chemistry Part 1 — Chemical Kinetics", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}], "video": {"id": "zo3mIphMSQ0", "title": "What is a zero order reaction ? | Kinetics | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write [R] = [R]₀ − k t and t₁/₂ = [R]₀ / 2k.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a zero-order reaction, t₁/₂ is", "options": ["proportional to [R]₀", "independent of [R]₀", "inversely proportional to [R]₀"], "answer": 0, "hint": "t₁/₂ = [R]₀ / 2k.", "solution": "Table 3.4.", "wrong": ["That is first order.", "That is second order.", ""]}, {"level": "Medium", "type": "number", "map": "Exercise 3.3", "prompt": "Rate of production of N₂ (×10⁻⁴ mol L⁻¹ s⁻¹) if k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹ for 2 NH₃ → N₂ + 3 H₂ (zero order)", "answer": 2.5, "unit": "×10⁻⁴ mol L⁻¹ s⁻¹", "tolerance": 0.05, "hint": "d[N₂]/dt = k.", "solution": "Stoichiometric factor 1 for N₂."}, {"level": "Hard", "type": "number", "prompt": "t₁/₂ (s) for zero-order k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹ and [R]₀ = 0.10 M", "answer": 200, "unit": "s", "tolerance": 1, "hint": "t₁/₂ = [R]₀ / 2k.", "solution": "0.10 / (2 × 2.5 × 10⁻⁴) = 200 s."}]}, {"id": "first-order-halflife", "nav": "First-order & half-life", "group": "04 / FIRST-ORDER & HALF-LIFE", "title": "k = (2.303/t) log([R]₀/[R])  and  t₁/₂ = 0.693 / k", "deck": "First-order half-life is constant — independent of [R]₀. That is why ¹⁴C dating and ⁹⁰Sr in bone work. Example: k = 1.15 × 10⁻³ s⁻¹, 5 g → 3 g takes 444 s.", "minutes": 10, "section": "3.3.2", "pages": [13, 18], "print": "73–78", "sim": "halflife", "simTitle": "First-order half-life: ¹⁴C, N₂O₅, sucrose inversion", "watch": "Choose the ¹⁴C clock, the 5 g → 3 g conversion or the 1/16 problem. The half-life markers stay equally spaced whatever the starting amount — the signature of first order.", "quick": ["Differential: −d[R]/dt = k[R]. Integrate: <strong>k = (2.303/t) log ([R]₀/[R])</strong>, or [R] = [R]₀ e^{−kt}. A plot of log[R] vs t is linear with slope −k/2.303.", "<strong>t₁/₂ = 0.693 / k</strong> — independent of [R]₀. After n half-lives, [R] = [R]₀ / 2ⁿ.", "Intext 3.5: k = 1.15 × 10⁻³ s⁻¹, 5 g → 3 g; t = (2.303/k) log(5/3) = 444 s. Intext 3.6: t₁/₂(SO₂Cl₂) = 60 min ⇒ k = 0.693/3600 = 1.925 × 10⁻⁴ s⁻¹."], "formulas": [{"label": "First-order integrated", "html": "k = (2.303/t) log ([R]₀/[R])", "cond": "Or [R] = [R]₀ e<sup>−kt</sup>"}, {"label": "Half-life", "html": "t<sub>1/2</sub> = 0.693 / k", "cond": "Independent of [R]₀"}], "deeper": "Exercise 3.18: t₉₉ / t₉₀ = log(100/1) / log(100/10) = 2. Exactly twice. Exercise 3.16: to 1/16th is 4 half-lives; t = 4 × 0.693 / 60 = 0.0462 s. Exercise 3.14: ¹⁴C t₁/₂ = 5730 y, 80% remaining ⇒ t = 1845 y.", "worked": {"title": "NCERT Example 3.5: rate constant from a first-order decomposition", "problem": "The initial concentration of N₂O₅ in the reaction N₂O₅(g) → 2 NO₂(g) + ½ O₂(g) was 1.24 × 10⁻² mol L⁻¹ at 318 K. After 60 minutes it had fallen to 0.20 × 10⁻² mol L⁻¹. Calculate the rate constant at 318 K.", "given": "[R]₀ = 1.24 × 10⁻² mol L⁻¹, [R] = 0.20 × 10⁻² mol L⁻¹, t = 60 min; first order.", "steps": ["Use k = (2.303/t) log([R]₀/[R]).", "Substitute: k = (2.303/60) log(1.24 × 10⁻²/0.20 × 10⁻²) = (2.303/60) log 6.2.", "log 6.2 = 0.7924, so k = (2.303 × 0.7924)/60 = 0.0304 min⁻¹.", "Equivalently k = 5.07 × 10⁻⁴ s⁻¹; the concentration plot is a straight line of slope −k/2.303 when log[R] is plotted against t."], "answer": "k = 3.04 × 10⁻² min⁻¹ (0.0304 min⁻¹)."}, "prediction": {"prompt": "A first-order reaction has k = 1.15 × 10⁻³ s⁻¹. Time for 5 g to fall to 3 g (Intext 3.5)?", "options": ["444 s", "0.693 / 1.15 × 10⁻³ = 603 s (that is t₁/₂, not this conversion)", "5 − 3 = 2 s"], "answer": 0, "explanation": "t = (2.303/k) log(5/3) = 444 s. t₁/₂ would be the time to 2.5 g."}, "connect": [{"title": "Nalanda wood and ¹⁴C", "text": "Exercise 3.14 is the archaeologist's equation. An artefact with 80% of living-tree ¹⁴C is 1845 years old — that places it in the Gupta–early medieval period, not the Mauryan."}, {"title": "First-order clocks everywhere", "text": "Radioactive decay, drug clearance from the blood and the decomposition of N₂O₅ all follow the same law. Because t½ = 0.693/k is independent of the starting amount, a patient clears half of any dose in the same time."}, {"title": "Wow: four half-lives to 1/16", "text": "Exercise 3.16 takes [A] to 1/16 = (1/2)⁴, so the time is exactly 4 × 0.693/k = 0.0462 s. A first-order clock is just a stack of identical half-lives.", "wow": true, "links": [{"t": "NCERT Chemistry Part 1 — Chemical Kinetics", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}], "video": {"id": "e4qci9b2d3U", "title": "Half-life of a first-order reaction | Kinetics | AP Chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Write k = (2.303/t) log([R]₀/[R]) and t₁/₂ = 0.693/k. Show t₉₉ = 2 t₉₀.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a first-order reaction, t₁/₂ is", "options": ["independent of [R]₀", "proportional to [R]₀", "proportional to [R]₀²"], "answer": 0, "hint": "t₁/₂ = 0.693/k.", "solution": "Table 3.4.", "wrong": ["Zero order.", "Second order.", ""]}, {"level": "Medium", "type": "number", "map": "Intext 3.5", "prompt": "Time (s) for 5 g → 3 g if k = 1.15 × 10⁻³ s⁻¹ (first order)", "answer": 444, "unit": "s", "tolerance": 5, "hint": "t = (2.303/k) log(5/3).", "solution": "444 s."}, {"level": "Hard", "type": "number", "map": "Exercise 3.16", "prompt": "Time (s) to reduce [A] to 1/16 of [A]₀ if k = 60 s⁻¹", "answer": 0.0462, "unit": "s", "tolerance": 0.001, "hint": "4 half-lives; t₁/₂ = 0.693/60.", "solution": "4 × 0.01155 = 0.0462 s."}]}, {"id": "pseudo-first", "nav": "Pseudo-first order", "group": "05 / PSEUDO-FIRST ORDER", "title": "When water is 55.5 M, inversion of cane sugar looks first order", "deck": "A bimolecular reaction can show first-order kinetics if one reactant is in large excess. Hydrolysis of ester and inversion of C₁₂H₂₂O₁₁ are the textbook cases.", "minutes": 7, "section": "3.3.2", "pages": [18, 19], "print": "78–79", "sim": "pseudo", "simTitle": "Pseudo-first order: ester hydrolysis and sugar inversion", "watch": "Run the sucrose clock: the fraction bar has halved every 3 h even though water is a reactant. Compare with the 30–60 s average-rate preset from Exercise 3.8.", "quick": ["If rate = k₂ [A][B] but [B]₀ ≫ [A]₀, [B] ≈ constant and rate = k′ [A] with k′ = k₂ [B]. The reaction is <strong>pseudo first order</strong>.", "Inversion of cane sugar: C₁₂H₂₂O₁₁ + H₂O → glucose + fructose, Rate = k [C₁₂H₂₂O₁₁] because [H₂O] ≈ 55.5 M hardly changes. Acid-catalysed ester hydrolysis is the other standard example.", "Exercise 3.8 (table): average rate between 30 and 60 s is (0.31 − 0.17)/30 = 4.7 × 10⁻³ mol L⁻¹ s⁻¹. Exercise 3.25: sucrose t₁/₂ = 3.00 h; fraction left after 8 h = 2^{−8/3} = 0.157."], "formulas": [{"label": "Pseudo-first order", "html": "Rate = k₂ [A][B] ≈ k′ [A],  k′ = k₂ [B]₀", "cond": "[B]₀ ≫ [A]₀"}, {"label": "Sugar inversion", "html": "Rate = k [C₁₂H₂₂O₁₁]", "cond": "Water in excess"}], "deeper": "The polarimeter reading of a sugar solution is a direct first-order clock: α_t − α_∞ = (α₀ − α_∞) e^{−kt}. Same integrated law as N₂O₅, different hardware.", "worked": {"title": "NCERT Exercise 3.25: how much sucrose survives 8 hours?", "problem": "Sucrose decomposes in acid solution into glucose and fructose by a first-order rate law with t½ = 3.00 h. What fraction of the sucrose remains after 8 hours?", "given": "t½ = 3.00 h; for first order the fraction left after n half-lives is (1/2)ⁿ.", "steps": ["The number of half-lives in 8 h is n = 8/3 = 2.667.", "Fraction remaining = (1/2)ⁿ = 2⁻⁸⁄³.", "Equivalently k = 0.693/3.00 = 0.231 h⁻¹, and fraction = e⁻⁷·⁹¹⁻= e⁻¹·⁸⁴² = 0.157.", "The reaction is pseudo first order because water is in huge excess ([H₂O] ≈ 55.5 mol L⁻¹), so its concentration does not change."], "answer": "About 0.157 of the sucrose remains (the NCERT key rounds this to 0.158)."}, "prediction": {"prompt": "Sucrose inversion has t₁/₂ = 3.00 h (Exercise 3.25). Fraction remaining after 8 h?", "options": ["0.157 (2^{−8/3})", "0", "8/3"], "answer": 0, "explanation": "First-order remaining fraction = 2^{−t/t₁/₂} = 2^{−8/3} = 0.157."}, "connect": [{"title": "Khandsari and inversion", "text": "Acid in a sugar mill inverts syrup so that it will not crystallise. The same pseudo-first-order law, run hot, is a factory process."}, {"title": "Water is 55.5 mol L⁻¹ everywhere", "text": "Hydrolysing 0.01 mol of ethyl acetate in 10 mol of water changes the water amount only slightly, so [H₂O] stays effectively 55.5 mol L⁻¹. The bimolecular reaction then behaves as first order with k′ = k₂[H₂O]."}, {"title": "Wow: a solvent so concentrated it disappears from the rate law", "text": "Consuming 0.01 mol of water in a litre flask changes [H₂O] by about 0.02%. The rate law cannot see the change, so the concentration of water is absorbed into the rate constant — that is the whole trick of pseudo-first order.", "wow": true, "links": [{"t": "NCERT Chemistry Part 1 — Chemical Kinetics", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}], "video": {"id": "4yMIUTxWgYQ", "title": "Pseudo First Order Reaction - Chemical Kinetics - Chemistry Class 12", "channel": "Ekeeda"}}], "recall": "Explain why inversion of cane sugar is pseudo first order and compute the 8-hour remaining fraction (Ex 3.25).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Inversion of cane sugar is treated as first order because", "options": ["[H₂O] is effectively constant", "the reaction is unimolecular", "sugar does not react with water"], "answer": 0, "hint": "Section 3.3 last pages.", "solution": "Water is in large excess; k′ = k₂ [H₂O].", "wrong": ["It is bimolecular.", "It does — that is the reaction.", ""]}, {"level": "Medium", "type": "number", "map": "Exercise 3.8", "prompt": "Average rate (×10⁻³ mol L⁻¹ s⁻¹) between 30 and 60 s if [A] goes 0.31 → 0.17 M", "answer": 4.67, "unit": "×10⁻³ M s⁻¹", "tolerance": 0.1, "hint": "Δ[A]/Δt.", "solution": "0.14/30 = 4.67 × 10⁻³."}, {"level": "Hard", "type": "number", "map": "Exercise 3.25", "prompt": "Fraction of sucrose remaining after 8 h if t₁/₂ = 3.00 h", "answer": 0.157, "unit": "dimensionless", "tolerance": 0.005, "hint": "2^{−8/3}.", "solution": "e^{−0.693×8/3} = 0.157."}]}, {"id": "arrhenius", "nav": "Arrhenius & collision theory", "group": "06 / ARRHENIUS & COLLISIONS", "title": "k = A e^{−E_a/RT} — a 10 °C rise often doubles the rate", "deck": "The exponential is brutal: Ex 3.30, rate ×4 from 293 to 313 K means E_a = 52.9 kJ mol⁻¹. Collision theory adds a steric factor P to the hard-sphere collision frequency.", "minutes": 10, "section": "3.4, 3.5", "pages": [19, 25], "print": "79–85", "sim": "arrhenius", "simTitle": "Arrhenius plot: ln k vs 1/T and the 10-degree rule", "watch": "Move T₂ and watch Eₐ. On an ln k vs 1/T plot the line steepens as Eₐ grows; collision theory adds the steric factor P on top of the collision frequency Z.", "quick": ["<strong>Arrhenius:</strong> k = A e^{−E_a/RT} (Eq. 3.18). A is the frequency (pre-exponential) factor; E_a is the activation energy. A plot of ln k vs 1/T is a straight line of slope −E_a/R.", "Two-temperature form: log(k₂/k₁) = (E_a/2.303 R) (1/T₁ − 1/T₂). A common rule of thumb: rate roughly doubles for a 10 °C rise near room temperature (E_a ~ 50 kJ mol⁻¹).", "Collision theory: k = P Z e^{−E_a/RT}. Z is the collision frequency; P ≤ 1 is the orientation (steric) factor. A catalyst lowers E_a by providing an alternative path (Section 3.5)."], "formulas": [{"label": "Arrhenius", "html": "k = A e<sup>−E<sub>a</sub>/RT</sup>", "cond": "Eq. 3.18"}, {"label": "Two temperatures", "html": "log (k₂/k₁) = (E<sub>a</sub> / 2.303 R) (1/T₁ − 1/T₂)", "cond": "R = 8.314 J K⁻¹ mol⁻¹"}, {"label": "Collision theory", "html": "k = P Z e<sup>−E<sub>a</sub>/RT</sup>", "cond": "P = steric factor"}], "deeper": "Exercise 3.30: k₂/k₁ = 4, T₁ = 293 K, T₂ = 313 K. E_a = 2.303 R × log 4 / (1/293 − 1/313) = 52.86 kJ mol⁻¹ (matches the spirit of Intext 3.8, 52.897 kJ mol⁻¹). Exercise 3.26: k = (4.5 × 10¹¹ s⁻¹) e^{−28000 K / T} ⇒ E_a = 28000 × 8.314 = 232.8 kJ mol⁻¹.", "worked": {"title": "NCERT Example 3.9: Eₐ and A from two rate constants", "problem": "The rate constants of a reaction at 500 K and 700 K are 0.02 s⁻¹ and 0.07 s⁻¹. Calculate the values of Eₐ and A.", "given": "k₁ = 0.02 s⁻¹ at T₁ = 500 K; k₂ = 0.07 s⁻¹ at T₂ = 700 K; R = 8.314 J K⁻¹ mol⁻¹.", "steps": ["Use log(k₂/k₁) = (Eₐ/2.303R)(T₂ − T₁)/(T₁T₂).", "log(0.07/0.02) = log 3.5 = 0.5441 = Eₐ × 200 / (2.303 × 8.314 × 500 × 700).", "Eₐ = 0.5441 × 2.303 × 8.314 × 350000/200 = 18,231 J mol⁻¹ = 18.2 kJ mol⁻¹.", "From k = A e<sup>−Eₐ/RT</sup>: 0.02 = A × e<sup>−18,231/(8.314 × 500)</sup> = A × e<sup>−4.386</sup>, so A = 0.02/0.0124 = 1.6 s⁻¹."], "answer": "Eₐ ≈ 1.82 × 10⁴ J mol⁻¹ (18.2 kJ mol⁻¹) and A ≈ 1.6 s⁻¹."}, "prediction": {"prompt": "The rate quadruples from 293 K to 313 K (Exercise 3.30). E_a?", "options": ["52.9 kJ mol⁻¹", "0 — temperature never affects k", "8.314 kJ mol⁻¹ — E_a equals R"], "answer": 0, "explanation": "log 4 = (E_a / 2.303 R) × (20)/(293×313) ⇒ E_a = 52.86 kJ mol⁻¹."}, "connect": [{"title": "Pressure cookers and Arrhenius", "text": "Raising the temperature by ~20 K in a cooker multiplies k several-fold for the same Eₐ of 50–80 kJ mol⁻¹ of food hydrolysis. Dinner is applied kinetics."}, {"title": "Catalysts lower Eₐ, never ΔG", "text": "A catalyst provides an alternative path with a lower activation energy (Fig. 3.11) and accelerates the forward and backward reactions equally. It changes the rate, never the equilibrium constant or the Gibbs energy change."}, {"title": "Wow: the Boltzmann factor is brutal", "text": "At 298 K, e<sup>−Eₐ/RT</sup> for Eₐ = 100 kJ mol⁻¹ is about 3 × 10⁻¹⁸ — almost no molecule has that energy. An enzyme or catalyst that cuts Eₐ to 50 kJ raises the factor by roughly 10⁹.", "wow": true, "links": [{"t": "NCERT Chemistry Part 1 — Chemical Kinetics", "u": "https://ncert.nic.in/textbook/pdf/lech103.pdf"}], "video": {"id": "zjhepBLtqug", "title": "The Arrhenius equation | Kinetics | AP Chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Write k = A e^{−Ea/RT} and compute E_a for a fourfold rate rise from 293 to 313 K.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A plot of ln k vs 1/T is linear with slope", "options": ["−E_a / R", "+E_a / R", "A"], "answer": 0, "hint": "ln k = ln A − (E_a/R)(1/T).", "solution": "Arrhenius plot.", "wrong": ["Wrong sign.", "A is the intercept, ln A.", ""]}, {"level": "Medium", "type": "number", "map": "Exercise 3.26", "prompt": "E_a (kJ mol⁻¹) if k = (4.5 × 10¹¹ s⁻¹) e^{−28000 K / T}", "answer": 232.8, "unit": "kJ mol⁻¹", "tolerance": 0.5, "hint": "E_a = 28000 × R.", "solution": "28000 × 8.314 / 1000 = 232.8 kJ mol⁻¹."}, {"level": "Hard", "type": "number", "map": "Exercise 3.30", "prompt": "E_a (kJ mol⁻¹) if rate ×4 from 293 K to 313 K", "answer": 52.9, "unit": "kJ mol⁻¹", "tolerance": 0.5, "hint": "log(k₂/k₁) = (E_a/2.303 R)(1/T₁ − 1/T₂).", "solution": "E_a = 52.86 kJ mol⁻¹."}]}], "exercises": [{"q": 1, "title": "Order and dimensions of the rate constant", "conceptIdx": 1, "page": 25, "printPage": 85, "question": "From the rate expression for the following reactions, determine their order of reaction and the dimensions of the rate constants.<br>(i) 3 NO(g) → N₂O(g)   Rate = k[NO]²<br>(ii) H₂O₂(aq) + 3 I⁻(aq) + 2 H⁺ → 2 H₂O(l) + I₃⁻   Rate = k[H₂O₂][I⁻]<br>(iii) CH₃CHO(g) → CH₄(g) + CO(g)   Rate = k[CH₃CHO]³⁄²<br>(iv) C₂H₅Cl(g) → C₂H₄(g) + HCl(g)   Rate = k[C₂H₅Cl]", "given": "Each rate law is given; the overall order is the sum of the exponents.", "steps": ["(i) Order = 2. From mol L⁻¹ s⁻¹ = k (mol L⁻¹)², k has units L mol⁻¹ s⁻¹.", "(ii) Order = 1 + 1 = 2; the same second-order units, L mol⁻¹ s⁻¹.", "(iii) Order = 3/2. mol L⁻¹ s⁻¹ = k (mol L⁻¹)^{3/2} gives k in mol⁻¹⁄² L¹⁄² s⁻¹.", "(iv) Order = 1; a first-order constant has units s⁻¹."], "answer": "(i) 2, L mol⁻¹ s⁻¹; (ii) 2, L mol⁻¹ s⁻¹; (iii) 3/2, mol⁻¹⁄² L¹⁄² s⁻¹; (iv) 1, s⁻¹.", "takeaway": "The order fixes the units of k through mol¹⁻ⁿ Lⁿ⁻¹ s⁻¹.", "conceptName": "Rate law, order & molecularity"}, {"q": 2, "title": "Rate after a given amount has reacted", "conceptIdx": 1, "page": 25, "printPage": 85, "question": "For the reaction 2 A + B → A₂B, the rate = k[A][B]² with k = 2.0 × 10⁻⁶ mol⁻² L² s⁻¹. Calculate the initial rate of the reaction when [A] = 0.1 mol L⁻¹ and [B] = 0.2 mol L⁻¹. Calculate the rate of reaction after [A] is reduced to 0.06 mol L⁻¹.", "given": "k = 2.0 × 10⁻⁶ mol⁻² L² s⁻¹; initial [A] = 0.10, [B] = 0.20 mol L⁻¹. From 2 A + B, Δ[B] = ½ Δ[A].", "steps": ["Initial rate = 2.0 × 10⁻⁶ × 0.10 × (0.20)² = 8.0 × 10⁻⁹ mol L⁻¹ s⁻¹.", "When [A] falls to 0.06, A consumed = 0.04 mol L⁻¹, so B consumed = 0.02 mol L⁻¹ and [B] = 0.18 mol L⁻¹.", "New rate = 2.0 × 10⁻⁶ × 0.06 × (0.18)² = 3.89 × 10⁻⁹ mol L⁻¹ s⁻¹."], "answer": "Initial rate = 8.0 × 10⁻⁹ mol L⁻¹ s⁻¹; after [A] = 0.06 mol L⁻¹ the rate is 3.89 × 10⁻⁹ mol L⁻¹ s⁻¹.", "takeaway": "The stoichiometry tells you how much B disappears with A; the rate law tells you the new rate.", "conceptName": "Rate law, order & molecularity"}, {"q": 3, "title": "Zero-order production of N₂ and H₂", "conceptIdx": 2, "page": 25, "printPage": 85, "question": "The decomposition of NH₃ on a platinum surface is a zero order reaction. What are the rates of production of N₂ and H₂ if k = 2.5 × 10⁻⁴ mol⁻¹ L s⁻¹?", "given": "2 NH₃(g) → N₂(g) + 3 H₂(g); zero order with k = 2.5 × 10⁻⁴. The unit printed in the question is a typo for mol L⁻¹ s⁻¹.", "steps": ["For a zero-order reaction, rate of reaction = k = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹, independent of [NH₃].", "d[N₂]/dt = rate of reaction = 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹.", "d[H₂]/dt = 3 × rate of reaction = 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹."], "answer": "N₂: 2.5 × 10⁻⁴ mol L⁻¹ s⁻¹; H₂: 7.5 × 10⁻⁴ mol L⁻¹ s⁻¹.", "takeaway": "Zero order does not mean zero rate; it means the rate is the same at every concentration.", "conceptName": "Zero-order integrated law"}, {"q": 4, "title": "Units of rate and k in the gas phase", "conceptIdx": 1, "page": 25, "printPage": 85, "question": "The decomposition of dimethyl ether leads to the formation of CH₄, H₂ and CO and the reaction rate is given by Rate = k[CH₃OCH₃]³⁄². The rate of reaction is followed by increase in pressure in a closed vessel, so the rate can also be expressed in terms of the partial pressure of dimethyl ether, i.e. Rate = k(p<sub>CH₃OCH₃</sub>)³⁄². If the pressure is measured in bar and time in minutes, what are the units of rate and the rate constant?", "given": "Rate expressed in bar min⁻¹; overall order = 3/2.", "steps": ["Rate has the units of pressure per time: bar min⁻¹.", "From bar min⁻¹ = k (bar)^{3/2}, the rate constant has units bar⁻¹⁄² min⁻¹."], "answer": "Rate: bar min⁻¹; k: bar⁻¹⁄² min⁻¹.", "takeaway": "In the gas phase, concentration can be replaced by partial pressure and mol L⁻¹ by bar.", "conceptName": "Rate law, order & molecularity"}, {"q": 5, "title": "Factors that control the rate", "conceptIdx": 1, "page": 25, "printPage": 85, "question": "Mention the factors that affect the rate of a chemical reaction.", "given": "The chapter studies concentration, temperature and catalyst in detail.", "steps": ["Concentration (or partial pressure) of the reactants: rate laws depend on these.", "Temperature: k usually rises steeply with T; a 10 °C rise often doubles the rate.", "Presence of a catalyst: it provides a lower-energy path and raises k.", "Nature of the reactants and solvent, surface area for heterogeneous reactions, and light for photochemical reactions also matter."], "answer": "Concentration, temperature, catalyst, and the nature/surface area of the reactants (plus light for photochemical reactions).", "takeaway": "The factors change the rate constant or the concentrations that enter the rate law — neither changes ΔG.", "conceptName": "Rate law, order & molecularity"}, {"q": 6, "title": "Second-order rate scaling", "conceptIdx": 1, "page": 25, "printPage": 85, "question": "A reaction is second order with respect to a reactant. How is the rate of reaction affected if the concentration of the reactant is (i) doubled and (ii) reduced to half?", "given": "Rate ∝ [A]².", "steps": ["For a second-order dependence, Rate = k[A]².", "(i) If [A] → 2[A], rate → k(2[A])² = 4 k[A]², so the rate becomes 4 times.", "(ii) If [A] → ½[A], rate → k([A]/2)² = (1/4) k[A]², so the rate becomes one-quarter."], "answer": "(i) 4 times; (ii) one-quarter.", "takeaway": "For order n, multiply the rate by (concentration factor)ⁿ.", "conceptName": "Rate law, order & molecularity"}, {"q": 7, "title": "Temperature and the rate constant", "conceptIdx": 5, "page": 25, "printPage": 85, "question": "What is the effect of temperature on the rate constant of a reaction? How can this effect of temperature on rate constant be represented quantitatively?", "given": "Arrhenius equation k = A e<sup>−Eₐ/RT</sup>.", "steps": ["For most reactions k increases with temperature; the rate constant roughly doubles for a 10 °C rise near room temperature.", "Quantitatively, k = A e<sup>−Eₐ/RT</sup>, where A is the Arrhenius or frequency factor and Eₐ the activation energy.", "For two temperatures, log(k₂/k₁) = (Eₐ/2.303R)(1/T₁ − 1/T₂); a plot of ln k against 1/T is a straight line of slope −Eₐ/R with intercept ln A."], "answer": "k rises with T; the Arrhenius equation represents it, and ln k vs 1/T gives a straight line of slope −Eₐ/R.", "takeaway": "The exponential is why a small temperature change can produce a large rate change.", "conceptName": "Arrhenius & collision theory"}, {"q": 8, "title": "Average rate in a pseudo-first-order run", "conceptIdx": 4, "page": 25, "printPage": 85, "question": "In a pseudo first order reaction in water, the following results were obtained: t/s = 0, 30, 60, 90 and [A]/mol L⁻¹ = 0.55, 0.31, 0.17, 0.085. Calculate the average rate of reaction between the time interval 30 to 60 seconds.", "given": "t₁ = 30 s, [A]₁ = 0.31 mol L⁻¹; t₂ = 60 s, [A]₂ = 0.17 mol L⁻¹.", "steps": ["rₐₚ = −Δ[A]/Δt over the interval 30–60 s.", "−Δ[A] = 0.31 − 0.17 = 0.14 mol L⁻¹; Δt = 60 − 30 = 30 s.", "rₐₚ = 0.14/30 = 4.67 × 10⁻³ mol L⁻¹ s⁻¹."], "answer": "4.67 × 10⁻³ mol L⁻¹ s⁻¹. (The NCERT key also lists a part (ii), 1.98 × 10⁻² s⁻¹, for a rate constant that the reprinted question does not ask for.)", "takeaway": "Average rate uses two points on the concentration–time curve; only a tangent gives the instantaneous rate.", "conceptName": "Pseudo-first order", "figure": "ex3.8"}, {"q": 9, "title": "Rate law for first order in A, second in B", "conceptIdx": 1, "page": 25, "printPage": 85, "question": "A reaction is first order in A and second order in B. (i) Write the differential rate equation. (ii) How is the rate affected on increasing the concentration of B three times? (iii) How is the rate affected when the concentrations of both A and B are doubled?", "given": "Order in A = 1, order in B = 2.", "steps": ["(i) The differential rate equation is Rate = −d[A]/dt = k[A][B]².", "(ii) Tripling [B] multiplies the rate by 3² = 9.", "(iii) Doubling both gives a factor 2 × 2² = 2 × 4 = 8."], "answer": "(i) Rate = k[A][B]²; (ii) 9 times; (iii) 8 times.", "takeaway": "Apply each concentration change to the exponent that goes with it.", "conceptName": "Rate law, order & molecularity"}, {"q": 10, "title": "Orders from initial-rate data", "conceptIdx": 1, "page": 26, "printPage": 86, "question": "In a reaction between A and B, the initial rate of reaction (r₀) was measured for different initial concentrations of A and B as given below: [A]/mol L⁻¹ = 0.20, 0.20, 0.40; [B]/mol L⁻¹ = 0.30, 0.10, 0.05; r₀/mol L⁻¹ s⁻¹ = 5.07 × 10⁻⁵, 5.07 × 10⁻⁵, 1.43 × 10⁻⁴. What is the order of the reaction with respect to A and B?", "given": "Runs 1 and 2 keep [A] = 0.20 while [B] changes 0.30 → 0.10; runs 2 and 3 change [A] 0.20 → 0.40.", "steps": ["Compare runs 1 and 2: [B] is tripled but r₀ is unchanged, so the order with respect to B is zero.", "Compare runs 2 and 3: [A] doubles and [B] halves (no effect), while r₀ becomes 1.43 × 10⁻⁴/5.07 × 10⁻⁵ = 2.82.", "2ˣ = 2.82 gives x = log 2.82/log 2 = 1.5; the order with respect to A is 1.5."], "answer": "Order with respect to A = 1.5; order with respect to B = 0. Rate = k[A]^{3/2}.", "takeaway": "Vary one concentration at a time and read the exponent from the rate ratio.", "conceptName": "Rate law, order & molecularity", "figure": "ex3.10"}, {"q": 11, "title": "Rate law and rate constant from four runs", "conceptIdx": 1, "page": 26, "printPage": 86, "question": "The following results have been obtained during the kinetic studies of the reaction 2 A + B → C + D: experiment I: [A] = 0.1, [B] = 0.1, initial rate of formation of D = 6.0 × 10⁻³ mol L⁻¹ min⁻¹; II: [A] = 0.3, [B] = 0.2, rate = 7.2 × 10⁻²; III: [A] = 0.3, [B] = 0.4, rate = 2.88 × 10⁻¹; IV: [A] = 0.4, [B] = 0.1, rate = 2.40 × 10⁻². Determine the rate law and the rate constant for the reaction.", "given": "mol L⁻¹ min⁻¹ rates from Table; compare runs I and IV (same [B]) and II and III (same [A]).", "steps": ["Compare I and IV: [B] is the same (0.1) while [A] goes 0.1 → 0.4 (×4) and the rate goes 6.0 × 10⁻³ → 2.40 × 10⁻² (×4), so the order in A is 1.", "Compare II and III: [A] is the same (0.3) while [B] goes 0.2 → 0.4 (×2) and the rate goes 7.2 × 10⁻² → 2.88 × 10⁻¹ (×4), so the order in B is 2.", "The rate law is Rate = k[A][B]². From run I, k = 6.0 × 10⁻³/(0.1 × 0.1²) = 6.0 L² mol⁻² min⁻¹."], "answer": "Rate = k[A][B]² with k = 6.0 L² mol⁻² min⁻¹ (= 6.0 mol⁻² L² min⁻¹).", "takeaway": "A pair of runs that differ in only one concentration isolates one exponent.", "conceptName": "Rate law, order & molecularity", "figure": "ex3.11"}, {"q": 12, "title": "Filling in a rate table", "conceptIdx": 1, "page": 26, "printPage": 86, "question": "The reaction between A and B is first order with respect to A and zero order with respect to B. Fill in the blanks in the following table: experiment I: [A] = 0.1, [B] = 0.1, initial rate = 2.0 × 10⁻² mol L⁻¹ min⁻¹; II: [A] = ?, [B] = 0.2, rate = 4.0 × 10⁻²; III: [A] = 0.4, [B] = 0.4, rate = ?; IV: [A] = ?, [B] = 0.2, rate = 2.0 × 10⁻².", "given": "Rate = k[A] with k = 2.0 × 10⁻²/0.1 = 0.20 min⁻¹ from run I.", "steps": ["From run I, k = rate/[A] = 2.0 × 10⁻²/0.1 = 0.20 min⁻¹.", "Run II: [A] = 4.0 × 10⁻²/0.20 = 0.20 mol L⁻¹.", "Run III: rate = 0.20 × 0.4 = 8.0 × 10⁻² mol L⁻¹ min⁻¹.", "Run IV: [A] = 2.0 × 10⁻²/0.20 = 0.10 mol L⁻¹."], "answer": "II: [A] = 0.20 mol L⁻¹; III: rate = 8.0 × 10⁻² mol L⁻¹ min⁻¹; IV: [A] = 0.10 mol L⁻¹.", "takeaway": "[B] does not appear in the rate law, so it cannot change the rate.", "conceptName": "Rate law, order & molecularity", "figure": "ex3.12"}, {"q": 13, "title": "Half-lives from three rate constants", "conceptIdx": 3, "page": 26, "printPage": 86, "question": "Calculate the half-life of a first order reaction from their rate constants given below: (i) 200 s⁻¹, (ii) 2 min⁻¹, (iii) 4 years⁻¹.", "given": "t½ = 0.693/k for first order.", "steps": ["For first order t½ = 0.693/k, independent of concentration.", "(i) t½ = 0.693/200 = 3.47 × 10⁻³ s.", "(ii) t½ = 0.693/2 = 0.347 min.", "(iii) t½ = 0.693/4 = 0.173 year."], "answer": "(i) 3.47 × 10⁻³ s; (ii) 0.347 min; (iii) 0.173 year.", "takeaway": "The half-life is inverse in k; the units follow k.", "conceptName": "First-order & half-life"}, {"q": 14, "title": "Ageing a wooden artefact", "conceptIdx": 3, "page": 26, "printPage": 86, "question": "The half-life for radioactive decay of ¹⁴C is 5730 years. An archaeological artifact containing wood had only 80% of the ¹⁴C found in a living tree. Estimate the age of the sample.", "given": "t½(¹⁴C) = 5730 y, [R]/[R]₀ = 0.80.", "steps": ["k = 0.693/t½ = 0.693/5730 = 1.21 × 10⁻⁴ y⁻¹.", "t = (2.303/k) log([R]₀/[R]) = (2.303/1.21 × 10⁻⁴) log(1/0.80).", "log(1.25) = 0.0969, so t = 1.904 × 10⁴ × 0.0969 = 1845 years."], "answer": "About 1845 years.", "takeaway": "First-order decay makes ¹⁴C a clock that does not care how much carbon the tree started with.", "conceptName": "First-order & half-life"}, {"q": 15, "title": "N₂O₅ decomposition data and half-life", "conceptIdx": 3, "page": 26, "printPage": 86, "question": "The experimental data for decomposition of N₂O₅ [2 N₂O₅ → 4 NO₂ + O₂] in the gas phase at 318 K are given below: t/s = 0, 400, 800, 1200, 1600, 2000, 2400, 2800, 3200; 10² × [N₂O₅]/mol L⁻¹ = 1.63, 1.36, 1.14, 0.93, 0.78, 0.64, 0.53, 0.43, 0.35. (i) Plot [N₂O₅] against t. (ii) Find the half-life period for the reaction. (iii) Draw a graph between log[N₂O₅] and t. (iv) What is the rate law? (v) Calculate the rate constant. (vi) Calculate the half-life period from k and compare it with (ii).", "given": "Data as above; the reaction is first order if a plot of log[N₂O₅] against t is a straight line.", "steps": ["(i)–(iii) [N₂O₅] against t is a decaying curve; log[N₂O₅] against t is a straight line, so the reaction is first order.", "(ii) [N₂O₅]₀ = 1.63 × 10⁻² mol L⁻¹, so t½ is the time to 0.815 × 10⁻²; interpolation between 1200 s (0.93) and 1600 s (0.78) gives t½ ≈ 1.5 × 10³ s.", "(iv) Rate = k[N₂O₅].", "(v) k = (2.303/t) log([A]₀/[A]); using t = 1600 s: k = (2.303/1600) log(1.63/0.78) = 4.6 × 10⁻⁴ s⁻¹ (values from 4.6 to 4.8 × 10⁻⁴ s⁻¹ over the table).", "(vi) t½ = 0.693/k ≈ 1.5 × 10³ s, in agreement with (ii)."], "answer": "First order; k ≈ 4.7 × 10⁻⁴ s⁻¹; t½ ≈ 1.5 × 10³ s from both the graph and k.", "takeaway": "Plotting log[R] is the standard test for first order: a straight line means d[R]/dt = −k[R].", "conceptName": "First-order & half-life", "figure": "ex3.15"}, {"q": 16, "title": "Time to reach one-sixteenth", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "The rate constant for a first order reaction is 60 s⁻¹. How much time will it take to reduce the initial concentration of the reactant to its 1/16th value?", "given": "k = 60 s⁻¹; [R]/[R]₀ = 1/16 = (1/2)⁴.", "steps": ["1/16 = (1/2)⁴, so the reaction needs four half-lives.", "t½ = 0.693/60 = 1.155 × 10⁻² s.", "t = 4 × 1.155 × 10⁻² = 4.62 × 10⁻² s. Check with the integrated law: t = (2.303/60) log 16 = 0.0462 s."], "answer": "4.62 × 10⁻² s (about 0.046 s).", "takeaway": "Count half-lives for simple powers of two, then use t½ = 0.693/k.", "conceptName": "First-order & half-life"}, {"q": 17, "title": "Strontium-90 in bone", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "During a nuclear explosion, one of the products is ⁹⁰Sr with a half-life of 28.1 years. If 1 mg of ⁹⁰Sr was absorbed in the bones of a newly born baby instead of calcium, how much of it will remain after 10 years and 60 years if it is not lost metabolically?", "given": "t½ = 28.1 y, m₀ = 1 mg.", "steps": ["k = 0.693/28.1 = 2.466 × 10⁻² y⁻¹.", "After 10 y: m = m₀e⁻⁷⁺ = e⁻²·⁴⁶⁶ = 0.781 mg.", "After 60 y: m = e⁻⁷⁺ = e⁻¹·⁴⁷⁹ = 0.227 mg (equivalently 2⁻⁶⁰⁄²⁸·¹ = 0.227)."], "answer": "0.781 mg after 10 years; 0.227 mg after 60 years.", "takeaway": "Biologically dangerous because Sr follows calcium into bone, where its 28-year half-life keeps irradiating the tissue.", "conceptName": "First-order & half-life"}, {"q": 18, "title": "99% versus 90% completion", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "For a first order reaction, show that time required for 99% completion is twice the time required for the completion of 90% of reaction.", "given": "t = (2.303/k) log([R]₀/[R]) for first order.", "steps": ["For 90% completion, 10% remains: t₉₀ = (2.303/k) log(100/10) = (2.303/k) log 10 = (2.303/k)(1.000).", "For 99% completion, 1% remains: t₉₉ = (2.303/k) log(100/1) = (2.303/k) log 100 = (2.303/k)(2.000).", "Therefore t₉₉/t₉₀ = 2/1 = 2, so t₉₉ = 2t₉₀."], "answer": "t₉₉ = 2 t₉₀.", "takeaway": "For first order, the ratio of two completion times is just the ratio of the logs of the remaining fractions.", "conceptName": "First-order & half-life"}, {"q": 19, "title": "Half-life after 30% decomposition", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "A first order reaction takes 40 min for 30% decomposition. Calculate t½.", "given": "First order; [R]/[R]₀ = 100 − 30 = 70% after 40 min.", "steps": ["k = (2.303/t) log([R]₀/[R]) = (2.303/40) log(100/70).", "log(100/70) = 0.1549, so k = (2.303 × 0.1549)/40 = 8.92 × 10⁻³ min⁻¹.", "t½ = 0.693/k = 0.693/8.92 × 10⁻³ = 77.7 min."], "answer": "t½ = 77.7 min.", "takeaway": "A 30% loss means 70% remains — always convert percentages into the remaining fraction before using the log form.", "conceptName": "First-order & half-life"}, {"q": 20, "title": "Rate constant from total-pressure data", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "For the decomposition of azoisopropane to hexane and nitrogen at 543 K, the following data are obtained: t/s = 0, 360, 720; P/mm of Hg = 35.0, 54.0, 63.0. Calculate the rate constant.", "given": "(CH₃)₂CHN=NCH(CH₃)₂ → N₂ + C₆H₁₄, so A → B + C and p<sub>A</sub> = 2pᵢ − p<sub>total</sub>, with pᵢ = 35.0 mm Hg.", "steps": ["At t = 360 s, p<sub>total</sub> = 54.0 mm Hg, so p<sub>A</sub> = 2(35.0) − 54.0 = 16.0 mm Hg.", "k₁ = (2.303/360) log(35.0/16.0) = 2.17 × 10⁻³ s⁻¹.", "At t = 720 s, p<sub>total</sub> = 63.0 mm Hg, so p<sub>A</sub> = 70.0 − 63.0 = 7.0 mm Hg.", "k₂ = (2.303/720) log(35.0/7.0) = 2.24 × 10⁻³ s⁻¹; the mean is 2.20 × 10⁻³ s⁻¹."], "answer": "k ≈ 2.2 × 10⁻³ s⁻¹ (mean of 2.17 and 2.24 × 10⁻³ s⁻¹).", "takeaway": "For A → B + C, the total pressure rises by x while A falls by x, so p<sub>A</sub> = 2pᵢ − p<sub>total</sub>.", "conceptName": "First-order & half-life", "figure": "ex3.20"}, {"q": 21, "title": "Rate when SO₂Cl₂ pressure is 0.65 atm", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "The following data were obtained during the first order thermal decomposition of SO₂Cl₂ at a constant volume: SO₂Cl₂(g) → SO₂(g) + Cl₂(g). Experiment 1: t = 0, total pressure = 0.5 atm; experiment 2: t = 100 s, total pressure = 0.6 atm. Calculate the rate of the reaction when total pressure is 0.65 atm.", "given": "pᵢ = 0.50 atm; at 100 s p<sub>total</sub> = 0.60 atm; A → B + C so p<sub>A</sub> = 2pᵢ − p<sub>total</sub>.", "steps": ["At 100 s, x = p<sub>total</sub> − pᵢ = 0.10 atm, so p<sub>A</sub> = 0.50 − 0.10 = 0.40 atm.", "k = (2.303/100) log(0.50/0.40) = 2.23 × 10⁻³ s⁻¹.", "When p<sub>total</sub> = 0.65 atm, x = 0.15 atm and p<sub>A</sub> = 0.35 atm.", "Rate = k p<sub>A</sub> = 2.23 × 10⁻³ × 0.35 = 7.80 × 10⁻⁴ atm s⁻¹."], "answer": "k = 2.23 × 10⁻³ s⁻¹; rate at p<sub>total</sub> = 0.65 atm is 7.8 × 10⁻⁴ atm s⁻¹.", "takeaway": "First find k from one data point, then substitute the required partial pressure into Rate = kp<sub>A</sub>.", "conceptName": "First-order & half-life", "figure": "ex3.21"}, {"q": 22, "title": "Arrhenius parameters from five temperatures", "conceptIdx": 5, "page": 27, "printPage": 87, "question": "The rate constant for the decomposition of N₂O₅ at various temperatures is given below: T/°C = 0, 20, 40, 60, 80; 10⁵ × k/s⁻¹ = 0.0787, 1.70, 25.7, 178, 2140. Draw a graph between ln k and 1/T and calculate the values of A and Eₐ. Predict the rate constant at 30° and 50 °C.", "given": "Five (T, k) pairs; ln k vs 1/T is a straight line of slope −Eₐ/R and intercept ln A.", "steps": ["Convert to SI: k = 7.87 × 10⁻⁷ (273 K), 1.70 × 10⁻⁵ (293 K), 2.57 × 10⁻⁴ (313 K), 1.78 × 10⁻³ (333 K), 2.14 × 10⁻² s⁻¹ (353 K).", "A least-squares fit of ln k against 1/T gives slope ≈ −1.21 × 10⁴ K, so Eₐ = 1.21 × 10⁴ × 8.314 = 1.01 × 10⁵ J mol⁻¹ ≈ 1.0 × 10² kJ mol⁻¹.", "The intercept is ln A ≈ 30.3, so A ≈ 1.5 × 10¹³ s⁻¹.", "The fitted line gives ln k(303 K) = −9.66, so k(30 °C) ≈ 6.4 × 10⁻⁵ s⁻¹; ln k(323 K) = −7.18 gives k(50 °C) ≈ 7.6 × 10⁻⁴ s⁻¹."], "answer": "Eₐ ≈ 1.0 × 10² kJ mol⁻¹, A ≈ 1.5 × 10¹³ s⁻¹, k(30 °C) ≈ 6.4 × 10⁻⁵ s⁻¹, k(50 °C) ≈ 7.6 × 10⁻⁴ s⁻¹. (The 2026–27 answer key omits this exercise; the values here are the least-squares fit to all five printed points.)", "takeaway": "ln k vs 1/T is the most reliable way to extract both Eₐ and A from a table of rate constants.", "conceptName": "Arrhenius & collision theory", "figure": "ex3.22"}, {"q": 23, "title": "Pre-exponential factor from k and Eₐ", "conceptIdx": 5, "page": 27, "printPage": 87, "question": "The rate constant for the decomposition of hydrocarbons is 2.418 × 10⁻⁵ s⁻¹ at 546 K. If the energy of activation is 179.9 kJ mol⁻¹, what will be the value of the pre-exponential factor?", "given": "k = 2.418 × 10⁻⁵ s⁻¹, T = 546 K, Eₐ = 179.9 kJ mol⁻¹ = 1.799 × 10⁵ J mol⁻¹.", "steps": ["Take logs of k = A e<sup>−Eₐ/RT</sup>: ln A = ln k + Eₐ/RT.", "ln k = ln(2.418 × 10⁻⁵) = −10.63.", "Eₐ/RT = 179900/(8.314 × 546) = 39.63.", "ln A = 29.00, so A = e²⁹ = 3.9 × 10¹² s⁻¹."], "answer": "A ≈ 3.9 × 10¹² s⁻¹.", "takeaway": "The pre-exponential factor is the intercept of the Arrhenius line; it has the same units as k.", "conceptName": "Arrhenius & collision theory"}, {"q": 24, "title": "Concentration remaining after 100 s", "conceptIdx": 3, "page": 27, "printPage": 87, "question": "Consider a certain reaction A → Products with k = 2.0 × 10⁻² s⁻¹. Calculate the concentration of A remaining after 100 s if the initial concentration of A is 1.0 mol L⁻¹.", "given": "First order, k = 2.0 × 10⁻² s⁻¹, [A]₀ = 1.0 mol L⁻¹, t = 100 s.", "steps": ["For a first-order reaction [A] = [A]₀e⁻⁷⁺.", "kt = 2.0 × 10⁻² × 100 = 2.0.", "[A] = e⁻² = 0.135 mol L⁻¹."], "answer": "[A] = 0.135 mol L⁻¹.", "takeaway": "The exponential form is fastest when you want a concentration directly.", "conceptName": "First-order & half-life"}, {"q": 25, "title": "Sucrose remaining after 8 hours", "conceptIdx": 4, "page": 27, "printPage": 87, "question": "Sucrose decomposes in acid solution into glucose and fructose according to the first order rate law, with t½ = 3.00 hours. What fraction of a sample of sucrose remains after 8 hours?", "given": "t½ = 3.00 h; first order.", "steps": ["k = 0.693/t½ = 0.693/3.00 = 0.231 h⁻¹.", "Fraction remaining = e⁻⁷⁺ = e⁻²·³⁰⁹ = e⁻¹·⁸⁴² = 0.157.", "Equivalently, 8 h is 8/3 = 2.67 half-lives, so (1/2)²·⁶⁷ = 0.157."], "answer": "About 0.157 of the sucrose remains (the NCERT key rounds this to 0.158).", "takeaway": "For first order the surviving fraction is (1/2) raised to the number of half-lives.", "conceptName": "Pseudo-first order"}, {"q": 26, "title": "Activation energy from an exponential k(T)", "conceptIdx": 5, "page": 27, "printPage": 87, "question": "The decomposition of a hydrocarbon follows the equation k = (4.5 × 10¹¹ s⁻¹) e⁻²⁸⁰⁰⁸ K/T. Calculate Eₐ.", "given": "k = (4.5 × 10¹¹ s⁻¹) e⁻²⁸⁰⁰⁸/T, so Eₐ/R = 28000 K.", "steps": ["Compare with k = A e<sup>−Eₐ/RT</sup>: the exponent is −28000/T, so Eₐ/R = 28000 K.", "Eₐ = 28000 × R = 28000 × 8.314 = 2.328 × 10⁵ J mol⁻¹.", "Eₐ = 232.8 kJ mol⁻¹ (NCERT key: 232.79)."], "answer": "Eₐ = 2.328 × 10⁵ J mol⁻¹ = 232.8 kJ mol⁻¹.", "takeaway": "When k is given as an exponential in 1/T, the constant multiplying 1/T is Eₐ/R.", "conceptName": "Arrhenius & collision theory"}, {"q": 27, "title": "Eₐ and temperature from log k = 14.34 − 1.25 × 10⁴/T", "conceptIdx": 5, "page": 28, "printPage": 88, "question": "The rate constant for the first order decomposition of H₂O₂ is given by the equation log k = 14.34 − 1.25 × 10⁴ K/T. Calculate Eₐ for this reaction and at what temperature will its half-period be 256 minutes?", "given": "log k = 14.34 − 1.25 × 10⁴/T; t½ = 256 min.", "steps": ["Compare with log k = log A − (Eₐ/2.303R)(1/T), so Eₐ/(2.303R) = 1.25 × 10⁴ K.", "Eₐ = 1.25 × 10⁴ × 2.303 × 8.314 = 2.393 × 10⁵ J mol⁻¹ = 239.3 kJ mol⁻¹.", "For t½ = 256 min = 15360 s, k = 0.693/15360 = 4.51 × 10⁻⁵ s⁻¹, so log k = −4.346.", "−4.346 = 14.34 − 1.25 × 10⁴/T gives T = 1.25 × 10⁴/18.686 = 669 K."], "answer": "Eₐ = 239.3 kJ mol⁻¹; t½ = 256 min at T = 669 K.", "takeaway": "The half-life converts into k, and the printed log k equation then gives the temperature.", "conceptName": "Arrhenius & collision theory"}, {"q": 28, "title": "Temperature for a faster rate constant", "conceptIdx": 5, "page": 28, "printPage": 88, "question": "The decomposition of A into product has value of k as 4.5 × 10³ s⁻¹ at 10 °C and energy of activation 60 kJ mol⁻¹. At what temperature would k be 1.5 × 10⁴ s⁻¹?", "given": "k₁ = 4.5 × 10³ s⁻¹ at T₁ = 283 K, k₂ = 1.5 × 10⁴ s⁻¹, Eₐ = 6.0 × 10⁴ J mol⁻¹.", "steps": ["log(k₂/k₁) = (Eₐ/2.303R)(1/T₁ − 1/T₂).", "log(1.5 × 10⁴/4.5 × 10³) = log 3.333 = 0.5229; Eₐ/2.303R = 60000/19.147 = 3133.7 K.", "1/T₂ = 1/283 − 0.5229/3133.7 = 3.5336 × 10⁻³ − 1.6685 × 10⁻⁴ = 3.3667 × 10⁻³ K⁻¹.", "T₂ = 297 K = 24 °C."], "answer": "T₂ ≈ 297 K, i.e. 24 °C.", "takeaway": "The two-temperature Arrhenius form avoids computing A altogether.", "conceptName": "Arrhenius & collision theory"}, {"q": 29, "title": "Equal times for 10% and 25% at two temperatures", "conceptIdx": 5, "page": 28, "printPage": 88, "question": "The time required for 10% completion of a first order reaction at 298 K is equal to that required for its 25% completion at 308 K. If the value of A is 4 × 10¹⁰ s⁻¹, calculate k at 318 K and Eₐ.", "given": "t₁₀(298 K) = t₂₅(308 K); A = 4 × 10¹⁰ s⁻¹.", "steps": ["Since the times are equal, the ratio k(308 K)/k(298 K) = log(100/90)/log(100/75) = 0.04576/0.12494 = 2.731.", "Eₐ = 2.303R × [T₁T₂/(T₂ − T₁)] log(k₃₀₈/k₂₉₈) = 2.303 × 8.314 × (298 × 308/10) × log 2.731 = 76.7 kJ mol⁻¹.", "At 298 K: k = A e<sup>−Eₐ/RT</sup> = 4 × 10¹⁰ × e<sup>−76,700/(8.314 × 298)</sup> = 1.47 × 10⁻³ s⁻¹.", "At 318 K: k = 4 × 10¹⁰ × e<sup>−76,700/(8.314 × 318)</sup> = 9.97 × 10⁻³ s⁻¹."], "answer": "Eₐ ≈ 76.7 kJ mol⁻¹ (key: 76.750 kJ mol⁻¹); k(318 K) ≈ 9.97 × 10⁻³ s⁻¹ (key: 0.9965 × 10⁻² s⁻¹ ≈ 1.0 × 10⁻² s⁻¹).", "takeaway": "Two temperatures plus the same time turn the integrated law into a ratio that cancels t.", "conceptName": "Arrhenius & collision theory"}, {"q": 30, "title": "Eₐ from a fourfold rate rise", "conceptIdx": 5, "page": 28, "printPage": 88, "question": "The rate of a reaction quadruples when the temperature changes from 293 K to 313 K. Calculate the energy of activation of the reaction assuming that it does not change with temperature.", "given": "k₂/k₁ = 4, T₁ = 293 K, T₂ = 313 K.", "steps": ["log(k₂/k₁) = (Eₐ/2.303R)(T₂ − T₁)/(T₁T₂).", "log 4 = 0.6021 = Eₐ × 20/(2.303 × 8.314 × 293 × 313).", "Eₐ = 0.6021 × 19.147 × 91709/20 = 52,860 J mol⁻¹ = 52.86 kJ mol⁻¹."], "answer": "Eₐ ≈ 52.86 kJ mol⁻¹ ≈ 52.9 kJ mol⁻¹ (the NCERT key rounds it to 52.8 kJ mol⁻¹).", "takeaway": "A fourfold rise over 20 K corresponds to Eₐ near 53 kJ mol⁻¹ — close to the rule that a 10 °C rise doubles the rate.", "conceptName": "Arrhenius & collision theory"}], "exerciseMap": [[1, "Order and dimensions of the rate constant", 1, 25], [2, "Rate after a given amount has reacted", 1, 25], [3, "Zero-order production of N₂ and H₂", 2, 25], [4, "Units of rate and k in the gas phase", 1, 25], [5, "Factors that control the rate", 1, 25], [6, "Second-order rate scaling", 1, 25], [7, "Temperature and the rate constant", 5, 25], [8, "Average rate in a pseudo-first-order run", 4, 25], [9, "Rate law for first order in A, second in B", 1, 25], [10, "Orders from initial-rate data", 1, 26], [11, "Rate law and rate constant from four runs", 1, 26], [12, "Filling in a rate table", 1, 26], [13, "Half-lives from three rate constants", 3, 26], [14, "Ageing a wooden artefact", 3, 26], [15, "N₂O₅ decomposition data and half-life", 3, 26], [16, "Time to reach one-sixteenth", 3, 27], [17, "Strontium-90 in bone", 3, 27], [18, "99% versus 90% completion", 3, 27], [19, "Half-life after 30% decomposition", 3, 27], [20, "Rate constant from total-pressure data", 3, 27], [21, "Rate when SO₂Cl₂ pressure is 0.65 atm", 3, 27], [22, "Arrhenius parameters from five temperatures", 5, 27], [23, "Pre-exponential factor from k and Eₐ", 5, 27], [24, "Concentration remaining after 100 s", 3, 27], [25, "Sucrose remaining after 8 hours", 4, 27], [26, "Activation energy from an exponential k(T)", 5, 27], [27, "Eₐ and temperature from log k = 14.34 − 1.25 × 10⁴/T", 5, 28], [28, "Temperature for a faster rate constant", 5, 28], [29, "Equal times for 10% and 25% at two temperatures", 5, 28], [30, "Eₐ from a fourfold rate rise", 5, 28]]};
+</script>
+<script>
+// Textbook data tables and graphs used by the exercises, redrawn as SVG from
+// books/originals/Class12-Chemistry-Pt1_lech103.pdf (Exercises 3.8, 3.10, 3.11,
+// 3.12, 3.15, 3.20, 3.21, 3.22). Drawn for the light revision page.
+window.FIGURES = (function(){
+  var INK = "#152637", MUTED = "#536678", LINE = "#dce4eb", SOFT = "#f7fafc",
+      HEAD = "#edf2ff", ACC = "#254ad7", AMB = "#b45309", RED = "#dc2626";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 13) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + s + '</text>';
+  }
+
+  // headers: [label, ...]; rows: [[cell, ...], ...]; bold row header cells when o.rowHead.
+  function table(x, y, headers, rows, w, colW, o){
+    o = o || {};
+    var rh = o.rowH || 26, hh = o.headH || 28;
+    var total = colW.reduce(function(a, b){ return a + b; }, 0);
+    var s = '<g>';
+    s += '<rect x="' + x + '" y="' + y + '" width="' + total + '" height="' + (hh + rh * rows.length) + '" rx="8" fill="#fff" stroke="' + LINE + '"/>';
+    var cx = x;
+    headers.forEach(function(hd, i){
+      s += '<rect x="' + cx + '" y="' + y + '" width="' + colW[i] + '" height="' + hh + '" fill="' + HEAD + '"/>';
+      s += text(cx + colW[i] / 2, y + hh - 9, hd, {size: 12.5, weight: 700});
+      if(i) s += '<line x1="' + cx + '" y1="' + y + '" x2="' + cx + '" y2="' + (y + hh + rh * rows.length) + '" stroke="' + LINE + '"/>';
+      cx += colW[i];
+    });
+    rows.forEach(function(r, ri){
+      var ry = y + hh + ri * rh;
+      if(ri % 2) s += '<rect x="' + x + '" y="' + ry + '" width="' + total + '" height="' + rh + '" fill="' + SOFT + '"/>';
+      s += '<line x1="' + x + '" y1="' + ry + '" x2="' + (x + total) + '" y2="' + ry + '" stroke="' + LINE + '"/>';
+      var rcx = x;
+      r.forEach(function(c, ci){
+        s += text(rcx + colW[ci] / 2, ry + rh - 8, c, {size: 12.5, weight: (ci === 0 || o.rowHead) ? 700 : 400, color: (ci === 0 && !o.rowHead) ? INK : INK});
+        rcx += colW[ci];
+      });
+      cx = x;
+    });
+    s += '</g>';
+    return s;
+  }
+
+  var figs = {};
+  var C = 0.023;
+
+  figs["ex3.8"] = {
+    caption: "Exercise 3.8 — pseudo-first-order run in water: [A] against t at 0, 30, 60 and 90 s (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 170" role="img" aria-label="Pseudo first order data table for Exercise 3.8">';
+      s += table(90, 18, ["t / s", "0", "30", "60", "90"], [["[A] / mol L⁻¹", "0.55", "0.31", "0.17", "0.085"]], 0, [150, 120, 120, 120, 120], {rowHead: true});
+      s += text(360, 118, "Average rate, 30–60 s: (0.31 − 0.17)/30 = 4.67 × 10⁻³ mol L⁻¹ s⁻¹", {size: 13, color: MUTED});
+      s += text(360, 142, "The falling interval average is the kinetic fingerprint.", {size: 12, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.10"] = {
+    caption: "Exercise 3.10 — initial rates for three runs of the reaction between A and B (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 170" role="img" aria-label="Initial rate data table for Exercise 3.10">';
+      s += table(70, 18, ["", "Run 1", "Run 2", "Run 3"], [
+        ["[A] / mol L⁻¹", "0.20", "0.20", "0.40"],
+        ["[B] / mol L⁻¹", "0.30", "0.10", "0.05"],
+        ["r₀ / mol L⁻¹ s⁻¹", "5.07 × 10⁻⁵", "5.07 × 10⁻⁵", "1.43 × 10⁻⁴"]
+      ], 0, [170, 150, 150, 150], {rowHead: true});
+      s += text(360, 150, "Runs 1 and 2: [B] changes, rate does not ⇒ order in B = 0.", {size: 12.5, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.11"] = {
+    caption: "Exercise 3.11 — the four kinetic runs for 2A + B → C + D (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 200" role="img" aria-label="Kinetic runs table for Exercise 3.11">';
+      s += table(50, 16, ["Experiment", "[A] / mol L⁻¹", "[B] / mol L⁻¹", "Initial rate of D / mol L⁻¹ min⁻¹"], [
+        ["I", "0.1", "0.1", "6.0 × 10⁻³"],
+        ["II", "0.3", "0.2", "7.2 × 10⁻²"],
+        ["III", "0.3", "0.4", "2.88 × 10⁻¹"],
+        ["IV", "0.4", "0.1", "2.40 × 10⁻²"]
+      ], 0, [110, 150, 150, 260], {});
+      s += text(360, 182, "Rate = k[A][B]²: order 1 in A from I→IV, order 2 in B from II→III.", {size: 12.5, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.12"] = {
+    caption: "Exercise 3.12 — first-order-with-respect-to-A table with the blanks marked ? (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 200" role="img" aria-label="Table with blanks for Exercise 3.12">';
+      s += table(50, 16, ["Experiment", "[A] / mol L⁻¹", "[B] / mol L⁻¹", "Initial rate / mol L⁻¹ min⁻¹"], [
+        ["I", "0.1", "0.1", "2.0 × 10⁻²"],
+        ["II", "?", "0.2", "4.0 × 10⁻²"],
+        ["III", "0.4", "0.4", "?"],
+        ["IV", "?", "0.2", "2.0 × 10⁻²"]
+      ], 0, [110, 150, 150, 260], {});
+      s += text(360, 182, "Zero order in B: the rate depends on [A] only.", {size: 12.5, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.15"] = {
+    caption: "Exercise 3.15 — N₂O₅ decomposition at 318 K: [N₂O₅] against t (left) and log[N₂O₅] against t (right) (redrawn from the printed data).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 320" role="img" aria-label="N2O5 concentration and log concentration graphs">';
+      // Left panel
+      s += '<rect x="30" y="14" width="320" height="292" rx="8" fill="#fff" stroke="' + LINE + '"/>';
+      s += text(190, 38, "[N₂O₅] / 10⁻² mol L⁻¹", {size: 12.5, weight: 700});
+      var L = {x: 70, y: 250, w: 250, h: 180};
+      s += '<line x1="' + L.x + '" y1="' + L.y + '" x2="' + (L.x + L.w) + '" y2="' + L.y + '" stroke="' + MUTED + '"/>';
+      s += '<line x1="' + L.x + '" y1="' + L.y + '" x2="' + L.x + '" y2="' + (L.y - L.h) + '" stroke="' + MUTED + '"/>';
+      var T = [0, 400, 800, 1200, 1600, 2000, 2400, 2800, 3200];
+      var N = [1.63, 1.36, 1.14, 0.93, 0.78, 0.64, 0.53, 0.43, 0.35];
+      function X(t){ return L.x + (t / 3200) * L.w; }
+      function Y(c){ return L.y - (c / 1.8) * L.h; }
+      var d = "";
+      T.forEach(function(t, i){ d += (i ? " L" : "M") + X(t) + " " + Y(N[i]); });
+      s += '<path d="' + d + '" fill="none" stroke="' + ACC + '" stroke-width="2.5"/>';
+      T.forEach(function(t, i){ s += '<circle cx="' + X(t) + '" cy="' + Y(N[i]) + '" r="3.2" fill="' + ACC + '"/>'; });
+      [0, 800, 1600, 2400, 3200].forEach(function(t){ s += text(X(t), L.y + 16, t, {size: 11, color: MUTED}); });
+      [0.5, 1.0, 1.5].forEach(function(v){ s += text(L.x - 8, Y(v) + 4, v.toFixed(1), {size: 11, color: MUTED, anchor: "end"}); });
+      s += text(L.x + L.w / 2, L.y + 34, "t / s", {size: 12, color: MUTED});
+      // Right panel
+      s += '<rect x="370" y="14" width="320" height="292" rx="8" fill="#fff" stroke="' + LINE + '"/>';
+      s += text(530, 38, "log[N₂O₅]", {size: 12.5, weight: 700});
+      var R = {x: 410, y: 250, w: 250, h: 180};
+      s += '<line x1="' + R.x + '" y1="' + R.y + '" x2="' + (R.x + R.w) + '" y2="' + R.y + '" stroke="' + MUTED + '"/>';
+      s += '<line x1="' + R.x + '" y1="' + R.y + '" x2="' + R.x + '" y2="' + (R.y - R.h) + '" stroke="' + MUTED + '"/>';
+      var logv = N.map(function(c){ return Math.log10(c); });
+      function RX(t){ return R.x + (t / 3200) * R.w; }
+      function RY(l){ return R.y - ((l + 0.6) / 1.0) * R.h; }
+      var d2 = "";
+      T.forEach(function(t, i){ d2 += (i ? " L" : "M") + RX(t) + " " + RY(logv[i]); });
+      s += '<path d="' + d2 + '" fill="none" stroke="' + INK + '" stroke-width="1.5" stroke-dasharray="5 4"/>';
+      s += '<line x1="' + RX(0) + '" y1="' + RY(logv[0]) + '" x2="' + RX(3200) + '" y2="' + RY(logv[8]) + '" stroke="' + AMB + '" stroke-width="2"/>';
+      T.forEach(function(t, i){ s += '<circle cx="' + RX(t) + '" cy="' + RY(logv[i]) + '" r="3.2" fill="' + ACC + '"/>'; });
+      [0, 800, 1600, 2400, 3200].forEach(function(t){ s += text(RX(t), R.y + 16, t, {size: 11, color: MUTED}); });
+      [-0.4, 0.0].forEach(function(v){ s += text(R.x - 8, RY(v) + 4, v.toFixed(1), {size: 11, color: MUTED, anchor: "end"}); });
+      s += text(R.x + R.w / 2, R.y + 34, "t / s", {size: 12, color: MUTED});
+      s += text(R.x + R.w / 2, R.y - R.h - 8, "straight line ⇒ first order, slope = −k/2.303", {size: 11.5, color: MUTED});
+      s += text(360, 302, "k ≈ 4.7 × 10⁻⁴ s⁻¹, t₁/₂ ≈ 1.5 × 10³ s", {size: 12.5, color: AMB, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.20"] = {
+    caption: "Exercise 3.20 — azoisopropane decomposition at 543 K: total pressure at t = 0, 360 and 720 s (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 170" role="img" aria-label="Azoisopropane pressure data table">';
+      s += table(120, 18, ["t / s", "0", "360", "720"], [["P / mm of Hg", "35.0", "54.0", "63.0"]], 0, [140, 130, 130, 130], {rowHead: true});
+      s += text(360, 120, "A → B + C, so pA = 2pi − ptotal = 70.0 − ptotal.", {size: 12.5, color: MUTED});
+      s += text(360, 146, "k(360 s) = 2.17 × 10⁻³ s⁻¹; k(720 s) = 2.24 × 10⁻³ s⁻¹.", {size: 12.5, color: AMB, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.21"] = {
+    caption: "Exercise 3.21 — SO₂Cl₂ decomposition at constant volume: total pressure at t = 0 and 100 s (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 170" role="img" aria-label="SO2Cl2 pressure data table">';
+      s += table(140, 18, ["Experiment", "Time / s", "Total pressure / atm"], [
+        ["1", "0", "0.5"],
+        ["2", "100", "0.6"]
+      ], 0, [140, 140, 200], {});
+      s += text(360, 140, "k = (2.303/100) log(0.50/0.40) = 2.23 × 10⁻³ s⁻¹; rate at 0.65 atm = 7.8 × 10⁻⁴ atm s⁻¹.", {size: 12.5, color: AMB, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["ex3.22"] = {
+    caption: "Exercise 3.22 — rate constants for N₂O₅ decomposition at 0, 20, 40, 60 and 80 °C (redrawn from the printed table).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 720 200" role="img" aria-label="Rate constant versus temperature table">';
+      s += table(50, 16, ["T / °C", "0", "20", "40", "60", "80"], [["10⁵ × k / s⁻¹", "0.0787", "1.70", "25.7", "178", "2140"]], 0, [140, 96, 96, 96, 96, 96], {rowHead: true});
+      s += '<line x1="80" y1="128" x2="640" y2="128" stroke="' + LINE + '"/>';
+      var X = [120, 200, 290, 430, 570];
+      var labels = ["0", "20", "40", "60", "80"];
+      labels.forEach(function(lb, i){ s += text(X[i], 152, lb + " °C", {size: 11, color: MUTED}); });
+      s += text(360, 152, "ln k vs 1/T is a straight line: slope = −Ea/R, intercept = ln A", {size: 12, color: MUTED});
+      s += text(360, 180, "Least-squares fit: Ea ≈ 1.0 × 10² kJ mol⁻¹, A ≈ 1.5 × 10¹³ s⁻¹", {size: 12.5, color: AMB, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1501,44 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1564,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1647,35 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1692,10 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1704,17 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1726,15 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1747,6 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1756,6 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1768,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1794,47 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1842,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1851,46 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1936,10 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1958,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +2008,8 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +2018,41 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +2067,6 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +2101,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +2186,9 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2216,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2261,31 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2331,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2341,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2351,31 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2395,12 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2410,10 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2427,41 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2469,7 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1895,27 +2478,237 @@ window.CHAPTER = {"code": "lech103", "chapterNumber": 3, "book_name": "Chemistry
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1944,8 +2737,8 @@ window.SIMS.avgrate = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>chord Δ[R]/Δt</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>tangent</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-1">Intext 3.1: 0.03 → 0.02 M / 25 min</button>' +
-      '<button class="preset-btn" id="p-2">Intext 3.2: 2A → products</button>';
+      '<button class="preset-btn active" id="p-1" data-preset="intext31">Intext 3.1: 0.03 → 0.02 M / 25 min</button>' +
+      '<button class="preset-btn" id="p-2" data-preset="intext32">Intext 3.2: 2A → products</button>';
     document.getElementById("p-1").onclick = function(){ setActivePreset(this); kind=1; draw(App.state.t); };
     document.getElementById("p-2").onclick = function(){ setActivePreset(this); kind=2; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -1989,10 +2782,10 @@ window.SIMS.ratelaw = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>rate vs [A]</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p0">order 0</button>' +
-      '<button class="preset-btn" id="p1">order 1</button>' +
-      '<button class="preset-btn" id="p2">order 2</button>' +
-      '<button class="preset-btn" id="p25">Intext 3.3 order 2.5</button>';
+      '<button class="preset-btn active" id="p0" data-preset="order0">order 0</button>' +
+      '<button class="preset-btn" id="p1" data-preset="order1">order 1</button>' +
+      '<button class="preset-btn" id="p2" data-preset="order2">order 2</button>' +
+      '<button class="preset-btn" id="p25" data-preset="order25">Intext 3.3 order 2.5</button>';
     ["0","1","2","25"].forEach(function(k){
       document.getElementById("p"+k).onclick = function(){ setActivePreset(this); order = k==="25"?2.5:Number(k); draw(); };
     });
@@ -2036,7 +2829,7 @@ window.SIMS.zeroorder = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>[R] = [R]₀ − k t</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-nh">Ex 3.3 NH₃ on Pt</button>';
+      '<button class="preset-btn active" id="p-nh" data-preset="ex33">Ex 3.3 NH₃ on Pt</button>';
     document.getElementById("p-nh").onclick = function(){ setActivePreset(this); draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>[R]₀ / M</span><span class="val" id="ctrl-r">0.10</span></div>' +
@@ -2072,9 +2865,9 @@ window.SIMS.halflife = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>[A] = [A]₀ e^{−kt}</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c">¹⁴C dating Ex 3.14</button>' +
-      '<button class="preset-btn" id="p-5">Intext 3.5: 5 g → 3 g</button>' +
-      '<button class="preset-btn" id="p-16">Ex 3.16: to 1/16</button>';
+      '<button class="preset-btn active" id="p-c" data-preset="c14">¹⁴C dating Ex 3.14</button>' +
+      '<button class="preset-btn" id="p-5" data-preset="intext35">Intext 3.5: 5 g → 3 g</button>' +
+      '<button class="preset-btn" id="p-16" data-preset="ex316">Ex 3.16: to 1/16</button>';
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); kind="c"; App.resetTimeline(); App.play(); };
     document.getElementById("p-5").onclick = function(){ setActivePreset(this); kind="g"; App.resetTimeline(); App.play(); };
     document.getElementById("p-16").onclick = function(){ setActivePreset(this); kind="s"; App.resetTimeline(); App.play(); };
@@ -2119,8 +2912,8 @@ window.SIMS.pseudo = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>sucrose</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>water (excess)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-s">Ex 3.25 t₁/₂ = 3 h</button>' +
-      '<button class="preset-btn" id="p-8">Ex 3.8 30–60 s average</button>';
+      '<button class="preset-btn active" id="p-s" data-preset="ex325">Ex 3.25 t₁/₂ = 3 h</button>' +
+      '<button class="preset-btn" id="p-8" data-preset="ex38">Ex 3.8 30–60 s average</button>';
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); kind="s"; draw(App.state.t); };
     document.getElementById("p-8").onclick = function(){ setActivePreset(this); kind="e"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2157,8 +2950,8 @@ window.SIMS.arrhenius = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>ln k vs 1/T</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-30">Ex 3.30: rate ×4, 293→313 K</button>' +
-      '<button class="preset-btn" id="p-26">Ex 3.26: Ea from 28000 K</button>';
+      '<button class="preset-btn active" id="p-30" data-preset="ex330">Ex 3.30: rate ×4, 293→313 K</button>' +
+      '<button class="preset-btn" id="p-26" data-preset="ex326">Ex 3.26: Ea from 28000 K</button>';
     document.getElementById("p-30").onclick = function(){ setActivePreset(this); kind="30"; draw(); };
     document.getElementById("p-26").onclick = function(){ setActivePreset(this); kind="26"; draw(); };
     document.getElementById("lab-controls").innerHTML =

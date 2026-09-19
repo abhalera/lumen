@@ -1,1730 +1,356 @@
-// Chapter 3: Tissues in Action - Interactive Simulation Suite
-window.SIMS = window.SIMS || {};
+// Class 9 Science, Chapter 3 (iesc103) — simulation labs.
+// Textbook data (Fig. 3.2, Tables 3.6–3.7) are used where given; other values are labelled illustrative.
+var App = window.App;
+var LAB = window.LAB;
+window.SIMS = {};
 
-// =========================================================================
-// Helper: Setup Standardized Timeline Controls & State
-// =========================================================================
-function createSimState(container, onUpdate) {
-    const state = {
-        running: false,
-        time: 0,
-        speed: 1.0,
-        animId: null,
-        presets: {},
-        custom: {}
-    };
-
-    // Timeline Loop
-    function loop() {
-        if (state.running) {
-            state.time += 0.03 * state.speed;
-            if (state.time > 10.0) state.time = 0.0;
-            const scrubber = container.querySelector('.sim-scrubber');
-            if (scrubber) scrubber.value = state.time.toFixed(2);
-            onUpdate(state);
-            state.animId = requestAnimationFrame(loop);
-        }
+// Lab 1 — Growth: Activity 3.1 (Fig. 3.2), three meristems, annual rings (Table 3.7)
+(function(){
+  var L = LAB, C = L.C;
+  var A = [[1, 0.2], [2, 0.8], [3, 1.8], [4, 2.9], [5, 3.8], [6, 4.9], [7, 5.8]];
+  var B = [[1, 0.2], [2, 0.7], [3, 1.6], [4, 2.6], [4.0001, 1.6], [5, 1.6], [6, 1.6], [7, 1.6]];
+  var TEAK = [[5, 4, 5], [10, 8, 10], [20, 24, 20], [25, 28, 25], [30, 32, 30], [40, 40, 40]];
+  var st = {preset: "act31"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    if(id === "act31"){ L.timeline({maxT: 7, step: 1, speed: 1, format: function(t){ return "day <b>" + L.num(Math.max(1, t), 1) + "</b>"; }}); L.legend([[C.vel, "Jar A (tips intact)"], [C.path, "Jar B (tips cut)"]]); L.watch("Activity 3.1 with the data of Fig. 3.2. The root tips in Jar B are cut on day 4."); }
+    else if(id === "three"){ L.timeline({maxT: 3, step: 1, speed: 0.6}); L.legend([["#34d399", "apical meristem"], [C.path, "lateral meristem"], [C.acc, "intercalary meristem"]]); L.watch("Each second one type of meristem lights up on the plant, with the growth it causes."); }
+    else { L.timeline({maxT: 40, step: 5, speed: 5, format: function(t){ return "age <b>" + Math.round(t) + "</b> years"; }}); L.legend([["#a16207", "diameter (DBH, cm)"], [C.vel, "number of annual rings"]]); L.watch("Exercise Q7 / Table 3.7: a teak tree's diameter and annual rings as it ages."); }
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "act31"){
+      var g = L.graph({x0: 80, y0: 262, w: 560, h: 214, tmax: 7, vmin: 0, vmax: 6, tStep: 1, vStep: 1, tLabel: "day", vLabel: "root length (cm)"});
+      m += g.svg;
+      function part(P){ return P.filter(function(p){ return p[0] <= Math.max(1, t) + 1e-6; }); }
+      var a = part(A), b = part(B);
+      m += L.polyline(g, a, C.vel, 3) + L.polyline(g, b, C.path, 3);
+      a.forEach(function(p){ m += L.circle(g.X(p[0]), g.Y(p[1]), 4, C.vel); });
+      b.forEach(function(p){ m += L.circle(g.X(p[0]), g.Y(p[1]), 4, C.path); });
+      if(t >= 4) m += L.text(g.X(4) + 8, g.Y(2.2), "tips cut", {size: 12, color: C.path, anchor: "start"});
+      L.svg(m, "Root lengths on day " + L.num(t, 0), 290);
+      var la = L.interp(A, Math.max(1, t)), lb = t >= 4 ? 1.6 : L.interp(B.slice(0, 4), Math.max(1, t));
+      L.readout([["Day", L.num(Math.max(1, t), 1)], ["Jar A root length", L.num(la, 1) + " cm", C.vel], ["Jar B root length", L.num(lb, 1) + " cm", C.path]]);
+      msg = t <= 0 ? "Press <b>Play</b>." : t < 7 ? "Recording root lengths…" : "<b>Activity 3.1:</b> Jar A's roots keep growing (5.8 cm by day 7); Jar B's stop at 1.6 cm after the tips are cut. Roots grow only from their tips: the <b>apical meristem</b>.";
+    } else if(st.preset === "three"){
+      var k = Math.floor(t + 1e-9);
+      m += L.rect(0, 230, 720, 70, "#3f2a1a") + L.rect(330, 60, 20, 170, "#4d7c0f");
+      m += '<path d="M340 230 q-10 30 -40 60 M340 230 q10 35 30 62" stroke="#a3a3a3" stroke-width="5" fill="none"/>';
+      [100, 160].forEach(function(y){ m += '<path d="M340 ' + y + ' q-60 -20 -90 -5 q40 15 90 5 z" fill="#65a30d"/><path d="M340 ' + (y + 20) + ' q60 -20 90 -5 q-40 15 -90 5 z" fill="#65a30d"/>'; });
+      var on = function(i){ return k >= i + 1 || (t > i && k === i); };
+      m += L.circle(340, 58, 12, on(0) ? "#34d399" : C.faint) + L.circle(300, 292, 8, on(0) ? "#34d399" : C.faint);
+      m += L.rect(326, 150, 28, 40, "none", ' stroke="' + (on(1) ? C.path : C.faint) + '" stroke-width="4" rx="6"');
+      m += L.rect(322, 106, 36, 8, on(2) ? C.acc : C.faint, ' rx="3"') + L.rect(322, 166, 36, 8, on(2) ? C.acc : C.faint, ' rx="3"');
+      var labels = [["apical meristem: tips → length", "#34d399", 60], ["lateral meristem: ring in stem → girth", C.path, 170], ["intercalary meristem: at nodes → regrowth", C.acc, 110]];
+      labels.forEach(function(l, i){ if(on(i)) m += L.text(420, l[2], l[0], {size: 14, color: l[1], anchor: "start", weight: 700}); });
+      L.svg(m, "Plant showing meristems.", 300);
+      L.readout([["Apical", "tips of root and shoot → length"], ["Lateral", "ring in stem → girth"], ["Intercalary", "base of internodes / nodes → regrowth"]]);
+      msg = t < 3 ? "Showing the meristems…" : "<b>Three meristems:</b> apical (length), lateral (girth) and intercalary (regrowth after cutting or grazing).";
+    } else {
+      var g2 = L.graph({x0: 80, y0: 262, w: 560, h: 214, tmax: 40, vmin: 0, vmax: 45, tStep: 5, vStep: 5, tLabel: "age (years)", vLabel: "cm / number of rings"});
+      m += g2.svg;
+      var pts = TEAK.filter(function(r){ return r[0] <= t + 1e-6; });
+      m += L.polyline(g2, pts.map(function(r){ return [r[0], r[1]]; }), "#a16207", 3) + L.polyline(g2, pts.map(function(r){ return [r[0], r[2]]; }), C.vel, 3, "6 4");
+      pts.forEach(function(r){ m += L.circle(g2.X(r[0]), g2.Y(r[1]), 5, "#d97706") + L.circle(g2.X(r[0]), g2.Y(r[2]), 4, C.vel); });
+      var rings = Math.min(12, Math.round(t / 4));
+      for(var i = rings; i >= 1; i--) m += L.circle(640, 60, 4 + i * 4, i % 2 ? "#b45309" : "#d6a45c");
+      L.svg(m, "Teak tree data up to age " + Math.round(t), 290);
+      var last = pts.length ? pts[pts.length - 1] : null;
+      L.readout([["Age", last ? last[0] + " years" : "—"], ["Diameter (DBH)", last ? last[1] + " cm" : "—", "#d97706"], ["Annual rings", last ? String(last[2]) : "—", C.vel]]);
+      msg = t < 40 ? "Plotting Table 3.7…" : "<b>Exercise Q7:</b> rings = age (one ring a year). Diameter grows fastest between 10 and 20 years (1.6 cm per year) and slower otherwise (0.8 cm per year). The <b>lateral meristem</b> makes the stem thicker.";
     }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["act31", "Activity 3.1: onion roots"], ["three", "Three meristems"], ["rings", "Exercise Q7: teak rings"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.meristem = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-    state.play = function() {
-        if (!state.running) {
-            state.running = true;
-            state.animId = requestAnimationFrame(loop);
-            const playBtn = container.querySelector('.btn-play');
-            if (playBtn) { playBtn.textContent = '⏸ Pause'; playBtn.classList.add('active'); }
-        }
-    };
-
-    state.pause = function() {
-        state.running = false;
-        if (state.animId) cancelAnimationFrame(state.animId);
-        const playBtn = container.querySelector('.btn-play');
-        if (playBtn) { playBtn.textContent = '▶ Play'; playBtn.classList.remove('active'); }
-    };
-
-    state.step = function() {
-        state.pause();
-        state.time += 0.2;
-        if (state.time > 10.0) state.time = 0.0;
-        const scrubber = container.querySelector('.sim-scrubber');
-        if (scrubber) scrubber.value = state.time.toFixed(2);
-        onUpdate(state);
-    };
-
-    state.reset = function() {
-        state.pause();
-        state.time = 0;
-        const scrubber = container.querySelector('.sim-scrubber');
-        if (scrubber) scrubber.value = '0';
-        onUpdate(state);
-    };
-
-    state.bindControls = function() {
-        const playBtn = container.querySelector('.btn-play');
-        const stepBtn = container.querySelector('.btn-step');
-        const resetBtn = container.querySelector('.btn-reset');
-        const scrubber = container.querySelector('.sim-scrubber');
-        const speedSel = container.querySelector('.sim-speed');
-
-        if (playBtn) playBtn.onclick = () => state.running ? state.pause() : state.play();
-        if (stepBtn) stepBtn.onclick = () => state.step();
-        if (resetBtn) resetBtn.onclick = () => state.reset();
-        if (scrubber) {
-            scrubber.oninput = (e) => {
-                state.pause();
-                state.time = parseFloat(e.target.value) || 0;
-                onUpdate(state);
-            };
-        }
-        if (speedSel) {
-            speedSel.onchange = (e) => {
-                state.speed = parseFloat(e.target.value) || 1.0;
-            };
-        }
-    };
-
-    return state;
-}
-
-// =========================================================================
-// 1. SIMULATION: Plant Meristem Growth Lab (sim-meristems)
-// =========================================================================
-window.SIMS['sim-meristems'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                        <label class="sim-label">Speed: 
-                            <select class="sim-speed">
-                                <option value="0.5">0.5×</option>
-                                <option value="1" selected>1.0×</option>
-                                <option value="2">2.0×</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Modes / Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-mode="apical">Apical Elongation (Shoot/Root)</button>
-                        <button class="btn btn-sm btn-preset" data-mode="lateral">Lateral Girth (Annual Rings)</button>
-                        <button class="btn btn-sm btn-preset" data-mode="intercalary">Intercalary Regrowth (Grass)</button>
-                        <button class="btn btn-sm btn-preset" data-mode="cut-root">Activity 3.1: Onion Root Tip Cut</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Meristem Mode:
-                        <select class="sel-meristem-type">
-                            <option value="apical">Apical Meristem (Primary Vertical Growth)</option>
-                            <option value="lateral">Lateral Meristem (Vascular Cambium Girth)</option>
-                            <option value="intercalary">Intercalary Meristem (Nodal Regrowth)</option>
-                            <option value="cut-root">Activity 3.1: Onion Root Excision</option>
-                        </select>
-                    </label>
-                    <label class="control-item">Years / Days Elapsed: <span class="val-elapsed">0</span>
-                        <input type="range" class="rng-elapsed" min="0" max="40" step="1" value="5">
-                    </label>
-                    <label class="control-item">
-                        <input type="checkbox" class="chk-cut-tip"> Cut Root / Shoot Tip (Excise Meristem)
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 440" width="100%" height="340" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const selMode = container.querySelector('.sel-meristem-type');
-        const rngElapsed = container.querySelector('.rng-elapsed');
-        const chkCut = container.querySelector('.chk-cut-tip');
-        const lblElapsed = container.querySelector('.val-elapsed');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.mode = 'apical';
-        state.custom.elapsed = 5;
-        state.custom.tipCut = false;
-
-        function applyMode(m) {
-            state.custom.mode = m;
-            selMode.value = m;
-            if (m === 'cut-root') {
-                chkCut.checked = true;
-                state.custom.tipCut = true;
-            } else {
-                chkCut.checked = false;
-                state.custom.tipCut = false;
-            }
-            state.reset();
-        }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => applyMode(btn.dataset.mode);
-        });
-
-        selMode.onchange = (e) => applyMode(e.target.value);
-        rngElapsed.oninput = (e) => {
-            state.custom.elapsed = parseInt(e.target.value);
-            lblElapsed.textContent = state.custom.elapsed;
-            this.draw(svg, state, container);
-        };
-        chkCut.onchange = (e) => {
-            state.custom.tipCut = e.target.checked;
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const mode = state.custom.mode;
-        const elapsed = state.custom.elapsed;
-        const tipCut = state.custom.tipCut;
-        const t = state.time;
-
-        const effectiveProgress = tipCut ? Math.min(t, 2.0) : t;
-        const animatedGrowth = (elapsed + effectiveProgress * 3.5);
-
-        let svgContent = '';
-        let readoutHtml = '';
-        let verdictHtml = '';
-
-        if (mode === 'apical' || mode === 'cut-root') {
-            const shootHeight = tipCut ? 120 : Math.min(260, 80 + animatedGrowth * 4.5);
-            const rootDepth = tipCut ? 60 : Math.min(130, 40 + animatedGrowth * 2.2);
-
-            svgContent = `
-                <defs>
-                    <linearGradient id="stemGrad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stop-color="#15803d" />
-                        <stop offset="50%" stop-color="#22c55e" />
-                        <stop offset="100%" stop-color="#15803d" />
-                    </linearGradient>
-                    <radialGradient id="meristemGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#facc15" stop-opacity="1" />
-                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.1" />
-                    </radialGradient>
-                </defs>
-                <rect x="50" y="240" width="700" height="190" fill="#2d1c14" rx="4" />
-                <line x1="50" y1="240" x2="750" y2="240" stroke="#78350f" stroke-width="4" stroke-dasharray="6,4" />
-                <text x="60" y="260" fill="#ca8a04" font-size="13" font-family="sans-serif">🌱 Soil Horizon (Subterranean Root Zone)</text>
-
-                <rect x="390" y="${240 - shootHeight}" width="20" height="${shootHeight}" fill="url(#stemGrad)" rx="3" />
-                
-                <ellipse cx="370" cy="${240 - shootHeight * 0.7}" rx="25" ry="12" fill="#16a34a" transform="rotate(-25 370 ${240 - shootHeight * 0.7})" />
-                <ellipse cx="430" cy="${240 - shootHeight * 0.7}" rx="25" ry="12" fill="#16a34a" transform="rotate(25 430 ${240 - shootHeight * 0.7})" />
-                <ellipse cx="365" cy="${240 - shootHeight * 0.4}" rx="30" ry="14" fill="#15803d" transform="rotate(-30 365 ${240 - shootHeight * 0.4})" />
-                <ellipse cx="435" cy="${240 - shootHeight * 0.4}" rx="30" ry="14" fill="#15803d" transform="rotate(30 435 ${240 - shootHeight * 0.4})" />
-
-                ${!tipCut ? `
-                    <circle cx="400" cy="${240 - shootHeight}" r="12" fill="url(#meristemGlow)" />
-                    <circle cx="400" cy="${240 - shootHeight}" r="6" fill="#fef08a" />
-                    <text x="425" y="${240 - shootHeight + 4}" fill="#facc15" font-size="13" font-weight="bold" font-family="sans-serif">Shoot Apical Meristem (SAM) [Active Mitosis]</text>
-                ` : `
-                    <line x1="380" y1="${240 - shootHeight}" x2="420" y2="${240 - shootHeight}" stroke="#ef4444" stroke-width="3" />
-                    <text x="425" y="${240 - shootHeight + 4}" fill="#ef4444" font-size="13" font-weight="bold" font-family="sans-serif">✂️ Meristem Excised (Elongation Terminated)</text>
-                `}
-
-                <line x1="400" y1="240" x2="400" y2="${240 + rootDepth}" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
-                <line x1="400" y1="${240 + rootDepth * 0.4}" x2="360" y2="${240 + rootDepth * 0.6}" stroke="#b45309" stroke-width="3" />
-                <line x1="400" y1="${240 + rootDepth * 0.5}" x2="440" y2="${240 + rootDepth * 0.7}" stroke="#b45309" stroke-width="3" />
-
-                ${!tipCut ? `
-                    <circle cx="400" cy="${240 + rootDepth}" r="8" fill="#facc15" />
-                    <text x="425" y="${240 + rootDepth + 5}" fill="#facc15" font-size="13" font-weight="bold" font-family="sans-serif">Root Apical Meristem (RAM) + Root Cap</text>
-                ` : `
-                    <circle cx="400" cy="${240 + rootDepth}" r="5" fill="#ef4444" />
-                    <text x="425" y="${240 + rootDepth + 5}" fill="#ef4444" font-size="13" font-family="sans-serif">✂️ Root Tip Severed (Activity 3.1: Zero Growth)</text>
-                `}
-
-                <line x1="120" y1="40" x2="120" y2="380" stroke="#64748b" stroke-width="2" />
-                <text x="130" y="55" fill="#94a3b8" font-size="11">Height Ruler</text>
-                <line x1="115" y1="240" x2="125" y2="240" stroke="#38bdf8" stroke-width="2" />
-                <text x="80" y="244" fill="#38bdf8" font-size="11">0 cm</text>
-                <line x1="115" y1="120" x2="125" y2="120" stroke="#38bdf8" stroke-width="2" />
-                <text x="75" y="124" fill="#38bdf8" font-size="11">+25 cm</text>
-                <line x1="115" y1="340" x2="125" y2="340" stroke="#38bdf8" stroke-width="2" />
-                <text x="75" y="344" fill="#38bdf8" font-size="11">-20 cm</text>
-            `;
-
-            const currentShootCm = (shootHeight / 5).toFixed(1);
-            const currentRootCm = (rootDepth / 5).toFixed(1);
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Meristem State:</span> <span class="metric-val" style="color:${tipCut ? '#ef4444' : '#22c55e'};">${tipCut ? 'Excised / Non-functional' : 'Active Mitotic Division'}</span></div>
-                <div class="metric"><span class="metric-lbl">Shoot Height:</span> <span class="metric-val">${currentShootCm} cm</span></div>
-                <div class="metric"><span class="metric-lbl">Root Depth:</span> <span class="metric-val">${currentRootCm} cm</span></div>
-                <div class="metric"><span class="metric-lbl">Mitotic Rate:</span> <span class="metric-val">${tipCut ? '0 cells/hr' : '142 cells/hr'}</span></div>
-            `;
-
-            verdictHtml = tipCut 
-                ? `<strong>NCERT Activity 3.1 Verification:</strong> Snipping 2-3 mm from root/shoot tips removes the <em>Apical Meristem</em>. Without these undifferentiated dividing cells, vertical primary elongation ceases permanently.`
-                : `<strong>Apical Meristem in Action:</strong> Continuous cell division at the shoot apex (SAM) and root apex (RAM) pushes the plant body upward into sunlight and downward into soil moisture.`;
-
-        } else if (mode === 'lateral') {
-            const treeAge = Math.min(40, Math.max(1, Math.round(animatedGrowth)));
-            const radius = Math.min(150, 20 + treeAge * 3.1);
-            const numRings = Math.min(treeAge, 40);
-
-            let ringsSvg = '';
-            for (let r = 1; r <= numRings; r++) {
-                const ringR = 20 + (r * (radius - 20) / numRings);
-                ringsSvg += `<circle cx="400" cy="220" r="${ringR}" fill="none" stroke="#78350f" stroke-width="1.8" opacity="0.65" />`;
-            }
-
-            svgContent = `
-                <rect x="50" y="20" width="700" height="400" fill="#1e293b" rx="8" />
-                <text x="70" y="50" fill="#f8fafc" font-size="16" font-weight="bold">Trunk Transverse Section: Lateral Meristem & Dendrochronology (Table 3.7)</text>
-
-                <circle cx="400" cy="220" r="${radius + 12}" fill="#3b2518" stroke="#52311b" stroke-width="6" />
-                <text x="${400 + radius + 20}" y="200" fill="#d97706" font-size="12">Outer Cork / Bark (Dead suberized cells)</text>
-
-                <circle cx="400" cy="220" r="${radius}" fill="#451a03" stroke="#eab308" stroke-width="3" stroke-dasharray="4,2" />
-                <text x="${400 + radius + 20}" y="225" fill="#eab308" font-size="13" font-weight="bold">Vascular Cambium (Lateral Meristem)</text>
-
-                ${ringsSvg}
-
-                <circle cx="400" cy="220" r="16" fill="#ca8a04" />
-                <text x="382" y="225" fill="#1e293b" font-size="11" font-weight="bold">Pith</text>
-
-                <line x1="${400 - radius}" y1="390" x2="${400 + radius}" y2="390" stroke="#38bdf8" stroke-width="3" />
-                <line x1="${400 - radius}" y1="382" x2="${400 - radius}" y2="398" stroke="#38bdf8" stroke-width="3" />
-                <line x1="${400 + radius}" y1="382" x2="${400 + radius}" y2="398" stroke="#38bdf8" stroke-width="3" />
-                <text x="360" y="415" fill="#38bdf8" font-size="14" font-weight="bold">DBH = ${(radius * 2 / 7.5).toFixed(1)} cm</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Tree Age:</span> <span class="metric-val">${treeAge} Years</span></div>
-                <div class="metric"><span class="metric-lbl">Annual Rings:</span> <span class="metric-val">${numRings} Concentric Rings</span></div>
-                <div class="metric"><span class="metric-lbl">Trunk Diameter:</span> <span class="metric-val">${(radius * 2 / 7.5).toFixed(1)} cm</span></div>
-                <div class="metric"><span class="metric-lbl">Active Meristem:</span> <span class="metric-val" style="color:#eab308;">Vascular Cambium</span></div>
-            `;
-
-            verdictHtml = `<strong>Table 3.7 Teak Tree Verification:</strong> The <em>lateral meristem</em> (vascular cambium) divides tangentially, depositing secondary xylem inward and secondary phloem outward. Each year's seasonal alternation forms 1 distinct ring (${numRings} rings = ${treeAge} years).`;
-
-        } else if (mode === 'intercalary') {
-            const bladeLength = Math.min(240, 80 + animatedGrowth * 4.0);
-
-            svgContent = `
-                <rect x="50" y="20" width="700" height="400" fill="#1e293b" rx="8" />
-                <text x="70" y="50" fill="#f8fafc" font-size="16" font-weight="bold">Grass / Sugarcane Stem: Intercalary Meristem at Nodes</text>
-
-                <rect x="100" y="350" width="600" height="60" fill="#2d1c14" />
-                <line x1="100" y1="350" x2="700" y2="350" stroke="#78350f" stroke-width="3" />
-
-                <rect x="385" y="270" width="30" height="80" fill="#4ade80" stroke="#16a34a" stroke-width="2" />
-                <rect x="385" y="180" width="30" height="85" fill="#4ade80" stroke="#16a34a" stroke-width="2" />
-                <rect x="385" y="${180 - bladeLength * 0.4}" width="30" height="${bladeLength * 0.4}" fill="#4ade80" stroke="#16a34a" stroke-width="2" />
-
-                <ellipse cx="400" cy="270" rx="20" ry="6" fill="#f59e0b" />
-                <text x="435" y="274" fill="#f59e0b" font-size="13" font-weight="bold">Node 1: Intercalary Meristem Zone</text>
-
-                <ellipse cx="400" cy="180" rx="20" ry="6" fill="#f59e0b" />
-                <text x="435" y="184" fill="#f59e0b" font-size="13" font-weight="bold">Node 2: Active Intercalary Meristem</text>
-
-                <path d="M 385 270 Q 300 240 280 160" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" />
-                <path d="M 415 180 Q 520 150 540 80" fill="none" stroke="#22c55e" stroke-width="6" stroke-linecap="round" />
-
-                <text x="180" y="140" fill="#86efac" font-size="13">Leaf blade regenerating from base</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Meristem Type:</span> <span class="metric-val" style="color:#f59e0b;">Intercalary Meristem</span></div>
-                <div class="metric"><span class="metric-lbl">Nodal Position:</span> <span class="metric-val">Base of Internodes</span></div>
-                <div class="metric"><span class="metric-lbl">Regeneration Speed:</span> <span class="metric-val">2.8 cm / day</span></div>
-                <div class="metric"><span class="metric-lbl">Ecological Role:</span> <span class="metric-val">Grazer Survival Adaptation</span></div>
-            `;
-
-            verdictHtml = `<strong>Intercalary Meristem Mechanics:</strong> Positioned at nodes between mature permanent tissues, these cells divide to elongate internodes and regrow grass leaves after grazing herbivores excise the tips.`;
-        }
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
+// Lab 2 — Plant tissues: bend test, transport, tissue systems
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "bend"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: id === "systems" ? 3 : 6, step: 1, speed: 1});
+    L.legend(id === "transport" ? [[C.vel, "xylem: water and minerals (up)"], [C.path, "phloem: food (from leaves)"]] : id === "bend" ? [["#34d399", "collenchyma (pectin corners)"], ["#b45309", "sclerenchyma (lignified)"]] : [["#fbbf24", "dermal"], ["#34d399", "ground"], [C.vel, "vascular"]]);
+    L.watch({bend: "Monsoon wind pushes two young stems: one supported by collenchyma, one imagined with sclerenchyma instead (Exercise Q9).", transport: "Water rises through xylem from the roots; food moves through phloem from the leaves.", systems: "Fig. 3.10: the three tissue systems of a plant, from outside in."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "bend"){
+      var force = Math.min(1, t / 4);
+      function stem(x, flexible){
+        var bend = flexible ? 60 * force : Math.min(10, 60 * force), broken = !flexible && force > 0.6;
+        var col = flexible ? "#34d399" : "#b45309";
+        if(broken) return '<path d="M' + x + ' 270 Q' + x + ' 200 ' + (x + 6) + ' 150" stroke="' + col + '" stroke-width="12" fill="none"/><path d="M' + (x + 10) + ' 148 L' + (x + 70) + ' 120" stroke="' + col + '" stroke-width="12"/>' + L.text(x + 40, 100, "snaps!", {size: 15, color: C.danger, weight: 700});
+        return '<path d="M' + x + ' 270 Q' + x + ' 170 ' + (x + bend) + ' 60" stroke="' + col + '" stroke-width="12" fill="none" stroke-linecap="round"/>';
+      }
+      m += stem(200, true) + stem(480, false);
+      for(var i = 0; i < 4; i++) m += L.arrow(40, 90 + i * 40, 40 + 60 * force, 90 + i * 40, C.vel, 3);
+      m += L.text(200, 290, "collenchyma (real sapling)", {size: 13, color: "#34d399"}) + L.text(480, 290, "if it were sclerenchyma", {size: 13, color: "#b45309"});
+      L.svg(m, "Two stems in wind.", 300);
+      L.readout([["Wind strength", L.num(force * 100, 0) + " %"], ["Collenchyma stem", "bends and springs back", "#34d399"], ["Sclerenchyma stem", force > 0.6 ? "rigid: breaks" : "rigid", "#b45309"]]);
+      msg = t < 6 ? "Wind rising…" : "<b>Collenchyma bends:</b> living cells with pectin-thickened corners give support with flexibility. Rigid, lignified sclerenchyma would resist bending and could snap in strong winds.";
+    } else if(st.preset === "transport"){
+      m += L.rect(340, 70, 40, 170, "#4d7c0f") + '<path d="M360 70 q-90 -40 -150 10 q80 20 150 -10 z M360 70 q90 -40 150 10 q-80 20 -150 -10 z" fill="#65a30d"/>' + L.rect(0, 240, 720, 60, "#3f2a1a");
+      m += L.line(350, 240, 350, 75, "rgba(56,189,248,0.35)", 6) + L.line(372, 75, 372, 280, "rgba(245,158,11,0.35)", 6);
+      for(var k = 0; k < 6; k++){
+        var f = ((t * 0.5 + k / 6) % 1);
+        m += L.circle(350, 240 - f * 165, 5, C.vel) + L.circle(372, 75 + f * 205, 5, C.path);
+      }
+      m += L.text(330, 160, "xylem ↑", {size: 13, color: C.vel, anchor: "end"}) + L.text(392, 160, "phloem ↓", {size: 13, color: C.path, anchor: "start"});
+      m += L.text(360, 30, "leaves: food made, water lost by transpiration", {size: 13, color: C.text});
+      L.svg(m, "Xylem and phloem transport.", 300);
+      L.readout([["Xylem carries", "water and minerals, roots → leaves", C.vel], ["Phloem carries", "food, leaves → other parts", C.path], ["Pull for water", "transpiration from stomata"]]);
+      msg = t < 6 ? "Transporting…" : "<b>Conducting tissues:</b> xylem carries water up from the roots, pulled by transpiration; phloem carries food from the leaves to other parts, such as the roots.";
+    } else {
+      var k2 = Math.floor(t + 1e-9);
+      m += L.circle(260, 150, 120, k2 >= 1 ? "rgba(52,211,153,0.25)" : "#1e293b", ' stroke="' + (k2 >= 0 && t > 0 ? "#fbbf24" : C.faint) + '" stroke-width="10"');
+      if(k2 >= 2) for(var j = 0; j < 8; j++){ var a = j * Math.PI / 4; m += '<ellipse cx="' + (260 + Math.cos(a) * 80) + '" cy="' + (150 + Math.sin(a) * 80) + '" rx="14" ry="20" fill="rgba(56,189,248,0.5)" stroke="' + C.vel + '" transform="rotate(' + (j * 45 + 90) + ' ' + (260 + Math.cos(a) * 80) + ' ' + (150 + Math.sin(a) * 80) + ')"/>'; }
+      [["dermal: epidermis protects, reduces water loss", "#fbbf24"], ["ground: parenchyma, collenchyma, sclerenchyma", "#34d399"], ["vascular: xylem and phloem", C.vel]].forEach(function(s, i){ if(t > i) m += L.text(420, 100 + i * 40, s[0], {size: 14, color: s[1], anchor: "start", weight: 700}); });
+      L.svg(m, "Cross-section of a stem showing tissue systems.", 300);
+      L.readout([["Tissue systems shown", Math.min(3, Math.ceil(t)) + " of 3"]]);
+      msg = t < 3 ? "Revealing tissue systems…" : "<b>Fig. 3.10:</b> plant tissues are organised into three tissue systems: dermal, ground and vascular.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["bend", "Exercise Q9: bend test"], ["transport", "Xylem and phloem"], ["systems", "Fig. 3.10: tissue systems"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.plantTissues = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// =========================================================================
-// 2. SIMULATION: Simple Permanent Tissues Mechanical Lab (sim-simple-tissues)
-// =========================================================================
-window.SIMS['sim-simple-tissues'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-tissue="collenchyma">Wind Flexing (Collenchyma)</button>
-                        <button class="btn btn-sm btn-preset" data-tissue="sclerenchyma">Nut Shell Armor (Sclerenchyma)</button>
-                        <button class="btn btn-sm btn-preset" data-tissue="parenchyma">Turgor Storage (Parenchyma)</button>
-                        <button class="btn btn-sm btn-preset" data-tissue="brittle-test">Exercise 9: Mango Sapling Wind Test</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Tissue Type:
-                        <select class="sel-tissue-type">
-                            <option value="collenchyma">Collenchyma (Living, Pectin Corner Thickenings)</option>
-                            <option value="sclerenchyma">Sclerenchyma (Dead, Lignified Thick Walls)</option>
-                            <option value="parenchyma">Parenchyma (Living, Thin Cellulose Walls)</option>
-                            <option value="brittle-test">Sclerenchyma-Replaced Stem (Exercise 9 Snap Test)</option>
-                        </select>
-                    </label>
-                    <label class="control-item">Applied Wind / Shear Force (N): <span class="val-force">30</span>
-                        <input type="range" class="rng-force" min="0" max="100" step="5" value="30">
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 400" width="100%" height="320" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const selTissue = container.querySelector('.sel-tissue-type');
-        const rngForce = container.querySelector('.rng-force');
-        const lblForce = container.querySelector('.val-force');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.tissue = 'collenchyma';
-        state.custom.force = 30;
-
-        function setTissue(t) {
-            state.custom.tissue = t;
-            selTissue.value = t;
-            state.reset();
+// Lab 3 — Epithelium and connective tissues
+(function(){
+  var L = LAB, C = L.C;
+  var ROWS = [["Touch your elbow", "hard, rigid", "strength, support, protection", "Bone"], ["Fold your ear or press your nose", "soft, flexible, keeps shape", "flexibility; cushions bone ends", "Cartilage"], ["Wiggle fingers, feel the forearm", "movement far from fingers", "connects muscle to bone", "Tendon"], ["Raise your leg till the knee stops", "joint stops at a limit", "connects bone to bone; stability", "Ligament"]];
+  var st = {preset: "epi"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: id === "act33" ? 4 : 6, step: 1, speed: 1});
+    L.legend(id === "blood" ? [["#fde68a", "plasma ≈ 55%"], [C.danger, "formed elements ≈ 45%"]] : [[C.vel, "oxygen particles"], ["#fbbf24", "epithelial cells"]]);
+    L.watch({epi: "Oxygen crosses two linings: a single layer of thin, flat cells (like the lungs) and many layers (like skin). Illustrative model.", blood: "Fig. 3.12a: blood separated into plasma and formed elements.", act33: "Activity 3.3 / Table 3.4: four actions, four connective tissues."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "epi"){
+      [[180, 1, "single thin layer (lungs)"], [520, 5, "many layers (skin)"]].forEach(function(c){
+        var x = c[0], layers = c[1], h = layers * 16;
+        for(var i = 0; i < layers; i++) m += L.rect(x - 110, 150 - h / 2 + i * 16, 220, 14, "rgba(251,191,36,0.35)", ' stroke="#fbbf24" rx="3"');
+        var passed = Math.min(10, Math.floor(t * 10 / (1 + (layers - 1) * 0.9)));
+        for(var p = 0; p < 10; p++){
+          var y = p < passed ? 150 + h / 2 + 20 + (p % 3) * 14 : 150 - h / 2 - 20 - (p % 3) * 14;
+          m += L.circle(x - 90 + p * 20, y, 5, C.vel);
         }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => setTissue(btn.dataset.tissue);
-        });
-
-        selTissue.onchange = (e) => setTissue(e.target.value);
-        rngForce.oninput = (e) => {
-            state.custom.force = parseInt(e.target.value);
-            lblForce.textContent = state.custom.force;
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const tissue = state.custom.tissue;
-        const force = state.custom.force;
-        const osc = Math.sin(state.time * 3.0);
-
-        let svgContent = '';
-        let readoutHtml = '';
-        let verdictHtml = '';
-
-        if (tissue === 'collenchyma') {
-            const bendAngle = (force * 0.45) * (0.8 + 0.2 * osc);
-            const tipX = 250 + Math.sin(bendAngle * Math.PI / 180) * 180;
-            const tipY = 320 - Math.cos(bendAngle * Math.PI / 180) * 180;
-
-            svgContent = `
-                <text x="40" y="40" fill="#38bdf8" font-size="16" font-weight="bold">Collenchyma: Dynamic Tensile Flexibility Under Wind</text>
-                
-                <rect x="80" y="320" width="340" height="50" fill="#334155" rx="4" />
-                <circle cx="250" cy="320" r="10" fill="#64748b" />
-
-                <path d="M 250 320 Q ${250 + (tipX-250)*0.5} ${320 - (320-tipY)*0.4} ${tipX} ${tipY}" fill="none" stroke="#22c55e" stroke-width="18" stroke-linecap="round" />
-                <ellipse cx="${tipX}" cy="${tipY}" rx="22" ry="10" fill="#4ade80" transform="rotate(${bendAngle} ${tipX} ${tipY})" />
-
-                <path d="M 80 180 L 160 180 M 150 170 L 160 180 L 150 190" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
-                <path d="M 60 220 L 180 220 M 170 210 L 180 220 L 170 230" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
-                <text x="60" y="165" fill="#38bdf8" font-size="13">Monsoon Gale Force = ${force} N</text>
-
-                <g transform="translate(480, 50)">
-                    <rect x="0" y="0" width="280" height="280" fill="#1e293b" stroke="#475569" stroke-width="2" rx="8" />
-                    <text x="20" y="30" fill="#facc15" font-size="13" font-weight="bold">Micro-Structure: Corner Pectin Thickenings</text>
-                    
-                    <circle cx="90" cy="110" r="35" fill="#14532d" stroke="#22c55e" stroke-width="3" />
-                    <circle cx="160" cy="110" r="35" fill="#14532d" stroke="#22c55e" stroke-width="3" />
-                    <circle cx="125" cy="170" r="35" fill="#14532d" stroke="#22c55e" stroke-width="3" />
-
-                    <circle cx="125" cy="110" r="10" fill="#eab308" />
-                    <circle cx="125" cy="140" r="12" fill="#eab308" />
-                    <text x="145" y="145" fill="#fde047" font-size="11">Hydrophilic Pectin Corner Cushion</text>
-                    <text x="20" y="240" fill="#94a3b8" font-size="12">• Living protoplast with nucleus</text>
-                    <text x="20" y="260" fill="#94a3b8" font-size="12">• Elastic tensile deflection without snap</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Tissue:</span> <span class="metric-val" style="color:#4ade80;">Collenchyma (Living)</span></div>
-                <div class="metric"><span class="metric-lbl">Deflection Angle:</span> <span class="metric-val">${bendAngle.toFixed(1)}°</span></div>
-                <div class="metric"><span class="metric-lbl">Elastic Strain:</span> <span class="metric-val">${(force * 0.18).toFixed(1)}% (Reversible)</span></div>
-                <div class="metric"><span class="metric-lbl">Mechanical Verdict:</span> <span class="metric-val" style="color:#22c55e;">Flexible Support (Zero Snapping)</span></div>
-            `;
-
-            verdictHtml = `<strong>Pectin Engineering:</strong> Collenchyma cell corners are reinforced with hydrophilic pectin and hemicellulose. They allow high tensile bending moments under heavy winds without cracking, springing back elastically when wind subsides.`;
-
-        } else if (tissue === 'sclerenchyma' || tissue === 'brittle-test') {
-            const isSnapped = force > 60;
-            const bendAngle = isSnapped ? 65 : (force * 0.08);
-            const tipX = isSnapped ? 340 : (250 + Math.sin(bendAngle * Math.PI / 180) * 180);
-            const tipY = isSnapped ? 280 : (320 - Math.cos(bendAngle * Math.PI / 180) * 180);
-
-            svgContent = `
-                <text x="40" y="40" fill="${isSnapped ? '#ef4444' : '#e2e8f0'}" font-size="16" font-weight="bold">
-                    ${tissue === 'brittle-test' ? 'Exercise 9: Mango Sapling Replaced by Sclerenchyma' : 'Sclerenchyma: Lignified Rigid Armor & Brittle Limit'}
-                </text>
-
-                <rect x="80" y="320" width="340" height="50" fill="#334155" rx="4" />
-
-                ${!isSnapped ? `
-                    <line x1="250" y1="320" x2="${tipX}" y2="${tipY}" stroke="#a16207" stroke-width="20" stroke-linecap="round" />
-                    <text x="270" y="240" fill="#facc15" font-size="13">High Compressive Stiffness (Zero Flex)</text>
-                ` : `
-                    <line x1="250" y1="320" x2="250" y2="230" stroke="#a16207" stroke-width="20" />
-                    <line x1="255" y1="225" x2="340" y2="270" stroke="#78350f" stroke-width="18" stroke-linecap="round" />
-                    <path d="M 238 230 L 250 220 L 245 235 L 260 225" stroke="#ef4444" stroke-width="3" fill="none" />
-                    <text x="270" y="210" fill="#ef4444" font-size="15" font-weight="bold">💥 BRITTLE SNAP (Fractured at 60 N!)</text>
-                `}
-
-                <g transform="translate(480, 50)">
-                    <rect x="0" y="0" width="280" height="280" fill="#1e293b" stroke="#475569" stroke-width="2" rx="8" />
-                    <text x="20" y="30" fill="#f87171" font-size="13" font-weight="bold">Micro-Structure: Lignified Armor</text>
-                    
-                    <rect x="70" y="70" width="140" height="120" fill="#78350f" stroke="#b45309" stroke-width="2" rx="6" />
-                    <rect x="110" y="110" width="60" height="40" fill="#0f172a" stroke="#ca8a04" stroke-width="2" />
-                    <text x="118" y="135" fill="#94a3b8" font-size="11">Narrow Lumen</text>
-                    
-                    <text x="20" y="220" fill="#e2e8f0" font-size="12">• Massive lignified secondary walls</text>
-                    <text x="20" y="240" fill="#e2e8f0" font-size="12">• Dead protoplast (empty lumen)</text>
-                    <text x="20" y="260" fill="#ef4444" font-size="12">• High strength, ZERO bending elasticity</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Tissue:</span> <span class="metric-val" style="color:#f87171;">Sclerenchyma (Dead)</span></div>
-                <div class="metric"><span class="metric-lbl">Applied Force:</span> <span class="metric-val">${force} N</span></div>
-                <div class="metric"><span class="metric-lbl">Elastic Strain:</span> <span class="metric-val">${isSnapped ? 'FAILED (Fractured)' : '0.4% (Brittle)'}</span></div>
-                <div class="metric"><span class="metric-lbl">Status:</span> <span class="metric-val" style="color:${isSnapped ? '#ef4444' : '#eab308'};">${isSnapped ? 'Snapping Failure' : 'Rigid Holding'}</span></div>
-            `;
-
-            verdictHtml = isSnapped 
-                ? `<strong>NCERT Exercise 9 Proven:</strong> If a young mango sapling's collenchyma were replaced by sclerenchyma, the brittle lignified walls would fail to dissipate dynamic bending energy, snapping cleanly in high winds.`
-                : `<strong>Sclerenchyma Rigidity:</strong> Extreme compressive and tensile resistance due to lignin, ideal for coconut husks and seed armor, but lacks elasticity for wind-blown young stems.`;
-
-        } else if (tissue === 'parenchyma') {
-            svgContent = `
-                <text x="40" y="40" fill="#86efac" font-size="16" font-weight="bold">Parenchyma: Living Matrix, Turgor Pressure & Intercellular Spaces</text>
-
-                <g transform="translate(150, 80)">
-                    <circle cx="100" cy="100" r="50" fill="#15803d" stroke="#86efac" stroke-width="2" opacity="0.8" />
-                    <circle cx="180" cy="100" r="50" fill="#15803d" stroke="#86efac" stroke-width="2" opacity="0.8" />
-                    <circle cx="140" cy="170" r="50" fill="#15803d" stroke="#86efac" stroke-width="2" opacity="0.8" />
-                    
-                    <circle cx="100" cy="100" r="32" fill="#0284c7" opacity="0.5" />
-                    <circle cx="180" cy="100" r="32" fill="#0284c7" opacity="0.5" />
-                    <circle cx="140" cy="170" r="32" fill="#0284c7" opacity="0.5" />
-                    
-                    <polygon points="140,115 155,135 125,135" fill="#f8fafc" opacity="0.7" />
-                    <text x="170" y="140" fill="#f8fafc" font-size="12">Intercellular Air Space</text>
-
-                    <circle cx="85" cy="85" r="4" fill="#fef08a" />
-                    <circle cx="110" cy="115" r="5" fill="#fef08a" />
-                    <circle cx="170" cy="90" r="4" fill="#fef08a" />
-                    <circle cx="190" cy="110" r="5" fill="#fef08a" />
-                </g>
-
-                <g transform="translate(480, 50)">
-                    <rect x="0" y="0" width="280" height="280" fill="#1e293b" stroke="#475569" stroke-width="2" rx="8" />
-                    <text x="20" y="30" fill="#86efac" font-size="13" font-weight="bold">Parenchyma Cytology</text>
-                    <text x="20" y="70" fill="#e2e8f0" font-size="12">• Thin primary cellulose wall</text>
-                    <text x="20" y="100" fill="#e2e8f0" font-size="12">• Massive central sap vacuole (turgor)</text>
-                    <text x="20" y="130" fill="#e2e8f0" font-size="12">• Prominent intercellular air spaces</text>
-                    <text x="20" y="160" fill="#e2e8f0" font-size="12">• Stores starch, water, and nutrients</text>
-                    <text x="20" y="200" fill="#38bdf8" font-size="12">Specialized forms:</text>
-                    <text x="20" y="225" fill="#4ade80" font-size="11">🍃 Chlorenchyma (Photosynthesis)</text>
-                    <text x="20" y="250" fill="#38bdf8" font-size="11">🪷 Aerenchyma (Aquatic Buoyancy)</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Tissue:</span> <span class="metric-val" style="color:#86efac;">Parenchyma (Living)</span></div>
-                <div class="metric"><span class="metric-lbl">Wall Composition:</span> <span class="metric-val">Primary Cellulose</span></div>
-                <div class="metric"><span class="metric-lbl">Intercellular Space:</span> <span class="metric-val">Large / Prominent</span></div>
-                <div class="metric"><span class="metric-lbl">Primary Role:</span> <span class="metric-val">Storage & Osmotic Turgidity</span></div>
-            `;
-
-            verdictHtml = `<strong>Parenchyma Versatility:</strong> The unspecialized mother tissue of plants. Living, thin-walled, and versatile—differentiating into chlorenchyma for photosynthesis, aerenchyma for buoyancy, or dividing for wound healing.`;
-        }
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
+        m += L.text(x, 285, c[2], {size: 13, color: C.text});
+      });
+      L.svg(m, "Diffusion across thin and thick linings.", 300);
+      var thin = Math.min(10, Math.floor(t * 10)), thick = Math.min(10, Math.floor(t * 10 / 4.6));
+      L.readout([["Crossed the single layer", thin + " of 10", C.vel], ["Crossed the many layers", thick + " of 10", C.vel]]);
+      msg = t < 6 ? "Oxygen diffusing…" : "<b>Structure fits function:</b> a single layer of thin, flat cells lets materials cross quickly (Exercise Q3); many layers slow exchange but protect, as in skin.";
+    } else if(st.preset === "blood"){
+      var f = Math.min(1, t / 4);
+      m += L.rect(290, 40, 140, 230, "none", ' stroke="#cbd5e1" stroke-width="3" rx="12"');
+      m += L.rect(293, 43 + 224 * (1 - 0.45 * f) , 134, 224 * 0.45 * f, "#b91c1c", ' rx="8"');
+      m += L.rect(293, 43, 134, 224 * (1 - 0.45 * f), f > 0.9 ? "#fde68a" : "#dc2626", ' rx="8"');
+      if(f > 0.9){ m += L.text(460, 110, "plasma ≈ 55%", {size: 15, color: "#fde68a", anchor: "start", weight: 700}) + L.text(460, 230, "formed elements ≈ 45%", {size: 15, color: "#f87171", anchor: "start", weight: 700}) + L.text(460, 252, "RBCs, WBCs, platelets", {size: 13, color: C.muted, anchor: "start"}); }
+      L.svg(m, "Blood separating into plasma and formed elements.", 300);
+      L.readout([["Plasma", "≈ 55% (watery matrix)"], ["Formed elements", "≈ 45%"], ["RBCs", "haemoglobin; live about 4 months"], ["Platelets", "clotting"], ["WBCs", "fight infection"]]);
+      msg = t < 6 ? "Separating…" : "<b>Blood is a fluid connective tissue:</b> plasma about 55% and formed elements about 45% of the volume (Fig. 3.12a).";
+    } else {
+      var k = Math.min(3, Math.floor(t + 1e-9));
+      m += L.text(360, 50, ROWS[k][0], {size: 18, color: C.text, weight: 700}) + L.text(360, 100, "feels: " + ROWS[k][1], {size: 15, color: C.muted}) + L.text(360, 140, "function: " + ROWS[k][2], {size: 15, color: C.muted}) + L.text(360, 200, ROWS[k][3], {size: 30, color: C.path, weight: 700});
+      L.svg(m, ROWS[k][3], 300);
+      L.readoutHTML('<table class="lab-table"><caption>Table 3.4: connective tissues</caption><thead><tr><th>Action</th><th>Function</th><th>Tissue</th></tr></thead><tbody>' + ROWS.map(function(r, i){ var d = i <= k && t > 0; return '<tr' + (d ? '' : ' class="pending"') + '><td>' + r[0] + '</td><td>' + (d ? r[2] : "?") + '</td><td>' + (d ? r[3] : "?") + '</td></tr>'; }).join("") + '</tbody></table>');
+      msg = t < 4 ? "Try each action…" : "<b>Activity 3.3:</b> Bone gives strength; Cartilage gives flexibility; Tendon joins muscle to bone; Ligament joins bone to bone.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["epi", "Exercise Q3: thin vs thick lining"], ["blood", "Fig. 3.12a: blood"], ["act33", "Activity 3.3: connective tissues"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.animalTissues = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// =========================================================================
-// 3. SIMULATION: Dual Vascular Engine Lab: Xylem & Phloem (sim-vascular-transport)
-// =========================================================================
-window.SIMS['sim-vascular-transport'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-preset="normal">Transpiration Pull (Normal Day)</button>
-                        <button class="btn btn-sm btn-preset" data-preset="debarked">Exercise 8: Elephant Debarking (Phloem Cut)</button>
-                        <button class="btn btn-sm btn-preset" data-preset="night">Nighttime (Zero Transpiration)</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Sunlight / Transpiration Intensity: <span class="val-sun">75%</span>
-                        <input type="range" class="rng-sun" min="0" max="100" step="5" value="75">
-                    </label>
-                    <label class="control-item">
-                        <input type="checkbox" class="chk-debarked"> Elephant Debarking (Sever Outer Phloem)
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 420" width="100%" height="340" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const rngSun = container.querySelector('.rng-sun');
-        const chkDebark = container.querySelector('.chk-debarked');
-        const lblSun = container.querySelector('.val-sun');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.sun = 75;
-        state.custom.debarked = false;
-
-        function applyPreset(p) {
-            if (p === 'normal') {
-                state.custom.sun = 75;
-                state.custom.debarked = false;
-                chkDebark.checked = false;
-            } else if (p === 'debarked') {
-                state.custom.sun = 75;
-                state.custom.debarked = true;
-                chkDebark.checked = true;
-            } else if (p === 'night') {
-                state.custom.sun = 0;
-                state.custom.debarked = false;
-                chkDebark.checked = false;
-            }
-            rngSun.value = state.custom.sun;
-            lblSun.textContent = state.custom.sun + '%';
-            state.reset();
-        }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => applyPreset(btn.dataset.preset);
-        });
-
-        rngSun.oninput = (e) => {
-            state.custom.sun = parseInt(e.target.value);
-            lblSun.textContent = state.custom.sun + '%';
-            this.draw(svg, state, container);
-        };
-        chkDebark.onchange = (e) => {
-            state.custom.debarked = e.target.checked;
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const sun = state.custom.sun;
-        const debarked = state.custom.debarked;
-        const t = state.time;
-
-        const xylemSpeed = (sun / 100) * 12;
-        const phloemSpeed = debarked ? 0 : 8;
-
-        let waterParticles = '';
-        for (let i = 0; i < 7; i++) {
-            const yPos = (340 - ((t * xylemSpeed * 6 + i * 45) % 300));
-            waterParticles += `<circle cx="270" cy="${yPos}" r="5" fill="#38bdf8" />`;
-            waterParticles += `<circle cx="290" cy="${(yPos + 20) % 300 + 40}" r="4" fill="#0284c7" />`;
-        }
-
-        let sugarParticles = '';
-        if (!debarked) {
-            for (let i = 0; i < 6; i++) {
-                const yPos = 80 + ((t * phloemSpeed * 4 + i * 50) % 260);
-                sugarParticles += `<circle cx="510" cy="${yPos}" r="6" fill="#facc15" />`;
-                sugarParticles += `<circle cx="530" cy="${(yPos + 30) % 260 + 80}" r="5" fill="#eab308" />`;
-            }
-        }
-
-        const svgContent = `
-            <text x="40" y="35" fill="#f8fafc" font-size="16" font-weight="bold">Vascular Engine: Xylem Conduction vs Phloem Translocation</text>
-
-            <rect x="200" y="45" width="400" height="35" fill="#15803d" rx="6" />
-            <text x="320" y="68" fill="#fef08a" font-size="13" font-weight="bold">🌿 Photosynthetic Canopy (Sugar Source)</text>
-
-            <rect x="200" y="360" width="400" height="45" fill="#3b2518" rx="6" />
-            <text x="310" y="388" fill="#ca8a04" font-size="13" font-weight="bold">🌱 Root System (Water Source & Nutrient Sink)</text>
-
-            <rect x="240" y="80" width="80" height="280" fill="#0c4a6e" stroke="#38bdf8" stroke-width="2" rx="4" />
-            <text x="250" y="105" fill="#7dd3fc" font-size="13" font-weight="bold">XYLEM</text>
-            <text x="245" y="125" fill="#bae6fd" font-size="10">Tracheids & Vessels</text>
-            <text x="245" y="140" fill="#38bdf8" font-size="10">Unidirectional ↑</text>
-            <path d="M 280 320 L 280 270 M 275 280 L 280 270 L 285 280" stroke="#38bdf8" stroke-width="2" />
-            <path d="M 280 220 L 280 170 M 275 180 L 280 170 L 285 180" stroke="#38bdf8" stroke-width="2" />
-            ${waterParticles}
-
-            <rect x="480" y="80" width="80" height="280" fill="#713f12" stroke="#eab308" stroke-width="2" rx="4" />
-            <text x="490" y="105" fill="#fef08a" font-size="13" font-weight="bold">PHLOEM</text>
-            <text x="485" y="125" fill="#fde047" font-size="10">Sieve Tubes & CC</text>
-            <text x="485" y="140" fill="#eab308" font-size="10">Bidirectional ↕</text>
-
-            ${!debarked ? `
-                <path d="M 520 170 L 520 220 M 515 210 L 520 220 L 525 210" stroke="#facc15" stroke-width="2" />
-                <path d="M 520 270 L 520 320 M 515 310 L 520 320 L 525 310" stroke="#facc15" stroke-width="2" />
-                ${sugarParticles}
-            ` : `
-                <rect x="475" y="200" width="90" height="40" fill="#ef4444" stroke="#f87171" stroke-width="2" rx="3" />
-                <line x1="475" y1="200" x2="565" y2="240" stroke="#ffffff" stroke-width="3" />
-                <line x1="475" y1="240" x2="565" y2="200" stroke="#ffffff" stroke-width="3" />
-                <text x="575" y="225" fill="#ef4444" font-size="12" font-weight="bold">✂️ Bark Stripped (Phloem Severed!)</text>
-                <circle cx="520" cy="190" r="18" fill="#ca8a04" opacity="0.8" />
-                <text x="575" y="195" fill="#ca8a04" font-size="11">Sugar Callus Swelling</text>
-                <text x="575" y="320" fill="#ef4444" font-size="11">Roots Starving (0 ATP)</text>
-            `}
-
-            <g transform="translate(40, 160)">
-                <rect x="0" y="0" width="180" height="150" fill="#1e293b" stroke="#334155" rx="6" />
-                <text x="15" y="25" fill="#f8fafc" font-size="12" font-weight="bold">Legend & Status</text>
-                <circle cx="25" cy="50" r="5" fill="#38bdf8" />
-                <text x="40" y="55" fill="#94a3b8" font-size="11">Water + Mineral Sap</text>
-                <circle cx="25" cy="80" r="5" fill="#facc15" />
-                <text x="40" y="85" fill="#94a3b8" font-size="11">Sucrose Photoassimilates</text>
-                <text x="15" y="115" fill="#38bdf8" font-size="11">Sun: ${sun}%</text>
-                <text x="15" y="135" fill="${debarked ? '#ef4444' : '#22c55e'}" font-size="11">Phloem: ${debarked ? 'Severed' : 'Intact'}</text>
-            </g>
-        `;
-
-        readoutHtml = `
-            <div class="metric"><span class="metric-lbl">Xylem Water Flow:</span> <span class="metric-val" style="color:#38bdf8;">${(xylemSpeed * 1.5).toFixed(1)} L/hr</span></div>
-            <div class="metric"><span class="metric-lbl">Phloem Sugar Flux:</span> <span class="metric-val" style="color:#facc15;">${debarked ? '0 μmol/s (BLOCKED)' : '48 μmol/s'}</span></div>
-            <div class="metric"><span class="metric-lbl">Canopy Hydration:</span> <span class="metric-val" style="color:#22c55e;">100% (Turgid)</span></div>
-            <div class="metric"><span class="metric-lbl">Root Viability:</span> <span class="metric-val" style="color:${debarked ? '#ef4444' : '#22c55e'};">${debarked ? 'Starving (No Sucrose)' : 'Nourished'}</span></div>
-        `;
-
-        verdictHtml = debarked
-            ? `<strong>NCERT Exercise 8 Verification:</strong> Removing outer bark strips the <em>phloem</em>. Water transport up the deeper woody <em>xylem</em> continues unhindered (leaves stay green initially), but roots are cut off from photosynthetic food, starving to death in weeks.`
-            : `<strong>Dual Vascular Operation:</strong> Xylem pulls water and inorganic minerals upwards via physical transpiration suction. Phloem distributes energy-rich sucrose bidirectionally from mature source leaves to sinks.`;
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
+// Lab 4 — Muscles and neurons
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "neuron"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: id === "muscles" ? 3 : 5, step: 1, speed: 1});
+    L.legend(id === "neuron" ? [["#fbbf24", "message (nerve impulse)"], ["#a78bfa", "neuron"]] : [["#f472b6", "muscle"], ["#a78bfa", "nucleus"]]);
+    L.watch({neuron: "Fig. 3.14: a message enters at the dendrites and leaves at the axon terminals.", muscles: "Fig. 3.13: compare skeletal, smooth and cardiac muscle cells.", exercise: "During exercise the brain signals the heart to beat faster (heart-rate values are illustrative)."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "neuron"){
+      m += L.circle(170, 150, 40, "rgba(167,139,250,0.3)", ' stroke="#a78bfa" stroke-width="3"') + L.circle(170, 150, 12, "#7c3aed");
+      [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1]].forEach(function(d){ m += L.line(170 + d[0] * 38, 150 + d[1] * 38, 170 + d[0] * 90 + (d[0] === 0 ? 20 : 0), 150 + d[1] * 90, "#a78bfa", 4); });
+      m += L.line(210, 150, 600, 150, "#a78bfa", 6);
+      [[-1], [0], [1]].forEach(function(d){ m += L.line(600, 150, 650, 150 + d[0] * 40, "#a78bfa", 4) + L.circle(652, 150 + d[0] * 40, 7, "#a78bfa"); });
+      m += L.text(80, 60, "dendrites", {size: 13, color: C.muted}) + L.text(170, 215, "cell body + nucleus", {size: 13, color: C.muted}) + L.text(400, 130, "axon", {size: 13, color: C.muted}) + L.text(650, 230, "axon terminals", {size: 13, color: C.muted});
+      var x = t < 1 ? 80 + t * 90 : t < 2 ? 170 : 170 + (t - 2) / 3 * 480;
+      if(t > 0) m += L.circle(Math.min(650, x), 150, 10, "#fbbf24", ' stroke="#fff" stroke-width="2"');
+      L.svg(m, "Neuron carrying a message.", 300);
+      var where = t <= 0 ? "—" : t < 1 ? "dendrites" : t < 2 ? "cell body" : t < 4.9 ? "axon" : "axon terminals";
+      L.readout([["Message is at", where, "#fbbf24"], ["Dendrites", "receive signals"], ["Axon", "carries messages away"], ["Axon terminals", "pass messages on"]]);
+      msg = t < 5 ? "Message travelling…" : "<b>Neuron:</b> dendrites receive, the cell body processes, the axon carries the message to the <b>axon terminals</b>, which pass it to the next cell.";
+    } else if(st.preset === "muscles"){
+      var k = Math.floor(t + 1e-9);
+      if(t > 0){ m += L.rect(40, 110, 180, 60, "rgba(244,114,182,0.3)", ' stroke="#f472b6" stroke-width="2" rx="10"'); for(var i = 0; i < 10; i++) m += L.line(55 + i * 16, 112, 55 + i * 16, 168, "rgba(244,114,182,0.7)", 2); [70, 130, 190].forEach(function(x){ m += L.circle(x, 140, 5, "#a78bfa"); }); m += L.text(130, 200, "skeletal: striated, many nuclei, unbranched", {size: 12, color: C.text}) + L.text(130, 218, "voluntary", {size: 12, color: C.muted}); }
+      if(t > 1) { m += '<path d="M270 140 q70 -40 140 0 q-70 40 -140 0 z" fill="rgba(244,114,182,0.3)" stroke="#f472b6" stroke-width="2"/>' + L.circle(340, 140, 5, "#a78bfa") + L.text(340, 200, "smooth: spindle, one nucleus, no striations", {size: 12, color: C.text}) + L.text(340, 218, "involuntary", {size: 12, color: C.muted}); }
+      if(t > 2) { m += '<path d="M470 120 h80 l30 -20 M550 120 l30 20 M470 160 h110" stroke="#f472b6" stroke-width="16" fill="none" stroke-linecap="round" opacity="0.5"/>' + L.circle(510, 120, 5, "#a78bfa") + L.circle(530, 160, 5, "#a78bfa") + L.text(560, 200, "cardiac: branched, one nucleus, faint striations", {size: 12, color: C.text}) + L.text(560, 218, "involuntary, heart only", {size: 12, color: C.muted}); }
+      L.svg(m, "Three types of muscle cells.", 300);
+      L.readout([["Skeletal", "voluntary; attached to bones"], ["Smooth", "involuntary; stomach, intestines"], ["Cardiac", "involuntary; heart; never tires"]]);
+      msg = k < 3 ? "Adding muscle types…" : "<b>Fig. 3.13:</b> skeletal (striated, many nuclei), smooth (spindle, no striations) and cardiac (branched, faint striations) muscle.";
+    } else {
+      var rate = t < 1 ? 72 : Math.min(120, 72 + (t - 1) * 16);
+      m += L.text(150, 80, "brain", {size: 16, color: "#a78bfa", weight: 700}) + L.circle(150, 130, 35, "rgba(167,139,250,0.3)", ' stroke="#a78bfa" stroke-width="3"');
+      m += L.text(500, 80, "heart", {size: 16, color: C.danger, weight: 700});
+      var beat = 1 + 0.12 * Math.abs(Math.sin(t * rate / 60 * Math.PI * 2));
+      m += '<path transform="translate(500 150) scale(' + beat + ')" d="M0 30 C -60 -10 -30 -60 0 -25 C 30 -60 60 -10 0 30 z" fill="' + C.danger + '"/>';
+      if(t >= 1) m += L.arrow(190, 130, 450, 140, "#fbbf24", 3) + L.text(320, 120, "nerve signal: beat faster", {size: 13, color: "#fbbf24"});
+      L.svg(m, "Heart rate " + Math.round(rate), 300);
+      L.readout([["Activity", t < 1 ? "resting" : "running"], ["Heart rate (illustrative)", Math.round(rate) + " beats/min", C.danger]]);
+      msg = t < 5 ? "Exercising…" : "<b>Muscles need instructions:</b> during exercise the brain signals the heart to beat faster, sending more oxygen to working muscles.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["neuron", "Fig. 3.14: neuron"], ["muscles", "Fig. 3.13: three muscles"], ["exercise", "Brain and heart during exercise"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.muscleNerve = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// =========================================================================
-// 4. SIMULATION: Epithelial Permeability & Barriers Lab (sim-epithelial-barriers)
-// =========================================================================
-window.SIMS['sim-epithelial-barriers'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-type="squamous">Alveoli Diffusion (Simple Squamous)</button>
-                        <button class="btn btn-sm btn-preset" data-type="stratified">Skin Armor (Stratified Squamous)</button>
-                        <button class="btn btn-sm btn-preset" data-type="ciliated">Tracheal Escalator (Ciliated Columnar)</button>
-                        <button class="btn btn-sm btn-preset" data-type="cuboidal">Kidney Reabsorption (Cuboidal)</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Epithelial Architecture:
-                        <select class="sel-epi-type">
-                            <option value="squamous">Simple Squamous (Ultra-thin Pavement - 0.3 μm)</option>
-                            <option value="stratified">Stratified Squamous (Multi-layered Protective Shield - 50 μm)</option>
-                            <option value="ciliated">Ciliated Columnar (Mucociliary Sweeper)</option>
-                            <option value="cuboidal">Simple Cuboidal (Tubular Secretion & Reabsorption)</option>
-                        </select>
-                    </label>
-                    <label class="control-item">Gas / Solute Concentration (mM): <span class="val-conc">80</span>
-                        <input type="range" class="rng-conc" min="10" max="100" step="5" value="80">
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 400" width="100%" height="320" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const selType = container.querySelector('.sel-epi-type');
-        const rngConc = container.querySelector('.rng-conc');
-        const lblConc = container.querySelector('.val-conc');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.type = 'squamous';
-        state.custom.conc = 80;
-
-        function setType(tp) {
-            state.custom.type = tp;
-            selType.value = tp;
-            state.reset();
-        }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => setType(btn.dataset.type);
-        });
-
-        selType.onchange = (e) => setType(e.target.value);
-        rngConc.oninput = (e) => {
-            state.custom.conc = parseInt(e.target.value);
-            lblConc.textContent = state.custom.conc;
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const type = state.custom.type;
-        const conc = state.custom.conc;
-        const t = state.time;
-
-        let svgContent = '';
-        let readoutHtml = '';
-        let verdictHtml = '';
-
-        if (type === 'squamous') {
-            const diffFlux = (conc * 0.95).toFixed(1);
-            let diffusedDots = '';
-            for (let i = 0; i < 15; i++) {
-                const x = 120 + (i * 35 + t * 40) % 550;
-                const y = 280 + Math.sin(x * 0.05 + t) * 20;
-                diffusedDots += `<circle cx="${x}" cy="${y}" r="4" fill="#38bdf8" />`;
-            }
-
-            svgContent = `
-                <text x="40" y="35" fill="#38bdf8" font-size="16" font-weight="bold">Simple Squamous Epithelium: Lung Alveoli Gas Diffusion (NCERT Ex 3 & 6A)</text>
-                
-                <rect x="80" y="60" width="640" height="90" fill="#1e293b" rx="4" />
-                <text x="100" y="100" fill="#94a3b8" font-size="14">Alveolar Lumen (High O2 Concentration = ${conc} mM)</text>
-
-                <rect x="80" y="150" width="640" height="24" fill="#0369a1" stroke="#38bdf8" stroke-width="2" />
-                <ellipse cx="180" cy="162" rx="20" ry="5" fill="#082f49" />
-                <ellipse cx="320" cy="162" rx="20" ry="5" fill="#082f49" />
-                <ellipse cx="460" cy="162" rx="20" ry="5" fill="#082f49" />
-                <ellipse cx="600" cy="162" rx="20" ry="5" fill="#082f49" />
-                <text x="100" y="195" fill="#38bdf8" font-size="12">Single cell layer (Thickness Δx = 0.3 μm) on Basement Membrane</text>
-
-                <rect x="80" y="220" width="640" height="110" fill="#881337" rx="4" />
-                <text x="100" y="250" fill="#fecdd3" font-size="14">Capillary Lumen: Rapid Oxygen Diffusion Uptake</text>
-                ${diffusedDots}
-                
-                <line x1="250" y1="120" x2="250" y2="240" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow)" />
-                <line x1="450" y1="120" x2="450" y2="240" stroke="#22c55e" stroke-width="3" marker-end="url(#arrow)" />
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Architecture:</span> <span class="metric-val" style="color:#38bdf8;">Simple Squamous (1 Layer)</span></div>
-                <div class="metric"><span class="metric-lbl">Barrier Thickness:</span> <span class="metric-val">0.3 μm (Minimal)</span></div>
-                <div class="metric"><span class="metric-lbl">Diffusion Rate J:</span> <span class="metric-val" style="color:#22c55e;">${diffFlux} mmol/s·m² (100% Maximum)</span></div>
-                <div class="metric"><span class="metric-lbl">Primary Role:</span> <span class="metric-val">Instant Gas Exchange</span></div>
-            `;
-
-            verdictHtml = `<strong>Fick's Law Proven (Exercise 3 & 6A):</strong> Diffusion rate $J \propto 1/\Delta x$. Because simple squamous is only one flat cell thick (0.3 μm), oxygen diffuses into red blood cells in milliseconds. A multi-layered barrier would cause fatal suffocation.`;
-
-        } else if (type === 'stratified') {
-            svgContent = `
-                <text x="40" y="35" fill="#facc15" font-size="16" font-weight="bold">Stratified Squamous Epithelium: Skin Protection & Abrasion Resistance</text>
-
-                <g transform="translate(80, 80)">
-                    <rect x="0" y="0" width="640" height="30" fill="#78350f" stroke="#a16207" stroke-width="2" />
-                    <text x="20" y="20" fill="#fde047" font-size="12">Stratum Corneum: Dead, keratinized, waterproof scales</text>
-
-                    <rect x="0" y="30" width="640" height="40" fill="#b45309" />
-                    <rect x="0" y="70" width="640" height="40" fill="#92400e" />
-                    
-                    <rect x="0" y="110" width="640" height="40" fill="#451a03" stroke="#eab308" stroke-width="2" />
-                    <text x="20" y="135" fill="#facc15" font-size="12">Basal Germinative Layer (Continuous mitosis pushing cells upwards)</text>
-                    
-                    <line x1="0" y1="150" x2="640" y2="150" stroke="#f8fafc" stroke-width="3" stroke-dasharray="6,3" />
-                    <text x="20" y="175" fill="#94a3b8" font-size="12">Extracellular Basement Membrane</text>
-
-                    <rect x="0" y="180" width="640" height="70" fill="#1e293b" />
-                    <text x="20" y="220" fill="#64748b" font-size="13">Dermis (Vascular connective tissue with collagen)</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Architecture:</span> <span class="metric-val" style="color:#facc15;">Stratified Squamous (40+ Layers)</span></div>
-                <div class="metric"><span class="metric-lbl">Barrier Thickness:</span> <span class="metric-val">50.0 μm (160× Thicker!)</span></div>
-                <div class="metric"><span class="metric-lbl">Diffusion Rate J:</span> <span class="metric-val" style="color:#ef4444;">0.01 mmol/s·m² (BLOCKED)</span></div>
-                <div class="metric"><span class="metric-lbl">Abrasion Protection:</span> <span class="metric-val" style="color:#22c55e;">Maximum Shield (10/10)</span></div>
-            `;
-
-            verdictHtml = `<strong>Structural Trade-off:</strong> Stratified epithelium provides impenetrable physical defense against friction, microbial invasion, and water loss, but completely blocks diffusion. Ideal for skin, unsuitable for lungs.`;
-
-        } else if (type === 'ciliated') {
-            let ciliaSvg = '';
-            for (let i = 0; i < 28; i++) {
-                const x = 100 + i * 22;
-                const slant = 12 * Math.sin(t * 6.0 + i * 0.4);
-                ciliaSvg += `<line x1="${x}" y1="160" x2="${x + slant}" y2="120" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />`;
-            }
-
-            const mucusX = 100 + (t * 50) % 560;
-
-            svgContent = `
-                <text x="40" y="35" fill="#38bdf8" font-size="16" font-weight="bold">Ciliated Columnar Epithelium: Tracheal Mucociliary Escalator</text>
-
-                <rect x="80" y="90" width="640" height="30" fill="#065f46" opacity="0.6" />
-                <text x="100" y="110" fill="#6ee7b7" font-size="12">Sticky Mucus Coat (Trapping Inhaled Microbes & Dust)</text>
-                <circle cx="${mucusX}" cy="105" r="8" fill="#a7f3d0" />
-                <text x="${mucusX - 6}" y="110" fill="#064e3b" font-size="10" font-weight="bold">Dust</text>
-
-                ${ciliaSvg}
-
-                <rect x="80" y="160" width="640" height="150" fill="#047857" stroke="#10b981" stroke-width="2" />
-                <ellipse cx="150" cy="270" rx="14" ry="22" fill="#064e3b" />
-                <ellipse cx="230" cy="270" rx="14" ry="22" fill="#064e3b" />
-                <ellipse cx="310" cy="270" rx="14" ry="22" fill="#064e3b" />
-                <ellipse cx="390" cy="270" rx="14" ry="22" fill="#064e3b" />
-                <ellipse cx="470" cy="270" rx="14" ry="22" fill="#064e3b" />
-                <ellipse cx="550" cy="270" rx="14" ry="22" fill="#064e3b" />
-                <ellipse cx="630" cy="270" rx="14" ry="22" fill="#064e3b" />
-                
-                <text x="100" y="200" fill="#a7f3d0" font-size="13">Tall Pillar-like Cells with Basal Oval Nuclei</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Architecture:</span> <span class="metric-val" style="color:#34d399;">Ciliated Columnar</span></div>
-                <div class="metric"><span class="metric-lbl">Ciliary Beat Freq:</span> <span class="metric-val">12 Hz (Metachronal Wave)</span></div>
-                <div class="metric"><span class="metric-lbl">Clearance Speed:</span> <span class="metric-val">15 mm / min</span></div>
-                <div class="metric"><span class="metric-lbl">Function:</span> <span class="metric-val">Airway Debris Expulsion</span></div>
-            `;
-
-            verdictHtml = `<strong>Mucociliary Defense:</strong> Microscopic cilia beat rhythmically in metachronal waves, sweeping pathogen-laden mucus upward away from lungs toward the pharynx. Smoking paralyzes these cilia, causing chronic cough.`;
-
-        } else if (type === 'cuboidal') {
-            svgContent = `
-                <text x="40" y="35" fill="#facc15" font-size="16" font-weight="bold">Simple Cuboidal Epithelium: Kidney Tubule Secretion & Reabsorption</text>
-
-                <g transform="translate(80, 80)">
-                    <rect x="0" y="0" width="640" height="70" fill="#1e293b" />
-                    <text x="20" y="40" fill="#38bdf8" font-size="14">Nephron Tubule Lumen (Glomerular Filtrate: Glucose, Water, Salts)</text>
-
-                    <rect x="0" y="70" width="640" height="100" fill="#ca8a04" stroke="#eab308" stroke-width="2" />
-                    <circle cx="80" cy="120" r="22" fill="#713f12" />
-                    <circle cx="180" cy="120" r="22" fill="#713f12" />
-                    <circle cx="280" cy="120" r="22" fill="#713f12" />
-                    <circle cx="380" cy="120" r="22" fill="#713f12" />
-                    <circle cx="480" cy="120" r="22" fill="#713f12" />
-                    <circle cx="580" cy="120" r="22" fill="#713f12" />
-                    
-                    <text x="20" y="195" fill="#fef08a" font-size="12">Cube-shaped Cells with Central Spherical Nuclei & Microvilli Brush Border</text>
-                    <rect x="0" y="210" width="640" height="60" fill="#881337" />
-                    <text x="20" y="245" fill="#fecdd3" font-size="13">Peritubular Capillary (Reabsorbed Solutes Enter Bloodstream)</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Architecture:</span> <span class="metric-val" style="color:#facc15;">Simple Cuboidal</span></div>
-                <div class="metric"><span class="metric-lbl">Nucleus:</span> <span class="metric-val">Central & Spherical</span></div>
-                <div class="metric"><span class="metric-lbl">Reabsorption Efficiency:</span> <span class="metric-val">99% Water / 100% Glucose</span></div>
-                <div class="metric"><span class="metric-lbl">Locations:</span> <span class="metric-val">Kidney Tubules, Salivary Ducts</span></div>
-            `;
-
-            verdictHtml = `<strong>Metabolic Workhorse:</strong> Cuboidal cells are structurally optimized for active transport. Packed with mitochondria and apical microvilli, they reabsorb essential ions, amino acids, and water from kidney filtrate back into the blood.`;
-        }
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
+// Lab 5 — Joints and Activity 3.4
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "ball", weight: 50};
+  var J = {ball: "ball and socket (shoulder)", hinge: "hinge (elbow, knee)", pivot: "pivot (neck)", fixed: "fixed (skull)"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 6, step: 1, speed: 1});
+    L.legend(id === "weight" ? [["#e2e8f0", "bone"], ["#f472b6", "muscle"]] : [["#e2e8f0", "bone"], [C.path, "range of movement"]]);
+    if(id === "weight"){
+      L.watch("Activity 3.4: estimate bone (12–15%) and muscle (textbook adult averages) from body weight.");
+      L.controls(L.slider("j5-w", "Body weight", 30, 80, 1, st.weight, st.weight + " kg"));
+      L.onInput("j5-w", function(v){ st.weight = v; L.setVal("j5-w", v + " kg"); App.seekTimeline(6); });
+    } else { L.watch("Watch every position the " + J[id] + " joint allows."); L.controls(""); }
+    L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, ph = t / 6 * Math.PI * 2;
+    if(st.preset === "weight"){
+      var w = st.weight, b1 = w * 0.12, b2 = w * 0.15;
+      m += L.rect(100, 60, 520, 40, "#334155", ' rx="8"') + L.rect(100, 60, 520 * 0.135, 40, "#e2e8f0", ' rx="8"') + L.text(360, 50, "total " + w + " kg", {size: 14, color: C.text});
+      m += L.text(110, 130, "bone ≈ 12–15%: " + L.num(b1, 1) + "–" + L.num(b2, 1) + " kg", {size: 15, color: "#e2e8f0", anchor: "start"});
+      m += L.text(110, 170, "muscle (adult female avg 30–40%): " + L.num(w * 0.3, 1) + "–" + L.num(w * 0.4, 1) + " kg", {size: 15, color: "#f472b6", anchor: "start"});
+      m += L.text(110, 210, "muscle (adult male avg 40–50%): " + L.num(w * 0.4, 1) + "–" + L.num(w * 0.5, 1) + " kg", {size: 15, color: "#f472b6", anchor: "start"});
+      L.svg(m, "Bone and muscle estimates.", 300);
+      L.readout([["Body weight", w + " kg"], ["Bone (12–15%)", L.num(b1, 1) + "–" + L.num(b2, 1) + " kg"], ["Muscle (30–50%)", L.num(w * 0.3, 1) + "–" + L.num(w * 0.5, 1) + " kg"]]);
+      msg = "<b>Activity 3.4:</b> for " + w + " kg, bone ≈ " + L.num(b1, 1) + "–" + L.num(b2, 1) + " kg (12–15%). Values vary with age, gender and body composition.";
+    } else {
+      var cx = 300, cy = 150, ang = 0, label = "";
+      m += L.circle(cx, cy, 16, "#94a3b8");
+      if(st.preset === "ball"){ ang = ph; m += L.circle(cx, cy, 120, "none", ' stroke="' + C.path + '" stroke-width="2" stroke-dasharray="6 5"'); label = "moves in all directions, even in a circle"; }
+      else if(st.preset === "hinge"){ ang = -Math.PI / 2 + (Math.sin(ph - Math.PI / 2) + 1) / 2 * (150 * Math.PI / 180); m += '<path d="M' + cx + ' ' + (cy - 120) + ' A120 120 0 0 1 ' + (cx + 120 * Math.cos(-Math.PI / 2 + 2.6)) + ' ' + (cy + 120 * Math.sin(-Math.PI / 2 + 2.6)) + '" fill="none" stroke="' + C.path + '" stroke-width="2" stroke-dasharray="6 5"/>'; label = "bends and straightens in one plane"; }
+      else if(st.preset === "pivot"){ ang = -Math.PI / 2 + Math.sin(ph) * 1.2; label = "turns side to side"; }
+      else { ang = -Math.PI / 2; label = "cannot move"; }
+      m += L.line(cx, cy, cx - 150, cy, "#e2e8f0", 16) + L.line(cx, cy, cx + Math.cos(ang) * 120, cy + Math.sin(ang) * 120, "#e2e8f0", 14);
+      if(st.preset === "fixed") m += L.text(cx, cy - 30, "bones locked together", {size: 13, color: C.muted});
+      m += L.text(560, 120, J[st.preset], {size: 16, color: C.text, weight: 700}) + L.text(560, 150, label, {size: 14, color: C.path});
+      L.svg(m, J[st.preset] + " joint: " + label, 300);
+      L.readout([["Joint", J[st.preset]], ["Movement", label, C.path], ["Angle now", Math.round(((ang + Math.PI / 2) * 180 / Math.PI + 360) % 360) + "°"]]);
+      msg = t < 6 ? "Moving…" : st.preset === "ball" ? "<b>Ball and socket:</b> movement in all directions." : st.preset === "hinge" ? "<b>Hinge:</b> movement in one plane only, like a door." : st.preset === "pivot" ? "<b>Pivot:</b> the head turns side to side on the backbone." : "<b>Fixed joint:</b> skull bones cannot move, protecting the brain.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["ball", "Ball and socket"], ["hinge", "Hinge"], ["pivot", "Pivot"], ["fixed", "Fixed"], ["weight", "Activity 3.4: bone & muscle"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.joints = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// =========================================================================
-// 5. SIMULATION: Connective Tissue Biomechanics Lab (sim-connective-matrix)
-// =========================================================================
-window.SIMS['sim-connective-matrix'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-mode="tendon">Tendon Pull (Muscle to Bone)</button>
-                        <button class="btn btn-sm btn-preset" data-mode="ligament">Ligament Stretch (Bone to Bone)</button>
-                        <button class="btn btn-sm btn-preset" data-mode="bone-cart">Bone vs Cartilage Shock Test</button>
-                        <button class="btn btn-sm btn-preset" data-mode="blood">Blood Smear Differential Count</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Connective Tissue Type:
-                        <select class="sel-conn-mode">
-                            <option value="tendon">Tendon (White Collagen, High Tensile Pull)</option>
-                            <option value="ligament">Ligament (Yellow Elastic Fibers, Joint Stabilizer)</option>
-                            <option value="bone-cart">Bone & Cartilage Matrix Comparison</option>
-                            <option value="blood">Fluid Connective Tissue: Blood Components</option>
-                        </select>
-                    </label>
-                    <label class="control-item">Applied Tensile / Compressive Force (N): <span class="val-load">400</span>
-                        <input type="range" class="rng-load" min="0" max="1000" step="50" value="400">
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 400" width="100%" height="320" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const selMode = container.querySelector('.sel-conn-mode');
-        const rngLoad = container.querySelector('.rng-load');
-        const lblLoad = container.querySelector('.val-load');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.mode = 'tendon';
-        state.custom.load = 400;
-
-        function setMode(m) {
-            state.custom.mode = m;
-            selMode.value = m;
-            state.reset();
-        }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => setMode(btn.dataset.mode);
-        });
-
-        selMode.onchange = (e) => setMode(e.target.value);
-        rngLoad.oninput = (e) => {
-            state.custom.load = parseInt(e.target.value);
-            lblLoad.textContent = state.custom.load;
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const mode = state.custom.mode;
-        const load = state.custom.load;
-        const t = state.time;
-
-        let svgContent = '';
-        let readoutHtml = '';
-        let verdictHtml = '';
-
-        if (mode === 'tendon') {
-            const isRuptured = load > 850;
-            const stretchMm = isRuptured ? 35 : (load * 0.015);
-            const tendonLength = 220 + stretchMm * 2.5;
-
-            svgContent = `
-                <text x="40" y="35" fill="#f8fafc" font-size="16" font-weight="bold">Tendon Biomechanics: Muscle-to-Bone Force Transmission (NCERT Ex 6-C)</text>
-
-                <rect x="80" y="140" width="160" height="90" fill="#dc2626" rx="25" />
-                <text x="110" y="190" fill="#fef2f2" font-size="14" font-weight="bold">Skeletal Muscle</text>
-
-                ${!isRuptured ? `
-                    <rect x="240" y="165" width="${tendonLength}" height="40" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2" />
-                    <line x1="245" y1="175" x2="${240 + tendonLength - 5}" y2="175" stroke="#cbd5e1" stroke-width="2" />
-                    <line x1="245" y1="185" x2="${240 + tendonLength - 5}" y2="185" stroke="#cbd5e1" stroke-width="2" />
-                    <line x1="245" y1="195" x2="${240 + tendonLength - 5}" y2="195" stroke="#cbd5e1" stroke-width="2" />
-                    <text x="${260 + tendonLength * 0.2}" y="150" fill="#f8fafc" font-size="12">Tendon (Parallel White Collagen)</text>
-                ` : `
-                    <rect x="240" y="165" width="100" height="40" fill="#e2e8f0" />
-                    <rect x="380" y="165" width="100" height="40" fill="#e2e8f0" />
-                    <path d="M 340 165 L 355 185 L 342 205" stroke="#ef4444" stroke-width="4" fill="none" />
-                    <text x="310" y="140" fill="#ef4444" font-size="14" font-weight="bold">💥 TENDON RUPTURE (Load > 850 N)</text>
-                `}
-
-                <rect x="${240 + tendonLength}" y="80" width="70" height="210" fill="#fef08a" stroke="#ca8a04" stroke-width="3" rx="10" />
-                <text x="${245 + tendonLength}" y="190" fill="#854d0e" font-size="14" font-weight="bold">BONE</text>
-
-                <path d="M 600 185 L 700 185 M 690 175 L 700 185 L 690 195" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" />
-                <text x="610" y="165" fill="#38bdf8" font-size="14" font-weight="bold">Pull = ${load} N</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Tissue:</span> <span class="metric-val" style="color:#e2e8f0;">Tendon (White Collagen)</span></div>
-                <div class="metric"><span class="metric-lbl">Connection:</span> <span class="metric-val">Muscle to Bone</span></div>
-                <div class="metric"><span class="metric-lbl">Elongation:</span> <span class="metric-val">${stretchMm.toFixed(2)} mm (${((stretchMm/220)*100).toFixed(1)}% strain)</span></div>
-                <div class="metric"><span class="metric-lbl">Mechanical State:</span> <span class="metric-val" style="color:${isRuptured ? '#ef4444' : '#22c55e'};">${isRuptured ? 'Torn / Ruptured' : 'Rigid Force Transfer'}</span></div>
-            `;
-
-            verdictHtml = `<strong>Tendon Physiology (Exercise 6-C):</strong> Tendons attach muscle to bone. Made of dense parallel bundles of white collagen fibers, they possess enormous tensile strength with limited elasticity, transferring muscular power directly to bone levers without stretch losses.`;
-
-        } else if (mode === 'ligament') {
-            const isSprained = load > 700;
-            const stretchMm = (load * 0.05);
-
-            svgContent = `
-                <text x="40" y="35" fill="#fde047" font-size="16" font-weight="bold">Ligament Biomechanics: Bone-to-Bone Articular Stabilization</text>
-
-                <rect x="140" y="110" width="130" height="150" fill="#fef08a" stroke="#ca8a04" stroke-width="3" rx="12" />
-                <text x="170" y="190" fill="#854d0e" font-size="14" font-weight="bold">Bone A</text>
-
-                <rect x="270" y="130" width="${100 + stretchMm * 2}" height="25" fill="#facc15" stroke="#ca8a04" stroke-width="2" rx="4" />
-                <rect x="270" y="215" width="${100 + stretchMm * 2}" height="25" fill="#facc15" stroke="#ca8a04" stroke-width="2" rx="4" />
-                <text x="280" y="115" fill="#fde047" font-size="12">Collateral Ligaments (Yellow Elastic Fibers)</text>
-
-                <rect x="${370 + stretchMm * 2}" y="110" width="130" height="150" fill="#fef08a" stroke="#ca8a04" stroke-width="3" rx="12" />
-                <text x="${400 + stretchMm * 2}" y="190" fill="#854d0e" font-size="14" font-weight="bold">Bone B</text>
-
-                ${isSprained ? `
-                    <text x="260" y="280" fill="#ef4444" font-size="14" font-weight="bold">⚠️ LIGAMENT SPRAIN (Excessive Strain > 25%!)</text>
-                ` : `
-                    <text x="270" y="280" fill="#22c55e" font-size="13">Joint Stabilized within Elastic Limit</text>
-                `}
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Tissue:</span> <span class="metric-val" style="color:#facc15;">Ligament (Yellow Elastic)</span></div>
-                <div class="metric"><span class="metric-lbl">Connection:</span> <span class="metric-val">Bone to Bone</span></div>
-                <div class="metric"><span class="metric-lbl">Stretch / Elongation:</span> <span class="metric-val">${stretchMm.toFixed(1)} mm (${((stretchMm/100)*100).toFixed(1)}% strain)</span></div>
-                <div class="metric"><span class="metric-lbl">Joint Security:</span> <span class="metric-val" style="color:${isSprained ? '#ef4444' : '#22c55e'};">${isSprained ? 'Sprained / Joint Unstable' : 'Secure & Flexible'}</span></div>
-            `;
-
-            verdictHtml = `<strong>Ligament Physiology:</strong> Ligaments bind bone to bone across synovial joints. Composed of yellow elastic fibers, they allow smooth joint articulation while preventing hyper-extension and joint dislocation.`;
-
-        } else if (mode === 'bone-cart') {
-            svgContent = `
-                <text x="40" y="35" fill="#38bdf8" font-size="16" font-weight="bold">Skeletal Tissues: Mineralized Bone vs Resilient Cartilage Matrix</text>
-
-                <g transform="translate(80, 70)">
-                    <rect x="0" y="0" width="290" height="270" fill="#1e293b" stroke="#ca8a04" stroke-width="2" rx="8" />
-                    <text x="20" y="30" fill="#fef08a" font-size="14" font-weight="bold">Bone (Osseous Tissue)</text>
-                    
-                    <circle cx="145" cy="130" r="80" fill="none" stroke="#713f12" stroke-width="3" />
-                    <circle cx="145" cy="130" r="55" fill="none" stroke="#713f12" stroke-width="3" />
-                    <circle cx="145" cy="130" r="30" fill="none" stroke="#713f12" stroke-width="3" />
-                    <circle cx="145" cy="130" r="14" fill="#ef4444" />
-                    <text x="110" y="135" fill="#fef2f2" font-size="9">Haversian</text>
-
-                    <ellipse cx="100" cy="130" rx="6" ry="3" fill="#ca8a04" />
-                    <ellipse cx="190" cy="130" rx="6" ry="3" fill="#ca8a04" />
-                    <ellipse cx="145" cy="85" rx="3" ry="6" fill="#ca8a04" />
-                    <ellipse cx="145" cy="175" rx="3" ry="6" fill="#ca8a04" />
-
-                    <text x="20" y="230" fill="#ca8a04" font-size="11">• Hard matrix: Calcium phosphate & carbonate</text>
-                    <text x="20" y="250" fill="#ca8a04" font-size="11">• Osteocytes trapped in lacunae with canaliculi</text>
-                </g>
-
-                <g transform="translate(420, 70)">
-                    <rect x="0" y="0" width="290" height="270" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="8" />
-                    <text x="20" y="30" fill="#7dd3fc" font-size="14" font-weight="bold">Cartilage (Chondral Tissue)</text>
-
-                    <rect x="20" y="50" width="250" height="150" fill="#0369a1" opacity="0.3" rx="6" />
-                    
-                    <circle cx="80" cy="90" r="16" fill="#0284c7" />
-                    <circle cx="80" cy="85" r="5" fill="#f8fafc" />
-                    <circle cx="80" cy="95" r="5" fill="#f8fafc" />
-
-                    <circle cx="180" cy="130" r="18" fill="#0284c7" />
-                    <circle cx="175" cy="130" r="5" fill="#f8fafc" />
-                    <circle cx="185" cy="130" r="5" fill="#f8fafc" />
-
-                    <text x="20" y="230" fill="#38bdf8" font-size="11">• Flexible matrix: Chondrin proteins & sugars</text>
-                    <text x="20" y="250" fill="#38bdf8" font-size="11">• Chondrocytes in lacunar nests (ear/nose/joints)</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Bone Hardness:</span> <span class="metric-val" style="color:#fef08a;">Mineralized (Rigid)</span></div>
-                <div class="metric"><span class="metric-lbl">Cartilage Resilience:</span> <span class="metric-val" style="color:#38bdf8;">Chondrin (Compressible)</span></div>
-                <div class="metric"><span class="metric-lbl">Vascularity:</span> <span class="metric-val">Bone (Rich) vs Cartilage (Avascular)</span></div>
-                <div class="metric"><span class="metric-lbl">Repair Capacity:</span> <span class="metric-val">Bone (Fast) vs Cartilage (Slow)</span></div>
-            `;
-
-            verdictHtml = `<strong>Matrix Composition Defines Function:</strong> Bone matrix is hardened by insoluble calcium and phosphate minerals, providing a rigid structural scaffold. Cartilage matrix contains organic chondrin proteoglycans, providing smooth shock-absorbing cushions for articular joints.`;
-
-        } else if (mode === 'blood') {
-            let bloodCells = '';
-            for (let i = 0; i < 35; i++) {
-                const rx = 100 + (i * 37 + 15) % 580;
-                const ry = 80 + (i * 47 + 25) % 240;
-                bloodCells += `<ellipse cx="${rx}" cy="${ry}" rx="12" ry="10" fill="#dc2626" stroke="#991b1b" stroke-width="1.5" />`;
-                bloodCells += `<circle cx="${rx}" cy="${ry}" r="4" fill="#b91c1c" />`;
-            }
-
-            svgContent = `
-                <text x="40" y="35" fill="#f87171" font-size="16" font-weight="bold">Fluid Connective Tissue: Blood Smear Differential View (Activity 3.2)</text>
-
-                <rect x="80" y="60" width="640" height="290" fill="#450a0a" stroke="#b91c1c" stroke-width="3" rx="8" />
-                <text x="100" y="90" fill="#fca5a5" font-size="13">Fluid Matrix: Blood Plasma (Water, Albumin, Salts, Glucose)</text>
-
-                ${bloodCells}
-
-                <circle cx="280" cy="180" r="18" fill="#f8fafc" stroke="#3b82f6" stroke-width="2" />
-                <path d="M 273 175 Q 280 185 287 175" fill="#1e3a8a" />
-                <text x="240" y="215" fill="#93c5fd" font-size="11">WBC (Neutrophil)</text>
-
-                <circle cx="500" cy="220" r="16" fill="#f8fafc" stroke="#8b5cf6" stroke-width="2" />
-                <circle cx="500" cy="220" r="10" fill="#4c1d95" />
-                <text x="470" y="250" fill="#c4b5fd" font-size="11">WBC (Lymphocyte)</text>
-
-                <circle cx="380" cy="130" r="4" fill="#cbd5e1" />
-                <circle cx="440" cy="160" r="3" fill="#cbd5e1" />
-                <circle cx="340" cy="240" r="4" fill="#cbd5e1" />
-                <text x="390" y="135" fill="#e2e8f0" font-size="10">Platelets</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Plasma Matrix:</span> <span class="metric-val">55% of Blood Volume</span></div>
-                <div class="metric"><span class="metric-lbl">Erythrocytes (RBC):</span> <span class="metric-val" style="color:#ef4444;">~5 Million / mm³ (O2 Transport)</span></div>
-                <div class="metric"><span class="metric-lbl">Leukocytes (WBC):</span> <span class="metric-val" style="color:#93c5fd;">6,000 - 8,000 / mm³ (Immunity)</span></div>
-                <div class="metric"><span class="metric-lbl">Platelets:</span> <span class="metric-val">1.5 - 4.0 Lakhs / mm³ (Clotting)</span></div>
-            `;
-
-            verdictHtml = `<strong>Why Blood is a Connective Tissue:</strong> Like all connective tissues, blood consists of living cells suspended in an extracellular matrix (plasma). It chemically connects and integrates every organ system in the body through systemic circulation.`;
-        }
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
+// Lab 6 — Rib cage and spine
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "breathe"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 8, step: 1, speed: 1});
+    L.legend(id === "breathe" ? [["#e2e8f0", "ribs"], [C.vel, "air"], ["#fbbf24", "cartilage"]] : [["#e2e8f0", "vertebrae"], ["#fbbf24", "cartilage discs"]]);
+    L.watch(id === "breathe" ? "The rib cage expands and contracts, changing the space inside the chest (schematic)." : "Bend the spine: the cartilage discs between vertebrae squeeze on one side and stretch on the other (schematic).");
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, s = 0.5 - 0.5 * Math.cos(t / 4 * Math.PI * 2);
+    if(st.preset === "breathe"){
+      var w = 110 + 30 * s;
+      m += L.rect(355, 40, 10, 220, "#fbbf24", ' rx="4"');
+      for(var i = 0; i < 6; i++){ var y = 70 + i * 32; m += '<path d="M360 ' + y + ' q' + (-w) + ' 10 ' + (-w + 10) + ' 30 M360 ' + y + ' q' + w + ' 10 ' + (w - 10) + ' 30" stroke="#e2e8f0" stroke-width="6" fill="none"/>'; }
+      var dir = Math.sin(t / 4 * Math.PI * 2) > 0 ? 1 : -1;
+      m += L.arrow(360, dir > 0 ? 0 : 36, 360, dir > 0 ? 36 : 0, C.vel, 4) + L.text(420, 24, dir > 0 ? "air in" : "air out", {size: 14, color: C.vel, anchor: "start"});
+      L.svg(m, "Rib cage breathing.", 300);
+      L.readout([["Chest space (relative)", L.num(100 + 30 * s, 0) + " %", C.vel], ["Ribs", "12 pairs; joined by cartilage"], ["Phase", dir > 0 ? "breathing in" : "breathing out"]]);
+      msg = t < 8 ? "Breathing…" : "<b>Rib cage:</b> flexible cartilage lets it expand (more space: air moves in) and contract (less space: air moves out) while still protecting the heart and lungs.";
+    } else {
+      var bend = Math.sin(t / 8 * Math.PI) * 0.35;
+      for(var k = 0; k < 8; k++){
+        var a = bend * k / 7, x = 360 + Math.sin(a) * k * 30, y = 260 - Math.cos(a) * k * 30;
+        m += L.rect(x - 30, y - 10, 60, 20, "#e2e8f0", ' rx="4" transform="rotate(' + (a * 57.3) + ' ' + x + ' ' + y + ')"');
+        if(k < 7) m += L.circle(x + Math.sin(a) * 15, y - Math.cos(a) * 15, 7, "#fbbf24");
+      }
+      L.svg(m, "Spine bending.", 300);
+      L.readout([["Bend", Math.round(bend * 57) + "°"], ["Cartilage discs", "cushion and allow flexibility", "#fbbf24"]]);
+      msg = t < 8 ? "Bending…" : "<b>Vertebral column:</b> many small vertebrae with cartilage discs between them let us bend and twist without injuring the spinal cord.";
     }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["breathe", "Rib cage and breathing"], ["spine", "Spine and cartilage discs"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.skeleton = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// =========================================================================
-// 6. SIMULATION: Muscle Motors & Neuron Communication Lab (sim-muscle-neuron)
-// =========================================================================
-window.SIMS['sim-muscle-neuron'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-view="cardiac">Tireless Heart Motor (Cardiac)</button>
-                        <button class="btn btn-sm btn-preset" data-view="striated">Voluntary Skeletal (Striated)</button>
-                        <button class="btn btn-sm btn-preset" data-view="smooth">Visceral Wave (Smooth)</button>
-                        <button class="btn btn-sm btn-preset" data-view="neuron">Neuron Action Potential & Synapse</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Tissue Type:
-                        <select class="sel-mn-view">
-                            <option value="cardiac">Cardiac Muscle (Branched, Intercalated Discs, Never Fatigues)</option>
-                            <option value="striated">Striated / Skeletal Muscle (Voluntary, Multinucleate)</option>
-                            <option value="smooth">Smooth / Visceral Muscle (Involuntary, Spindle-shaped)</option>
-                            <option value="neuron">Motor Neuron (Impulse Conduction & Synapse)</option>
-                        </select>
-                    </label>
-                    <label class="control-item">Stimulation Rate: <span class="val-stim">72 bpm</span>
-                        <input type="range" class="rng-stim" min="40" max="180" step="5" value="72">
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 400" width="100%" height="320" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const selView = container.querySelector('.sel-mn-view');
-        const rngStim = container.querySelector('.rng-stim');
-        const lblStim = container.querySelector('.val-stim');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.view = 'cardiac';
-        state.custom.stim = 72;
-
-        function setView(v) {
-            state.custom.view = v;
-            selView.value = v;
-            state.reset();
-        }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => setView(btn.dataset.view);
-        });
-
-        selView.onchange = (e) => setView(e.target.value);
-        rngStim.oninput = (e) => {
-            state.custom.stim = parseInt(e.target.value);
-            lblStim.textContent = state.custom.stim + (state.custom.view === 'neuron' ? ' Hz' : ' bpm');
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const view = state.custom.view;
-        const stim = state.custom.stim;
-        const t = state.time;
-
-        let svgContent = '';
-        let readoutHtml = '';
-        let verdictHtml = '';
-
-        if (view === 'cardiac') {
-            const freq = (stim / 60) * 2.0;
-            const beat = Math.sin(t * freq * Math.PI * 2);
-            const scale = 1.0 + 0.08 * beat;
-
-            svgContent = `
-                <text x="40" y="35" fill="#f87171" font-size="16" font-weight="bold">Cardiac Muscle: Branched Architecture, Intercalated Discs & Tireless Rhythm</text>
-
-                <g transform="translate(180, 110) scale(${scale})">
-                    <path d="M 0 30 Q 120 10 240 30 T 400 30" fill="none" stroke="#be123c" stroke-width="26" stroke-linecap="round" />
-                    <path d="M 160 30 Q 200 70 240 110" fill="none" stroke="#be123c" stroke-width="20" />
-                    <path d="M 0 110 Q 120 130 240 110 T 400 110" fill="none" stroke="#be123c" stroke-width="26" stroke-linecap="round" />
-
-                    <ellipse cx="100" cy="30" rx="14" ry="7" fill="#4c0519" />
-                    <ellipse cx="320" cy="30" rx="14" ry="7" fill="#4c0519" />
-                    <ellipse cx="120" cy="110" rx="14" ry="7" fill="#4c0519" />
-                    <ellipse cx="340" cy="110" rx="14" ry="7" fill="#4c0519" />
-
-                    <line x1="210" y1="17" x2="210" y2="43" stroke="#facc15" stroke-width="4" />
-                    <line x1="260" y1="97" x2="260" y2="123" stroke="#facc15" stroke-width="4" />
-                    <text x="215" y="10" fill="#facc15" font-size="12" font-weight="bold">Intercalated Disc (Gap Junctions)</text>
-                </g>
-
-                <g transform="translate(80, 270)">
-                    <rect x="0" y="0" width="640" height="70" fill="#1e293b" stroke="#334155" rx="6" />
-                    <text x="20" y="28" fill="#facc15" font-size="13" font-weight="bold">Mitochondrial Bioenergetics (Exercise 6-B):</text>
-                    <text x="20" y="50" fill="#cbd5e1" font-size="12">Mitochondria make up 40% of cell volume + rich coronary capillary beds → continuous aerobic ATP synthesis → ZERO lactic acid fatigue!</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Heart Rate:</span> <span class="metric-val" style="color:#f87171;">${stim} bpm</span></div>
-                <div class="metric"><span class="metric-lbl">Mitochondrial Fraction:</span> <span class="metric-val">40% Cell Volume (Massive)</span></div>
-                <div class="metric"><span class="metric-lbl">Intercalated Discs:</span> <span class="metric-val" style="color:#facc15;">Electrical Syncytium</span></div>
-                <div class="metric"><span class="metric-lbl">Fatigue Status:</span> <span class="metric-val" style="color:#22c55e;">IMMUNE (0% Lactic Acid)</span></div>
-            `;
-
-            verdictHtml = `<strong>Exercise 6-B Verified:</strong> Assertion & Reason are both TRUE. Cardiac muscle contracts continuously without fatigue because vast mitochondrial density and abundant blood supply keep ATP levels high via aerobic respiration throughout life.`;
-
-        } else if (view === 'striated') {
-            const contraction = Math.abs(Math.sin(t * 3.0));
-            const width = 450 - contraction * 50;
-
-            let sarcomereBands = '';
-            for (let i = 0; i < 18; i++) {
-                const x = 160 + i * 22;
-                sarcomereBands += `<line x1="${x}" y1="120" x2="${x}" y2="200" stroke="#fecdd3" stroke-width="5" />`;
-                sarcomereBands += `<line x1="${x + 11}" y1="120" x2="${x + 11}" y2="200" stroke="#991b1b" stroke-width="6" />`;
-            }
-
-            svgContent = `
-                <text x="40" y="35" fill="#f87171" font-size="16" font-weight="bold">Striated / Skeletal Muscle: Voluntary Sarcomeric Contractile Engine</text>
-
-                <rect x="150" y="120" width="${width}" height="80" fill="#b91c1c" stroke="#f87171" stroke-width="2" rx="12" />
-                ${sarcomereBands}
-
-                <ellipse cx="200" cy="124" rx="18" ry="6" fill="#1e1b4b" />
-                <ellipse cx="360" cy="124" rx="18" ry="6" fill="#1e1b4b" />
-                <ellipse cx="280" cy="196" rx="18" ry="6" fill="#1e1b4b" />
-                <ellipse cx="440" cy="196" rx="18" ry="6" fill="#1e1b4b" />
-                <text x="480" y="115" fill="#a5b4fc" font-size="12">Peripheral Nuclei (Multinucleate)</text>
-
-                <g transform="translate(80, 260)">
-                    <rect x="0" y="0" width="640" height="80" fill="#1e293b" stroke="#334155" rx="6" />
-                    <text x="20" y="28" fill="#f87171" font-size="13" font-weight="bold">Skeletal Muscle Characteristics:</text>
-                    <text x="20" y="50" fill="#cbd5e1" font-size="12">• Long, cylindrical, unbranched fibers with distinct Dark (A) and Light (I) bands.</text>
-                    <text x="20" y="70" fill="#cbd5e1" font-size="12">• Voluntary control; contracts rapidly but fatigues during prolonged anaerobic glycolysis.</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Muscle Type:</span> <span class="metric-val" style="color:#f87171;">Striated (Skeletal)</span></div>
-                <div class="metric"><span class="metric-lbl">Control:</span> <span class="metric-val">Voluntary (Somatic)</span></div>
-                <div class="metric"><span class="metric-lbl">Nuclear State:</span> <span class="metric-val">Multinucleate (Syncytial)</span></div>
-                <div class="metric"><span class="metric-lbl">Fatigue Rate:</span> <span class="metric-val" style="color:#ef4444;">Rapid (Lactic Acid Accumulation)</span></div>
-            `;
-
-            verdictHtml = `<strong>Sarcomere Sliding:</strong> Myosin thick filaments pull actin thin filaments inward to shorten the fiber. Because burst power demands outstrip aerobic supply, skeletal muscle fatigues under prolonged exertion.`;
-
-        } else if (view === 'smooth') {
-            const waveX = (t * 60) % 400;
-
-            svgContent = `
-                <text x="40" y="35" fill="#fde047" font-size="16" font-weight="bold">Smooth / Visceral Muscle: Spindle-Shaped Uninucleate Fibers</text>
-
-                <g transform="translate(100, 100)">
-                    <path d="M 50 50 Q 200 10 350 50 Q 200 90 50 50 Z" fill="#854d0e" stroke="#facc15" stroke-width="2" />
-                    <ellipse cx="200" cy="50" rx="18" ry="8" fill="#422006" />
-
-                    <path d="M 220 90 Q 370 50 520 90 Q 370 130 220 90 Z" fill="#854d0e" stroke="#facc15" stroke-width="2" />
-                    <ellipse cx="370" cy="90" rx="18" ry="8" fill="#422006" />
-
-                    <path d="M 80 120 Q 230 80 380 120 Q 230 160 80 120 Z" fill="#854d0e" stroke="#facc15" stroke-width="2" />
-                    <ellipse cx="230" cy="120" rx="18" ry="8" fill="#422006" />
-
-                    <text x="210" y="45" fill="#fef08a" font-size="11">Single Central Nucleus</text>
-                </g>
-
-                <ellipse cx="${180 + waveX}" cy="220" rx="40" ry="12" fill="#38bdf8" opacity="0.3" />
-                <text x="250" y="270" fill="#38bdf8" font-size="13">Autonomic Involuntary Peristaltic Wave (Gut / Blood Vessels)</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Muscle Type:</span> <span class="metric-val" style="color:#fde047;">Smooth (Visceral)</span></div>
-                <div class="metric"><span class="metric-lbl">Cell Morphology:</span> <span class="metric-val">Spindle-shaped (Fusiform)</span></div>
-                <div class="metric"><span class="metric-lbl">Striations:</span> <span class="metric-val">None (Unstriated)</span></div>
-                <div class="metric"><span class="metric-lbl">Contraction Style:</span> <span class="metric-val">Slow, Sustained, Fatigue-Resistant</span></div>
-            `;
-
-            verdictHtml = `<strong>Involuntary Smooth Action:</strong> Lining the digestive tract, blood vessels, and iris, smooth muscle provides rhythmic peristalsis and vasoconstriction without conscious voluntary effort.`;
-
-        } else if (view === 'neuron') {
-            const pulseX = 260 + ((t * 120) % 360);
-
-            svgContent = `
-                <text x="40" y="35" fill="#38bdf8" font-size="16" font-weight="bold">Neuron: High-Speed Electrochemical Action Potential Propagation</text>
-
-                <polygon points="180,180 140,120 90,140 110,190 70,220 130,240 170,210" fill="#1e3a8a" stroke="#3b82f6" stroke-width="2" />
-                <line x1="140" y1="120" x2="110" y2="80" stroke="#60a5fa" stroke-width="3" />
-                <line x1="90" y1="140" x2="50" y2="120" stroke="#60a5fa" stroke-width="3" />
-                <line x1="70" y1="220" x2="40" y2="250" stroke="#60a5fa" stroke-width="3" />
-                <text x="40" y="75" fill="#93c5fd" font-size="12" font-weight="bold">Dendrites (Input)</text>
-
-                <circle cx="140" cy="180" r="16" fill="#172554" stroke="#93c5fd" stroke-width="2" />
-                <text x="125" y="185" fill="#f8fafc" font-size="10">Nucleus</text>
-
-                <line x1="180" y1="190" x2="650" y2="190" stroke="#60a5fa" stroke-width="6" />
-
-                <rect x="230" y="172" width="60" height="36" fill="#ca8a04" rx="8" />
-                <rect x="310" y="172" width="60" height="36" fill="#ca8a04" rx="8" />
-                <rect x="390" y="172" width="60" height="36" fill="#ca8a04" rx="8" />
-                <rect x="470" y="172" width="60" height="36" fill="#ca8a04" rx="8" />
-                <rect x="550" y="172" width="60" height="36" fill="#ca8a04" rx="8" />
-                
-                <text x="292" y="165" fill="#facc15" font-size="10">Node</text>
-                <text x="372" y="165" fill="#facc15" font-size="10">Node</text>
-                <text x="380" y="235" fill="#ca8a04" font-size="12">Myelin Sheath (Lipid Insulation)</text>
-
-                <circle cx="${pulseX}" cy="190" r="10" fill="#fde047" />
-                <line x1="${pulseX - 15}" y1="190" x2="${pulseX + 15}" y2="190" stroke="#ffffff" stroke-width="4" />
-
-                <path d="M 650 190 L 700 160 M 650 190 L 710 190 M 650 190 L 700 220" stroke="#3b82f6" stroke-width="3" />
-                <circle cx="700" cy="160" r="6" fill="#ef4444" />
-                <circle cx="710" cy="190" r="6" fill="#ef4444" />
-                <circle cx="700" cy="220" r="6" fill="#ef4444" />
-                <text x="660" y="245" fill="#f87171" font-size="12">Synaptic Knobs</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Structure:</span> <span class="metric-val" style="color:#60a5fa;">Multipolar Motor Neuron</span></div>
-                <div class="metric"><span class="metric-lbl">Signal Direction:</span> <span class="metric-val">Dendrite → Cyton → Axon → Synapse</span></div>
-                <div class="metric"><span class="metric-lbl">Conduction Velocity:</span> <span class="metric-val" style="color:#fde047;">100 m/s (Saltatory)</span></div>
-                <div class="metric"><span class="metric-lbl">Synaptic Output:</span> <span class="metric-val">Neurotransmitter (Acetylcholine)</span></div>
-            `;
-
-            verdictHtml = `<strong>Neural Highway:</strong> Dendrites receive input signals, the cyton integrates them, and the axon transmits depolarization waves at up to 100 m/s via Nodes of Ranvier to synaptic terminals.`;
-        }
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
+// Lab 7 — Steward's carrot experiment (Fig. 3.19, Table 3.6)
+(function(){
+  var L = LAB, C = L.C;
+  var STEPS = ["carrot root cross-section", "2-mg fragments in nutrient medium", "single cells shear off and divide", "embryonic plant from one cell", "plantlet on agar, then soil", "adult carrot plant"];
+  var st = {preset: "regen"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: id === "regen" ? 6 : 3, step: 1, speed: 0.8});
+    L.legend(id === "regen" ? [[C.path, "current stage"], ["#34d399", "growing plant"]] : [["#34d399", "increase"], [C.danger, "reduced"]]);
+    L.watch(id === "regen" ? "Fig. 3.19: F. C. Steward's regeneration of a carrot plant from single phloem cells (1958)." : "Table 3.6: effect of light, air and nutrient medium on the growth of cultured carrot cells.");
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, k = Math.min(STEPS.length - 1, Math.floor(t + 1e-9));
+    if(st.preset === "regen"){
+      STEPS.forEach(function(s, i){
+        var x = 70 + i * 116, on = t > i || (i === 0 && t > 0);
+        m += L.circle(x, 130, 40, on ? "rgba(52,211,153,0.2)" : "#1e293b", ' stroke="' + (i === k && t > 0 ? C.path : on ? "#34d399" : C.faint) + '" stroke-width="3"');
+        if(i < 5) m += L.arrow(x + 44, 130, x + 72, 130, on ? "#34d399" : C.faint, 3);
+        m += L.text(x, 200 + (i % 2) * 20, s, {size: 11, color: on ? C.text : C.faint});
+      });
+      function carrot(x){ return '<path d="M' + (x - 10) + ' 112 L' + x + ' 158 L' + (x + 10) + ' 112 z" fill="#f97316"/><path d="M' + x + ' 112 l-8 -14 M' + x + ' 112 l0 -16 M' + x + ' 112 l8 -14" stroke="#22c55e" stroke-width="3"/>'; }
+      m += carrot(70);
+      if(t > 1) [[-10, -6], [6, -8], [-4, 8], [10, 6]].forEach(function(d){ m += L.circle(186 + d[0], 130 + d[1], 5, "#fbbf24"); });
+      if(t > 2) m += L.circle(302, 130, 14, "#fbbf24") + L.line(288, 130, 316, 130, "#0f172a", 2) + L.line(302, 116, 302, 144, "#0f172a", 2);
+      if(t > 3) m += '<path d="M418 150 q-12 -20 0 -40 q12 -10 6 10" stroke="#34d399" stroke-width="5" fill="none"/>';
+      if(t > 4) m += L.rect(526, 110, 16, 40, "rgba(148,163,184,0.4)", ' rx="4"') + '<path d="M534 145 v-25 m0 8 l-8 -8 m8 4 l8 -8" stroke="#34d399" stroke-width="3" fill="none"/>';
+      if(t > 5) m += carrot(650);
+      L.svg(m, "Regeneration stage: " + STEPS[k], 300);
+      L.readout([["Stage", (k + 1) + " of 6"], ["Now", t > 0 ? STEPS[k] : "—", C.path]]);
+      msg = t < 6 ? "Regenerating…" : "<b>Totipotency:</b> a specialised phloem cell dedifferentiated, divided and redifferentiated into a whole carrot plant.";
+    } else {
+      var rows = [["light ✓, air ✗, solid medium", -1], ["light ✓, air ✓, liquid medium", 20], ["light ✗, air ✓, liquid medium", -1]];
+      rows.forEach(function(r, i){
+        var on = t > i, y = 70 + i * 70;
+        m += L.text(40, y + 5, r[0], {size: 14, color: on ? C.text : C.faint, anchor: "start"});
+        if(on) m += r[1] > 0 ? L.rect(360, y - 14, 20 * 12, 28, "#34d399", ' rx="4"') + L.text(620, y + 5, "20% increased", {size: 14, color: "#34d399", anchor: "start"}) : L.rect(330, y - 14, 30, 28, C.danger, ' rx="4"') + L.text(380, y + 5, "reduced", {size: 14, color: C.danger, anchor: "start"});
+      });
+      L.svg(m, "Table 3.6 results.", 300);
+      L.readout([["Best growth", "light + air + liquid medium (20% increase)", "#34d399"], ["Reduced", "no air (solid) or no light"]]);
+      msg = t < 3 ? "Showing results…" : "<b>Table 3.6:</b> only light + air + liquid nutrient medium increased fresh weight (by 20%). The table does not show which of the other two was reduced more.";
     }
-};
-
-// =========================================================================
-// 7. SIMULATION: Joint Kinematics & Jump Mechanics Lab (sim-joints-biomechanics)
-// =========================================================================
-window.SIMS['sim-joints-biomechanics'] = {
-    mount: function(container) {
-        container.innerHTML = `
-            <div class="sim-ui-wrapper">
-                <div class="sim-toolbar">
-                    <div class="sim-controls-row">
-                        <button class="btn btn-primary btn-play">▶ Play</button>
-                        <button class="btn btn-secondary btn-step">⏭ Step</button>
-                        <button class="btn btn-outline btn-reset">↺ Reset</button>
-                        <label class="sim-label">Scrubber: <input type="range" class="sim-scrubber" min="0" max="10" step="0.05" value="0"></label>
-                    </div>
-                    <div class="sim-presets-row">
-                        <span class="preset-label">Presets:</span>
-                        <button class="btn btn-sm btn-preset" data-jump="normal">Normal Jump (Cushioned Landing)</button>
-                        <button class="btn btn-sm btn-preset" data-jump="stiff">Straight-Leg Jump (Shock Spike)</button>
-                        <button class="btn btn-sm btn-preset" data-jump="ball-socket">Ball & Socket Shoulder (360°)</button>
-                        <button class="btn btn-sm btn-preset" data-jump="pivot">Pivot Joint Neck Turn</button>
-                    </div>
-                </div>
-
-                <div class="sim-interactive-controls">
-                    <label class="control-item">Joint / Landing Mode:
-                        <select class="sel-joint-mode">
-                            <option value="normal">Normal Jump Landing (Knees & Ankles Flex - Δt = 0.20 s)</option>
-                            <option value="stiff">Straight-Leg Stiff Landing (Locked Joints - Δt = 0.015 s)</option>
-                            <option value="ball-socket">Ball and Socket Articulation (Multi-axial)</option>
-                            <option value="pivot">Pivot Articulation (Atlanto-Axial Neck)</option>
-                        </select>
-                    </label>
-                    <label class="control-item">Jumper Body Mass (kg): <span class="val-mass">60</span>
-                        <input type="range" class="rng-mass" min="40" max="100" step="5" value="60">
-                    </label>
-                </div>
-
-                <div class="sim-stage-area">
-                    <svg class="sim-svg" viewBox="0 0 800 400" width="100%" height="320" style="background:#0f172a; border-radius:12px;"></svg>
-                </div>
-
-                <div id="lab-readout" class="lab-metrics-panel"></div>
-                <div id="lab-verdict" class="lab-verdict-box"></div>
-            </div>
-        `;
-
-        const svg = container.querySelector('.sim-svg');
-        const selMode = container.querySelector('.sel-joint-mode');
-        const rngMass = container.querySelector('.rng-mass');
-        const lblMass = container.querySelector('.val-mass');
-
-        const state = createSimState(container, (s) => this.draw(svg, s, container));
-        state.custom.mode = 'normal';
-        state.custom.mass = 60;
-
-        function setMode(m) {
-            state.custom.mode = m;
-            selMode.value = m;
-            state.reset();
-        }
-
-        container.querySelectorAll('.btn-preset').forEach(btn => {
-            btn.onclick = () => setMode(btn.dataset.jump);
-        });
-
-        selMode.onchange = (e) => setMode(e.target.value);
-        rngMass.oninput = (e) => {
-            state.custom.mass = parseInt(e.target.value);
-            lblMass.textContent = state.custom.mass;
-            this.draw(svg, state, container);
-        };
-
-        state.bindControls();
-        this.draw(svg, state, container);
-    },
-
-    draw: function(svg, state, container) {
-        const mode = state.custom.mode;
-        const mass = state.custom.mass;
-        const t = state.time;
-
-        let svgContent = '';
-        let readoutHtml = '';
-        let verdictHtml = '';
-
-        if (mode === 'normal' || mode === 'stiff') {
-            const isNormal = (mode === 'normal');
-            const vImpact = 3.0;
-            const deltaT = isNormal ? 0.20 : 0.015;
-            const deltaP = mass * vImpact;
-            const fImpact = (deltaP / deltaT);
-            const gForce = (fImpact / (mass * 9.8)).toFixed(1);
-
-            const groundY = 320;
-            const cycle = (t * 2.0) % 4.0;
-            const isLanded = cycle > 1.5;
-
-            let hipY, kneeX, kneeY, ankleX, ankleY;
-            if (isNormal) {
-                const flex = isLanded ? Math.min(1.0, (cycle - 1.5) * 2.0) : 0;
-                hipY = isLanded ? (200 + flex * 45) : (160 + (cycle / 1.5) * 40);
-                kneeX = 380 + flex * 35;
-                kneeY = hipY + 55;
-                ankleX = 400;
-                ankleY = groundY;
-            } else {
-                hipY = isLanded ? 200 : (160 + (cycle / 1.5) * 40);
-                kneeX = 400;
-                kneeY = hipY + 60;
-                ankleX = 400;
-                ankleY = groundY;
-            }
-
-            svgContent = `
-                <text x="40" y="35" fill="${isNormal ? '#22c55e' : '#ef4444'}" font-size="16" font-weight="bold">
-                    ${isNormal ? 'Normal Jump: Knee & Ankle Hinge Flexion (Cushioned Deceleration)' : 'Straight-Leg Jump: Rigid Locked Joints (Shockwave Spike - Ex 4 & 5)'}
-                </text>
-
-                <rect x="100" y="320" width="600" height="50" fill="#334155" rx="4" />
-                <line x1="100" y1="320" x2="700" y2="320" stroke="#64748b" stroke-width="3" />
-
-                <circle cx="400" cy="${hipY - 70}" r="20" fill="#f8fafc" />
-                <line x1="400" y1="${hipY - 50}" x2="400" y2="${hipY}" stroke="#f8fafc" stroke-width="6" stroke-linecap="round" />
-                <line x1="400" y1="${hipY - 35}" x2="${isNormal ? 430 : 410}" y2="${hipY - 10}" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" />
-                
-                <line x1="400" y1="${hipY}" x2="${kneeX}" y2="${kneeY}" stroke="${isNormal ? '#4ade80' : '#f87171'}" stroke-width="7" stroke-linecap="round" />
-                <line x1="${kneeX}" y1="${kneeY}" x2="${ankleX}" y2="${ankleY}" stroke="${isNormal ? '#4ade80' : '#f87171'}" stroke-width="7" stroke-linecap="round" />
-                <line x1="${ankleX}" y1="${ankleY}" x2="${ankleX + 25}" y2="${ankleY}" stroke="#f8fafc" stroke-width="6" stroke-linecap="round" />
-
-                ${isLanded && !isNormal ? `
-                    <circle cx="400" cy="320" r="30" fill="none" stroke="#ef4444" stroke-width="4" opacity="0.8" />
-                    <circle cx="400" cy="320" r="55" fill="none" stroke="#ef4444" stroke-width="3" opacity="0.5" />
-                    <text x="440" y="290" fill="#ef4444" font-size="14" font-weight="bold">⚡ IMPACT: ${(fImpact / 1000).toFixed(1)} kN (${gForce}g!)</text>
-                ` : isLanded ? `
-                    <circle cx="400" cy="320" r="25" fill="none" stroke="#22c55e" stroke-width="2" opacity="0.6" />
-                    <text x="440" y="270" fill="#22c55e" font-size="14" font-weight="bold">✓ CUSHIONED: ${(fImpact / 1000).toFixed(1)} kN (${gForce}g)</text>
-                ` : ''}
-
-                <g transform="translate(60, 80)">
-                    <rect x="0" y="0" width="240" height="130" fill="#1e293b" stroke="#334155" rx="6" />
-                    <text x="15" y="25" fill="#f8fafc" font-size="12" font-weight="bold">Impulse Physics Equation</text>
-                    <text x="15" y="55" fill="#38bdf8" font-size="13">F = Δp / Δt = m·v / Δt</text>
-                    <text x="15" y="85" fill="#94a3b8" font-size="11">Deceleration Δt: ${deltaT} s</text>
-                    <text x="15" y="110" fill="${isNormal ? '#4ade80' : '#ef4444'}" font-size="11">Peak Force: ${(fImpact).toFixed(0)} N</text>
-                </g>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Jump Style:</span> <span class="metric-val" style="color:${isNormal ? '#22c55e' : '#ef4444'};">${isNormal ? 'Normal (Bent Joints)' : 'Straight-Leg (Stiff)'}</span></div>
-                <div class="metric"><span class="metric-lbl">Deceleration Time Δt:</span> <span class="metric-val">${(deltaT * 1000).toFixed(0)} ms</span></div>
-                <div class="metric"><span class="metric-lbl">Impact Force:</span> <span class="metric-val" style="color:${isNormal ? '#22c55e' : '#ef4444'};">${(fImpact).toFixed(0)} N (${gForce}g)</span></div>
-                <div class="metric"><span class="metric-lbl">Articular Cartilage:</span> <span class="metric-val">${isNormal ? 'Safely Protected' : 'Severe Shock Trauma'}</span></div>
-            `;
-
-            verdictHtml = isNormal
-                ? `<strong>Exercise 4 & 5 Kinematics:</strong> Bending the knee and ankle hinge joints prolongs deceleration time ($\Delta t \approx 200\text{ ms}$), dissipating momentum smoothly via eccentric quadriceps work and shielding bones from fracture.`
-                : `<strong>Straight-Leg Trauma:</strong> Locking joints cuts stopping time down to $\approx 15\text{ ms}$. Force spikes to ${gForce} times body weight, transmitting bone-jarring shockwaves directly through articular cartilage and spinal vertebrae!`;
-
-        } else if (mode === 'ball-socket') {
-            const rot = (t * 60) % 360;
-            const armX = 400 + Math.cos(rot * Math.PI / 180) * 110;
-            const armY = 200 + Math.sin(rot * Math.PI / 180) * 110;
-
-            svgContent = `
-                <text x="40" y="35" fill="#38bdf8" font-size="16" font-weight="bold">Ball and Socket Joint: 360° Multi-Axial Articulation (Shoulder / Hip)</text>
-
-                <path d="M 370 140 A 65 65 0 0 0 370 260 L 350 260 L 350 140 Z" fill="#ca8a04" stroke="#eab308" stroke-width="3" />
-                <text x="270" y="205" fill="#fde047" font-size="12">Cup Socket</text>
-
-                <circle cx="400" cy="200" r="45" fill="#fef08a" stroke="#ca8a04" stroke-width="3" />
-                <text x="390" y="205" fill="#854d0e" font-size="11" font-weight="bold">Ball</text>
-
-                <line x1="400" y1="200" x2="${armX}" y2="${armY}" stroke="#fef08a" stroke-width="14" stroke-linecap="round" />
-                <circle cx="${armX}" cy="${armY}" r="12" fill="#ca8a04" />
-
-                <circle cx="400" cy="200" r="110" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4" />
-                <text x="480" y="110" fill="#38bdf8" font-size="13">Multi-Axial 3D Freedom (Flex, Extend, Abduct, Rotate)</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Joint Type:</span> <span class="metric-val" style="color:#38bdf8;">Ball and Socket</span></div>
-                <div class="metric"><span class="metric-lbl">Freedom of Motion:</span> <span class="metric-val">3 Planes (Multi-axial)</span></div>
-                <div class="metric"><span class="metric-lbl">Current Rotation:</span> <span class="metric-val">${rot.toFixed(0)}°</span></div>
-                <div class="metric"><span class="metric-lbl">Anatomical Examples:</span> <span class="metric-val">Shoulder & Hip Joints</span></div>
-            `;
-
-            verdictHtml = `<strong>Ball and Socket Kinematics:</strong> The spherical head of one bone fits smoothly into the cup-like cavity of another, permitting universal rotational freedom in all three spatial planes.`;
-
-        } else if (mode === 'pivot') {
-            const angle = Math.sin(t * 3.0) * 60;
-
-            svgContent = `
-                <text x="40" y="35" fill="#facc15" font-size="16" font-weight="bold">Pivot Joint: Atlanto-Axial Neck Rotation (Atlas C1 & Axis C2)</text>
-
-                <ellipse cx="400" cy="200" rx="90" ry="40" fill="none" stroke="#ca8a04" stroke-width="8" />
-                <text x="240" y="205" fill="#fde047" font-size="12">Fibro-Osseous Ring (Atlas)</text>
-
-                <ellipse cx="400" cy="200" rx="25" ry="18" fill="#fef08a" stroke="#a16207" stroke-width="3" />
-                <text x="382" y="205" fill="#854d0e" font-size="10" font-weight="bold">Peg</text>
-
-                <line x1="400" y1="200" x2="${400 + Math.sin(angle * Math.PI / 180) * 140}" y2="${200 - Math.cos(angle * Math.PI / 180) * 90}" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" />
-                <circle cx="${400 + Math.sin(angle * Math.PI / 180) * 140}" cy="${200 - Math.cos(angle * Math.PI / 180) * 90}" r="14" fill="#0284c7" />
-                <text x="450" y="100" fill="#38bdf8" font-size="13">Rotational Turning Angle: ${angle.toFixed(1)}°</text>
-            `;
-
-            readoutHtml = `
-                <div class="metric"><span class="metric-lbl">Joint Type:</span> <span class="metric-val" style="color:#facc15;">Pivot Joint (Trochoid)</span></div>
-                <div class="metric"><span class="metric-lbl">Motion:</span> <span class="metric-val">Axial Rotation in 1 Plane</span></div>
-                <div class="metric"><span class="metric-lbl">Rotation Angle:</span> <span class="metric-val">${angle.toFixed(1)}° (Side-to-Side)</span></div>
-                <div class="metric"><span class="metric-lbl">Examples:</span> <span class="metric-val">Neck (Saying 'No') & Radioulnar</span></div>
-            `;
-
-            verdictHtml = `<strong>Pivot Joint Mechanics:</strong> A conical or cylindrical bony peg rotates within a stable ring formed of bone and ligaments, enabling head turning and forearm pronation/supination.`;
-        }
-
-        svg.innerHTML = svgContent;
-        const readoutEl = container.querySelector('#lab-readout');
-        const verdictEl = container.querySelector('#lab-verdict');
-        if (readoutEl) readoutEl.innerHTML = readoutHtml;
-        if (verdictEl) verdictEl.innerHTML = verdictHtml;
-    }
-};
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["regen", "Fig. 3.19: cell to plant"], ["table", "Table 3.6: growing conditions"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.totipotency = {mount: mount, draw: draw, select: select, state: st};
+})();

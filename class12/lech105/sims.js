@@ -16,10 +16,10 @@ function cell(label, val, color){
 window.SIMS.werner = (function(){
   var idx = 0;
   var rows = [
-    {name:"CoCl₃·6NH₃", color:"Yellow", formula:"[Co(NH₃)₆]³⁺ 3Cl⁻", ag:3, elec:"1:3", sphere:["NH3","NH3","NH3","NH3","NH3","NH3"], free:3},
-    {name:"CoCl₃·5NH₃", color:"Purple", formula:"[CoCl(NH₃)₅]²⁺ 2Cl⁻", ag:2, elec:"1:2", sphere:["NH3","NH3","NH3","NH3","NH3","Cl"], free:2},
-    {name:"CoCl₃·4NH₃ green", color:"Green", formula:"[CoCl₂(NH₃)₄]⁺ Cl⁻", ag:1, elec:"1:1", sphere:["NH3","NH3","NH3","NH3","Cl","Cl"], free:1},
-    {name:"CoCl₃·4NH₃ violet", color:"Violet", formula:"[CoCl₂(NH₃)₄]⁺ Cl⁻", ag:1, elec:"1:1", sphere:["NH3","NH3","NH3","NH3","Cl","Cl"], free:1}
+    {id:"yellow",name:"CoCl₃·6NH₃", color:"Yellow", formula:"[Co(NH₃)₆]³⁺ 3Cl⁻", ag:3, elec:"1:3", sphere:["NH3","NH3","NH3","NH3","NH3","NH3"], free:3},
+    {id:"purple",name:"CoCl₃·5NH₃", color:"Purple", formula:"[CoCl(NH₃)₅]²⁺ 2Cl⁻", ag:2, elec:"1:2", sphere:["NH3","NH3","NH3","NH3","NH3","Cl"], free:2},
+    {id:"green",name:"CoCl₃·4NH₃ green", color:"Green", formula:"[CoCl₂(NH₃)₄]⁺ Cl⁻", ag:1, elec:"1:1", sphere:["NH3","NH3","NH3","NH3","Cl","Cl"], free:1},
+    {id:"violet",name:"CoCl₃·4NH₃ violet", color:"Violet", formula:"[CoCl₂(NH₃)₄]⁺ Cl⁻", ag:1, elec:"1:1", sphere:["NH3","NH3","NH3","NH3","Cl","Cl"], free:1}
   ];
   function mount(){
     App.state.maxT = 6;
@@ -28,7 +28,7 @@ window.SIMS.werner = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Cl in sphere</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Free Cl⁻ → AgCl</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      rows.map(function(r,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="pw'+i+'">'+r.color+'</button>'; }).join("");
+      rows.map(function(r,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+r.id+'" id="pw'+i+'">'+r.color+'</button>'; }).join("");
     rows.forEach(function(r,i){
       document.getElementById("pw"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -72,17 +72,17 @@ window.SIMS.werner = (function(){
 window.SIMS.terms = (function(){
   var idx = 0;
   var items = [
-    {t:"Coordination entity", d:"Central metal + ligands in [ ]. Examples: [CoCl₃(NH₃)₃], [Ni(CO)₄], [Fe(CN)₆]⁴⁻.", tag:"Lewis acid + bases"},
-    {t:"Denticity", d:"Unidentate Cl⁻/NH₃; didentate en, C₂O₄²⁻; hexadentate EDTA⁴⁻ (2 N + 4 O). Chelate = two or more donors of one ligand on one metal.", tag:"CN counts σ donors, not π bonds"},
-    {t:"Ambidentate", d:"NO₂⁻ binds N (nitro) or O (nitrito); SCN⁻ binds S or N. Linkage isomerism follows.", tag:"Two different donor atoms"},
-    {t:"Polyhedron / OS / homo-hetero", d:"[Co(NH₃)₆]³⁺ octahedral; [Ni(CO)₄] Td; [PtCl₄]²⁻ square planar. [Cu(CN)₄]³⁻ is Cu(I). Homoleptic one ligand type; heteroleptic mixed.", tag:"Fig. 5.1"}
+    {id:"entity",t:"Coordination entity", d:"Central metal + ligands in [ ]. Examples: [CoCl₃(NH₃)₃], [Ni(CO)₄], [Fe(CN)₆]⁴⁻.", tag:"Lewis acid + bases"},
+    {id:"denticity",t:"Denticity", d:"Unidentate Cl⁻/NH₃; didentate en, C₂O₄²⁻; hexadentate EDTA⁴⁻ (2 N + 4 O). Chelate = two or more donors of one ligand on one metal.", tag:"CN counts σ donors, not π bonds"},
+    {id:"ambidentate",t:"Ambidentate", d:"NO₂⁻ binds N (nitro) or O (nitrito); SCN⁻ binds S or N. Linkage isomerism follows.", tag:"Two different donor atoms"},
+    {id:"polyhedron",t:"Polyhedron / OS / homo-hetero", d:"[Co(NH₃)₆]³⁺ octahedral; [Ni(CO)₄] Td; [PtCl₄]²⁻ square planar. [Cu(CN)₄]³⁻ is Cu(I). Homoleptic one ligand type; heteroleptic mixed.", tag:"Fig. 5.1"}
   ];
   function mount(){
     App.state.maxT = 4;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>§5.2 glossary</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      items.map(function(it,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="pt'+i+'">'+it.t.split(" ")[0]+'</button>'; }).join("");
+      items.map(function(it,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+it.id+'" id="pt'+i+'">'+it.t.split(" ")[0]+'</button>'; }).join("");
     items.forEach(function(it,i){
       document.getElementById("pt"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -107,21 +107,21 @@ window.SIMS.terms = (function(){
 window.SIMS.iupac = (function(){
   var idx = 0;
   var pairs = [
-    {name:"triamminetriaquachromium(III) chloride", formula:"[Cr(NH₃)₃(H₂O)₃]Cl₃"},
-    {name:"tris(ethane-1,2-diamine)cobalt(III) sulphate", formula:"[Co(en)₃]₂(SO₄)₃"},
-    {name:"diamminesilver(I) dicyanidoargentate(I)", formula:"[Ag(NH₃)₂][Ag(CN)₂]"},
-    {name:"tetraammineaquachloridocobalt(III) chloride", formula:"[Co(NH₃)₄(H₂O)Cl]Cl₂"},
-    {name:"potassium tetrahydroxidozincate(II)", formula:"K₂[Zn(OH)₄]"},
-    {name:"diamminechloridonitrito-N-platinum(II)", formula:"[Pt(NH₃)₂Cl(NO₂)]"},
-    {name:"dichloridobis(ethane-1,2-diamine)cobalt(III) chloride", formula:"[CoCl₂(en)₂]Cl"},
-    {name:"tetracarbonylnickel(0)", formula:"[Ni(CO)₄]"}
+    {id:"pair1",name:"triamminetriaquachromium(III) chloride", formula:"[Cr(NH₃)₃(H₂O)₃]Cl₃"},
+    {id:"pair2",name:"tris(ethane-1,2-diamine)cobalt(III) sulphate", formula:"[Co(en)₃]₂(SO₄)₃"},
+    {id:"pair3",name:"diamminesilver(I) dicyanidoargentate(I)", formula:"[Ag(NH₃)₂][Ag(CN)₂]"},
+    {id:"pair4",name:"tetraammineaquachloridocobalt(III) chloride", formula:"[Co(NH₃)₄(H₂O)Cl]Cl₂"},
+    {id:"pair5",name:"potassium tetrahydroxidozincate(II)", formula:"K₂[Zn(OH)₄]"},
+    {id:"pair6",name:"diamminechloridonitrito-N-platinum(II)", formula:"[Pt(NH₃)₂Cl(NO₂)]"},
+    {id:"pair7",name:"dichloridobis(ethane-1,2-diamine)cobalt(III) chloride", formula:"[CoCl₂(en)₂]Cl"},
+    {id:"pair8",name:"tetracarbonylnickel(0)", formula:"[Ni(CO)₄]"}
   ];
   function mount(){
     App.state.maxT = 6;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>2004 draft: chlorido, cyanido</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      pairs.map(function(p,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="pi'+i+'">'+(i+1)+'</button>'; }).join("");
+      pairs.map(function(p,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+p.id+'" id="pi'+i+'">'+(i+1)+'</button>'; }).join("");
     pairs.forEach(function(p,i){
       document.getElementById("pi"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -152,11 +152,11 @@ window.SIMS.isomerism = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>NH₃ / en</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Cl</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-cis">cis-[Co(NH₃)₄Cl₂]⁺</button>' +
-      '<button class="preset-btn" id="p-trans">trans-[Co(NH₃)₄Cl₂]⁺</button>' +
-      '<button class="preset-btn" id="p-fac">fac-[Ma₃b₃]</button>' +
-      '<button class="preset-btn" id="p-mer">mer-[Ma₃b₃]</button>' +
-      '<button class="preset-btn" id="p-opt">optical [Co(en)₃]³⁺</button>';
+      '<button class="preset-btn active" data-preset="cis" id="p-cis">cis-[Co(NH₃)₄Cl₂]⁺</button>' +
+      '<button class="preset-btn" data-preset="trans" id="p-trans">trans-[Co(NH₃)₄Cl₂]⁺</button>' +
+      '<button class="preset-btn" data-preset="fac" id="p-fac">fac-[Ma₃b₃]</button>' +
+      '<button class="preset-btn" data-preset="mer" id="p-mer">mer-[Ma₃b₃]</button>' +
+      '<button class="preset-btn" data-preset="optical" id="p-opt">optical [Co(en)₃]³⁺</button>';
     document.getElementById("p-cis").onclick = function(){ setActivePreset(this); mode="cis"; draw(0); };
     document.getElementById("p-trans").onclick = function(){ setActivePreset(this); mode="trans"; draw(0); };
     document.getElementById("p-fac").onclick = function(){ setActivePreset(this); mode="fac"; draw(0); };
@@ -216,17 +216,17 @@ window.SIMS.isomerism = (function(){
 window.SIMS.structiso = (function(){
   var idx = 0;
   var kinds = [
-    {t:"Linkage", e:"[Co(NH₃)₅(NO₂)]Cl₂ yellow (Co–NO₂) vs red (Co–ONO)", test:"Ambidentate NO₂⁻ or SCN⁻"},
-    {t:"Coordination", e:"[Co(NH₃)₆][Cr(CN)₆] vs [Cr(NH₃)₆][Co(CN)₆]", test:"Ligands swap spheres"},
-    {t:"Ionisation", e:"[Co(NH₃)₅Br]SO₄ vs [Co(NH₃)₅SO₄]Br", test:"Ba²⁺ → BaSO₄ only if SO₄²⁻ is free; Ag⁺ → AgBr only if Br⁻ is free"},
-    {t:"Solvate / hydrate", e:"[Cr(H₂O)₆]Cl₃ violet vs [Cr(H₂O)₅Cl]Cl₂·H₂O grey-green", test:"Water inside vs outside the sphere"}
+    {id:"linkage",t:"Linkage", e:"[Co(NH₃)₅(NO₂)]Cl₂ yellow (Co–NO₂) vs red (Co–ONO)", test:"Ambidentate NO₂⁻ or SCN⁻"},
+    {id:"coordination",t:"Coordination", e:"[Co(NH₃)₆][Cr(CN)₆] vs [Cr(NH₃)₆][Co(CN)₆]", test:"Ligands swap spheres"},
+    {id:"ionisation",t:"Ionisation", e:"[Co(NH₃)₅Br]SO₄ vs [Co(NH₃)₅SO₄]Br", test:"Ba²⁺ → BaSO₄ only if SO₄²⁻ is free; Ag⁺ → AgBr only if Br⁻ is free"},
+    {id:"solvate",t:"Solvate / hydrate", e:"[Cr(H₂O)₆]Cl₃ violet vs [Cr(H₂O)₅Cl]Cl₂·H₂O grey-green", test:"Water inside vs outside the sphere"}
   ];
   function mount(){
     App.state.maxT = 4;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Structural (different bonds)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      kinds.map(function(k,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="ps'+i+'">'+k.t+'</button>'; }).join("");
+      kinds.map(function(k,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+k.id+'" id="ps'+i+'">'+k.t+'</button>'; }).join("");
     kinds.forEach(function(k,i){
       document.getElementById("ps"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -251,12 +251,12 @@ window.SIMS.structiso = (function(){
 window.SIMS.vbtlab = (function(){
   var idx = 0;
   var cxplx = [
-    {n:"[Co(NH₃)₆]³⁺", hyb:"d²sp³", geom:"octahedral inner / low-spin", spin:"n = 0 diamagnetic", os:"Co³⁺ d⁶"},
-    {n:"[CoF₆]³⁻", hyb:"sp³d²", geom:"octahedral outer / high-spin", spin:"n = 4 paramagnetic", os:"Co³⁺ d⁶"},
-    {n:"[NiCl₄]²⁻", hyb:"sp³", geom:"tetrahedral", spin:"n = 2 paramagnetic", os:"Ni²⁺ d⁸"},
-    {n:"[Ni(CN)₄]²⁻", hyb:"dsp²", geom:"square planar", spin:"n = 0 diamagnetic", os:"Ni²⁺ d⁸"},
-    {n:"[Ni(CO)₄]", hyb:"sp³", geom:"tetrahedral", spin:"n = 0 diamagnetic", os:"Ni(0)"},
-    {n:"[MnBr₄]²⁻", hyb:"sp³", geom:"tetrahedral (Ex 5.7)", spin:"μ = 5.9 BM, n = 5", os:"Mn²⁺ d⁵"}
+    {id:"conh3",n:"[Co(NH₃)₆]³⁺", hyb:"d²sp³", geom:"octahedral inner / low-spin", spin:"n = 0 diamagnetic", os:"Co³⁺ d⁶"},
+    {id:"cof6",n:"[CoF₆]³⁻", hyb:"sp³d²", geom:"octahedral outer / high-spin", spin:"n = 4 paramagnetic", os:"Co³⁺ d⁶"},
+    {id:"nicl4",n:"[NiCl₄]²⁻", hyb:"sp³", geom:"tetrahedral", spin:"n = 2 paramagnetic", os:"Ni²⁺ d⁸"},
+    {id:"nicn4",n:"[Ni(CN)₄]²⁻", hyb:"dsp²", geom:"square planar", spin:"n = 0 diamagnetic", os:"Ni²⁺ d⁸"},
+    {id:"nico4",n:"[Ni(CO)₄]", hyb:"sp³", geom:"tetrahedral", spin:"n = 0 diamagnetic", os:"Ni(0)"},
+    {id:"mnbr4",n:"[MnBr₄]²⁻", hyb:"sp³", geom:"tetrahedral (Ex 5.7)", spin:"μ = 5.9 BM, n = 5", os:"Mn²⁺ d⁵"}
   ];
   function mount(){
     App.state.maxT = 6;
@@ -264,7 +264,7 @@ window.SIMS.vbtlab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Inner d²sp³ / dsp²</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Outer sp³ / sp³d²</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      cxplx.map(function(c,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="pv'+i+'">'+c.n+'</button>'; }).join("");
+      cxplx.map(function(c,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+c.id+'" id="pv'+i+'">'+c.n+'</button>'; }).join("");
     cxplx.forEach(function(c,i){
       document.getElementById("pv"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -297,12 +297,12 @@ window.SIMS.cftlab = (function(){
     App.state.maxT = 6;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>e<sub>g</sub> (+0.6 Δo)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>t<sub>2g</sub> (−0.4 Δo)</span></div>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>t₂<sub>g</sub> (−0.4 Δo)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-hs">Octahedral weak (Δo &lt; P)</button>' +
-      '<button class="preset-btn" id="p-ls">Octahedral strong (Δo &gt; P)</button>' +
-      '<button class="preset-btn" id="p-td">Tetrahedral Δt = 4/9 Δo</button>' +
-      '<button class="preset-btn" id="p-ti">[Ti(H₂O)₆]³⁺ 498 nm</button>';
+      '<button class="preset-btn active" data-preset="hs" id="p-hs">Octahedral weak (Δo &lt; P)</button>' +
+      '<button class="preset-btn" data-preset="ls" id="p-ls">Octahedral strong (Δo &gt; P)</button>' +
+      '<button class="preset-btn" data-preset="td" id="p-td">Tetrahedral Δt = 4/9 Δo</button>' +
+      '<button class="preset-btn" data-preset="ti" id="p-ti">[Ti(H₂O)₆]³⁺ 498 nm</button>';
     document.getElementById("p-hs").onclick = function(){ setActivePreset(this); field="oh-hs"; draw(0); };
     document.getElementById("p-ls").onclick = function(){ setActivePreset(this); field="oh-ls"; draw(0); };
     document.getElementById("p-td").onclick = function(){ setActivePreset(this); field="td"; draw(0); };
@@ -383,18 +383,18 @@ window.SIMS.cftlab = (function(){
 window.SIMS.apps = (function(){
   var idx = 0;
   var cards = [
-    {t:"Synergic carbonyls", d:"OC→M σ + M→π*(CO) back-bond. Ni(CO)₄ Td, Fe(CO)₅ TBP, Cr(CO)₆ Oh. Mn₂(CO)₁₀ Mn–Mn; Co₂(CO)₈ bridged CO."},
-    {t:"Biology", d:"Chlorophyll (Mg), haemoglobin (Fe, O₂ carrier), vitamin B₁₂ (Co, anti-pernicious anaemia), carbonic anhydrase, carboxypeptidase A."},
-    {t:"Analysis & hardness", d:"EDTA, DMG, cupron, α-nitroso-β-naphthol. Na₂EDTA titration of Ca²⁺/Mg²⁺ (different Kstab)."},
-    {t:"Metallurgy", d:"Au + CN⁻ + O₂ + H₂O → [Au(CN)₂]⁻ then Zn. Mond: Ni → [Ni(CO)₄] → pure Ni. Electroplating from [Ag(CN)₂]⁻ / [Au(CN)₂]⁻."},
-    {t:"Medicine & photo", d:"cis-platin (tumours); EDTA (Pb); D-penicillamine (Cu); desferrioxime B (Fe). Hypo: AgBr → [Ag(S₂O₃)₂]³⁻. Wilkinson [(Ph₃P)₃RhCl] hydrogenates alkenes."}
+    {id:"synergic",t:"Synergic carbonyls", d:"OC→M σ + M→π*(CO) back-bond. Ni(CO)₄ Td, Fe(CO)₅ TBP, Cr(CO)₆ Oh. Mn₂(CO)₁₀ Mn–Mn; Co₂(CO)₈ bridged CO."},
+    {id:"biology",t:"Biology", d:"Chlorophyll (Mg), haemoglobin (Fe, O₂ carrier), vitamin B₁₂ (Co, anti-pernicious anaemia), carbonic anhydrase, carboxypeptidase A."},
+    {id:"analysis",t:"Analysis & hardness", d:"EDTA, DMG, cupron, α-nitroso-β-naphthol. Na₂EDTA titration of Ca²⁺/Mg²⁺ (different Kstab)."},
+    {id:"metallurgy",t:"Metallurgy", d:"Au + CN⁻ + O₂ + H₂O → [Au(CN)₂]⁻ then Zn. Mond: Ni → [Ni(CO)₄] → pure Ni. Electroplating from [Ag(CN)₂]⁻ / [Au(CN)₂]⁻."},
+    {id:"medicine",t:"Medicine & photo", d:"cis-platin (tumours); EDTA (Pb); D-penicillamine (Cu); desferrioxime B (Fe). Hypo: AgBr → [Ag(S₂O₃)₂]³⁻. Wilkinson [(Ph₃P)₃RhCl] hydrogenates alkenes."}
   ];
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>§5.6–5.7</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      cards.map(function(c,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="pa'+i+'">'+c.t.split(" ")[0]+'</button>'; }).join("");
+      cards.map(function(c,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+c.id+'" id="pa'+i+'">'+c.t.split(" ")[0]+'</button>'; }).join("");
     cards.forEach(function(c,i){
       document.getElementById("pa"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });

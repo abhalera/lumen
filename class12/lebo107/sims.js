@@ -31,11 +31,11 @@ window.SIMS["bacterial-viral-protozoan"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Virus (rhinovirus)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Protozoa (Plasmodium / Entamoeba)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ty">Typhoid</button>' +
-      '<button class="preset-btn" id="p-pn">Pneumonia</button>' +
-      '<button class="preset-btn" id="p-co">Cold</button>' +
-      '<button class="preset-btn" id="p-ma">Malaria</button>' +
-      '<button class="preset-btn" id="p-am">Amoebiasis</button>';
+      '<button class="preset-btn active" id="p-ty" data-preset="p-ty">Typhoid</button>' +
+      '<button class="preset-btn" id="p-pn" data-preset="p-pn">Pneumonia</button>' +
+      '<button class="preset-btn" id="p-co" data-preset="p-co">Cold</button>' +
+      '<button class="preset-btn" id="p-ma" data-preset="p-ma">Malaria</button>' +
+      '<button class="preset-btn" id="p-am" data-preset="p-am">Amoebiasis</button>';
     document.getElementById("p-ty").onclick = function(){ setActivePreset(this); dis = 0; draw(App.state.t); };
     document.getElementById("p-pn").onclick = function(){ setActivePreset(this); dis = 1; draw(App.state.t); };
     document.getElementById("p-co").onclick = function(){ setActivePreset(this); dis = 2; draw(App.state.t); };
@@ -43,9 +43,9 @@ window.SIMS["bacterial-viral-protozoan"] = (function(){
     document.getElementById("p-am").onclick = function(){ setActivePreset(this); dis = 4; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Guess the pathogen</span><span class="val">?</span></div>' +
-      '<div><button class="preset-btn" id="g-b">Salmonella</button> ' +
-      '<button class="preset-btn" id="g-v">Rhinovirus</button> ' +
-      '<button class="preset-btn" id="g-p">Plasmodium</button></div></div>' +
+      '<div><button class="preset-btn" id="g-b" data-preset="g-b">Salmonella</button> ' +
+      '<button class="preset-btn" id="g-v" data-preset="g-v">Rhinovirus</button> ' +
+      '<button class="preset-btn" id="g-p" data-preset="g-p">Plasmodium</button></div></div>' +
       '<div class="control-item"><div class="control-label"><span>Typhoid Mary note</span><span class="val">carrier</span></div>' +
       '<div style="font-size:12px;color:#94a3b8">Cook + carrier spread typhoid via food for years</div></div>';
     document.getElementById("g-b").onclick = function(){ judge(0); };
@@ -99,17 +99,17 @@ window.SIMS["helminth-fungal-hygiene"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Mosquito stages (vector + host)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Hygiene break</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pl">Plasmodium stepper</button>' +
-      '<button class="preset-btn" id="p-as">Ascaris (faecal-oral)</button>' +
-      '<button class="preset-btn" id="p-wu">Wuchereria (vector)</button>' +
-      '<button class="preset-btn" id="p-rw">Ringworm (fomite)</button>';
+      '<button class="preset-btn active" id="p-pl" data-preset="p-pl">Plasmodium stepper</button>' +
+      '<button class="preset-btn" id="p-as" data-preset="p-as">Ascaris (faecal-oral)</button>' +
+      '<button class="preset-btn" id="p-wu" data-preset="p-wu">Wuchereria (vector)</button>' +
+      '<button class="preset-btn" id="p-rw" data-preset="p-rw">Ringworm (fomite)</button>';
     document.getElementById("p-pl").onclick = function(){ setActivePreset(this); mode = "plas"; draw(App.state.t); };
     document.getElementById("p-as").onclick = function(){ setActivePreset(this); mode = "asc"; draw(App.state.t); };
     document.getElementById("p-wu").onclick = function(){ setActivePreset(this); mode = "wuch"; draw(App.state.t); };
     document.getElementById("p-rw").onclick = function(){ setActivePreset(this); mode = "ring"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Cycle step</span><span class="val" id="ctrl-s">1 / 4</span></div>' +
-      '<div><button class="preset-btn" id="b-p">Prev</button> <button class="preset-btn" id="b-n">Next</button></div></div>' +
+      '<div><button class="preset-btn" id="b-p" data-preset="b-p">Prev</button> <button class="preset-btn" id="b-n" data-preset="b-n">Next</button></div></div>' +
       '<div class="control-item"><div class="control-label"><span>Vector break</span><span class="val">Gambusia</span></div>' +
       '<div style="font-size:12px;color:#94a3b8">nets, no stagnation, Gambusia, insecticides, mesh</div></div>';
     document.getElementById("b-p").onclick = function(){ step = Math.max(0, step - 1); App.state.t = step; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = step; draw(step); };
@@ -183,17 +183,17 @@ window.SIMS["innate-acquired-immunity"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Acquired: specific + memory (B/T)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Antibody H2L2 (Fig. 7.4)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-so">Barrier sorter</button>' +
-      '<button class="preset-btn" id="p-me">Memory: primary vs secondary</button>' +
-      '<button class="preset-btn" id="p-ab">H2L2 builder (Ex Q9)</button>';
+      '<button class="preset-btn active" id="p-so" data-preset="p-so">Barrier sorter</button>' +
+      '<button class="preset-btn" id="p-me" data-preset="p-me">Memory: primary vs secondary</button>' +
+      '<button class="preset-btn" id="p-ab" data-preset="p-ab">H2L2 builder (Ex Q9)</button>';
     document.getElementById("p-so").onclick = function(){ setActivePreset(this); mode = "sort"; draw(App.state.t); };
     document.getElementById("p-me").onclick = function(){ setActivePreset(this); mode = "mem"; draw(App.state.t); };
     document.getElementById("p-ab").onclick = function(){ setActivePreset(this); mode = "ab"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Classifier item</span><span class="val" id="ctrl-i">1 / 6</span></div>' +
-      '<div><button class="preset-btn" id="b-in">Innate</button> <button class="preset-btn" id="b-ac">Acquired</button></div></div>' +
+      '<div><button class="preset-btn" id="b-in" data-preset="b-in">Innate</button> <button class="preset-btn" id="b-ac" data-preset="b-ac">Acquired</button></div></div>' +
       '<div class="control-item"><div class="control-label"><span>H2L2 chains</span><span class="val" id="ctrl-h">2H + 2L</span></div>' +
-      '<div><button class="preset-btn" id="b-h">+ Heavy</button> <button class="preset-btn" id="b-l">+ Light</button> <button class="preset-btn" id="b-r">Reset</button></div></div>';
+      '<div><button class="preset-btn" id="b-h" data-preset="b-h">+ Heavy</button> <button class="preset-btn" id="b-l" data-preset="b-l">+ Light</button> <button class="preset-btn" id="b-r" data-preset="b-r">Reset</button></div></div>';
     document.getElementById("b-in").onclick = function(){ judge("I"); };
     document.getElementById("b-ac").onclick = function(){ judge("A"); };
     document.getElementById("b-h").onclick = function(){ if(h < 2) h++; draw(App.state.t); };
@@ -274,15 +274,15 @@ window.SIMS["vaccination-allergy-lymphoid"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Secondary: spleen / nodes / MALT</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Allergy: IgE - histamine</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-so">Organ sorter (Ex Q6)</button>' +
-      '<button class="preset-btn" id="p-ma">MALT 50%</button>' +
-      '<button class="preset-btn" id="p-al">Active/passive + allergy</button>';
+      '<button class="preset-btn active" id="p-so" data-preset="p-so">Organ sorter (Ex Q6)</button>' +
+      '<button class="preset-btn" id="p-ma" data-preset="p-ma">MALT 50%</button>' +
+      '<button class="preset-btn" id="p-al" data-preset="p-al">Active/passive + allergy</button>';
     document.getElementById("p-so").onclick = function(){ setActivePreset(this); mode = "sort"; draw(App.state.t); };
     document.getElementById("p-ma").onclick = function(){ setActivePreset(this); mode = "malt"; draw(App.state.t); };
     document.getElementById("p-al").onclick = function(){ setActivePreset(this); mode = "alg"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Organ</span><span class="val" id="ctrl-o">1 / 7</span></div>' +
-      '<div><button class="preset-btn" id="b-p">Primary</button> <button class="preset-btn" id="b-s">Secondary</button></div></div>' +
+      '<div><button class="preset-btn" id="b-p" data-preset="b-p">Primary</button> <button class="preset-btn" id="b-s" data-preset="b-s">Secondary</button></div></div>' +
       '<div class="control-item"><div class="control-label"><span>MALT share</span><span class="val" id="ctrl-m">50%</span></div>' +
       '<input type="range" id="ctrl-m-range" min="0" max="100" step="1" value="50"></div>';
     document.getElementById("b-p").onclick = function(){ judge("P"); };
@@ -354,15 +354,15 @@ window.SIMS["aids"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Macrophage factory</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Helper-T fall (5-10 yr lag)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-r">Replication stepper (Fig. 7.6)</button>' +
-      '<button class="preset-btn" id="p-m">Myth-buster: touch?</button>';
+      '<button class="preset-btn active" id="p-r" data-preset="p-r">Replication stepper (Fig. 7.6)</button>' +
+      '<button class="preset-btn" id="p-m" data-preset="p-m">Myth-buster: touch?</button>';
     document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode = "rep"; draw(App.state.t); };
     document.getElementById("p-m").onclick = function(){ setActivePreset(this); mode = "myth"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Step</span><span class="val" id="ctrl-s">1 / 4</span></div>' +
-      '<div><button class="preset-btn" id="b-p">Prev</button> <button class="preset-btn" id="b-n">Next</button></div></div>' +
+      '<div><button class="preset-btn" id="b-p" data-preset="b-p">Prev</button> <button class="preset-btn" id="b-n" data-preset="b-n">Next</button></div></div>' +
       '<div class="control-item"><div class="control-label"><span>Myth test</span><span class="val">body fluids only</span></div>' +
-      '<div><button class="preset-btn" id="b-touch">Hug spreads HIV?</button> <button class="preset-btn" id="b-needle">Shared needle?</button></div></div>';
+      '<div><button class="preset-btn" id="b-touch" data-preset="b-touch">Hug spreads HIV?</button> <button class="preset-btn" id="b-needle" data-preset="b-needle">Shared needle?</button></div></div>';
     document.getElementById("b-p").onclick = function(){ step = Math.max(0, step - 1); App.state.t = step; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = step; draw(step); };
     document.getElementById("b-n").onclick = function(){ step = Math.min(3, step + 1); App.state.t = step; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = step; draw(step); };
     document.getElementById("b-touch").onclick = function(){ verdict("<b>Myth BUSTED (Sec 7.3):</b> <b>HIV is NOT spread by touch/hug/bench</b> — body fluids only. Do NOT isolate patients; give help + sympathy. (Ex Q10)."); draw(App.state.t); };
@@ -426,15 +426,15 @@ window.SIMS["cancer"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Benign: confined</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Malignant: invade / starve / metastasise</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-so">Benign vs malignant (Ex Q12)</button>' +
-      '<button class="preset-btn" id="p-me">Metastasis path (Ex Q13)</button>' +
-      '<button class="preset-btn" id="p-ca">Carcinogens + detect-treat</button>';
+      '<button class="preset-btn active" id="p-so" data-preset="p-so">Benign vs malignant (Ex Q12)</button>' +
+      '<button class="preset-btn" id="p-me" data-preset="p-me">Metastasis path (Ex Q13)</button>' +
+      '<button class="preset-btn" id="p-ca" data-preset="p-ca">Carcinogens + detect-treat</button>';
     document.getElementById("p-so").onclick = function(){ setActivePreset(this); mode = "sort"; draw(App.state.t); };
     document.getElementById("p-me").onclick = function(){ setActivePreset(this); mode = "met"; draw(App.state.t); };
     document.getElementById("p-ca").onclick = function(){ setActivePreset(this); mode = "car"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Feature</span><span class="val" id="ctrl-f">1 / 6</span></div>' +
-      '<div><button class="preset-btn" id="b-b">Benign</button> <button class="preset-btn" id="b-m">Malignant</button></div></div>';
+      '<div><button class="preset-btn" id="b-b" data-preset="b-b">Benign</button> <button class="preset-btn" id="b-m" data-preset="b-m">Malignant</button></div></div>';
     document.getElementById("b-b").onclick = function(){ judge("B"); };
     document.getElementById("b-m").onclick = function(){ judge("M"); };
     draw(0);
@@ -504,17 +504,17 @@ window.SIMS["drugs-alcohol"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Dependence: withdrawal syndrome</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Prevention ladder (5)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-so">Addiction vs dependence (Ex Q16)</button>' +
-      '<button class="preset-btn" id="p-dr">Drug-receptor map</button>' +
-      '<button class="preset-btn" id="p-pr">Prevention planner (5 steps)</button>';
+      '<button class="preset-btn active" id="p-so" data-preset="p-so">Addiction vs dependence (Ex Q16)</button>' +
+      '<button class="preset-btn" id="p-dr" data-preset="p-dr">Drug-receptor map</button>' +
+      '<button class="preset-btn" id="p-pr" data-preset="p-pr">Prevention planner (5 steps)</button>';
     document.getElementById("p-so").onclick = function(){ setActivePreset(this); mode = "sort"; draw(App.state.t); };
     document.getElementById("p-dr").onclick = function(){ setActivePreset(this); mode = "map"; draw(App.state.t); };
     document.getElementById("p-pr").onclick = function(){ setActivePreset(this); mode = "prev"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Sorter</span><span class="val" id="ctrl-i">1 / 6</span></div>' +
-      '<div><button class="preset-btn" id="b-a">Addiction</button> <button class="preset-btn" id="b-d">Dependence</button></div></div>' +
+      '<div><button class="preset-btn" id="b-a" data-preset="b-a">Addiction</button> <button class="preset-btn" id="b-d" data-preset="b-d">Dependence</button></div></div>' +
       '<div class="control-item"><div class="control-label"><span>Planner tick</span><span class="val" id="ctrl-c">0 / 5</span></div>' +
-      '<div><button class="preset-btn" id="b-t">Tick next step</button> <button class="preset-btn" id="b-rs">Reset</button></div></div>';
+      '<div><button class="preset-btn" id="b-t" data-preset="b-t">Tick next step</button> <button class="preset-btn" id="b-rs" data-preset="b-rs">Reset</button></div></div>';
     document.getElementById("b-a").onclick = function(){ judge("A"); };
     document.getElementById("b-d").onclick = function(){ judge("D"); };
     document.getElementById("b-t").onclick = function(){ var i; for(i = 0; i < 5; i++){ if(!checks[i]){ checks[i] = true; break; } } draw(App.state.t); };

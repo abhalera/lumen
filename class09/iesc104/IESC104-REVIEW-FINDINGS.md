@@ -1,5 +1,15 @@
 # iesc104 learner experience review and repair handoff
 
+> **Status 2026-09-10:** this review is historical. Chapter 4 was rebuilt against the PDF.
+> The 2026-09-08 "repairs" had left wrong content in place:
+> - the Sarang, Example 4.4, cyclist Q12 and clock Q16 presets;
+> - the Q6, Q12 and Q13 exercise solutions;
+> - Q10 using a = −2;
+> - page citations computed by a formula;
+> - a placeholder YouTube video (`dQw4w9WgXcQ`) on most Connect cards.
+>
+> See `COVERAGE.md` for the current mapping, and `tests/verify.cjs` plus `tests/browser.cjs` for the checks.
+
 **Target:** `output/Class09/iesc104/index.html`  
 **Chapter:** Class 9 Science, Chapter 4 — Describing Motion Around Us  
 **Review date:** 2026-09-08  

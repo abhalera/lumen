@@ -30,8 +30,9 @@ window.SIMS.carbnom = (function(){
     var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>C=O polar, planar sp²</span></div>';
+    var nids = ["methanal","ethanal","2-methylpropanal","prop-2-enal","benzaldehyde","pentan-2-one","mesityl-oxide","terephthalaldehyde"];
     document.getElementById("preset-bar").innerHTML =
-      names.map(function(n,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="n'+i+'">'+(i+1)+'</button>'; }).join("");
+      names.map(function(n,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+nids[i]+'" id="n'+i+'">'+(i+1)+'</button>'; }).join("");
     names.forEach(function(_,i){
       document.getElementById("n"+i).onclick = function(){ setActivePreset(this); row=i; draw(0); };
     });
@@ -63,11 +64,11 @@ window.SIMS.prepald = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Aldehyde route</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Ketone route</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-r">Rosenmund / Stephen</button>' +
-      '<button class="preset-btn" id="p-e">Étard / Gattermann–Koch</button>' +
-      '<button class="preset-btn" id="p-ox">Alcohol oxidation</button>' +
-      '<button class="preset-btn" id="p-fc">Friedel–Crafts acyl</button>' +
-      '<button class="preset-btn" id="p-ozo">Ozonolysis / alkyne</button>';
+      '<button class="preset-btn active" data-preset="rosenmund" id="p-r">Rosenmund / Stephen</button>' +
+      '<button class="preset-btn" data-preset="etard" id="p-e">Étard / Gattermann–Koch</button>' +
+      '<button class="preset-btn" data-preset="oxidation" id="p-ox">Alcohol oxidation</button>' +
+      '<button class="preset-btn" data-preset="friedel-crafts" id="p-fc">Friedel–Crafts acyl</button>' +
+      '<button class="preset-btn" data-preset="ozonolysis" id="p-ozo">Ozonolysis / alkyne</button>';
     document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode="rosen"; draw(0); };
     document.getElementById("p-e").onclick = function(){ setActivePreset(this); mode="etard"; draw(0); };
     document.getElementById("p-ox").onclick = function(){ setActivePreset(this); mode="ox"; draw(0); };
@@ -101,7 +102,7 @@ window.SIMS.physcarb = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Polar C=O</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>H-bonding (alcohols, acids)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="b1">Intext 8.3 boiling points</button>';
+      '<button class="preset-btn active" data-preset="boiling-points" id="b1">Intext 8.3 boiling points</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -132,12 +133,12 @@ window.SIMS.nucadd = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Carbonyl Cδ⁺</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Tetrahedral intermediate</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="u-m">Fig 8.2 mechanism</button>' +
-      '<button class="preset-btn" id="u-r">Reactivity order</button>' +
-      '<button class="preset-btn" id="u-hcn">HCN cyanohydrin</button>' +
-      '<button class="preset-btn" id="u-ac">Acetal / ketal</button>' +
-      '<button class="preset-btn" id="u-nz">NH₂Z (oxime, 2,4-DNP)</button>' +
-      '<button class="preset-btn" id="u-bz">Ex 8.3 benzaldehyde</button>';
+      '<button class="preset-btn active" data-preset="mechanism" id="u-m">Fig 8.2 mechanism</button>' +
+      '<button class="preset-btn" data-preset="reactivity" id="u-r">Reactivity order</button>' +
+      '<button class="preset-btn" data-preset="cyanohydrin" id="u-hcn">HCN cyanohydrin</button>' +
+      '<button class="preset-btn" data-preset="acetal" id="u-ac">Acetal / ketal</button>' +
+      '<button class="preset-btn" data-preset="nhz" id="u-nz">NH₂Z (oxime, 2,4-DNP)</button>' +
+      '<button class="preset-btn" data-preset="benzaldehyde" id="u-bz">Ex 8.3 benzaldehyde</button>';
     document.getElementById("u-m").onclick = function(){ setActivePreset(this); mode="mech"; App.resetTimeline(); App.play(); };
     document.getElementById("u-r").onclick = function(){ setActivePreset(this); mode="reac"; draw(0); };
     document.getElementById("u-hcn").onclick = function(){ setActivePreset(this); mode="hcn"; draw(0); };
@@ -228,10 +229,10 @@ window.SIMS.aldolox = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>α-H / enolate</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>No α-H / Cannizzaro</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="o-a">Aldol</button>' +
-      '<button class="preset-btn" id="o-c">Cannizzaro</button>' +
-      '<button class="preset-btn" id="o-ox">Tollens / Fehling</button>' +
-      '<button class="preset-btn" id="o-red">Clemmensen / Wolff–Kishner</button>';
+      '<button class="preset-btn active" data-preset="aldol" id="o-a">Aldol</button>' +
+      '<button class="preset-btn" data-preset="cannizzaro" id="o-c">Cannizzaro</button>' +
+      '<button class="preset-btn" data-preset="tollens-fehling" id="o-ox">Tollens / Fehling</button>' +
+      '<button class="preset-btn" data-preset="clemmensen-wk" id="o-red">Clemmensen / Wolff–Kishner</button>';
     document.getElementById("o-a").onclick = function(){ setActivePreset(this); mode="aldol"; draw(0); };
     document.getElementById("o-c").onclick = function(){ setActivePreset(this); mode="can"; draw(0); };
     document.getElementById("o-ox").onclick = function(){ setActivePreset(this); mode="ox"; draw(0); };
@@ -292,9 +293,10 @@ window.SIMS.acidnom = (function(){
     var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Carboxyl –COOH</span></div>';
+    var cids = ["methanoic","ethanoic","dimethylbutanoic","benzoic","adipic","propenoic"];
     document.getElementById("preset-bar").innerHTML =
-      rows.map(function(r,k){ return '<button class="preset-btn'+(k===0?' active':'')+'" id="c'+k+'">'+(k+1)+'</button>'; }).join("") +
-      '<button class="preset-btn" id="cprep">Preparation</button>';
+      rows.map(function(r,k){ return '<button class="preset-btn'+(k===0?' active':'')+'" data-preset="'+cids[k]+'" id="c'+k+'">'+(k+1)+'</button>'; }).join("") +
+      '<button class="preset-btn" data-preset="preparation" id="cprep">Preparation</button>';
     rows.forEach(function(_,k){
       document.getElementById("c"+k).onclick = function(){ setActivePreset(this); i=k; draw(0); };
     });
@@ -346,13 +348,13 @@ window.SIMS.acidstrength = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Stronger (low pKa)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Carboxylate 2 equivalent forms</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="s-et">EtOH 15.9</button>' +
-      '<button class="preset-btn" id="s-ph">PhOH 10</button>' +
-      '<button class="preset-btn active" id="s-ac">AcOH 4.76</button>' +
-      '<button class="preset-btn" id="s-bz">PhCOOH 4.19</button>' +
-      '<button class="preset-btn" id="s-cl">ClCH₂COOH</button>' +
-      '<button class="preset-btn" id="s-tf">CF₃COOH 0.23</button>' +
-      '<button class="preset-btn" id="s-why">Why &gt; phenol?</button>';
+      '<button class="preset-btn" data-preset="ethanol" id="s-et">EtOH 15.9</button>' +
+      '<button class="preset-btn" data-preset="phenol" id="s-ph">PhOH 10</button>' +
+      '<button class="preset-btn active" data-preset="acetic" id="s-ac">AcOH 4.76</button>' +
+      '<button class="preset-btn" data-preset="benzoic" id="s-bz">PhCOOH 4.19</button>' +
+      '<button class="preset-btn" data-preset="chloroacetic" id="s-cl">ClCH₂COOH</button>' +
+      '<button class="preset-btn" data-preset="tfa" id="s-tf">CF₃COOH 0.23</button>' +
+      '<button class="preset-btn" data-preset="why-phenol" id="s-why">Why &gt; phenol?</button>';
     document.getElementById("s-et").onclick = function(){ setActivePreset(this); id="etoh"; draw(0); };
     document.getElementById("s-ph").onclick = function(){ setActivePreset(this); id="ph"; draw(0); };
     document.getElementById("s-ac").onclick = function(){ setActivePreset(this); id="ac"; draw(0); };
@@ -399,10 +401,10 @@ window.SIMS.acidrxn = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>C–OH cleavage</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>–COOH / α-H</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="x-e">Esterification</button>' +
-      '<button class="preset-btn" id="x-h">HVZ halogenation</button>' +
-      '<button class="preset-btn" id="x-d">Decarboxylation / LiAlH₄</button>' +
-      '<button class="preset-btn" id="x-u">Uses</button>';
+      '<button class="preset-btn active" data-preset="esterification" id="x-e">Esterification</button>' +
+      '<button class="preset-btn" data-preset="hvz" id="x-h">HVZ halogenation</button>' +
+      '<button class="preset-btn" data-preset="decarboxylation" id="x-d">Decarboxylation / LiAlH₄</button>' +
+      '<button class="preset-btn" data-preset="uses" id="x-u">Uses</button>';
     document.getElementById("x-e").onclick = function(){ setActivePreset(this); mode="est"; App.resetTimeline(); App.play(); };
     document.getElementById("x-h").onclick = function(){ setActivePreset(this); mode="hvz"; draw(0); };
     document.getElementById("x-d").onclick = function(){ setActivePreset(this); mode="dec"; draw(0); };

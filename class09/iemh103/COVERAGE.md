@@ -1,36 +1,34 @@
-# Curriculum & Pedagogical Coverage: Class 9 Mathematics Chapter 3
-## The World of Numbers (`iemh103`)
-**Textbook**: NCERT *Ganita Manjari*, Grade 9 Part I (2024–26 NCF Reprint)  
-**Syllabus Range**: pp. 41–67  
-**Architectural Standard**: Golden Reference (5-Block Pedagogical Pipeline)
+# COVERAGE — iemh103 The World of Numbers
 
----
+**Source:** `books/originals/Class09-Maths_iemh103.pdf` (NCERT *Ganita Manjari*, Grade 9, Part I), 27 PDF pages. Printed page = PDF page + 40.
+**Build:** `python3 scripts/build_chapter.py iemh103`.
+**Checks:**
+- `node output/Class09/iemh103/tests/verify.cjs`
+- `browser_qa.cjs output/Class09/iemh103`
 
-### 1. Concept-to-Curriculum Mapping
+| # | Concept | PDF pp. | NCERT items | Lab |
+|---|---|---|---|---|
+| 1 | Counting and natural numbers | 1–3 | 3.1, 3.1.1 (Lebombo and Ishango bones, Fig. 3.1), 3.1.2 (Indus trade, Vedic powers of 10), Exercise Set 3.1 | `counting`: pebbles, Ishango tallies, finger joints, Lothal trade |
+| 2 | Zero and integers | 3–6 | 3.2 (Śhūnyatā, Bakhśhālī, Brahmagupta’s rules for zero), 3.3 (dhana and ṛiṇa, Fig. 3.2, rules 1–5), Think and Reflect, Exercise Set 3.2 | `integers`: debts, Ladakh temperature, spice trader, (−3) × (−4), 10 − (−5) |
+| 3 | Rational numbers | 6–9 | 3.4 (definition, q ≠ 0, equivalent forms, Brahmagupta’s laws, closure), Think and Reflect, Exercise Set 3.3 | `fractions`: equality, sum, product area, kurtas, distributive law |
+| 4 | Rationals on the number line | 10–13 | 3.4.1 (Figs. 3.3–3.8, absolute value, Example 1), 3.4.2 (density, Fig. 3.9), Exercise Set 3.4 | `numberline`: 3/4, 9/4, −7/4 and 8/5, \|a − b\|, density zoom, 3.1415 to 3.1416 |
+| 5 | Irrational numbers | 13–16 | 3.5, Fig. 3.10, 3.5.1 proof by contradiction, Think and Reflect (√3, √5, √7, √10), 3.5.2 construction (Fig. 3.11) | `sqrt2`: diagonal trials, proof steps, construct √2 and √3, square root spiral |
+| 6 | π and the real line | 16–17 | 3.5.3 (Āryabhaṭa, Lambert, Mādhava’s series), Fig. 3.12 | `pi`: Mādhava’s sums, Āryabhaṭa vs 22/7, rolling wheel, real line |
+| 7 | Decimals and the real numbers | 17–24 | 3.6.1 (terminating and repeating decimals, Examples 2–9, prime factor test, summary table), 3.6.2 cyclic numbers, 3.6.3 irrational decimals, Exercise Set 3.5, non-uniqueness (0.999… = 1), 3.7 conclusion (Fig. 3.13), imaginary numbers, Chapter summary | `decimals`: long division of 1/7, predicting, converting 0.4545…, 142857, 0.999… |
 
-| Concept ID | NCERT Section & Topic | Page Range | Interactive Manipulative Engine | Quizzes |
-| :--- | :--- | :--- | :--- | :--- |
-| **c1** | 3.1 The Dawn of Mathematics: The Human Need to Count (1-to-1 correspondence, Lebombo Bone 35,000 BCE, Ishango Bone 20,000 BCE with primes 11, 13, 17, 19, Lothal trade weights, Vedic powers of 10 parārdha $10^{12}$ and tallakṣhaṇa $10^{53}$, Base-12 finger joint counting) | pp. 41–43 | `sim-ishango-tally`: Bone tally notch cluster visualizer, prime detector, and interactive 12-joint human hand model | 3 MCQs |
-| **c2** | 3.2 The Revolution of Śhūnya & 3.3 Integers (Brahmagupta 628 CE *Brāhmasphuṭasiddhānta*, Bakhshālī manuscript, Dhana fortunes vs Ṛiṇa debts, signed arithmetic laws, $(-a) 	imes (-b) = +ab$, $a - (-b) = a + b$, Integers $\mathbb{Z}$) | pp. 43–48 | `sim-brahmagupta-shunya`: Dynamic balance scale of fortunes & debts, zero pairs cancellation, sign multiplication engine | 3 MCQs |
-| **c3** | 3.4 Fractions & Rational Numbers (Rational definition $\mathbb{Q}$, equivalent fractions, operations, density property: midpoint formula $(a+b)/2$, common denominator gap expansion $k_1/m < \dots < k_2/m$ where $k_2 - k_1 > n + 1$) | pp. 48–56 | `sim-rational-density`: Infinite micro-zoomer on number line, arbitrary interval subdivider, binary midpoint tree | 3 MCQs |
-| **c4** | 3.5 Irrational Numbers & Baudhāyana Śulbasūtra (Vedic altar geometry 800 BCE, unit square diagonal $\sqrt{2}$, Baudhāyana rational approximation $577/408 \approx 1.4142156$, proof of irrationality of $\sqrt{2}$ by contradiction, story of $\pi$ and Mādhava series) | pp. 56–60 | `sim-baudhayana-sqrt`: Unit square geometric diagonal dissection, Baudhāyana 4-term progression, parity contradiction grid | 3 MCQs |
-| **c5** | 3.6 Real Numbers: Decimals & Cyclic Patterns (Terminating condition $q = 2^a 5^b$, converting recurring decimals to $p/q$, proof that $0.\bar{9} = 1$, cyclic number $1/7 = 0.\overline{142857}$ carousel, $1/13$ dual coset families, non-terminating non-repeating irrationals) | pp. 60–63 | `sim-cyclic-decimals`: Rotating circular heptagon wheel of cyclic digits, decimal converter, $0.\bar{9}=1$ algebraic steps | 3 MCQs |
-| **c6** | 3.7 Conclusion: The Real Number Continuum & Root Spiral (Real line $\mathbb{R} = \mathbb{Q} \cup \mathbb{I}$, Square root spiral / Wheel of Theodorus $\sqrt{2} \dots \sqrt{17}$, perpendicular vector recurrence, projection arcs to line, preview of imaginary $i = \sqrt{-1}$) | pp. 63–67 | `sim-sqrt-spiral`: Wheel of Theodorus interactive vector construction, radial arcs to real line, continuous play timeline | 3 MCQs |
+**Exercises:** 43 items.
+- Exercise Set 3.1 has 4 questions, Set 3.2 has 4, Set 3.3 has 8, Set 3.4 has 6, and Set 3.5 has 5.
+- The End-of-Chapter Exercises Q1–Q16 are one item each.
 
----
+The book has no answer key. `gen_ex.py` computes every answer with exact fractions and asserts it before writing, and `tests/verify.cjs` recomputes the answers with BigInt fractions.
 
-### 2. Comprehensive Exercises & Question Bank Coverage
-- **Exercise Set 3.1 (p. 43):** 4 Questions completely solved with step-by-step guidance (Lothal spice/copper trade ratio, Ishango prime patterns, closure of natural numbers under subtraction, finger joint base-12 anatomy).
-- **Exercise Set 3.2 (p. 48):** 4 Questions completely solved with step-by-step guidance (Ladakh temperature drop, spice trader debt ledger equation, Brahmagupta sign calculations, debt cancellation real-world rationale).
-- **Exercise Set 3.3 (p. 52):** 8 Questions completely solved with step-by-step guidance (equivalent rationals, sums, differences, products, quotients, distributive law proof, simplification, linear rational equation).
-- **Exercise Set 3.4 (p. 53):** 6 Questions completely solved with step-by-step guidance (number line plotting, 3 rationals between fractions, expression simplification, tailor silk kurta division, decimals between 3.1415 and 3.1416, alternative mediant/Farey methods).
-- **Exercise Set 3.5 (p. 62):** 5 Questions completely solved with step-by-step guidance (terminating vs repeating tests without division, $1/13$ period and dual cycles, rational vs irrational classification with fraction conversions, algebraic proof that $0.\bar{9} = 1$, full-period cyclic primes).
-- **End-of-Chapter Exercises (pp. 64–66):** 16 Questions completely solved with step-by-step guidance (long division terminating vs recurring, proof $\sqrt{5}$ irrational, $p/q$ conversions, number line localization, finding $n$ rationals between integers/fractions, linear equation, product sign analysis, 4th decimal place terminating structure, prime factor criteria, scale condition $k_2 - k_1 > n + 1$, simultaneous zero proof $x+y+z=0$, midpoint proof, square root spiral hypotenuses).
-- **Total Exercises:** 43 verbatim curriculum questions with complete pedagogical guidance.
+**Repeating bars.** The bars over repeating digits in Examples 3–9 and End-of-Chapter Q3–Q4 were read from the PDF’s vector overlines, matched to the characters beneath them. That gives Q3 as (i) 12.6, (ii) 0.0120, (iii) 3.0<ins>52</ins>, (iv) 1.2<ins>35</ins>, (v) 0.<ins>23</ins>, (vi) 2.0<ins>5</ins>, (vii) 2.12<ins>5</ins>, (viii) 3.12<ins>5</ins> and (ix) 2.<ins>1625</ins>, with the underlined block repeating. Q4 (ii) is 1.1<ins>5</ins>.
 
----
-
-### 3. Golden Standard Compliance
-- **File size**: Standalone single-file HTML strictly < 2 MB, offline zero CDN dependencies, zero unencrypted `http://` links.
-- **Pedagogical Loop**: Complete 5-block cycle (Learn $\to$ Predict First $\to$ Play $\to$ Connect $\to$ Practice $\to$ Revise).
-- **Automated Verification**: `tests/verify.cjs` asserts JSON schema, exercise guidance presence, mathematical algorithm truth, DOM sandbox execution, and asset budgets.
+**Notes:**
+- **Set 3.3 Q8 is an identity.** 5/6 (x + 3/5) expands to exactly 5/6 x + 1/2, so every rational x satisfies it. The solution says so, rather than inventing a single value.
+- **End-of-Chapter Q13.** Finding n numerators needs only k₂ − k₁ ≥ n + 1. The book’s k₂ − k₁ > n + 1 is sufficient but slightly stronger than necessary, and the solution explains both.
+- **Set 3.5 Q2.** 2/13 is not a rotation of 1/13’s block. The twelve blocks of k/13 form two families of rotations (076923 and 153846), and the solution reports this honestly.
+- **Dates.** The book dates Hippasus to c. 400 BCE, while he is traditionally placed in the 5th century BCE, so the lesson gives no date. The chapter summary says Brahmagupta 629 CE and the text says 628 CE; the lessons use 628 CE, the date of the Brāhmasphuṭasiddhānta.
+- **Fig. 3.14** has 10 triangles, counted from the zoomed PDF render, so the hypotenuses run from √2 to √11.
+- **The `realline` lab** places a selection of the numbers shown in Fig. 3.12; it is not an exact copy of the figure.
+- **Videos.** Real, oEmbed-verified videos are requested from agy-imported.

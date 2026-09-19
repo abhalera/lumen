@@ -1,747 +1,325 @@
-
-// =========================================================================
-// IEMH105: ROUND AND ROUND (CIRCLES)
-// Interactive Geometric Manipulatives & Laboratory Engines
-// =========================================================================
-
-window.SIM_STATE = {
-  currentConcept: 'c1',
-  isPlaying: false,
-  timer: null,
-  scrubberVal: 0,
-  speed: 1,
-  // Concept-specific states
-  c1: { mode: 'circum', triType: 'acute' },
-  c2: { chordL: 140, angle: 70 },
-  c3: { r: 130, d: 50 },
-  c4: { mode: 'parallel', r: 130, l1: 240, l2: 100 },
-  c5: { centralAngle: 120, pAngle: 50, isDiameter: false },
-  c6: { aAngle: 40, bAngle: 110, cAngle: 210, dAngle: 300 }
-};
-
-window.SIM_ENGINES = {
-
-  // -----------------------------------------------------------------------
-  // LAB 1: CIRCLE SYMMETRIES & CIRCUMCIRCLE EXPLORER (pp. 92–98)
-  // -----------------------------------------------------------------------
-  c1: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">⭕ Circumcircle &amp; Circle Symmetries Explorer</div>
-            <div style="font-size:13px;color:#94a3b8;">Unique Circle Through 3 Points • Acute vs Right vs Obtuse Circumcentre</div>
-          </div>
-          <div id="c1-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn active" id="c1-btn-acute" aria-pressed="true" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Acute Δ (Centre Inside)</button>
-            <button class="lab-btn" id="c1-btn-right" aria-pressed="false" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Right Δ (Centre on Hypotenuse)</button>
-            <button class="lab-btn" id="c1-btn-obtuse" aria-pressed="false" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Obtuse Δ (Centre Outside)</button>
-            <button class="lab-btn" id="c1-btn-reset" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">↺ Reset</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-            <label style="font-size:11px;color:#94a3b8;display:block;">Triangle Scale: <b id="c1-scale-val" style="color:#38bdf8;">100%</b></label>
-            <input type="range" id="c1-slider-scale" min="50" max="150" value="100" step="5" aria-label="Triangle scale factor" style="width:100%;">
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c1;
-      s.scale = 100;
-      function setTri(t) {
-        s.triType = t;
-        ['acute', 'right', 'obtuse'].forEach(function(k) {
-          var b = document.getElementById('c1-btn-' + k);
-          if (b) {
-            b.style.background = (k === t) ? '#0284c7' : '#334155';
-            b.classList.toggle('active', k === t);
-            b.setAttribute('aria-pressed', k === t ? 'true' : 'false');
-          }
-        });
-        window.SIM_ENGINES.c1.update();
-      }
-
-      var scaleSlider = document.getElementById('c1-slider-scale');
-      if (scaleSlider) {
-        scaleSlider.oninput = function() {
-          s.scale = parseInt(scaleSlider.value, 10);
-          var sv = document.getElementById('c1-scale-val');
-          if (sv) sv.innerText = s.scale + '%';
-          window.SIM_ENGINES.c1.update();
-        };
-      }
-
-      document.getElementById('c1-btn-acute').onclick = function() { setTri('acute'); };
-      document.getElementById('c1-btn-right').onclick = function() { setTri('right'); };
-      document.getElementById('c1-btn-obtuse').onclick = function() { setTri('obtuse'); };
-      document.getElementById('c1-btn-reset').onclick = function() {
-        setTri('acute');
-        s.scale = 100;
-        if (scaleSlider) scaleSlider.value = 100;
-        var sv = document.getElementById('c1-scale-val');
-        if (sv) sv.innerText = '100%';
-        window.SIM_ENGINES.c1.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c1;
-      var box = document.getElementById('c1-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var cx = w / 2 - 40;
-      var cy = 125;
-      var R = 85;
-
-      // Circle
-      svg += `
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#38bdf8" stroke-width="2"/>
-        <circle cx="${cx}" cy="${cy}" r="4" fill="#f59e0b"/>
-        <text x="${cx + 8}" y="${cy - 8}" fill="#f59e0b" font-size="11" font-weight="bold">O (Centre)</text>
-      `;
-
-      var ax, ay, bx, by, cxP, cyP;
-      var locText = "";
-
-      if (s.triType === 'acute') {
-        // Acute triangle: all angles < 90°
-        ax = cx + R * Math.cos(-2.4); ay = cy + R * Math.sin(-2.4);
-        bx = cx + R * Math.cos(2.4);  by = cy + R * Math.sin(2.4);
-        cxP = cx + R * Math.cos(0.2); cyP = cy + R * Math.sin(0.2);
-        locText = "INSIDE the triangle";
-      } else if (s.triType === 'right') {
-        // Right triangle: AB is diameter
-        ax = cx - R; ay = cy;
-        bx = cx + R; by = cy;
-        cxP = cx + R * Math.cos(-1.1); cyP = cy + R * Math.sin(-1.1);
-        locText = "ON the hypotenuse (midpoint of AB)";
-      } else {
-        // Obtuse triangle: one angle > 90°
-        ax = cx + R * Math.cos(-0.8); ay = cy + R * Math.sin(-0.8);
-        bx = cx + R * Math.cos(0.8);  by = cy + R * Math.sin(0.8);
-        cxP = cx + R * Math.cos(0.1); cyP = cy + R * Math.sin(0.1);
-        locText = "OUTSIDE the triangle";
-      }
-
-      // Draw Triangle
-      svg += `
-        <polygon points="${ax},${ay} ${bx},${by} ${cxP},${cyP}" fill="#0284c7" fill-opacity="0.25" stroke="#ffffff" stroke-width="2"/>
-        <circle cx="${ax}" cy="${ay}" r="4" fill="#38bdf8"/><text x="${ax - 12}" y="${ay}" fill="#fff" font-size="11" font-weight="bold">A</text>
-        <circle cx="${bx}" cy="${by}" r="4" fill="#38bdf8"/><text x="${bx + 8}" y="${by}" fill="#fff" font-size="11" font-weight="bold">B</text>
-        <circle cx="${cxP}" cy="${cyP}" r="4" fill="#38bdf8"/><text x="${cxP}" y="${cyP + 16}" fill="#fff" font-size="11" font-weight="bold">C</text>
-      `;
-
-      // Legend box
-      var infoX = cx + R + 35;
-      svg += `
-        <g transform="translate(${infoX}, 45)">
-          <rect x="0" y="0" width="${w - infoX - 25}" height="140" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-          <text x="12" y="25" fill="#38bdf8" font-size="12" font-weight="bold">Circumcentre Location:</text>
-          <text x="12" y="55" fill="#ffffff" font-size="13" font-weight="bold">${s.triType.toUpperCase()} Δ</text>
-          <text x="12" y="80" fill="#10b981" font-size="12">Centre O lies:</text>
-          <text x="12" y="105" fill="#fbbf24" font-size="12" font-weight="bold">${locText}</text>
-          <text x="12" y="125" fill="#94a3b8" font-size="10">Radius OA = OB = OC = R</text>
-        </g>
-      `;
-
-      readout.innerHTML = `TRIANGLE: ${s.triType.toUpperCase()} | CIRCUMRADIUS: ${R}px | CIRCUMCENTRE: ${locText}`;
-      verdict.innerHTML = `<strong>Unique Circumcircle Theorem:</strong> Exactly ONE unique circle passes through any three non-collinear points. The circumcentre lies inside for acute triangles, on the hypotenuse for right triangles, and outside for obtuse triangles.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 2: CHORDS & CENTRAL ANGLE COMPARATOR (pp. 98–100)
-  // -----------------------------------------------------------------------
-  c2: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📏 Chords &amp; Central Angle Subtended Workbench</div>
-            <div style="font-size:13px;color:#94a3b8;">Theorem 1 &amp; 2: Equal Chords ⟺ Equal Central Angles (SSS / SAS Congruence)</div>
-          </div>
-          <div id="c2-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Central Angle θ: <b id="c2-angle-val" style="color:#38bdf8;">70°</b></label>
-              <input type="range" id="c2-slider-angle" min="30" max="150" value="70" step="5" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c2;
-      var aSlider = document.getElementById('c2-slider-angle');
-      aSlider.oninput = function() {
-        s.angle = parseInt(aSlider.value);
-        document.getElementById('c2-angle-val').innerText = s.angle + '°';
-        window.SIM_ENGINES.c2.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c2;
-      var box = document.getElementById('c2-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var cx = w / 2 - 40;
-      var cy = 120;
-      var R = 85;
-      var rad = (s.angle * Math.PI) / 180;
-
-      // Chord 1 (AB)
-      var a1 = -rad / 2;
-      var a2 = rad / 2;
-      var ax = cx + R * Math.cos(a1), ay = cy + R * Math.sin(a1);
-      var bx = cx + R * Math.cos(a2), by = cy + R * Math.sin(a2);
-      var chordLen = 2 * R * Math.sin(rad / 2);
-
-      // Chord 2 (CD) rotated by 180°
-      var c1 = Math.PI - rad / 2;
-      var c2 = Math.PI + rad / 2;
-      var cxP = cx + R * Math.cos(c1), cyP = cy + R * Math.sin(c1);
-      var dx = cx + R * Math.cos(c2), dy = cy + R * Math.sin(c2);
-
-      svg += `
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#64748b" stroke-width="2"/>
-        <circle cx="${cx}" cy="${cy}" r="4" fill="#f59e0b"/>
-        <text x="${cx - 10}" y="${cy - 8}" fill="#f59e0b" font-size="11" font-weight="bold">O</text>
-
-        <!-- Sector / Chord 1: AB -->
-        <polygon points="${cx},${cy} ${ax},${ay} ${bx},${by}" fill="#0284c7" fill-opacity="0.25" stroke="#0284c7" stroke-width="1.5"/>
-        <line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="#38bdf8" stroke-width="3"/>
-        <text x="${(ax+bx)/2 + 10}" y="${(ay+by)/2}" fill="#38bdf8" font-size="11" font-weight="bold">AB</text>
-
-        <!-- Sector / Chord 2: CD -->
-        <polygon points="${cx},${cy} ${cxP},${cyP} ${dx},${dy}" fill="#10b981" fill-opacity="0.25" stroke="#10b981" stroke-width="1.5"/>
-        <line x1="${cxP}" y1="${cyP}" x2="${dx}" y2="${dy}" stroke="#34d399" stroke-width="3"/>
-        <text x="${(cxP+dx)/2 - 25}" y="${(cyP+dy)/2}" fill="#34d399" font-size="11" font-weight="bold">CD</text>
-      `;
-
-      var infoX = cx + R + 35;
-      svg += `
-        <g transform="translate(${infoX}, 45)">
-          <rect x="0" y="0" width="${w - infoX - 25}" height="140" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-          <text x="12" y="25" fill="#38bdf8" font-size="12" font-weight="bold">Equal Subtended Angles:</text>
-          <text x="12" y="55" fill="#ffffff" font-size="12">• ∠AOB = ${s.angle}°</text>
-          <text x="12" y="78" fill="#ffffff" font-size="12">• ∠COD = ${s.angle}°</text>
-          <line x1="12" y1="90" x2="${w - infoX - 40}" y2="90" stroke="#475569"/>
-          <text x="12" y="112" fill="#10b981" font-size="12" font-weight="bold">AB = CD = ${chordLen.toFixed(1)} px</text>
-          <text x="12" y="130" fill="#94a3b8" font-size="10">SSS Congruence: ΔOAB ≅ ΔOCD</text>
-        </g>
-      `;
-
-      readout.innerHTML = `CENTRAL ANGLE: ${s.angle}° | CHORD AB: ${chordLen.toFixed(1)}px | CHORD CD: ${chordLen.toFixed(1)}px | CONGRUENCE: SSS ⟹ AB = CD`;
-      verdict.innerHTML = `<strong>Theorem 1 &amp; 2 (Equivalence):</strong> Equal chords subtend equal angles at the centre, and conversely chords subtending equal angles at the centre are strictly equal in length.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 3: PERPENDICULAR BISECTOR & PYTHAGORAS TRIANGLE (pp. 100–102)
-  // -----------------------------------------------------------------------
-  c3: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📐 Chord Perpendicular Bisector &amp; Pythagoras Triangle</div>
-            <div style="font-size:13px;color:#94a3b8;">r² = d² + (L/2)² • Centre to Midpoint is Perpendicular (OM ⊥ AB)</div>
-          </div>
-          <div id="c3-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Radius r: <b id="c3-r-val" style="color:#38bdf8;">13 cm</b></label>
-              <input type="range" id="c3-slider-r" min="10" max="18" value="13" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Distance d: <b id="c3-d-val" style="color:#f59e0b;">5 cm</b></label>
-              <input type="range" id="c3-slider-d" min="1" max="12" value="5" step="1" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c3;
-      var rSlider = document.getElementById('c3-slider-r');
-      var dSlider = document.getElementById('c3-slider-d');
-
-      rSlider.oninput = function() {
-        s.r = parseInt(rSlider.value) * 10;
-        document.getElementById('c3-r-val').innerText = (s.r / 10) + ' cm';
-        if (s.d >= s.r) s.d = s.r - 10;
-        dSlider.max = (s.r / 10 - 1).toString();
-        window.SIM_ENGINES.c3.update();
-      };
-      dSlider.oninput = function() {
-        s.d = parseInt(dSlider.value) * 10;
-        document.getElementById('c3-d-val').innerText = (s.d / 10) + ' cm';
-        window.SIM_ENGINES.c3.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c3;
-      var box = document.getElementById('c3-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var cx = w / 2 - 50;
-      var cy = 120;
-      var R = s.r * 0.65; // scale to fit
-      var dPx = s.d * 0.65;
-
-      var halfChordPx = Math.sqrt(Math.max(0, R*R - dPx*dPx));
-      var halfChordCm = Math.sqrt(Math.max(0, (s.r/10)*(s.r/10) - (s.d/10)*(s.d/10)));
-      var chordCm = 2 * halfChordCm;
-
-      // Circle
-      svg += `
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#64748b" stroke-width="2"/>
-        <circle cx="${cx}" cy="${cy}" r="4" fill="#f59e0b"/>
-        <text x="${cx - 15}" y="${cy + 4}" fill="#f59e0b" font-size="11" font-weight="bold">O</text>
-
-        <!-- Chord AB -->
-        <line x1="${cx - halfChordPx}" y1="${cy + dPx}" x2="${cx + halfChordPx}" y2="${cy + dPx}" stroke="#38bdf8" stroke-width="3"/>
-        <circle cx="${cx - halfChordPx}" cy="${cy + dPx}" r="3" fill="#38bdf8"/><text x="${cx - halfChordPx - 14}" y="${cy + dPx + 4}" fill="#fff" font-size="11">A</text>
-        <circle cx="${cx + halfChordPx}" cy="${cy + dPx}" r="3" fill="#38bdf8"/><text x="${cx + halfChordPx + 6}" y="${cy + dPx + 4}" fill="#fff" font-size="11">B</text>
-
-        <!-- Perpendicular OM -->
-        <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy + dPx}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/>
-        <circle cx="${cx}" cy="${cy + dPx}" r="3" fill="#f59e0b"/><text x="${cx + 6}" y="${cy + dPx + 14}" fill="#f59e0b" font-size="10">M</text>
-
-        <!-- Right angle marker at M -->
-        <rect x="${cx}" y="${cy + dPx - 8}" width="8" height="8" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
-
-        <!-- Radius OA (Hypotenuse) -->
-        <line x1="${cx}" y1="${cy}" x2="${cx - halfChordPx}" y2="${cy + dPx}" stroke="#ec4899" stroke-width="2"/>
-        <text x="${cx - halfChordPx/2 - 12}" y="${cy + dPx/2}" fill="#ec4899" font-size="11" font-weight="bold">r</text>
-      `;
-
-      var infoX = cx + R + 30;
-      svg += `
-        <g transform="translate(${infoX}, 40)">
-          <rect x="0" y="0" width="${w - infoX - 20}" height="150" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-          <text x="12" y="25" fill="#38bdf8" font-size="12" font-weight="bold">Pythagoras in ΔOMA:</text>
-          <text x="12" y="50" fill="#ec4899" font-size="11">• Radius r = ${(s.r/10)} cm</text>
-          <text x="12" y="70" fill="#f59e0b" font-size="11">• Distance d = ${(s.d/10)} cm</text>
-          <text x="12" y="90" fill="#38bdf8" font-size="11">• Half-chord AM = ${halfChordCm.toFixed(2)} cm</text>
-          <line x1="12" y1="102" x2="${w - infoX - 35}" y2="102" stroke="#475569"/>
-          <text x="12" y="122" fill="#10b981" font-size="12" font-weight="bold">Total Chord L = ${chordCm.toFixed(2)} cm</text>
-          <text x="12" y="140" fill="#94a3b8" font-size="10">r² = d² + (L/2)²</text>
-        </g>
-      `;
-
-      readout.innerHTML = `RADIUS: ${s.r/10} cm | DISTANCE: ${s.d/10} cm | HALF-CHORD: ${halfChordCm.toFixed(2)} cm | TOTAL CHORD LENGTH: ${chordCm.toFixed(2)} cm`;
-      verdict.innerHTML = `<strong>Theorem 4 &amp; 5 Applied:</strong> The line from centre to chord midpoint is perpendicular ($OM \\perp AB$), creating right triangle $\\Delta OMA$ with $r^2 = d^2 + (L/2)^2$.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 4: EQUIDISTANT CHORDS & DISTANCE VS LENGTH (pp. 102–106)
-  // -----------------------------------------------------------------------
-  c4: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📏 Chord Distance vs Length Hierarchy Workbench</div>
-            <div style="font-size:13px;color:#94a3b8;">Longer Chords are Strictly Closer to Centre • Parallel Chords Problem</div>
-          </div>
-          <div id="c4-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c4-btn-parallel" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Parallel Chords (10 cm &amp; 24 cm)</button>
-            <button class="lab-btn" id="c4-btn-opp" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Opposite Sides (6 cm &amp; 8 cm, r=5)</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c4;
-      document.getElementById('c4-btn-parallel').onclick = function() {
-        s.mode = 'parallel';
-        s.r = 130; s.l1 = 240; s.l2 = 100;
-        document.getElementById('c4-btn-parallel').style.background = '#0284c7';
-        document.getElementById('c4-btn-opp').style.background = '#334155';
-        window.SIM_ENGINES.c4.update();
-      };
-      document.getElementById('c4-btn-opp').onclick = function() {
-        s.mode = 'opposite';
-        s.r = 100; s.l1 = 160; s.l2 = 120;
-        document.getElementById('c4-btn-opp').style.background = '#0284c7';
-        document.getElementById('c4-btn-parallel').style.background = '#334155';
-        window.SIM_ENGINES.c4.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c4;
-      var box = document.getElementById('c4-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var cx = w / 2 - 50;
-      var cy = 120;
-      var R = 85;
-
-      svg += `
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#64748b" stroke-width="2"/>
-        <circle cx="${cx}" cy="${cy}" r="4" fill="#f59e0b"/>
-      `;
-
-      if (s.mode === 'parallel') {
-        // Parallel chords: 24cm (d=5) and 10cm (d=12), r=13
-        var d1 = 5 * (R / 13);
-        var d2 = 12 * (R / 13);
-        var h1 = 12 * (R / 13);
-        var h2 = 5 * (R / 13);
-
-        svg += `
-          <!-- Chord 1: 24 cm -->
-          <line x1="${cx - h1}" y1="${cy + d1}" x2="${cx + h1}" y2="${cy + d1}" stroke="#10b981" stroke-width="2.5"/>
-          <text x="${cx + h1 + 6}" y="${cy + d1 + 4}" fill="#10b981" font-size="10">24 cm (d=5)</text>
-
-          <!-- Chord 2: 10 cm -->
-          <line x1="${cx - h2}" y1="${cy + d2}" x2="${cx + h2}" y2="${cy + d2}" stroke="#38bdf8" stroke-width="2.5"/>
-          <text x="${cx + h2 + 6}" y="${cy + d2 + 4}" fill="#38bdf8" font-size="10">10 cm (d=12)</text>
-
-          <!-- Gap indicator -->
-          <line x1="${cx}" y1="${cy + d1}" x2="${cx}" y2="${cy + d2}" stroke="#ef4444" stroke-width="2"/>
-          <text x="${cx - 16}" y="${cy + (d1+d2)/2 + 4}" fill="#ef4444" font-size="11" font-weight="bold">7 cm</text>
-        `;
-
-        readout.innerHTML = `CHORD 1: 24 cm (d₁ = 5 cm) | CHORD 2: 10 cm (d₂ = 12 cm) | GAP: d₂ - d₁ = 7 cm | RADIUS: r = 13 cm`;
-        verdict.innerHTML = `<strong>EOC Q18 Solved:</strong> Longer chord (24 cm) is closer ($d=5$ cm) than shorter chord (10 cm, $d=12$ cm). Both satisfy $r^2 = d^2 + (L/2)^2 = 5^2 + 12^2 = 169 \\implies r = 13$ cm.`;
-      } else {
-        // Opposite sides: 8cm (d=3) and 6cm (d=4), r=5
-        var dA = 3 * (R / 5);
-        var dB = 4 * (R / 5);
-        var hA = 4 * (R / 5);
-        var hB = 3 * (R / 5);
-
-        svg += `
-          <!-- Top Chord: 8 cm -->
-          <line x1="${cx - hA}" y1="${cy - dA}" x2="${cx + hA}" y2="${cy - dA}" stroke="#10b981" stroke-width="2.5"/>
-          <text x="${cx + hA + 6}" y="${cy - dA + 4}" fill="#10b981" font-size="10">8 cm (d=3)</text>
-
-          <!-- Bottom Chord: 6 cm -->
-          <line x1="${cx - hB}" y1="${cy + dB}" x2="${cx + hB}" y2="${cy + dB}" stroke="#38bdf8" stroke-width="2.5"/>
-          <text x="${cx + hB + 6}" y="${cy + dB + 4}" fill="#38bdf8" font-size="10">6 cm (d=4)</text>
-
-          <!-- Total distance line through centre -->
-          <line x1="${cx}" y1="${cy - dA}" x2="${cx}" y2="${cy + dB}" stroke="#fbbf24" stroke-width="2"/>
-          <text x="${cx + 8}" y="${cy}" fill="#fbbf24" font-size="11" font-weight="bold">Dist = 7 cm</text>
-        `;
-
-        readout.innerHTML = `OPPOSITE CHORDS: 8 cm (d=3) & 6 cm (d=4) | TOTAL SEPARATION: 3 + 4 = 7 cm | RADIUS: 5 cm`;
-        verdict.innerHTML = `<strong>Exercise 5.3 Q3 Solved:</strong> Because the chords are on opposite sides of the centre, the line joining their midpoints passes through $O$, so total separation is $d_1 + d_2 = 3 + 4 = 7$ cm.`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 5: INSCRIBED ANGLE THEOREM & SEMICIRCLE (pp. 106–111)
-  // -----------------------------------------------------------------------
-  c5: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📐 Inscribed Angle Theorem &amp; Semicircle Right Angle</div>
-            <div style="font-size:13px;color:#94a3b8;">Theorem 8: ∠AOB = 2∠APB • Thales Theorem: Angle in Semicircle = 90°</div>
-          </div>
-          <div id="c5-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c5-btn-general" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">General Arc (∠AOB = 2∠APB)</button>
-            <button class="lab-btn" id="c5-btn-semi" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Thales Semicircle (90°)</button>
-          </div>
-
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Central Angle ∠AOB: <b id="c5-angle-val" style="color:#38bdf8;">120°</b></label>
-              <input type="range" id="c5-slider-angle" min="40" max="170" value="120" step="5" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c5;
-      var aSlider = document.getElementById('c5-slider-angle');
-
-      document.getElementById('c5-btn-general').onclick = function() {
-        s.isDiameter = false;
-        aSlider.disabled = false;
-        document.getElementById('c5-btn-general').style.background = '#0284c7';
-        document.getElementById('c5-btn-semi').style.background = '#334155';
-        window.SIM_ENGINES.c5.update();
-      };
-      document.getElementById('c5-btn-semi').onclick = function() {
-        s.isDiameter = true;
-        s.centralAngle = 180;
-        aSlider.value = 180;
-        aSlider.disabled = true;
-        document.getElementById('c5-angle-val').innerText = '180° (Diameter)';
-        document.getElementById('c5-btn-semi').style.background = '#0284c7';
-        document.getElementById('c5-btn-general').style.background = '#334155';
-        window.SIM_ENGINES.c5.update();
-      };
-
-      aSlider.oninput = function() {
-        s.centralAngle = parseInt(aSlider.value);
-        document.getElementById('c5-angle-val').innerText = s.centralAngle + '°';
-        window.SIM_ENGINES.c5.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c5;
-      var box = document.getElementById('c5-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var cx = w / 2 - 40;
-      var cy = 125;
-      var R = 85;
-
-      var cenDeg = s.isDiameter ? 180 : s.centralAngle;
-      var insDeg = cenDeg / 2;
-
-      var rad = (cenDeg * Math.PI) / 180;
-      var ax = cx - R * Math.sin(rad/2);
-      var ay = cy + R * Math.cos(rad/2);
-      var bx = cx + R * Math.sin(rad/2);
-      var by = cy + R * Math.cos(rad/2);
-
-      // Point P on top circumference
-      var px = cx;
-      var py = cy - R;
-
-      svg += `
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#64748b" stroke-width="2"/>
-        <circle cx="${cx}" cy="${cy}" r="4" fill="#f59e0b"/>
-        <text x="${cx + 8}" y="${cy + 15}" fill="#f59e0b" font-size="11">O</text>
-
-        <!-- Central Angle Lines OA, OB -->
-        <line x1="${cx}" y1="${cy}" x2="${ax}" y2="${ay}" stroke="#f59e0b" stroke-width="2"/>
-        <line x1="${cx}" y1="${cy}" x2="${bx}" y2="${by}" stroke="#f59e0b" stroke-width="2"/>
-
-        <!-- Inscribed Angle Lines PA, PB -->
-        <line x1="${px}" y1="${py}" x2="${ax}" y2="${ay}" stroke="#38bdf8" stroke-width="2"/>
-        <line x1="${px}" y1="${py}" x2="${bx}" y2="${by}" stroke="#38bdf8" stroke-width="2"/>
-
-        <!-- Vertex Points -->
-        <circle cx="${ax}" cy="${ay}" r="4" fill="#fff"/><text x="${ax - 14}" y="${ay + 4}" fill="#fff" font-size="11">A</text>
-        <circle cx="${bx}" cy="${by}" r="4" fill="#fff"/><text x="${bx + 6}" y="${by + 4}" fill="#fff" font-size="11">B</text>
-        <circle cx="${px}" cy="${py}" r="5" fill="#38bdf8"/><text x="${px}" y="${py - 8}" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">P</text>
-      `;
-
-      var infoX = cx + R + 35;
-      svg += `
-        <g transform="translate(${infoX}, 45)">
-          <rect x="0" y="0" width="${w - infoX - 25}" height="140" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-          <text x="12" y="25" fill="#38bdf8" font-size="12" font-weight="bold">Angle Measurements:</text>
-          <text x="12" y="55" fill="#f59e0b" font-size="13" font-weight="bold">Central ∠AOB = ${cenDeg}°</text>
-          <text x="12" y="80" fill="#38bdf8" font-size="13" font-weight="bold">Inscribed ∠APB = ${insDeg.toFixed(1)}°</text>
-          <line x1="12" y1="95" x2="${w - infoX - 40}" y2="95" stroke="#475569"/>
-          <text x="12" y="118" fill="#10b981" font-size="12" font-weight="bold">Ratio: 2.000 × ∠APB</text>
-          <text x="12" y="134" fill="#94a3b8" font-size="10">${s.isDiameter ? "Thales: 180° / 2 = 90°" : "Theorem 8 Verified"}</text>
-        </g>
-      `;
-
-      readout.innerHTML = `CENTRAL ANGLE: ${cenDeg}° | INSCRIBED ANGLE: ${insDeg.toFixed(1)}° | RATIO: ${(cenDeg / insDeg).toFixed(3)} | THALES: ${s.isDiameter}`;
-      verdict.innerHTML = s.isDiameter
-        ? `<strong>Thales' Theorem:</strong> The central angle of a diameter is $180^\\circ$. Therefore, the angle subtended at the circumference is always $180^\\circ / 2 = 90^\\circ$ (a right angle)!`
-        : `<strong>Theorem 8 Verified:</strong> The angle subtended by an arc at the centre is strictly twice the angle subtended at any point on the remaining part of the circle ($\\angle AOB = 2\\angle APB$).`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 6: CYCLIC QUADRILATERAL 180° LAW & EXTERIOR ANGLE (pp. 111–117)
-  // -----------------------------------------------------------------------
-  c6: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🔄 Cyclic Quadrilateral 180° Law &amp; Exterior Angle Engine</div>
-            <div style="font-size:13px;color:#94a3b8;">Theorem 11: ∠A + ∠C = 180° • Theorem 12 • Exterior Angle = Interior Opposite</div>
-          </div>
-          <div id="c6-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c6-btn-standard" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Standard Cyclic Quad (75° &amp; 105°)</button>
-            <button class="lab-btn" id="c6-btn-rect" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Inscribed Rectangle (90° All)</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c6;
-      document.getElementById('c6-btn-standard').onclick = function() {
-        s.aAngle = 40; s.bAngle = 110; s.cAngle = 210; s.dAngle = 300;
-        document.getElementById('c6-btn-standard').style.background = '#0284c7';
-        document.getElementById('c6-btn-rect').style.background = '#334155';
-        window.SIM_ENGINES.c6.update();
-      };
-      document.getElementById('c6-btn-rect').onclick = function() {
-        s.aAngle = 45; s.bAngle = 135; s.cAngle = 225; s.dAngle = 315;
-        document.getElementById('c6-btn-rect').style.background = '#0284c7';
-        document.getElementById('c6-btn-standard').style.background = '#334155';
-        window.SIM_ENGINES.c6.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c6;
-      var box = document.getElementById('c6-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var cx = w / 2 - 50;
-      var cy = 125;
-      var R = 85;
-
-      var pt = function(deg) {
-        var r = (deg * Math.PI) / 180;
-        return { x: cx + R * Math.cos(r), y: cy + R * Math.sin(r) };
-      };
-
-      var A = pt(s.aAngle);
-      var B = pt(s.bAngle);
-      var C = pt(s.cAngle);
-      var D = pt(s.dAngle);
-
-      // Exterior line extension of CD to E
-      var ex = D.x + (D.x - C.x) * 0.4;
-      var ey = D.y + (D.y - C.y) * 0.4;
-
-      svg += `
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#64748b" stroke-width="2"/>
-        
-        <!-- Cyclic Quad Polygon -->
-        <polygon points="${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y} ${D.x},${D.y}" fill="#0284c7" fill-opacity="0.25" stroke="#38bdf8" stroke-width="2"/>
-
-        <!-- Extension line for exterior angle -->
-        <line x1="${C.x}" y1="${C.y}" x2="${ex}" y2="${ey}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/>
-        <circle cx="${ex}" cy="${ey}" r="3" fill="#f59e0b"/><text x="${ex + 6}" y="${ey}" fill="#f59e0b" font-size="10">E</text>
-
-        <!-- Vertices -->
-        <circle cx="${A.x}" cy="${A.y}" r="4" fill="#fff"/><text x="${A.x + 6}" y="${A.y}" fill="#fff" font-size="11" font-weight="bold">A</text>
-        <circle cx="${B.x}" cy="${B.y}" r="4" fill="#fff"/><text x="${B.x}" y="${B.y + 14}" fill="#fff" font-size="11" font-weight="bold">B</text>
-        <circle cx="${C.x}" cy="${C.y}" r="4" fill="#fff"/><text x="${C.x - 14}" y="${C.y}" fill="#fff" font-size="11" font-weight="bold">C</text>
-        <circle cx="${D.x}" cy="${D.y}" r="4" fill="#fff"/><text x="${D.x}" y="${D.y - 8}" fill="#fff" font-size="11" font-weight="bold">D</text>
-      `;
-
-      var infoX = cx + R + 35;
-      svg += `
-        <g transform="translate(${infoX}, 40)">
-          <rect x="0" y="0" width="${w - infoX - 25}" height="150" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-          <text x="12" y="25" fill="#38bdf8" font-size="12" font-weight="bold">Opposite Angles Law:</text>
-          <text x="12" y="52" fill="#10b981" font-size="12" font-weight="bold">∠A + ∠C = 180° (Supp)</text>
-          <text x="12" y="75" fill="#10b981" font-size="12" font-weight="bold">∠B + ∠D = 180° (Supp)</text>
-          <line x1="12" y1="88" x2="${w - infoX - 40}" y2="88" stroke="#475569"/>
-          <text x="12" y="110" fill="#f59e0b" font-size="12" font-weight="bold">Exterior Angle Property:</text>
-          <text x="12" y="132" fill="#ffffff" font-size="12">∠ADE ≡ ∠ABC</text>
-        </g>
-      `;
-
-      readout.innerHTML = `CYCLIC QUAD: ABCD | ∠A + ∠C = 180° | ∠B + ∠D = 180° | EXTERIOR ∠ADE = INTERIOR OPPOSITE ∠ABC`;
-      verdict.innerHTML = `<strong>Theorems 11 &amp; 12:</strong> In any quadrilateral inscribed in a circle, opposite pairs of angles are supplementary (sum to $180^\\circ$), and extending any side produces an exterior angle identical to the interior opposite angle!`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
+// iemh105 labs: I’m Up and Down, and Round and Round (circles).
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function nM5(v, d){ var L = window.LAB; if(d !== undefined) return L.num(v, d); var a = Math.abs(v); if(Math.abs(a - Math.round(a)) < 1e-6) return L.num(v, 0); if(Math.abs(a * 10 - Math.round(a * 10)) < 1e-6) return L.num(v, 1); return L.num(v, 2); }
+function clampM5(x, a, b){ return Math.max(a, Math.min(b, x)); }
+var DEG5 = Math.PI / 180;
+// Geometry in units; S(o) maps a unit point to pixels with origin (ox, oy) and scale k.
+function viewM5(ox, oy, k){ return function(p){ return [ox + p[0] * k, oy - p[1] * k]; }; }
+function onM5(r, deg){ return [r * Math.cos(deg * DEG5), r * Math.sin(deg * DEG5)]; }
+function segM5(L, V, a, b, col, w, dash){ var A = V(a), B = V(b); return L.line(A[0], A[1], B[0], B[1], col, w || 2, dash); }
+function dotM5(L, V, p, col, lab, dx, dy){ var P = V(p); return L.circle(P[0], P[1], 4.5, col) + (lab ? L.text(P[0] + (dx === undefined ? 8 : dx), P[1] + (dy === undefined ? -8 : dy), lab, {size: 13, color: col, weight: 700, anchor: "middle"}) : ""); }
+function circM5(L, V, c, r, k, col, fill){ var P = V(c); return L.circle(P[0], P[1], r * k, fill || "none", ' stroke="' + (col || L.C.text) + '" stroke-width="2"'); }
+function angM5(v, a, b){ var x1 = a[0] - v[0], y1 = a[1] - v[1], x2 = b[0] - v[0], y2 = b[1] - v[1]; return Math.acos(clampM5((x1 * x2 + y1 * y2) / (Math.hypot(x1, y1) * Math.hypot(x2, y2)), -1, 1)) / DEG5; }
+function sliderSetM5(L, st, defs){
+  L.controls(defs.map(function(d){ return L.slider(d[0], d[1], d[2], d[3], d[4], st[d[5]], nM5(st[d[5]])); }).join(""));
+  defs.forEach(function(d){ L.onInput(d[0], function(v){ st[d[5]] = v; L.setVal(d[0], nM5(v)); App.resetTimeline(); App.play(); }); });
+}
+function rightMarkM5(L, V, at, u1, u2, s){ var p1 = [at[0] + u1[0] * s, at[1] + u1[1] * s], p2 = [p1[0] + u2[0] * s, p1[1] + u2[1] * s], p3 = [at[0] + u2[0] * s, at[1] + u2[1] * s]; var A = V(p1), B = V(p2), C = V(p3); return '<polyline points="' + A.join(",") + ' ' + B.join(",") + ' ' + C.join(",") + '" fill="none" stroke="' + L.C.muted + '" stroke-width="1.5"/>'; }
+
+// Lab 1 — What is a circle? Locus, symmetry and the centre (§5.1–5.2)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "locus"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend({locus: [[C.path, "points at distance r"], [C.text, "centre"]], rotate: [[C.vel, "wheel"], [C.path, "a marked chord"]], fold: [[C.danger, "fold line"]], centre: [[C.danger, "first crease"], [C.vel, "second crease"]]}[id]);
+    L.watch({locus: "§5.1: mark points that are exactly r from the centre, one after another.", rotate: "§5.2: turn a wheel. Can you tell that it has moved?", fold: "§5.2: fold the circle so its edges match. Where do the creases go?", centre: "Think and Reflect: Jamuna finds the centre of a paper circle with two folds."}[id]);
+    L.controls(""); L.restart(true);
   }
-};
+  function draw(t){
+    var V = viewM5(360, 150, 1), R = 115, m = "", msg, id = st.preset, f = clampM5(t / 4, 0, 1);
+    if(id === "locus"){
+      var n = Math.floor(f * 48 + 1e-9);
+      for(var i = 0; i < n; i++){ var p = onM5(R, i * 7.5); m += L.circle(V(p)[0], V(p)[1], 4, C.path); }
+      m += L.circle(360, 150, 5, C.text) + L.text(372, 146, "C", {size: 13, color: C.text, weight: 700}) + (n > 0 ? L.line(360, 150, V(onM5(R, (n - 1) * 7.5))[0], V(onM5(R, (n - 1) * 7.5))[1], C.muted, 1.5, "5 4") : "");
+      L.svg(m, "Points at a fixed distance from a centre", 300);
+      L.readout([["Points marked", String(n), C.path], ["Distance from C", "r for every point"]]);
+      msg = t < 4 ? "Marking points…" : "Every point at distance r from C lies on the circle: the circle is the <b>locus</b> of such points.";
+    } else if(id === "rotate"){
+      var a = 360 * f;
+      m += L.circle(360, 150, R, "rgba(56,189,248,0.10)", ' stroke="' + C.vel + '" stroke-width="3"');
+      var p1 = onM5(R, 20 + a), p2 = onM5(R, 110 + a);
+      m += L.line(V(p1)[0], V(p1)[1], V(p2)[0], V(p2)[1], C.path, 3) + L.line(360, 150, V(p1)[0], V(p1)[1], C.muted, 1) + L.line(360, 150, V(p2)[0], V(p2)[1], C.muted, 1) + L.circle(360, 150, 5, C.text);
+      L.svg(m, "A turning wheel", 300);
+      L.readout([["Turned through", L.num(a, 0) + "°"], ["Circle", "unchanged"], ["Chord length", "unchanged", C.path]]);
+      msg = t < 4 ? "Turning…" : "Turned through any angle, the circle looks exactly the same: it has <b>complete rotational symmetry</b>.";
+    } else if(id === "fold"){
+      m += L.circle(360, 150, R, "rgba(148,163,184,0.08)", ' stroke="' + C.text + '" stroke-width="2"');
+      var k = Math.floor(f * 6 + 1e-9);
+      for(var j = 0; j <= k && j < 6; j++){ var q = onM5(R + 15, j * 30); m += L.line(V([-q[0], -q[1]])[0], V([-q[0], -q[1]])[1], V(q)[0], V(q)[1], C.danger, 2, "6 4"); }
+      m += L.circle(360, 150, 5, C.text);
+      L.svg(m, "Fold lines of a circle", 300);
+      L.readout([["Creases drawn", String(Math.min(6, k + 1)), C.danger], ["Each passes through", "the centre"]]);
+      msg = t < 4 ? "Folding…" : "Every crease that matches the edges passes through the centre: <b>every diameter is a line of symmetry</b>.";
+    } else {
+      m += L.circle(360, 150, R, "rgba(251,191,140,0.18)", ' stroke="' + C.text + '" stroke-width="2"');
+      var c1 = onM5(R + 10, 25), c2 = onM5(R + 10, 115);
+      if(t >= 0.5) m += L.line(V([-c1[0], -c1[1]])[0], V([-c1[0], -c1[1]])[1], V(c1)[0], V(c1)[1], C.danger, 2.5, "6 4");
+      if(t >= 2) m += L.line(V([-c2[0], -c2[1]])[0], V([-c2[0], -c2[1]])[1], V(c2)[0], V(c2)[1], C.vel, 2.5, "6 4");
+      if(t >= 3) m += L.circle(360, 150, 7, C.ok) + L.text(376, 170, "centre", {size: 13, color: C.ok, weight: 700});
+      L.svg(m, "Finding the centre by folding", 300);
+      L.readout([["Fold 1", t >= 0.5 ? "a diameter" : "…", C.danger], ["Fold 2", t >= 2 ? "another diameter" : "…", C.vel], ["They meet at", t >= 3 ? "the centre" : "…", C.ok]]);
+      msg = t < 4 ? "Folding twice…" : "Two different creases are two diameters, and they cross at the centre.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["locus", "§5.1: the locus"], ["rotate", "Rotational symmetry"], ["fold", "Reflection symmetry"], ["centre", "Jamuna’s centre"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.circle = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 2 — Circles through two points; the circumcircle (§5.3)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "twopts"};
+  var T = {acute: [[-3, -2], [3, -2], [0.8, 3]], obtuse: [[-4, -1], [4, -1], [-2.5, 0.8]], right: [[-3, -2], [3, -2], [0, 1]], collinear: [[-4, -2], [0, 0], [4, 2]]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend(id === "twopts" ? [[C.danger, "perpendicular bisector of AB"], [C.vel, "circles through A and B"]] : [[C.danger, "perpendicular bisectors"], [C.path, "circumcircle"]]);
+    L.watch({twopts: "§5.3 and Fig. 5.4: move the centre along the perpendicular bisector of AB (AB = 6 units).", acute: "Fig. 5.5: an acute-angled triangle.", obtuse: "Fig. 5.6: an obtuse-angled triangle.", right: "Fig. 5.7: a right-angled triangle.", collinear: "Think, Draw and Infer 1: three collinear points."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function cc(a, b, c){ var D = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1])); if(Math.abs(D) < 1e-9) return null; var s = function(p){ return p[0] * p[0] + p[1] * p[1]; }; return [(s(a) * (b[1] - c[1]) + s(b) * (c[1] - a[1]) + s(c) * (a[1] - b[1])) / D, (s(a) * (c[0] - b[0]) + s(b) * (a[0] - c[0]) + s(c) * (b[0] - a[0])) / D]; }
+  function bis(L, V, p, q, col){ var mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = q[0] - p[0], dy = q[1] - p[1], len = Math.hypot(dx, dy), ux = -dy / len, uy = dx / len; return segM5(L, V, [mx - ux * 9, my - uy * 9], [mx + ux * 9, my + uy * 9], col, 1.5, "6 4"); }
+  function draw(t){
+    var k = 26, V = viewM5(360, 150, k), m = "", msg, id = st.preset;
+    if(id === "twopts"){
+      var A = [-3, 0], B = [3, 0], y = -4 + 8 * clampM5(t / 4, 0, 1), O = [0, y], r = Math.hypot(3, y);
+      m += segM5(L, V, [0, -5.5], [0, 5.5], C.danger, 1.5, "6 4") + circM5(L, V, O, r, k, C.vel) + segM5(L, V, A, B, C.text, 2) + dotM5(L, V, A, C.text, "A", -12, 4) + dotM5(L, V, B, C.text, "B", 14, 4) + dotM5(L, V, O, C.path, "O", 14, -4) + (Math.abs(y) < 0.2 ? "" : segM5(L, V, O, A, C.muted, 1, "4 3"));
+      L.svg(m, "Circles through two points", 300);
+      L.readout([["Centre O", "(0, " + nM5(y, 1) + ")", C.path], ["Radius OA", nM5(r, 2) + " units", C.vel], ["Smallest radius", "AB/2 = 3 units"]]);
+      msg = t < 4 ? "Moving the centre…" : "Every centre lies on the perpendicular bisector of AB, and the smallest radius is <b>AB/2 = 3 units</b>, with AB as a diameter.";
+    } else {
+      var P = T[id], O2 = cc(P[0], P[1], P[2]);
+      m += segM5(L, V, P[0], P[1], C.text, 2) + segM5(L, V, P[1], P[2], C.text, 2) + segM5(L, V, P[2], P[0], C.text, 2);
+      if(t >= 1) m += bis(L, V, P[0], P[1], C.danger);
+      if(t >= 2) m += bis(L, V, P[1], P[2], C.danger) + bis(L, V, P[2], P[0], C.danger);
+      if(t >= 3 && O2){ var R2 = Math.hypot(P[0][0] - O2[0], P[0][1] - O2[1]); m += circM5(L, V, O2, R2, k, C.path) + dotM5(L, V, O2, C.path, "O", 14, -6); }
+      ["A", "B", "C"].forEach(function(nm, i){ m += dotM5(L, V, P[i], C.text, nm, i === 0 ? -12 : i === 1 ? 14 : 0, i === 2 ? -12 : 14); });
+      L.svg(m, "Perpendicular bisectors and the circumcircle", 300);
+      var R3 = O2 ? Math.hypot(P[0][0] - O2[0], P[0][1] - O2[1]) : 0;
+      L.readout([["Circumcentre", O2 && t >= 3 ? "(" + nM5(O2[0], 2) + ", " + nM5(O2[1], 2) + ")" : id === "collinear" && t >= 3 ? "none" : "…", C.path], ["Circumradius", O2 && t >= 3 ? nM5(R3, 2) + " units" : "…"]]);
+      msg = t < 4 ? "Drawing the perpendicular bisectors…" : {acute: "The bisectors meet at one point: the circumcentre is <b>inside the triangle</b>.", obtuse: "For this obtuse-angled triangle the circumcentre lies <b>outside the triangle</b>.", right: "For the right-angled triangle the circumcentre is the <b>midpoint of the hypotenuse</b>.", collinear: "For collinear points the bisectors are parallel, so <b>no circle</b> passes through A, B and C."}[id];
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["twopts", "Fig. 5.4: two points"], ["acute", "Fig. 5.5: acute"], ["obtuse", "Fig. 5.6: obtuse"], ["right", "Fig. 5.7: right"], ["collinear", "Collinear points"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.circum = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 3 — Chords and central angles (§5.4)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "rotate", ang: 90};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C.path, "chord"], [C.vel, "radii"], [C.ok, "equal chord"]]);
+    L.watch({rotate: "Fig. 5.8: a taut thread on a turning wheel (radius 5 cm, central angle 70°).", equal: "Fig. 5.9: equal chords AB and DE give congruent triangles.", angle60: "A chord that subtends 60° at the centre.", explore: "Change the central angle and watch the chord length in a circle of radius 5 cm."}[id]);
+    if(id === "explore") sliderSetM5(L, st, [["m5ang", "central angle (°)", 10, 180, 5, "ang"]]);
+    else L.controls("");
+    L.restart(true);
+  }
+  function chordAt(L, V, r, start, ang, col){ var a = onM5(r, start), b = onM5(r, start + ang); return segM5(L, V, a, b, col, 3) + segM5(L, V, [0, 0], a, C.vel, 1.5) + segM5(L, V, [0, 0], b, C.vel, 1.5); }
+  function draw(t){
+    var k = 26, V = viewM5(360, 150, k), r = 5, m = circM5(L, V, [0, 0], r, k, C.text), msg, id = st.preset, f = clampM5(t / 4, 0, 1);
+    if(id === "rotate"){
+      m += chordAt(L, V, r, 200 + 180 * f, 70, C.path) + L.circle(360, 150, 4, C.text);
+      L.svg(m, "A rotating chord", 300);
+      L.readout([["Central angle", "70°", C.vel], ["Chord length", nM5(2 * r * Math.sin(35 * DEG5), 2) + " cm", C.path]]);
+      msg = t < 4 ? "Rotating…" : "Length and central angle move together: <b>equal chords subtend equal angles</b> at the centre.";
+    } else if(id === "equal"){
+      m += '<polygon points="' + [V([0, 0]), V(onM5(r, 100)), V(onM5(r, 160))].map(function(p){ return p.join(","); }).join(" ") + '" fill="rgba(245,158,11,0.25)"/>';
+      if(t >= 1.5) m += '<polygon points="' + [V([0, 0]), V(onM5(r, -40)), V(onM5(r, 20))].map(function(p){ return p.join(","); }).join(" ") + '" fill="rgba(52,211,153,0.25)"/>';
+      m += chordAt(L, V, r, 100, 60, C.path) + (t >= 1.5 ? chordAt(L, V, r, -40, 60, C.ok) : "");
+      m += dotM5(L, V, onM5(r, 100), C.text, "A", 0, -12) + dotM5(L, V, onM5(r, 160), C.text, "B", -14, 0) + dotM5(L, V, onM5(r, -40), C.text, "D", 10, 14) + dotM5(L, V, onM5(r, 20), C.text, "E", 14, 0) + dotM5(L, V, [0, 0], C.text, "C", -14, 14);
+      L.svg(m, "Congruent triangles from equal chords", 300);
+      L.readout([["CA = CD, CB = CE", "radii"], ["AB = DE", "given"], ["Congruence", t >= 3 ? "SSS" : "…", C.ok]]);
+      msg = t < 4 ? "Comparing the triangles…" : "ΔCAB ≅ ΔCDE by SSS, so <b>∠ACB = ∠DCE</b>.";
+    } else if(id === "angle60"){
+      m += '<polygon points="' + [V([0, 0]), V(onM5(r, 60)), V(onM5(r, 120))].map(function(p){ return p.join(","); }).join(" ") + '" fill="rgba(56,189,248,0.2)"/>' + chordAt(L, V, r, 60, 60, C.path);
+      L.svg(m, "A 60° chord", 300);
+      L.readout([["Central angle", "60°"], ["Base angles", "(180° − 60°) ÷ 2 = 60°"], ["Chord", t >= 2 ? "5 cm" : "…", C.path]]);
+      msg = t < 4 ? "Measuring…" : "All three angles are 60°, so the triangle is equilateral: <b>chord = radius = 5 cm</b>.";
+    } else {
+      var ang = st.ang, len = 2 * r * Math.sin(ang / 2 * DEG5);
+      m += chordAt(L, V, r, 90 - ang / 2, ang, C.path);
+      L.svg(m, "Chord length and central angle", 300);
+      L.readout([["Central angle", nM5(ang) + "°", C.vel], ["Chord length", nM5(len, 2) + " cm", C.path]]);
+      msg = "A central angle of " + nM5(ang) + "° gives a chord of <b>" + nM5(len, 2) + " cm</b> in a circle of radius 5 cm; equal angles always give equal chords.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["rotate", "Fig. 5.8: rotating chord"], ["equal", "Fig. 5.9: Theorem 2"], ["angle60", "A 60° chord"], ["explore", "Explore: central angle"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.chordangle = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 4 — The perpendicular from the centre (§5.5)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "mid"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C.path, "chord"], [C.danger, "centre to chord"], [C.ok, "right angle"]]);
+    L.watch({mid: "Fig. 5.12 and Theorem 4: join the centre to the midpoint of the chord.", perp: "Theorem 5: drop a perpendicular from the centre to an 8 cm chord (radius 5 cm).", centre: "Draw two chords and their perpendicular bisectors.", worked: "Worked example: how far is an 8 cm chord from the centre of a circle of radius 5 cm?"}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var k = 26, V = viewM5(360, 150, k), r = 5, m = circM5(L, V, [0, 0], r, k, C.text), msg, id = st.preset, f = clampM5(t / 4, 0, 1);
+    if(id === "mid" || id === "perp" || id === "worked"){
+      var tilt = id === "mid" ? -30 + 60 * f : 0, d = 3, u = [Math.cos((tilt + 90) * DEG5), Math.sin((tilt + 90) * DEG5)], w = [-u[1], u[0]], M = [u[0] * -d, u[1] * -d], A = [M[0] - w[0] * 4, M[1] - w[1] * 4], B = [M[0] + w[0] * 4, M[1] + w[1] * 4];
+      m += segM5(L, V, A, B, C.path, 3) + segM5(L, V, [0, 0], M, C.danger, 2.5) + rightMarkM5(L, V, M, [u[0], u[1]], w, 0.45) + dotM5(L, V, A, C.text, "A", -12, 10) + dotM5(L, V, B, C.text, "B", 12, 10) + dotM5(L, V, M, C.ok, "M", 0, 20) + dotM5(L, V, [0, 0], C.text, "C", 0, -12);
+      if(id !== "mid") m += segM5(L, V, [0, 0], A, C.vel, 1.5, "4 3");
+      L.svg(m, "Centre, midpoint and chord", 300);
+      if(id === "mid"){ L.readout([["AM = MB", "4 cm"], ["∠CMA", "90°", C.ok], ["∠CMB", "90°", C.ok]]); msg = t < 4 ? "Turning the chord…" : "Wherever the chord is, ∠CMA = ∠CMB = <b>90°</b> (Theorem 4)."; }
+      else if(id === "perp"){ L.readout([["CM ⊥ AB", "yes", C.ok], ["AM", "4 cm"], ["MB", "4 cm"]]); msg = t < 4 ? "Dropping the perpendicular…" : "The perpendicular lands at the midpoint: <b>AM = MB = 4 cm</b> (Theorem 5)."; }
+      else { L.readout([["CA (radius)", "5 cm", C.vel], ["AM (half-chord)", "4 cm"], ["CM", t >= 3 ? "3 cm" : "…", C.danger]]); msg = t < 4 ? "Using the right triangle CMA…" : "CM = √(5² − 4²) = √9 = <b>3 cm</b>."; }
+    } else {
+      var c1a = onM5(r, 150), c1b = onM5(r, 40), c2a = onM5(r, 250), c2b = onM5(r, 340);
+      m += segM5(L, V, c1a, c1b, C.path, 3) + segM5(L, V, c2a, c2b, C.vel, 3);
+      function bisector(p, q, col, frac){ var mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, dx = q[0] - p[0], dy = q[1] - p[1], ln = Math.hypot(dx, dy); var s = [mx + dy / ln * 7, my - dx / ln * 7], e = [mx - dy / ln * 7, my + dx / ln * 7]; return segM5(L, V, s, [s[0] + (e[0] - s[0]) * frac, s[1] + (e[1] - s[1]) * frac], col, 1.8, "6 4"); }
+      m += bisector(c1a, c1b, C.danger, clampM5(t / 2, 0, 1)) + (t >= 1.5 ? bisector(c2a, c2b, C.ok, clampM5((t - 1.5) / 2, 0, 1)) : "");
+      if(t >= 3.5) m += L.circle(360, 150, 7, C.path) + L.text(378, 142, "centre", {size: 13, color: C.path, weight: 700});
+      L.svg(m, "Finding the centre from two chords", 300);
+      L.readout([["Bisector of chord 1", "passes through the centre", C.danger], ["Bisector of chord 2", t >= 3.5 ? "passes through the centre" : "…", C.ok]]);
+      msg = t < 4 ? "Constructing bisectors…" : "The perpendicular bisectors of two chords cross at the <b>centre</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["mid", "Theorem 4: midpoint"], ["perp", "Theorem 5: perpendicular"], ["centre", "Finding the centre"], ["worked", "Worked example"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.perp = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 5 — Chord length and distance from the centre (§5.6)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "table", d: 3};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C.path, "chord"], [C.danger, "distance from the centre"]]);
+    L.watch({table: "Table 1 activity: chords at distances 0, 3, 4 and 5 cm in a circle of radius 5 cm.", slide: "Move the chord: its length is 2√(r² − d²).", equal: "Theorem 6: two 8 cm chords in different positions.", compare: "Theorem 8: an 8 cm chord and a 6 cm chord."}[id]);
+    if(id === "slide") sliderSetM5(L, st, [["m5d", "distance d (cm)", 0, 5, 0.5, "d"]]);
+    else L.controls("");
+    L.restart(true);
+  }
+  function chordAtDist(L, V, r, d, dir, col){ var u = [Math.cos(dir * DEG5), Math.sin(dir * DEG5)], w = [-u[1], u[0]], h = Math.sqrt(Math.max(0, r * r - d * d)), M = [u[0] * d, u[1] * d]; return segM5(L, V, [M[0] - w[0] * h, M[1] - w[1] * h], [M[0] + w[0] * h, M[1] + w[1] * h], col, 3) + segM5(L, V, [0, 0], M, C.danger, 2, "5 4") + L.circle(V(M)[0], V(M)[1], 3.5, C.danger); }
+  function draw(t){
+    var k = 26, V = viewM5(360, 150, k), r = 5, m = circM5(L, V, [0, 0], r, k, C.text) + L.circle(360, 150, 4, C.text), msg, id = st.preset;
+    if(id === "table"){
+      var rows = [[0, 90], [3, 30], [4, 200], [5, 290]], n = Math.min(4, Math.floor(t + 1e-9) + 1);
+      rows.slice(0, n).forEach(function(rw, i){ m += chordAtDist(L, V, r, rw[0], rw[1], [C.path, C.vel, C.ok, C.acc][i]); m += L.text(40, 60 + i * 30, "d = " + rw[0] + " cm → chord " + nM5(2 * Math.sqrt(r * r - rw[0] * rw[0])) + " cm", {size: 15, color: C.text, anchor: "start", mono: true}); });
+      L.svg(m, "Chords at different distances", 300);
+      L.readout([["Radius", "5 cm"], ["Rows", n + " of 4"]]);
+      msg = t < 4 ? "Filling Table 1…" : "Distances 0, 3, 4, 5 cm give chords 10, 8, 6, 0 cm: <b>the longer the chord, the closer it is to the centre</b>.";
+    } else if(id === "slide"){
+      var d = st.d, len = 2 * Math.sqrt(r * r - d * d);
+      m += chordAtDist(L, V, r, d, 60, C.path);
+      L.svg(m, "Chord length from distance", 300);
+      L.readout([["Distance d", nM5(d) + " cm", C.danger], ["Half-chord", "√(25 − " + nM5(d * d) + ") = " + nM5(len / 2) + " cm"], ["Chord", nM5(len) + " cm", C.path]]);
+      msg = "d = " + nM5(d) + " cm gives L = 2√(25 − " + nM5(d * d) + ") = <b>" + nM5(len) + " cm</b>.";
+    } else if(id === "equal"){
+      m += chordAtDist(L, V, r, 3, 70, C.path) + (t >= 1.5 ? chordAtDist(L, V, r, 3, 220, C.ok) : "");
+      L.svg(m, "Equal chords", 300);
+      L.readout([["Chord 1", "8 cm, 3 cm from the centre", C.path], ["Chord 2", t >= 1.5 ? "8 cm, 3 cm from the centre" : "…", C.ok]]);
+      msg = t < 4 ? "Comparing…" : "Both 8 cm chords are <b>3 cm from the centre</b> (Theorem 6).";
+    } else {
+      m += chordAtDist(L, V, r, 3, 60, C.path) + (t >= 1.5 ? chordAtDist(L, V, r, 4, 240, C.vel) : "");
+      L.svg(m, "A longer and a shorter chord", 300);
+      L.readout([["8 cm chord", "3 cm from the centre", C.path], ["6 cm chord", t >= 1.5 ? "4 cm from the centre" : "…", C.vel]]);
+      msg = t < 4 ? "Comparing…" : "The 8 cm chord is 3 cm away and the 6 cm chord is 4 cm away: <b>the longer chord is closer</b> (Theorem 8).";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["table", "Table 1 activity"], ["slide", "Explore: move the chord"], ["equal", "Theorem 6: equal chords"], ["compare", "Theorem 8: unequal chords"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.distance = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 6 — Angles subtended by an arc (§5.7)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "move"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C.vel, "angle at the centre"], [C.path, "angle on the circle"], [C.danger, "point off the circle"]]);
+    L.watch({move: "Theorem 9: the minor arc AB subtends 100° at the centre. Watch ∠ADB as D moves along the rest of the circle.", semicircle: "Corollary: AB is a diameter.", minor: "The major arc seen from a point E on the minor arc.", inout: "Fig. 5.25: points inside and outside the circle see AB at different angles."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var k = 26, V = viewM5(360, 150, k), r = 5, m = circM5(L, V, [0, 0], r, k, C.text), msg, id = st.preset, f = clampM5(t / 4, 0, 1);
+    var central = id === "semicircle" ? 180 : 100, A = onM5(r, 270 - central / 2), B = onM5(r, 270 + central / 2), O = [0, 0];
+    m += dotM5(L, V, A, C.text, "A", -14, 10) + dotM5(L, V, B, C.text, "B", 14, 10) + L.circle(360, 150, 4, C.text);
+    if(id === "move" || id === "semicircle"){
+      var start = 270 + central / 2 + 15, end = 270 - central / 2 + 360 - 15, Dp = onM5(r, start + (end - start) * f);
+      m += segM5(L, V, O, A, C.vel, 1.5) + segM5(L, V, O, B, C.vel, 1.5) + segM5(L, V, Dp, A, C.path, 2.5) + segM5(L, V, Dp, B, C.path, 2.5) + dotM5(L, V, Dp, C.path, "D", 0, -12);
+      var aD = angM5(Dp, A, B);
+      L.svg(m, "Angle subtended by an arc", 300);
+      L.readout([["∠ACB (centre)", central + "°", C.vel], ["∠ADB", nM5(aD, 1) + "°", C.path]]);
+      msg = t < 4 ? "Moving D…" : id === "move" ? "∠ADB stays at <b>50°</b>, half of ∠ACB = 100°, wherever D is on the rest of the circle." : "∠ADB = <b>90°</b> wherever D is on the circle: the angle in a semicircle.";
+    } else if(id === "minor"){
+      var E = onM5(r, 270 - 15 + 30 * f);
+      m += segM5(L, V, E, A, C.path, 2.5) + segM5(L, V, E, B, C.path, 2.5) + dotM5(L, V, E, C.path, "E", 0, 18) + segM5(L, V, O, A, C.vel, 1.5, "4 3") + segM5(L, V, O, B, C.vel, 1.5, "4 3");
+      L.svg(m, "Angle subtended by the major arc", 300);
+      L.readout([["Reflex ∠ACB", "260°", C.vel], ["∠AEB", nM5(angM5(E, A, B), 1) + "°", C.path]]);
+      msg = t < 4 ? "Moving E along the minor arc…" : "The major arc subtends the reflex angle 260° at the centre, so ∠AEB = ½ × 260° = <b>130°</b>.";
+    } else {
+      var Don = onM5(r, 90), Din = [0, 1.5 + 1.5 * (1 - f)], Dout = [0, 5 + 2 * f];
+      m += segM5(L, V, Don, A, C.path, 2) + segM5(L, V, Don, B, C.path, 2) + dotM5(L, V, Don, C.path, "on", 20, -4);
+      m += segM5(L, V, Din, A, C.ok, 1.5, "5 4") + segM5(L, V, Din, B, C.ok, 1.5, "5 4") + dotM5(L, V, Din, C.ok, "inside", 34, 4);
+      m += segM5(L, V, Dout, A, C.danger, 1.5, "5 4") + segM5(L, V, Dout, B, C.danger, 1.5, "5 4") + dotM5(L, V, Dout, C.danger, "outside", 36, 4);
+      L.svg(m, "Points on, inside and outside the circle", 300);
+      L.readout([["On the circle", nM5(angM5(Don, A, B), 1) + "°", C.path], ["Inside", nM5(angM5(Din, A, B), 1) + "°", C.ok], ["Outside", nM5(angM5(Dout, A, B), 1) + "°", C.danger]]);
+      msg = t < 4 ? "Comparing points…" : "Inside the circle the angle is larger and outside it is smaller; only points <b>on the circle</b> see AB at exactly 50°.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["move", "Theorem 9: moving D"], ["semicircle", "Angle in a semicircle"], ["minor", "The major arc"], ["inout", "Fig. 5.25: on, inside, outside"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.inscribed = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 7 — Cyclic quadrilaterals (§5.8)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "move"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C.path, "∠A"], [C.vel, "∠C"], [C.text, "quadrilateral"]]);
+    L.watch({move: "Theorem 11: move A along the circle and watch ∠A + ∠C.", off: "Theorem 12’s converse view: pull A off the circle.", fig526: "Exercise Set 5.6 Q3, Fig. 5.26: ∠D = 100°. Find x = ∠B.", check: "In-text exercise: can a cyclic quadrilateral have angles 80°, 110°, 100° and 70°?"}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function quad(L, V, P, names){ var m = '<polygon points="' + P.map(function(p){ return V(p).join(","); }).join(" ") + '" fill="rgba(245,158,11,0.15)" stroke="' + L.C.text + '" stroke-width="2"/>'; P.forEach(function(p, i){ var q = V(p), c = V([0, 0]), dx = q[0] - c[0], dy = q[1] - c[1], ln = Math.hypot(dx, dy) || 1; m += L.circle(q[0], q[1], 4.5, L.C.text) + L.text(q[0] + dx / ln * 16, q[1] + dy / ln * 16 + 4, names[i], {size: 14, color: L.C.text, weight: 700}); }); return m; }
+  function draw(t){
+    var k = 26, V = viewM5(360, 150, k), r = 5, m = circM5(L, V, [0, 0], r, k, C.muted), msg, id = st.preset, f = clampM5(t / 4, 0, 1);
+    if(id === "move" || id === "off"){
+      var aA = id === "move" ? 100 + 70 * f : 135, rad = id === "off" ? r * (1 + 0.35 * f) : r;
+      var A = onM5(rad, aA), B = onM5(r, 210), Cc = onM5(r, 300), D = onM5(r, 40);
+      m += quad(L, V, [A, B, Cc, D], ["A", "B", "C", "D"]);
+      var angA = angM5(A, B, D), angC = angM5(Cc, B, D);
+      L.svg(m, "A quadrilateral inscribed in a circle", 300);
+      L.readout([["∠A", nM5(angA, 1) + "°", C.path], ["∠C", nM5(angC, 1) + "°", C.vel], ["∠A + ∠C", nM5(angA + angC, 1) + "°"]]);
+      msg = t < 4 ? (id === "move" ? "Moving A along the circle…" : "Pulling A off the circle…") : id === "move" ? "∠A + ∠C = <b>180°</b> wherever A is on the circle." : "Off the circle, ∠A + ∠C = " + nM5(angA + angC, 1) + "°, not 180°: ABCD is <b>not cyclic</b>.";
+    } else if(id === "fig526"){
+      var A2 = onM5(r, 180), B2 = onM5(r, 290), C2 = onM5(r, 10), D2 = onM5(r, 90);
+      m += quad(L, V, [A2, B2, C2, D2], ["A", "B", "C", "D"]);
+      var dAng = angM5(D2, A2, C2), bAng = angM5(B2, A2, C2);
+      m += L.text(V(D2)[0], V(D2)[1] + 30, "100°", {size: 13, color: C.vel, weight: 700}) + (t >= 2 ? L.text(V(B2)[0], V(B2)[1] - 22, "x = 80°", {size: 13, color: C.path, weight: 700}) : "");
+      L.svg(m, "Fig. 5.26", 300);
+      L.readout([["∠D", "100°", C.vel], ["x = ∠B", t >= 2 ? "180° − 100° = 80°" : "…", C.path]]);
+      msg = t < 4 ? "Using opposite angles…" : "ABCD is cyclic, so ∠B + ∠D = 180° and x = 180° − 100° = <b>80°</b>.";
+    } else {
+      var rows = [["∠A + ∠C", "80° + 100° = 180°"], ["∠B + ∠D", "110° + 70° = 180°"], ["All four", "80° + 110° + 100° + 70° = 360°"]];
+      rows.forEach(function(rw, i){ if(t >= i) m += L.text(110, 60 + i * 50, rw[0] + ":  " + rw[1] + "  ✓", {size: 18, color: C.text, anchor: "start", mono: true}); });
+      if(t >= 3) m = circM5(L, V, [0, 0], r, k, C.muted) + quad(L, V, [onM5(r, 150), onM5(r, 240), onM5(r, 330), onM5(r, 60)], ["A", "B", "C", "D"]).replace(/^/, "") + rows.map(function(rw, i){ return L.text(20, 40 + i * 26, rw[0] + ": " + rw[1], {size: 13, color: C.text, anchor: "start"}); }).join("");
+      L.svg(m, "Checking a cyclic quadrilateral", 300);
+      L.readout([["Opposite pairs", "180° each", C.ok], ["Can it be drawn?", t >= 3 ? "yes" : "…", C.path]]);
+      msg = t < 4 ? "Checking opposite angles…" : "80° + 100° = 180° and 110° + 70° = 180°, so by Theorem 12 <b>it can be drawn</b> as a cyclic quadrilateral.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["move", "Theorem 11: move A"], ["off", "A off the circle"], ["fig526", "Fig. 5.26: find x"], ["check", "80°, 110°, 100°, 70°"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.cyclic = {mount: mount, draw: draw, select: select, state: st};
+})();

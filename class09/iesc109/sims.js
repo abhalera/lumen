@@ -1,786 +1,356 @@
-var App = window.App;
-window.SIMS = {};
+// iesc109 labs: Atomic Foundations of Matter. Balance readings in the activities are illustrative; example values are from the textbook.
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function clamp9(x, a, b){ return Math.max(a, Math.min(b, x)); }
+var SUB9 = "₀₁₂₃₄₅₆₇₈₉";
+function sub9(n){ return String(n).split("").map(function(d){ return SUB9[+d]; }).join(""); }
+function gcd9(a, b){ return b ? gcd9(b, a % b) : a; }
 
-function setActivePreset(btn){
-  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-  if(btn) btn.classList.add("active");
-}
-
-// =========================================================================
-// 1. SIMULATION 1: Law of Conservation of Mass (lab_mass_conservation)
-// =========================================================================
+// Lab 1 — Conservation of mass (Activities 9.1–9.3, Example 9.1)
 (function(){
-  var simState = {
-    sealed: true,
-    reacted: false
-  };
-
-  function mount(lesson){
-    simState.sealed = true;
-    simState.reacted = false;
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Reactants (Na₂CO₃ + CH₃COOH)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Sealed Rubber Stopper</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Escaping Gas (if Unsealed)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p1-sealed">Sealed Flask (Mass Conserved: 11.30 g)</button>' +
-      '<button class="preset-btn" id="p1-open">Unsealed Flask (CO₂ Escapes: 9.10 g!)</button>' +
-      '<button class="preset-btn" id="p1-precip">Precipitation: BaCl₂ + Na₂SO₄ &rarr; BaSO₄(s)</button>';
-
-    document.getElementById("p1-sealed").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.sealed = true;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Sealed flask: 5.3 g Na₂CO₃ + 6.0 g acid react. All CO₂ gas is trapped, maintaining exact mass = 11.30 g!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p1-open").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.sealed = false;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Unsealed flask: 2.2 g of CO₂ gas bubbles escape into the room. Apparent balance reading drops to 9.10 g!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p1-precip").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.sealed = true;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Precipitation: Liquid mixing produces solid white BaSO₄. Zero gas produced, mass remains perfectly constant!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  var L = LAB, C = L.C;
+  var st = {preset: "salt"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.05, speed: 0.6});
+    L.legend(id === "ex91" ? [[C.vel, "reactants"], [C.path, "products"]] : [[C.path, "balance reading"]]);
+    L.watch({salt: "Activity 9.1: about 50 g of water and a spatula of salt in a beaker on a tared balance (55.0 g is illustrative).", open: "Activity 9.2, set-up 1: baking soda tipped into vinegar in an open flask (readings illustrative).", closed: "Activity 9.2, set-up 2: the balloon of baking soda is tied over the flask before mixing (readings illustrative).", precipitate: "Activity 9.3: sodium sulfate solution (A) and barium chloride solution (B) are mixed (readings illustrative).", ex91: "Example 9.1: calcium carbonate and hydrochloric acid react in a closed container."}[id]);
+    L.controls(""); L.restart(true);
   }
-
+  function balance(m, reading){ return m + L.rect(170, 240, 380, 40, "#334155", ' rx="6"') + L.rect(300, 250, 120, 24, "#0f172a", ' rx="3"') + L.text(360, 268, reading, {size: 16, color: "#4ade80", weight: 700, mono: true}); }
+  function flask(x, y, fill, level){ return '<path d="M' + (x - 12) + ' ' + (y - 110) + ' L' + (x - 12) + ' ' + (y - 70) + ' L' + (x - 50) + ' ' + y + ' L' + (x + 50) + ' ' + y + ' L' + (x + 12) + ' ' + (y - 70) + ' L' + (x + 12) + ' ' + (y - 110) + '" fill="none" stroke="#cbd5e1" stroke-width="2.5"/>' + '<path d="M' + (x - 50 + level * 0.54) + ' ' + (y - level) + ' L' + (x + 50 - level * 0.54) + ' ' + (y - level) + ' L' + (x + 50) + ' ' + y + ' L' + (x - 50) + ' ' + y + ' Z" fill="' + fill + '" opacity="0.7"/>'; }
   function draw(t){
-    var progress = Math.min(1.0, t / 3.0);
-    var isReacted = progress > 0.4;
-    var reading = simState.sealed ? 11.30 : (11.30 - (isReacted ? progress * 2.20 : 0));
-
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    // Digital Balance Base
-    svg += '<rect x="220" y="210" width="280" height="45" rx="6" fill="#1e293b" stroke="#64748b" stroke-width="2"/>';
-    svg += '<rect x="300" y="220" width="120" height="25" rx="3" fill="#020617"/>';
-    svg += '<text x="360" y="238" fill="#22c55e" font-family="monospace" font-size="16" font-weight="bold" text-anchor="middle">' + reading.toFixed(2) + ' g</text>';
-
-    // Conical Flask Outline
-    svg += '<polygon points="320,60 400,60 460,205 260,205" fill="#0284c7" fill-opacity="0.08" stroke="#38bdf8" stroke-width="2.5"/>';
-
-    // Stopper if sealed
-    if(simState.sealed){
-      svg += '<polygon points="315,50 405,50 395,68 325,68" fill="#10b981" stroke="#059669" stroke-width="2"/>';
-      svg += '<text x="360" y="42" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">Airtight Stopper (Sealed System)</text>';
+    var m = "", msg, f = clamp9(t, 0, 1), i;
+    if(st.preset === "salt"){
+      m += L.rect(310, 140, 100, 100, "none", ' stroke="#cbd5e1" stroke-width="2.5"') + L.rect(312, 170, 96, 68, "#38bdf8", ' opacity="0.45"');
+      var left = Math.round(12 * (1 - clamp9((t - 0.3) / 1.5, 0, 1)));
+      for(i = 0; i < left; i++) m += L.rect(322 + (i * 7) % 76, 226 - (i % 3) * 5, 5, 5, "#f8fafc");
+      m = balance(m, "55.0 g");
+      L.svg(m, "Salt dissolving on a balance", 300);
+      L.readout([["Water + salt, before", "55.0 g", C.path], ["Solution, after", t >= 2 ? "55.0 g" : "…", C.path], ["Change in mass", t >= 2 ? "none" : "…"]]);
+      msg = t < 2 ? "Dissolving…" : "<b>Activity 9.1:</b> the reading stays at 55.0 g. Dissolving is a physical change, and the <b>mass does not change</b>.";
+    } else if(st.preset === "open" || st.preset === "closed"){
+      var open = st.preset === "open", reading = open ? 22.0 - 1.0 * clamp9((t - 0.5) / 1.5, 0, 1) : 22.0;
+      m += flask(360, 240, "#fde68a", 30);
+      if(open){ m += '<ellipse cx="' + (460) + '" cy="225" rx="' + (22 * (1 - clamp9(t / 0.5, 0, 1)) + 1) + '" ry="14" fill="#ef4444" opacity="' + (t < 0.5 ? 0.9 : 0.25) + '"/>'; for(i = 0; i < 10 && t > 0.5; i++){ var ph = ((t - 0.5) * 0.8 + i / 10) % 1; m += L.circle(352 + (i * 5) % 18, 200 - ph * 170, 4, "#e2e8f0"); } }
+      else { var inflate = clamp9((t - 0.5) / 1.2, 0, 1), rr = 18 + 32 * inflate; m += '<ellipse cx="360" cy="' + (130 - rr) + '" rx="' + rr + '" ry="' + (rr * 1.15) + '" fill="#ef4444" opacity="0.85"/>'; for(i = 0; i < 6 && t > 0.5; i++){ var q = ((t - 0.5) * 0.8 + i / 6) % 1; m += L.circle(352 + (i * 7) % 16, 225 - q * 90, 3.5, "#e2e8f0"); } }
+      m = balance(m, reading.toFixed(1) + " g");
+      L.svg(m, open ? "Open flask reaction" : "Flask with balloon", 300);
+      L.readout([["Before mixing", "22.0 g", C.path], ["After the reaction", t >= 2 ? reading.toFixed(1) + " g" : "…", C.path], ["Carbon dioxide", open ? "escapes into the air" : "trapped in the balloon"]]);
+      msg = t < 2 ? "Reacting…" : open ? "<b>Set-up 1:</b> the reading fell from 22.0 g to 21.0 g because the <b>carbon dioxide escaped</b> into the air." : "<b>Set-up 2:</b> the balloon trapped the carbon dioxide, so the reading stayed at 22.0 g: <b>mass is conserved</b>.";
+    } else if(st.preset === "precipitate"){
+      var pour = clamp9(t / 0.8, 0, 1);
+      m += flask(280, 240, "#bae6fd", 30 + 20 * pour) + flask(440, 240, "#bae6fd", 30 * (1 - pour) + 1) + L.text(280, 120, "A", {size: 14, color: C.text, weight: 700}) + L.text(440, 120, "B", {size: 14, color: C.text, weight: 700});
+      var ppt = Math.round(24 * clamp9((t - 0.8) / 1, 0, 1));
+      for(i = 0; i < ppt; i++) m += L.circle(248 + (i * 13) % 64, 232 - (i % 4) * 9, 3.2, "#f8fafc");
+      m = balance(m, "20.0 g");
+      L.svg(m, "Mixing sodium sulfate and barium chloride", 300);
+      L.readout([["Before mixing", "20.0 g", C.path], ["After mixing", t >= 2 ? "20.0 g" : "…", C.path], ["Observed", t > 0.8 ? "white precipitate" : "clear solutions"]]);
+      msg = t < 2 ? "Mixing…" : "<b>Activity 9.3:</b> a white precipitate of <b>barium sulfate</b> forms (with sodium chloride), and the total stays at 20.0 g.";
     } else {
-      svg += '<text x="360" y="42" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">Open Mouth (Gas Escapes!)</text>';
-      if(isReacted){
-        // Escaping bubbles
-        for(var b = 0; b < 6; b++){
-          var by = 50 - b * 8 - (t * 15 % 30);
-          var bx = 350 + (b % 2 === 0 ? 10 : -10);
-          svg += '<circle cx="' + bx + '" cy="' + by + '" r="4" fill="#fca5a5" opacity="0.7"/>';
-        }
-      }
+      var X = function(g){ return g * 70; }, ra = [["calcium carbonate", 4.0, "#60a5fa"], ["hydrochloric acid", 2.92, "#93c5fd"]], pr = [["carbon dioxide", 1.76, "#fb923c"], ["water", 0.72, "#fdba74"], ["calcium chloride", 4.44, "#f59e0b"]];
+      var x = 80;
+      ra.forEach(function(r){ var w = X(r[1]) * (1 - f); m += L.rect(x, 70, w, 40, r[2]) + (w > 60 ? L.text(x + w / 2, 95, r[1] + " g", {size: 12, color: "#0f172a", weight: 700}) : ""); x += w; });
+      m += L.text(70, 95, "reactants", {size: 13, color: C.vel, anchor: "end"});
+      x = 80;
+      pr.forEach(function(r){ var w = X(r[1]) * f; m += L.rect(x, 170, w, 40, r[2]) + (w > 40 ? L.text(x + w / 2, 195, r[1] + " g", {size: 12, color: "#0f172a", weight: 700}) : ""); x += w; });
+      m += L.text(70, 195, "products", {size: 13, color: C.path, anchor: "end"}) + L.text(80 + X(6.92) + 10, 95, (6.92 * (1 - f)).toFixed(2) + " g", {size: 14, color: C.vel, anchor: "start", weight: 700}) + L.text(80 + X(6.92) + 10, 195, (6.92 * f).toFixed(2) + " g", {size: 14, color: C.path, anchor: "start", weight: 700});
+      L.svg(m, "Reactant and product masses", 260);
+      L.readout([["Reactants", "4.0 + 2.92 = 6.92 g", C.vel], ["Products", "1.76 + 0.72 + 4.44 = 6.92 g", C.path], ["Difference", "0 g"]]);
+      msg = t < 2 ? "Reacting…" : "<b>Example 9.1:</b> 4.0 g + 2.92 g = 6.92 g of reactants and 1.76 g + 0.72 g + 4.44 g = <b>6.92 g</b> of products: the law is obeyed.";
     }
-
-    // Reaction liquid at bottom
-    var liqColor = isReacted ? '#0284c7' : '#38bdf8';
-    svg += '<polygon points="275,170 445,170 455,203 265,203" fill="' + liqColor + '" fill-opacity="0.5"/>';
-
-    // Bubbles inside liquid if reaction occurring
-    if(progress > 0.1 && progress < 0.9){
-      for(var i = 0; i < 8; i++){
-        var bubbleX = 290 + i * 18;
-        var bubbleY = 195 - (i * 3 + t * 20) % 25;
-        svg += '<circle cx="' + bubbleX + '" cy="' + bubbleY + '" r="3" fill="#fff" opacity="0.8"/>';
-      }
-      svg += '<text x="360" y="155" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">Brisk Effervescence: CO₂ Gas Formed!</text>';
-    }
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>System: <strong>' + (simState.sealed ? 'Closed (Sealed)' : 'Open (Unsealed)') + '</strong></span>' +
-      '<span>Reactant Mass: <strong>11.30 g</strong></span>' +
-      '<span>Current Balance: <strong style="color:' + (simState.sealed ? '#10b981' : '#ef4444') + ';">' + reading.toFixed(2) + ' g</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      simState.sealed ? 
-      'Law of Conservation of Mass strictly verified! Total Mass of Reactants (11.30 g) = Total Mass of Products (11.30 g).' :
-      'Apparent mass decrease is due to escaping CO₂ gas in an open system. Mass is strictly conserved in universe!';
+    L.verdict(msg);
   }
-
-  window.SIMS.lab_mass_conservation = { mount: mount, draw: draw };
+  function mount(){ L.presets([["salt", "Activity 9.1: salt in water"], ["open", "Activity 9.2: open flask"], ["closed", "Activity 9.2: with a balloon"], ["precipitate", "Activity 9.3: precipitate"], ["ex91", "Example 9.1"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.massLab = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 2. SIMULATION 2: Constant Proportions & Dalton (lab_constant_proportions)
-// =========================================================================
+// Lab 2 — Constant proportions and Dalton's atoms (Section 9.2–9.3, Example 9.3, Pause and Ponder 6)
 (function(){
-  var simState = {
-    mH: 3.0,
-    mO: 24.0
-  };
-
-  function mount(lesson){
-    simState.mH = 3.0; simState.mO = 24.0;
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Hydrogen Mass (1 Part)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Oxygen Mass (8 Parts)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Water Formed (H:O = 1:8)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p2-exact">Exact Ratio: 3.0 g H + 24.0 g O &rarr; 27.0 g H₂O</button>' +
-      '<button class="preset-btn" id="p2-excess-h">Excess Hydrogen: 5.0 g H + 24.0 g O (2.0 g H left!)</button>' +
-      '<button class="preset-btn" id="p2-ammonia">Ammonia Ratio: 14.0 g N + 3.0 g H &rarr; 17.0 g NH₃</button>';
-
-    document.getElementById("p2-exact").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mH = 3.0; simState.mO = 24.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Exact 1:8 stoichiometric mass ratio! 3.0 g H combines with 24.0 g O to yield 27.0 g water with zero excess.";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p2-excess-h").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mH = 5.0; simState.mO = 24.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Limiting reactant: 24.0 g O can react with only 3.0 g H. 2.0 g of excess hydrogen remains completely unreacted!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p2-ammonia").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mH = 3.0; simState.mO = 14.0; // N=14, H=3
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Ammonia (NH₃) constant mass ratio: Nitrogen and Hydrogen combine strictly in the 14:3 mass ratio!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  var L = LAB, C = L.C;
+  var st = {preset: "water"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.05, speed: 0.6});
+    L.legend(id === "rearrange" ? [[C.vel, "hydrogen atoms"], [C.danger, "oxygen atoms"]] : [[C.vel, "first element"], [C.path, "second element"]]);
+    L.watch({water: "Section 9.2: 9 g of purified water from a river, a borewell and the ocean is decomposed.", ex93: "Example 9.3: sodium and chlorine combine in the ratio 23 : 35.5.", copper: "Pause and Ponder 6: students X and Y each prepare an oxide of copper.", rearrange: "Dalton's theory: two hydrogen molecules and one oxygen molecule rearrange into two water molecules."}[id]);
+    L.controls(""); L.restart(true);
   }
-
   function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
-
-    var maxO = simState.mH * 8;
-    var usedH, usedO, excessH, excessO, water;
-
-    if(simState.mO === 14.0){ // Ammonia mode
-      usedH = 3.0; usedO = 14.0; excessH = 0; excessO = 0; water = 17.0;
-    } else {
-      if(simState.mO >= maxO){
-        usedH = simState.mH; usedO = maxO; excessH = 0; excessO = simState.mO - maxO;
-      } else {
-        usedO = simState.mO; usedH = simState.mO / 8; excessH = simState.mH - usedH; excessO = 0;
-      }
-      water = usedH + usedO;
-    }
-
-    // Reaction Chamber Graphic
-    svg += '<rect x="60" y="50" width="260" height="180" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>';
-    svg += '<text x="190" y="80" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">Reactant Gas Mixture</text>';
-    svg += '<text x="190" y="115" fill="#93c5fd" font-size="13" text-anchor="middle">Hydrogen (H₂): ' + simState.mH.toFixed(1) + ' g</text>';
-    svg += '<text x="190" y="145" fill="#fca5a5" font-size="13" text-anchor="middle">' + (simState.mO===14.0?'Nitrogen (N₂)':'Oxygen (O₂)') + ': ' + simState.mO.toFixed(1) + ' g</text>';
-    if(excessH > 0){
-      svg += '<text x="190" y="185" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">Excess H₂ Unreacted: ' + excessH.toFixed(1) + ' g</text>';
-    }
-
-    // Arrow
-    svg += '<line x1="330" y1="140" x2="410" y2="140" stroke="#10b981" stroke-width="4"/>';
-    svg += '<polygon points="410,132 425,140 410,148" fill="#10b981"/>';
-    svg += '<text x="370" y="125" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">Combines 1:8</text>';
-
-    // Product Chamber Graphic
-    svg += '<rect x="435" y="50" width="240" height="180" rx="10" fill="#1e293b" stroke="#10b981" stroke-width="2"/>';
-    svg += '<text x="555" y="80" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">' + (simState.mO===14.0?'Ammonia Formed':'Pure Water Formed') + '</text>';
-    svg += '<text x="555" y="125" fill="#f8fafc" font-size="28" font-weight="bold" text-anchor="middle">' + water.toFixed(1) + ' g</text>';
-    svg += '<text x="555" y="165" fill="#94a3b8" font-size="12" text-anchor="middle">' + (simState.mO===14.0?'14 g N : 3 g H fixed ratio':'1 g H : 8 g O fixed ratio') + '</text>';
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>Product Mass: <strong style="color:#10b981;">' + water.toFixed(1) + ' g</strong></span>' +
-      '<span>H:O Combining Ratio: <strong>1 : 8 by mass</strong></span>' +
-      '<span>Unreacted Gas: <strong style="color:' + (excessH>0?'#fbbf24':'#94a3b8') + ';">' + excessH.toFixed(1) + ' g</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      'Proust Law of Constant Proportions: Elements always combine in fixed definite mass ratios regardless of source or excess!';
-  }
-
-  window.SIMS.lab_constant_proportions = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 3. SIMULATION 3: Covalent Bonding & Octet Sharing (lab_covalent_bonding)
-// =========================================================================
-(function(){
-  var simState = {
-    mol: "O2" // "H2", "O2", "N2", "CH4"
-  };
-
-  function mount(lesson){
-    simState.mol = "O2";
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Shared Bonding Electrons</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Non-Bonding Lone Pairs</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Central Nuclei</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p3-o2">Oxygen (O=O Double Bond: 4 Shared e⁻)</button>' +
-      '<button class="preset-btn" id="p3-n2">Nitrogen (N&equiv;N Triple Bond: 6 Shared e⁻)</button>' +
-      '<button class="preset-btn" id="p3-h2">Hydrogen (H&minus;H Single Bond: 2 Shared e⁻)</button>';
-
-    document.getElementById("p3-o2").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mol = "O2";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Oxygen: 6 valence electrons each. Sharing 2 pairs (4 electrons) gives both atoms a complete stable octet: :O=O:!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p3-n2").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mol = "N2";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Nitrogen: 5 valence electrons each. Sharing 3 pairs (6 electrons) forms an immensely strong triple bond: :N≡N:!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p3-h2").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mol = "H2";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Hydrogen: Sharing 1 pair of electrons fulfills the stable helium duplet (2 electrons) for each hydrogen atom.";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
-  }
-
-  function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
-
-    var c1x = 280, c2x = 440, cy = 140;
-
-    if(simState.mol === "O2"){
-      // Overlapping Shells for O=O
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="90" fill="#38bdf8" fill-opacity="0.1" stroke="#38bdf8" stroke-width="2"/>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="90" fill="#38bdf8" fill-opacity="0.1" stroke="#38bdf8" stroke-width="2"/>';
-
-      // Nuclei
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="22" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>';
-      svg += '<text x="' + c1x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">O (8p)</text>';
-
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="22" fill="#ef4444" stroke="#fca5a5" stroke-width="2"/>';
-      svg += '<text x="' + c2x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">O (8p)</text>';
-
-      // 4 Shared Electrons in intersection
-      var sharedPts = [{x: 350, y: 115}, {x: 370, y: 115}, {x: 350, y: 165}, {x: 370, y: 165}];
-      sharedPts.forEach(function(p){
-        svg += '<circle cx="' + p.x + '" cy="' + p.y + '" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>';
+    var m = "", msg, f = clamp9(t, 0, 1);
+    if(st.preset === "water"){
+      ["River", "Borewell", "Ocean"].forEach(function(s, i){
+        var y = 50 + i * 80;
+        m += L.text(120, y + 22, s + " (9 g)", {size: 13, color: C.text, anchor: "end"}) + L.rect(140, y, 9 * 50 * (1 - f), 34, "#38bdf8", ' opacity="0.4"');
+        m += L.rect(140, y, 50 * f, 34, C.vel) + L.rect(140 + 50 * f + 4, y, 400 * f, 34, C.path);
+        if(f > 0.6) m += L.text(165, y + 22, "1 g", {size: 12, color: "#0f172a", weight: 700}) + L.text(140 + 50 + 4 + 200, y + 22, "8 g oxygen", {size: 12, color: "#0f172a", weight: 700});
       });
-
-      // Lone pairs on atom 1
-      svg += '<circle cx="210" cy="110" r="5.5" fill="#fbbf24"/><circle cx="210" cy="130" r="5.5" fill="#fbbf24"/>';
-      svg += '<circle cx="210" cy="150" r="5.5" fill="#fbbf24"/><circle cx="210" cy="170" r="5.5" fill="#fbbf24"/>';
-
-      // Lone pairs on atom 2
-      svg += '<circle cx="510" cy="110" r="5.5" fill="#fbbf24"/><circle cx="510" cy="130" r="5.5" fill="#fbbf24"/>';
-      svg += '<circle cx="510" cy="150" r="5.5" fill="#fbbf24"/><circle cx="510" cy="170" r="5.5" fill="#fbbf24"/>';
-
-      svg += '<text x="360" y="45" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">Oxygen Molecule (O₂): Double Covalent Bond (O=O)</text>';
-      svg += '<text x="360" y="255" fill="#94a3b8" font-size="12" text-anchor="middle">4 shared electrons in overlap + 4 lone electrons each = 8 valence electrons (Octet achieved!)</text>';
-    } else if(simState.mol === "N2"){
-      // N=N Triple bond
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="90" fill="#a855f7" fill-opacity="0.1" stroke="#a855f7" stroke-width="2"/>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="90" fill="#a855f7" fill-opacity="0.1" stroke="#a855f7" stroke-width="2"/>';
-
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="22" fill="#ef4444"/><text x="' + c1x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">N (7p)</text>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="22" fill="#ef4444"/><text x="' + c2x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">N (7p)</text>';
-
-      // 6 Shared Electrons
-      var nShared = [{x:350, y:110},{x:370, y:110},{x:350, y:140},{x:370, y:140},{x:350, y:170},{x:370, y:170}];
-      nShared.forEach(function(p){
-        svg += '<circle cx="' + p.x + '" cy="' + p.y + '" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>';
+      L.svg(m, "Decomposing water samples", 270);
+      L.readout([["River", "1 g H : 8 g O", C.vel], ["Borewell", "1 g H : 8 g O", C.vel], ["Ocean", "1 g H : 8 g O", C.vel]]);
+      msg = t < 2 ? "Decomposing…" : "Every sample gives 1 g of hydrogen and 8 g of oxygen for each 9 g of water: always <b>1 : 8</b>.";
+    } else if(st.preset === "ex93"){
+      var S = 4.2;
+      m += L.text(130, 82, "sodium", {size: 13, color: C.vel, anchor: "end"}) + L.rect(140, 60, 46 * S, 34, C.vel) + L.text(140 + 46 * S / 2, 82, "46 g", {size: 13, color: "#0f172a", weight: 700});
+      m += L.text(130, 142, "chlorine", {size: 13, color: C.path, anchor: "end"}) + L.rect(140, 120, 71 * S * f, 34, C.path) + L.text(150 + 71 * S * f, 142, (71 * f).toFixed(1) + " g", {size: 13, color: C.path, anchor: "start", weight: 700});
+      m += L.text(130, 212, "sodium chloride", {size: 13, color: C.text, anchor: "end"}) + L.rect(140, 190, 46 * S * f, 34, C.vel, ' opacity="0.8"') + L.rect(140 + 46 * S * f, 190, 71 * S * f, 34, C.path, ' opacity="0.8"') + L.text(150 + 117 * S * f, 212, (117 * f).toFixed(0) + " g", {size: 13, color: C.text, anchor: "start", weight: 700});
+      L.svg(m, "Sodium and chlorine masses", 250);
+      L.readout([["Ratio Na : Cl", "23 : 35.5"], ["Chlorine for 46 g of sodium", "(35.5 ÷ 23) × 46 = 71 g", C.path], ["Sodium chloride formed", "46 + 71 = 117 g"]]);
+      msg = t < 2 ? "Combining…" : "<b>Example 9.3:</b> (35.5 ÷ 23) × 46 g = <b>71 g</b> of chlorine, forming 117 g of sodium chloride.";
+    } else if(st.preset === "copper"){
+      [["Student X", 4, 1], ["Student Y", 8, 2]].forEach(function(s, i){
+        var y = 60 + i * 100, S = 40;
+        m += L.text(130, y + 22, s[0], {size: 14, color: C.text, anchor: "end"}) + L.rect(140, y, s[1] * S * f, 34, "#b45309") + L.rect(144 + s[1] * S * f, y, s[2] * S * f, 34, C.danger);
+        m += L.text(140, y + 56, s[1] + " g copper : " + s[2] + " g oxygen = " + (s[1] / gcd9(s[1], s[2])) + " : " + (s[2] / gcd9(s[1], s[2])), {size: 13, color: C.muted, anchor: "start"});
       });
-
-      // 1 Lone pair each
-      svg += '<circle cx="210" cy="130" r="5.5" fill="#fbbf24"/><circle cx="210" cy="150" r="5.5" fill="#fbbf24"/>';
-      svg += '<circle cx="510" cy="130" r="5.5" fill="#fbbf24"/><circle cx="510" cy="150" r="5.5" fill="#fbbf24"/>';
-
-      svg += '<text x="360" y="45" fill="#a855f7" font-size="16" font-weight="bold" text-anchor="middle">Nitrogen Molecule (N₂): Triple Covalent Bond (N&equiv;N)</text>';
-      svg += '<text x="360" y="255" fill="#94a3b8" font-size="12" text-anchor="middle">6 shared electrons + 2 lone electrons = 8 valence electrons per atom (945 kJ/mol bond strength)</text>';
+      L.svg(m, "Two copper oxide samples", 270);
+      L.readout([["Student X", "4 : 1"], ["Student Y", "8 : 2 = 4 : 1"], ["Same compound?", "yes, same ratio", C.ok]]);
+      msg = t < 2 ? "Comparing…" : "<b>Pause and Ponder 6:</b> 4 : 1 and 8 : 2 are the <b>same ratio</b>, so both results support the Law of Constant Proportions.";
     } else {
-      // H-H Single bond
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="80" fill="#10b981" fill-opacity="0.1" stroke="#10b981" stroke-width="2"/>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="80" fill="#10b981" fill-opacity="0.1" stroke="#10b981" stroke-width="2"/>';
-
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="20" fill="#ef4444"/><text x="' + c1x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">H (1p)</text>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="20" fill="#ef4444"/><text x="' + c2x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">H (1p)</text>';
-
-      svg += '<circle cx="350" cy="140" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>';
-      svg += '<circle cx="370" cy="140" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>';
-
-      svg += '<text x="360" y="45" fill="#10b981" font-size="16" font-weight="bold" text-anchor="middle">Hydrogen Molecule (H₂): Single Covalent Bond (H&minus;H)</text>';
-      svg += '<text x="360" y="255" fill="#94a3b8" font-size="12" text-anchor="middle">1 shared pair (2 electrons) fulfills the stable Helium duplet for both atoms</text>';
+      var before = [[120, 100], [150, 100], [120, 200], [150, 200], [250, 150], [280, 150]], after = [[470, 125], [530, 125], [470, 235], [530, 235], [500, 100], [500, 210]];
+      if(f === 0) m += L.line(120, 100, 150, 100, "#cbd5e1", 4) + L.line(120, 200, 150, 200, "#cbd5e1", 4) + L.line(250, 150, 280, 150, "#cbd5e1", 4);
+      if(f === 1) m += L.line(470, 125, 500, 100, "#cbd5e1", 4) + L.line(530, 125, 500, 100, "#cbd5e1", 4) + L.line(470, 235, 500, 210, "#cbd5e1", 4) + L.line(530, 235, 500, 210, "#cbd5e1", 4);
+      before.forEach(function(b, i){ var x = b[0] + (after[i][0] - b[0]) * f, y = b[1] + (after[i][1] - b[1]) * f, O = i >= 4; m += L.circle(x, y, O ? 17 : 12, O ? C.danger : C.vel) + L.text(x, y + 5, O ? "O" : "H", {size: 12, color: "#fff", weight: 700}); });
+      m += L.text(200, 270, "2 H₂ + O₂", {size: 15, color: C.text}) + L.text(500, 285, "2 H₂O", {size: 15, color: C.text}) + L.arrow(320, 160, 410, 160, C.faint, 3);
+      L.svg(m, "Atoms rearranging into water", 300);
+      L.readout([["Before", "4 H atoms, 2 O atoms", C.vel], ["After", "4 H atoms, 2 O atoms", C.vel], ["Atoms created or destroyed", "none"]]);
+      msg = t < 2 ? "Rearranging…" : "Atoms only rearrange: <b>4 H and 2 O</b> before and after. So mass is conserved, and every water molecule has the same make-up (Dalton's postulates).";
     }
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>Molecule: <strong>' + simState.mol + '</strong></span>' +
-      '<span>Bond Type: <strong style="color:#38bdf8;">' + (simState.mol==='H2'?'Single Bond (2 e⁻)':(simState.mol==='O2'?'Double Bond (4 e⁻)':'Triple Bond (6 e⁻)')) + '</strong></span>' +
-      '<span>Octet Status: <strong style="color:#10b981;">Fully Satisfied</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      'Covalent bonding enables non-metals to achieve noble gas electron configurations by sharing electron pairs!';
+    L.verdict(msg);
   }
-
-  window.SIMS.lab_covalent_bonding = { mount: mount, draw: draw };
+  function mount(){ L.presets([["water", "Water from three sources"], ["ex93", "Example 9.3: NaCl"], ["copper", "Pause and Ponder 6: copper oxide"], ["rearrange", "Dalton: atoms rearrange"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.proportions = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 4. SIMULATION 4: Ionic Bonding & Electron Transfer (lab_ionic_bonding)
-// =========================================================================
+// Lab 3 — Covalent bonds (Figs. 9.6–9.10, Pause and Ponder 8)
 (function(){
-  var simState = {
-    type: "NaCl" // "NaCl" or "MgO"
+  var L = LAB, C = L.C;
+  var st = {preset: "h2"};
+  var MOL = {
+    h2: {atoms: [["H", 1, 40, 250, 150, 330, 150], ["H", 1, 40, 470, 150, 390, 150]], bonds: [[0, 1, 1]], name: "H—H", fig: "<b>Fig. 9.6:</b> each hydrogen shares one electron, and the shared pair gives both a full K-shell. Single bond: <b>H—H</b>.", each: "2 (full K-shell)"},
+    cl2: {atoms: [["Cl", 7, 60, 200, 150, 315, 150], ["Cl", 7, 60, 520, 150, 405, 150]], bonds: [[0, 1, 1]], name: "Cl—Cl", fig: "<b>Fig. 9.7:</b> each chlorine shares one electron to complete its octet: <b>Cl—Cl</b>.", each: "8 (octet)"},
+    o2: {atoms: [["O", 6, 60, 200, 150, 315, 150], ["O", 6, 60, 520, 150, 405, 150]], bonds: [[0, 1, 2]], name: "O=O", fig: "<b>Fig. 9.8:</b> each oxygen shares two electrons: two shared pairs make a double bond, <b>O=O</b>.", each: "8 (octet)"},
+    hcl: {atoms: [["H", 1, 40, 230, 150, 330, 150], ["Cl", 7, 60, 520, 150, 410, 150]], bonds: [[0, 1, 1]], name: "H—Cl", fig: "<b>Fig. 9.9:</b> hydrogen and chlorine each need one electron, so they share a pair: <b>H—Cl</b>.", each: "H 2, Cl 8"},
+    h2o: {atoms: [["O", 6, 60, 360, 120, 360, 120], ["H", 1, 40, 170, 250, 297, 190], ["H", 1, 40, 550, 250, 423, 190]], bonds: [[0, 1, 1], [0, 2, 1]], name: "H—O—H", fig: "<b>Fig. 9.10:</b> oxygen shares one pair with each of two hydrogen atoms: <b>H—O—H</b>, the water molecule H₂O.", each: "O 8, H 2"},
+    n2: {atoms: [["N", 5, 60, 200, 150, 315, 150], ["N", 5, 60, 520, 150, 405, 150]], bonds: [[0, 1, 3]], name: "N≡N", fig: "<b>Pause and Ponder 8:</b> each nitrogen shares three electrons: three shared pairs make a triple bond, <b>N≡N</b>.", each: "8 (octet)"}
   };
-
-  function mount(lesson){
-    simState.type = "NaCl";
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span><span>Metal Cation (Na⁺ / Mg²⁺)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Non-Metal Anion (Cl⁻ / O²⁻)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Transferred Electron</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p4-nacl">Sodium Chloride: Na &rarr; Na⁺ + e⁻ to Cl (NaCl)</button>' +
-      '<button class="preset-btn" id="p4-mgo">Magnesium Oxide: Mg &rarr; Mg²⁺ + 2e⁻ to O (MgO)</button>';
-
-    document.getElementById("p4-nacl").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.type = "NaCl";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Sodium (2,8,1) transfers 1 electron to Chlorine (2,8,7), producing Na⁺ (2,8) and Cl⁻ (2,8,8) ionic crystal!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p4-mgo").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.type = "MgO";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Magnesium (2,8,2) transfers 2 electrons to Oxygen (2,6), creating highly charged Mg²⁺ and O²⁻ ions!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 1.5, step: 0.05, speed: 0.6});
+    L.legend([[C.vel, "electrons of the first atom"], [C.path, "electrons of the other atom(s)"]]);
+    L.watch({h2: "Fig. 9.6: two hydrogen atoms (1 electron each).", cl2: "Fig. 9.7: two chlorine atoms (7 valence electrons each).", o2: "Fig. 9.8: two oxygen atoms (6 valence electrons each).", hcl: "Fig. 9.9: a hydrogen atom and a chlorine atom.", h2o: "Fig. 9.10: one oxygen atom and two hydrogen atoms.", n2: "Pause and Ponder 8: two nitrogen atoms (5 valence electrons each)."}[id] + " Only the valence shell is drawn.");
+    L.controls(""); L.restart(true);
   }
-
   function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
+    var M = MOL[st.preset], f = clamp9(t, 0, 1), m = "", pos = M.atoms.map(function(a){ return [a[3] + (a[5] - a[3]) * f, a[4] + (a[6] - a[4]) * f]; });
+    M.atoms.forEach(function(a, i){
+      var p = pos[i], dirs = [], shared = 0, col = i === 0 ? C.vel : C.path;
+      M.bonds.forEach(function(b){ if(b[0] === i || b[1] === i){ var o = pos[b[0] === i ? b[1] : b[0]]; dirs.push([Math.atan2(o[1] - p[1], o[0] - p[0]), b[2]]); shared += b[2]; } });
+      m += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + a[2] + '" fill="none" stroke="#64748b" stroke-width="2"/>' + L.circle(p[0], p[1], 16, "#1e293b") + L.text(p[0], p[1] + 5, a[0], {size: 14, color: C.text, weight: 700});
+      var sx = 0, sy = 0;
+      dirs.forEach(function(d){ sx += Math.cos(d[0]); sy += Math.sin(d[0]); for(var k = 0; k < d[1]; k++){ var ang = d[0] + (k - (d[1] - 1) / 2) * 0.32; m += L.circle(p[0] + a[2] * Math.cos(ang), p[1] + a[2] * Math.sin(ang), 5.5, col); } });
+      var lone = a[1] - shared, base = Math.atan2(-sy, -sx);
+      for(var j = 0; j < lone; j++){ var an = base + (j - (lone - 1) / 2) * 0.55; m += L.circle(p[0] + a[2] * Math.cos(an), p[1] + a[2] * Math.sin(an), 5.5, col); }
+    });
+    var pairs = M.bonds.reduce(function(s, b){ return s + b[2]; }, 0);
+    m += L.text(360, 285, f >= 1 ? M.name : "", {size: 22, color: C.text, weight: 700});
+    L.svg(m, "Covalent bond: " + M.name, 300);
+    L.readout([["Shared pairs", String(pairs)], ["Bond type", M.bonds[0][2] === 1 ? "single" : M.bonds[0][2] === 2 ? "double" : "triple"], ["Structure", M.name, C.path], ["Electrons each atom counts", M.each]]);
+    L.verdict(t < 1.5 ? "Atoms approaching…" : M.fig);
+  }
+  function mount(){ L.presets([["h2", "Fig. 9.6: H₂"], ["cl2", "Fig. 9.7: Cl₂"], ["o2", "Fig. 9.8: O₂"], ["hcl", "Fig. 9.9: HCl"], ["h2o", "Fig. 9.10: H₂O"], ["n2", "N₂ (triple bond)"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.covalent = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-    var c1x = 220, c2x = 500, cy = 135;
-    var transferT = Math.min(1.0, t / 2.5);
-
-    if(simState.type === "NaCl"){
-      // Na Atom / Ion
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="70" fill="#3b82f6" fill-opacity="0.1" stroke="#3b82f6" stroke-width="2"/>';
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="22" fill="#3b82f6"/>';
-      svg += '<text x="' + c1x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">Na⁺</text>';
-      svg += '<text x="' + c1x + '" y="' + (cy - 80) + '" fill="#93c5fd" font-size="13" font-weight="bold" text-anchor="middle">Sodium (2, 8, 1 &rarr; 2, 8)</text>';
-
-      // Cl Atom / Ion
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="85" fill="#22c55e" fill-opacity="0.1" stroke="#22c55e" stroke-width="2"/>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="22" fill="#22c55e"/>';
-      svg += '<text x="' + c2x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">Cl⁻</text>';
-      svg += '<text x="' + c2x + '" y="' + (cy - 95) + '" fill="#86efac" font-size="13" font-weight="bold" text-anchor="middle">Chlorine (2, 8, 7 &rarr; 2, 8, 8)</text>';
-
-      // Migrating Electron
-      var ex = (c1x + 70) + transferT * (c2x - 85 - (c1x + 70));
-      svg += '<circle cx="' + ex + '" cy="' + (cy - 20) + '" r="6" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>';
-      svg += '<text x="' + ex + '" y="' + (cy - 30) + '" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">e&minus;</text>';
-
-      // Electrostatic Arrow between ions
-      if(transferT >= 0.8){
-        svg += '<path d="M 290 135 L 415 135" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>';
-        svg += '<text x="360" y="125" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">Strong Coulomb Attraction</text>';
+// Lab 4 — Ionic bonds (Figs. 9.11–9.14, Pause and Ponder 13 and 15)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "nacl"};
+  var ION = {
+    nacl: {metals: [["Na", 1, 200, 150]], non: [["Cl", 7, 1, 480, 150]], moves: [[0, 0]], formula: "NaCl", rows: [["Sodium", "Na (2, 8, 1) → Na⁺ (2, 8)"], ["Chlorine", "Cl (2, 8, 7) → Cl⁻ (2, 8, 8)"]], msg: "<b>Fig. 9.13:</b> sodium gives its valence electron to chlorine, forming <b>Na⁺ and Cl⁻</b>, which attract each other: NaCl."},
+    mgcl2: {metals: [["Mg", 2, 360, 150]], non: [["Cl", 7, 1, 140, 150], ["Cl", 7, 1, 580, 150]], moves: [[0, 0], [0, 1]], formula: "MgCl₂", rows: [["Magnesium", "Mg (2, 8, 2) → Mg²⁺ (2, 8)"], ["Each chlorine", "Cl (2, 8, 7) → Cl⁻ (2, 8, 8)"]], msg: "<b>Pause and Ponder 13:</b> magnesium gives one electron to each of two chlorine atoms, and Mg²⁺ with 2 Cl⁻ forms <b>MgCl₂</b>."},
+    na2s: {metals: [["Na", 1, 140, 150], ["Na", 1, 580, 150]], non: [["S", 6, 2, 360, 150]], moves: [[0, 0], [1, 0]], formula: "Na₂S", rows: [["Each sodium", "Na (2, 8, 1) → Na⁺ (2, 8)"], ["Sulfur", "S (2, 8, 6) → S²⁻ (2, 8, 8)"]], msg: "<b>Pause and Ponder 15:</b> two sodium atoms each give one electron to sulfur, and 2 Na⁺ with S²⁻ form <b>Na₂S</b>."}
+  };
+  var CH = {1: "⁺", 2: "²⁺"}, AN = {1: "⁻", 2: "²⁻"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.05, speed: 0.6});
+    L.legend(id === "lattice" ? [["#a78bfa", "Na⁺"], ["#4ade80", "Cl⁻"]] : [[C.vel, "metal's valence electrons"], [C.path, "non-metal's valence electrons"]]);
+    L.watch({nacl: "Figs. 9.11–9.13: a sodium atom and a chlorine atom. Only valence shells are drawn.", mgcl2: "A magnesium atom between two chlorine atoms.", na2s: "Two sodium atoms and a sulfur atom.", lattice: "Fig. 9.14: one layer of a sodium chloride crystal."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "lattice"){
+      var rowsShown = Math.ceil(clamp9(t / 1.5, 0, 1) * 5);
+      for(var r = 0; r < rowsShown; r++) for(var c = 0; c < 9; c++){
+        var x = 120 + c * 60, y = 40 + r * 55, na = (r + c) % 2 === 0;
+        m += L.circle(x, y, na ? 13 : 20, na ? "#a78bfa" : "#4ade80", ' opacity="0.9"') + L.text(x, y + 4, na ? "Na⁺" : "Cl⁻", {size: 10, color: "#0f172a", weight: 700});
       }
+      if(t >= 1.5){ m += '<circle cx="360" cy="150" r="22" fill="none" stroke="#facc15" stroke-width="3"/>'; [[300, 150], [420, 150], [360, 95], [360, 205]].forEach(function(p){ m += L.line(360, 150, p[0], p[1], "#facc15", 2); }); }
+      L.svg(m, "Sodium chloride crystal layer", 290);
+      L.readout([["Around each Na⁺ in this layer", "4 Cl⁻"], ["Plus one above and one below", "6 Cl⁻ in 3-D", C.path], ["Around each Cl⁻", "6 Na⁺"]]);
+      msg = t < 2 ? "Building the crystal…" : "<b>Fig. 9.14:</b> the ions repeat in a regular pattern. In 3-D each Na⁺ is surrounded by <b>six chloride ions</b> (four in this layer, one above and one below).";
     } else {
-      // MgO
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="70" fill="#3b82f6" fill-opacity="0.1" stroke="#3b82f6" stroke-width="2"/>';
-      svg += '<circle cx="' + c1x + '" cy="' + cy + '" r="22" fill="#3b82f6"/><text x="' + c1x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">Mg²⁺</text>';
-      svg += '<text x="' + c1x + '" y="' + (cy - 80) + '" fill="#93c5fd" font-size="13" font-weight="bold" text-anchor="middle">Magnesium (2, 8, 2 &rarr; 2, 8)</text>';
+      var S = ION[st.preset], f = clamp9((t - 0.5) / 1, 0, 1), done = t >= 1.6;
+      S.metals.forEach(function(a, i){
+        var moved = S.moves.filter(function(mv){ return mv[0] === i; }).length;
+        m += '<circle cx="' + a[2] + '" cy="' + a[3] + '" r="50" fill="none" stroke="#64748b" stroke-width="2"' + (done ? ' stroke-dasharray="4 5" opacity="0.4"' : '') + '/>' + L.circle(a[2], a[3], 20, "#1e293b") + L.text(a[2], a[3] + 5, a[0] + (done ? CH[a[1]] : ""), {size: 15, color: done ? C.vel : C.text, weight: 700});
+      });
+      S.non.forEach(function(a){
+        m += '<circle cx="' + a[3] + '" cy="' + a[4] + '" r="60" fill="none" stroke="#64748b" stroke-width="2"/>' + L.circle(a[3], a[4], 22, "#1e293b") + L.text(a[3], a[4] + 5, a[0] + (done ? AN[a[2]] : ""), {size: 15, color: done ? C.path : C.text, weight: 700});
+        for(var j = 0; j < a[1]; j++){ var an = -Math.PI / 2 + j * 2 * Math.PI / 8; m += L.circle(a[3] + 60 * Math.cos(an), a[4] + 60 * Math.sin(an), 5.5, C.path); }
+      });
+      var slot = {};
+      S.moves.forEach(function(mv, k){
+        var a = S.metals[mv[0]], b = S.non[mv[1]], idx = S.moves.filter(function(q, qi){ return q[0] === mv[0] && qi < k; }).length;
+        var sa = Math.atan2(b[4] - a[3], b[3] - a[2]) + (idx ? 0.5 : 0) * (S.metals[mv[0]][1] > 1 ? 1 : 0), sx = a[2] + 50 * Math.cos(sa), sy = a[3] + 50 * Math.sin(sa);
+        slot[mv[1]] = (slot[mv[1]] || 0) + 1;
+        var ta = -Math.PI / 2 + (b[1] + slot[mv[1]] - 1) * 2 * Math.PI / 8, tx = b[3] + 60 * Math.cos(ta), ty = b[4] + 60 * Math.sin(ta);
+        m += L.circle(sx + (tx - sx) * f, sy + (ty - sy) * f - Math.sin(f * Math.PI) * 40, 6, "#facc15");
+      });
+      if(done) m += L.text(360, 285, S.formula, {size: 24, color: C.text, weight: 700});
+      L.svg(m, "Electron transfer forming " + S.formula, 300);
+      L.readout(S.rows.concat([["Formula", done ? S.formula : "…", C.path]]));
+      msg = done ? S.msg : "Transferring electrons…";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["nacl", "Fig. 9.13: NaCl"], ["mgcl2", "MgCl₂"], ["na2s", "Na₂S"], ["lattice", "Fig. 9.14: crystal"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.ionic = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="75" fill="#22c55e" fill-opacity="0.1" stroke="#22c55e" stroke-width="2"/>';
-      svg += '<circle cx="' + c2x + '" cy="' + cy + '" r="22" fill="#22c55e"/><text x="' + c2x + '" y="' + (cy + 5) + '" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">O²⁻</text>';
-      svg += '<text x="' + c2x + '" y="' + (cy - 85) + '" fill="#86efac" font-size="13" font-weight="bold" text-anchor="middle">Oxygen (2, 6 &rarr; 2, 8)</text>';
+// Lab 5 — Writing chemical formulae by criss-cross (Section 9.5, Table 9.1)
+(function(){
+  var L = LAB, C = L.C;
+  var CAT = [["Na", "sodium", 1, 0], ["K", "potassium", 1, 0], ["Ag", "silver", 1, 0], ["NH₄", "ammonium", 1, 1], ["Ca", "calcium", 2, 0], ["Mg", "magnesium", 2, 0], ["Zn", "zinc", 2, 0], ["Ba", "barium", 2, 0], ["Cu", "cupric", 2, 0], ["Fe", "ferrous", 2, 0], ["Fe", "ferric", 3, 0], ["Al", "aluminium", 3, 0]];
+  var ANI = [["Cl", "chloride", 1, 0], ["Br", "bromide", 1, 0], ["I", "iodide", 1, 0], ["F", "fluoride", 1, 0], ["OH", "hydroxide", 1, 1], ["NO₃", "nitrate", 1, 1], ["HCO₃", "hydrogencarbonate", 1, 1], ["O", "oxide", 2, 0], ["S", "sulfide", 2, 0], ["CO₃", "carbonate", 2, 1], ["SO₄", "sulfate", 2, 1]];
+  var PRE = {h2s: [["H", 1, 0], ["S", 2, 0], false, "hydrogen sulfide"], ccl4: [["C", 4, 0], ["Cl", 1, 0], false, "carbon tetrachloride"], cacl2: [["Ca", 2, 0], ["Cl", 1, 0], true, "calcium chloride"], al2o3: [["Al", 3, 0], ["O", 2, 0], true, "aluminium oxide"], mgo: [["Mg", 2, 0], ["O", 2, 0], true, "magnesium oxide"], mgoh2: [["Mg", 2, 0], ["OH", 1, 1], true, "magnesium hydroxide"], al2so43: [["Al", 3, 0], ["SO₄", 2, 1], true, "aluminium sulfate"]};
+  var st = {preset: "cacl2", c: 0, a: 0};
+  var SUP = {1: "", 2: "²", 3: "³", 4: "⁴"};
+  function part(sym, n, poly){ return n === 1 ? sym : poly ? "(" + sym + ")" + sub9(n) : sym + sub9(n); }
+  function spec(){ if(st.preset !== "build") return PRE[st.preset]; var c = CAT[st.c], a = ANI[st.a]; return [[c[0], c[2], c[3]], [a[0], a[2], a[3]], true, c[1] + " " + a[1]]; }
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 0.8});
+    L.legend([[C.vel, "first symbol / cation"], [C.path, "second symbol / anion"]]);
+    L.watch(id === "build" ? "Pick any cation and anion from Table 9.1." : id === "h2s" || id === "ccl4" ? "Section 9.5.1: a covalent compound, using valencies." : "Section 9.5.2: an ionic compound, using the charges (numbers only).");
+    if(id === "build"){
+      var ionTxt = function(r, sign){ return r[0] + SUP[r[2]] + sign; };
+      L.controls(L.slider("cc-c", "Cation", 0, CAT.length - 1, 1, st.c, ionTxt(CAT[st.c], "⁺")) + L.slider("cc-a", "Anion", 0, ANI.length - 1, 1, st.a, ionTxt(ANI[st.a], "⁻")));
+      L.onInput("cc-c", function(v){ st.c = v; L.setVal("cc-c", ionTxt(CAT[v], "⁺")); App.resetTimeline(); App.play(); });
+      L.onInput("cc-a", function(v){ st.a = v; L.setVal("cc-a", ionTxt(ANI[v], "⁻")); App.resetTimeline(); App.play(); });
+    } else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var S = spec(), A = S[0], B = S[1], ionic = S[2], m = "";
+    var na = B[1], nb = A[1], g = gcd9(na, nb), raw = part(A[0], na, A[2]) + part(B[0], nb, B[2]), simple = part(A[0], na / g, A[2]) + part(B[0], nb / g, B[2]);
+    var f = clamp9(t - 1, 0, 1);
+    m += L.text(240, 100, A[0], {size: 44, color: C.vel, weight: 700}) + L.text(460, 100, B[0], {size: 44, color: C.path, weight: 700});
+    m += L.text(240, 150, ionic ? A[1] + "+" : String(A[1]), {size: 22, color: C.vel, mono: true}) + L.text(460, 150, ionic ? B[1] + "−" : String(B[1]), {size: 22, color: C.path, mono: true}) + L.text(120, 150, ionic ? "charge" : "valency", {size: 13, color: C.muted, anchor: "start"});
+    var ax = 240 + (500 - 240) * f, ay = 150 + (120 - 150) * f, bx = 460 + (285 - 460) * f, by = 150 + (120 - 150) * f;
+    if(t >= 1){ m += L.line(250, 140, 490, 115, C.faint, 1.5) + L.line(450, 140, 295, 115, C.faint, 1.5); m += L.text(ax, ay, String(A[1]), {size: 18, color: C.vel, weight: 700}) + L.text(bx, by, String(B[1]), {size: 18, color: C.path, weight: 700}); }
+    if(t >= 2) m += L.text(360, 220, "→ " + raw, {size: 26, color: C.muted});
+    if(t >= 2.5) m += L.text(360, 268, simple, {size: 34, color: C.text, weight: 700});
+    L.svg(m, "Criss-cross method for " + simple, 290);
+    var charge = A[1] * (na / g) - B[1] * (nb / g);
+    L.readout([[ionic ? "Cation" : "First element", A[0] + " (" + (ionic ? A[1] + "+" : "valency " + A[1]) + ")", C.vel], [ionic ? "Anion" : "Second element", B[0] + " (" + (ionic ? B[1] + "−" : "valency " + B[1]) + ")", C.path], ["After crossing", raw], ["Formula", t >= 2.5 ? simple : "…"], ionic ? ["Charge check", (na / g) + " × " + A[1] + " − " + (nb / g) + " × " + B[1] + " = " + charge] : ["Name", S[3]]]);
+    var note = raw !== simple ? " (" + raw + " divided by " + g + ")" : "";
+    note += (A[2] && na / g > 1) || (B[2] && nb / g > 1) ? "; brackets show more than one polyatomic ion" : "";
+    L.verdict(t < 3 ? "Crossing over…" : "The formula of " + S[3] + " is <b>" + simple + "</b>" + note + ".");
+  }
+  function mount(){ L.presets([["h2s", "H₂S"], ["ccl4", "CCl₄"], ["cacl2", "CaCl₂"], ["al2o3", "Al₂O₃"], ["mgo", "MgO"], ["mgoh2", "Mg(OH)₂"], ["al2so43", "Al₂(SO₄)₃"], ["build", "Build from Table 9.1"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.crissCross = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-      // 2 Migrating Electrons
-      var ex1 = (c1x + 70) + transferT * (c2x - 75 - (c1x + 70));
-      svg += '<circle cx="' + ex1 + '" cy="' + (cy - 30) + '" r="6" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>';
-      svg += '<circle cx="' + ex1 + '" cy="' + (cy - 10) + '" r="6" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>';
-      svg += '<text x="' + ex1 + '" y="' + (cy - 42) + '" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle">2 e&minus;</text>';
-
-      if(transferT >= 0.8){
-        svg += '<path d="M 290 135 L 425 135" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>';
-        svg += '<text x="360" y="125" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">Doubly Charged Attraction (+2 &minus;2)</text>';
+// Lab 6 — Solubility and conductivity (Activity 9.4, Table 9.2)
+(function(){
+  var L = LAB, C = L.C;
+  var DATA = {
+    nacl: ["Sodium chloride", [1, 0, 0], 0, 1, true, "<b>Sodium chloride:</b> dissolves in water only. The solid does not conduct, but in water the <b>bulb glows</b> because the ions are free to move."],
+    cuso4: ["Copper sulfate", [1, 0, 0], 0, 1, true, "<b>Copper sulfate:</b> dissolves in water only. The solid does not conduct, but in water the <b>bulb glows</b>: it is ionic."],
+    sugar: ["Sugar", [1, 0, 0], 0, 0, false, "<b>Sugar:</b> dissolves in water but gives <b>no ions</b>, so the bulb stays off. It is covalent."],
+    camphor: ["Camphor", [0, 1, 1], 0, 0, false, "<b>Camphor:</b> <b>does not dissolve in water</b> but dissolves in kerosene and petrol, and it never conducts: a covalent compound."],
+    molten: ["Molten sodium chloride", [1, 0, 0], 0, 1, true, "<b>Prediction:</b> melted sodium chloride conducts because its ions are <b>free to move</b>; a melted covalent compound has no ions and would not."]
+  };
+  var st = {preset: "nacl"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 0.8});
+    L.legend([["#facc15", "bulb glowing"], [C.vel, "moving ions"]]);
+    L.watch(id === "molten" ? "The textbook asks you to predict: does molten (melted) sodium chloride conduct? Solid first, then melted." : "Activity 9.4: first the solubility tests (0–1 s), then conductivity of the solid (1–2 s) and in water (2–3 s).");
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var D = DATA[st.preset], m = "", i, phase = t < 1 ? 0 : t < 2 ? 1 : 2, glow = (phase === 1 && D[2]) || (phase === 2 && D[3]);
+    if(st.preset !== "molten"){
+      ["water", "kerosene", "petrol"].forEach(function(s, k){
+        var x = 70 + k * 90, dis = D[1][k], left = Math.round(8 * (1 - (dis ? clamp9(t, 0, 1) : 0)));
+        m += L.rect(x - 30, 150, 60, 80, "none", ' stroke="#cbd5e1" stroke-width="2"') + L.rect(x - 28, 170, 56, 58, k ? "#fde68a" : "#38bdf8", ' opacity="0.35"');
+        for(i = 0; i < left; i++) m += L.rect(x - 22 + (i * 7) % 44, 220 - (i % 2) * 5, 5, 5, "#f8fafc");
+        m += L.text(x, 250, s, {size: 12, color: C.muted}) + L.text(x, 140, t >= 1 ? (dis ? "dissolves" : "no") : "", {size: 12, color: dis ? C.ok : C.danger, weight: 700});
+      });
+    } else {
+      m += L.rect(110, 150, 120, 60, "#475569", ' rx="6"') + L.text(170, 186, t < 1 ? "solid" : "melted", {size: 14, color: C.text});
+      for(i = 0; i < 5 && t >= 1; i++) m += '<path d="M' + (130 + i * 20) + ' 240 q8 -18 0 -26 q-8 8 0 26" fill="#f97316"/>';
+    }
+    m += L.rect(420, 40, 60, 30, "#475569", ' rx="3"') + L.text(450, 60, "9 V", {size: 12, color: C.text}) + L.line(420, 55, 360, 55, "#cbd5e1", 2) + L.line(360, 55, 360, 120, "#cbd5e1", 2) + L.line(480, 55, 620, 55, "#cbd5e1", 2) + L.line(620, 55, 620, 80, "#cbd5e1", 2);
+    m += L.circle(620, 100, 20, glow ? "#facc15" : "#1e293b", ' stroke="#cbd5e1" stroke-width="2"') + (glow ? L.circle(620, 100, 34, "#facc15", ' opacity="0.25"') : "") + L.line(620, 120, 620, 140, "#cbd5e1", 2) + L.line(620, 140, 540, 140, "#cbd5e1", 2) + L.line(540, 140, 540, 170, "#cbd5e1", 2);
+    m += L.rect(330, 150, 240, 100, "none", ' stroke="#cbd5e1" stroke-width="2"') + L.line(360, 120, 360, 230, "#94a3b8", 6) + L.line(540, 170, 540, 230, "#94a3b8", 6);
+    var inWater = phase === 2;
+    if(phase >= 1){
+      if(inWater && st.preset !== "molten") m += L.rect(332, 175, 236, 73, "#38bdf8", ' opacity="0.3"');
+      if(inWater && st.preset === "molten") m += L.rect(332, 175, 236, 73, "#f97316", ' opacity="0.3"');
+      for(i = 0; i < 12; i++){
+        var bx = 380 + (i * 37) % 140, by = 195 + (i * 23) % 45;
+        if(inWater && D[4]) { bx += Math.sin(t * 4 + i) * 10; m += L.circle(bx, by, 5, i % 2 ? C.vel : C.path); }
+        else if(inWater && D[1][0]) m += L.circle(bx, by, 4, "#e2e8f0", ' opacity="0.6"');
+        else if(!inWater) m += L.rect(380 + (i % 6) * 22, 226 - Math.floor(i / 6) * 10, 16, 9, "#f8fafc");
       }
     }
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>Compound: <strong>' + simState.type + '</strong></span>' +
-      '<span>Cation: <strong style="color:#38bdf8;">' + (simState.type==='NaCl'?'Na⁺ (2, 8)':'Mg²⁺ (2, 8)') + '</strong></span>' +
-      '<span>Anion: <strong style="color:#10b981;">' + (simState.type==='NaCl'?'Cl⁻ (2, 8, 8)':'O²⁻ (2, 8)') + '</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      'Electron transfer completely fulfills octets for both species, forming robust ionic crystals with high lattice energy!';
+    m += L.text(450, 275, phase === 0 ? "" : phase === 1 ? "testing the solid" : st.preset === "molten" ? "testing the melt" : "testing in water", {size: 13, color: C.muted});
+    L.svg(m, D[0] + " tests", 290);
+    var yn = function(b){ return b ? "yes" : "no"; };
+    L.readout([["Dissolves in water / kerosene / petrol", st.preset === "molten" ? "(melted instead)" : D[1].map(yn).join(" / ")], ["Solid conducts?", t >= 1 ? yn(D[2]) : "…"], [st.preset === "molten" ? "Melt conducts?" : "In water conducts?", t >= 2 ? yn(D[3]) : "…", D[3] ? C.ok : C.danger]]);
+    L.verdict(t < 3 ? "Testing…" : D[5]);
   }
-
-  window.SIMS.lab_ionic_bonding = { mount: mount, draw: draw };
+  function mount(){ L.presets([["nacl", "Sodium chloride"], ["cuso4", "Copper sulfate"], ["sugar", "Sugar"], ["camphor", "Camphor"], ["molten", "Prediction: molten salt"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.conductivity = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 5. SIMULATION 5: Chemical Formulae Criss-Cross Solver (lab_chemical_formulae)
-// =========================================================================
+// Lab 7 — Molecular mass and formula unit mass (Examples 9.4–9.7, Pause and Ponder 21 and 24)
 (function(){
-  var simState = {
-    cat: "Al", catQ: 3, an: "SO4", anQ: 2, poly: true, name: "Aluminium Sulphate"
+  var L = LAB, C = L.C;
+  var MASS = {H: 1, C: 12, N: 14, O: 16, Na: 23, Mg: 24, Ca: 40};
+  var SUBS = {
+    h2o: ["H₂O", ["H", "H", "O"], "(1 u × 2) + (16 u × 1)", "<b>Example 9.4:</b> H₂O = (1 u × 2) + (16 u × 1) = <b>18 u</b>."],
+    co2: ["CO₂", ["C", "O", "O"], "(12 u × 1) + (16 u × 2)", "<b>Example 9.5:</b> CO₂ = (12 u × 1) + (16 u × 2) = <b>44 u</b>."],
+    na2o: ["Na₂O", ["Na", "Na", "O"], "(23 u × 2) + (16 u × 1)", "<b>Example 9.6:</b> the formula unit mass of Na₂O = (23 u × 2) + (16 u × 1) = <b>62 u</b>."],
+    cano32: ["Ca(NO₃)₂", ["Ca", "N", "O", "O", "O", "N", "O", "O", "O"], "40 u + {14 u + (16 u × 3)} × 2", "<b>Example 9.7:</b> Ca(NO₃)₂ = 40 u + {14 u + (16 u × 3)} × 2 = <b>164 u</b>."],
+    hno3: ["HNO₃", ["H", "N", "O", "O", "O"], "1 u + 14 u + (16 u × 3)", "<b>Pause and Ponder 21:</b> HNO₃ = 1 u + 14 u + (16 u × 3) = <b>63 u</b>."],
+    mgoh2: ["Mg(OH)₂", ["Mg", "O", "H", "O", "H"], "24 u + (16 u + 1 u) × 2", "<b>Pause and Ponder 24:</b> Mg(OH)₂ = 24 u + (16 u + 1 u) × 2 = <b>58 u</b>."]
   };
-
-  function mount(lesson){
-    simState.cat = "Al"; simState.catQ = 3; simState.an = "SO4"; simState.anQ = 2; simState.poly = true; simState.name = "Aluminium Sulphate";
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Cation & Charge</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Anion & Charge</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Balanced Chemical Formula</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p5-also4">Al³⁺ + SO₄²⁻ &rarr; Al₂(SO₄)₃</button>' +
-      '<button class="preset-btn" id="p5-caoh">Ca²⁺ + OH⁻ &rarr; Ca(OH)₂</button>' +
-      '<button class="preset-btn" id="p5-cao">Ca²⁺ + O²⁻ &rarr; CaO (Reduced 1:1)</button>' +
-      '<button class="preset-btn" id="p5-nh4cl">NH₄⁺ + Cl⁻ &rarr; NH₄Cl</button>';
-
-    document.getElementById("p5-also4").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cat = "Al"; simState.catQ = 3; simState.an = "SO4"; simState.anQ = 2; simState.poly = true; simState.name = "Aluminium Sulphate";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Charges +3 and −2 cross over. Polyatomic SO₄ takes subscript 3, requiring brackets: Al₂(SO₄)₃!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p5-caoh").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cat = "Ca"; simState.catQ = 2; simState.an = "OH"; simState.anQ = 1; simState.poly = true; simState.name = "Calcium Hydroxide";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Ca²⁺ with OH⁻: Subscript 2 applies to the whole hydroxide ion: Ca(OH)₂ (never CaOH₂)!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p5-cao").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cat = "Ca"; simState.catQ = 2; simState.an = "O"; simState.anQ = 2; simState.poly = false; simState.name = "Calcium Oxide";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Ca₂O₂ reduces by dividing by common factor 2 to give the simplest formula: CaO!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p5-nh4cl").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cat = "NH4"; simState.catQ = 1; simState.an = "Cl"; simState.anQ = 1; simState.poly = true; simState.name = "Ammonium Chloride";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> +1 and −1 balance 1:1. When subscript is 1, brackets are omitted: NH₄Cl.";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  var COL = {H: "#e2e8f0", C: "#475569", N: "#60a5fa", O: "#ef4444", Na: "#a78bfa", Mg: "#4ade80", Ca: "#fbbf24"};
+  var st = {preset: "h2o"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.05, speed: 0.6});
+    L.legend([[C.path, "running total"]]);
+    L.watch("Atomic masses: H 1 u, C 12 u, N 14 u, O 16 u, Na 23 u, Mg 24 u, Ca 40 u.");
+    L.controls(""); L.restart(true);
   }
-
   function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
-
-    // Top Step 1: Write Symbols & Charges
-    svg += '<g transform="translate(140, 40)">' +
-           '<rect width="180" height="90" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>' +
-           '<text x="90" y="35" fill="#38bdf8" font-size="28" font-weight="bold" text-anchor="middle">' + simState.cat + '</text>' +
-           '<text x="145" y="25" fill="#ef4444" font-size="18" font-weight="bold">' + simState.catQ + '+' + '</text>' +
-           '<text x="90" y="70" fill="#94a3b8" font-size="12" text-anchor="middle">Valency = ' + simState.catQ + '</text>' +
-           '</g>';
-
-    svg += '<g transform="translate(400, 40)">' +
-           '<rect width="180" height="90" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>' +
-           '<text x="90" y="35" fill="#f59e0b" font-size="28" font-weight="bold" text-anchor="middle">' + simState.an + '</text>' +
-           '<text x="145" y="25" fill="#ef4444" font-size="18" font-weight="bold">' + simState.anQ + '&minus;' + '</text>' +
-           '<text x="90" y="70" fill="#94a3b8" font-size="12" text-anchor="middle">Valency = ' + simState.anQ + '</text>' +
-           '</g>';
-
-    // Criss-Cross Diagonals
-    svg += '<line x1="280" y1="130" x2="430" y2="180" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6,3"/>';
-    svg += '<line x1="440" y1="130" x2="290" y2="180" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6,3"/>';
-
-    // Formula Result Box
-    var formulaStr;
-    if(simState.cat === "Al" && simState.an === "SO4") formulaStr = "Al₂(SO₄)₃";
-    else if(simState.cat === "Ca" && simState.an === "OH") formulaStr = "Ca(OH)₂";
-    else if(simState.cat === "Ca" && simState.an === "O") formulaStr = "CaO";
-    else formulaStr = "NH₄Cl";
-
-    svg += '<g transform="translate(240, 185)">' +
-           '<rect width="240" height="70" rx="12" fill="#1e293b" stroke="#10b981" stroke-width="3"/>' +
-           '<text x="120" y="45" fill="#10b981" font-size="32" font-weight="bold" text-anchor="middle">' + formulaStr + '</text>' +
-           '</g>';
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>Compound: <strong>' + simState.name + '</strong></span>' +
-      '<span>Formula: <strong style="color:#10b981;">' + formulaStr + '</strong></span>' +
-      '<span>Charge Neutrality: <strong>Net 0</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      'Criss-cross valencies and simplify! Use brackets for polyatomic groups when subscript is 2 or more.';
+    var S = SUBS[st.preset], atoms = S[1], n = atoms.length, k = Math.min(n, Math.floor(clamp9(t, 0, 2) / 2 * n + 1e-9)), total = 0, m = "", x = 40, scale = 3.6;
+    atoms.forEach(function(a, i){
+      var w = MASS[a] * scale;
+      if(i < k){ total += MASS[a]; m += L.rect(x, 120, w - 2, 50, COL[a], ' rx="3"') + (w > 26 ? L.text(x + w / 2, 142, a, {size: 12, color: "#0f172a", weight: 700}) + L.text(x + w / 2, 160, MASS[a] + " u", {size: 10, color: "#0f172a"}) : L.text(x + w / 2, 110, a, {size: 11, color: C.text})); }
+      else m += L.rect(x, 120, w - 2, 50, "#1e293b", ' rx="3"');
+      x += w;
+    });
+    m += L.text(360, 70, S[0], {size: 34, color: C.text, weight: 700}) + L.text(360, 230, "total = " + total + " u", {size: 26, color: C.path, weight: 700});
+    L.svg(m, "Adding atomic masses for " + S[0], 260);
+    L.readout([["Formula", S[0]], ["Calculation", S[2]], ["Atoms added", k + " of " + n], ["Total so far", total + " u", C.path]]);
+    L.verdict(t < 2 ? "Adding atoms…" : S[3]);
   }
-
-  window.SIMS.lab_chemical_formulae = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 6. SIMULATION 6: Properties of Ionic vs Covalent Compounds (lab_ionic_vs_covalent)
-// =========================================================================
-(function(){
-  var simState = {
-    sample: "salt_sol", // "salt_solid", "salt_sol", "sugar_sol"
-    bulbOn: true
-  };
-
-  function mount(lesson){
-    simState.sample = "salt_sol";
-    simState.bulbOn = true;
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Bulb Glowing (Conduction)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#475569;"></span><span>Bulb Off (Non-Conductor)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Graphite Electrodes</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p6-saltsol">NaCl in Water: Free Na⁺ & Cl⁻ Ions (Bulb GLOWS!)</button>' +
-      '<button class="preset-btn" id="p6-sugarsol">Sugar Solution: Neutral Molecules (Bulb OFF)</button>' +
-      '<button class="preset-btn" id="p6-saltsolid">Dry Solid NaCl: Ions Locked in Lattice (Bulb OFF)</button>';
-
-    document.getElementById("p6-saltsol").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.sample = "salt_sol";
-      simState.bulbOn = true;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Dissolved salt breaks into free mobile Na⁺ and Cl⁻ ions that migrate to electrodes, lighting the bulb brightly!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p6-sugarsol").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.sample = "sugar_sol";
-      simState.bulbOn = false;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Sugar dissolves as intact neutral molecules (C₁₂H₂₂O₁₁). Zero ions exist to carry electric current: bulb stays dark!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p6-saltsolid").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.sample = "salt_solid";
-      simState.bulbOn = false;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> In solid crystalline NaCl, strong electrostatic forces lock ions in fixed positions: no migration, zero conduction!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
-  }
-
-  function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    // Beaker
-    svg += '<rect x="180" y="80" width="200" height="150" rx="8" fill="#0284c7" fill-opacity="0.1" stroke="#38bdf8" stroke-width="3"/>';
-
-    if(simState.sample !== "salt_solid"){
-      // Liquid
-      svg += '<rect x="185" y="110" width="190" height="115" fill="#38bdf8" fill-opacity="0.25"/>';
-    } else {
-      // Solid salt crystals pile
-      svg += '<polygon points="200,225 280,160 360,225" fill="#f8fafc" opacity="0.8"/>';
-      svg += '<text x="280" y="215" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="middle">Rigid Crystal Lattice</text>';
-    }
-
-    // Graphite Electrodes
-    svg += '<rect x="230" y="60" width="15" height="130" fill="#475569" stroke="#64748b"/>';
-    svg += '<rect x="315" y="60" width="15" height="130" fill="#475569" stroke="#64748b"/>';
-    svg += '<text x="280" y="50" fill="#94a3b8" font-size="11" text-anchor="middle">Carbon Electrodes</text>';
-
-    // Ions floating if salt solution
-    if(simState.sample === "salt_sol"){
-      svg += '<circle cx="255" cy="140" r="10" fill="#3b82f6"/><text x="255" y="144" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Na⁺</text>';
-      svg += '<circle cx="295" cy="165" r="10" fill="#22c55e"/><text x="295" y="169" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Cl⁻</text>';
-      svg += '<circle cx="260" cy="185" r="10" fill="#22c55e"/><text x="260" y="189" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Cl⁻</text>';
-      svg += '<circle cx="300" cy="130" r="10" fill="#3b82f6"/><text x="300" y="134" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Na⁺</text>';
-    }
-
-    // Circuit Wires, Battery and Bulb
-    svg += '<line x1="237" y1="60" x2="237" y2="30" stroke="#e2e8f0" stroke-width="2.5"/>';
-    svg += '<line x1="237" y1="30" x2="520" y2="30" stroke="#e2e8f0" stroke-width="2.5"/>';
-
-    // Battery (6V)
-    svg += '<rect x="520" y="15" width="45" height="30" rx="4" fill="#334155" stroke="#f59e0b"/>';
-    svg += '<text x="542" y="35" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">6 V</text>';
-
-    svg += '<line x1="565" y1="30" x2="620" y2="30" stroke="#e2e8f0" stroke-width="2.5"/>';
-    svg += '<line x1="620" y1="30" x2="620" y2="120" stroke="#e2e8f0" stroke-width="2.5"/>';
-
-    // Bulb
-    var bulbColor = simState.bulbOn ? "#22c55e" : "#475569";
-    var glowFilter = simState.bulbOn ? '<circle cx="620" cy="140" r="28" fill="#22c55e" opacity="0.3"/>' : '';
-    svg += glowFilter;
-    svg += '<circle cx="620" cy="140" r="18" fill="' + bulbColor + '" stroke="#94a3b8" stroke-width="2"/>';
-    svg += '<text x="620" y="145" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">' + (simState.bulbOn?'ON':'OFF') + '</text>';
-    svg += '<text x="620" y="180" fill="#94a3b8" font-size="11" text-anchor="middle">Bulb</text>';
-
-    svg += '<line x1="620" y1="160" x2="620" y2="240" stroke="#e2e8f0" stroke-width="2.5"/>';
-    svg += '<line x1="620" y1="240" x2="322" y2="240" stroke="#e2e8f0" stroke-width="2.5"/>';
-    svg += '<line x1="322" y1="240" x2="322" y2="60" stroke="#e2e8f0" stroke-width="2.5"/>';
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>Tested Substance: <strong>' + (simState.sample==='salt_sol'?'Aqueous NaCl (Salt)':(simState.sample==='sugar_sol'?'Aqueous Glucose (Sugar)':'Dry Solid NaCl')) + '</strong></span>' +
-      '<span>Bulb State: <strong style="color:' + (simState.bulbOn?'#22c55e':'#ef4444') + ';">' + (simState.bulbOn?'GLOWING (Current Flows)':'DARK (No Current)') + '</strong></span>' +
-      '<span>Carriers: <strong>' + (simState.sample==='salt_sol'?'Free Mobile Na⁺, Cl⁻':'None') + '</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      simState.bulbOn ? 
-      'Ionic solution conducts electricity because polar water dissociates the crystal into free mobile ions that carry charge!' :
-      'Covalent sugar contains neutral molecules, while dry salt has ions fixed in lattice. Free mobile ions are essential for conduction!';
-  }
-
-  window.SIMS.lab_ionic_vs_covalent = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 7. SIMULATION 7: Molecular & Formula Mass Calculator (lab_molecular_formula_mass)
-// =========================================================================
-(function(){
-  var simState = {
-    formula: "NH4NO3",
-    name: "Ammonium Nitrate (Fertilizer - Ex 8)",
-    breakdown: "2N (2×14) + 4H (4×1) + 3O (3×16)",
-    calc: "28 + 4 + 48",
-    mass: 80.0
-  };
-
-  function mount(lesson){
-    simState.formula = "NH4NO3";
-    simState.name = "Ammonium Nitrate (Fertilizer - Ex 8)";
-    simState.breakdown = "2N (2×14) + 4H (4×1) + 3O (3×16)";
-    simState.calc = "28 + 4 + 48";
-    simState.mass = 80.0;
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chemical Formula</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Atomic Mass Breakdown</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Formula Unit Mass (u)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p7-nh4no3">Ammonium Nitrate (NH₄NO₃ &rarr; 80 u)</button>' +
-      '<button class="preset-btn" id="p7-h3po4">Phosphoric Acid (H₃PO₄ &rarr; 98 u)</button>' +
-      '<button class="preset-btn" id="p7-nahco3">Baking Soda (NaHCO₃ &rarr; 84 u)</button>' +
-      '<button class="preset-btn" id="p7-h2o">Water (H₂O &rarr; 18 u)</button>';
-
-    document.getElementById("p7-nh4no3").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.formula = "NH4NO3";
-      simState.name = "Ammonium Nitrate (Fertilizer - Ex 8)";
-      simState.breakdown = "2N (2×14) + 4H (4×1) + 3O (3×16)";
-      simState.calc = "28 + 4 + 48";
-      simState.mass = 80.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Ammonium nitrate (NH₄NO₃): 2 Nitrogens (28 u) + 4 Hydrogens (4 u) + 3 Oxygens (48 u) = 80 u!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p7-h3po4").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.formula = "H3PO4";
-      simState.name = "Phosphoric Acid (Detergents & Fertilizer - Ex 8)";
-      simState.breakdown = "3H (3×1) + 1P (1×31) + 4O (4×16)";
-      simState.calc = "3 + 31 + 64";
-      simState.mass = 98.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Phosphoric acid (H₃PO₄): 3 H (3 u) + 1 P (31 u) + 4 O (64 u) = 98 u!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p7-nahco3").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.formula = "NaHCO3";
-      simState.name = "Sodium Hydrogencarbonate (Antacid & Baking Soda - Ex 8)";
-      simState.breakdown = "1Na (23) + 1H (1) + 1C (12) + 3O (3×16)";
-      simState.calc = "23 + 1 + 12 + 48";
-      simState.mass = 84.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Sodium bicarbonate (NaHCO₃): 23 + 1 + 12 + 48 = 84 u!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p7-h2o").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.formula = "H2O";
-      simState.name = "Water (Universal Solvent)";
-      simState.breakdown = "2H (2×1) + 1O (1×16)";
-      simState.calc = "2 + 16";
-      simState.mass = 18.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Water (H₂O): 2 Hydrogens (2 u) + 1 Oxygen (16 u) = 18 u!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
-  }
-
-  function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#090d16" rx="12"/>';
-
-    // Big Formula Display Box
-    svg += '<g transform="translate(80, 40)">' +
-           '<rect width="250" height="190" rx="12" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>' +
-           '<text x="125" y="40" fill="#94a3b8" font-size="12" text-anchor="middle">Chemical Formula</text>' +
-           '<text x="125" y="100" fill="#38bdf8" font-size="44" font-weight="bold" text-anchor="middle">' + simState.formula + '</text>' +
-           '<text x="125" y="145" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">' + simState.name + '</text>' +
-           '</g>';
-
-    // Breakdown Panel
-    svg += '<g transform="translate(360, 40)">' +
-           '<rect width="280" height="190" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="2"/>' +
-           '<text x="140" y="32" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">Atomic Mass Computation</text>' +
-           '<text x="25" y="70" fill="#fbbf24" font-size="13">Breakdown:</text>' +
-           '<text x="25" y="95" fill="#cbd5e1" font-size="12">' + simState.breakdown + '</text>' +
-           '<text x="25" y="130" fill="#fbbf24" font-size="13">Calculation:</text>' +
-           '<text x="25" y="150" fill="#cbd5e1" font-size="13">' + simState.calc + ' =</text>' +
-           '<text x="255" y="175" fill="#10b981" font-size="28" font-weight="bold" text-anchor="end">' + simState.mass.toFixed(1) + ' u</text>' +
-           '</g>';
-
-    document.getElementById("diagram").innerHTML = svg + '</svg>';
-    document.getElementById("lab-readout").innerHTML = 
-      '<span>Formula: <strong>' + simState.formula + '</strong></span>' +
-      '<span>Formula Mass: <strong style="color:#10b981;">' + simState.mass.toFixed(1) + ' u</strong></span>' +
-      '<span>Unit: <strong>Unified Atomic Mass (u)</strong></span>';
-    document.getElementById("lab-verdict").innerHTML = 
-      'Formula mass is the exact sum of all atomic masses present in the empirical formula unit!';
-  }
-
-  window.SIMS.lab_molecular_formula_mass = { mount: mount, draw: draw };
+  function mount(){ L.presets([["h2o", "Example 9.4: H₂O"], ["co2", "Example 9.5: CO₂"], ["na2o", "Example 9.6: Na₂O"], ["cano32", "Example 9.7: Ca(NO₃)₂"], ["hno3", "HNO₃"], ["mgoh2", "Mg(OH)₂"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.massCalc = {mount: mount, draw: draw, select: select, state: st};
 })();

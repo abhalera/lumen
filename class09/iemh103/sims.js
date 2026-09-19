@@ -1,949 +1,413 @@
-
-// =========================================================================
-// IEMH103: THE WORLD OF NUMBERS
-// Interactive Mathematical Manipulatives & Laboratory Engines
-// =========================================================================
-
-window.SIM_STATE = {
-  currentConcept: 'c1',
-  isPlaying: false,
-  timer: null,
-  scrubberVal: 0,
-  speed: 1,
-  // Concept-specific states
-  c1: { mode: 'ishango', jointCount: 6, spiceBags: 6 },
-  c2: { fortunes: 8, debts: 5, opMode: 'balance', multA: -4, multB: -3 },
-  c3: { preset: '2_5_to_3_5', aNum: 2, aDen: 5, bNum: 3, bDen: 5, n: 5, method: 'equal' },
-  c4: { step: 4, showDissection: true },
-  c5: { den: 7, num: 1, mode: 'wheel' },
-  c6: { count: 6, showArcs: true }
-};
-
-window.SIM_ENGINES = {
-
-  // -----------------------------------------------------------------------
-  // LAB 1: ANCIENT TALLY & BASE-12 FINGER JOINT WORKBENCH (pp. 41–43)
-  // -----------------------------------------------------------------------
-  c1: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🦴 Ancient Tally, Primes & Base-12 Finger Joint Counter</div>
-            <div style="font-size:13px;color:#94a3b8;">1-to-1 Correspondence • Ishango Bone (20,000 BCE) • Lothal Trade</div>
-          </div>
-          <div id="c1-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c1-btn-ishango" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🦴 Ishango Primes (11, 13, 17, 19)</button>
-            <button class="lab-btn" id="c1-btn-hand" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🖐 12 Finger Joints (Base-12)</button>
-            <button class="lab-btn" id="c1-btn-lothal" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">⚖ Lothal Ingot Trade</button>
-            <button class="lab-btn" id="c1-btn-lebombo" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🌙 Lebombo Lunar (29)</button>
-          </div>
-
-          <div id="c1-controls" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-            <div id="c1-control-box" style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label id="c1-slider-label" style="font-size:11px;color:#94a3b8;display:block;">Finger Joint Count: <b id="c1-val-display" style="color:#38bdf8;">6</b></label>
-              <input type="range" id="c1-slider" min="1" max="12" value="6" step="1" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c1;
-      var slider = document.getElementById('c1-slider');
-      var sliderLabel = document.getElementById('c1-slider-label');
-      var valDisplay = document.getElementById('c1-val-display');
-
-      function setMode(mode) {
-        s.mode = mode;
-        ['ishango', 'hand', 'lothal', 'lebombo'].forEach(function(m) {
-          var b = document.getElementById('c1-btn-' + m);
-          if (b) b.style.background = (m === mode) ? '#0284c7' : '#334155';
-        });
-        if (mode === 'hand') {
-          slider.min = '1'; slider.max = '12'; slider.value = s.jointCount;
-          sliderLabel.innerHTML = 'Finger Joint Count (Thumb Pointer): <b id="c1-val-display" style="color:#38bdf8;">' + s.jointCount + '</b>';
-        } else if (mode === 'lothal') {
-          slider.min = '2'; slider.max = '30'; slider.step = '2'; slider.value = s.spiceBags;
-          sliderLabel.innerHTML = 'Bags of Spice to Trade: <b id="c1-val-display" style="color:#38bdf8;">' + s.spiceBags + '</b>';
-        } else if (mode === 'ishango') {
-          slider.min = '1'; slider.max = '4'; slider.step = '1'; slider.value = '4';
-          sliderLabel.innerHTML = 'Prime Notch Group: <b id="c1-val-display" style="color:#38bdf8;">All 4 (11, 13, 17, 19)</b>';
-        } else {
-          slider.min = '1'; slider.max = '29'; slider.step = '1'; slider.value = '29';
-          sliderLabel.innerHTML = 'Lunar Day Notches: <b id="c1-val-display" style="color:#38bdf8;">29</b>';
-        }
-        window.SIM_ENGINES.c1.update();
-      }
-
-      document.getElementById('c1-btn-ishango').onclick = function() { setMode('ishango'); };
-      document.getElementById('c1-btn-hand').onclick = function() { setMode('hand'); };
-      document.getElementById('c1-btn-lothal').onclick = function() { setMode('lothal'); };
-      document.getElementById('c1-btn-lebombo').onclick = function() { setMode('lebombo'); };
-
-      slider.oninput = function() {
-        if (s.mode === 'hand') {
-          s.jointCount = parseInt(slider.value);
-          document.getElementById('c1-val-display').innerText = s.jointCount;
-        } else if (s.mode === 'lothal') {
-          s.spiceBags = parseInt(slider.value);
-          document.getElementById('c1-val-display').innerText = s.spiceBags;
-        }
-        window.SIM_ENGINES.c1.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c1;
-      var box = document.getElementById('c1-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      if (s.mode === 'ishango') {
-        // Render Ishango bone with 4 clusters
-        var boneX = 40, boneY = 60, boneW = w - 80, boneH = 70;
-        svg += `
-          <defs>
-            <linearGradient id="boneGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#d4b584"/>
-              <stop offset="50%" stop-color="#bfa06a"/>
-              <stop offset="100%" stop-color="#8c6d3d"/>
-            </linearGradient>
-          </defs>
-          <rect x="${boneX}" y="${boneY}" width="${boneW}" height="${boneH}" rx="25" fill="url(#boneGrad)" stroke="#5c4321" stroke-width="3"/>
-          <text x="${w/2}" y="35" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Ishango Bone: Prime Number Tally Column (~20,000 BCE)</text>
-        `;
-        var clusters = [11, 13, 17, 19];
-        var totalNotches = 11 + 13 + 17 + 19;
-        var startX = boneX + 30;
-        var gap = (boneW - 80) / 4;
-
-        clusters.forEach(function(num, idx) {
-          var cx = startX + idx * gap;
-          svg += `<text x="${cx + 25}" y="${boneY - 10}" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Prime: ${num}</text>`;
-          for (var i = 0; i < num; i++) {
-            var nx = cx + (i % 6) * 7;
-            var ny = boneY + 12 + Math.floor(i / 6) * 16;
-            svg += `<line x1="${nx}" y1="${ny}" x2="${nx + 4}" y2="${ny + 10}" stroke="#261705" stroke-width="2.5" stroke-linecap="round"/>`;
-          }
-        });
-
-        // doublings highlight
-        svg += `<text x="${w/2}" y="${boneY + boneH + 30}" fill="#94a3b8" font-size="12" text-anchor="middle">Groupings: 11, 13, 17, 19 (Consecutive Primes between 10 &amp; 20). Total prime tallies = 60.</text>`;
-
-        readout.innerHTML = `ARTIFACT: Ishango Bone (Congo, ~20,000 BCE) | COLUMNS: Prime Column (11, 13, 17, 19) | TOTAL NOTCHES: 60 | PATTERN: Prime density awareness`;
-        verdict.innerHTML = `<strong>Mathematical Truth:</strong> The Ishango bone provides 22,000-year-old evidence that Paleolithic humans recognized prime numbers (11, 13, 17, 19) long before written civilization!`;
-      }
-      else if (s.mode === 'hand') {
-        // Render 4 fingers with 3 joints each + thumb pointer
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Anatomy of Base-12: 4 Fingers × 3 Joints = 12 Counts per Hand</text>
-        `;
-        var fingers = ['Index', 'Middle', 'Ring', 'Little'];
-        var fingerW = (w - 120) / 4;
-        var jointTotal = s.jointCount;
-
-        fingers.forEach(function(name, fIdx) {
-          var fx = 70 + fIdx * fingerW;
-          svg += `<text x="${fx + fingerW/2}" y="60" fill="#94a3b8" font-size="11" text-anchor="middle">${name}</text>`;
-          // 3 joints per finger
-          for (var j = 0; j < 3; j++) {
-            var jointIndex = fIdx * 3 + (3 - j);
-            var jy = 75 + j * 42;
-            var isActive = (fIdx * 3 + (j + 1)) <= jointTotal;
-            var fillCol = isActive ? '#0284c7' : '#334155';
-            var strokeCol = isActive ? '#38bdf8' : '#64748b';
-            var txtCol = isActive ? '#ffffff' : '#94a3b8';
-
-            svg += `
-              <rect x="${fx + 10}" y="${jy}" width="${fingerW - 20}" height="34" rx="6" fill="${fillCol}" stroke="${strokeCol}" stroke-width="2"/>
-              <text x="${fx + fingerW/2}" y="${jy + 21}" fill="${txtCol}" font-size="11" font-weight="bold" text-anchor="middle">J${fIdx * 3 + j + 1}</text>
-            `;
-          }
-        });
-
-        // Thumb pointer indicator
-        svg += `
-          <circle cx="45" cy="140" r="18" fill="#f59e0b" stroke="#fbbf24" stroke-width="2"/>
-          <text x="45" y="145" fill="#000" font-size="10" font-weight="bold" text-anchor="middle">Thumb</text>
-          <text x="${w/2}" y="220" fill="#38bdf8" font-size="12" text-anchor="middle">5 Full Hand Cycles × 12 Joints = 60 (Sexagesimal Astronomical Base)</text>
-        `;
-
-        readout.innerHTML = `HAND COUNT: ${jointTotal} of 12 Phalanges | FRACTION OF DOZEN: ${(jointTotal/12).toFixed(2)} | SEXAGESIMAL FRACTION: ${(jointTotal/60).toFixed(3)}`;
-        verdict.innerHTML = `<strong>Base-12 to Base-60 Origin:</strong> Using the thumb to point to 3 phalanges on each of the 4 fingers allowed counting to 12 on one hand. Using the 5 fingers of the other hand yielded $5 \\times 12 = 60$, creating our 60 minutes, 60 seconds, and 360° circle!`;
-      }
-      else if (s.mode === 'lothal') {
-        // Lothal Spice to Copper Ingot Trade
-        var bags = s.spiceBags;
-        var ingots = (bags / 2) * 15;
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Indus Valley Trade at Lothal Port: Ratio 2 Spice Bags = 15 Copper Ingots</text>
-          <g transform="translate(60, 60)">
-            <rect x="0" y="0" width="${w/2 - 80}" height="120" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
-            <text x="${(w/2 - 80)/2}" y="30" fill="#fbbf24" font-size="13" font-weight="bold" text-anchor="middle">🌿 Spices Brought</text>
-            <text x="${(w/2 - 80)/2}" y="70" fill="#ffffff" font-size="28" font-weight="bold" text-anchor="middle">${bags} Bags</text>
-            <text x="${(w/2 - 80)/2}" y="100" fill="#94a3b8" font-size="11" text-anchor="middle">${bags/2} trade pairs</text>
-          </g>
-          <text x="${w/2}" y="125" fill="#38bdf8" font-size="24" font-weight="bold" text-anchor="middle">⇄</text>
-          <g transform="translate(${w/2 + 20}, 60)">
-            <rect x="0" y="0" width="${w/2 - 80}" height="120" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-            <text x="${(w/2 - 80)/2}" y="30" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">🪙 Copper Ingots Received</text>
-            <text x="${(w/2 - 80)/2}" y="70" fill="#ffffff" font-size="28" font-weight="bold" text-anchor="middle">${ingots}</text>
-            <text x="${(w/2 - 80)/2}" y="100" fill="#94a3b8" font-size="11" text-anchor="middle">15 ingots per 2 bags</text>
-          </g>
-          <text x="${w/2}" y="215" fill="#94a3b8" font-size="12" text-anchor="middle">Proportion: (Ingots / ${bags}) = (15 / 2) ⟹ Ingots = (${bags} × 15) / 2 = ${ingots}</text>
-        `;
-
-        readout.innerHTML = `INPUT: ${bags} spice bags | EXCHANGE RATE: 7.5 ingots/bag | COPPER INGOTS RETURNED: ${ingots}`;
-        verdict.innerHTML = `<strong>Standardized Trade:</strong> The merchants of Harappa and Lothal used unit ratios to trade terracotta, spices, and lapis lazuli with Mesopotamia, laying early foundations for proportional rational arithmetic.`;
-      }
-      else {
-        // Lebombo Lunar Calendar
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Lebombo Bone (~35,000 BCE): 29 Notches Lunar Month Counter</text>
-          <rect x="50" y="80" width="${w - 100}" height="40" rx="15" fill="#a16207" stroke="#713f12" stroke-width="3"/>
-        `;
-        var step = (w - 140) / 29;
-        for (var k = 0; k < 29; k++) {
-          var kx = 70 + k * step;
-          svg += `<line x1="${kx}" y1="88" x2="${kx}" y2="112" stroke="#451a03" stroke-width="2.5"/>`;
-        }
-        svg += `
-          <circle cx="${w/2}" cy="160" r="22" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
-          <text x="${w/2}" y="165" fill="#000" font-size="11" font-weight="bold" text-anchor="middle">29.5d</text>
-          <text x="${w/2}" y="210" fill="#94a3b8" font-size="12" text-anchor="middle">29 notches exactly mirror the synodic lunar cycle tracked in Vedic Panchangas.</text>
-        `;
-        readout.innerHTML = `ARTIFACT: Lebombo Bone (Swaziland, 35,000 BCE) | TALLIES: 29 discrete notches | ASTRONOMICAL CORRELATE: Synodic Lunar Month (29.53 days)`;
-        verdict.innerHTML = `<strong>Lunar Tracking:</strong> Over 35,000 years ago, natural counting numbers $\\mathbb{N}$ enabled humans to predict lunar cycles and agricultural seasons.`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 2: BRAHMAGUPTA'S LEDGER OF FORTUNES & DEBTS (pp. 43–48)
-  // -----------------------------------------------------------------------
-  c2: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">⚖ Brahmagupta's Ledger: Dhana (Fortunes) &amp; Ṛiṇa (Debts)</div>
-            <div style="font-size:13px;color:#94a3b8;">Brāhmasphuṭasiddhānta (628 CE) • Zero Pairs • Multiplication of Signs</div>
-          </div>
-          <div id="c2-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c2-btn-balance" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🪙 Balance Scale (Zero Pairs)</button>
-            <button class="lab-btn" id="c2-btn-mult" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">✖ Brahmagupta's Sign Multiplier</button>
-            <button class="lab-btn" id="c2-btn-subdebt" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">✂ Subtracting Debt: a - (-b) = a + b</button>
-          </div>
-
-          <div id="c2-controls" style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Fortunes (+Dhana): <b id="c2-fort-val" style="color:#10b981;">8</b></label>
-              <input type="range" id="c2-slider-fort" min="0" max="15" value="8" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Debts (-Ṛiṇa): <b id="c2-debt-val" style="color:#ef4444;">5</b></label>
-              <input type="range" id="c2-slider-debt" min="0" max="15" value="5" step="1" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c2;
-      var fSlider = document.getElementById('c2-slider-fort');
-      var dSlider = document.getElementById('c2-slider-debt');
-
-      function setOpMode(m) {
-        s.opMode = m;
-        ['balance', 'mult', 'subdebt'].forEach(function(k) {
-          var b = document.getElementById('c2-btn-' + k);
-          if (b) b.style.background = (k === m) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c2.update();
-      }
-
-      document.getElementById('c2-btn-balance').onclick = function() { setOpMode('balance'); };
-      document.getElementById('c2-btn-mult').onclick = function() { setOpMode('mult'); };
-      document.getElementById('c2-btn-subdebt').onclick = function() { setOpMode('subdebt'); };
-
-      fSlider.oninput = function() {
-        s.fortunes = parseInt(fSlider.value);
-        document.getElementById('c2-fort-val').innerText = s.fortunes;
-        window.SIM_ENGINES.c2.update();
-      };
-      dSlider.oninput = function() {
-        s.debts = parseInt(dSlider.value);
-        document.getElementById('c2-debt-val').innerText = s.debts;
-        window.SIM_ENGINES.c2.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c2;
-      var box = document.getElementById('c2-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      if (s.opMode === 'balance') {
-        var F = s.fortunes;
-        var D = s.debts;
-        var net = F - D;
-        var pairs = Math.min(F, D);
-
-        // Visual Balance Scale
-        var pivotX = w / 2;
-        var pivotY = 160;
-        var tilt = Math.max(-15, Math.min(15, (D - F) * 1.5)); // angle
-        var beamL = 180;
-        var rad = tilt * Math.PI / 180;
-        var leftPanX = pivotX - beamL * Math.cos(rad);
-        var leftPanY = pivotY - beamL * Math.sin(rad);
-        var rightPanX = pivotX + beamL * Math.cos(rad);
-        var rightPanY = pivotY + beamL * Math.sin(rad);
-
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Brahmagupta's Ledger Scale: Fortunes (+${F}) vs Debts (-${D})</text>
-          <!-- Stand -->
-          <line x1="${pivotX}" y1="${pivotY}" x2="${pivotX}" y2="210" stroke="#64748b" stroke-width="4"/>
-          <polygon points="${pivotX-20},210 ${pivotX+20},210 ${pivotX},190" fill="#475569"/>
-          <!-- Beam -->
-          <line x1="${leftPanX}" y1="${leftPanY}" x2="${rightPanX}" y2="${rightPanY}" stroke="#e2e8f0" stroke-width="4"/>
-          <circle cx="${pivotX}" cy="${pivotY}" r="6" fill="#38bdf8"/>
-          <!-- Left Pan (Fortunes / Dhana) -->
-          <line x1="${leftPanX}" y1="${leftPanY}" x2="${leftPanX-25}" y2="${leftPanY+40}" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="${leftPanX}" y1="${leftPanY}" x2="${leftPanX+25}" y2="${leftPanY+40}" stroke="#94a3b8" stroke-width="1.5"/>
-          <ellipse cx="${leftPanX}" cy="${leftPanY+40}" rx="35" ry="8" fill="#10b981" stroke="#059669" stroke-width="2"/>
-          <text x="${leftPanX}" y="${leftPanY+30}" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">+${F} Dhana</text>
-
-          <!-- Right Pan (Debts / Rina) -->
-          <line x1="${rightPanX}" y1="${rightPanY}" x2="${rightPanX-25}" y2="${rightPanY+40}" stroke="#94a3b8" stroke-width="1.5"/>
-          <line x1="${rightPanX}" y1="${rightPanY}" x2="${rightPanX+25}" y2="${rightPanY+40}" stroke="#94a3b8" stroke-width="1.5"/>
-          <ellipse cx="${rightPanX}" cy="${rightPanY+40}" rx="35" ry="8" fill="#ef4444" stroke="#dc2626" stroke-width="2"/>
-          <text x="${rightPanX}" y="${rightPanY+30}" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">-${D} Ṛiṇa</text>
-
-          <!-- Status badge -->
-          <rect x="${w/2 - 75}" y="50" width="150" height="30" rx="6" fill="#0f172a" stroke="${net >= 0 ? '#10b981' : '#ef4444'}" stroke-width="2"/>
-          <text x="${w/2}" y="70" fill="${net >= 0 ? '#10b981' : '#ef4444'}" font-size="13" font-weight="bold" text-anchor="middle">Net Worth = ${net >= 0 ? '+' + net : net}</text>
-        `;
-
-        readout.innerHTML = `DHANA (Fortunes): +${F} | ṚIṆA (Debts): -${D} | ZERO PAIRS CANCELLED: ${pairs} | NET INTEGER: ${net}`;
-        verdict.innerHTML = net === 0
-          ? `<strong>Śhūnya (Zero State):</strong> Fortunes and debts exactly balance! $(${F}) + (-${D}) = 0$. The ledger is perfectly balanced.`
-          : net > 0
-          ? `<strong>Net Fortune:</strong> After cancelling ${pairs} zero pairs, you retain a positive fortune of +${net}.`
-          : `<strong>Net Debt:</strong> After cancelling ${pairs} zero pairs, an unpaid debt of ${Math.abs(net)} remains.`;
-      }
-      else if (s.opMode === 'mult') {
-        // Multiplier rules
-        var a = -s.fortunes || -4;
-        var b = -s.debts || -3;
-        var prod = a * b;
-
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Brahmagupta's Law of Signs: The Product of Two Debts is a Fortune!</text>
-          <g transform="translate(${w/2 - 160}, 60)">
-            <rect x="0" y="0" width="320" height="120" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
-            <text x="160" y="40" fill="#f8fafc" font-size="20" font-weight="bold" text-anchor="middle">
-              <tspan fill="#ef4444">(${a})</tspan> × <tspan fill="#ef4444">(${b})</tspan> = <tspan fill="#10b981">+${prod}</tspan>
-            </text>
-            <text x="160" y="75" fill="#38bdf8" font-size="13" text-anchor="middle">Ṛiṇa × Ṛiṇa = Dhana (Negative × Negative = Positive)</text>
-            <text x="160" y="100" fill="#94a3b8" font-size="11" text-anchor="middle">Brahmagupta (628 CE): 'The product of two debts is a fortune'</text>
-          </g>
-        `;
-        readout.innerHTML = `MULTIPLICATION: (${a}) × (${b}) = +${prod} | RULE: Negative × Negative = Positive`;
-        verdict.innerHTML = `<strong>Why $(-a) \\times (-b) = +ab$:</strong> If you remove $a$ payments of debt $b$ from your records, your net capital increases by $ab$. Negating a debt creates an asset!`;
-      }
-      else {
-        // Subtraction of Debt: a - (-b) = a + b
-        var current = s.fortunes;
-        var debtRemoved = s.debts;
-        var finalWorth = current + debtRemoved;
-
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Cancelling a Debt: Subtracting Negative Equals Adding Positive</text>
-          <g transform="translate(${w/2 - 170}, 60)">
-            <rect x="0" y="0" width="340" height="120" rx="10" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
-            <text x="170" y="45" fill="#f8fafc" font-size="20" font-weight="bold" text-anchor="middle">
-              ${current} - <tspan fill="#ef4444">(-${debtRemoved})</tspan> = <tspan fill="#10b981">${finalWorth}</tspan>
-            </text>
-            <text x="170" y="80" fill="#38bdf8" font-size="13" text-anchor="middle">Removing a debt of ₹${debtRemoved} increases net wealth by ₹${debtRemoved}!</text>
-            <text x="170" y="105" fill="#94a3b8" font-size="11" text-anchor="middle">Formal law: a - (-b) = a + b</text>
-          </g>
-        `;
-        readout.innerHTML = `INITIAL WORTH: ₹${current} | DEBT CANCELLED: -₹${debtRemoved} | FINAL WORTH: ₹${finalWorth}`;
-        verdict.innerHTML = `<strong>Creditor Debt Cancellation:</strong> When a creditor forgives your loan of ₹${debtRemoved}, your liabilities decrease to zero, which raises your net financial worth by precisely ₹${debtRemoved}.`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 3: RATIONAL DENSITY & NUMBER LINE ZOOMER (pp. 48–56)
-  // -----------------------------------------------------------------------
-  c3: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🔍 Rational Density &amp; Number Line Micro-Zoomer</div>
-            <div style="font-size:13px;color:#94a3b8;">Infinite Intermediate Rationals • Average Midpoint • Common Denominators</div>
-          </div>
-          <div id="c3-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c3-p1" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">[2/5, 3/5] (Ex 3.4)</button>
-            <button class="lab-btn" id="c3-p2" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">[-1/2, 1/4]</button>
-            <button class="lab-btn" id="c3-p3" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">[3, 4] (EOC Q5)</button>
-            <button class="lab-btn" id="c3-p4" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">[3.1415, 3.1416]</button>
-          </div>
-
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Intermediate Points (n): <b id="c3-n-val" style="color:#38bdf8;">5</b></label>
-              <input type="range" id="c3-slider-n" min="1" max="15" value="5" step="1" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c3;
-      var nSlider = document.getElementById('c3-slider-n');
-
-      function setPreset(p, aN, aD, bN, bD, nDefault) {
-        s.preset = p; s.aNum = aN; s.aDen = aD; s.bNum = bN; s.bDen = bD;
-        s.n = nDefault;
-        nSlider.value = nDefault;
-        document.getElementById('c3-n-val').innerText = nDefault;
-        ['p1', 'p2', 'p3', 'p4'].forEach(function(k) {
-          var b = document.getElementById('c3-' + k);
-          if (b) b.style.background = (k === p) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c3.update();
-      }
-
-      document.getElementById('c3-p1').onclick = function() { setPreset('p1', 2, 5, 3, 5, 5); };
-      document.getElementById('c3-p2').onclick = function() { setPreset('p2', -1, 2, 1, 4, 3); };
-      document.getElementById('c3-p3').onclick = function() { setPreset('p3', 3, 1, 4, 1, 6); };
-      document.getElementById('c3-p4').onclick = function() { setPreset('p4', 31415, 10000, 31416, 10000, 3); };
-
-      nSlider.oninput = function() {
-        s.n = parseInt(nSlider.value);
-        document.getElementById('c3-n-val').innerText = s.n;
-        window.SIM_ENGINES.c3.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c3;
-      var box = document.getElementById('c3-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var aVal = s.aNum / s.aDen;
-      var bVal = s.bNum / s.bDen;
-      var n = s.n;
-
-      var lineY = 120;
-      var padX = 60;
-      var spanW = w - 2 * padX;
-
-      svg += `
-        <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Interval [${s.aNum}/${s.aDen}, ${s.bNum}/${s.bDen}] with ${n} Scaled Intermediate Rationals</text>
-        <line x1="${padX - 20}" y1="${lineY}" x2="${w - padX + 20}" y2="${lineY}" stroke="#64748b" stroke-width="3"/>
-      `;
-
-      // Endpoints
-      svg += `
-        <!-- Left Bound -->
-        <circle cx="${padX}" cy="${lineY}" r="7" fill="#ef4444" stroke="#fff" stroke-width="2"/>
-        <line x1="${padX}" y1="${lineY - 15}" x2="${padX}" y2="${lineY + 15}" stroke="#ef4444" stroke-width="2"/>
-        <text x="${padX}" y="${lineY - 22}" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">a = ${s.aNum}/${s.aDen}</text>
-        <text x="${padX}" y="${lineY + 30}" fill="#94a3b8" font-size="11" text-anchor="middle">${aVal.toFixed(4)}</text>
-
-        <!-- Right Bound -->
-        <circle cx="${w - padX}" cy="${lineY}" r="7" fill="#10b981" stroke="#fff" stroke-width="2"/>
-        <line x1="${w - padX}" y1="${lineY - 15}" x2="${w - padX}" y2="${lineY + 15}" stroke="#10b981" stroke-width="2"/>
-        <text x="${w - padX}" y="${lineY - 22}" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">b = ${s.bNum}/${s.bDen}</text>
-        <text x="${w - padX}" y="${lineY + 30}" fill="#94a3b8" font-size="11" text-anchor="middle">${bVal.toFixed(4)}</text>
-      `;
-
-      // Intermediate Points
-      var points = [];
-      for (var i = 1; i <= n; i++) {
-        var frac = i / (n + 1);
-        var ptVal = aVal + frac * (bVal - aVal);
-        var ptX = padX + frac * spanW;
-        points.push(ptVal.toFixed(4));
-
-        svg += `
-          <circle cx="${ptX}" cy="${lineY}" r="5" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>
-          <line x1="${ptX}" y1="${lineY - 10}" x2="${ptX}" y2="${lineY + 10}" stroke="#38bdf8" stroke-width="1.5"/>
-          <text x="${ptX}" y="${lineY + (i % 2 === 0 ? 30 : 18)}" fill="#38bdf8" font-size="10" text-anchor="middle">q${i}</text>
-        `;
-      }
-
-      svg += `
-        <text x="${w/2}" y="200" fill="#94a3b8" font-size="12" text-anchor="middle">Scaling denominator by (n+1) = ${n+1} yields exactly ${n} interior rational coordinates.</text>
-      `;
-
-      readout.innerHTML = `INTERVAL: [${aVal.toFixed(5)}, ${bVal.toFixed(5)}] | GAP: ${(bVal - aVal).toFixed(5)} | SLOTS INSERTED: ${n} | SAMPLES: ${points.slice(0, 4).join(', ')}...`;
-      verdict.innerHTML = `<strong>The Density Theorem:</strong> Between any two distinct rational numbers $a < b$, there exist infinitely many rational numbers. Repeating this process proves there is NO 'immediate next' rational number!`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 4: BAUDHĀYANA'S DIAGONAL & √2 ALTAR DISSECTION (pp. 56–60)
-  // -----------------------------------------------------------------------
-  c4: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📐 Baudhāyana's Diagonal &amp; Altar Dissection (800 BCE)</div>
-            <div style="font-size:13px;color:#94a3b8;">Śulbasūtra Unit Square Diagonal • 577/408 Approximation • Proof of √2 Irrationality</div>
-          </div>
-          <div id="c4-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c4-s1" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Term 1: 1</button>
-            <button class="lab-btn" id="c4-s2" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Term 2: 1 + 1/3 (1.3333)</button>
-            <button class="lab-btn" id="c4-s3" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Term 3: + 1/12 (1.4167)</button>
-            <button class="lab-btn" id="c4-s4" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Term 4: - 1/408 (577/408 = 1.414215)</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c4;
-      function setStep(step) {
-        s.step = step;
-        [1, 2, 3, 4].forEach(function(k) {
-          var b = document.getElementById('c4-s' + k);
-          if (b) b.style.background = (k === step) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c4.update();
-      }
-
-      document.getElementById('c4-s1').onclick = function() { setStep(1); };
-      document.getElementById('c4-s2').onclick = function() { setStep(2); };
-      document.getElementById('c4-s3').onclick = function() { setStep(3); };
-      document.getElementById('c4-s4').onclick = function() { setStep(4); };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c4;
-      var box = document.getElementById('c4-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var sqSize = 130;
-      var sqX = 50, sqY = 60;
-
-      // Unit Square
-      svg += `
-        <text x="${w/2}" y="25" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Baudhāyana's Śulbasūtra Formula: √2 ≈ 1 + 1/3 + 1/(3×4) - 1/(3×4×34)</text>
-        <!-- Unit Square -->
-        <rect x="${sqX}" y="${sqY}" width="${sqSize}" height="${sqSize}" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-        <text x="${sqX + sqSize/2}" y="${sqY + sqSize + 18}" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Side = 1</text>
-        <text x="${sqX - 12}" y="${sqY + sqSize/2}" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">1</text>
-        <!-- Diagonal -->
-        <line x1="${sqX}" y1="${sqY + sqSize}" x2="${sqX + sqSize}" y2="${sqY}" stroke="#ec4899" stroke-width="3" stroke-dasharray="${s.step >= 1 ? 'none' : '4,4'}"/>
-        <text x="${sqX + sqSize/2 - 10}" y="${sqY + sqSize/2 - 8}" fill="#ec4899" font-size="13" font-weight="bold" transform="rotate(-45, ${sqX + sqSize/2}, ${sqY + sqSize/2})">d = √2</text>
-      `;
-
-      // Approximation values
-      var stepData = [
-        { name: "Term 1", frac: "1", dec: 1.0, err: "29.3%" },
-        { name: "Term 2", frac: "1 + 1/3 = 4/3", dec: 1.33333, err: "5.7%" },
-        { name: "Term 3", frac: "4/3 + 1/12 = 17/12", dec: 1.41667, err: "0.17%" },
-        { name: "Term 4", frac: "17/12 - 1/408 = 577/408", dec: 1.41421569, err: "0.00015%" }
-      ];
-      var cur = stepData[s.step - 1];
-
-      // Comparison Box
-      var boxX = sqX + sqSize + 40;
-      var boxW = w - boxX - 30;
-      svg += `
-        <g transform="translate(${boxX}, ${sqY})">
-          <rect x="0" y="0" width="${boxW}" height="${sqSize}" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-          <text x="${boxW/2}" y="25" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">Step ${s.step}: ${cur.name}</text>
-          <text x="${boxW/2}" y="55" fill="#ffffff" font-size="16" font-weight="bold" text-anchor="middle">${cur.frac}</text>
-          <text x="${boxW/2}" y="82" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">≈ ${cur.dec.toFixed(8)}</text>
-          <text x="${boxW/2}" y="105" fill="#f59e0b" font-size="11" text-anchor="middle">True √2 = 1.41421356 | Error: ${cur.err}</text>
-        </g>
-      `;
-
-      readout.innerHTML = `BAUDHĀYANA FORMULA: 577/408 ≈ 1.414215686 | TRUE VALUE: 1.414213562 | ACCURACY: 5 decimal places (Error < 0.00015%)`;
-      verdict.innerHTML = `<strong>Vedic Genius (800 BCE):</strong> Baudhāyana derived $577/408$, matching $\\sqrt{2}$ to five decimal places 2,800 years ago! Yet Hippasus proved $\\sqrt{2}$ cannot be expressed by ANY finite fraction $p/q$ by contradiction.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 5: CYCLIC DECIMAL WHEEL (1/7, 1/13, 1/17) (pp. 60–63)
-  // -----------------------------------------------------------------------
-  c5: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🎡 Cyclic Decimal Wheel &amp; Repeating Period Explorer</div>
-            <div style="font-size:13px;color:#94a3b8;">1/7 Heptagon Carousel • Cyclic Digits {1,4,2,8,5,7} • Proof that 0.999... = 1</div>
-          </div>
-          <div id="c5-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c5-d7" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">1/7 Cyclic Carousel (Period 6)</button>
-            <button class="lab-btn" id="c5-d13" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">1/13 Dual Cyclic Families (Ex 3.5)</button>
-            <button class="lab-btn" id="c5-nine" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Proof: 0.999... = 1</button>
-          </div>
-
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Numerator (k): <b id="c5-num-val" style="color:#38bdf8;">1</b></label>
-              <input type="range" id="c5-slider-num" min="1" max="6" value="1" step="1" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c5;
-      var numSlider = document.getElementById('c5-slider-num');
-
-      function setDen(den, mode) {
-        s.den = den; s.mode = mode;
-        s.num = 1;
-        numSlider.min = '1';
-        numSlider.max = (den === 7) ? '6' : (den === 13 ? '12' : '1');
-        numSlider.value = '1';
-        document.getElementById('c5-num-val').innerText = '1';
-        ['d7', 'd13', 'nine'].forEach(function(k) {
-          var b = document.getElementById('c5-' + k);
-          if (b) b.style.background = (k === (mode === 'nine' ? 'nine' : ('d' + den))) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c5.update();
-      }
-
-      document.getElementById('c5-d7').onclick = function() { setDen(7, 'wheel'); };
-      document.getElementById('c5-d13').onclick = function() { setDen(13, 'wheel'); };
-      document.getElementById('c5-nine').onclick = function() { setDen(1, 'nine'); };
-
-      numSlider.oninput = function() {
-        s.num = parseInt(numSlider.value);
-        document.getElementById('c5-num-val').innerText = s.num;
-        window.SIM_ENGINES.c5.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c5;
-      var box = document.getElementById('c5-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 240;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      if (s.mode === 'nine') {
-        // Render 0.999... = 1 Proof
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Algebraic Proof: Why 0.9̄ = 0.99999... is Exactly Equal to 1</text>
-          <g transform="translate(${w/2 - 180}, 60)">
-            <rect x="0" y="0" width="360" height="140" rx="10" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
-            <text x="180" y="30" fill="#94a3b8" font-size="13" text-anchor="middle">Step 1: Let x = 0.99999...</text>
-            <text x="180" y="55" fill="#38bdf8" font-size="13" text-anchor="middle">Step 2: Multiply by 10 ⟹ 10x = 9.99999...</text>
-            <text x="180" y="80" fill="#f59e0b" font-size="13" text-anchor="middle">Step 3: Subtract ⟹ 10x - x = 9.00000...</text>
-            <text x="180" y="105" fill="#ffffff" font-size="16" font-weight="bold" text-anchor="middle">9x = 9 ⟹ x = 9/9 = 1</text>
-            <text x="180" y="128" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">Conclusion: 0.9̄ ≡ 1 (Exact Identity)</text>
-          </g>
-        `;
-        readout.innerHTML = `ALGEBRAIC PROOF: Let x = 0.9̄ ⟹ 10x = 9.9̄ ⟹ 9x = 9 ⟹ x = 1`;
-        verdict.innerHTML = `<strong>Rigorous Identity:</strong> $0.\\bar{9}$ is not an approximation; it is precisely and mathematically $1$. Real numbers do not possess infinitesimal gaps.`;
-      }
-      else if (s.den === 7) {
-        // Cyclic 1/7 Wheel
-        var k = s.num;
-        var digits = ['1', '4', '2', '8', '5', '7'];
-        // starting index based on k
-        var startMap = { 1: 0, 2: 2, 3: 1, 4: 4, 5: 5, 6: 3 }; // 1/7=.142857, 2/7=.285714, 3/7=.428571, 4/7=.571428, 5/7=.714285, 6/7=.857142
-        var sIdx = startMap[k] || 0;
-        var rotated = [];
-        for (var i = 0; i < 6; i++) {
-          rotated.push(digits[(sIdx + i) % 6]);
-        }
-        var decString = "0." + rotated.join('') + "...";
-
-        // Circle Wheel
-        var cx = w / 2 - 90;
-        var cy = 135;
-        var R = 65;
-
-        svg += `
-          <text x="${w/2}" y="25" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Cyclic Wheel of 1/7: All Multiples Circulate {1, 4, 2, 8, 5, 7}</text>
-          <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#334155" stroke-width="3" stroke-dasharray="4,4"/>
-        `;
-
-        for (var d = 0; d < 6; d++) {
-          var ang = (d * 60 - 90) * Math.PI / 180;
-          var dx = cx + R * Math.cos(ang);
-          var dy = cy + R * Math.sin(ang);
-          var isLead = (d === sIdx);
-
-          svg += `
-            <circle cx="${dx}" cy="${dy}" r="16" fill="${isLead ? '#0284c7' : '#0f172a'}" stroke="${isLead ? '#38bdf8' : '#64748b'}" stroke-width="2"/>
-            <text x="${dx}" y="${dy + 5}" fill="${isLead ? '#ffffff' : '#e2e8f0'}" font-size="13" font-weight="bold" text-anchor="middle">${digits[d]}</text>
-          `;
-        }
-
-        // Summary Box
-        var rX = w / 2 + 20;
-        svg += `
-          <g transform="translate(${rX}, 65)">
-            <rect x="0" y="0" width="${w - rX - 30}" height="120" rx="8" fill="#0f172a" stroke="#0284c7" stroke-width="2"/>
-            <text x="${(w - rX - 30)/2}" y="30" fill="#38bdf8" font-size="18" font-weight="bold" text-anchor="middle">${k}/7</text>
-            <text x="${(w - rX - 30)/2}" y="65" fill="#10b981" font-size="16" font-weight="bold" text-anchor="middle">= ${decString}</text>
-            <text x="${(w - rX - 30)/2}" y="95" fill="#94a3b8" font-size="11" text-anchor="middle">Period: 6 repeating digits</text>
-          </g>
-        `;
-
-        readout.innerHTML = `FRACTION: ${k}/7 | DECIMAL: ${decString} | START DIGIT: ${rotated[0]} | REPEATING BLOCK: ${rotated.join('')}`;
-        verdict.innerHTML = `<strong>The Magic of 142857:</strong> Multiplying the block $142857$ by $1, 2, 3, 4, 5, 6$ produces purely circular shifts of the same digits! It is the smallest cyclic number in mathematics.`;
-      }
-      else {
-        // 1/13 Two Families
-        var k13 = s.num;
-        var decVal = (k13 / 13).toFixed(8);
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">1/13 Splits into Two Distinct Cyclic Families of 6 Digits (Ex 3.5)</text>
-          <g transform="translate(${w/2 - 180}, 60)">
-            <rect x="0" y="0" width="360" height="130" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
-            <text x="180" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">Fraction: ${k13}/13 ≈ ${decVal}</text>
-            <text x="180" y="60" fill="#10b981" font-size="12" text-anchor="middle">Family A {0, 7, 6, 9, 2, 3}: 1/13, 3/13, 4/13, 9/13, 10/13, 12/13</text>
-            <text x="180" y="85" fill="#f59e0b" font-size="12" text-anchor="middle">Family B {1, 5, 3, 8, 4, 6}: 2/13, 5/13, 6/13, 7/13, 8/13, 11/13</text>
-            <text x="180" y="115" fill="#94a3b8" font-size="11" text-anchor="middle">Period length = 6. (Since 6 divides 13 - 1 = 12).</text>
-          </g>
-        `;
-        readout.innerHTML = `FRACTION: ${k13}/13 | DECIMAL: ${decVal} | PERIOD: 6 digits | FAMILIES: 2 cyclic cosets`;
-        verdict.innerHTML = `<strong>Coset Decomposition:</strong> For denominator $13$, the period is $6$ (half of $13 - 1 = 12$). The remainders decompose into two cyclic orbits of length 6.`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 6: SQUARE ROOT SPIRAL (WHEEL OF THEODORUS) (pp. 63–67)
-  // -----------------------------------------------------------------------
-  c6: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🌀 The Square Root Spiral (Wheel of Theodorus)</div>
-            <div style="font-size:13px;color:#94a3b8;">Pythagorean Recurrence: h² = (√N)² + 1² = N+1 ⟹ Hypotenuse = √(N+1)</div>
-          </div>
-          <div id="c6-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c6-play" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">▶ Play</button>
-            <button class="lab-btn" id="c6-pause" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">⏸ Pause</button>
-            <button class="lab-btn" id="c6-step" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">⏭ Step</button>
-            <button class="lab-btn" id="c6-reset" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">↺ Reset</button>
-          </div>
-
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Triangles Constructed: <b id="c6-count-val" style="color:#38bdf8;">6</b></label>
-              <input type="range" id="c6-slider-count" min="1" max="16" value="6" step="1" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c6;
-      var cSlider = document.getElementById('c6-slider-count');
-
-      cSlider.oninput = function() {
-        s.count = parseInt(cSlider.value);
-        document.getElementById('c6-count-val').innerText = s.count;
-        window.SIM_ENGINES.c6.update();
-      };
-
-      document.getElementById('c6-play').onclick = function() {
-        if (window.SIM_STATE.timer) clearInterval(window.SIM_STATE.timer);
-        window.SIM_STATE.timer = setInterval(function() {
-          if (s.count < 16) {
-            s.count++;
-            cSlider.value = s.count;
-            document.getElementById('c6-count-val').innerText = s.count;
-            window.SIM_ENGINES.c6.update();
-          } else {
-            clearInterval(window.SIM_STATE.timer);
-          }
-        }, 600);
-      };
-
-      document.getElementById('c6-pause').onclick = function() {
-        if (window.SIM_STATE.timer) clearInterval(window.SIM_STATE.timer);
-      };
-
-      document.getElementById('c6-step').onclick = function() {
-        if (s.count < 16) {
-          s.count++;
-          cSlider.value = s.count;
-          document.getElementById('c6-count-val').innerText = s.count;
-          window.SIM_ENGINES.c6.update();
-        }
-      };
-
-      document.getElementById('c6-reset').onclick = function() {
-        if (window.SIM_STATE.timer) clearInterval(window.SIM_STATE.timer);
-        s.count = 1;
-        cSlider.value = 1;
-        document.getElementById('c6-count-val').innerText = 1;
-        window.SIM_ENGINES.c6.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c6;
-      var box = document.getElementById('c6-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 260;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var originX = w / 2;
-      var originY = h / 2 + 10;
-      var unit = 32; // pixel scale for length 1
-
-      svg += `
-        <text x="${w/2}" y="25" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Square Root Spiral: Construction of √2 to √17 (Wheel of Theodorus)</text>
-        <circle cx="${originX}" cy="${originY}" r="4" fill="#f59e0b"/>
-        <text x="${originX - 10}" y="${originY + 16}" fill="#f59e0b" font-size="11" font-weight="bold">O</text>
-      `;
-
-      // Draw spiral triangles
-      var angle = 0; // starting horizontally to right
-      var px = originX + unit;
-      var py = originY;
-
-      // First horizontal leg
-      svg += `<line x1="${originX}" y1="${originY}" x2="${px}" y2="${py}" stroke="#64748b" stroke-width="2"/>`;
-
-      var colors = ['#38bdf8', '#818cf8', '#a855f7', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e', '#10b981'];
-
-      var lastHypLen = Math.sqrt(2);
-      var lastRoot = 2;
-
-      for (var t = 1; t <= s.count; t++) {
-        // Altitude perpendicular to current radial vector
-        var radLen = Math.sqrt(t);
-        var altLen = 1;
-        var nextRadLen = Math.sqrt(t + 1);
-        var dAngle = Math.atan2(altLen, radLen);
-        var nextAngle = angle + dAngle;
-
-        var qx = originX + unit * nextRadLen * Math.cos(nextAngle);
-        var qy = originY - unit * nextRadLen * Math.sin(nextAngle);
-
-        var col = colors[(t - 1) % colors.length];
-
-        // Fill triangle
-        svg += `
-          <polygon points="${originX},${originY} ${px},${py} ${qx},${qy}" fill="${col}" fill-opacity="0.25" stroke="${col}" stroke-width="1.8"/>
-          <!-- Perpendicular leg -->
-          <line x1="${px}" y1="${py}" x2="${qx}" y2="${qy}" stroke="#f8fafc" stroke-width="2"/>
-          <!-- Label hypotenuse -->
-          <text x="${(originX + qx)/2}" y="${(originY + qy)/2}" fill="#ffffff" font-size="9" font-weight="bold">√${t + 1}</text>
-        `;
-
-        angle = nextAngle;
-        px = qx;
-        py = qy;
-        lastHypLen = nextRadLen;
-        lastRoot = t + 1;
-      }
-
-      readout.innerHTML = `TRIANGLES: ${s.count} | CURRENT HYPOTENUSE: √${lastRoot} | DECIMAL: ${lastHypLen.toFixed(5)} | RECURRENCE: (${Math.sqrt(lastRoot-1).toFixed(3)})² + 1² = ${lastRoot}`;
-      verdict.innerHTML = `<strong>Wheel of Theodorus Construction:</strong> Each consecutive right triangle uses the previous hypotenuse $\\sqrt{N}$ as base and adds an orthogonal leg of 1, yielding hypotenuse $\\sqrt{(\\sqrt{N})^2 + 1^2} = \\sqrt{N+1}$. Rotating this onto the real axis physically constructs all square roots!`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    }
+// iemh103 labs: The World of Numbers.
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function clampM3(x, a, b){ return Math.max(a, Math.min(b, x)); }
+function gcdM3(a, b){ a = Math.abs(a); b = Math.abs(b); while(b){ var t = a % b; a = b; b = t; } return a || 1; }
+function frM3(n, d){ if(d < 0){ n = -n; d = -d; } var g = gcdM3(n, d); n /= g; d /= g; return (n < 0 ? "−" : "") + Math.abs(n) + (d === 1 ? "" : "/" + d); }
+function sgnM3(v){ return v < 0 ? "−" + Math.abs(v) : String(v); }
+// A number line from lo to hi with `parts` ticks per unit; fmt(v) labels the major ticks.
+function nlM3(L, o){
+  var C = L.C, X = function(v){ return o.x0 + (v - o.lo) / (o.hi - o.lo) * (o.x1 - o.x0); }, m = L.line(o.x0 - 12, o.y, o.x1 + 12, o.y, C.faint, 2);
+  var n = Math.round((o.hi - o.lo) * o.parts);
+  for(var i = 0; i <= n; i++){
+    var v = o.lo + i / o.parts, major = o.major ? o.major(i) : Math.abs(v - Math.round(v)) < 1e-9;
+    m += L.line(X(v), o.y - (major ? 9 : 5), X(v), o.y + (major ? 9 : 5), major ? C.text : C.muted, major ? 2 : 1);
+    if(major) m += L.text(X(v), o.y + 26, o.fmt ? o.fmt(v, i) : sgnM3(Math.round(v)), {size: 11, color: C.muted});
   }
-};
+  return {svg: m, X: X};
+}
+
+// Lab 1 — Counting: pebbles, the Ishango bone, finger joints, trade at Lothal (§3.1)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "herd"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend({herd: [[C.path, "pebble"], [C.text, "cow"]], ishango: [["#e7d3b1", "bone"], ["#7c2d12", "notch"]], fingers: [[C.path, "joint counted"]], lothal: [["#a16207", "bag of spices"], ["#b45309", "copper ingot"]]}[id]);
+    L.watch({herd: "Morning: 8 cows go out and a pebble goes into the pot for each. Evening: a pebble comes out for each cow that returns.", ishango: "Fig. 3.1: one column of the Ishango bone groups its notches as 11, 13, 17 and 19.", fingers: "Exercise Set 3.1 Q4: the thumb counts the 3 joints on each of the other 4 fingers.", lothal: "Exercise Set 3.1 Q1: 15 copper ingots for every 2 bags of spices; the merchant brings 12 bags."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function cow(x, y, on){ var col = on ? "#e2e8f0" : "rgba(226,232,240,0.12)"; return L.rect(x - 18, y - 12, 34, 20, col, ' rx="6"') + L.circle(x + 20, y - 9, 8, col) + L.line(x - 10, y + 8, x - 10, y + 20, col, 3) + L.line(x + 8, y + 8, x + 8, y + 20, col, 3); }
+  function draw(t){
+    var m = "", msg, i;
+    if(st.preset === "herd"){
+      var out = Math.min(8, Math.floor(t / 2 * 8 + 1e-9)), back = t <= 2 ? 0 : Math.min(7, Math.floor((t - 2) / 2 * 7 + 1e-9)), pebbles = out - back;
+      m += L.text(180, 30, t < 2 ? "Morning: cows leave to graze" : "Evening: cows return", {size: 14, color: C.text, weight: 700});
+      for(i = 0; i < 8; i++) m += cow(60 + (i % 4) * 80, 90 + Math.floor(i / 4) * 70, t < 2 ? i >= out : i < back);
+      m += '<path d="M 470 90 L 490 230 L 610 230 L 630 90 Z" fill="rgba(180,83,9,0.35)" stroke="#b45309" stroke-width="3"/>' + L.text(550, 256, "clay pot", {size: 12, color: C.muted});
+      for(var p = 0; p < pebbles; p++) m += L.circle(508 + (p % 4) * 28, 212 - Math.floor(p / 4) * 24, 10, C.path);
+      L.svg(m, "Pebbles in a pot", 270);
+      L.readout([["Cows that went out", String(out)], ["Cows back", String(back)], ["Pebbles in the pot", String(pebbles), C.path]]);
+      msg = t < 4 ? "Matching cows and pebbles…" : "8 cows went out but only 7 came back: 1 pebble is left, so <b>1 cow is missing</b>.";
+    } else if(st.preset === "ishango"){
+      var groups = [11, 13, 17, 19], x = 90;
+      m += '<path d="M 60 120 Q 360 80 660 120 L 660 180 Q 360 220 60 180 Z" fill="#e7d3b1" stroke="#a8906a" stroke-width="2"/>';
+      groups.forEach(function(g, gi){
+        var f = clampM3(t - gi, 0, 1), k = Math.round(g * f);
+        for(var j = 0; j < g; j++) m += L.line(x + j * 5, 128, x + j * 5, 172, j < k ? "#7c2d12" : "rgba(124,45,18,0.15)", 2);
+        if(f >= 1) m += L.text(x + g * 2.5, 210, String(g), {size: 15, color: C.path, weight: 700});
+        x += g * 5 + 40;
+      });
+      L.svg(m, "Ishango bone tallies", 240);
+      L.readout([["Groups", groups.filter(function(g, gi){ return t >= gi + 1; }).join(", ") || "…", C.path], ["Factors of each", t >= 4 ? "only 1 and itself" : "…"]]);
+      msg = t < 4 ? "Counting notches…" : "11, 13, 17 and 19 have no factors except 1 and themselves: they are <b>the primes between 10 and 20</b>.";
+    } else if(st.preset === "fingers"){
+      var n = Math.min(12, Math.floor(t / 4 * 12 + 1e-9)), c = 0;
+      m += L.rect(250, 160, 200, 110, "rgba(251,191,140,0.35)", ' rx="30"') + L.rect(196, 178, 70, 30, "rgba(251,191,140,0.5)", ' rx="14"') + L.text(222, 228, "thumb", {size: 11, color: C.muted});
+      for(var f2 = 0; f2 < 4; f2++){
+        var fx = 270 + f2 * 46;
+        m += L.rect(fx, 40, 38, 125, "rgba(251,191,140,0.35)", ' rx="16"');
+        for(var jn = 0; jn < 3; jn++){ c++; var on = c <= n; m += L.circle(fx + 19, 62 + jn * 40, 12, on ? C.path : "rgba(245,158,11,0.15)") + (on ? L.text(fx + 19, 66 + jn * 40, String(c), {size: 10, color: "#111", weight: 700}) : ""); }
+      }
+      L.svg(m, "Counting on finger joints", 290);
+      L.readout([["Joints counted", String(n), C.path], ["Fingers × joints", "4 × 3 = 12"], ["Dozens on the other hand", "5 × 12 = 60"]]);
+      msg = t < 4 ? "Counting joints…" : "<b>12 joints</b> on one hand: counting naturally in dozens, the idea behind base-12 systems.";
+    } else {
+      var pairs = Math.min(6, Math.floor(t / 4 * 6 + 1e-9));
+      for(var b = 0; b < 12; b++) m += L.rect(40 + (b % 2) * 34 + Math.floor(b / 2) * 105, 40, 30, 36, Math.floor(b / 2) < pairs ? "#a16207" : "rgba(161,98,7,0.3)", ' rx="6"');
+      for(var g2 = 0; g2 < pairs; g2++) for(var ing = 0; ing < 15; ing++) m += L.rect(40 + g2 * 105 + (ing % 5) * 18, 100 + Math.floor(ing / 5) * 14, 15, 9, "#b45309");
+      L.svg(m, "Spices for copper", 170);
+      L.readout([["Pairs of bags", pairs + " of 6"], ["Ingots", String(pairs * 15), C.path], ["Rate", "15 ingots per 2 bags"]]);
+      msg = t < 4 ? "Exchanging…" : "12 bags make 6 pairs, and 6 × 15 = <b>90 ingots</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["herd", "Pebbles for cows"], ["ishango", "Fig. 3.1: Ishango bone"], ["fingers", "Set 3.1 Q4: finger joints"], ["lothal", "Set 3.1 Q1: trade at Lothal"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.counting = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 2 — Integers: fortunes and debts on the number line (§3.3, Exercise Set 3.2)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "debts"};
+  var P = {
+    debts: {lo: -12, hi: 12, tick: 1, every: 2, unit: "", moves: [[0, -5, "danger", "debt of 5"], [-5, -9, "danger", "debt of 4"]], watch: "Brahmagupta’s rule: a debt plus a debt is a debt.", msg: "(−5) + (−4) = <b>−9</b>: a debt plus a debt is a debt."},
+    temp: {lo: -16, hi: 8, tick: 1, every: 2, unit: " °C", moves: [[0, 4, "ok", "4 °C at noon"], [4, -11, "vel", "drops by 15 °C"]], watch: "Exercise Set 3.2 Q1: 4 °C at noon, then a drop of 15 °C by midnight in Ladakh.", msg: "4 + (−15) = <b>−11 °C</b> at midnight."},
+    trader: {lo: -1000, hi: 800, tick: 100, every: 200, unit: "", moves: [[0, -850, "danger", "loan ₹850"], [-850, 350, "ok", "profit ₹1200"], [350, -100, "danger", "loss ₹450"]], watch: "Exercise Set 3.2 Q2: a loan, then a profit, then a loss.", msg: "(−850) + 1200 + (−450) = −100: a <b>debt of ₹100</b>."},
+    product: {lo: -14, hi: 14, tick: 1, every: 2, unit: "", moves: [[0, 3, "ok", "remove a debt of 3"], [3, 6, "ok", ""], [6, 9, "ok", ""], [9, 12, "ok", ""]], watch: "Think and Reflect: someone takes away four of your debts of ₹3 each.", msg: "Taking away four debts of ₹3 leaves you ₹12 richer: (−3) × (−4) = <b>12</b>."},
+    subneg: {lo: -2, hi: 18, tick: 1, every: 2, unit: "", moves: [[0, 10, "ok", "worth 10"], [10, 15, "ok", "remove a debt of 5"]], watch: "Exercise Set 3.2 Q4: subtracting a negative number.", msg: "Removing a debt of 5 moves you 5 to the right: 10 − (−5) = <b>15</b>."}
+  };
+  function select(id){ st.preset = id; L.markPreset(id); L.timeline({maxT: 4, step: 0.04, speed: 1}); L.legend([[C.ok, "fortune: move right"], [C.danger, "debt: move left"]]); L.watch(P[id].watch); L.controls(""); L.restart(true); }
+  function draw(t){
+    var c = P[st.preset], x0 = 50, x1 = 670, y = 175, X = function(v){ return x0 + (v - c.lo) / (c.hi - c.lo) * (x1 - x0); }, m = L.line(x0 - 10, y, x1 + 10, y, C.faint, 2), pos = 0;
+    for(var v = c.lo; v <= c.hi + 1e-9; v += c.tick){ var lab = Math.round(v) % c.every === 0; m += L.line(X(v), y - (lab ? 8 : 4), X(v), y + (lab ? 8 : 4), v === 0 ? C.text : C.muted, v === 0 ? 2.5 : 1) + (lab ? L.text(X(v), y + 26, sgnM3(Math.round(v)), {size: 11, color: v === 0 ? C.text : C.muted}) : ""); }
+    m += L.text(X(c.lo) + 70, y + 54, "← debts (ṛiṇa)", {size: 12, color: C.danger}) + L.text(X(c.hi) - 80, y + 54, "fortunes (dhana) →", {size: 12, color: C.ok}) + L.text(X(0), y + 54, "śhūnya", {size: 11, color: C.muted});
+    c.moves.forEach(function(mv, i){
+      var f = clampM3(t / 4 * c.moves.length - i, 0, 1);
+      if(f <= 0) return;
+      var e = mv[0] + (mv[1] - mv[0]) * f, yy = y - 34 - (i % 2) * 36, col = C[mv[2]];
+      m += L.arrow(X(mv[0]), yy, X(e), yy, col, 3) + (f >= 1 && mv[3] ? L.text((X(mv[0]) + X(mv[1])) / 2, yy - 9, mv[3], {size: 11, color: col}) : "");
+      pos = e;
+    });
+    m += L.circle(X(pos), y, 8, C.path);
+    L.svg(m, "Integers on the number line", 250);
+    L.readout([["Position", sgnM3(Math.round(pos)) + c.unit, C.path], ["Steps", String(c.moves.length)]]);
+    L.verdict(t < 4 ? "Moving along the number line…" : c.msg);
+  }
+  function mount(){ L.presets([["debts", "(−5) + (−4)"], ["temp", "Set 3.2 Q1: Ladakh"], ["trader", "Set 3.2 Q2: spice trader"], ["product", "(−3) × (−4)"], ["subneg", "10 − (−5)"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.integers = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 3 — Fractions: equality, sums, products, quotients and distributivity (§3.4, Exercise Set 3.3)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "equal"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend({equal: [[C.vel, "2/3"], [C.path, "4/6"]], add: [[C.vel, "7/12 = 14/24"], [C.path, "5/8 = 15/24"]], multiply: [[C.vel, "2/3 of the rows"], [C.path, "3/10 of the columns"], [C.ok, "overlap"]], divide: [["#a855f7", "one kurta: 2¼ m"]], distrib: [[C.vel, "1/2 × 8/3"], [C.path, "3/4 × 8/3"]]}[id]);
+    L.watch({equal: "Exercise Set 3.3 Q1: are 2/3 and 4/6 the same amount?", add: "Exercise Set 3.3 Q2 (ii): 7/12 + 5/8, re-cut into 24ths.", multiply: "Exercise Set 3.3 Q4 (i): 2/3 × 3/10 as an area.", divide: "Exercise Set 3.4 Q4: cut 15¾ m of silk into pieces of 2¼ m.", distrib: "Exercise Set 3.3 Q6: (1/2 + 3/4) × 8/3 as the area of two rectangles."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function bar(x, y, w, h, parts, filled, col){ var m = "", pw = w / parts; for(var i = 0; i < parts; i++) m += L.rect(x + i * pw, y, pw, h, i < filled ? col : "rgba(148,163,184,0.08)", ' stroke="#64748b" stroke-width="1"'); return m; }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "equal"){
+      m += bar(60, 50, 480, 40, 3, 2, C.vel) + L.text(560, 76, "2/3", {size: 16, color: C.vel, anchor: "start", weight: 700});
+      if(t >= 1.5) m += bar(60, 120, 480, 40, 6, 4, C.path) + L.text(560, 146, "4/6", {size: 16, color: C.path, anchor: "start", weight: 700});
+      if(t >= 3) m += L.line(380, 40, 380, 170, C.ok, 2, "5 4");
+      L.svg(m, "Equal fractions", 200);
+      L.readout([["2 × 6", "12"], ["3 × 4", "12"], ["Equal?", t >= 3 ? "yes" : "…", C.ok]]);
+      msg = t < 4 ? "Comparing the bars…" : "2 × 6 = 3 × 4 = 12, and the shaded lengths match: <b>2/3 = 4/6</b>.";
+    } else if(st.preset === "add"){
+      var cut = t >= 1.5;
+      m += bar(60, 40, 480, 34, cut ? 24 : 12, cut ? 14 : 7, C.vel) + L.text(560, 63, cut ? "14/24" : "7/12", {size: 15, color: C.vel, anchor: "start", weight: 700});
+      m += bar(60, 90, 480, 34, cut ? 24 : 8, cut ? 15 : 5, C.path) + L.text(560, 113, cut ? "15/24" : "5/8", {size: 15, color: C.path, anchor: "start", weight: 700});
+      if(t >= 3) m += bar(60, 150, 480, 34, 24, 24, C.ok) + bar(60, 194, 480, 34, 24, 5, C.ok) + L.text(560, 173, "24/24 = 1", {size: 14, color: C.ok, anchor: "start"}) + L.text(560, 217, "+ 5/24", {size: 14, color: C.ok, anchor: "start"});
+      L.svg(m, "Adding fractions", 250);
+      L.readout([["Common denominator", "LCM(12, 8) = 24"], ["Sum of numerators", cut ? "14 + 15 = 29" : "…"], ["Result", t >= 3 ? "29/24 = 1 5/24" : "…", C.ok]]);
+      msg = t < 4 ? "Re-cutting into 24ths…" : "7/12 + 5/8 = 14/24 + 15/24 = <b>29/24</b>, that is 1 whole and 5/24.";
+    } else if(st.preset === "multiply"){
+      var gx = 180, gy = 30, W = 360, H = 180;
+      for(var r = 0; r < 3; r++) for(var c = 0; c < 10; c++){
+        var inRow = r < 2 && t >= 1, inCol = c < 3 && t >= 2, both = inRow && inCol && t >= 3;
+        m += L.rect(gx + c * W / 10, gy + r * H / 3, W / 10, H / 3, both ? C.ok : inRow ? "rgba(56,189,248,0.35)" : inCol ? "rgba(245,158,11,0.35)" : "rgba(148,163,184,0.06)", ' stroke="#64748b" stroke-width="1"');
+      }
+      L.svg(m, "A product as an area", 230);
+      L.readout([["Rows shaded", "2 of 3"], ["Columns shaded", "3 of 10"], ["Overlap", t >= 3 ? "6 of 30 cells" : "…", C.ok]]);
+      msg = t < 4 ? "Shading rows and columns…" : "The overlap is 6 of the 30 cells: 2/3 × 3/10 = 6/30 = <b>1/5</b>.";
+    } else if(st.preset === "divide"){
+      var sc = 38, x0 = 60, pieces = Math.min(7, Math.floor(t / 4 * 7 + 1e-9));
+      m += L.rect(x0, 70, 15.75 * sc, 44, "rgba(168,85,247,0.15)", ' stroke="#a855f7" stroke-width="2"');
+      for(var k = 0; k < pieces; k++) m += L.rect(x0 + k * 2.25 * sc + 2, 72, 2.25 * sc - 4, 40, "rgba(168,85,247,0.55)") + L.text(x0 + (k + 0.5) * 2.25 * sc, 97, String(k + 1), {size: 13, color: "#fff", weight: 700});
+      m += L.text(x0, 60, "15¾ m of silk", {size: 12, color: C.muted, anchor: "start"}) + L.text(x0 + 2.25 * sc / 2, 140, "2¼ m", {size: 12, color: "#a855f7"});
+      L.svg(m, "Cutting silk into kurtas", 170);
+      L.readout([["15¾", "63/4"], ["2¼", "9/4"], ["Kurtas", String(pieces), "#a855f7"]]);
+      msg = t < 4 ? "Cutting pieces…" : "15¾ ÷ 2¼ = 63/4 × 4/9 = <b>7 kurtas</b>, with no silk left over.";
+    } else {
+      var sx = 180, sy = 36, u = 96;
+      m += L.rect(sx, sy, 0.5 * u * 2, (8 / 3) * u * 0.6, t >= 1 ? "rgba(56,189,248,0.35)" : "none", ' stroke="' + C.vel + '" stroke-width="2"') + L.rect(sx + u, sy, 0.75 * u * 2, (8 / 3) * u * 0.6, t >= 2 ? "rgba(245,158,11,0.35)" : "none", ' stroke="' + C.path + '" stroke-width="2"');
+      m += L.text(sx + u / 2 + u / 2, sy + 180, "1/2", {size: 13, color: C.vel}) + L.text(sx + u + 0.75 * u, sy + 180, "3/4", {size: 13, color: C.path}) + L.text(sx - 12, sy + 80, "8/3", {size: 13, color: C.text, anchor: "end"});
+      if(t >= 1) m += L.text(sx + u / 2, sy + 84, "4/3", {size: 16, color: C.text, weight: 700});
+      if(t >= 2) m += L.text(sx + u + 0.75 * u, sy + 84, "2", {size: 16, color: C.text, weight: 700});
+      L.svg(m, "The distributive law as areas", 240);
+      L.readout([["Left side", "(1/2 + 3/4) × 8/3 = 5/4 × 8/3 = 10/3"], ["Right side", t >= 2 ? "4/3 + 2 = 10/3" : "…", C.ok]]);
+      msg = t < 4 ? "Adding the two areas…" : "(1/2 + 3/4) × 8/3 = 1/2 × 8/3 + 3/4 × 8/3 = 4/3 + 2 = <b>10/3</b>, the same either way.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["equal", "Set 3.3 Q1: 2/3 = 4/6"], ["add", "Set 3.3 Q2: 7/12 + 5/8"], ["multiply", "Set 3.3 Q4: 2/3 × 3/10"], ["divide", "Set 3.4 Q4: kurtas"], ["distrib", "Set 3.3 Q6: distributive law"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.fractions = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 4 — Rational numbers on the number line, distance and density (§3.4.1–3.4.2)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "q34"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C.path, "the rational number"], [C.vel, "equal parts"]]);
+    L.watch({q34: "Fig. 3.5: divide the unit from 0 to 1 into 4 equal parts and move 3 parts.", q94: "Fig. 3.6: 9/4 = 2¼ lies between 2 and 3.", neg: "Think and Reflect: place 8/5 and −7/4, then measure the distance between them.", dist: "Fig. 3.8: the distance between −4 and 3 is |a − b|.", dense: "Fig. 3.9: keep averaging. Each zoom finds a new rational between 1 and the last one.", tight: "Exercise Set 3.4 Q5: zoom in between 3.1415 and 3.1416."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, y = 130, id = st.preset, line, f = clampM3(t / 3, 0, 1);
+    if(id === "q34" || id === "q94"){
+      var hi = id === "q34" ? 1 : 3, target = id === "q34" ? 0.75 : 2.25;
+      line = nlM3(L, {lo: 0, hi: hi, parts: 4, x0: 80, x1: 640, y: y});
+      m += line.svg + L.line(line.X(0), y - 30, line.X(target * f), y - 30, C.vel, 4) + L.circle(line.X(target * f), y, 9, C.path);
+      if(t >= 3) m += L.text(line.X(target), y - 44, id === "q34" ? "3/4" : "9/4 = 2¼", {size: 15, color: C.path, weight: 700});
+      L.svg(m, "Placing a fraction", 190);
+      L.readout([["Parts per unit", "4"], ["Parts moved", id === "q34" ? "3" : "9"], ["Value", t >= 3 ? (id === "q34" ? "3/4 = 0.75" : "9/4 = 2.25") : "…", C.path]]);
+      msg = t < 4 ? "Counting equal parts…" : id === "q34" ? "3/4 is <b>3 of the 4 equal parts</b> from 0 to 1." : "9/4 = <b>2¼</b>: one quarter of the way from 2 to 3.";
+    } else if(id === "neg"){
+      line = nlM3(L, {lo: -2, hi: 2, parts: 20, x0: 80, x1: 640, y: y});
+      var a = -1.75, b = 1.6;
+      m += line.svg + L.circle(line.X(a), y, 9, C.danger) + L.text(line.X(a), y - 20, "−7/4", {size: 14, color: C.danger, weight: 700});
+      if(t >= 1) m += L.circle(line.X(b), y, 9, C.ok) + L.text(line.X(b), y - 20, "8/5", {size: 14, color: C.ok, weight: 700});
+      if(t >= 2) m += L.line(line.X(a), y - 50, line.X(a + (b - a) * clampM3(t - 2, 0, 1)), y - 50, C.path, 4);
+      L.svg(m, "Distance between −7/4 and 8/5", 190);
+      L.readout([["−7/4", "−1¾ (quarters)"], ["8/5", "1⅗ (fifths)"], ["Distance", t >= 3 ? "|8/5 − (−7/4)| = 67/20" : "…", C.path]]);
+      msg = t < 4 ? "Measuring…" : "−7/4 = −1¾ and 8/5 = 1⅗; the distance between them is <b>67/20</b> = 3.35 units.";
+    } else if(id === "dist"){
+      line = nlM3(L, {lo: -5, hi: 4, parts: 1, x0: 80, x1: 640, y: y});
+      m += line.svg + L.circle(line.X(-4), y, 9, C.danger) + L.text(line.X(-4), y - 20, "a = −4", {size: 13, color: C.danger, weight: 700}) + L.circle(line.X(3), y, 9, C.ok) + L.text(line.X(3), y - 20, "b = 3", {size: 13, color: C.ok, weight: 700});
+      m += L.line(line.X(-4), y - 50, line.X(-4 + 7 * f), y - 50, C.path, 4) + (t >= 3 ? L.text(line.X(-0.5), y - 60, "7 units", {size: 14, color: C.path, weight: 700}) : "");
+      L.svg(m, "Distance between two integers", 190);
+      L.readout([["a − b", "−4 − 3 = −7"], ["|a − b|", t >= 3 ? "7" : "…", C.path]]);
+      msg = t < 4 ? "Measuring…" : "The distance is |a − b| = |−4 − 3| = <b>7</b> units.";
+    } else if(id === "dense"){
+      var level = Math.min(2, Math.floor(t * 0.75 + 1e-9)), lo = 1, his = [1.5, 1.25, 1.125], names = ["3/2", "5/4", "9/8", "17/16"];
+      line = nlM3(L, {lo: lo, hi: his[level], parts: 4 / (his[level] - lo), x0: 80, x1: 640, y: y, major: function(i){ return i === 0 || i === 4; }, fmt: function(v, i){ return i === 0 ? "1" : names[level]; }});
+      m += line.svg + L.circle(line.X((lo + his[level]) / 2), y, 9, C.path) + L.text(line.X((lo + his[level]) / 2), y - 22, names[level + 1], {size: 15, color: C.path, weight: 700});
+      m += L.text(360, 40, "zoom " + (level + 1) + ": between 1 and " + names[level], {size: 13, color: C.muted});
+      L.svg(m, "Density of rational numbers", 190);
+      L.readout([["Interval", "1 to " + names[level]], ["Average", names[Math.min(3, level + 1)], C.path], ["Found so far", names.slice(1, level + 2).join(", ")]]);
+      msg = t < 4 ? "Zooming in…" : "5/4, then 9/8, then 17/16, … averaging never runs out, so there are <b>infinitely many rationals</b> between 1 and 3/2.";
+    } else {
+      line = nlM3(L, {lo: 0, hi: 1, parts: 10, x0: 80, x1: 640, y: y, major: function(i){ return i === 0 || i === 10 || i === 5; }, fmt: function(v, i){ return i === 0 ? "3.1415" : i === 10 ? "3.1416" : "3.14155"; }});
+      m += line.svg;
+      [[0.1, "3.14151"], [0.5, "3.14155"], [0.9, "3.14159"]].forEach(function(p, i){ if(t >= i + 1) m += L.circle(line.X(p[0]), y, 8, C.path) + L.text(line.X(p[0]), y - 20 - (i % 2) * 16, p[1], {size: 12, color: C.path, weight: 700}); });
+      L.svg(m, "Rationals between 3.1415 and 3.1416", 190);
+      L.readout([["Each tick", "0.00001"], ["Chosen", ["3.14151", "3.14155", "3.14159"].slice(0, Math.min(3, Math.floor(t + 1e-9))).join(", ") || "…", C.path]]);
+      msg = t < 4 ? "Adding a decimal place…" : "3.14151, 3.14155 and 3.14159 all lie between 3.1415 and 3.1416.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["q34", "Fig. 3.5: 3/4"], ["q94", "Fig. 3.6: 9/4"], ["neg", "−7/4 and 8/5"], ["dist", "Fig. 3.8: |a − b|"], ["dense", "Fig. 3.9: density"], ["tight", "Set 3.4 Q5: 3.1415 to 3.1416"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.numberline = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 5 — √2: the diagonal, the proof, the construction and the square root spiral (§3.5)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "square"};
+  var MAXT = {square: 5, proof: 8, construct: 5, spiral: 5};
+  var STEPS = ["1. Assume √2 = p/q in lowest form (p, q co-prime).", "2. Square both sides: 2 = p²/q².", "3. Multiply by q²: 2q² = p².", "4. p² is even, so p is even: p = 2k.", "5. Substitute: 2q² = 4k².", "6. Divide by 2: q² = 2k².", "7. q² is even, so q is even.", "8. p and q share the factor 2: contradiction!"];
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: MAXT[id], step: 0.04, speed: 1});
+    L.legend({square: [[C.path, "diagonal"], [C.vel, "trial squares"]], proof: [[C.text, "step"], [C.danger, "contradiction"]], construct: [[C.vel, "unit steps"], [C.path, "arcs to the number line"]], spiral: [[C.path, "hypotenuses √n"]]}[id]);
+    L.watch({square: "Fig. 3.10: the diagonal of a unit square. Try decimals whose square is close to 2.", proof: "§3.5.1: the proof by contradiction, one step at a time.", construct: "Fig. 3.11: construct √2 and then √3 with a ruler and compass.", spiral: "Fig. 3.14: add a unit side at right angles to each hypotenuse."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(id === "square"){
+      m += L.rect(60, 50, 180, 180, "rgba(56,189,248,0.12)", ' stroke="' + C.vel + '" stroke-width="2"') + L.line(60, 230, 240, 50, C.path, 4) + L.text(150, 250, "1", {size: 13, color: C.text}) + L.text(48, 140, "1", {size: 13, color: C.text, anchor: "end"}) + L.text(160, 130, "√2", {size: 16, color: C.path, weight: 700});
+      var tries = [1.4, 1.41, 1.414, 1.4142, 1.41421], k = Math.min(5, Math.floor(t + 1e-9));
+      tries.slice(0, k).forEach(function(v, i){ var sq = (v * v).toFixed(10).replace(/0+$/, ""); m += L.text(300, 70 + i * 36, v + "² = " + sq, {size: 15, color: C.vel, anchor: "start", mono: true}); });
+      L.svg(m, "The diagonal of a unit square", 270);
+      L.readout([["d²", "1² + 1² = 2"], ["Closest try", k ? String(tries[k - 1]) : "…", C.vel], ["Exactly 2?", t >= 5 ? "never" : "…", C.danger]]);
+      msg = t < 5 ? "Trying decimals…" : "Each try gets closer to 2 but never equals it: <b>√2 ≈ 1.41421…</b> has no exact fraction.";
+    } else if(id === "proof"){
+      var n = Math.min(8, Math.floor(t + 1e-9) + 1);
+      STEPS.slice(0, n).forEach(function(s, i){ m += L.text(40, 34 + i * 32, s, {size: 15, color: i === 7 ? C.danger : i === n - 1 ? C.path : C.text, anchor: "start", weight: i === n - 1 ? 700 : 400}); });
+      L.svg(m, "Proof that √2 is irrational", 280);
+      L.readout([["Step", n + " of 8"], ["Assumption", "√2 = p/q, lowest form"], ["Result", t >= 8 ? "contradiction" : "…", C.danger]]);
+      msg = t < 8 ? "Following the argument…" : "The assumption led to a contradiction, so <b>√2 is irrational</b>.";
+    } else if(id === "construct"){
+      var ox = 110, oy = 220, u = 150, X = function(v){ return ox + v * u; }, Y = function(v){ return oy - v * u; };
+      m += L.line(40, oy, 690, oy, C.faint, 2);
+      [0, 1, 2, 3].forEach(function(v){ m += L.line(X(v), oy - 8, X(v), oy + 8, C.text, 2) + L.text(X(v), oy + 26, String(v), {size: 12, color: C.muted}); });
+      m += L.text(X(0), oy + 44, "O", {size: 12, color: C.text});
+      var f1 = clampM3(t, 0, 1), f2 = clampM3(t - 1, 0, 1), f3 = clampM3(t - 2, 0, 1), f4 = clampM3(t - 3, 0, 1), f5 = clampM3(t - 4, 0, 1);
+      m += L.line(X(0), oy, X(f1), oy, C.vel, 4) + L.line(X(1), oy, X(1), Y(f1), C.vel, 4) + L.text(X(1) + 10, Y(0.5), "AB = 1", {size: 12, color: C.vel, anchor: "start"});
+      if(f2 > 0) m += L.line(X(0), oy, X(f2), Y(f2), C.path, 3) + (f2 >= 1 ? L.text(X(0.45), Y(0.62), "√2", {size: 14, color: C.path, weight: 700}) : "");
+      function arc(r, a0, frac){ var pts = [], k; for(k = 0; k <= 30; k++){ var a = a0 * (1 - frac * k / 30); pts.push(X(r * Math.cos(a)).toFixed(1) + "," + Y(r * Math.sin(a)).toFixed(1)); } return '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + C.path + '" stroke-width="2" stroke-dasharray="5 4"/>'; }
+      if(f3 > 0) m += arc(Math.SQRT2, Math.PI / 4, f3);
+      if(f3 >= 1) m += L.circle(X(Math.SQRT2), oy, 7, C.path) + L.text(X(Math.SQRT2), oy + 44, "P = √2", {size: 12, color: C.path, weight: 700});
+      var cx = 1 - Math.SQRT1_2, cy = 1 + Math.SQRT1_2;
+      if(f4 > 0) m += L.line(X(1), Y(1), X(1 + (cx - 1) * f4), Y(1 + (cy - 1) * f4), C.vel, 4) + L.line(X(0), oy, X(cx * f4), Y(cy * f4), C.acc, 3);
+      if(f5 > 0) m += arc(Math.sqrt(3), Math.atan2(cy, cx), f5);
+      if(f5 >= 1) m += L.circle(X(Math.sqrt(3)), oy, 7, C.acc) + L.text(X(Math.sqrt(3)) + 30, oy + 44, "Q = √3", {size: 12, color: C.acc, weight: 700});
+      L.svg(m, "Constructing √2 and √3", 280);
+      L.readout([["OB", "√(1² + 1²) = √2 ≈ 1.414", C.path], ["OC", t >= 4 ? "√(2 + 1) = √3 ≈ 1.732" : "…", C.acc]]);
+      msg = t < 5 ? "Constructing…" : "OP = √2 ≈ 1.414 and OQ = √3 ≈ 1.732: irrational lengths are now <b>points on the number line</b>.";
+    } else {
+      var cx0 = 360, cy0 = 150, s = 42, n2 = Math.min(10, Math.floor(t / 5 * 10 + 1e-9)), P = [1, 0], cols = ["#38bdf8", "#a78bfa", "#f472b6", "#f59e0b", "#34d399", "#fb7185", "#60a5fa", "#facc15", "#c084fc", "#2dd4bf"];
+      for(var i2 = 0; i2 < n2; i2++){
+        var len = Math.hypot(P[0], P[1]), Q = [P[0] - P[1] / len, P[1] + P[0] / len];
+        m += '<polygon points="' + cx0 + ',' + cy0 + ' ' + (cx0 + P[0] * s).toFixed(1) + ',' + (cy0 - P[1] * s).toFixed(1) + ' ' + (cx0 + Q[0] * s).toFixed(1) + ',' + (cy0 - Q[1] * s).toFixed(1) + '" fill="' + cols[i2] + '" fill-opacity="0.45" stroke="#e2e8f0" stroke-width="1.5"/>';
+        P = Q;
+      }
+      L.svg(m, "Square root spiral", 300);
+      var names = ["√2", "√3", "2", "√5", "√6", "√7", "√8", "3", "√10", "√11"];
+      L.readout([["Triangles", n2 + " of 10"], ["Latest hypotenuse", n2 ? names[n2 - 1] : "…", C.path]]);
+      msg = t < 5 ? "Adding unit sides…" : "The hypotenuses are √2, √3, 2, √5, √6, √7, √8, 3, √10 and <b>√11</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["square", "Fig. 3.10: the diagonal"], ["proof", "The proof by contradiction"], ["construct", "Fig. 3.11: construct √2, √3"], ["spiral", "Fig. 3.14: square root spiral"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.sqrt2 = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 6 — π: Mādhava’s series, Āryabhaṭa’s value, a rolling wheel and the real line (§3.5.3)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "madhava"};
+  function sum(n){ var s = 0; for(var k = 0; k < n; k++) s += (k % 2 ? -1 : 1) / (2 * k + 1); return 4 * s; }
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend({madhava: [[C.path, "sum of n terms"], [C.ok, "π"]], aryabhata: [[C.path, "approximations"], [C.ok, "π"]], wheel: [[C.vel, "wheel of diameter 1"], [C.path, "distance rolled"]], realline: [[C.vel, "rational"], [C.path, "irrational"]]}[id]);
+    L.watch({madhava: "Mādhava’s series: add one more term each step and watch the total.", aryabhata: "Āryabhaṭa’s 3927/1250 and the familiar 22/7, zoomed in next to π.", wheel: "Roll a wheel of diameter 1 unit through one full turn.", realline: "Fig. 3.12: rational and irrational numbers on one line."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(id === "madhava"){
+      var N = 20, n = Math.max(1, Math.min(N, Math.ceil(t / 4 * N)));
+      var g = L.graph({x0: 90, y0: 250, w: 580, h: 210, tmax: N, vmin: 2.5, vmax: 4.2, tStep: 2, vStep: 0.25, tLabel: "number of terms n", vLabel: "sum", tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return L.num(v, 2); }});
+      var pts = []; for(var k = 1; k <= n; k++) pts.push([k, sum(k)]);
+      m += g.svg + L.polyline(g, [[0, Math.PI], [N, Math.PI]], C.ok, 2, "6 4") + L.polyline(g, pts, C.path, 2);
+      pts.forEach(function(p){ m += L.circle(g.X(p[0]), g.Y(p[1]), 3.5, C.path); });
+      L.svg(m, "Sums of Mādhava’s series", 290);
+      L.readout([["Terms", String(n)], ["Sum", L.num(sum(n), 4), C.path], ["π", "3.1416", C.ok], ["Gap", L.num(Math.abs(sum(n) - Math.PI), 4)]]);
+      msg = t < 4 ? "Adding terms…" : "After 20 terms the sum is " + L.num(sum(20), 4) + ": the sums <b>swing above and below π</b> and close in slowly.";
+    } else if(id === "aryabhata"){
+      var lo = 3.14, hi = 3.1435, X = function(v){ return 70 + (v - lo) / (hi - lo) * 580; }, y = 150;
+      m += L.line(50, y, 670, y, C.faint, 2);
+      for(var i = 0; i <= 6; i++){ var v = lo + i * 0.00025; m += L.line(X(v), y - 6, X(v), y + 6, C.muted, 1) + (i % 2 === 0 ? L.text(X(v), y + 24, L.num(v, 4), {size: 11, color: C.muted}) : ""); }
+      var items = [[Math.PI, "π = 3.14159…", C.ok], [3.1416, "3927/1250 = 3.1416", C.path], [22 / 7, "22/7 = 3.14286…", C.danger]];
+      items.forEach(function(it, j){ if(t >= j * 1.2) m += L.circle(X(it[0]), y, 7, it[2]) + L.line(X(it[0]), y - 10, X(it[0]), y - 40 - j * 26, it[2], 1.5) + L.text(X(it[0]), y - 46 - j * 26, it[1], {size: 12, color: it[2], weight: 700}); });
+      L.svg(m, "Approximations of π", 210);
+      L.readout([["3.1416 − π", L.num(3.1416 - Math.PI, 7), C.path], ["22/7 − π", L.num(22 / 7 - Math.PI, 4), C.danger]]);
+      msg = t < 4 ? "Zooming in…" : "3927/1250 = 3.1416 differs from π by only <b>" + L.num(3.1416 - Math.PI, 7) + "</b>; 22/7 is off by about " + L.num(22 / 7 - Math.PI, 4) + ".";
+    } else if(id === "wheel"){
+      var u = 150, r = u / 2, x0 = 80, y0 = 230, f = clampM3(t / 4, 0, 1), cx = x0 + Math.PI * u * f, ang = 2 * Math.PI * f;
+      m += L.line(40, y0, 700, y0, C.faint, 2);
+      [0, 1, 2, 3, 4].forEach(function(v){ m += L.line(x0 + v * u, y0 - 6, x0 + v * u, y0 + 6, C.text, 2) + L.text(x0 + v * u, y0 + 24, String(v), {size: 12, color: C.muted}); });
+      m += L.line(x0, y0 + 36, cx, y0 + 36, C.path, 4) + L.circle(cx, y0 - r, r, "rgba(56,189,248,0.12)", ' stroke="' + C.vel + '" stroke-width="3"');
+      m += L.circle(cx - r * Math.sin(ang), y0 - r + r * Math.cos(ang), 7, C.path) + L.line(cx, y0 - r, cx - r * Math.sin(ang), y0 - r + r * Math.cos(ang), C.vel, 2);
+      if(t >= 4) m += L.text(x0 + Math.PI * u, y0 + 58, "π ≈ 3.14159", {size: 13, color: C.path, weight: 700});
+      L.svg(m, "A rolling wheel", 300);
+      L.readout([["Diameter", "1 unit"], ["Turns", L.num(f, 2)], ["Distance", L.num(Math.PI * f, 3) + " units", C.path]]);
+      msg = t < 4 ? "Rolling…" : "One turn of a wheel of diameter 1 unit covers its circumference, <b>π ≈ 3.14159</b> units.";
+    } else {
+      var X2 = function(v){ return 60 + (v + 5) / 10 * 600; }, y2 = 170;
+      m += L.line(40, y2, 680, y2, C.faint, 2);
+      for(var q = -5; q <= 5; q++) m += L.line(X2(q), y2 - 7, X2(q), y2 + 7, C.text, 1.5) + L.text(X2(q), y2 + 24, sgnM3(q), {size: 11, color: C.muted});
+      var list = [[-22 / 5, "−22/5", 0], [-Math.sqrt(10), "−√10", 1], [-12 / 5, "−12/5", 0], [-3 / 2, "−3/2", 0], [-1 / 3, "−1/3", 0], [5 / 6, "5/6", 0], [Math.SQRT2, "√2", 1], [3 / 2, "3/2", 0], [Math.sqrt(5), "√5", 1], [Math.PI, "π", 1], [7 / 2, "7/2", 0], [9 / 2, "9/2", 0]];
+      var shown = Math.floor(t / 4 * list.length + 1e-9);
+      list.slice(0, shown).forEach(function(it, i){ var col = it[2] ? C.path : C.vel, up = i % 2 === 0; m += L.circle(X2(it[0]), y2, 5, col) + L.text(X2(it[0]), up ? y2 - 16 - (i % 4 === 0 ? 18 : 0) : y2 + 46 + (i % 4 === 1 ? 18 : 0), it[1], {size: 12, color: col, weight: 700}); });
+      L.svg(m, "The real number line", 260);
+      L.readout([["Rational shown", String(list.slice(0, shown).filter(function(it){ return !it[2]; }).length), C.vel], ["Irrational shown", String(list.slice(0, shown).filter(function(it){ return it[2]; }).length), C.path]]);
+      msg = t < 4 ? "Placing numbers…" : "Fractions and irrational numbers such as √2, √5, π and −√10 all sit on one line: <b>the real numbers</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["madhava", "Mādhava’s series"], ["aryabhata", "Āryabhaṭa’s 3.1416"], ["wheel", "A wheel rolls π"], ["realline", "Fig. 3.12: the real line"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.pi = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 7 — Decimal expansions: long division, prediction, conversion, cyclic numbers, 0.999… (§3.6)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "longdiv"};
+  var MAXT = {longdiv: 7, predict: 4, convert: 4, cyclic: 6, nines: 4};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: MAXT[id], step: 0.04, speed: 1});
+    L.legend({longdiv: [[C.path, "digit"], [C.vel, "remainder"]], predict: [[C.ok, "terminates"], [C.danger, "repeats"]], convert: [[C.path, "step"]], cyclic: [[C.path, "starting digit"]], nines: [[C.vel, "0.99…9"], [C.danger, "gap to 1"]]}[id]);
+    L.watch({longdiv: "Long division for 1/7: watch the remainders. The first repeated remainder starts the loop.", predict: "Exercise Set 3.5 Q1 and more: predict from the prime factors of the denominator.", convert: "Example 6: turn 0.4545… into a fraction.", cyclic: "§3.6.2: 142857 multiplied by 1 to 6.", nines: "Exercise Set 3.5 Q4: how far is 0.99…9 from 1?"}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(id === "longdiv"){
+      var r = 1, rows = [], k;
+      for(k = 0; k < 7; k++){ var dgt = Math.floor(r * 10 / 7), nr = (r * 10) % 7; rows.push([r * 10, dgt, nr]); r = nr; }
+      var n = Math.min(7, Math.floor(t + 1e-9) + 1);
+      m += L.text(60, 34, "bring down", {size: 12, color: C.muted, anchor: "start"}) + L.text(230, 34, "÷ 7 = digit", {size: 12, color: C.muted, anchor: "start"}) + L.text(400, 34, "remainder", {size: 12, color: C.muted, anchor: "start"});
+      rows.slice(0, n).forEach(function(rw, i){ var back = i === 5; m += L.text(60, 66 + i * 30, String(rw[0]), {size: 16, color: C.text, anchor: "start", mono: true}) + L.text(230, 66 + i * 30, String(rw[1]), {size: 16, color: C.path, anchor: "start", mono: true, weight: 700}) + L.text(400, 66 + i * 30, String(rw[2]), {size: 16, color: back ? C.danger : C.vel, anchor: "start", mono: true, weight: back ? 700 : 400}); });
+      m += L.text(560, 120, "1/7 = 0." + rows.slice(0, Math.min(6, n)).map(function(rw){ return rw[1]; }).join("") + (n >= 7 ? "142857…" : "…"), {size: 15, color: C.path, weight: 700, mono: true});
+      L.svg(m, "Long division for 1/7", 290);
+      L.readout([["Digits", rows.slice(0, n).map(function(rw){ return rw[1]; }).join(""), C.path], ["Remainders", "1, " + rows.slice(0, n).map(function(rw){ return rw[2]; }).join(", "), C.vel]]);
+      msg = t < 7 ? "Dividing…" : "The remainder 1 comes back after 6 steps, so the digits <b>142857 repeat</b>: 1/7 = 0.142857142857…";
+    } else if(id === "predict"){
+      var cards = [["7/20", "20 = 2² × 5", 1, "0.35"], ["4/15", "15 = 3 × 5", 0, "0.2666…"], ["13/250", "250 = 2 × 5³", 1, "0.052"], ["5/11", "11 = 11", 0, "0.4545…"]];
+      cards.forEach(function(c, i){
+        var on = t >= i * 0.9, y = 20 + i * 64, col = c[2] ? C.ok : C.danger;
+        m += L.rect(40, y, 640, 52, on ? (c[2] ? "rgba(52,211,153,0.10)" : "rgba(239,68,68,0.10)") : "rgba(148,163,184,0.05)", ' rx="8"') + L.text(70, y + 33, c[0], {size: 20, color: C.text, anchor: "start", weight: 700, mono: true});
+        if(on) m += L.text(210, y + 33, c[1], {size: 15, color: C.muted, anchor: "start"}) + L.text(430, y + 33, c[2] ? "terminates" : "repeats", {size: 15, color: col, anchor: "start", weight: 700}) + L.text(660, y + 33, c[3], {size: 15, color: col, anchor: "end", mono: true});
+      });
+      L.svg(m, "Predicting decimal expansions", 280);
+      L.readout([["Rule", "only 2s and 5s in q ⇒ terminates"], ["Terminating", t >= 3 ? "7/20, 13/250" : "…", C.ok], ["Repeating", t >= 3 ? "4/15, 5/11" : "…", C.danger]]);
+      msg = t < 4 ? "Factorising denominators…" : "7/20 and 13/250 terminate (only 2s and 5s); <b>4/15 and 5/11 repeat</b>.";
+    } else if(id === "convert"){
+      var lines = ["x = 0.454545…", "100x = 45.454545…", "100x − x = 45", "99x = 45", "x = 45/99 = 5/11"];
+      lines.slice(0, Math.min(5, Math.floor(t + 1e-9) + 1)).forEach(function(s, i){ m += L.text(120, 50 + i * 44, s, {size: 22, color: i === 4 ? C.path : C.text, anchor: "start", mono: true, weight: i === 4 ? 700 : 400}); });
+      L.svg(m, "Converting a repeating decimal", 260);
+      L.readout([["Repeating digits", "2 (45)"], ["Multiply by", "10² = 100"], ["Result", t >= 4 ? "5/11" : "…", C.path]]);
+      msg = t < 4 ? "Shifting and subtracting…" : "100x − x = 45, so x = 45/99 = <b>5/11</b>.";
+    } else if(id === "cyclic"){
+      var digits = "142857", cx = 170, cy = 145, R = 90, n2 = Math.min(6, Math.floor(t + 1e-9) + 1), prods = ["142857", "285714", "428571", "571428", "714285", "857142"], start = prods[n2 - 1].charAt(0), idx = digits.indexOf(start);
+      for(var i = 0; i < 6; i++){ var a = -Math.PI / 2 + i * Math.PI / 3, on = i === idx; m += L.circle(cx + R * Math.cos(a), cy + R * Math.sin(a), 22, on ? C.path : "rgba(148,163,184,0.12)") + L.text(cx + R * Math.cos(a), cy + R * Math.sin(a) + 7, digits.charAt(i), {size: 20, color: on ? "#111" : C.text, weight: 700}); }
+      prods.slice(0, n2).forEach(function(p, j){ m += L.text(360, 44 + j * 40, "142857 × " + (j + 1) + " = " + p, {size: 18, color: j === n2 - 1 ? C.path : C.text, anchor: "start", mono: true}); });
+      L.svg(m, "The cyclic number 142857", 290);
+      L.readout([["Multiplier", String(n2)], ["Product", prods[n2 - 1], C.path], ["× 7", t >= 6 ? "999999" : "…"]]);
+      msg = t < 6 ? "Multiplying…" : "142857 × 1 to 6 uses the same digits in the same circular order, and <b>142857 × 7 = 999999</b>.";
+    } else {
+      var n3 = Math.min(8, Math.floor(t / 4 * 8 + 1e-9) + 1);
+      for(var j2 = 1; j2 <= n3; j2++){ var val = "0." + new Array(j2 + 1).join("9"), y = 20 + (j2 - 1) * 30; m += L.text(40, y + 18, val, {size: 15, color: C.vel, anchor: "start", mono: true}) + L.rect(260, y + 4, 400 * Math.pow(0.1, j2 - 1), 18, C.danger) + L.text(250, y + 18, "gap 10⁻" + (j2 === 1 ? "¹" : j2 === 2 ? "²" : j2 === 3 ? "³" : j2 === 4 ? "⁴" : j2 === 5 ? "⁵" : j2 === 6 ? "⁶" : j2 === 7 ? "⁷" : "⁸"), {size: 12, color: C.danger, anchor: "end"}); }
+      L.svg(m, "0.999… and 1", 270);
+      L.readout([["Nines", String(n3)], ["Gap to 1", "0." + new Array(n3).join("0") + "1", C.danger]]);
+      msg = t < 4 ? "Adding nines…" : "The gap to 1 is 0.1, 0.01, 0.001, …, smaller than any positive number, so <b>0.999… = 1</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["longdiv", "Long division: 1/7"], ["predict", "Terminate or repeat?"], ["convert", "Example 6: 0.4545…"], ["cyclic", "Cyclic 142857"], ["nines", "0.999… = 1"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.decimals = {mount: mount, draw: draw, select: select, state: st};
+})();

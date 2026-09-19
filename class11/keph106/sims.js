@@ -335,3 +335,5 @@ window.SIMS.icechair = (function(){
   }
   return { mount: mount, draw: draw };
 })();
+Object.keys(window.SIMS).forEach(function(key){var sim=window.SIMS[key];if(!sim||typeof sim.mount!=="function")return;var originalMount=sim.mount;sim.mount=function(lesson){originalMount.call(sim,lesson);document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn,index){if(!btn.dataset.preset)btn.dataset.preset=btn.id||(key+"-"+index);});};});
+document.addEventListener("click",function(event){if(!event.target.closest("#btn-check-prediction"))return;var lesson=window.CHAPTER.lessons[App.state.conceptIndex],chosen=document.querySelector('input[name="predict_ans"]:checked');if(!lesson||!chosen)return;document.querySelectorAll("#predict-options .predict-option").forEach(function(option,index){option.classList.toggle("is-answer",index===lesson.prediction.answer);option.classList.toggle("is-wrong",index===Number(chosen.value)&&index!==lesson.prediction.answer);});});

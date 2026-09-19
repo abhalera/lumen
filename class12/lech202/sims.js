@@ -22,11 +22,11 @@ window.SIMS.classnom = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Alcohol C(sp³)–OH</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Phenol / ether</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c1">1° alcohol</button>' +
-      '<button class="preset-btn" id="c2">2° / 3°</button>' +
-      '<button class="preset-btn" id="c3">Allylic / benzylic</button>' +
-      '<button class="preset-btn" id="c4">Phenol</button>' +
-      '<button class="preset-btn" id="c5">Ether</button>';
+      '<button class="preset-btn active" data-preset="primary" id="c1">1° alcohol</button>' +
+      '<button class="preset-btn" data-preset="secondary-tertiary" id="c2">2° / 3°</button>' +
+      '<button class="preset-btn" data-preset="allylic-benzylic" id="c3">Allylic / benzylic</button>' +
+      '<button class="preset-btn" data-preset="phenol" id="c4">Phenol</button>' +
+      '<button class="preset-btn" data-preset="ether" id="c5">Ether</button>';
     document.getElementById("c1").onclick = function(){ setActivePreset(this); kind="1alc"; draw(0); };
     document.getElementById("c2").onclick = function(){ setActivePreset(this); kind="23"; draw(0); };
     document.getElementById("c3").onclick = function(){ setActivePreset(this); kind="allyl"; draw(0); };
@@ -61,9 +61,9 @@ window.SIMS.hbonds = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>H-bonding</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-bp">b.p. vs ethers / alkanes</button>' +
-      '<button class="preset-btn" id="h-sol">Water solubility</button>' +
-      '<button class="preset-btn" id="h-onp">o- vs p-nitrophenol steam</button>';
+      '<button class="preset-btn active" data-preset="bp" id="h-bp">b.p. vs ethers / alkanes</button>' +
+      '<button class="preset-btn" data-preset="solubility" id="h-sol">Water solubility</button>' +
+      '<button class="preset-btn" data-preset="nitrophenol" id="h-onp">o- vs p-nitrophenol steam</button>';
     document.getElementById("h-bp").onclick = function(){ setActivePreset(this); mode="bp"; draw(0); };
     document.getElementById("h-sol").onclick = function(){ setActivePreset(this); mode="sol"; draw(0); };
     document.getElementById("h-onp").onclick = function(){ setActivePreset(this); mode="onp"; draw(0); };
@@ -116,11 +116,11 @@ window.SIMS.prepalc = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Alcohol route</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Phenol route</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-hb">Hydroboration–oxidation</button>' +
-      '<button class="preset-btn" id="p-h3">Acid hydration</button>' +
-      '<button class="preset-btn" id="p-gr">Grignard + carbonyl</button>' +
-      '<button class="preset-btn" id="p-cu">Cumene → phenol</button>' +
-      '<button class="preset-btn" id="p-dow">Dow / diazonium</button>';
+      '<button class="preset-btn active" data-preset="hydroboration" id="p-hb">Hydroboration–oxidation</button>' +
+      '<button class="preset-btn" data-preset="hydration" id="p-h3">Acid hydration</button>' +
+      '<button class="preset-btn" data-preset="grignard" id="p-gr">Grignard + carbonyl</button>' +
+      '<button class="preset-btn" data-preset="cumene" id="p-cu">Cumene → phenol</button>' +
+      '<button class="preset-btn" data-preset="dow" id="p-dow">Dow / diazonium</button>';
     document.getElementById("p-hb").onclick = function(){ setActivePreset(this); mode="hb"; draw(0); };
     document.getElementById("p-h3").onclick = function(){ setActivePreset(this); mode="h3"; draw(0); };
     document.getElementById("p-gr").onclick = function(){ setActivePreset(this); mode="gr"; draw(0); };
@@ -137,7 +137,7 @@ window.SIMS.prepalc = (function(){
     else if(mode==="h3"){ eq="CH₂=CH₂ + H₂O  (H⁺)  →  CH₃CH₂OH"; n="Ex 7.11 mechanism: protonation → carbocation → water capture → deprotonation. 2°/3° C⁺ may rearrange (Ex 7.33)."; }
     else if(mode==="gr"){ eq="RMgX + HCHO → 1° ; RCHO → 2° ; R₂C=O → 3°  (then H₃O⁺)"; n="Carbon of Grignard is nucleophilic. Also catalytic H₂ or LiAlH₄/NaBH₄ reduce carbonyls to alcohols."; }
     else if(mode==="cu"){ eq="PhCHMe₂ + O₂ → cumene hydroperoxide  (H⁺)  →  PhOH + Me₂C=O"; n="Industrial phenol + acetone from cumene (Ex 7.9)."; }
-    else { eq="PhCl + NaOH, 623 K, 300 atm → PhONa  (H⁺)  →  PhOH"; n="Also: ArSO₃Na fusion; ArN₂⁺ hydrolysis. Ex 7.10, 7.12 (benzene → PhSO₃H → PhOH)."; }
+    else { eq="PhCl + NaOH, 623 K, 320 atm → PhONa  (H⁺)  →  PhOH"; n="Also: ArSO₃Na fusion; ArN₂⁺ hydrolysis. Ex 7.10, 7.12 (benzene → PhSO₃H → PhOH)."; }
     m += '<text x="360" y="90" fill="#e2e8f0" font-size="15" text-anchor="middle">' + eq + '</text>';
     svg.innerHTML = m;
     readout(cell("Route", mode));
@@ -164,13 +164,13 @@ window.SIMS.phenolacidity = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Stronger acid (low pKa)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Weaker acid</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="a-et">Ethanol 15.9</button>' +
-      '<button class="preset-btn" id="a-cr">p-Cresol 10.2</button>' +
-      '<button class="preset-btn active" id="a-ph">Phenol 10.0</button>' +
-      '<button class="preset-btn" id="a-mn">m-NO₂ 8.3</button>' +
-      '<button class="preset-btn" id="a-on">o-NO₂ 7.2</button>' +
-      '<button class="preset-btn" id="a-pn">p-NO₂ 7.1</button>' +
-      '<button class="preset-btn" id="a-pi">Picric ~0.4</button>';
+      '<button class="preset-btn" data-preset="ethanol" id="a-et">Ethanol 15.9</button>' +
+      '<button class="preset-btn" data-preset="cresol" id="a-cr">p-Cresol 10.2</button>' +
+      '<button class="preset-btn active" data-preset="phenol" id="a-ph">Phenol 10.0</button>' +
+      '<button class="preset-btn" data-preset="m-nitrophenol" id="a-mn">m-NO₂ 8.3</button>' +
+      '<button class="preset-btn" data-preset="o-nitrophenol" id="a-on">o-NO₂ 7.2</button>' +
+      '<button class="preset-btn" data-preset="p-nitrophenol" id="a-pn">p-NO₂ 7.1</button>' +
+      '<button class="preset-btn" data-preset="picric" id="a-pi">Picric ~0.4</button>';
     [["a-et","etoh"],["a-cr","cresol"],["a-ph","ph"],["a-mn","mn"],["a-on","on"],["a-pn","pn"],["a-pi","pic"]].forEach(function(p){
       document.getElementById(p[0]).onclick = function(){ setActivePreset(this); id=p[1]; App.resetTimeline(); App.play(); };
     });
@@ -209,10 +209,10 @@ window.SIMS.rxnalc = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>C–O chemistry</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="r-ox">Oxidation 1°/2°/3°</button>' +
-      '<button class="preset-btn" id="r-de">Acid dehydration</button>' +
-      '<button class="preset-btn" id="r-lu">Lucas / HX</button>' +
-      '<button class="preset-btn" id="r-rearr">C⁺ rearrangement (Ex 7.33)</button>';
+      '<button class="preset-btn active" data-preset="oxidation" id="r-ox">Oxidation 1°/2°/3°</button>' +
+      '<button class="preset-btn" data-preset="dehydration" id="r-de">Acid dehydration</button>' +
+      '<button class="preset-btn" data-preset="lucas" id="r-lu">Lucas / HX</button>' +
+      '<button class="preset-btn" data-preset="rearrangement" id="r-rearr">C⁺ rearrangement (Ex 7.33)</button>';
     document.getElementById("r-ox").onclick = function(){ setActivePreset(this); mode="ox"; draw(0); };
     document.getElementById("r-de").onclick = function(){ setActivePreset(this); mode="de"; App.resetTimeline(); App.play(); };
     document.getElementById("r-lu").onclick = function(){ setActivePreset(this); mode="lu"; draw(0); };
@@ -270,10 +270,10 @@ window.SIMS.rxnph = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Phenoxide (more reactive)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="k-k">Kolbe–Schmitt</button>' +
-      '<button class="preset-btn" id="k-rt">Reimer–Tiemann</button>' +
-      '<button class="preset-btn" id="k-br">Br₂ / HNO₃ / Friedel–Crafts</button>' +
-      '<button class="preset-btn" id="k-as">Acetylation → aspirin</button>';
+      '<button class="preset-btn active" data-preset="kolbe" id="k-k">Kolbe–Schmitt</button>' +
+      '<button class="preset-btn" data-preset="reimer-tiemann" id="k-rt">Reimer–Tiemann</button>' +
+      '<button class="preset-btn" data-preset="bromination" id="k-br">Br₂ / HNO₃ / Friedel–Crafts</button>' +
+      '<button class="preset-btn" data-preset="aspirin" id="k-as">Acetylation → aspirin</button>';
     document.getElementById("k-k").onclick = function(){ setActivePreset(this); mode="kolbe"; draw(0); };
     document.getElementById("k-rt").onclick = function(){ setActivePreset(this); mode="rt"; draw(0); };
     document.getElementById("k-br").onclick = function(){ setActivePreset(this); mode="br"; draw(0); };
@@ -306,10 +306,10 @@ window.SIMS.ethersim = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Williamson SN2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>HI cleavage</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-w">Williamson</button>' +
-      '<button class="preset-btn" id="e-lim">Limitation (3° RX)</button>' +
-      '<button class="preset-btn" id="e-hi">HI cleavage</button>' +
-      '<button class="preset-btn" id="e-an">Anisole EAS</button>';
+      '<button class="preset-btn active" data-preset="williamson" id="e-w">Williamson</button>' +
+      '<button class="preset-btn" data-preset="limitation" id="e-lim">Limitation (3° RX)</button>' +
+      '<button class="preset-btn" data-preset="hi-cleavage" id="e-hi">HI cleavage</button>' +
+      '<button class="preset-btn" data-preset="anisole" id="e-an">Anisole EAS</button>';
     document.getElementById("e-w").onclick = function(){ setActivePreset(this); mode="will"; draw(0); };
     document.getElementById("e-lim").onclick = function(){ setActivePreset(this); mode="lim"; draw(0); };
     document.getElementById("e-hi").onclick = function(){ setActivePreset(this); mode="hi"; App.resetTimeline(); App.play(); };

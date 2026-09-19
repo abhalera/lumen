@@ -25,8 +25,8 @@ window.SIMS.suitcase = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Fixed 7</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Free wheels</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-norep">Suitcase: no repetition</button>' +
-      '<button class="preset-btn" id="p-upi">UPI PIN: repetition allowed</button>';
+      '<button class="preset-btn active" data-preset="p-norep" id="p-norep">Suitcase: no repetition</button>' +
+      '<button class="preset-btn" data-preset="p-upi" id="p-upi">UPI PIN: repetition allowed</button>';
     document.getElementById("p-norep").onclick = function(){ setActivePreset(this); repeat=false; App.resetTimeline(); App.play(); };
     document.getElementById("p-upi").onclick = function(){ setActivePreset(this); repeat=true; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -63,9 +63,9 @@ window.SIMS["pants-shirts"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Choice 1</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Choice 2</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m">Mohan 3×2 = 6</button>' +
-      '<button class="preset-btn" id="p-s">Sabnam 2×3×2 = 12</button>' +
-      '<button class="preset-btn" id="p-r">ROSE 4! = 24</button>';
+      '<button class="preset-btn active" data-preset="p-m" id="p-m">Mohan 3×2 = 6</button>' +
+      '<button class="preset-btn" data-preset="p-s" id="p-s">Sabnam 2×3×2 = 12</button>' +
+      '<button class="preset-btn" data-preset="p-r" id="p-r">ROSE 4! = 24</button>';
     document.getElementById("p-m").onclick = function(){ setActivePreset(this); mode="mohan"; App.resetTimeline(); App.play(); };
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); mode="sabnam"; App.resetTimeline(); App.play(); };
     document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode="rose"; App.resetTimeline(); App.play(); };
@@ -115,9 +115,9 @@ window.SIMS["npr-calc"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>n slots of objects</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-num">NUMBER 6P3=120</button>' +
-      '<button class="preset-btn" id="p-ch">12P2 chairman=132</button>' +
-      '<button class="preset-btn" id="p-rep">Theorem 2: n^r</button>';
+      '<button class="preset-btn active" data-preset="p-num" id="p-num">NUMBER 6P3=120</button>' +
+      '<button class="preset-btn" data-preset="p-ch" id="p-ch">12P2 chairman=132</button>' +
+      '<button class="preset-btn" data-preset="p-rep" id="p-rep">Theorem 2: n^r</button>';
     document.getElementById("p-num").onclick = function(){ setActivePreset(this); n=6;r=3; App.resetTimeline(); };
     document.getElementById("p-ch").onclick = function(){ setActivePreset(this); n=12;r=2; App.resetTimeline(); };
     document.getElementById("p-rep").onclick = function(){ setActivePreset(this); n=4;r=4; App.resetTimeline(); };
@@ -157,9 +157,9 @@ window.SIMS["root-word"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Distinct permutations</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-root">ROOT 4!/2! = 12</button>' +
-      '<button class="preset-btn" id="p-all">ALLAHABAD 7560</button>' +
-      '<button class="preset-btn" id="p-ind">INDEPENDENCE 1663200</button>';
+      '<button class="preset-btn active" data-preset="p-root" id="p-root">ROOT 4!/2! = 12</button>' +
+      '<button class="preset-btn" data-preset="p-all" id="p-all">ALLAHABAD 7560</button>' +
+      '<button class="preset-btn" data-preset="p-ind" id="p-ind">INDEPENDENCE 1663200</button>';
     document.getElementById("p-root").onclick = function(){ setActivePreset(this); word="ROOT"; App.resetTimeline(); };
     document.getElementById("p-all").onclick = function(){ setActivePreset(this); word="ALLAHABAD"; App.resetTimeline(); };
     document.getElementById("p-ind").onclick = function(){ setActivePreset(this); word="INDEPENDENCE"; App.resetTimeline(); };
@@ -192,9 +192,9 @@ window.SIMS["vowels-together"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Glued vowels AUE</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-tog">DAUGHTER vowels together</button>' +
-      '<button class="preset-btn" id="p-nev">Never together</button>' +
-      '<button class="preset-btn" id="p-gap">5 girls + 3 boys, gaps</button>';
+      '<button class="preset-btn active" data-preset="p-tog" id="p-tog">DAUGHTER vowels together</button>' +
+      '<button class="preset-btn" data-preset="p-nev" id="p-nev">Never together</button>' +
+      '<button class="preset-btn" data-preset="p-gap" id="p-gap">5 girls + 3 boys, gaps</button>';
     document.getElementById("p-tog").onclick = function(){ setActivePreset(this); mode="together"; App.resetTimeline(); };
     document.getElementById("p-nev").onclick = function(){ setActivePreset(this); mode="never"; App.resetTimeline(); };
     document.getElementById("p-gap").onclick = function(){ setActivePreset(this); mode="gap"; App.resetTimeline(); };
@@ -243,9 +243,9 @@ window.SIMS["ncr-lab"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>combination nCr</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>permutation nPr</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-hs">12 handshakes 12C2</button>' +
-      '<button class="preset-btn" id="p-ch">7 chords 7C2</button>' +
-      '<button class="preset-btn" id="p-card">52C4 cards</button>';
+      '<button class="preset-btn active" data-preset="p-hs" id="p-hs">12 handshakes 12C2</button>' +
+      '<button class="preset-btn" data-preset="p-ch" id="p-ch">7 chords 7C2</button>' +
+      '<button class="preset-btn" data-preset="p-card" id="p-card">52C4 cards</button>';
     document.getElementById("p-hs").onclick = function(){ setActivePreset(this); n=12;r=2; App.resetTimeline(); };
     document.getElementById("p-ch").onclick = function(){ setActivePreset(this); n=7;r=2; App.resetTimeline(); };
     document.getElementById("p-card").onclick = function(){ setActivePreset(this); n=52;r=4; App.resetTimeline(); };
@@ -286,8 +286,8 @@ window.SIMS["ipl-squad"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Bowlers (5 available)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Others (12)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-4">Ex 6.4 Q7: exactly 4 bowlers</button>' +
-      '<button class="preset-btn" id="p-21">Ex 21: 4G+7B team of 5</button>';
+      '<button class="preset-btn active" data-preset="p-4" id="p-4">Ex 6.4 Q7: exactly 4 bowlers</button>' +
+      '<button class="preset-btn" data-preset="p-21" id="p-21">Ex 21: 4G+7B team of 5</button>';
     document.getElementById("p-4").onclick = function(){ setActivePreset(this); mode="bowl"; App.resetTimeline(); };
     document.getElementById("p-21").onclick = function(){ setActivePreset(this); mode="team"; App.resetTimeline(); };
     document.getElementById("lab-controls").innerHTML =
@@ -333,8 +333,8 @@ window.SIMS["course-pick"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Compulsory (2)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Free choice from 7</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c">5 courses, 2 compulsory</button>' +
-      '<button class="preset-btn" id="p-n">NEET 8 Qs, ≥3 from each part</button>';
+      '<button class="preset-btn active" data-preset="p-c" id="p-c">5 courses, 2 compulsory</button>' +
+      '<button class="preset-btn" data-preset="p-n" id="p-n">NEET 8 Qs, ≥3 from each part</button>';
     var mode="c";
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); mode="c"; draw(); };
     document.getElementById("p-n").onclick = function(){ setActivePreset(this); mode="n"; draw(); };

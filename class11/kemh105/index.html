@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 11</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 11</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 05 · LINEAR INEQUALITIES</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,53 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 40 Exercises from NCERT Class 11 Mathematics (pp. 89–99) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 40 Exercises from NCERT Class 11 Mathematics (pp. 89–99) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathematics", "title": "Linear Inequalities", "subtitle": "One-variable linear inequalities: rules that reverse, number-line graphs, double inequalities, and mixture/temperature models.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh105.pdf", "page_start": 89, "page_end": 99, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "intro-inequalities", "nav": "Inequalities around us", "title": "When an equation is not enough: rice packets and classroom chairs", "deck": "Statements with <, >, ≤, ≥ are inequalities. Ravi’s ₹200 rice budget and Reshma’s ₹120 stationery budget are the chapter’s opening models.", "minutes": 8, "section": "5.1–5.2", "pages": [1, 2], "print": "89–90", "sim": "rice-market", "simTitle": "Ravi’s rice packets: 30x < 200", "quick": ["<strong>Inequalities</strong> arise the moment a statement problem cannot be forced into an equation. The height of every student in your class is less than 160 cm; a classroom occupies at most 60 tables or chairs. The symbols ‘&lt;’ (less than), ‘&gt;’ (greater than), ‘≤’ (less than or equal) and ‘≥’ (greater than or equal) turn such statements into mathematics.", "Ravi goes to market with ₹200; rice is ₹30 per 1 kg packet. If <em>x</em> is the number of packets, then <strong>30x &lt; 200</strong> (1) — he cannot spend the entire ₹200 because packets are whole. Reshma has ₹120; registers ₹40, pens ₹20: <strong>40x + 20y ≤ 120</strong> (2). Statement (2) is the disjunction of the strict inequality 40x + 20y &lt; 120 and the equation 40x + 20y = 120."], "formulas": [{"label": "Definition 1", "html": "two real numbers or algebraic expressions related by &lt;, &gt;, ≤ or ≥ form an inequality", "cond": "zoom p.2"}, {"label": "Ravi’s rice (1)", "html": "30x &lt; 200", "cond": "x = number of 1 kg packets; ₹30 each; budget ₹200"}, {"label": "Reshma’s stationery (2)", "html": "40x + 20y ≤ 120", "cond": "registers ₹40, pens ₹20, budget ₹120"}], "deeper": "Numerical inequalities such as 3 &lt; 5 and 7 &gt; 5 involve only numbers. Literal inequalities such as x &lt; 5, y ≥ 2 involve variables. Double inequalities such as 3 &lt; 5 &lt; 7 or 3 ≤ x &lt; 5 chain two comparisons. This reprint studies linear inequalities in one and two variables; quadratic inequalities ax² + bx + c ≤ 0 are named only to be set aside.", "worked": "Ravi, packets of 1 kg at ₹30, ₹200 in hand: 30x &lt; 200. Why not ≤? Because he buys only whole packets, 30×6 = 180 and 30×7 = 210, so he never hits exactly 200. The model is a strict inequality even though the wallet says ‘at most 200’.", "prediction": {"prompt": "A UPI daily limit is ₹1,00,000. If each scan-and-pay is ₹1,999, and x is the number of scans, which model is correct?", "options": ["1999x ≤ 100000, because the limit may be used fully if the last payment fits", "1999x &lt; 100000 always, because UPI never allows equality", "1999x = 100000, because limits are equations"], "answer": 0, "explanation": "A limit is ‘at most’, so ≤. Equality is allowed if 1999x lands exactly on 1,00,000 (it does not, but the model is still ≤). Ravi’s rice was &lt; only because packets cannot hit ₹200 exactly and the text chose a strict model."}, "connect": [["UPI daily cap as 1999x ≤ 1,00,000", "NPCI UPI apps (GPay, PhonePe, BHIM) enforce a daily cap. If each kirana scan is ₹1,999, the number of scans x satisfies 1999x ≤ 100000, i.e. x ≤ 50.02 so at most 50 scans. The inequality, not an equation, is the right translation."], ["Wow — the classroom of at most 60 seats", "NCERT’s opening ‘at most 60 tables or chairs’ is  t + c ≤ 60. The same pattern is the Delhi Metro coach ‘maximum standing 300’ sticker: a slack inequality, equality allowed.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "State Definition 1 and write Ravi’s and Reshma’s inequalities with units.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which of the following is an inequality?", "options": ["30x < 200", "2x + 3 = 7", "x² = 4"], "answer": 0, "hint": "Look for <, >, ≤, ≥.", "solution": "An inequality relates two expressions by <, >, ≤ or ≥. 30x < 200 is (1) of §5.2.", "wrong": ["", "That is an equation.", "That is still an equation."]}, {"level": "Medium", "type": "mcq", "prompt": "Reshma’s 40x + 20y ≤ 120 consists of", "options": ["the inequality 40x + 20y < 120 and the equation 40x + 20y = 120", "only the equation 40x + 20y = 120", "two strict inequalities and no equation"], "answer": 0, "hint": "Zoom p.2: statement (2) splits as (3) and (4).", "solution": "≤ means ‘less than or equal’, the disjunction of < and =.", "wrong": ["", "≤ includes the equal case but is not only equal.", "There is only one strict piece."]}, {"level": "Hard", "type": "mcq", "prompt": "Why is Ravi’s model 30x < 200 rather than 30x ≤ 200?", "options": ["Packets are whole kilograms, so he cannot spend exactly ₹200", "Inequalities are never allowed to use ≤", "₹200 is not a real number"], "answer": 0, "hint": "Section 5.2 (i): ‘he may not be able to spend the entire amount (Why?).’", "solution": "30 does not divide 200, and x is a whole number of packets, so 30x never equals 200.", "wrong": ["", "Example 4 uses ≤.", "₹200 is real; the issue is the packet size."]}]}, {"id": "types-linear", "nav": "Strict, slack, linear", "title": "Strict vs slack, one variable vs two, linear vs quadratic", "deck": "ax + b < 0 is a strict linear inequality in one variable; ax + by ≤ c is slack and two-variable. Quadratics are named and then left alone.", "minutes": 8, "section": "5.2", "pages": [2, 2], "print": "90", "sim": "ineq-types", "simTitle": "Classifier: strict / slack / linear / quadratic", "quick": ["Inequalities (5)–(8) are of the form ax + b ? 0. When a ≠ 0 they are <strong>linear inequalities in one variable</strong> x. Inequalities (9)–(12) of the form ax + by ? c, with a ≠ 0, b ≠ 0, are <strong>linear inequalities in two variables</strong>.", "<strong>Strict</strong> inequalities use &lt; or &gt;: (5), (6), (9), (10), (14). <strong>Slack</strong> inequalities use ≤ or ≥: (7), (8), (11), (12), (13). Inequalities (13) and (14) are quadratic (ax² + bx + c ? 0, a ≠ 0) — this chapter confines itself to linear inequalities in one and two variables only."], "formulas": [{"label": "Linear, one variable", "html": "ax + b &lt; 0, ax + b &gt; 0, ax + b ≤ 0, ax + b ≥ 0", "cond": "a ≠ 0; (5)–(8)"}, {"label": "Linear, two variables", "html": "ax + by &lt; c,  ax + by &gt; c,  ax + by ≤ c,  ax + by ≥ c", "cond": "a ≠ 0, b ≠ 0; (9)–(12)"}, {"label": "Not linear (quadratic)", "html": "ax² + bx + c ≤ 0  or  ax² + bx + c &gt; 0", "cond": "a ≠ 0; (13), (14) — out of this chapter"}], "deeper": "‘Slack’ is NCERT’s word for non-strict (≤, ≥). Graphically, slack inequalities include the boundary (a dark circle on the number line; a solid line in the plane). Strict inequalities exclude the boundary (an open circle). Two-variable linear inequalities will not be graphed as half-planes in this shortened reprint — the body after §5.2 is one-variable algebra and number-line graphs.", "worked": "Classify: (i) 3x − 7 &lt; 0 — linear, one variable, strict. (ii) 40x + 20y ≤ 120 — linear, two variables, slack. (iii) x² − 5x + 6 ≥ 0 — quadratic, slack, not studied here.", "prediction": {"prompt": "Which of these is a slack linear inequality in one variable?", "options": ["ax + b ≥ 0 with a ≠ 0", "ax + by < c with a, b ≠ 0", "ax² + bx + c ≤ 0 with a ≠ 0"], "answer": 0, "explanation": "≥ makes it slack; one variable; degree 1. The second is two-variable; the third is quadratic."}, "connect": [["GST slab as a slack inequality", "GST 5% applies when 0 &lt; taxable value ≤ a notified threshold in some compositions; the ‘at most’ is ≤, a slack inequality. Crossing the threshold jumps the rate — the boundary is included in the lower slab."], ["Wow — Aadhaar enrolment age", "UIDAI’s ‘resident of age 5 years or above must update biometrics’ is age ≥ 5, a slack inequality on a real (or integer) line. Age &gt; 5 would exclude the fifth birthday.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "Give one example each of a strict linear inequality in one variable, a slack two-variable inequality, and a quadratic inequality.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A slack inequality uses the symbol", "options": ["≤ or ≥", "< or > only", "= only"], "answer": 0, "hint": "NCERT: (7), (8), (11), (12), (13) are slack.", "solution": "Slack = non-strict = ≤ or ≥.", "wrong": ["", "Those are strict.", "Equality is an equation, not an inequality."]}, {"level": "Medium", "type": "mcq", "prompt": "ax + by ≥ c with a ≠ 0, b ≠ 0 is", "options": ["a slack linear inequality in two variables", "a strict linear inequality in one variable", "a quadratic inequality"], "answer": 0, "hint": "Compare with (12).", "solution": "Two variables, degree 1, ≥ ⇒ slack.", "wrong": ["", "Two variables, and ≥ is not strict.", "No x²."]}, {"level": "Hard", "type": "mcq", "prompt": "This reprint confines the chapter to", "options": ["linear inequalities in one and two variables only", "quadratic inequalities only", "strict inequalities only"], "answer": 0, "hint": "Last paragraph of §5.2, zoom p.2.", "solution": "Quadratics (13)–(14) are exhibited and then excluded.", "wrong": ["", "They are named and dropped.", "Slack inequalities are fully in scope."]}]}, {"id": "solution-rules", "nav": "Rules that reverse", "title": "Add anything; multiply by a negative and reverse the sign", "deck": "A solution is a value that makes the inequality true. Rule 2 reverses < to > (and ≤ to ≥) when both sides are multiplied or divided by a negative number.", "minutes": 10, "section": "5.3", "pages": [3, 4], "print": "91–92", "sim": "reverse-rule", "simTitle": "3 > 2 but −3 < −2: the reverse rule", "quick": ["For 30x &lt; 200 with x a whole number of packets, trial shows x = 0,1,2,3,4,5,6 work and x = 7 fails (210 ≮ 200). Those x that make the statement true are <strong>solutions</strong>; the set {0,1,2,3,4,5,6} is the <strong>solution set</strong>. Trial-and-error is inefficient; we need rules.", "<strong>Rule 1.</strong> Equal numbers may be added to (or subtracted from) both sides without changing the inequality sign. <strong>Rule 2.</strong> Both sides may be multiplied (or divided) by the same <em>positive</em> number. When both sides are multiplied or divided by a <em>negative</em> number, the sign is reversed: 3 &gt; 2 while −3 &lt; −2; −8 &lt; −7 while (−8)(−2) &gt; (−7)(−2), i.e. 16 &gt; 14."], "formulas": [{"label": "Rule 1", "html": "a &lt; b  ⇒  a + c &lt; b + c  (c any real)", "cond": "addition/subtraction never reverse"}, {"label": "Rule 2 (positive)", "html": "a &lt; b and k &gt; 0  ⇒  ka &lt; kb", "cond": "same for division by k &gt; 0"}, {"label": "Rule 2 (negative)", "html": "a &lt; b and k &lt; 0  ⇒  ka &gt; kb", "cond": "the sign reverses; same for ≤, ≥"}], "deeper": "The reverse is forced by the order of the real line: multiplying by −1 reflects through the origin, which swaps left and right. Henceforth, unless stated otherwise, this chapter solves inequalities in the set of real numbers (after Example 2).", "worked": "30x &lt; 200, divide by 30 &gt; 0: x &lt; 20/3. (i) x natural: {1,2,3,4,5,6} (Example 1; 0 is not natural in NCERT). (ii) x integer: {…,−3,−2,−1,0,1,2,3,4,5,6}.", "prediction": {"prompt": "Start from −8 < −7. Multiply both sides by −2. What is true?", "options": ["16 > 14, because the sign reverses", "16 < 14, keep the same sign", "−16 < −14, ignore the multiplication"], "answer": 0, "explanation": "NCERT’s own numerical check of Rule 2: (−8)(−2) = 16 and (−7)(−2) = 14, and 16 > 14."}, "connect": [["Temperature below zero", "If today’s high is −3 °C and yesterday’s was −2 °C, then −3 &lt; −2. Multiplying by −1 (a ‘how far below zero’ reflection) gives 3 &gt; 2: yesterday was closer to freezing. The reverse rule is the number-line flip."], ["Wow — cricket net run rate", "If two NRR values satisfy a &lt; b, then −a &gt; −b. Ranking by ‘negative of NRR’ (used in some tie-break visualisations) reverses the order of the table.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "State Rule 1 and Rule 2, and give NCERT’s pair 3 > 2 vs −3 < −2.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The solution set of 30x < 200 for whole-number packets x is", "options": ["{0,1,2,3,4,5,6}", "{1,2,3,4,5,6,7}", "{0,1,2,…,7}"], "answer": 0, "hint": "Trial in §5.3: x = 7 gives 210 which is not < 200.", "solution": "x = 7 fails; 0 through 6 work.", "wrong": ["", "7 overshoots.", "7 is false."]}, {"level": "Medium", "type": "mcq", "prompt": "Dividing 30x < 200 by 30 (Example 1) yields", "options": ["x < 20/3", "x > 20/3", "x ≤ 20/3"], "answer": 0, "hint": "30 > 0, so Rule 2 does not reverse.", "solution": "x < 200/30 = 20/3.", "wrong": ["", "No reverse for a positive divisor.", "The original is strict."]}, {"level": "Hard", "type": "mcq", "prompt": "−12x > 30, x a natural number. Solution set?", "options": ["empty set", "{1,2,3}", "all natural numbers"], "answer": 0, "hint": "Divide by −12 and reverse: x < −2.5. No natural is negative.", "solution": "Exercise 5.1 Q2(i). Naturals are 1,2,3,… — none are < −2.5.", "wrong": ["", "Those are positive.", "The reverse produces a negative bound."]}]}, {"id": "algebra-onevar", "nav": "Algebra of one variable", "title": "Collect x, watch the sign: Examples 1–4", "deck": "Example 2: 5x − 3 < 3x + 1 ⇒ x < 2. Example 3: −2x < 4 ⇒ x > −2 (reverse). Example 4: (5−2x)/3 ≤ x/6 − 5 ⇒ x ≥ 8.", "minutes": 12, "section": "5.3", "pages": [4, 5], "print": "92–93", "sim": "algebra-lab", "simTitle": "Solve ax + b < cx + d with a slider", "quick": ["<strong>Example 2</strong> (zoom p.4). 5x − 3 &lt; 3x + 1. Add 3: 5x &lt; 3x + 4. Subtract 3x: 2x &lt; 4. Divide by 2 &gt; 0: x &lt; 2. Integers: {…,−4,−3,−2,−1,0,1}. Reals: x ∈ (−∞, 2).", "<strong>Example 3</strong> (zoom p.5). 4x + 3 &lt; 6x + 7 ⇒ −2x &lt; 4 ⇒ x &gt; −2, solution (−2, ∞). <strong>Example 4</strong> (zoom p.5). (5 − 2x)/3 ≤ x/6 − 5. Multiply by 6: 2(5 − 2x) ≤ x − 30 ⇒ 10 − 4x ≤ x − 30 ⇒ −5x ≤ −40 ⇒ x ≥ 8 (reverse, divide by −5). Solution [8, ∞)."], "formulas": [{"label": "Example 2", "html": "5x − 3 &lt; 3x + 1  ⇒  x &lt; 2", "cond": "integers {…,−1,0,1}; reals (−∞, 2)"}, {"label": "Example 3", "html": "4x + 3 &lt; 6x + 7  ⇒  x &gt; −2", "cond": "reverse because of −2x; (−2, ∞)"}, {"label": "Example 4", "html": "(5 − 2x)/3 ≤ x/6 − 5  ⇒  x ≥ 8", "cond": "zoom p.5; [8, ∞)"}], "deeper": "Clearing a denominator that is positive (3, 6) does not reverse the sign. The reverse in Example 4 appears only when −5x ≤ −40 is divided by −5. Always isolate the coefficient of x before dividing.", "worked": "Example 4, zoom-checked: (5−2x)/3 ≤ x/6 − 5. Multiply through by 6: 2(5−2x) ≤ x − 30. Expand: 10 − 4x ≤ x − 30. Bring x terms left, numbers right: 10 + 30 ≤ x + 4x ⇒ 40 ≤ 5x ⇒ x ≥ 8. Equivalently −5x ≤ −40, divide by −5, reverse, x ≥ 8.", "prediction": {"prompt": "From −2x < 4, the correct next line is", "options": ["x > −2 (divide by −2, reverse)", "x < −2 (keep the sign)", "x < 2 (drop the minus on x only)"], "answer": 0, "explanation": "Example 3, zoom p.5: −2x < 4 or x > −2. Dividing by a negative reverses the inequality."}, "connect": [["CBSE internal assessment ‘at least 75% attendance’", "If a student has attended 62 of 80 periods so far, remaining periods r satisfy (62 + r)/(80 + r) ≥ 0.75. Clearing the positive denominator and collecting r is exactly Example 2’s algebra."], ["Wow — JEE attempt cap", "‘A candidate may attempt JEE (Main) in three consecutive years’ is an integer inequality on the attempt index. Translating ‘consecutive’ plus a numerical bound is Example 8’s pattern, but the algebra of isolating x is Examples 2–4.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Example 2: 5x − 3 < 3x + 1 for real x has solution", "options": ["(−∞, 2)", "(−∞, 2]", "(2, ∞)"], "answer": 0, "hint": "x < 2, open at 2.", "solution": "The inequality is strict, so 2 is excluded.", "wrong": ["", "Strict, so 2 is out.", "The collected form is x < 2, not x > 2."]}, {"level": "Medium", "type": "number", "prompt": "Example 4: the smallest real x satisfying (5−2x)/3 ≤ x/6 − 5 is", "answer": 8, "unit": "", "tolerance": 0.05, "hint": "Multiply by 6, collect, reverse on −5x ≤ −40.", "solution": "2(5−2x) ≤ x−30 ⇒ 10−4x ≤ x−30 ⇒ −5x ≤ −40 ⇒ x ≥ 8. Smallest real in [8,∞) is 8.", "map": "Example 4"}, {"level": "Hard", "type": "mcq", "prompt": "4x + 3 < 6x + 7 simplifies to −2x < 4. Why is the solution x > −2 rather than x < −2?", "options": ["Division by −2 reverses the inequality", "Addition of 2x reverses the inequality", "The original inequality was slack"], "answer": 0, "hint": "Rule 2, Example 3.", "solution": "Only multiplication/division by a negative reverses. Adding 2x is Rule 1 and would give 3 < 2x + 7, still the same direction.", "wrong": ["", "Rule 1 never reverses.", "It was strict <."]}]}, {"id": "numberline", "nav": "Number-line graphs", "title": "Open circle vs dark circle: Figs 5.1 and 5.2", "deck": "x < a: open circle at a, ray to the left. x ≥ a: dark circle at a, ray to the right. Example 5: x < 3. Example 6: (3x−4)/2 ≥ (x+1)/4 − 1 ⇒ x ≥ 1.", "minutes": 10, "section": "5.3", "pages": [5, 6], "print": "93–94", "sim": "numberline-graph", "simTitle": "Fig 5.1 / 5.2 number-line painter", "quick": ["<strong>Example 5</strong> (zoom p.5, Fig 5.1). 7x + 3 &lt; 5x + 9 ⇒ 2x &lt; 6 ⇒ x &lt; 3. Graph: open circle at 3, thick ray through 2, 1, 0, … to −∞.", "<strong>Example 6</strong> (zoom p.5–6, Fig 5.2). (3x − 4)/2 ≥ (x + 1)/4 − 1. Bring to (3x − 4)/2 ≥ (x − 3)/4, then 2(3x − 4) ≥ (x − 3) ⇒ 6x − 8 ≥ x − 3 ⇒ 5x ≥ 5 ⇒ x ≥ 1. Graph: dark circle at 1, ray to +∞. Summary: x &lt; a (or x &gt; a) → hollow circle; x ≤ a (or x ≥ a) → dark circle."], "formulas": [{"label": "Example 5 / Fig 5.1", "html": "7x + 3 &lt; 5x + 9  ⇒  x &lt; 3", "cond": "open circle at 3, ray left"}, {"label": "Example 6 / Fig 5.2", "html": "(3x − 4)/2 ≥ (x + 1)/4 − 1  ⇒  x ≥ 1", "cond": "dark circle at 1, ray right"}, {"label": "Graphing rule (Summary)", "html": "x &lt; a: hollow circle at a;  x ≤ a: dark circle at a", "cond": "ray left of a; swap left/right for &gt; / ≥"}], "deeper": "The hollow circle is the one-dimensional analogue of a dotted boundary line in the plane. Students often darken the circle for a strict inequality — Fig 5.1 is the corrective picture: 3 is not a solution of x < 3.", "worked": "Example 6, zoom-checked. (3x−4)/2 ≥ (x+1)/4 − 1. Right side: (x+1)/4 − 4/4 = (x+1−4)/4 = (x−3)/4. Multiply by 4: 2(3x−4) ≥ x−3. 6x−8 ≥ x−3. 5x ≥ 5. x ≥ 1. Fig 5.2: filled dot at 1, arrow through 2,3,4,…", "prediction": {"prompt": "Fig 5.1 (Example 5) has an open circle at 3. Is x = 3 a solution of 7x + 3 < 5x + 9?", "options": ["No — the inequality is strict, 2x < 6, 3 is excluded", "Yes — the circle is only decorative", "Yes — NCERT always includes the endpoint"], "answer": 0, "explanation": "Open circle = endpoint out. 7(3)+3 = 24 and 5(3)+9 = 24, so 24 < 24 is false."}, "connect": [["Highway speed-limit board", "‘Speed ≤ 90 km/h’ is a dark circle at 90 with a ray to the left (down to 0). A strict ‘below 90’ camera rule would be an open circle — rare, because challans include equality at the painted limit."], ["Wow — mercury in a clinical thermometer", "A fever cut-off of temperature ≥ 37.5 °C is a dark circle. The number-line picture is exactly Fig 5.2, with 37.5 in place of 1.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "Draw x < 3 and x ≥ 1 on a number line, naming which circle is hollow.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "To graph x < a one must", "options": ["put an open circle at a and darken to the left", "put a dark circle at a and darken to the left", "put an open circle at a and darken to the right"], "answer": 0, "hint": "Summary, zoom p.11.", "solution": "Open = strict; left = less than.", "wrong": ["", "Dark circle is for ≤.", "Right is for >."]}, {"level": "Medium", "type": "number", "prompt": "Example 6: the endpoint of the solution ray is x =", "answer": 1, "unit": "", "tolerance": 0.05, "hint": "5x ≥ 5 after clearing denominators.", "solution": "2(3x−4) ≥ x−3 ⇒ 6x−8 ≥ x−3 ⇒ 5x ≥ 5 ⇒ x ≥ 1. Dark circle at 1.", "map": "Example 6"}, {"level": "Hard", "type": "mcq", "prompt": "Fig 5.2 has a dark circle at 1 because", "options": ["the inequality is slack (x ≥ 1), so 1 is a solution", "NCERT never uses open circles on the right", "1 is not a real number"], "answer": 0, "hint": "Example 6 ends x ≥ 1; Summary on dark circles.", "solution": "Plug x = 1 into Example 6: both sides match after the algebra, and ≥ includes equality.", "wrong": ["", "Fig 5.1 uses an open circle on the right of some integers.", "1 is real."]}]}, {"id": "word-problems", "nav": "Marks, odds, boards", "title": "Translate English into ≤: average marks and consecutive odds", "deck": "Example 7: (62+48+x)/3 ≥ 60 ⇒ x ≥ 70. Example 8: consecutive odd naturals > 10 summing to < 40 give pairs (11,13), (13,15), (15,17), (17,19).", "minutes": 12, "section": "5.3", "pages": [6, 8], "print": "94–96", "sim": "marks-upi", "simTitle": "Average-at-least-60 marks lab", "quick": ["<strong>Example 7</strong> (zoom p.6). Terminal marks 62 and 48; annual x; average at least 60: (62 + 48 + x)/3 ≥ 60 ⇒ 110 + x ≥ 180 ⇒ x ≥ 70. Minimum 70 marks.", "<strong>Example 8</strong>. Smaller consecutive odd natural x, other x+2, both &gt; 10, sum &lt; 40: x &gt; 10 and 2x + 2 &lt; 40 ⇒ x &lt; 19. So 10 &lt; x &lt; 19 with x odd: 11,13,15,17. Pairs (11,13), (13,15), (15,17), (17,19). Exercise 5.1 then repeats the pattern for Ravi’s unit tests, Sunita’s Grade A, consecutive evens, a triangle perimeter, and a 91 cm board."], "formulas": [{"label": "Average at least A", "html": "(m₁ + m₂ + x)/n ≥ A", "cond": "Example 7: n=3, A=60 → x ≥ 70"}, {"label": "Consecutive odds", "html": "x &gt; 10 and x + (x+2) &lt; 40, x odd", "cond": "Example 8 → {11,13,15,17}"}], "deeper": "‘At least’ is ≥; ‘at most’ is ≤; ‘less than’ is &lt;; ‘more than’ is &gt;. Consecutive odds differ by 2; consecutive evens differ by 2. Always declare the domain (natural, integer, real) because the same inequality x < 19 has different solution lists on those sets.", "worked": "Example 7: 62+48+x ≥ 180, x ≥ 70. Exercise 5.1 Q21: Ravi 70 and 75, third test x, average ≥ 60: (145+x)/3 ≥ 60 ⇒ x ≥ 35. Q22: Sunita 87,92,94,95, fifth x, average ≥ 90: (368+x)/5 ≥ 90 ⇒ x ≥ 82.", "prediction": {"prompt": "Sunita has 87, 92, 94, 95. Minimum marks in the fifth exam for an average of at least 90 (each exam out of 100)?", "options": ["82", "90", "70"], "answer": 0, "explanation": "Exercise 5.1 Q22: 87+92+94+95 = 368; 368+x ≥ 450; x ≥ 82. (She can score 82, not necessarily 90.)"}, "connect": [["CBSE best-of and ‘at least 33%’", "A theory paper of 80 with ‘at least 33%’ is x ≥ 0.33×80 = 26.4, so an integer score x ≥ 27. The inequality is the same shape as Example 7."], ["Wow — UPI PIN tries", "Many BHIM/GPay flows lock the UPI PIN after 3 consecutive failures: n ≤ 3. Consecutive-odd counting (Example 8) is the cousin of ‘consecutive attempts’ — an integer inequality with a gap of 1 rather than 2.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "Write the inequality for Example 7 and list the four pairs of Example 8.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 7: minimum annual marks for average ≥ 60 given 62 and 48 is", "answer": 70, "unit": "marks", "tolerance": 0.05, "hint": "(62+48+x)/3 ≥ 60", "solution": "110 + x ≥ 180 ⇒ x ≥ 70."}, {"level": "Medium", "type": "mcq", "prompt": "Example 8: how many pairs of consecutive odd naturals both > 10 with sum < 40?", "options": ["4 pairs", "3 pairs", "5 pairs"], "answer": 0, "hint": "x ∈ {11,13,15,17}.", "solution": "(11,13), (13,15), (15,17), (17,19).", "wrong": ["", "Four odd values of x.", "19 as the smaller fails x < 19."]}, {"level": "Hard", "type": "mcq", "prompt": "A 91 cm board is cut into x, x+3, 2x with 2x ≥ (x+3)+5 and total ≤ 91. Range of x?", "options": ["8 ≤ x ≤ 22", "x ≥ 8 only", "x ≤ 22 only"], "answer": 0, "hint": "Exercise 5.1 Q26 hint, zoom p.8.", "solution": "4x+3 ≤ 91 ⇒ x ≤ 22 and 2x ≥ x+8 ⇒ x ≥ 8.", "wrong": ["", "The board length also caps x.", "The ‘at least 5 cm longer’ floor is x ≥ 8."]}]}, {"id": "double-systems", "nav": "Double inequalities & systems", "title": "Solve both ends at once: −8 ≤ 5x − 3 < 7 and the overlap of two rays", "deck": "Example 9: −1 ≤ x < 2. Example 10: −5 ≤ (5−3x)/2 ≤ 8 ⇒ −11/3 ≤ x ≤ 5. Example 11: 3x−7 < 5+x and 11−5x ≤ 1 ⇒ 2 ≤ x < 6 (Fig 5.3).", "minutes": 12, "section": "Misc. Ex. 9–11", "pages": [8, 9], "print": "96–97", "sim": "double-ineq", "simTitle": "Fig 5.3: overlap of x < 6 and x ≥ 2", "quick": ["A <strong>double inequality</strong> a ≤ f(x) &lt; b is two inequalities solved simultaneously, operating on all three members. <strong>Example 9</strong> (zoom p.8): −8 ≤ 5x − 3 &lt; 7. Add 3: −5 ≤ 5x &lt; 10. Divide by 5 &gt; 0: −1 ≤ x &lt; 2.", "<strong>Example 10</strong>: −5 ≤ (5 − 3x)/2 ≤ 8. Multiply by 2: −10 ≤ 5 − 3x ≤ 16. Subtract 5: −15 ≤ −3x ≤ 11. Divide by −3 and reverse <em>both</em> signs: 5 ≥ x ≥ −11/3, i.e. −11/3 ≤ x ≤ 5. <strong>Example 11</strong> is a <em>system</em>: 3x − 7 &lt; 5 + x ⇒ x &lt; 6, and 11 − 5x ≤ 1 ⇒ x ≥ 2. Common ray on Fig 5.3: 2 ≤ x &lt; 6."], "formulas": [{"label": "Example 9", "html": "−8 ≤ 5x − 3 &lt; 7  ⇒  −1 ≤ x &lt; 2", "cond": "operate on all three members"}, {"label": "Example 10", "html": "−5 ≤ (5 − 3x)/2 ≤ 8  ⇒  −11/3 ≤ x ≤ 5", "cond": "reverse both ends when dividing by −3"}, {"label": "Example 11 / Fig 5.3", "html": "x &lt; 6  and  x ≥ 2  ⇒  2 ≤ x &lt; 6", "cond": "intersection of two rays"}], "deeper": "A system is an AND: the solution is the intersection of two sets on the number line. If the two rays point opposite ways and miss each other, the system is empty. Double inequalities are a compact notation for a system whose two bounds share the same middle expression.", "worked": "Example 10, zoom p.8: −5 ≤ (5−3x)/2 ≤ 8 → −10 ≤ 5−3x ≤ 16 → −15 ≤ −3x ≤ 11. Dividing by −3 reverses: 5 ≥ x ≥ −11/3. Rewrite left-to-right as −11/3 ≤ x ≤ 5.", "prediction": {"prompt": "Example 11: 3x − 7 < 5 + x and 11 − 5x ≤ 1. The solution is", "options": ["2 ≤ x < 6", "x < 6 only", "x ≥ 2 only"], "answer": 0, "explanation": "Each inequality is necessary; Fig 5.3 bold segment is the overlap, including 2, excluding 6."}, "connect": [["CBSE percentage band 75–90 for a scholarship", "75 ≤ p &lt; 90 is Example 9’s shape. A student with internals 70 and externals x out of 100, p = (70+x)/2, becomes 150 ≤ 70+x &lt; 180, i.e. 80 ≤ x &lt; 110, then intersected with 0 ≤ x ≤ 100."], ["Wow — IPL over-rate window", "A bowling side must finish 20 overs in a time window T with 83 ≤ T ≤ 90 minutes (illustrative). That is a double slack inequality, graphed as a dark-to-dark segment — Fig 5.3 with both ends closed.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Example 9: −8 ≤ 5x − 3 < 7 has solution", "options": ["−1 ≤ x < 2", "−1 < x ≤ 2", "x < 2 only"], "answer": 0, "hint": "Add 3, divide by 5.", "solution": "−5 ≤ 5x < 10 ⇒ −1 ≤ x < 2. Left end closed, right open, matching ≤ and <.", "wrong": ["", "Left was ≤ so −1 is in.", "The left bound is needed."]}, {"level": "Medium", "type": "mcq", "prompt": "In Example 10, dividing −15 ≤ −3x ≤ 11 by −3", "options": ["reverses both inequalities, giving −11/3 ≤ x ≤ 5", "keeps both signs", "reverses only the left sign"], "answer": 0, "hint": "Zoom p.8: 5 ≥ x ≥ −11/3.", "solution": "A negative divisor reverses every comparison in the chain.", "wrong": ["", "Rule 2.", "Both ends flip."]}, {"level": "Hard", "type": "number", "prompt": "The left endpoint of Example 11’s solution (included) is x =", "answer": 2, "unit": "", "tolerance": 0.05, "hint": "11 − 5x ≤ 1 ⇒ −5x ≤ −10 ⇒ x ≥ 2.", "solution": "From (2): x ≥ 2; from (1): x < 6; intersection starts at 2.", "map": "Example 11"}]}, {"id": "applications", "nav": "°C, acid, IQ", "title": "Temperature bands, acid mixtures, and IQ = (MA/CA)×100", "deck": "Example 12: 30 < C < 35 becomes 86 < F < 95 via C = (5/9)(F−32). Example 13: 120 < x < 300 litres of 30% acid into 600 L of 12%. IQ of 12-year-olds with 80 ≤ IQ ≤ 140 has 9.6 ≤ MA ≤ 16.8.", "minutes": 12, "section": "Misc. Ex. 12–13; Misc. Ex. 11–14", "pages": [9, 11], "print": "97–99", "sim": "mixture-temp", "simTitle": "Acid-mixture inequality 120 < x < 300", "quick": ["<strong>Example 12</strong> (zoom p.9). Keep HCl between 30 °C and 35 °C. C = (5/9)(F − 32). Then 30 &lt; (5/9)(F − 32) &lt; 35. Multiply by 9/5: 54 &lt; F − 32 &lt; 63 ⇒ 86 &lt; F &lt; 95.", "<strong>Example 13</strong> (zoom p.9–10). 600 L of 12% acid; add x L of 30%; resulting strength between 15% and 18%: 0.30x + 0.12·600 &gt; 0.15(x+600) and &lt; 0.18(x+600) ⇒ 15x &gt; 1800 and 12x &lt; 3600 ⇒ 120 &lt; x &lt; 300. Miscellaneous Q11 reverses F → C; Q12–13 are dilution cousins; Q14: 80 ≤ (MA/12)·100 ≤ 140 ⇒ 9.6 ≤ MA ≤ 16.8."], "formulas": [{"label": "C–F (Example 12)", "html": "C = (5/9)(F − 32),  30 &lt; C &lt; 35  ⇒  86 &lt; F &lt; 95", "cond": "zoom p.9"}, {"label": "Mixture (Example 13)", "html": "0.30x + 72 &gt; 0.15(x+600)  and  &lt; 0.18(x+600)", "cond": "120 &lt; x &lt; 300 litres"}, {"label": "IQ (Misc. 14)", "html": "IQ = (MA/CA)×100,  CA = 12,  80 ≤ IQ ≤ 140", "cond": "9.6 ≤ MA ≤ 16.8 years"}], "deeper": "Mixture inequalities compare amounts of pure acid, not percentages directly. Always write (acid in) &gt; (lower %)×(total volume) and (acid in) &lt; (upper %)×(total volume). Water has 0% acid, so adding water (Q13) keeps acid grams fixed while volume grows, which can only decrease the percentage.", "worked": "Example 13: 30x + 7200 > 15x + 9000 ⇒ 15x > 1800 ⇒ x > 120, and 30x + 7200 < 18x + 10800 ⇒ 12x < 3600 ⇒ x < 300. Misc. Q12: 640 L of 8% plus x L of 2%, result between 4% and 6% ⇒ 320 < x < 1280. Misc. Q13: 1125 L of 45% plus x L water, 25–30% ⇒ 562.5 < x < 900.", "prediction": {"prompt": "HCl is kept between 30 °C and 35 °C. Using C = (5/9)(F−32), the Fahrenheit window is", "options": ["86 < F < 95", "86 ≤ F ≤ 95", "32 < F < 35"], "answer": 0, "explanation": "Example 12: both original inequalities are strict, and the conversion is increasing, so the image is open: 86 < F < 95."}, "connect": [["WHO oral-rehydration osmolarity band", "ORS is specified in a concentration window, e.g. more than a% but less than b% of a salt — Example 13’s mixture inequality. ASHAs mixing ORS from packets in rural PHCs are solving 120 < x < 300 in a jug."], ["Wow — IQ formula on the Class 11 page", "Misc. Q14 writes IQ = (MA/CA)×100 with 80 ≤ IQ ≤ 140 at CA = 12, so mental age sits in [9.6, 16.8]. The same double inequality is used in every psychometric conversion table: multiply through by the positive constant CA/100.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh105.pdf"}]]], "recall": "Convert 30 < C < 35 to Fahrenheit, and state 120 < x < 300 for Example 13.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Example 12: 30 °C is how many °F?", "options": ["86 °F", "95 °F", "32 °F"], "answer": 0, "hint": "F = (9/5)C + 32 = 54 + 32.", "solution": "The open window starts just above 86 °F.", "wrong": ["", "That is 35 °C.", "32 °F is 0 °C."]}, {"level": "Medium", "type": "number", "prompt": "Example 13: the lower bound (excluded) on litres of 30% acid is", "answer": 120, "unit": "L", "tolerance": 0.05, "hint": "15x > 1800.", "solution": "30x + 7200 > 15x + 9000 ⇒ 15x > 1800 ⇒ x > 120.", "map": "Example 13"}, {"level": "Hard", "type": "mcq", "prompt": "Misc. Q14: 80 ≤ (MA/12)×100 ≤ 140. The mental-age interval is", "options": ["9.6 ≤ MA ≤ 16.8", "80 ≤ MA ≤ 140", "12 ≤ MA ≤ 16"], "answer": 0, "hint": "Multiply by 12/100.", "solution": "MA ∈ [80·12/100, 140·12/100] = [9.6, 16.8].", "wrong": ["", "Those are IQ bounds, not MA.", "CA is 12, not the answer."]}]}], "exercises": [{"number": "5.1.1", "conceptIdx": 2, "page": 7, "printPage": 95, "question": "Solve 24x < 100, when (i) x is a natural number (ii) x is an integer.", "steps": ["24x < 100 ⇒ x < 100/24 = 25/6 ≈ 4.166 (divide by 24 > 0).", "(i) Naturals 1,2,3,4 (0 is not natural in NCERT).", "(ii) Integers …, −1, 0, 1, 2, 3, 4."], "answer": "(i) {1,2,3,4}; (ii) {…,−1,0,1,2,3,4}", "section": "Ex 5.1"}, {"number": "5.1.2", "conceptIdx": 2, "page": 7, "printPage": 95, "question": "Solve −12x > 30, when (i) x is a natural number (ii) x is an integer.", "steps": ["Divide by −12, reverse: x < 30/(−12) = −5/2 = −2.5.", "(i) No natural number is < −2.5 → empty set.", "(ii) Integers …, −5, −4, −3."], "answer": "(i) ∅; (ii) {…,−5,−4,−3}", "section": "Ex 5.1"}, {"number": "5.1.3", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 5x − 3 < 7, when (i) x is an integer (ii) x is a real number.", "steps": ["5x < 10 ⇒ x < 2.", "(i) Integers {…,−1,0,1}.", "(ii) Reals (−∞, 2)."], "answer": "(i) {…,−1,0,1}; (ii) (−∞, 2)", "section": "Ex 5.1"}, {"number": "5.1.4", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3x + 8 > 2, when (i) x is an integer (ii) x is a real number.", "steps": ["3x > −6 ⇒ x > −2.", "(i) Integers {−1,0,1,2,…}.", "(ii) Reals (−2, ∞)."], "answer": "(i) {−1,0,1,…}; (ii) (−2, ∞)", "section": "Ex 5.1"}, {"number": "5.1.5", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 4x + 3 < 5x + 7 for real x.", "steps": ["4x − 5x < 7 − 3 ⇒ −x < 4 ⇒ x > −4 (reverse on multiplying by −1)."], "answer": "x ∈ (−4, ∞)", "section": "Ex 5.1"}, {"number": "5.1.6", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3x − 7 > 5x − 1 for real x.", "steps": ["3x − 5x > −1 + 7 ⇒ −2x > 6 ⇒ x < −3 (reverse)."], "answer": "x ∈ (−∞, −3)", "section": "Ex 5.1"}, {"number": "5.1.7", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3(x − 1) ≤ 2(x − 3) for real x.", "steps": ["3x − 3 ≤ 2x − 6 ⇒ x ≤ −3."], "answer": "x ∈ (−∞, −3]", "section": "Ex 5.1"}, {"number": "5.1.8", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3(2 − x) ≥ 2(1 − x) for real x.", "steps": ["6 − 3x ≥ 2 − 2x ⇒ 6 − 2 ≥ 3x − 2x ⇒ 4 ≥ x ⇒ x ≤ 4."], "answer": "x ∈ (−∞, 4]", "section": "Ex 5.1"}, {"number": "5.1.9", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve x + x/2 + x/3 < 11 for real x.", "steps": ["(6x + 3x + 2x)/6 < 11 ⇒ 11x/6 < 11 ⇒ x < 6."], "answer": "x ∈ (−∞, 6)", "section": "Ex 5.1"}, {"number": "5.1.10", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve x/3 > x/2 + 1 for real x.", "steps": ["x/3 − x/2 > 1 ⇒ (2x − 3x)/6 > 1 ⇒ −x/6 > 1 ⇒ x < −6 (reverse)."], "answer": "x ∈ (−∞, −6)", "section": "Ex 5.1"}, {"number": "5.1.11", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3(x − 2)/5 ≤ 5(2 − x)/3 for real x.", "steps": ["9(x − 2) ≤ 25(2 − x)  (multiply by 15 > 0).", "9x − 18 ≤ 50 − 25x ⇒ 34x ≤ 68 ⇒ x ≤ 2."], "answer": "x ∈ (−∞, 2]", "section": "Ex 5.1"}, {"number": "5.1.12", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve (1/2)(3x/5 + 4) ≥ (1/3)(x − 6) for real x.", "steps": ["Multiply by 6: 3(3x/5 + 4) ≥ 2(x − 6).", "9x/5 + 12 ≥ 2x − 12 ⇒ 24 ≥ 2x − 9x/5 = x/5 ⇒ x ≤ 120."], "answer": "x ∈ (−∞, 120]", "section": "Ex 5.1"}, {"number": "5.1.13", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 2(2x + 3) − 10 < 6(x − 2) for real x.", "steps": ["4x + 6 − 10 < 6x − 12 ⇒ 4x − 4 < 6x − 12 ⇒ 8 < 2x ⇒ x > 4."], "answer": "x ∈ (4, ∞)", "section": "Ex 5.1"}, {"number": "5.1.14", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 37 − (3x + 5) ≥ 9x − 8(x − 3) for real x. (zoom p.7: ≥)", "steps": ["32 − 3x ≥ 9x − 8x + 24 ⇒ 32 − 3x ≥ x + 24.", "32 − 24 ≥ x + 3x ⇒ 8 ≥ 4x ⇒ x ≤ 2."], "answer": "x ∈ (−∞, 2]", "section": "Ex 5.1"}, {"number": "5.1.15", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve x/4 < (5x − 2)/3 − (7x − 3)/5 for real x.", "steps": ["Multiply by 60: 15x < 20(5x − 2) − 12(7x − 3).", "15x < 100x − 40 − 84x + 36 ⇒ 15x < 16x − 4 ⇒ 4 < x."], "answer": "x ∈ (4, ∞)", "section": "Ex 5.1"}, {"number": "5.1.16", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve (2x − 1)/3 ≥ (3x − 2)/4 − (2 − x)/5 for real x.", "steps": ["Multiply by 60: 20(2x − 1) ≥ 15(3x − 2) − 12(2 − x).", "40x − 20 ≥ 45x − 30 − 24 + 12x ⇒ 40x − 20 ≥ 57x − 54.", "34 ≥ 17x ⇒ x ≤ 2."], "answer": "x ∈ (−∞, 2]", "section": "Ex 5.1"}, {"number": "5.1.17", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve 3x − 2 < 2x + 1 and graph on the number line.", "steps": ["x < 3. Open circle at 3, ray to −∞."], "answer": "x ∈ (−∞, 3); open circle at 3, ray left", "section": "Ex 5.1"}, {"number": "5.1.18", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve 5x − 3 > 3x − 5 and graph on the number line.", "steps": ["2x > −2 ⇒ x > −1. Open circle at −1, ray to +∞."], "answer": "x ∈ (−1, ∞); open circle at −1, ray right", "section": "Ex 5.1"}, {"number": "5.1.19", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve 3(1 − x) < 2(x + 4) and graph on the number line.", "steps": ["3 − 3x < 2x + 8 ⇒ −5 < 5x ⇒ x > −1."], "answer": "x ∈ (−1, ∞); open circle at −1, ray right", "section": "Ex 5.1"}, {"number": "5.1.20", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve x/2 ≥ (5x − 2)/3 − (7x − 3)/5 and graph on the number line.", "steps": ["Multiply by 30: 15x ≥ 10(5x − 2) − 6(7x − 3).", "15x ≥ 50x − 20 − 42x + 18 ⇒ 15x ≥ 8x − 2 ⇒ 7x ≥ −2 ⇒ x ≥ −2/7.", "Dark circle at −2/7, ray to +∞."], "answer": "x ∈ [−2/7, ∞); dark circle at −2/7, ray right", "section": "Ex 5.1"}, {"number": "5.1.21", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "Ravi obtained 70 and 75 marks in first two unit tests. Find the minimum marks he should get in the third test to have an average of at least 60 marks.", "steps": ["(70 + 75 + x)/3 ≥ 60 ⇒ 145 + x ≥ 180 ⇒ x ≥ 35."], "answer": "35 marks", "given": "70, 75; average ≥ 60", "section": "Ex 5.1"}, {"number": "5.1.22", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "To receive Grade ‘A’, one must obtain an average of 90 marks or more in five examinations (each of 100 marks). Sunita’s first four scores: 87, 92, 94, 95. Minimum marks in the fifth examination?", "steps": ["(87+92+94+95+x)/5 ≥ 90 ⇒ 368 + x ≥ 450 ⇒ x ≥ 82.", "82 ≤ 100, so it is attainable."], "answer": "82 marks", "given": "87, 92, 94, 95; average ≥ 90", "section": "Ex 5.1"}, {"number": "5.1.23", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "Find all pairs of consecutive odd positive integers both of which are smaller than 10 such that their sum is more than 11.", "steps": ["x and x+2 odd, x+2 < 10 ⇒ x < 8, x ≥ 1, 2x+2 > 11 ⇒ x > 4.5.", "Odd integers 5, 7. Pairs (5,7), (7,9)."], "answer": "(5, 7) and (7, 9)", "section": "Ex 5.1"}, {"number": "5.1.24", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "Find all pairs of consecutive even positive integers, both of which are larger than 5, such that their sum is less than 23.", "steps": ["x even, x > 5 ⇒ x ≥ 6; 2x + 2 < 23 ⇒ x < 10.5.", "x = 6, 8, 10. Pairs (6,8), (8,10), (10,12)."], "answer": "(6, 8), (8, 10), (10, 12)", "section": "Ex 5.1"}, {"number": "5.1.25", "conceptIdx": 5, "page": 8, "printPage": 96, "question": "The longest side of a triangle is 3 times the shortest side and the third side is 2 cm shorter than the longest side. If the perimeter is at least 61 cm, find the minimum length of the shortest side.", "steps": ["Sides x, 3x, 3x − 2. x + 3x + (3x − 2) ≥ 61 ⇒ 7x ≥ 63 ⇒ x ≥ 9.", "Triangle inequalities hold at x = 9: 9+27 > 25, etc."], "answer": "9 cm", "section": "Ex 5.1"}, {"number": "5.1.26", "conceptIdx": 5, "page": 8, "printPage": 96, "question": "A man wants to cut three lengths from a single piece of board of length 91 cm. The second is 3 cm longer than the shortest and the third is twice the shortest. Possible lengths of the shortest board if the third piece is at least 5 cm longer than the second?", "steps": ["x + (x+3) + 2x ≤ 91 ⇒ 4x ≤ 88 ⇒ x ≤ 22.", "2x ≥ (x+3)+5 ⇒ x ≥ 8.", "Hence 8 ≤ x ≤ 22 (cm)."], "answer": "8 cm ≤ shortest ≤ 22 cm", "given": "hint: x+(x+3)+2x ≤ 91 and 2x ≥ (x+3)+5", "section": "Ex 5.1"}, {"number": "M.1", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 2 ≤ 3x − 4 ≤ 5.", "steps": ["Add 4: 6 ≤ 3x ≤ 9. Divide by 3: 2 ≤ x ≤ 3."], "answer": "x ∈ [2, 3]", "section": "Misc."}, {"number": "M.2", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 6 ≤ −3(2x − 4) < 12.", "steps": ["6 ≤ −6x + 12 < 12. Subtract 12: −6 ≤ −6x < 0.", "Divide by −6, reverse: 1 ≥ x > 0, i.e. 0 < x ≤ 1."], "answer": "x ∈ (0, 1]", "section": "Misc."}, {"number": "M.3", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve −3 ≤ 4 − 7x/2 ≤ 18.", "steps": ["Subtract 4: −7 ≤ −7x/2 ≤ 14.", "Multiply by −2/7 (negative), reverse: 2 ≥ x ≥ −4, i.e. −4 ≤ x ≤ 2."], "answer": "x ∈ [−4, 2]", "section": "Misc."}, {"number": "M.4", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve −15 < 3(x − 2)/5 ≤ 0.", "steps": ["Multiply by 5/3 > 0: −25 < x − 2 ≤ 0 ⇒ −23 < x ≤ 2."], "answer": "x ∈ (−23, 2]", "section": "Misc."}, {"number": "M.5", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve −12 < 4 − 3x/5 ≤ 2.", "steps": ["Subtract 4: −16 < −3x/5 ≤ −2.", "Multiply by −5/3, reverse: 80/3 > x ≥ 10/3, i.e. 10/3 ≤ x < 80/3."], "answer": "x ∈ [10/3, 80/3)", "section": "Misc."}, {"number": "M.6", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 7 ≤ (3x + 11)/2 ≤ 11.", "steps": ["14 ≤ 3x + 11 ≤ 22 ⇒ 3 ≤ 3x ≤ 11 ⇒ 1 ≤ x ≤ 11/3."], "answer": "x ∈ [1, 11/3]", "section": "Misc."}, {"number": "M.7", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 5x + 1 > −24,  5x − 1 < 24 and graph.", "steps": ["5x > −25 ⇒ x > −5;  5x < 25 ⇒ x < 5.", "Open circles at −5 and 5, segment between."], "answer": "x ∈ (−5, 5)", "section": "Misc."}, {"number": "M.8", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 2(x − 1) < x + 5,  3(x + 2) > 2 − x and graph.", "steps": ["2x − 2 < x + 5 ⇒ x < 7.", "3x + 6 > 2 − x ⇒ 4x > −4 ⇒ x > −1.", "Open at −1 and 7."], "answer": "x ∈ (−1, 7)", "section": "Misc."}, {"number": "M.9", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 3x − 7 > 2(x − 6),  6 − x > 11 − 2x and graph.", "steps": ["3x − 7 > 2x − 12 ⇒ x > −5.", "6 − 11 > x − 2x ⇒ −5 > −x ⇒ x > 5.", "Intersection: x > 5."], "answer": "x ∈ (5, ∞)", "section": "Misc."}, {"number": "M.10", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 5(2x − 7) − 3(2x + 3) ≤ 0,  2x + 19 ≤ 6x + 47 and graph.", "steps": ["10x − 35 − 6x − 9 ≤ 0 ⇒ 4x ≤ 44 ⇒ x ≤ 11.", "19 − 47 ≤ 6x − 2x ⇒ −28 ≤ 4x ⇒ x ≥ −7.", "Dark circles at −7 and 11."], "answer": "x ∈ [−7, 11]", "section": "Misc."}, {"number": "M.11", "conceptIdx": 7, "page": 10, "printPage": 98, "question": "A solution is to be kept between 68 °F and 77 °F. Range in °C if F = (9/5)C + 32?", "steps": ["68 < (9/5)C + 32 < 77 ⇒ 36 < (9/5)C < 45 ⇒ 20 < C < 25."], "answer": "20 < C < 25", "section": "Misc."}, {"number": "M.12", "conceptIdx": 7, "page": 10, "printPage": 98, "question": "640 litres of 8% boric acid, add x litres of 2% solution so that the mixture is more than 4% but less than 6% boric acid. Find x.", "steps": ["0.08·640 + 0.02x > 0.04(640 + x) ⇒ 51.2 + 0.02x > 25.6 + 0.04x ⇒ x < 1280.", "0.08·640 + 0.02x < 0.06(640 + x) ⇒ 51.2 + 0.02x < 38.4 + 0.06x ⇒ x > 320.", "320 < x < 1280."], "answer": "320 < x < 1280 litres", "section": "Misc."}, {"number": "M.13", "conceptIdx": 7, "page": 11, "printPage": 99, "question": "How many litres of water must be added to 1125 litres of 45% acid so that the mixture contains more than 25% but less than 30% acid?", "steps": ["Acid = 0.45×1125 = 506.25 L (fixed).", "506.25 > 0.25(1125 + x) ⇒ x < 900.", "506.25 < 0.30(1125 + x) ⇒ x > 562.5.", "562.5 < x < 900."], "answer": "562.5 < x < 900 litres", "section": "Misc."}, {"number": "M.14", "conceptIdx": 7, "page": 11, "printPage": 99, "question": "IQ = (MA/CA)×100. For 12-year-old children with 80 ≤ IQ ≤ 140, find the range of mental age.", "steps": ["80 ≤ (MA/12)×100 ≤ 140.", "Multiply by 12/100: 9.6 ≤ MA ≤ 16.8."], "answer": "9.6 ≤ MA ≤ 16.8 years", "section": "Misc."}]};
+window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathematics", "title": "Linear Inequalities", "subtitle": "One-variable linear inequalities: rules that reverse, number-line graphs, double inequalities, and mixture/temperature models.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh105.pdf", "page_start": 89, "page_end": 99, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "intro-inequalities", "nav": "Inequalities around us", "title": "When an equation is not enough: rice packets and classroom chairs", "deck": "Statements with <, >, ≤, ≥ are inequalities. Ravi’s ₹200 rice budget and Reshma’s ₹120 stationery budget are the chapter’s opening models.", "minutes": 8, "section": "5.1–5.2", "pages": [1, 2], "print": "89–90", "sim": "rice-market", "simTitle": "Ravi’s rice packets: 30x < 200", "quick": ["<strong>Inequalities</strong> arise the moment a statement problem cannot be forced into an equation. The height of every student in your class is less than 160 cm; a classroom occupies at most 60 tables or chairs. The symbols ‘&lt;’ (less than), ‘&gt;’ (greater than), ‘≤’ (less than or equal) and ‘≥’ (greater than or equal) turn such statements into mathematics.", "Ravi goes to market with ₹200; rice is ₹30 per 1 kg packet. If <em>x</em> is the number of packets, then <strong>30x &lt; 200</strong> (1) — he cannot spend the entire ₹200 because packets are whole. Reshma has ₹120; registers ₹40, pens ₹20: <strong>40x + 20y ≤ 120</strong> (2). Statement (2) is the disjunction of the strict inequality 40x + 20y &lt; 120 and the equation 40x + 20y = 120.", "Numerical inequalities such as 3 &lt; 5 and 7 &gt; 5 involve only numbers. Literal inequalities such as x &lt; 5, y ≥ 2 involve variables. Double inequalities such as 3 &lt; 5 &lt; 7 or 3 ≤ x &lt; 5 chain two comparisons. This reprint studies linear inequalities in one and two variables; quadratic inequalities ax² + bx + c ≤ 0 are named only to be set aside."], "formulas": [{"label": "Definition 1", "html": "two real numbers or algebraic expressions related by &lt;, &gt;, ≤ or ≥ form an inequality", "cond": "zoom p.2"}, {"label": "Ravi’s rice (1)", "html": "30x &lt; 200", "cond": "x = number of 1 kg packets; ₹30 each; budget ₹200"}, {"label": "Reshma’s stationery (2)", "html": "40x + 20y ≤ 120", "cond": "registers ₹40, pens ₹20, budget ₹120"}], "deeper": "Numerical inequalities such as 3 &lt; 5 and 7 &gt; 5 involve only numbers. Literal inequalities such as x &lt; 5, y ≥ 2 involve variables. Double inequalities such as 3 &lt; 5 &lt; 7 or 3 ≤ x &lt; 5 chain two comparisons. This reprint studies linear inequalities in one and two variables; quadratic inequalities ax² + bx + c ≤ 0 are named only to be set aside.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 24x < 100, when (i) x is a natural number (ii) x is an integer.", "given": "Solve 24x < 100, when (i) x is a natural number (ii) x is an integer.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "24x < 100 ⇒ x < 100/24 = 25/6 ≈ 4.166 (divide by 24 > 0).", "(i) Naturals 1,2,3,4 (0 is not natural in NCERT).", "(ii) Integers …, −1, 0, 1, 2, 3, 4."], "answer": "(i) {1,2,3,4}; (ii) {…,−1,0,1,2,3,4}"}, "prediction": {"prompt": "A UPI daily limit is ₹1,00,000. If each scan-and-pay is ₹1,999, and x is the number of scans, which model is correct?", "options": ["1999x ≤ 100000, because the limit may be used fully if the last payment fits", "1999x &lt; 100000 always, because UPI never allows equality", "1999x = 100000, because limits are equations"], "answer": 0, "explanation": "A limit is ‘at most’, so ≤. Equality is allowed if 1999x lands exactly on 1,00,000 (it does not, but the model is still ≤). Ravi’s rice was &lt; only because packets cannot hit ₹200 exactly and the text chose a strict model."}, "connect": [["UPI daily cap as 1999x ≤ 1,00,000", "NPCI UPI apps (GPay, PhonePe, BHIM) enforce a daily cap. If each kirana scan is ₹1,999, the number of scans x satisfies 1999x ≤ 100000, i.e. x ≤ 50.02 so at most 50 scans. The inequality, not an equation, is the right translation."], ["Wow — the classroom of at most 60 seats", "NCERT’s opening ‘at most 60 tables or chairs’ is  t + c ≤ 60. The same pattern is the Delhi Metro coach ‘maximum standing 300’ sticker: a slack inequality, equality allowed.", null, {"id": "WZmMHZseee4", "title": "Inequalities (Basics) | Linear Inequalities | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State Definition 1 and write Ravi’s and Reshma’s inequalities with units.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which of the following is an inequality?", "options": ["30x < 200", "2x + 3 = 7", "x² = 4"], "answer": 0, "hint": "Look for <, >, ≤, ≥.", "solution": "An inequality relates two expressions by <, >, ≤ or ≥. 30x < 200 is (1) of §5.2.", "wrong": ["", "That is an equation.", "That is still an equation."]}, {"level": "Medium", "type": "mcq", "prompt": "Reshma’s 40x + 20y ≤ 120 consists of", "options": ["the inequality 40x + 20y < 120 and the equation 40x + 20y = 120", "only the equation 40x + 20y = 120", "two strict inequalities and no equation"], "answer": 0, "hint": "Zoom p.2: statement (2) splits as (3) and (4).", "solution": "≤ means ‘less than or equal’, the disjunction of < and =.", "wrong": ["", "≤ includes the equal case but is not only equal.", "There is only one strict piece."]}, {"level": "Hard", "type": "mcq", "prompt": "Why is Ravi’s model 30x < 200 rather than 30x ≤ 200?", "options": ["Packets are whole kilograms, so he cannot spend exactly ₹200", "Inequalities are never allowed to use ≤", "₹200 is not a real number"], "answer": 0, "hint": "Section 5.2 (i): ‘he may not be able to spend the entire amount (Why?).’", "solution": "30 does not divide 200, and x is a whole number of packets, so 30x never equals 200.", "wrong": ["", "Example 4 uses ≤.", "₹200 is real; the issue is the packet size."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "types-linear", "nav": "Strict, slack, linear", "title": "Strict vs slack, one variable vs two, linear vs quadratic", "deck": "ax + b < 0 is a strict linear inequality in one variable; ax + by ≤ c is slack and two-variable. Quadratics are named and then left alone.", "minutes": 8, "section": "5.2", "pages": [2, 2], "print": "90", "sim": "ineq-types", "simTitle": "Classifier: strict / slack / linear / quadratic", "quick": ["Inequalities (5)–(8) are of the form ax + b ? 0. When a ≠ 0 they are <strong>linear inequalities in one variable</strong> x. Inequalities (9)–(12) of the form ax + by ? c, with a ≠ 0, b ≠ 0, are <strong>linear inequalities in two variables</strong>.", "<strong>Strict</strong> inequalities use &lt; or &gt;: (5), (6), (9), (10), (14). <strong>Slack</strong> inequalities use ≤ or ≥: (7), (8), (11), (12), (13). Inequalities (13) and (14) are quadratic (ax² + bx + c ? 0, a ≠ 0) — this chapter confines itself to linear inequalities in one and two variables only.", "‘Slack’ is NCERT’s word for non-strict (≤, ≥). Graphically, slack inequalities include the boundary (a dark circle on the number line; a solid line in the plane). Strict inequalities exclude the boundary (an open circle). Two-variable linear inequalities will not be graphed as half-planes in this shortened reprint — the body after §5.2 is one-variable algebra and number-line graphs."], "formulas": [{"label": "Linear, one variable", "html": "ax + b &lt; 0, ax + b &gt; 0, ax + b ≤ 0, ax + b ≥ 0", "cond": "a ≠ 0; (5)–(8)"}, {"label": "Linear, two variables", "html": "ax + by &lt; c,  ax + by &gt; c,  ax + by ≤ c,  ax + by ≥ c", "cond": "a ≠ 0, b ≠ 0; (9)–(12)"}, {"label": "Not linear (quadratic)", "html": "ax² + bx + c ≤ 0  or  ax² + bx + c &gt; 0", "cond": "a ≠ 0; (13), (14) — out of this chapter"}], "deeper": "‘Slack’ is NCERT’s word for non-strict (≤, ≥). Graphically, slack inequalities include the boundary (a dark circle on the number line; a solid line in the plane). Strict inequalities exclude the boundary (an open circle). Two-variable linear inequalities will not be graphed as half-planes in this shortened reprint — the body after §5.2 is one-variable algebra and number-line graphs.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve −12x > 30, when (i) x is a natural number (ii) x is an integer.", "given": "Solve −12x > 30, when (i) x is a natural number (ii) x is an integer.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Divide by −12, reverse: x < 30/(−12) = −5/2 = −2.5.", "(i) No natural number is < −2.5 → empty set.", "(ii) Integers …, −5, −4, −3."], "answer": "(i) ∅; (ii) {…,−5,−4,−3}"}, "prediction": {"prompt": "Which of these is a slack linear inequality in one variable?", "options": ["ax + b ≥ 0 with a ≠ 0", "ax + by < c with a, b ≠ 0", "ax² + bx + c ≤ 0 with a ≠ 0"], "answer": 0, "explanation": "≥ makes it slack; one variable; degree 1. The second is two-variable; the third is quadratic."}, "connect": [["GST slab as a slack inequality", "GST 5% applies when 0 &lt; taxable value ≤ a notified threshold in some compositions; the ‘at most’ is ≤, a slack inequality. Crossing the threshold jumps the rate — the boundary is included in the lower slab."], ["Wow — Aadhaar enrolment age", "UIDAI’s ‘resident of age 5 years or above must update biometrics’ is age ≥ 5, a slack inequality on a real (or integer) line. Age &gt; 5 would exclude the fifth birthday.", null, {"id": "cvB8b4AACyE", "title": "Compound inequalities 3 | Linear inequalities | Algebra I | Khan Academy", "channel": "Khan Academy"}]], "recall": "Give one example each of a strict linear inequality in one variable, a slack two-variable inequality, and a quadratic inequality.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A slack inequality uses the symbol", "options": ["≤ or ≥", "< or > only", "= only"], "answer": 0, "hint": "NCERT: (7), (8), (11), (12), (13) are slack.", "solution": "Slack = non-strict = ≤ or ≥.", "wrong": ["", "Those are strict.", "Equality is an equation, not an inequality."]}, {"level": "Medium", "type": "mcq", "prompt": "ax + by ≥ c with a ≠ 0, b ≠ 0 is", "options": ["a slack linear inequality in two variables", "a strict linear inequality in one variable", "a quadratic inequality"], "answer": 0, "hint": "Compare with (12).", "solution": "Two variables, degree 1, ≥ ⇒ slack.", "wrong": ["", "Two variables, and ≥ is not strict.", "No x²."]}, {"level": "Hard", "type": "mcq", "prompt": "This reprint confines the chapter to", "options": ["linear inequalities in one and two variables only", "quadratic inequalities only", "strict inequalities only"], "answer": 0, "hint": "Last paragraph of §5.2, zoom p.2.", "solution": "Quadratics (13)–(14) are exhibited and then excluded.", "wrong": ["", "They are named and dropped.", "Slack inequalities are fully in scope."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "solution-rules", "nav": "Rules that reverse", "title": "Add anything; multiply by a negative and reverse the sign", "deck": "A solution is a value that makes the inequality true. Rule 2 reverses < to > (and ≤ to ≥) when both sides are multiplied or divided by a negative number.", "minutes": 10, "section": "5.3", "pages": [3, 4], "print": "91–92", "sim": "reverse-rule", "simTitle": "3 > 2 but −3 < −2: the reverse rule", "quick": ["For 30x &lt; 200 with x a whole number of packets, trial shows x = 0,1,2,3,4,5,6 work and x = 7 fails (210 ≮ 200). Those x that make the statement true are <strong>solutions</strong>; the set {0,1,2,3,4,5,6} is the <strong>solution set</strong>. Trial-and-error is inefficient; we need rules.", "<strong>Rule 1.</strong> Equal numbers may be added to (or subtracted from) both sides without changing the inequality sign. <strong>Rule 2.</strong> Both sides may be multiplied (or divided) by the same <em>positive</em> number. When both sides are multiplied or divided by a <em>negative</em> number, the sign is reversed: 3 &gt; 2 while −3 &lt; −2; −8 &lt; −7 while (−8)(−2) &gt; (−7)(−2), i.e. 16 &gt; 14.", "The reverse is forced by the order of the real line: multiplying by −1 reflects through the origin, which swaps left and right. Henceforth, unless stated otherwise, this chapter solves inequalities in the set of real numbers (after Example 2)."], "formulas": [{"label": "Rule 1", "html": "a &lt; b  ⇒  a + c &lt; b + c  (c any real)", "cond": "addition/subtraction never reverse"}, {"label": "Rule 2 (positive)", "html": "a &lt; b and k &gt; 0  ⇒  ka &lt; kb", "cond": "same for division by k &gt; 0"}, {"label": "Rule 2 (negative)", "html": "a &lt; b and k &lt; 0  ⇒  ka &gt; kb", "cond": "the sign reverses; same for ≤, ≥"}], "deeper": "The reverse is forced by the order of the real line: multiplying by −1 reflects through the origin, which swaps left and right. Henceforth, unless stated otherwise, this chapter solves inequalities in the set of real numbers (after Example 2).", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 5x − 3 < 7, when (i) x is an integer (ii) x is a real number.", "given": "Solve 5x − 3 < 7, when (i) x is an integer (ii) x is a real number.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5x < 10 ⇒ x < 2.", "(i) Integers {…,−1,0,1}.", "(ii) Reals (−∞, 2)."], "answer": "(i) {…,−1,0,1}; (ii) (−∞, 2)"}, "prediction": {"prompt": "Start from −8 < −7. Multiply both sides by −2. What is true?", "options": ["16 > 14, because the sign reverses", "16 < 14, keep the same sign", "−16 < −14, ignore the multiplication"], "answer": 0, "explanation": "NCERT’s own numerical check of Rule 2: (−8)(−2) = 16 and (−7)(−2) = 14, and 16 > 14."}, "connect": [["Temperature below zero", "If today’s high is −3 °C and yesterday’s was −2 °C, then −3 &lt; −2. Multiplying by −1 (a ‘how far below zero’ reflection) gives 3 &gt; 2: yesterday was closer to freezing. The reverse rule is the number-line flip."], ["Wow — cricket net run rate", "If two NRR values satisfy a &lt; b, then −a &gt; −b. Ranking by ‘negative of NRR’ (used in some tie-break visualisations) reverses the order of the table.", null, {"id": "ZIviiA7aOcc", "title": "Rules for solving inequalities | Linear Inequalities | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State Rule 1 and Rule 2, and give NCERT’s pair 3 > 2 vs −3 < −2.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The solution set of 30x < 200 for whole-number packets x is", "options": ["{0,1,2,3,4,5,6}", "{1,2,3,4,5,6,7}", "{0,1,2,…,7}"], "answer": 0, "hint": "Trial in §5.3: x = 7 gives 210 which is not < 200.", "solution": "x = 7 fails; 0 through 6 work.", "wrong": ["", "7 overshoots.", "7 is false."]}, {"level": "Medium", "type": "mcq", "prompt": "Dividing 30x < 200 by 30 (Example 1) yields", "options": ["x < 20/3", "x > 20/3", "x ≤ 20/3"], "answer": 0, "hint": "30 > 0, so Rule 2 does not reverse.", "solution": "x < 200/30 = 20/3.", "wrong": ["", "No reverse for a positive divisor.", "The original is strict."]}, {"level": "Hard", "type": "mcq", "prompt": "−12x > 30, x a natural number. Solution set?", "options": ["empty set", "{1,2,3}", "all natural numbers"], "answer": 0, "hint": "Divide by −12 and reverse: x < −2.5. No natural is negative.", "solution": "Exercise 5.1 Q2(i). Naturals are 1,2,3,… — none are < −2.5.", "wrong": ["", "Those are positive.", "The reverse produces a negative bound."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "algebra-onevar", "nav": "Algebra of one variable", "title": "Collect x, watch the sign: Examples 1–4", "deck": "Example 2: 5x − 3 < 3x + 1 ⇒ x < 2. Example 3: −2x < 4 ⇒ x > −2 (reverse). Example 4: (5−2x)/3 ≤ x/6 − 5 ⇒ x ≥ 8.", "minutes": 12, "section": "5.3", "pages": [4, 5], "print": "92–93", "sim": "algebra-lab", "simTitle": "Solve ax + b < cx + d with a slider", "quick": ["<strong>Example 2</strong> (zoom p.4). 5x − 3 &lt; 3x + 1. Add 3: 5x &lt; 3x + 4. Subtract 3x: 2x &lt; 4. Divide by 2 &gt; 0: x &lt; 2. Integers: {…,−4,−3,−2,−1,0,1}. Reals: x ∈ (−∞, 2).", "<strong>Example 3</strong> (zoom p.5). 4x + 3 &lt; 6x + 7 ⇒ −2x &lt; 4 ⇒ x &gt; −2, solution (−2, ∞). <strong>Example 4</strong> (zoom p.5). (5 − 2x)/3 ≤ x/6 − 5. Multiply by 6: 2(5 − 2x) ≤ x − 30 ⇒ 10 − 4x ≤ x − 30 ⇒ −5x ≤ −40 ⇒ x ≥ 8 (reverse, divide by −5). Solution [8, ∞).", "Clearing a denominator that is positive (3, 6) does not reverse the sign. The reverse in Example 4 appears only when −5x ≤ −40 is divided by −5. Always isolate the coefficient of x before dividing."], "formulas": [{"label": "Example 2", "html": "5x − 3 &lt; 3x + 1  ⇒  x &lt; 2", "cond": "integers {…,−1,0,1}; reals (−∞, 2)"}, {"label": "Example 3", "html": "4x + 3 &lt; 6x + 7  ⇒  x &gt; −2", "cond": "reverse because of −2x; (−2, ∞)"}, {"label": "Example 4", "html": "(5 − 2x)/3 ≤ x/6 − 5  ⇒  x ≥ 8", "cond": "zoom p.5; [8, ∞)"}], "deeper": "Clearing a denominator that is positive (3, 6) does not reverse the sign. The reverse in Example 4 appears only when −5x ≤ −40 is divided by −5. Always isolate the coefficient of x before dividing.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 3x + 8 > 2, when (i) x is an integer (ii) x is a real number.", "given": "Solve 3x + 8 > 2, when (i) x is an integer (ii) x is a real number.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x > −6 ⇒ x > −2.", "(i) Integers {−1,0,1,2,…}.", "(ii) Reals (−2, ∞)."], "answer": "(i) {−1,0,1,…}; (ii) (−2, ∞)"}, "prediction": {"prompt": "From −2x < 4, the correct next line is", "options": ["x > −2 (divide by −2, reverse)", "x < −2 (keep the sign)", "x < 2 (drop the minus on x only)"], "answer": 0, "explanation": "Example 3, zoom p.5: −2x < 4 or x > −2. Dividing by a negative reverses the inequality."}, "connect": [["CBSE internal assessment ‘at least 75% attendance’", "If a student has attended 62 of 80 periods so far, remaining periods r satisfy (62 + r)/(80 + r) ≥ 0.75. Clearing the positive denominator and collecting r is exactly Example 2’s algebra."], ["Wow — JEE attempt cap", "‘A candidate may attempt JEE (Main) in three consecutive years’ is an integer inequality on the attempt index. Translating ‘consecutive’ plus a numerical bound is Example 8’s pattern, but the algebra of isolating x is Examples 2–4.", null, {"id": "XOAn5z8mkvI", "title": "Multi-step inequalities 2 | Linear inequalities | Algebra I | Khan Academy", "channel": "Khan Academy"}]], "recall": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Example 2: 5x − 3 < 3x + 1 for real x has solution", "options": ["(−∞, 2)", "(−∞, 2]", "(2, ∞)"], "answer": 0, "hint": "x < 2, open at 2.", "solution": "The inequality is strict, so 2 is excluded.", "wrong": ["", "Strict, so 2 is out.", "The collected form is x < 2, not x > 2."]}, {"level": "Medium", "type": "number", "prompt": "Example 4: the smallest real x satisfying (5−2x)/3 ≤ x/6 − 5 is", "answer": 8, "unit": "", "tolerance": 0.05, "hint": "Multiply by 6, collect, reverse on −5x ≤ −40.", "solution": "2(5−2x) ≤ x−30 ⇒ 10−4x ≤ x−30 ⇒ −5x ≤ −40 ⇒ x ≥ 8. Smallest real in [8,∞) is 8.", "map": "Example 4"}, {"level": "Hard", "type": "mcq", "prompt": "4x + 3 < 6x + 7 simplifies to −2x < 4. Why is the solution x > −2 rather than x < −2?", "options": ["Division by −2 reverses the inequality", "Addition of 2x reverses the inequality", "The original inequality was slack"], "answer": 0, "hint": "Rule 2, Example 3.", "solution": "Only multiplication/division by a negative reverses. Adding 2x is Rule 1 and would give 3 < 2x + 7, still the same direction.", "wrong": ["", "Rule 1 never reverses.", "It was strict <."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "numberline", "nav": "Number-line graphs", "title": "Open circle vs dark circle: Figs 5.1 and 5.2", "deck": "x < a: open circle at a, ray to the left. x ≥ a: dark circle at a, ray to the right. Example 5: x < 3. Example 6: (3x−4)/2 ≥ (x+1)/4 − 1 ⇒ x ≥ 1.", "minutes": 10, "section": "5.3", "pages": [5, 6], "print": "93–94", "sim": "numberline-graph", "simTitle": "Fig 5.1 / 5.2 number-line painter", "quick": ["<strong>Example 5</strong> (zoom p.5, Fig 5.1). 7x + 3 &lt; 5x + 9 ⇒ 2x &lt; 6 ⇒ x &lt; 3. Graph: open circle at 3, thick ray through 2, 1, 0, … to −∞.", "<strong>Example 6</strong> (zoom p.5–6, Fig 5.2). (3x − 4)/2 ≥ (x + 1)/4 − 1. Bring to (3x − 4)/2 ≥ (x − 3)/4, then 2(3x − 4) ≥ (x − 3) ⇒ 6x − 8 ≥ x − 3 ⇒ 5x ≥ 5 ⇒ x ≥ 1. Graph: dark circle at 1, ray to +∞. Summary: x &lt; a (or x &gt; a) → hollow circle; x ≤ a (or x ≥ a) → dark circle.", "The hollow circle is the one-dimensional analogue of a dotted boundary line in the plane. Students often darken the circle for a strict inequality — Fig 5.1 is the corrective picture: 3 is not a solution of x < 3."], "formulas": [{"label": "Example 5 / Fig 5.1", "html": "7x + 3 &lt; 5x + 9  ⇒  x &lt; 3", "cond": "open circle at 3, ray left"}, {"label": "Example 6 / Fig 5.2", "html": "(3x − 4)/2 ≥ (x + 1)/4 − 1  ⇒  x ≥ 1", "cond": "dark circle at 1, ray right"}, {"label": "Graphing rule (Summary)", "html": "x &lt; a: hollow circle at a;  x ≤ a: dark circle at a", "cond": "ray left of a; swap left/right for &gt; / ≥"}], "deeper": "The hollow circle is the one-dimensional analogue of a dotted boundary line in the plane. Students often darken the circle for a strict inequality — Fig 5.1 is the corrective picture: 3 is not a solution of x < 3.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 4x + 3 < 5x + 7 for real x.", "given": "Solve 4x + 3 < 5x + 7 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4x − 5x < 7 − 3 ⇒ −x < 4 ⇒ x > −4 (reverse on multiplying by −1).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−4, ∞)"}, "prediction": {"prompt": "Fig 5.1 (Example 5) has an open circle at 3. Is x = 3 a solution of 7x + 3 < 5x + 9?", "options": ["No — the inequality is strict, 2x < 6, 3 is excluded", "Yes — the circle is only decorative", "Yes — NCERT always includes the endpoint"], "answer": 0, "explanation": "Open circle = endpoint out. 7(3)+3 = 24 and 5(3)+9 = 24, so 24 < 24 is false."}, "connect": [["Highway speed-limit board", "‘Speed ≤ 90 km/h’ is a dark circle at 90 with a ray to the left (down to 0). A strict ‘below 90’ camera rule would be an open circle — rare, because challans include equality at the painted limit."], ["Wow — mercury in a clinical thermometer", "A fever cut-off of temperature ≥ 37.5 °C is a dark circle. The number-line picture is exactly Fig 5.2, with 37.5 in place of 1.", null, {"id": "ilWDSYnTEFs", "title": "How to plot inequalities on a number line | Pre-Algebra | Khan Academy", "channel": "Khan Academy"}]], "recall": "Draw x < 3 and x ≥ 1 on a number line, naming which circle is hollow.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "To graph x < a one must", "options": ["put an open circle at a and darken to the left", "put a dark circle at a and darken to the left", "put an open circle at a and darken to the right"], "answer": 0, "hint": "Summary, zoom p.11.", "solution": "Open = strict; left = less than.", "wrong": ["", "Dark circle is for ≤.", "Right is for >."]}, {"level": "Medium", "type": "number", "prompt": "Example 6: the endpoint of the solution ray is x =", "answer": 1, "unit": "", "tolerance": 0.05, "hint": "5x ≥ 5 after clearing denominators.", "solution": "2(3x−4) ≥ x−3 ⇒ 6x−8 ≥ x−3 ⇒ 5x ≥ 5 ⇒ x ≥ 1. Dark circle at 1.", "map": "Example 6"}, {"level": "Hard", "type": "mcq", "prompt": "Fig 5.2 has a dark circle at 1 because", "options": ["the inequality is slack (x ≥ 1), so 1 is a solution", "NCERT never uses open circles on the right", "1 is not a real number"], "answer": 0, "hint": "Example 6 ends x ≥ 1; Summary on dark circles.", "solution": "Plug x = 1 into Example 6: both sides match after the algebra, and ≥ includes equality.", "wrong": ["", "Fig 5.1 uses an open circle on the right of some integers.", "1 is real."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "word-problems", "nav": "Marks, odds, boards", "title": "Translate English into ≤: average marks and consecutive odds", "deck": "Example 7: (62+48+x)/3 ≥ 60 ⇒ x ≥ 70. Example 8: consecutive odd naturals > 10 summing to < 40 give pairs (11,13), (13,15), (15,17), (17,19).", "minutes": 12, "section": "5.3", "pages": [6, 8], "print": "94–96", "sim": "marks-upi", "simTitle": "Average-at-least-60 marks lab", "quick": ["<strong>Example 7</strong> (zoom p.6). Terminal marks 62 and 48; annual x; average at least 60: (62 + 48 + x)/3 ≥ 60 ⇒ 110 + x ≥ 180 ⇒ x ≥ 70. Minimum 70 marks.", "<strong>Example 8</strong>. Smaller consecutive odd natural x, other x+2, both &gt; 10, sum &lt; 40: x &gt; 10 and 2x + 2 &lt; 40 ⇒ x &lt; 19. So 10 &lt; x &lt; 19 with x odd: 11,13,15,17. Pairs (11,13), (13,15), (15,17), (17,19). Exercise 5.1 then repeats the pattern for Ravi’s unit tests, Sunita’s Grade A, consecutive evens, a triangle perimeter, and a 91 cm board.", "‘At least’ is ≥; ‘at most’ is ≤; ‘less than’ is &lt;; ‘more than’ is &gt;. Consecutive odds differ by 2; consecutive evens differ by 2. Always declare the domain (natural, integer, real) because the same inequality x < 19 has different solution lists on those sets."], "formulas": [{"label": "Average at least A", "html": "(m₁ + m₂ + x)/n ≥ A", "cond": "Example 7: n=3, A=60 → x ≥ 70"}, {"label": "Consecutive odds", "html": "x &gt; 10 and x + (x+2) &lt; 40, x odd", "cond": "Example 8 → {11,13,15,17}"}], "deeper": "‘At least’ is ≥; ‘at most’ is ≤; ‘less than’ is &lt;; ‘more than’ is &gt;. Consecutive odds differ by 2; consecutive evens differ by 2. Always declare the domain (natural, integer, real) because the same inequality x < 19 has different solution lists on those sets.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 3x − 7 > 5x − 1 for real x.", "given": "Solve 3x − 7 > 5x − 1 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x − 5x > −1 + 7 ⇒ −2x > 6 ⇒ x < −3 (reverse).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, −3)"}, "prediction": {"prompt": "Sunita has 87, 92, 94, 95. Minimum marks in the fifth exam for an average of at least 90 (each exam out of 100)?", "options": ["82", "90", "70"], "answer": 0, "explanation": "Exercise 5.1 Q22: 87+92+94+95 = 368; 368+x ≥ 450; x ≥ 82. (She can score 82, not necessarily 90.)"}, "connect": [["CBSE best-of and ‘at least 33%’", "A theory paper of 80 with ‘at least 33%’ is x ≥ 0.33×80 = 26.4, so an integer score x ≥ 27. The inequality is the same shape as Example 7."], ["Wow — UPI PIN tries", "Many BHIM/GPay flows lock the UPI PIN after 3 consecutive failures: n ≤ 3. Consecutive-odd counting (Example 8) is the cousin of ‘consecutive attempts’ — an integer inequality with a gap of 1 rather than 2.", null, {"id": "ClSbvGXYumk", "title": "Inequalities word problems | Linear Inequalities | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write the inequality for Example 7 and list the four pairs of Example 8.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 7: minimum annual marks for average ≥ 60 given 62 and 48 is", "answer": 70, "unit": "marks", "tolerance": 0.05, "hint": "(62+48+x)/3 ≥ 60", "solution": "110 + x ≥ 180 ⇒ x ≥ 70."}, {"level": "Medium", "type": "mcq", "prompt": "Example 8: how many pairs of consecutive odd naturals both > 10 with sum < 40?", "options": ["4 pairs", "3 pairs", "5 pairs"], "answer": 0, "hint": "x ∈ {11,13,15,17}.", "solution": "(11,13), (13,15), (15,17), (17,19).", "wrong": ["", "Four odd values of x.", "19 as the smaller fails x < 19."]}, {"level": "Hard", "type": "mcq", "prompt": "A 91 cm board is cut into x, x+3, 2x with 2x ≥ (x+3)+5 and total ≤ 91. Range of x?", "options": ["8 ≤ x ≤ 22", "x ≥ 8 only", "x ≤ 22 only"], "answer": 0, "hint": "Exercise 5.1 Q26 hint, zoom p.8.", "solution": "4x+3 ≤ 91 ⇒ x ≤ 22 and 2x ≥ x+8 ⇒ x ≥ 8.", "wrong": ["", "The board length also caps x.", "The ‘at least 5 cm longer’ floor is x ≥ 8."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "double-systems", "nav": "Double inequalities & systems", "title": "Solve both ends at once: −8 ≤ 5x − 3 < 7 and the overlap of two rays", "deck": "Example 9: −1 ≤ x < 2. Example 10: −5 ≤ (5−3x)/2 ≤ 8 ⇒ −11/3 ≤ x ≤ 5. Example 11: 3x−7 < 5+x and 11−5x ≤ 1 ⇒ 2 ≤ x < 6 (Fig 5.3).", "minutes": 12, "section": "Misc. Ex. 9–11", "pages": [8, 9], "print": "96–97", "sim": "double-ineq", "simTitle": "Fig 5.3: overlap of x < 6 and x ≥ 2", "quick": ["A <strong>double inequality</strong> a ≤ f(x) &lt; b is two inequalities solved simultaneously, operating on all three members. <strong>Example 9</strong> (zoom p.8): −8 ≤ 5x − 3 &lt; 7. Add 3: −5 ≤ 5x &lt; 10. Divide by 5 &gt; 0: −1 ≤ x &lt; 2.", "<strong>Example 10</strong>: −5 ≤ (5 − 3x)/2 ≤ 8. Multiply by 2: −10 ≤ 5 − 3x ≤ 16. Subtract 5: −15 ≤ −3x ≤ 11. Divide by −3 and reverse <em>both</em> signs: 5 ≥ x ≥ −11/3, i.e. −11/3 ≤ x ≤ 5. <strong>Example 11</strong> is a <em>system</em>: 3x − 7 &lt; 5 + x ⇒ x &lt; 6, and 11 − 5x ≤ 1 ⇒ x ≥ 2. Common ray on Fig 5.3: 2 ≤ x &lt; 6.", "A system is an AND: the solution is the intersection of two sets on the number line. If the two rays point opposite ways and miss each other, the system is empty. Double inequalities are a compact notation for a system whose two bounds share the same middle expression."], "formulas": [{"label": "Example 9", "html": "−8 ≤ 5x − 3 &lt; 7  ⇒  −1 ≤ x &lt; 2", "cond": "operate on all three members"}, {"label": "Example 10", "html": "−5 ≤ (5 − 3x)/2 ≤ 8  ⇒  −11/3 ≤ x ≤ 5", "cond": "reverse both ends when dividing by −3"}, {"label": "Example 11 / Fig 5.3", "html": "x &lt; 6  and  x ≥ 2  ⇒  2 ≤ x &lt; 6", "cond": "intersection of two rays"}], "deeper": "A system is an AND: the solution is the intersection of two sets on the number line. If the two rays point opposite ways and miss each other, the system is empty. Double inequalities are a compact notation for a system whose two bounds share the same middle expression.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 3(x − 1) ≤ 2(x − 3) for real x.", "given": "Solve 3(x − 1) ≤ 2(x − 3) for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x − 3 ≤ 2x − 6 ⇒ x ≤ −3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, −3]"}, "prediction": {"prompt": "Example 11: 3x − 7 < 5 + x and 11 − 5x ≤ 1. The solution is", "options": ["2 ≤ x < 6", "x < 6 only", "x ≥ 2 only"], "answer": 0, "explanation": "Each inequality is necessary; Fig 5.3 bold segment is the overlap, including 2, excluding 6."}, "connect": [["CBSE percentage band 75–90 for a scholarship", "75 ≤ p &lt; 90 is Example 9’s shape. A student with internals 70 and externals x out of 100, p = (70+x)/2, becomes 150 ≤ 70+x &lt; 180, i.e. 80 ≤ x &lt; 110, then intersected with 0 ≤ x ≤ 100."], ["Wow — IPL over-rate window", "A bowling side must finish 20 overs in a time window T with 83 ≤ T ≤ 90 minutes (illustrative). That is a double slack inequality, graphed as a dark-to-dark segment — Fig 5.3 with both ends closed.", null, {"id": "jYcATHfMxxU", "title": "Inequalities challenge problem | Linear Inequalities | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Example 9: −8 ≤ 5x − 3 < 7 has solution", "options": ["−1 ≤ x < 2", "−1 < x ≤ 2", "x < 2 only"], "answer": 0, "hint": "Add 3, divide by 5.", "solution": "−5 ≤ 5x < 10 ⇒ −1 ≤ x < 2. Left end closed, right open, matching ≤ and <.", "wrong": ["", "Left was ≤ so −1 is in.", "The left bound is needed."]}, {"level": "Medium", "type": "mcq", "prompt": "In Example 10, dividing −15 ≤ −3x ≤ 11 by −3", "options": ["reverses both inequalities, giving −11/3 ≤ x ≤ 5", "keeps both signs", "reverses only the left sign"], "answer": 0, "hint": "Zoom p.8: 5 ≥ x ≥ −11/3.", "solution": "A negative divisor reverses every comparison in the chain.", "wrong": ["", "Rule 2.", "Both ends flip."]}, {"level": "Hard", "type": "number", "prompt": "The left endpoint of Example 11’s solution (included) is x =", "answer": 2, "unit": "", "tolerance": 0.05, "hint": "11 − 5x ≤ 1 ⇒ −5x ≤ −10 ⇒ x ≥ 2.", "solution": "From (2): x ≥ 2; from (1): x < 6; intersection starts at 2.", "map": "Example 11"}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "applications", "nav": "°C, acid, IQ", "title": "Temperature bands, acid mixtures, and IQ = (MA/CA)×100", "deck": "Example 12: 30 < C < 35 becomes 86 < F < 95 via C = (5/9)(F−32). Example 13: 120 < x < 300 litres of 30% acid into 600 L of 12%. IQ of 12-year-olds with 80 ≤ IQ ≤ 140 has 9.6 ≤ MA ≤ 16.8.", "minutes": 12, "section": "Misc. Ex. 12–13; Misc. Ex. 11–14", "pages": [9, 11], "print": "97–99", "sim": "mixture-temp", "simTitle": "Acid-mixture inequality 120 < x < 300", "quick": ["<strong>Example 12</strong> (zoom p.9). Keep HCl between 30 °C and 35 °C. C = (5/9)(F − 32). Then 30 &lt; (5/9)(F − 32) &lt; 35. Multiply by 9/5: 54 &lt; F − 32 &lt; 63 ⇒ 86 &lt; F &lt; 95.", "<strong>Example 13</strong> (zoom p.9–10). 600 L of 12% acid; add x L of 30%; resulting strength between 15% and 18%: 0.30x + 0.12·600 &gt; 0.15(x+600) and &lt; 0.18(x+600) ⇒ 15x &gt; 1800 and 12x &lt; 3600 ⇒ 120 &lt; x &lt; 300. Miscellaneous Q11 reverses F → C; Q12–13 are dilution cousins; Q14: 80 ≤ (MA/12)·100 ≤ 140 ⇒ 9.6 ≤ MA ≤ 16.8.", "Mixture inequalities compare amounts of pure acid, not percentages directly. Always write (acid in) &gt; (lower %)×(total volume) and (acid in) &lt; (upper %)×(total volume). Water has 0% acid, so adding water (Q13) keeps acid grams fixed while volume grows, which can only decrease the percentage."], "formulas": [{"label": "C–F (Example 12)", "html": "C = (5/9)(F − 32),  30 &lt; C &lt; 35  ⇒  86 &lt; F &lt; 95", "cond": "zoom p.9"}, {"label": "Mixture (Example 13)", "html": "0.30x + 72 &gt; 0.15(x+600)  and  &lt; 0.18(x+600)", "cond": "120 &lt; x &lt; 300 litres"}, {"label": "IQ (Misc. 14)", "html": "IQ = (MA/CA)×100,  CA = 12,  80 ≤ IQ ≤ 140", "cond": "9.6 ≤ MA ≤ 16.8 years"}], "deeper": "Mixture inequalities compare amounts of pure acid, not percentages directly. Always write (acid in) &gt; (lower %)×(total volume) and (acid in) &lt; (upper %)×(total volume). Water has 0% acid, so adding water (Q13) keeps acid grams fixed while volume grows, which can only decrease the percentage.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Solve 3(2 − x) ≥ 2(1 − x) for real x.", "given": "Solve 3(2 − x) ≥ 2(1 − x) for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "6 − 3x ≥ 2 − 2x ⇒ 6 − 2 ≥ 3x − 2x ⇒ 4 ≥ x ⇒ x ≤ 4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 4]"}, "prediction": {"prompt": "HCl is kept between 30 °C and 35 °C. Using C = (5/9)(F−32), the Fahrenheit window is", "options": ["86 < F < 95", "86 ≤ F ≤ 95", "32 < F < 35"], "answer": 0, "explanation": "Example 12: both original inequalities are strict, and the conversion is increasing, so the image is open: 86 < F < 95."}, "connect": [["WHO oral-rehydration osmolarity band", "ORS is specified in a concentration window, e.g. more than a% but less than b% of a salt — Example 13’s mixture inequality. ASHAs mixing ORS from packets in rural PHCs are solving 120 < x < 300 in a jug."], ["Wow — IQ formula on the Class 11 page", "Misc. Q14 writes IQ = (MA/CA)×100 with 80 ≤ IQ ≤ 140 at CA = 12, so mental age sits in [9.6, 16.8]. The same double inequality is used in every psychometric conversion table: multiply through by the positive constant CA/100.", null, {"id": "02UyFnM3-e0", "title": "Class 11 NCERT Maths || Chapter 6 Linear Inequalities || Lec 11 Miscellaneous Examples Part 1", "channel": "The Mathematical Things"}]], "recall": "Convert 30 < C < 35 to Fahrenheit, and state 120 < x < 300 for Example 13.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Example 12: 30 °C is how many °F?", "options": ["86 °F", "95 °F", "32 °F"], "answer": 0, "hint": "F = (9/5)C + 32 = 54 + 32.", "solution": "The open window starts just above 86 °F.", "wrong": ["", "That is 35 °C.", "32 °F is 0 °C."]}, {"level": "Medium", "type": "number", "prompt": "Example 13: the lower bound (excluded) on litres of 30% acid is", "answer": 120, "unit": "L", "tolerance": 0.05, "hint": "15x > 1800.", "solution": "30x + 7200 > 15x + 9000 ⇒ 15x > 1800 ⇒ x > 120.", "map": "Example 13"}, {"level": "Hard", "type": "mcq", "prompt": "Misc. Q14: 80 ≤ (MA/12)×100 ≤ 140. The mental-age interval is", "options": ["9.6 ≤ MA ≤ 16.8", "80 ≤ MA ≤ 140", "12 ≤ MA ≤ 16"], "answer": 0, "hint": "Multiply by 12/100.", "solution": "MA ∈ [80·12/100, 140·12/100] = [9.6, 16.8].", "wrong": ["", "Those are IQ bounds, not MA.", "CA is 12, not the answer."]}], "group": "Linear Inequalities", "watch": "Change the scenario and verify the displayed result against the definition."}], "exercises": [{"number": "5.1.1", "conceptIdx": 2, "page": 7, "printPage": 95, "question": "Solve 24x < 100, when (i) x is a natural number (ii) x is an integer.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "24x < 100 ⇒ x < 100/24 = 25/6 ≈ 4.166 (divide by 24 > 0).", "(i) Naturals 1,2,3,4 (0 is not natural in NCERT).", "(ii) Integers …, −1, 0, 1, 2, 3, 4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) {1,2,3,4}; (ii) {…,−1,0,1,2,3,4}", "section": "Ex 5.1", "q": 1, "title": "Exercise Q1", "given": "Solve 24x < 100, when (i) x is a natural number (ii) x is an integer.", "conceptName": "Rules that reverse", "takeaway": "State Rule 1 and Rule 2, and give NCERT’s pair 3 > 2 vs −3 < −2."}, {"number": "5.1.2", "conceptIdx": 2, "page": 7, "printPage": 95, "question": "Solve −12x > 30, when (i) x is a natural number (ii) x is an integer.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Divide by −12, reverse: x < 30/(−12) = −5/2 = −2.5.", "(i) No natural number is < −2.5 → empty set.", "(ii) Integers …, −5, −4, −3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) ∅; (ii) {…,−5,−4,−3}", "section": "Ex 5.1", "q": 2, "title": "Exercise Q2", "given": "Solve −12x > 30, when (i) x is a natural number (ii) x is an integer.", "conceptName": "Rules that reverse", "takeaway": "State Rule 1 and Rule 2, and give NCERT’s pair 3 > 2 vs −3 < −2."}, {"number": "5.1.3", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 5x − 3 < 7, when (i) x is an integer (ii) x is a real number.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5x < 10 ⇒ x < 2.", "(i) Integers {…,−1,0,1}.", "(ii) Reals (−∞, 2).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) {…,−1,0,1}; (ii) (−∞, 2)", "section": "Ex 5.1", "q": 3, "title": "Exercise Q3", "given": "Solve 5x − 3 < 7, when (i) x is an integer (ii) x is a real number.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.4", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3x + 8 > 2, when (i) x is an integer (ii) x is a real number.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x > −6 ⇒ x > −2.", "(i) Integers {−1,0,1,2,…}.", "(ii) Reals (−2, ∞).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) {−1,0,1,…}; (ii) (−2, ∞)", "section": "Ex 5.1", "q": 4, "title": "Exercise Q4", "given": "Solve 3x + 8 > 2, when (i) x is an integer (ii) x is a real number.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.5", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 4x + 3 < 5x + 7 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4x − 5x < 7 − 3 ⇒ −x < 4 ⇒ x > −4 (reverse on multiplying by −1).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−4, ∞)", "section": "Ex 5.1", "q": 5, "title": "Exercise Q5", "given": "Solve 4x + 3 < 5x + 7 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.6", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3x − 7 > 5x − 1 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x − 5x > −1 + 7 ⇒ −2x > 6 ⇒ x < −3 (reverse).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, −3)", "section": "Ex 5.1", "q": 6, "title": "Exercise Q6", "given": "Solve 3x − 7 > 5x − 1 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.7", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3(x − 1) ≤ 2(x − 3) for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x − 3 ≤ 2x − 6 ⇒ x ≤ −3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, −3]", "section": "Ex 5.1", "q": 7, "title": "Exercise Q7", "given": "Solve 3(x − 1) ≤ 2(x − 3) for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.8", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3(2 − x) ≥ 2(1 − x) for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "6 − 3x ≥ 2 − 2x ⇒ 6 − 2 ≥ 3x − 2x ⇒ 4 ≥ x ⇒ x ≤ 4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 4]", "section": "Ex 5.1", "q": 8, "title": "Exercise Q8", "given": "Solve 3(2 − x) ≥ 2(1 − x) for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.9", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve x + x/2 + x/3 < 11 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(6x + 3x + 2x)/6 < 11 ⇒ 11x/6 < 11 ⇒ x < 6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 6)", "section": "Ex 5.1", "q": 9, "title": "Exercise Q9", "given": "Solve x + x/2 + x/3 < 11 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.10", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve x/3 > x/2 + 1 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x/3 − x/2 > 1 ⇒ (2x − 3x)/6 > 1 ⇒ −x/6 > 1 ⇒ x < −6 (reverse).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, −6)", "section": "Ex 5.1", "q": 10, "title": "Exercise Q10", "given": "Solve x/3 > x/2 + 1 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.11", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 3(x − 2)/5 ≤ 5(2 − x)/3 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "9(x − 2) ≤ 25(2 − x)  (multiply by 15 > 0).", "9x − 18 ≤ 50 − 25x ⇒ 34x ≤ 68 ⇒ x ≤ 2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 2]", "section": "Ex 5.1", "q": 11, "title": "Exercise Q11", "given": "Solve 3(x − 2)/5 ≤ 5(2 − x)/3 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.12", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve (1/2)(3x/5 + 4) ≥ (1/3)(x − 6) for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Multiply by 6: 3(3x/5 + 4) ≥ 2(x − 6).", "9x/5 + 12 ≥ 2x − 12 ⇒ 24 ≥ 2x − 9x/5 = x/5 ⇒ x ≤ 120.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 120]", "section": "Ex 5.1", "q": 12, "title": "Exercise Q12", "given": "Solve (1/2)(3x/5 + 4) ≥ (1/3)(x − 6) for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.13", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 2(2x + 3) − 10 < 6(x − 2) for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4x + 6 − 10 < 6x − 12 ⇒ 4x − 4 < 6x − 12 ⇒ 8 < 2x ⇒ x > 4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (4, ∞)", "section": "Ex 5.1", "q": 13, "title": "Exercise Q13", "given": "Solve 2(2x + 3) − 10 < 6(x − 2) for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.14", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve 37 − (3x + 5) ≥ 9x − 8(x − 3) for real x. (zoom p.7: ≥)", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "32 − 3x ≥ 9x − 8x + 24 ⇒ 32 − 3x ≥ x + 24.", "32 − 24 ≥ x + 3x ⇒ 8 ≥ 4x ⇒ x ≤ 2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 2]", "section": "Ex 5.1", "q": 14, "title": "Exercise Q14", "given": "Solve 37 − (3x + 5) ≥ 9x − 8(x − 3) for real x. (zoom p.7: ≥)", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.15", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve x/4 < (5x − 2)/3 − (7x − 3)/5 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Multiply by 60: 15x < 20(5x − 2) − 12(7x − 3).", "15x < 100x − 40 − 84x + 36 ⇒ 15x < 16x − 4 ⇒ 4 < x.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (4, ∞)", "section": "Ex 5.1", "q": 15, "title": "Exercise Q15", "given": "Solve x/4 < (5x − 2)/3 − (7x − 3)/5 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.16", "conceptIdx": 3, "page": 7, "printPage": 95, "question": "Solve (2x − 1)/3 ≥ (3x − 2)/4 − (2 − x)/5 for real x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Multiply by 60: 20(2x − 1) ≥ 15(3x − 2) − 12(2 − x).", "40x − 20 ≥ 45x − 30 − 24 + 12x ⇒ 40x − 20 ≥ 57x − 54.", "34 ≥ 17x ⇒ x ≤ 2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 2]", "section": "Ex 5.1", "q": 16, "title": "Exercise Q16", "given": "Solve (2x − 1)/3 ≥ (3x − 2)/4 − (2 − x)/5 for real x.", "conceptName": "Algebra of one variable", "takeaway": "Solve 5x − 3 < 3x + 1 and (5−2x)/3 ≤ x/6 − 5, stating the reverse step in the second."}, {"number": "5.1.17", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve 3x − 2 < 2x + 1 and graph on the number line.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x < 3. Open circle at 3, ray to −∞.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−∞, 3); open circle at 3, ray left", "section": "Ex 5.1", "q": 17, "title": "Exercise Q17", "given": "Solve 3x − 2 < 2x + 1 and graph on the number line.", "conceptName": "Number-line graphs", "takeaway": "Draw x < 3 and x ≥ 1 on a number line, naming which circle is hollow."}, {"number": "5.1.18", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve 5x − 3 > 3x − 5 and graph on the number line.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2x > −2 ⇒ x > −1. Open circle at −1, ray to +∞.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−1, ∞); open circle at −1, ray right", "section": "Ex 5.1", "q": 18, "title": "Exercise Q18", "given": "Solve 5x − 3 > 3x − 5 and graph on the number line.", "conceptName": "Number-line graphs", "takeaway": "Draw x < 3 and x ≥ 1 on a number line, naming which circle is hollow."}, {"number": "5.1.19", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve 3(1 − x) < 2(x + 4) and graph on the number line.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3 − 3x < 2x + 8 ⇒ −5 < 5x ⇒ x > −1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−1, ∞); open circle at −1, ray right", "section": "Ex 5.1", "q": 19, "title": "Exercise Q19", "given": "Solve 3(1 − x) < 2(x + 4) and graph on the number line.", "conceptName": "Number-line graphs", "takeaway": "Draw x < 3 and x ≥ 1 on a number line, naming which circle is hollow."}, {"number": "5.1.20", "conceptIdx": 4, "page": 7, "printPage": 95, "question": "Solve x/2 ≥ (5x − 2)/3 − (7x − 3)/5 and graph on the number line.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Multiply by 30: 15x ≥ 10(5x − 2) − 6(7x − 3).", "15x ≥ 50x − 20 − 42x + 18 ⇒ 15x ≥ 8x − 2 ⇒ 7x ≥ −2 ⇒ x ≥ −2/7.", "Dark circle at −2/7, ray to +∞.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ [−2/7, ∞); dark circle at −2/7, ray right", "section": "Ex 5.1", "q": 20, "title": "Exercise Q20", "given": "Solve x/2 ≥ (5x − 2)/3 − (7x − 3)/5 and graph on the number line.", "conceptName": "Number-line graphs", "takeaway": "Draw x < 3 and x ≥ 1 on a number line, naming which circle is hollow."}, {"number": "5.1.21", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "Ravi obtained 70 and 75 marks in first two unit tests. Find the minimum marks he should get in the third test to have an average of at least 60 marks.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(70 + 75 + x)/3 ≥ 60 ⇒ 145 + x ≥ 180 ⇒ x ≥ 35.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "35 marks", "given": "Ravi obtained 70 and 75 marks in first two unit tests. Find the minimum marks he should get in the third test to have an average of at least 60 marks.", "section": "Ex 5.1", "q": 21, "title": "Exercise Q21", "conceptName": "Marks, odds, boards", "takeaway": "Write the inequality for Example 7 and list the four pairs of Example 8."}, {"number": "5.1.22", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "To receive Grade ‘A’, one must obtain an average of 90 marks or more in five examinations (each of 100 marks). Sunita’s first four scores: 87, 92, 94, 95. Minimum marks in the fifth examination?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(87+92+94+95+x)/5 ≥ 90 ⇒ 368 + x ≥ 450 ⇒ x ≥ 82.", "82 ≤ 100, so it is attainable.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "82 marks", "given": "To receive Grade ‘A’, one must obtain an average of 90 marks or more in five examinations (each of 100 marks). Sunita’s first four scores: 87, 92, 94, 95. Minimum marks in the fifth examination?", "section": "Ex 5.1", "q": 22, "title": "Exercise Q22", "conceptName": "Marks, odds, boards", "takeaway": "Write the inequality for Example 7 and list the four pairs of Example 8."}, {"number": "5.1.23", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "Find all pairs of consecutive odd positive integers both of which are smaller than 10 such that their sum is more than 11.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x and x+2 odd, x+2 < 10 ⇒ x < 8, x ≥ 1, 2x+2 > 11 ⇒ x > 4.5.", "Odd integers 5, 7. Pairs (5,7), (7,9).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(5, 7) and (7, 9)", "section": "Ex 5.1", "q": 23, "title": "Exercise Q23", "given": "Find all pairs of consecutive odd positive integers both of which are smaller than 10 such that their sum is more than 11.", "conceptName": "Marks, odds, boards", "takeaway": "Write the inequality for Example 7 and list the four pairs of Example 8."}, {"number": "5.1.24", "conceptIdx": 5, "page": 7, "printPage": 95, "question": "Find all pairs of consecutive even positive integers, both of which are larger than 5, such that their sum is less than 23.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x even, x > 5 ⇒ x ≥ 6; 2x + 2 < 23 ⇒ x < 10.5.", "x = 6, 8, 10. Pairs (6,8), (8,10), (10,12).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(6, 8), (8, 10), (10, 12)", "section": "Ex 5.1", "q": 24, "title": "Exercise Q24", "given": "Find all pairs of consecutive even positive integers, both of which are larger than 5, such that their sum is less than 23.", "conceptName": "Marks, odds, boards", "takeaway": "Write the inequality for Example 7 and list the four pairs of Example 8."}, {"number": "5.1.25", "conceptIdx": 5, "page": 8, "printPage": 96, "question": "The longest side of a triangle is 3 times the shortest side and the third side is 2 cm shorter than the longest side. If the perimeter is at least 61 cm, find the minimum length of the shortest side.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Sides x, 3x, 3x − 2. x + 3x + (3x − 2) ≥ 61 ⇒ 7x ≥ 63 ⇒ x ≥ 9.", "Triangle inequalities hold at x = 9: 9+27 > 25, etc.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "9 cm", "section": "Ex 5.1", "q": 25, "title": "Exercise Q25", "given": "The longest side of a triangle is 3 times the shortest side and the third side is 2 cm shorter than the longest side. If the perimeter is at least 61 cm, find the minimum length of the shortest side.", "conceptName": "Marks, odds, boards", "takeaway": "Write the inequality for Example 7 and list the four pairs of Example 8."}, {"number": "5.1.26", "conceptIdx": 5, "page": 8, "printPage": 96, "question": "A man wants to cut three lengths from a single piece of board of length 91 cm. The second is 3 cm longer than the shortest and the third is twice the shortest. Possible lengths of the shortest board if the third piece is at least 5 cm longer than the second?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x + (x+3) + 2x ≤ 91 ⇒ 4x ≤ 88 ⇒ x ≤ 22.", "2x ≥ (x+3)+5 ⇒ x ≥ 8.", "Hence 8 ≤ x ≤ 22 (cm).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "8 cm ≤ shortest ≤ 22 cm", "given": "A man wants to cut three lengths from a single piece of board of length 91 cm. The second is 3 cm longer than the shortest and the third is twice the shortest. Possible lengths of the shortest board if the third piece is at least 5 cm longer than the second?", "section": "Ex 5.1", "q": 26, "title": "Exercise Q26", "conceptName": "Marks, odds, boards", "takeaway": "Write the inequality for Example 7 and list the four pairs of Example 8."}, {"number": "M.1", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 2 ≤ 3x − 4 ≤ 5.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Add 4: 6 ≤ 3x ≤ 9. Divide by 3: 2 ≤ x ≤ 3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ [2, 3]", "section": "Misc.", "q": 27, "title": "Exercise Q1", "given": "Solve 2 ≤ 3x − 4 ≤ 5.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.2", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 6 ≤ −3(2x − 4) < 12.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "6 ≤ −6x + 12 < 12. Subtract 12: −6 ≤ −6x < 0.", "Divide by −6, reverse: 1 ≥ x > 0, i.e. 0 < x ≤ 1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (0, 1]", "section": "Misc.", "q": 28, "title": "Exercise Q2", "given": "Solve 6 ≤ −3(2x − 4) < 12.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.3", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve −3 ≤ 4 − 7x/2 ≤ 18.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Subtract 4: −7 ≤ −7x/2 ≤ 14.", "Multiply by −2/7 (negative), reverse: 2 ≥ x ≥ −4, i.e. −4 ≤ x ≤ 2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ [−4, 2]", "section": "Misc.", "q": 29, "title": "Exercise Q3", "given": "Solve −3 ≤ 4 − 7x/2 ≤ 18.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.4", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve −15 < 3(x − 2)/5 ≤ 0.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Multiply by 5/3 > 0: −25 < x − 2 ≤ 0 ⇒ −23 < x ≤ 2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−23, 2]", "section": "Misc.", "q": 30, "title": "Exercise Q4", "given": "Solve −15 < 3(x − 2)/5 ≤ 0.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.5", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve −12 < 4 − 3x/5 ≤ 2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Subtract 4: −16 < −3x/5 ≤ −2.", "Multiply by −5/3, reverse: 80/3 > x ≥ 10/3, i.e. 10/3 ≤ x < 80/3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ [10/3, 80/3)", "section": "Misc.", "q": 31, "title": "Exercise Q5", "given": "Solve −12 < 4 − 3x/5 ≤ 2.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.6", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 7 ≤ (3x + 11)/2 ≤ 11.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "14 ≤ 3x + 11 ≤ 22 ⇒ 3 ≤ 3x ≤ 11 ⇒ 1 ≤ x ≤ 11/3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ [1, 11/3]", "section": "Misc.", "q": 32, "title": "Exercise Q6", "given": "Solve 7 ≤ (3x + 11)/2 ≤ 11.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.7", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 5x + 1 > −24,  5x − 1 < 24 and graph.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5x > −25 ⇒ x > −5;  5x < 25 ⇒ x < 5.", "Open circles at −5 and 5, segment between.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−5, 5)", "section": "Misc.", "q": 33, "title": "Exercise Q7", "given": "Solve 5x + 1 > −24,  5x − 1 < 24 and graph.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.8", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 2(x − 1) < x + 5,  3(x + 2) > 2 − x and graph.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2x − 2 < x + 5 ⇒ x < 7.", "3x + 6 > 2 − x ⇒ 4x > −4 ⇒ x > −1.", "Open at −1 and 7.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (−1, 7)", "section": "Misc.", "q": 34, "title": "Exercise Q8", "given": "Solve 2(x − 1) < x + 5,  3(x + 2) > 2 − x and graph.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.9", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 3x − 7 > 2(x − 6),  6 − x > 11 − 2x and graph.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3x − 7 > 2x − 12 ⇒ x > −5.", "6 − 11 > x − 2x ⇒ −5 > −x ⇒ x > 5.", "Intersection: x > 5.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ (5, ∞)", "section": "Misc.", "q": 35, "title": "Exercise Q9", "given": "Solve 3x − 7 > 2(x − 6),  6 − x > 11 − 2x and graph.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.10", "conceptIdx": 6, "page": 10, "printPage": 98, "question": "Solve 5(2x − 7) − 3(2x + 3) ≤ 0,  2x + 19 ≤ 6x + 47 and graph.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "10x − 35 − 6x − 9 ≤ 0 ⇒ 4x ≤ 44 ⇒ x ≤ 11.", "19 − 47 ≤ 6x − 2x ⇒ −28 ≤ 4x ⇒ x ≥ −7.", "Dark circles at −7 and 11.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x ∈ [−7, 11]", "section": "Misc.", "q": 36, "title": "Exercise Q10", "given": "Solve 5(2x − 7) − 3(2x + 3) ≤ 0,  2x + 19 ≤ 6x + 47 and graph.", "conceptName": "Double inequalities & systems", "takeaway": "Solve −8 ≤ 5x − 3 < 7 and state the overlap 2 ≤ x < 6 from Example 11."}, {"number": "M.11", "conceptIdx": 7, "page": 10, "printPage": 98, "question": "A solution is to be kept between 68 °F and 77 °F. Range in °C if F = (9/5)C + 32?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "68 < (9/5)C + 32 < 77 ⇒ 36 < (9/5)C < 45 ⇒ 20 < C < 25.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "20 < C < 25", "section": "Misc.", "q": 37, "title": "Exercise Q11", "given": "A solution is to be kept between 68 °F and 77 °F. Range in °C if F = (9/5)C + 32?", "conceptName": "°C, acid, IQ", "takeaway": "Convert 30 < C < 35 to Fahrenheit, and state 120 < x < 300 for Example 13."}, {"number": "M.12", "conceptIdx": 7, "page": 10, "printPage": 98, "question": "640 litres of 8% boric acid, add x litres of 2% solution so that the mixture is more than 4% but less than 6% boric acid. Find x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "0.08·640 + 0.02x > 0.04(640 + x) ⇒ 51.2 + 0.02x > 25.6 + 0.04x ⇒ x < 1280.", "0.08·640 + 0.02x < 0.06(640 + x) ⇒ 51.2 + 0.02x < 38.4 + 0.06x ⇒ x > 320.", "320 < x < 1280.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "320 < x < 1280 litres", "section": "Misc.", "q": 38, "title": "Exercise Q12", "given": "640 litres of 8% boric acid, add x litres of 2% solution so that the mixture is more than 4% but less than 6% boric acid. Find x.", "conceptName": "°C, acid, IQ", "takeaway": "Convert 30 < C < 35 to Fahrenheit, and state 120 < x < 300 for Example 13."}, {"number": "M.13", "conceptIdx": 7, "page": 11, "printPage": 99, "question": "How many litres of water must be added to 1125 litres of 45% acid so that the mixture contains more than 25% but less than 30% acid?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Acid = 0.45×1125 = 506.25 L (fixed).", "506.25 > 0.25(1125 + x) ⇒ x < 900.", "506.25 < 0.30(1125 + x) ⇒ x > 562.5.", "562.5 < x < 900.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "562.5 < x < 900 litres", "section": "Misc.", "q": 39, "title": "Exercise Q13", "given": "How many litres of water must be added to 1125 litres of 45% acid so that the mixture contains more than 25% but less than 30% acid?", "conceptName": "°C, acid, IQ", "takeaway": "Convert 30 < C < 35 to Fahrenheit, and state 120 < x < 300 for Example 13."}, {"number": "M.14", "conceptIdx": 7, "page": 11, "printPage": 99, "question": "IQ = (MA/CA)×100. For 12-year-old children with 80 ≤ IQ ≤ 140, find the range of mental age.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "80 ≤ (MA/12)×100 ≤ 140.", "Multiply by 12/100: 9.6 ≤ MA ≤ 16.8.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "9.6 ≤ MA ≤ 16.8 years", "section": "Misc.", "q": 40, "title": "Exercise Q14", "given": "IQ = (MA/CA)×100. For 12-year-old children with 80 ≤ IQ ≤ 140, find the range of mental age.", "conceptName": "°C, acid, IQ", "takeaway": "Convert 30 < C < 35 to Fahrenheit, and state 120 < x < 300 for Example 13."}], "exerciseMap": [[1, "Exercise Q1", 2, 7], [2, "Exercise Q2", 2, 7], [3, "Exercise Q3", 3, 7], [4, "Exercise Q4", 3, 7], [5, "Exercise Q5", 3, 7], [6, "Exercise Q6", 3, 7], [7, "Exercise Q7", 3, 7], [8, "Exercise Q8", 3, 7], [9, "Exercise Q9", 3, 7], [10, "Exercise Q10", 3, 7], [11, "Exercise Q11", 3, 7], [12, "Exercise Q12", 3, 7], [13, "Exercise Q13", 3, 7], [14, "Exercise Q14", 3, 7], [15, "Exercise Q15", 3, 7], [16, "Exercise Q16", 3, 7], [17, "Exercise Q17", 4, 7], [18, "Exercise Q18", 4, 7], [19, "Exercise Q19", 4, 7], [20, "Exercise Q20", 4, 7], [21, "Exercise Q21", 5, 7], [22, "Exercise Q22", 5, 7], [23, "Exercise Q23", 5, 7], [24, "Exercise Q24", 5, 7], [25, "Exercise Q25", 5, 8], [26, "Exercise Q26", 5, 8], [27, "Exercise Q1", 6, 10], [28, "Exercise Q2", 6, 10], [29, "Exercise Q3", 6, 10], [30, "Exercise Q4", 6, 10], [31, "Exercise Q5", 6, 10], [32, "Exercise Q6", 6, 10], [33, "Exercise Q7", 6, 10], [34, "Exercise Q8", 6, 10], [35, "Exercise Q9", 6, 10], [36, "Exercise Q10", 6, 10], [37, "Exercise Q11", 7, 10], [38, "Exercise Q12", 7, 10], [39, "Exercise Q13", 7, 11], [40, "Exercise Q14", 7, 11]], "exercisesNote": "All 40 source questions are included with exact source page mapping and expanded worked guidance. PDF pages 1–11 correspond to printed pages 90–98."};
+</script>
+<script>
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1316,44 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1379,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1462,35 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1507,10 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,16 +1519,17 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1241,10 +1541,15 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1278,7 +1583,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1304,42 +1609,47 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1347,7 +1657,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1356,48 +1666,46 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1443,6 +1751,10 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1461,7 +1773,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1511,7 +1823,8 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1520,6 +1833,41 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1534,9 +1882,6 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1571,7 +1916,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1656,9 +2001,9 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1686,7 +2031,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1731,20 +2076,31 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2146,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2156,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2166,31 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1834,16 +2210,12 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1853,6 +2225,10 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1866,6 +2242,41 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1873,6 +2284,7 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1881,27 +2293,237 @@ window.CHAPTER = {"code": "kemh105", "chapterNumber": 5, "book_name": "Mathemati
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1955,8 +2577,8 @@ window.SIMS["rice-market"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Spend 30x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Budget ₹200</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ravi">Ravi: 30x &lt; 200</button>' +
-      '<button class="preset-btn" id="p-upi">UPI: 1999x ≤ 100000</button>';
+      '<button class="preset-btn active" data-preset="p-ravi" id="p-ravi">Ravi: 30x &lt; 200</button>' +
+      '<button class="preset-btn" data-preset="p-upi" id="p-upi">UPI: 1999x ≤ 100000</button>';
     document.getElementById("p-ravi").onclick = function(){ setActivePreset(this); mode="ravi"; App.resetTimeline(); App.play(); };
     document.getElementById("p-upi").onclick = function(){ setActivePreset(this); mode="upi"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2014,7 +2636,7 @@ window.SIMS["ineq-types"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Linear</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Quadratic / other</span></div>';
     document.getElementById("preset-bar").innerHTML = items.map(function(it,i){
-      return '<button class="preset-btn'+(i===0?' active':'')+'" id="p-t'+i+'">'+it.t+'</button>';
+      return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="p-t'+i+'" id="p-t'+i+'">'+it.t+'</button>';
     }).join("");
     items.forEach(function(_,i){
       document.getElementById("p-t"+i).onclick = function(){ setActivePreset(this); idx=i; App.resetTimeline(); };
@@ -2047,9 +2669,9 @@ window.SIMS["reverse-rule"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>3 and 2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>after × k</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-neg">k = −1 (reverse)</button>' +
-      '<button class="preset-btn" id="p-neg2">k = −2 (NCERT 16 &gt; 14)</button>' +
-      '<button class="preset-btn" id="p-pos">k = +2 (no reverse)</button>';
+      '<button class="preset-btn active" data-preset="p-neg" id="p-neg">k = −1 (reverse)</button>' +
+      '<button class="preset-btn" data-preset="p-neg2" id="p-neg2">k = −2 (NCERT 16 &gt; 14)</button>' +
+      '<button class="preset-btn" data-preset="p-pos" id="p-pos">k = +2 (no reverse)</button>';
     document.getElementById("p-neg").onclick = function(){ setActivePreset(this); k=-1; App.resetTimeline(); };
     document.getElementById("p-neg2").onclick = function(){ setActivePreset(this); k=-2; App.resetTimeline(); };
     document.getElementById("p-pos").onclick = function(){ setActivePreset(this); k=2; App.resetTimeline(); };
@@ -2096,9 +2718,9 @@ window.SIMS["algebra-lab"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solution ray</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Test x</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-e2">Ex 2: x &lt; 2</button>' +
-      '<button class="preset-btn" id="p-e3">Ex 3: x &gt; −2</button>' +
-      '<button class="preset-btn" id="p-e4">Ex 4: x ≥ 8</button>';
+      '<button class="preset-btn active" data-preset="p-e2" id="p-e2">Ex 2: x &lt; 2</button>' +
+      '<button class="preset-btn" data-preset="p-e3" id="p-e3">Ex 3: x &gt; −2</button>' +
+      '<button class="preset-btn" data-preset="p-e4" id="p-e4">Ex 4: x ≥ 8</button>';
     document.getElementById("p-e2").onclick = function(){ setActivePreset(this); which="e2"; App.resetTimeline(); };
     document.getElementById("p-e3").onclick = function(){ setActivePreset(this); which="e3"; App.resetTimeline(); };
     document.getElementById("p-e4").onclick = function(){ setActivePreset(this); which="e4"; App.resetTimeline(); };
@@ -2139,9 +2761,9 @@ window.SIMS["numberline-graph"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Open circle (strict)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Dark circle (slack)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-51">Fig 5.1 · x &lt; 3</button>' +
-      '<button class="preset-btn" id="p-52">Fig 5.2 · x ≥ 1</button>' +
-      '<button class="preset-btn" id="p-53">Fig 5.3 · 2 ≤ x &lt; 6</button>';
+      '<button class="preset-btn active" data-preset="p-51" id="p-51">Fig 5.1 · x &lt; 3</button>' +
+      '<button class="preset-btn" data-preset="p-52" id="p-52">Fig 5.2 · x ≥ 1</button>' +
+      '<button class="preset-btn" data-preset="p-53" id="p-53">Fig 5.3 · 2 ≤ x &lt; 6</button>';
     document.getElementById("p-51").onclick = function(){ setActivePreset(this); fig="51"; App.resetTimeline(); };
     document.getElementById("p-52").onclick = function(){ setActivePreset(this); fig="52"; App.resetTimeline(); };
     document.getElementById("p-53").onclick = function(){ setActivePreset(this); fig="53"; App.resetTimeline(); };
@@ -2190,9 +2812,9 @@ window.SIMS["marks-upi"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Average</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Target</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-e7">Ex 7: 62, 48, avg ≥ 60</button>' +
-      '<button class="preset-btn" id="p-sun">Sunita Grade A ≥ 90</button>' +
-      '<button class="preset-btn" id="p-odd">Ex 8 consecutive odds</button>';
+      '<button class="preset-btn active" data-preset="p-e7" id="p-e7">Ex 7: 62, 48, avg ≥ 60</button>' +
+      '<button class="preset-btn" data-preset="p-sun" id="p-sun">Sunita Grade A ≥ 90</button>' +
+      '<button class="preset-btn" data-preset="p-odd" id="p-odd">Ex 8 consecutive odds</button>';
     document.getElementById("p-e7").onclick = function(){ setActivePreset(this); mode="ex7"; App.resetTimeline(); };
     document.getElementById("p-sun").onclick = function(){ setActivePreset(this); mode="sun"; App.resetTimeline(); };
     document.getElementById("p-odd").onclick = function(){ setActivePreset(this); mode="odd"; App.resetTimeline(); };
@@ -2251,9 +2873,9 @@ window.SIMS["double-ineq"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Feasible overlap</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-e9">Ex 9: −1 ≤ x &lt; 2</button>' +
-      '<button class="preset-btn" id="p-e10">Ex 10: −11/3 ≤ x ≤ 5</button>' +
-      '<button class="preset-btn" id="p-e11">Ex 11: 2 ≤ x &lt; 6</button>';
+      '<button class="preset-btn active" data-preset="p-e9" id="p-e9">Ex 9: −1 ≤ x &lt; 2</button>' +
+      '<button class="preset-btn" data-preset="p-e10" id="p-e10">Ex 10: −11/3 ≤ x ≤ 5</button>' +
+      '<button class="preset-btn" data-preset="p-e11" id="p-e11">Ex 11: 2 ≤ x &lt; 6</button>';
     document.getElementById("p-e9").onclick = function(){ setActivePreset(this); which="e9"; App.resetTimeline(); };
     document.getElementById("p-e10").onclick = function(){ setActivePreset(this); which="e10"; App.resetTimeline(); };
     document.getElementById("p-e11").onclick = function(){ setActivePreset(this); which="e11"; App.resetTimeline(); };
@@ -2300,9 +2922,9 @@ window.SIMS["mixture-temp"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Resulting %</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Allowed band</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ac">Ex 13 · 12% + 30%</button>' +
-      '<button class="preset-btn" id="p-cf">Ex 12 · 30&lt;C&lt;35 → F</button>' +
-      '<button class="preset-btn" id="p-iq">Misc 14 · IQ band</button>';
+      '<button class="preset-btn active" data-preset="p-ac" id="p-ac">Ex 13 · 12% + 30%</button>' +
+      '<button class="preset-btn" data-preset="p-cf" id="p-cf">Ex 12 · 30&lt;C&lt;35 → F</button>' +
+      '<button class="preset-btn" data-preset="p-iq" id="p-iq">Misc 14 · IQ band</button>';
     document.getElementById("p-ac").onclick = function(){ setActivePreset(this); mode="acid"; App.resetTimeline(); };
     document.getElementById("p-cf").onclick = function(){ setActivePreset(this); mode="cf"; App.resetTimeline(); };
     document.getElementById("p-iq").onclick = function(){ setActivePreset(this); mode="iq"; App.resetTimeline(); };

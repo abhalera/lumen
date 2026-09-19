@@ -1,6 +1,8 @@
 # COVERAGE — lebo106 Evolution
 
-**Source:** `books/originals/Class12-Biology_lebo106.pdf` (17 pdf pages, printed folio absent in source, Reprint 2026-27).
+**Source:** `books/originals/Class12-Biology_lebo106.pdf` (17 pdf pages, printed folio = pdf page + 109 (verified, see correction note below), Reprint 2026-27).
+
+**Correction (2026-09-19):** an earlier pass wrongly recorded this chapter as folio-absent. Verified directly against the PDF: the printed folio appears as the first extracted text line on almost every page (only the chapter-opener page lacks one). Confirmed printed = 1-based PDF page + 109 across 3 independent anchor points with zero deviation. `printPage` on every exercise and `print` on every lesson now hold the real printed folio.
 **SHA-256:** `d2a181994b3d2a060226f4bf1b45ad581c6da69a8dd2a01e448704d6ce868071` (in `/tmp/opencode/bio_maps.json`, key `lebo106`).
 **Extraction:** PyMuPDF text layer (`/tmp/opencode/bio_text/lebo106.txt`) + section/exercise page maps in `/tmp/opencode/bio_maps.json`. **pdftotext was not used.**
 **NCERT:** https://ncert.nic.in/textbook/pdf/lebo106.pdf
@@ -35,7 +37,7 @@ Honest notes: the page map resolves every section (6.1–6.9) only to pdf p. 1 a
 
 ## End-of-Chapter Exercises 1–10
 
-All **10** exercises from this reprint mapped with verbatim stems and NCERT-faithful stepwise solutions in `chapter.json` (all on pdf p. 17; printed folio absent in source; conceptIdx per lesson: Q1→L4, Q2→L2, Q3→L4, Q4–Q6→L6, Q7→L2, Q8→L3, Q9–Q10→L6).
+All **10** exercises from this reprint mapped with verbatim stems and NCERT-faithful stepwise solutions in `chapter.json` (all on pdf p. 17; printed folio = pdf page + 109 (verified, see correction note below); conceptIdx per lesson: Q1→L4, Q2→L2, Q3→L4, Q4–Q6→L6, Q7→L2, Q8→L3, Q9–Q10→L6).
 
 ## Pedagogical Simulations (sims.js — separate script)
 

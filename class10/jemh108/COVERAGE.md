@@ -1,20 +1,26 @@
-# jemh108 Trigonometry pilot — coverage (verified against locked extraction)
+# jemh108 Introduction to Trigonometry — coverage (rebuild vs locked extraction)
 
-Source: `books/originals/Class10-Maths_jemh108.pdf`, 20 pdf pages, printed pp. 113–132, Reprint 2026–27. Extraction: `scripts/extract_maths.py` (PyMuPDF dict spans + PNG zooms; Symbol PUA map proven).
+Source: `books/originals/Class10-Maths_jemh108.pdf`, 20 PDF pages, printed pp. 113–132, Reprint 2026–27. Extraction: `scripts/extract_maths.py` + `text.txt` (PyMuPDF dict). OFFSET = 112.
 
-| NCERT block | PDF pp. | Concept | Status |
+| NCERT block | PDF pp. | Lesson | Status |
 |---|---|---|---|
-| 8.1 Introduction (Qutub Minar, river, balloon) | 1–2 | naming-sides Connect, complete-from-one Connect | referenced (motivating examples, not assessed) |
-| 8.2 six ratios + reciprocals + tan=sin/cos | 2–4 | naming-sides, six-ratios | implemented |
-| Remark sin A is not sin×A; similar triangles PAM/CAB/QAN; ratios fixed at fixed angle | 4–5 | fix-angle-fix-ratio | implemented |
-| Note sin²A/(sin A)²/(sin A)⁻¹/sin⁻¹A/θ | 5 | notation-traps | implemented |
-| Worked sin A = 1/3 → cos = 2√2/3 (zoom-verified) | 5 | complete-from-one | implemented, PNG zoom cited |
-| Remark sin/cos ≤ 1; Ex.1 (tan 4/3), Ex.2 (sin B = sin Q ⟹ B = Q), Ex.3 (29-21-20, identity preview), Ex.4 (tan = 1, 2sin·cos), Ex.5 (7-24-25) | 6–8 | complete-from-one, identities | Ex.1/4/5 patterns in quizzes; Ex.2/3 reasoning in Hards |
-| Ex 8.1 Q1–11 | 9 | all | located in exerciseMap; Q-patterns covered (24-7-25, 15cot = 8, sec 13/12, identity checks) |
-| 8.3 45° (isosceles), 30°/60° (equilateral+altitude), Table 8.1 | 10–11 | table-angles | implemented, derivations shown |
-| 0°/90° limits + Table 8.1 full | 11–13 | zero-ninety, table-angles | implemented |
-| Ex 8.2 Q1–4 | 13 | table-angles, zero-ninety | located; evaluation patterns in quizzes |
-| 8.4 identities (2)(3)(4) + domains; Ex.6–8; Ex 8.3 Q1–7 | 14–16 | identities | implemented; proofs Ex.10–12 patterns in deeper |
-| Ex.9–12 + Ex 8.4 Q1–5 | 16–20 | identities | located in map; proof templates in deeper/worked |
+| 8.1 Qutub Minar, river, balloon; Greek etymology | 1–2 | naming-sides | motivation, not assessed |
+| 8.2 six ratios, reciprocals, tan=sin/cos; not a product | 2–4 | naming-sides, six-ratios | rebuilt |
+| Similar △PAM ~ △CAB; ratios fixed at fixed angle; notation note | 4–5 | fix-angle | rebuilt |
+| sin A=1/3 → cos=2√2/3; sin,cos ≤ 1; Examples 1–5 | 5–8 | complete-from-one | recomputed (3-4-5, 29-21-20, 7-24-25) |
+| Ex 8.1 Q1–Q11 | 9 | exercises | recomputed; Fig. 8.13 tan P−cot R = 0 |
+| 8.3 45° and 30°/60° | 10–11 | table-angles | derived from the two triangles |
+| 0°/90° limits, Table 8.1, Examples 6–8 | 11–14 | zero-ninety | four ratios **not defined** (not named as unbounded) |
+| Ex 8.2 Q1–Q4 | 15 | exercises | recomputed; A=45°, B=15° |
+| 8.4 identities (2)(3)(4) + domains; Examples 9–12 | 16–19 | identities | rebuilt |
+| Ex 8.3 Q1–Q4 | 19–20 | exercises | Q3: 9; 2; cos A; tan²A. Ten proofs grouped |
+| 8.5 Summary (6 points) | 20 | identities | no Pythagoras-of-heights here |
 
-Gaps (honest): full 34-item exercise bank is mapped, not fully solved in-page; Ex 8.3 Q7 wire problem and Ex 8.4 Q5 trig-in-triangle need diagram-heavy solutions — pending. No Wow videos yet (pilot has no Wow cards — by design for review first). Browser matrix/teacher/learner review pending.
+Videos: none wired. Lesson list sent to agy-imported. Old pilot IDs not copied.
+
+Honest gaps:
+- **No Exercise 8.4** in this 20-page reprint. Heights and distances are Chapter 9.
+- 0°/90° are defined from a limit; tan 90°, sec 90°, cot 0°, cosec 0° are left not defined. This chapter does not assign a symbol to 1/0.
+- Qutub Minar / river / balloon are opening scenes, not worked measurement techniques.
+
+Recomputed facts used in verify: 24-7-25; Fig. 8.13 difference 0; 8-15-17; 5-12-13; 8.2 Q1(v)=67/12; 9(sec²−tan²)=9; Example 5 7-24-25; Example 3 29-21-20.

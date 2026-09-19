@@ -46,8 +46,8 @@ window.SIMS.axes3d = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>y-axis</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>z-axis</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ax">Coordinate axes</button>' +
-      '<button class="preset-btn" id="p-pl">Three coordinate planes</button>';
+      '<button class="preset-btn active" data-preset="p-ax" id="p-ax">Coordinate axes</button>' +
+      '<button class="preset-btn" data-preset="p-pl" id="p-pl">Three coordinate planes</button>';
     var mode="ax";
     document.getElementById("p-ax").onclick = function(){ setActivePreset(this); mode="ax"; draw(0); };
     document.getElementById("p-pl").onclick = function(){ setActivePreset(this); mode="pl"; draw(0); };
@@ -76,9 +76,9 @@ window.SIMS.octant = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Point P(x,y,z)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="o1">Ex 2: (−3,1,2) octant II</button>' +
-      '<button class="preset-btn" id="o2">(−3,1,−2) octant VI</button>' +
-      '<button class="preset-btn" id="o3">P(2,4,5) and F(2,0,5)</button>';
+      '<button class="preset-btn active" data-preset="o1" id="o1">Ex 2: (−3,1,2) octant II</button>' +
+      '<button class="preset-btn" data-preset="o2" id="o2">(−3,1,−2) octant VI</button>' +
+      '<button class="preset-btn" data-preset="o3" id="o3">P(2,4,5) and F(2,0,5)</button>';
     document.getElementById("o1").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x").value=-3; document.getElementById("ctrl-y").value=1; document.getElementById("ctrl-z").value=2; draw(0); };
     document.getElementById("o2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x").value=-3; document.getElementById("ctrl-y").value=1; document.getElementById("ctrl-z").value=-2; draw(0); };
     document.getElementById("o3").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x").value=2; document.getElementById("ctrl-y").value=4; document.getElementById("ctrl-z").value=5; draw(0); };
@@ -127,8 +127,8 @@ window.SIMS.dist3d = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Q</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>PQ</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="d-ex3">Ex 3: P(1,−3,4) Q(−4,1,2)</button>' +
-      '<button class="preset-btn" id="d-o">Distance from origin</button>';
+      '<button class="preset-btn active" data-preset="d-ex3" id="d-ex3">Ex 3: P(1,−3,4) Q(−4,1,2)</button>' +
+      '<button class="preset-btn" data-preset="d-o" id="d-o">Distance from origin</button>';
     document.getElementById("d-ex3").onclick = function(){ setActivePreset(this); document.getElementById("qx").value=-4; document.getElementById("qy").value=1; document.getElementById("qz").value=2; draw(0); };
     document.getElementById("d-o").onclick = function(){ setActivePreset(this); document.getElementById("qx").value=0; document.getElementById("qy").value=0; document.getElementById("qz").value=0; draw(0); };
     document.getElementById("lab-controls").innerHTML =
@@ -161,8 +161,8 @@ window.SIMS.collinear3d = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>P, Q, R</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c-yes">Ex 4: collinear √14 + 2√14 = 3√14</button>' +
-      '<button class="preset-btn" id="c-no">Ex 5: not right-angled</button>';
+      '<button class="preset-btn active" data-preset="c-yes" id="c-yes">Ex 4: collinear √14 + 2√14 = 3√14</button>' +
+      '<button class="preset-btn" data-preset="c-no" id="c-no">Ex 5: not right-angled</button>';
     var mode="yes";
     document.getElementById("c-yes").onclick = function(){ setActivePreset(this); mode="yes"; draw(0); };
     document.getElementById("c-no").onclick = function(){ setActivePreset(this); mode="no"; draw(0); };
@@ -204,8 +204,8 @@ window.SIMS.locus3d = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A, B</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Perpendicular-bisector plane</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="l-eq">Ex 8: PA=PB ⇒ 10x+6y−18z−29=0</button>' +
-      '<button class="preset-btn" id="l-sum">Ex 11.2 Q5: PA+PB=10 (ellipsoid)</button>';
+      '<button class="preset-btn active" data-preset="l-eq" id="l-eq">Ex 8: PA=PB ⇒ 10x+6y−18z−29=0</button>' +
+      '<button class="preset-btn" data-preset="l-sum" id="l-sum">Ex 11.2 Q5: PA+PB=10 (ellipsoid)</button>';
     var mode="eq";
     document.getElementById("l-eq").onclick = function(){ setActivePreset(this); mode="eq"; draw(0); };
     document.getElementById("l-sum").onclick = function(){ setActivePreset(this); mode="sum"; draw(0); };
@@ -241,8 +241,8 @@ window.SIMS.centroid3d = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A, B, C</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Centroid G</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="g-ex9">Ex 9: G(1,1,1), C=(1,1,2)</button>' +
-      '<button class="preset-btn" id="g-par">Ex 7: parallelogram, not a rectangle</button>';
+      '<button class="preset-btn active" data-preset="g-ex9" id="g-ex9">Ex 9: G(1,1,1), C=(1,1,2)</button>' +
+      '<button class="preset-btn" data-preset="g-par" id="g-par">Ex 7: parallelogram, not a rectangle</button>';
     var mode="g";
     document.getElementById("g-ex9").onclick = function(){ setActivePreset(this); mode="g"; draw(0); };
     document.getElementById("g-par").onclick = function(){ setActivePreset(this); mode="p"; draw(0); };

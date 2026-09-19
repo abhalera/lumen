@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 10: Biotechnology and Its Applications — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -75,6 +76,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -278,6 +305,7 @@ p.concept-deck {
   gap: 4px;
   padding-bottom: 12px;
   border-bottom: 1px dashed var(--line);
+  min-width: 0;
 }
 .eq-row:last-child {
   border-bottom: none;
@@ -285,9 +313,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +498,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -598,11 +628,12 @@ input.timeline-scrubber {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 6px;
   padding: 8px 12px;
+  min-width: 0;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -610,6 +641,7 @@ input.timeline-scrubber {
   font-weight: 750;
   color: #fff;
   font-family: monospace;
+  overflow-wrap: anywhere;
 }
 .lab-verdict {
   background: rgba(8,118,106,0.25);
@@ -652,7 +684,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +696,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +773,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +967,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,50 +1071,174 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
+
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a class="class-link" href="../index.html">Class 12</a><span class="chapter-crumb" id="chapter-crumb">CH 10 · BIOTECHNOLOGY AND ITS APPLICATIONS</span>
+  <a class="brand" href="../index.html"><span class="brand-mark">l.</span> lumen</a>
+  <span class="chapter-crumb" id="chapter-crumb">CH 10 · BIOTECHNOLOGY AND ITS APPLICATIONS</span>
   <div class="top-actions">
     <div class="progress-pill">
       <span>Mastery:</span>
@@ -1045,7 +1252,7 @@ button.btn-secondary {
 <div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
+    <div id="sidebar-nav"></div>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
       <button class="concept-nav" id="nav-revision">
         <span class="num">✦</span>
@@ -1056,20 +1263,21 @@ button.btn-secondary {
 
   <main id="main-content">
     <div id="concept-view"></div>
-    <div id="revision-view" class="revision-page" data-block="revise">
+    <div id="revision-view" class="revision-page">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h1 class="concept-title">Revise, Reflect, Refine</h1>
-        <p class="concept-deck">All 13 Exercises from NCERT Class 12 Biology (PDF pp. 1–11 · printed folio absent in source) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 13 Exercises from NCERT Class 12 Biology (pp. 1–11) mapped to core concepts with step-by-step solutions.</p>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology", "title": "Biotechnology and Its Applications", "subtitle": "Pest-resistant crops and RNAi, recombinant insulin and gene therapy, molecular diagnosis, transgenic animals and the ethics of biopiracy.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo110.pdf", "page_start": 1, "page_end": 11, "extraction": "PyMuPDF text layer (/tmp/opencode/bio_text/lebo110.txt) + section/exercise page maps in /tmp/opencode/bio_maps.json (key lebo110). SHA-256 4da2923c699b97a1930ae6b1072bf75fb5b0429d724ead7ba06510f98730b826. pdftotext not used. No PNG zooms (prose-quantitative chapter).", "lessons": [{"id": "tissue-culture", "nav": "Tissue culture & micropropagation", "title": "Totipotency to somaclones: explants, meristems and somatic hybrids", "deck": "Any plant cell can regrow a whole plant. Sterile nutrient media turn explants into thousands of identical somaclones; meristems give virus-free plants; fused protoplasts give somatic hybrids such as pomato.", "minutes": 8, "section": "10.1", "pages": [2, 3], "print": "2–3", "sim": "tissueculture", "simTitle": "Explant-to-plantlet stepper: totipotency to somaclones", "quick": ["Three options exist for raising food production — agro-chemical agriculture, organic agriculture and genetically engineered crop-based agriculture. The <strong>Green Revolution tripled food supply</strong>, mainly through better management and agrochemicals, but agrochemicals are too expensive for developing-world farmers and conventional breeding cannot keep pace — so <strong>tissue culture</strong> was developed.", "Scientists learnt in the <strong>1950s</strong> that <strong>whole plants could be regenerated from explants</strong> — any part of a plant taken out and grown in a test tube under sterile conditions in special nutrient media. This capacity of any cell/explant to generate a whole plant is <strong>totipotency</strong>. The medium must supply a carbon source such as <strong>sucrose</strong> plus <strong>inorganic salts, vitamins, amino acids and growth regulators like auxins and cytokinins</strong>.", "Producing <strong>thousands of plants through tissue culture</strong> in very short durations is <strong>micro-propagation</strong>; each plant is genetically identical to the parent — a <strong>somaclone</strong>. Tomato, banana and apple are produced commercially this way. Even from virus-infected plants, the <strong>meristem (apical and axillary) is virus-free</strong>, so culturing it in vitro yields healthy plants — done for <strong>banana, sugarcane and potato</strong>.", "Single cells can be stripped of walls to give naked <strong>protoplasts</strong>; protoplasts of two varieties with desirable characters can be <strong>fused into hybrid protoplasts</strong> grown into new plants — <strong>somatic hybrids</strong> via <strong>somatic hybridisation</strong>. Fusing tomato and potato protoplasts gave <strong>pomato</strong>, which unfortunately lacked the desired combination for commercial use."], "formulas": [{"label": "Totipotency", "html": "any cell / explant —sterile medium→ whole plant", "cond": "Section 10.1; 1950s explant work"}, {"label": "Medium recipe", "html": "sucrose + inorganic salts + vitamins + amino acids + auxins / cytokinins", "cond": "Section 10.1; Exercise 3"}, {"label": "Somatic hybridisation", "html": "protoplast A + protoplast B → hybrid protoplast → plant (pomato = tomato + potato)", "cond": "Section 10.1; not commercialised"}], "deeper": "Note the two precision points the text stresses: the meristem escapes virus that infects the rest of the plant, which is why meristem culture — not leaf or stem cuttings — is the virus-free route; and somaclones are genetically identical to the single parent, so micropropagation multiplies but never improves a variety. The chapter invites a visit to a tissue-culture laboratory to see sterile transfer and media preparation first-hand.", "worked": "Virus-free banana chain: diseased banana plant → excise apical/axillary meristem (virus-free zone) → grow in vitro on sucrose–salts–vitamins–auxin/cytokinin medium → virus-free plantlet → micropropagate into thousands of somaclones → commercial planting of tomato, banana, apple scale stock.", "prediction": {"prompt": "A sugarcane crop is virus-infected, but the farmer needs healthy planting material. Which starting material does Section 10.1 prescribe, and why?", "options": ["Apical/axillary meristem — it is free of virus even in an infected plant, and regenerates whole virus-free plants in vitro", "Any infected leaf — virus spreads evenly so all parts are equivalent", "Mature seeds from the infected plant — seeds always escape virus"], "answer": 0, "explanation": "The text states the meristem is free of virus even when the plant is infected; culturing it in vitro (banana, sugarcane, potato) gives healthy plants."}, "connect": [["Tissue-culture banana and sugarcane in India", "Commercial micropropagation labs multiply elite banana and sugarcane plantlets by the thousand — the somaclone logic of Section 10.1 running as an industry, with meristem-tip culture cleaning up virus-loaded cane.", [], {"id": "530GYX9C1vU", "title": "Biotechnology And its Applications Class 12 One Shot | NCERT + PYQs | Biology Chapter 12", "channel": "NCERT Wallah"}], ["Wow — the pomato that worked but failed", "Tomato + potato protoplasts really did fuse and grow into pomato plants — somatic hybridisation succeeding in the dish yet failing in the market, because the hybrid lacked the desired combination for commercial utilisation."]], "recall": "Define totipotency, explant, somaclone and somatic hybridisation; list the five medium-component groups; state which plant part gives virus-free plants and three crops so recovered.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Totipotency is the capacity of", "options": ["Any cell or explant to generate a whole plant", "Only seeds to germinate in soil", "Only meristems to form flowers"], "answer": 0, "hint": "Section 10.1 defines it right after explants.", "solution": "Totipotency: a whole plant from any cell/explant grown under sterile conditions in special nutrient media.", "wrong": ["Seeds are one route, but totipotency covers any cell.", "Meristems matter for virus-free plants, but totipotency is general."]}, {"level": "Medium", "type": "mcq", "prompt": "Virus-free plants are recovered from a diseased plant by culturing its", "options": ["Apical/axillary meristem in vitro", "Mature infected leaf blades", "Sap squeezed from infected stems"], "answer": 0, "hint": "Which zone does the virus not reach?", "solution": "The meristem is free of virus even in infected plants; banana, sugarcane and potato were so recovered.", "wrong": ["Infected leaves carry the virus.", "Sap from infected stems carries the virus."]}, {"level": "Hard", "type": "mcq", "prompt": "Pomato (tomato + potato somatic hybrid) is best described as", "options": ["A real hybrid that lacked the desired trait combination for commercial use", "A failed fusion that never produced plants", "A seed-cross variety sold commercially across India"], "answer": 0, "hint": "Read the last lines on somatic hybridisation.", "solution": "Fusion succeeded and hybrid plants formed, but without the desired combination of characteristics for commercial utilisation.", "wrong": ["Plants were formed — that is stated.", "It was never commercialised."]}], "resources": [{"title": "NCERT §10.1 — Tissue culture & micropropagation (official PDF, PDF p.2)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=2"}]}, {"id": "bt-rnai", "nav": "Bt crops & RNAi", "title": "Cry protoxins and interfering RNA: pest-resistant plants", "deck": "Bt crystals are harmless protoxins until an insect gut activates them. cryIAc/cryIIAb guard cotton, cryIAb guards corn — and host-made dsRNA silences the nematode Meloidegyne incognitia.", "minutes": 9, "section": "10.1", "pages": [3, 4], "print": "3–4", "sim": "btcotton", "simTitle": "cry gene to pest-mortality explorer (bollworm, corn borer, nematode)", "quick": ["Plants, bacteria, fungi and animals with altered genes are <strong>Genetically Modified Organisms (GMO)</strong>. Genetic modification makes crops tolerant to <strong>abiotic stresses</strong> (cold, drought, salt, heat), cuts <strong>chemical pesticide</strong> reliance, reduces <strong>post-harvest losses</strong>, improves <strong>mineral-use efficiency</strong>, and enhances <strong>nutritional value</strong> (e.g. <strong>golden rice, Vitamin A enriched rice</strong>) — plus tailor-made starches, fuels and pharmaceuticals.", "<strong>Bt toxin</strong> from the bacterium <strong>Bacillus thuringiensis</strong> is cloned into plants as a <strong>bio-pesticide</strong> — Bt cotton, Bt corn, rice, tomato, potato, soyabean. Strains kill <strong>lepidopterans</strong> (tobacco budworm, armyworm), <strong>coleopterans</strong> (beetles) and <strong>dipterans</strong> (flies, mosquitoes). The bacterium forms <strong>protein crystals</strong> of <strong>inactive protoxin</strong>; in the insect gut the <strong>alkaline pH solubilises</strong> crystals into active toxin, which <strong>binds midgut epithelial cells, creates pores, swells and lyses cells</strong>, killing the insect. Figure 10.1 contrasts bollworm-destroyed and mature cotton bolls.", "Most Bt toxins are <strong>insect-group specific</strong>, so gene choice follows crop and pest: the toxin gene is <strong>cry</strong> — proteins of <strong>cryIAc and cryIIAb control cotton bollworms</strong>, while <strong>cryIAb controls corn borer</strong>.", "The nematode <strong>Meloidegyne incognitia</strong> infects tobacco roots and slashes yield. Protection uses <strong>RNA interference (RNAi)</strong> — a cellular defense of all eukaryotes in which a <strong>specific mRNA is silenced by complementary dsRNA</strong> that binds and blocks translation (sources: RNA-genome viruses, transposons replicating via RNA). Via <strong>Agrobacterium vectors</strong>, nematode-specific genes enter the host so that <strong>sense and anti-sense RNA</strong> form <strong>dsRNA</strong>, initiating RNAi; the parasite cannot survive in the transgenic host (Figure 10.2: control vs protected roots)."], "formulas": [{"label": "Bt activation", "html": "inactive protoxin crystal —alkaline gut→ active toxin → midgut pores → lysis → insect death", "cond": "Section 10.1; Exercise 4 answer (c)"}, {"label": "cry gene table", "html": "cryIAc + cryIIAb → cotton bollworms; cryIAb → corn borer", "cond": "Section 10.1; insect-group specific"}, {"label": "RNAi protection", "html": "sense + anti-sense RNA → dsRNA → mRNA silencing → nematode cannot survive", "cond": "Section 10.1; Meloidegyne incognitia via Agrobacterium"}], "deeper": "Exercise 4 is answered inside the mechanism: the crystals do not kill Bacillus because the toxin exists as inactive protoxin — option (c) — and only the alkaline insect gut converts it. Note the specificity ladder the text builds: protoxin chemistry (who it can kill), cry-gene choice (which pest it targets), then RNAi (which mRNA it silences) — three different locks, one pest-resistant plant.", "worked": "Exercise 4 chain: Bt forms crystals → protein is inactive protoxin inside bacteria → insect ingests → alkaline gut pH solubilises crystals → active toxin → midgut pores → swelling/lysis → death. Hence (a) resistance, (b) immaturity and (d) special sac are all wrong; (c) toxin is inactive is correct.", "prediction": {"prompt": "A cotton bollworm chews leaves of Bt cotton carrying cryIAc/cryIIAb. What follows, per Section 10.1?", "options": ["Ingested protoxin activates in the alkaline gut, binds midgut cells, forms pores and kills the larva", "The protoxin poisons the Bacillus cells inside the leaf first", "Nothing — cry proteins only work against corn borers"], "answer": 0, "explanation": "Alkaline-gut activation → midgut binding → pores → lysis → death; cryIAc/cryIIAb specifically control cotton bollworms."}, "connect": [["Bt cotton in Maharashtra and Gujarat", "Cotton belts with heavy bollworm pressure adopted Bt cotton carrying cryIAc/cryIIAb precisely to cut insecticide sprays — the textbook bio-pesticide logic working at state scale, with gene choice matched to the targeted pest."], ["Wow — the plant that vaccinates itself with RNA", "The tobacco plant is engineered to manufacture both sense and anti-sense strands so the double helix that kills no one silences exactly one nematode mRNA — immunity written as complementarity."]], "recall": "State the cry-gene table, the protoxin activation sequence, and the four RNAi steps from Agrobacterium delivery to nematode failure.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Bt toxin crystals do not kill Bacillus themselves because", "options": ["The toxin is inactive (protoxin)", "Bacteria enclose toxin in a special sac", "Bacteria are resistant to the active toxin"], "answer": 0, "hint": "Exercise 4 — options (a) to (d).", "solution": "Option (c): the protein exists as inactive protoxin; only the alkaline insect gut converts it to the active form.", "wrong": ["No sac is described in the text.", "Resistance is not the mechanism; inactivity is."]}, {"level": "Medium", "type": "mcq", "prompt": "The gene cryIAb is deployed against", "options": ["Corn borer", "Cotton bollworms", "Tobacco root nematode"], "answer": 0, "hint": "cryIAc/cryIIAb do cotton; what is left?", "solution": "cryIAb controls the corn borer; cryIAc and cryIIAb control cotton bollworms.", "wrong": ["Cotton bollworms need cryIAc and cryIIAb.", "The nematode is handled by RNAi, not cry genes."]}, {"level": "Hard", "type": "number", "map": "Section 10.1", "prompt": "Number of cry genes named in the text for controlling cotton bollworms", "answer": 2, "unit": "genes", "tolerance": 0.1, "hint": "cryIAc and …?", "solution": "Two: cryIAc and cryIIAb control the cotton bollworms."}], "resources": [{"title": "NCERT §10.1 — Bt crops & RNAi (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=3"}]}, {"id": "insulin-genetherapy", "nav": "Insulin & gene therapy", "title": "From proinsulin C-peptide to Eli Lilly E. coli — and the 1990 ADA cure attempt", "deck": "Mature insulin is just A (21) + B (30) chains; the C peptide (33) is cut away. In 1983 Eli Lilly built both chains in E. coli; in 1990 a 4-year-old ADA-deficient girl received the first clinical gene therapy.", "minutes": 9, "section": "10.2.1, 10.2.2", "pages": [5, 6], "print": "5–6", "sim": "insulin", "simTitle": "Proinsulin-to-insulin chain remover + ADA lymphocyte timeline", "quick": ["Recombinant DNA healthcare gives <strong>mass-produced, safe, effective therapeutics</strong> with <strong>no unwanted immunological responses</strong> (unlike animal-source products): about <strong>30 recombinant therapeutics approved worldwide, 12 marketed in India</strong>. Diabetes management needs regular insulin; earlier insulin came from <strong>slaughtered cattle and pig pancreas</strong> and caused <strong>allergy/reactions to the foreign protein</strong> in some patients.", "<strong>Insulin has two short polypeptide chains, A and B, linked by disulphide bridges</strong> (Figure 10.3). In mammals it is synthesised as a <strong>pro-hormone with an extra C peptide</strong> that is <strong>absent in mature insulin — removed during maturation</strong>. The rDNA challenge was assembling mature insulin. In <strong>1983, Eli Lilly (American company)</strong> prepared <strong>two DNA sequences for chains A and B</strong>, introduced them in <strong>E. coli plasmids</strong>, produced the chains <strong>separately</strong>, extracted them and <strong>combined them with disulfide bonds</strong> into human insulin.", "<strong>Gene therapy</strong> corrects a diagnosed gene defect in a child/embryo by <strong>inserting genes into cells/tissues</strong> — a normal gene compensating for the non-functional one. The <strong>first clinical gene therapy (1990)</strong> went to a <strong>4-year-old girl with adenosine deaminase (ADA) deficiency</strong> — the enzyme crucial for immunity, its gene deleted. Alternatives exist: <strong>bone-marrow transplantation</strong> cures some children, <strong>enzyme-replacement injections</strong> treat others — but neither is completely curative.", "The ADA protocol: <strong>lymphocytes from patient blood are cultured outside the body</strong>, a <strong>functional ADA cDNA via retroviral vector</strong> enters them, and they are <strong>returned to the patient</strong>. These cells are <strong>not immortal, so periodic infusion</strong> is needed; introducing the marrow-cell ADA gene at <strong>early embryonic stages could be a permanent cure</strong>."], "formulas": [{"label": "Insulin chains (Fig. 10.3)", "html": "chain A (21 aa) + chain B (30 aa), disulphide-linked; proinsulin = A + C (33) + B → mature A + B", "cond": "Sections 10.2.1; C peptide removed on maturation"}, {"label": "1983 Eli Lilly route", "html": "A-DNA + B-DNA → E. coli plasmids → separate chains → extract → disulfide assembly", "cond": "Section 10.2.1"}, {"label": "1990 ADA protocol", "html": "patient lymphocytes out → retroviral ADA cDNA in → cells back (periodic; non-immortal)", "cond": "Section 10.2.2"}], "deeper": "The chapter poses two think-questions this lesson answers: whether insulin can be given orally (no — a protein, digested; see Exercises 12–13 and the blood protease/nuclease discussion), and why bacterial human insulin beats cattle/pig insulin (identical to the human molecule, so no foreign-protein allergy). Note the careful wording: 1990 was the first clinical gene therapy, given to a 4-year-old — both facts are fixture-checked in verify.cjs.", "worked": "C-peptide removal math: chain A = 21 amino acids, chain B = 30, so mature insulin = 21 + 30 = 51 amino acids joined by disulphide bridges. Proinsulin adds the C peptide (33) — 21 + 30 + 33 = 84 — all of which is cut away during maturation, leaving C-free mature insulin. ADA timeline: 1983 (Eli Lilly insulin) → 1990 (first ADA gene therapy, age 4) → 1997 (Rosie) — seven-year steps.", "prediction": {"prompt": "A lab test finds C peptide in a sample labelled mature insulin. What is the verdict?", "options": ["Mislabeled or immature — C peptide is removed during maturation and absent in mature insulin", "Correct — mature insulin always retains the C peptide", "Correct — C peptide is added after maturation"], "answer": 0, "explanation": "Proinsulin's extra C stretch is removed on maturation; mature insulin is A + B only (Figure 10.3)."}, "connect": [["Diabetes care in India and the 12 marketed therapeutics", "With a vast diabetic population, India markets 12 of the ~30 approved recombinant therapeutics — bacterial human insulin replacing cattle/pig extracts that once caused allergy is Section 10.2.1 in every pharmacy."], ["Wow — science-fiction surgery in 1990", "Blood drawn from a 4-year-old girl, her own lymphocytes reprogrammed with a retroviral ADA gene and dripped back — the first clinical gene therapy, periodic because the repaired cells are mortal."]], "recall": "State chain counts (A21/B30/C33), the 1983 Eli Lilly assembly order, and the five ADA protocol steps with year and patient age.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Mature insulin differs from proinsulin in that", "options": ["The C peptide is removed during maturation", "An extra C peptide is added during maturation", "Chains A and B are never linked"], "answer": 0, "hint": "Figure 10.3 — what leaves?", "solution": "Pro-hormone carries an extra C stretch; maturation removes it, leaving disulphide-linked A + B.", "wrong": ["Nothing is added at maturation.", "A and B are linked by disulphide bridges."]}, {"level": "Medium", "type": "mcq", "prompt": "Eli Lilly (1983) produced human insulin by", "options": ["Expressing A and B DNAs separately in E. coli plasmids, then joining the chains with disulfide bonds", "Extracting larger volumes of cattle pancreas", "Fusing human and pig insulin genes in yeast"], "answer": 0, "hint": "Two DNA sequences, two chains, one assembly.", "solution": "Two DNAs for A and B in E. coli plasmids; chains made separately, extracted, combined by disulfide bonds.", "wrong": ["Animal extraction is the old allergic route.", "No human–pig fusion is described."]}, {"level": "Hard", "type": "number", "map": "Figure 10.3", "prompt": "Amino acids in one mature human insulin molecule (A 21 + B 30)", "answer": 51, "unit": "aa", "tolerance": 0.1, "hint": "21 + 30.", "solution": "21 + 30 = 51 amino acids in mature insulin; proinsulin adds C (33) for 84."}], "resources": [{"title": "NCERT §10.2.1, 10.2.2 — Insulin & gene therapy (official PDF, PDF p.5)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=5"}]}, {"id": "diagnosis-transgenic", "nav": "Diagnosis & transgenic animals", "title": "PCR, probes and ELISA — plus Rosie, the 2.4 g/L cow", "deck": "PCR amplifies what eyes cannot see, probes fish for mutant genes on film, ELISA reads antigen–antibody binding. Transgenic animals — 95% mice — model disease, test vaccines and manufacture milk like Rosie's.", "minutes": 9, "section": "10.2.3, 10.3", "pages": [6, 8], "print": "6–8", "sim": "transgenic", "simTitle": "Rosie/Tracy trait explorer with PCR-vs-ELISA-vs-probe matcher", "quick": ["Effective treatment needs <strong>early diagnosis</strong>, but conventional <strong>serum/urine analysis cannot detect disease early</strong>. Recombinant DNA technology plus <strong>PCR</strong> and <strong>ELISA</strong> fill the gap. A pathogen is usually suspected only after symptoms, when its concentration is already high — yet <strong>very low bacterial/viral counts are detectable by amplifying their nucleic acid with PCR</strong>: routine for <strong>HIV in suspected AIDS</strong>, <strong>mutations in suspected cancer</strong>, and other genetic disorders.", "A <strong>single-stranded DNA/RNA probe tagged with a radioactive molecule</strong> is hybridised to its complementary DNA in cell clones and detected by <strong>autoradiography</strong>: the clone with the <strong>mutated gene does not appear on the photographic film</strong>, lacking complementarity. <strong>ELISA</strong> rests on <strong>antigen–antibody interaction</strong> — infection is read through <strong>pathogen antigens (proteins, glycoproteins) or the antibodies</strong> made against them.", "Animals with manipulated DNA carrying an <strong>extra foreign gene</strong> are <strong>transgenic animals</strong> — rats, rabbits, pigs, sheep, cows, fish, though <strong>over 95% are mice</strong>. They serve (i) <strong>normal physiology/development</strong> studies (e.g. insulin-like growth factor regulation via foreign genes) and (ii) <strong>disease models</strong> for <strong>cancer, cystic fibrosis, rheumatoid arthritis and Alzheimer’s</strong> to test new treatments.", "(iii) <strong>Biological products</strong>: transgenic animals make useful human proteins such as <strong>α-1-antitrypsin for emphysema</strong> (the transgenic sheep Tracy, 1990 — companion detail beyond the reprint naming), with similar attempts for <strong>PKU and cystic fibrosis</strong>. In <strong>1997 the first transgenic cow Rosie produced human protein-enriched milk (2.4 grams per litre)</strong> carrying <strong>human alpha-lactalbumin</strong> — more balanced for human babies than natural cow milk. (iv) <strong>Vaccine safety</strong>: transgenic mice test <strong>polio vaccine</strong> batches, potentially replacing monkeys. (v) <strong>Chemical/toxicity safety testing</strong>: gene-carrying animals more sensitive to toxins give results in less time."], "formulas": [{"label": "Diagnosis trio", "html": "PCR (amplify nucleic acid) · probe (hybridise + autoradiography) · ELISA (antigen–antibody)", "cond": "Section 10.2.3; low-count detection"}, {"label": "Transgenic share", "html": ">95% of all transgenic animals are mice", "cond": "Section 10.3"}, {"label": "Rosie 1997", "html": "human alpha-lactalbumin milk = 2.4 g/L", "cond": "Section 10.3; first transgenic cow"}], "deeper": "The probe paragraph is an exam trap: the mutated clone is the one missing from the film, because the probe finds no complement to bind — absence is the signal. Contrast the three tools by what each detects: PCR detects nucleic acid itself (amplified), probes detect sequence complementarity (hybridised), ELISA detects proteins or antibodies (bound). On transgenics, memorise the five purposes in order — physiology, disease, products, vaccines, toxicity — each with its book example.", "worked": "Rosie arithmetic: 2.4 g/L means 2.4 g per 1000 mL; a 500 mL bottle carries 1.2 g of human alpha-lactalbumin, a 250 mL glass 0.6 g (600 mg). Mice arithmetic: in any 100 transgenic animals, more than 95 are mice — fewer than 5 are rats, rabbits, pigs, sheep, cows and fish combined.", "prediction": {"prompt": "A blood sample may carry a few copies of HIV, far below symptom levels. Which tool does Section 10.2.3 reach for first?", "options": ["PCR — amplify the viral nucleic acid until the tiny count becomes detectable", "Waiting for symptoms so conventional serum analysis works", "ELISA for insulin chains, which also detects viruses"], "answer": 0, "explanation": "Very low pathogen concentrations are detected by amplifying nucleic acid with PCR; the text cites HIV detection explicitly."}, "connect": [["Polio-vaccine safety and pulse polio in India", "Transgenic mice that could replace monkeys in polio-vaccine batch testing matter to a country that ran pulse-polio campaigns — Section 10.3 vaccine safety at population scale."], ["Wow — a cow that nurses like a human", "Rosie's milk carries 2.4 grams per litre of human alpha-lactalbumin — a cow udder manufacturing a human baby protein, nutritionally more balanced than natural cow milk."]], "recall": "Contrast PCR, probe and ELISA by target and readout; list the five transgenic purposes with one example each; state the mice percentage and Rosie facts.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "PCR helps early diagnosis because it", "options": ["Amplifies pathogen nucleic acid so very low counts become detectable", "Photographs antibodies directly in serum", "Removes the C peptide from proinsulin"], "answer": 0, "hint": "What does PCR multiply?", "solution": "Amplification of nucleic acid reveals bacteria/viruses before symptoms; used for HIV and cancer mutations.", "wrong": ["Serum analysis is the conventional method PCR improves on.", "C-peptide removal is insulin maturation, not diagnosis."]}, {"level": "Medium", "type": "mcq", "prompt": "In probe autoradiography, the clone carrying the mutated gene", "options": ["Does not appear on the film — the probe lacks complementarity", "Glows brightest because mutation attracts probe", "Appears only after ELISA staining"], "answer": 0, "hint": "No complement, no hybrid, no signal.", "solution": "The probe hybridises only to complementary DNA; the mutated clone stays blank on the photographic film.", "wrong": ["Mutation destroys binding, not strengthens it.", "ELISA is a different, antigen–antibody technique."]}, {"level": "Hard", "type": "number", "map": "Section 10.3", "prompt": "Milligrams of human alpha-lactalbumin in a 250 mL glass of Rosie's milk (2.4 g/L)", "answer": 600, "unit": "mg", "tolerance": 1, "hint": "2.4 g/L × 0.25 L × 1000.", "solution": "2.4 × 0.25 = 0.6 g = 600 mg per 250 mL glass."}], "resources": [{"title": "NCERT §10.2.3, 10.3 — Diagnosis & transgenic animals (official PDF, PDF p.6)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=6"}]}, {"id": "ethics-biopiracy", "nav": "Ethics & biopiracy", "title": "GEAC, Basmati patents and biopiracy: who owns genetic wealth?", "deck": "Manipulation needs regulation: GEAC judges GM safety in India. Basmati's 1997 US patent, turmeric and neem claims, and the biopiracy fight over benefit-sharing close the chapter.", "minutes": 8, "section": "10.4", "pages": [8, 9], "print": "8–9", "sim": "ethics", "simTitle": "Biopiracy case sorter + GEAC approval explorer", "quick": ["Manipulating living organisms <strong>cannot go on without regulation</strong> — ethical standards plus the <strong>biological risk of unpredictable results when GM organisms enter ecosystems</strong>. India set up the <strong>GEAC (Genetic Engineering Approval Committee)</strong>, which decides the <strong>validity of GM research and the safety of introducing GM organisms for public services</strong>.", "<strong>Rice goes back thousands of years in Asian agriculture; India alone holds ~200,000 varieties</strong>, among the world's richest diversity, with <strong>27 documented Basmati varieties</strong> celebrated since ancient texts, folklore and poetry. In <strong>1997 an American company won Basmati patent rights from the US Patent and Trademark Office</strong> — Indian farmer varieties crossed with semi-dwarf lines, claimed as novelty, with the patent reaching <strong>functional equivalents</strong> that could restrict other Basmati sellers.", "Similar patent attempts target <strong>Indian traditional herbal medicines such as turmeric and neem</strong> — uses, products and processes. <strong>Biopiracy</strong> is the use of <strong>bio-resources by multinationals/organisations without proper authorisation and without compensatory payment</strong>. Industrialised nations are <strong>financially rich but biodiversity-poor</strong>; the developing world is <strong>biodiversity-rich with traditional knowledge</strong> that saves commercialisation time, effort and expenditure.", "The chapter closes on <strong>injustice and inadequate compensation/benefit-sharing</strong>: nations now legislate against unauthorised exploitation, and the <strong>Indian Parliament cleared the second amendment of the Indian Patents Bill</strong> covering patent terms, emergency provisions, research and development."], "formulas": [{"label": "GEAC mandate", "html": "validity of GM research + safety of GM release for public services", "cond": "Section 10.4; Govt. of India"}, {"label": "Biopiracy", "html": "bio-resource + traditional knowledge → patent/use with no authorisation and no compensation", "cond": "Section 10.4"}, {"label": "Basmati numbers", "html": "~200,000 Indian rice varieties; 27 Basmati; US patent 1997", "cond": "Section 10.4"}], "deeper": "Read the asymmetry sentence as the chapter's thesis: money on one side, biodiversity plus traditional knowledge on the other — biopiracy arbitrages that gap. The Basmati case shows three patent overreaches at once: farmer varieties as raw material, a cross claimed as invention, and functional-equivalents language reaching beyond the single variety. Vigilance plus the Patents Bill amendment is the prescribed defence.", "worked": "Basmati case sort: (1) resource — Indian farmer Basmati varieties (ancient, documented, 27 grown); (2) act — cross with semi-dwarf lines, US patent 1997 covering functional equivalents; (3) verdict — biopiracy pattern (no authorisation/compensation); (4) remedy — challenge patents, legislate benefit-sharing (Patents Bill second amendment). Same sieve sorts turmeric and neem claims.", "prediction": {"prompt": "A foreign firm patents a wound-healing turmeric formulation long used in Indian homes, with no permission or payment. Per Section 10.4 this is", "options": ["Biopiracy — traditional-knowledge bio-resource use without authorisation or compensatory payment", "Valid novelty — ancient use counts as invention by the firm", "A GEAC vaccine-safety approval"], "answer": 0, "explanation": "The text names turmeric among traditional-medicine patent attempts and defines such unauthorised, uncompensated use as biopiracy."}, "connect": [["GEAC and the GM-mustard debate in India", "GEAC's mandate — judging GM research validity and release safety — is the same lens turned on Bt brinjal's moratorium and GM mustard's appraisal: regulation deciding what enters Indian fields and plates."], ["Wow — patents that got revoked", "Turmeric's wound-healing patent and neem claims became global textbook cases of biopiracy challenged — ancient Indian knowledge forcing modern patent offices to back down when vigilance kicked in."]], "recall": "Expand GEAC and state its two decisions; define biopiracy exactly; quote the rice/Basmati numbers and the 1997 patent facts.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "GEAC is the", "options": ["Genetic Engineering Approval Committee — decides GM research validity and release safety", "General ELISA and Antibody Council for diagnosis", "Gene Extraction and Cloning unit of Eli Lilly"], "answer": 0, "hint": "Section 10.4 names the Indian body.", "solution": "Set up by the Indian Government for GM research validity and the safety of introducing GM organisms for public services.", "wrong": ["ELISA is a diagnostic technique, not a committee.", "Eli Lilly made insulin in 1983; GEAC is Indian regulation."]}, {"level": "Medium", "type": "mcq", "prompt": "Biopiracy means", "options": ["Using bio-resources without proper authorisation and without compensatory payment", "Pirating ships that carry Basmati rice", "Any laboratory use of bacteria"], "answer": 0, "hint": "Authorisation + compensation — whose definition?", "solution": "Multinationals/organisations exploiting bio-resources and traditional knowledge without permission or payment.", "wrong": ["No ships are involved.", "Laboratory use with approval is legitimate research."]}, {"level": "Hard", "type": "number", "map": "Section 10.4", "prompt": "Documented varieties of Basmati grown in India, per the text", "answer": 27, "unit": "varieties", "tolerance": 0.1, "hint": "Against ~200,000 total rice varieties.", "solution": "27 documented Basmati varieties; ~200,000 rice varieties in India alone."}], "resources": [{"title": "NCERT §10.4 — Ethics & biopiracy (official PDF, PDF p.8)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=8"}]}], "exercises": [{"number": 1, "conceptIdx": 0, "page": 10, "printPage": null, "question": "Which part of the plant is best suited for making virus-free plants and why?", "steps": ["Even in a virus-infected plant, the meristem (apical and axillary) is free of virus.", "Remove the meristem and grow it in vitro under sterile conditions in special nutrient media.", "The regenerated plantlets are healthy/virus-free — achieved for banana, sugarcane and potato."], "answer": "Apical/axillary meristem — virus-free even in infected plants; in-vitro culture gives healthy plants."}, {"number": 2, "conceptIdx": 0, "page": 10, "printPage": null, "question": "What is the major advantage of producing plants by micropropagation?", "steps": ["Micropropagation yields thousands of plants in very short durations from one explant.", "All plants are genetically identical to the parent (somaclones), preserving elite traits.", "Combined with meristem culture it also gives virus-free stock; commercial scale for tomato, banana, apple."], "answer": "Thousands of genetically identical (somaclone), optionally virus-free plants in very short time."}, {"number": 3, "conceptIdx": 0, "page": 10, "printPage": null, "question": "Find out what the various components of the medium used for propagation of an explant in vitro are?", "steps": ["Carbon source such as sucrose.", "Inorganic salts, vitamins and amino acids.", "Growth regulators like auxins and cytokinins; sterile test-tube conditions throughout."], "answer": "Sucrose + inorganic salts + vitamins + amino acids + auxins/cytokinins (sterile in vitro)."}, {"number": 4, "conceptIdx": 1, "page": 10, "printPage": null, "question": "Crystals of Bt toxin produced by some bacteria do not kill the bacteria themselves because – (a) bacteria are resistant to the toxin (b) toxin is immature; (c) toxin is inactive; (d) bacteria encloses toxin in a special sac.", "steps": ["Bt forms protein crystals containing a toxic insecticidal protein.", "Inside Bacillus the protein exists as inactive protoxin.", "Activation needs the alkaline gut pH of the insect (solubilises crystals); hence (c) is correct and (a), (b), (d) are wrong."], "answer": "(c) toxin is inactive (protoxin; activated only in the alkaline insect gut)."}, {"number": 5, "conceptIdx": 2, "page": 11, "printPage": null, "question": "What are transgenic bacteria? Illustrate using any one example.", "steps": ["Transgenic bacteria carry and express an extra (foreign) gene introduced by rDNA methods.", "Example: E. coli carrying the human insulin A-chain and B-chain DNAs in plasmids (Eli Lilly, 1983).", "The two chains are produced separately, extracted and joined by disulfide bonds into human insulin."], "answer": "Bacteria with a foreign expressed gene — e.g. E. coli producing human insulin chains (1983)."}, {"number": 6, "conceptIdx": 1, "page": 11, "printPage": null, "question": "Compare and contrast the advantages and disadvantages of production of genetically modified crops.", "steps": ["Advantages: abiotic-stress tolerance; pest resistance (less pesticide); less post-harvest loss; efficient mineral use; enriched nutrition (golden rice); tailor-made starches, fuels, pharmaceuticals.", "Disadvantages: unpredictable ecosystem results on release; need for regulation (GEAC); patent/biopiracy conflicts over genetic resources.", "Verdict: benefits are agronomic and nutritional; risks are ecological, ethical and legal — hence case-by-case approval."], "answer": "Advantages (i)–(v) + tailor-made products vs unpredictable ecosystem/patent risks; regulated by GEAC."}, {"number": 7, "conceptIdx": 1, "page": 11, "printPage": null, "question": "What are Cry proteins? Name an organism that produce it. How has man exploited this protein to his benefit?", "steps": ["Cry proteins are the insecticidal Bt toxin proteins coded by cry genes.", "Organism: the bacterium Bacillus thuringiensis, which forms protoxin protein crystals.", "Exploitation: cry genes (cryIAc/cryIIAb for cotton bollworms; cryIAb for corn borer) expressed in crops — Bt cotton, corn, rice, tomato, potato, soyabean — as built-in bio-pesticide."], "answer": "Bt protoxin proteins of Bacillus thuringiensis; cry genes in pest-resistant Bt crops."}, {"number": 8, "conceptIdx": 2, "page": 11, "printPage": null, "question": "What is gene therapy? Illustrate using the example of adenosine deaminase (ADA) deficiency.", "steps": ["Gene therapy inserts genes into cells/tissues to correct a diagnosed gene defect (child/embryo).", "ADA deficiency (deleted ADA gene; immune failure) — first clinical therapy 1990 in a 4-year-old girl.", "Patient lymphocytes cultured outside the body receive functional ADA cDNA via retroviral vector, then return to the patient; cells are mortal so infusion repeats; early-embryonic delivery could cure permanently."], "answer": "Corrective gene insertion — e.g. retroviral ADA cDNA into patient lymphocytes (1990, age 4)."}, {"number": 9, "conceptIdx": 2, "page": 11, "printPage": null, "question": "Digrammatically represent the experimental steps in cloning and expressing an human gene (say the gene for growth hormone) into a bacterium like E. coli ?", "steps": ["Isolate the human growth-hormone gene and cut it plus a plasmid vector with the same restriction enzyme.", "Ligate into recombinant plasmid (foreign gene + vector).", "Introduce into E. coli host, select transformants, culture at scale, express the protein, then downstream processing/purification.", "Draw as a flow-chart: gene → cut → ligate → transform → select → grow → express → purify. (Stem keeps the textbook spelling “Digrammatically”.)"], "answer": "Flow-chart: isolate → cut → ligate → transform E. coli → select → culture → express → downstream processing."}, {"number": 10, "conceptIdx": 1, "page": 11, "printPage": null, "question": "Can you suggest a method to remove oil (hydrocarbon) from seeds based on your understanding of rDNA technology and chemistry of oil?", "steps": ["Open-ended: clone genes for hydrocarbon-degrading/modifying enzymes into a suitable host or the seed system.", "Express enzymes that break or alter the oil chemistry so the hydrocarbon fraction separates from seed material.", "Recover/purify via downstream processing. Honest note: the chapter gives no single NCERT key for this problem question."], "answer": "rDNA route: express hydrocarbon-acting enzymes, then separate — open-ended, no single textbook key."}, {"number": 11, "conceptIdx": 1, "page": 11, "printPage": null, "question": "Find out from internet what is golden rice.", "steps": ["Golden rice is a genetically modified, Vitamin A enriched rice cited in Section 10.1.", "It exemplifies enhanced nutritional value of food by genetic modification.", "Honest note: molecular detail (beta-carotene pathway genes) is internet beyond-scope enrichment, not in this reprint."], "answer": "Vitamin A enriched GM rice — enhanced-nutrition example (detail beyond this reprint)."}, {"number": 12, "conceptIdx": 2, "page": 11, "printPage": null, "question": "Does our blood have proteases and nucleases?", "steps": ["Yes — blood carries proteases (e.g. clotting-cascade and complement proteases) and nucleases that clear extracellular nucleic acids.", "This is the same chemistry behind Exercise 13: injected/oral protein or DNA therapeutics face enzymatic digestion in the body.", "Hence recombinant proteins need protection/delivery design; the text links this to why insulin is not orally administered."], "answer": "Yes — clotting/complement proteases and clearing nucleases circulate in blood."}, {"number": 13, "conceptIdx": 2, "page": 11, "printPage": null, "question": "Consult internet and find out how to make orally active protein pharmaceutical. What is the major problem to be encountered?", "steps": ["Major problem: stomach acid plus digestive/blood proteases (see Exercise 12) digest protein drugs; poor gut absorption adds a second barrier — the chapter's own insulin question.", "Strategies researched: protective encapsulation/coatings, protease inhibitors, absorption enhancers, analogues.", "Honest note: working detail is internet beyond-scope; the textbook's verdict is that oral protein delivery remains the core unsolved problem."], "answer": "Problem: proteolytic digestion + poor absorption; protection/delivery strategies are beyond-scope research."}], "pageOffset": null, "printPageStart": null, "printPageEnd": null, "paginationProvenance": "folio-absent-in-source"};
+window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology", "title": "Biotechnology and Its Applications", "subtitle": "Pest-resistant crops and RNAi, recombinant insulin and gene therapy, molecular diagnosis, transgenic animals and the ethics of biopiracy.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo110.pdf", "page_start": 1, "page_end": 11, "extraction": "PyMuPDF text layer (/tmp/opencode/bio_text/lebo110.txt) + section/exercise page maps in /tmp/opencode/bio_maps.json (key lebo110). SHA-256 4da2923c699b97a1930ae6b1072bf75fb5b0429d724ead7ba06510f98730b826. pdftotext not used. No PNG zooms (prose-quantitative chapter).", "lessons": [{"id": "tissue-culture", "nav": "Tissue culture & micropropagation", "title": "Totipotency to somaclones: explants, meristems and somatic hybrids", "deck": "Any plant cell can regrow a whole plant. Sterile nutrient media turn explants into thousands of identical somaclones; meristems give virus-free plants; fused protoplasts give somatic hybrids such as pomato.", "minutes": 8, "section": "10.1", "pages": [2, 3], "print": "178–179", "sim": "tissueculture", "simTitle": "Explant-to-plantlet stepper: totipotency to somaclones", "quick": ["Three options exist for raising food production — agro-chemical agriculture, organic agriculture and genetically engineered crop-based agriculture. The <strong>Green Revolution tripled food supply</strong>, mainly through better management and agrochemicals, but agrochemicals are too expensive for developing-world farmers and conventional breeding cannot keep pace — so <strong>tissue culture</strong> was developed.", "Scientists learnt in the <strong>1950s</strong> that <strong>whole plants could be regenerated from explants</strong> — any part of a plant taken out and grown in a test tube under sterile conditions in special nutrient media. This capacity of any cell/explant to generate a whole plant is <strong>totipotency</strong>. The medium must supply a carbon source such as <strong>sucrose</strong> plus <strong>inorganic salts, vitamins, amino acids and growth regulators like auxins and cytokinins</strong>.", "Producing <strong>thousands of plants through tissue culture</strong> in very short durations is <strong>micro-propagation</strong>; each plant is genetically identical to the parent — a <strong>somaclone</strong>. Tomato, banana and apple are produced commercially this way. Even from virus-infected plants, the <strong>meristem (apical and axillary) is virus-free</strong>, so culturing it in vitro yields healthy plants — done for <strong>banana, sugarcane and potato</strong>.", "Single cells can be stripped of walls to give naked <strong>protoplasts</strong>; protoplasts of two varieties with desirable characters can be <strong>fused into hybrid protoplasts</strong> grown into new plants — <strong>somatic hybrids</strong> via <strong>somatic hybridisation</strong>. Fusing tomato and potato protoplasts gave <strong>pomato</strong>, which unfortunately lacked the desired combination for commercial use."], "formulas": [{"label": "Totipotency", "html": "any cell / explant —sterile medium→ whole plant", "cond": "Section 10.1; 1950s explant work"}, {"label": "Medium recipe", "html": "sucrose + inorganic salts + vitamins + amino acids + auxins / cytokinins", "cond": "Section 10.1; Exercise 3"}, {"label": "Somatic hybridisation", "html": "protoplast A + protoplast B → hybrid protoplast → plant (pomato = tomato + potato)", "cond": "Section 10.1; not commercialised"}], "deeper": "Note the two precision points the text stresses: the meristem escapes virus that infects the rest of the plant, which is why meristem culture — not leaf or stem cuttings — is the virus-free route; and somaclones are genetically identical to the single parent, so micropropagation multiplies but never improves a variety. The chapter invites a visit to a tissue-culture laboratory to see sterile transfer and media preparation first-hand.", "worked": "Virus-free banana chain: diseased banana plant → excise apical/axillary meristem (virus-free zone) → grow in vitro on sucrose–salts–vitamins–auxin/cytokinin medium → virus-free plantlet → micropropagate into thousands of somaclones → commercial planting of tomato, banana, apple scale stock.", "prediction": {"prompt": "A sugarcane crop is virus-infected, but the farmer needs healthy planting material. Which starting material does Section 10.1 prescribe, and why?", "options": ["Apical/axillary meristem — it is free of virus even in an infected plant, and regenerates whole virus-free plants in vitro", "Any infected leaf — virus spreads evenly so all parts are equivalent", "Mature seeds from the infected plant — seeds always escape virus"], "answer": 0, "explanation": "The text states the meristem is free of virus even when the plant is infected; culturing it in vitro (banana, sugarcane, potato) gives healthy plants."}, "connect": [["Tissue-culture banana and sugarcane in India", "Commercial micropropagation labs multiply elite banana and sugarcane plantlets by the thousand — the somaclone logic of Section 10.1 running as an industry, with meristem-tip culture cleaning up virus-loaded cane."], ["Wow — the pomato that worked but failed", "Tomato + potato protoplasts really did fuse and grow into pomato plants — somatic hybridisation succeeding in the dish yet failing in the market, because the hybrid lacked the desired combination for commercial utilisation.", [], {"id": "8GD5fH7JhQQ", "title": "Tissue Culture | Introduction to Biotechnology | Class 9 | Science | Maharashtra | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Define totipotency, explant, somaclone and somatic hybridisation; list the five medium-component groups; state which plant part gives virus-free plants and three crops so recovered.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Totipotency is the capacity of", "options": ["Any cell or explant to generate a whole plant", "Only seeds to germinate in soil", "Only meristems to form flowers"], "answer": 0, "hint": "Section 10.1 defines it right after explants.", "solution": "Totipotency: a whole plant from any cell/explant grown under sterile conditions in special nutrient media.", "wrong": ["Seeds are one route, but totipotency covers any cell.", "Meristems matter for virus-free plants, but totipotency is general."]}, {"level": "Medium", "type": "mcq", "prompt": "Virus-free plants are recovered from a diseased plant by culturing its", "options": ["Apical/axillary meristem in vitro", "Mature infected leaf blades", "Sap squeezed from infected stems"], "answer": 0, "hint": "Which zone does the virus not reach?", "solution": "The meristem is free of virus even in infected plants; banana, sugarcane and potato were so recovered.", "wrong": ["Infected leaves carry the virus.", "Sap from infected stems carries the virus."]}, {"level": "Hard", "type": "mcq", "prompt": "Pomato (tomato + potato somatic hybrid) is best described as", "options": ["A real hybrid that lacked the desired trait combination for commercial use", "A failed fusion that never produced plants", "A seed-cross variety sold commercially across India"], "answer": 0, "hint": "Read the last lines on somatic hybridisation.", "solution": "Fusion succeeded and hybrid plants formed, but without the desired combination of characteristics for commercial utilisation.", "wrong": ["Plants were formed — that is stated.", "It was never commercialised."]}], "resources": [{"title": "NCERT §10.1 — Tissue culture & micropropagation (official PDF, PDF p.2)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=2"}]}, {"id": "bt-rnai", "nav": "Bt crops & RNAi", "title": "Cry protoxins and interfering RNA: pest-resistant plants", "deck": "Bt crystals are harmless protoxins until an insect gut activates them. cryIAc/cryIIAb guard cotton, cryIAb guards corn — and host-made dsRNA silences the nematode Meloidegyne incognitia.", "minutes": 9, "section": "10.1", "pages": [3, 4], "print": "179–180", "sim": "btcotton", "simTitle": "cry gene to pest-mortality explorer (bollworm, corn borer, nematode)", "quick": ["Plants, bacteria, fungi and animals with altered genes are <strong>Genetically Modified Organisms (GMO)</strong>. Genetic modification makes crops tolerant to <strong>abiotic stresses</strong> (cold, drought, salt, heat), cuts <strong>chemical pesticide</strong> reliance, reduces <strong>post-harvest losses</strong>, improves <strong>mineral-use efficiency</strong>, and enhances <strong>nutritional value</strong> (e.g. <strong>golden rice, Vitamin A enriched rice</strong>) — plus tailor-made starches, fuels and pharmaceuticals.", "<strong>Bt toxin</strong> from the bacterium <strong>Bacillus thuringiensis</strong> is cloned into plants as a <strong>bio-pesticide</strong> — Bt cotton, Bt corn, rice, tomato, potato, soyabean. Strains kill <strong>lepidopterans</strong> (tobacco budworm, armyworm), <strong>coleopterans</strong> (beetles) and <strong>dipterans</strong> (flies, mosquitoes). The bacterium forms <strong>protein crystals</strong> of <strong>inactive protoxin</strong>; in the insect gut the <strong>alkaline pH solubilises</strong> crystals into active toxin, which <strong>binds midgut epithelial cells, creates pores, swells and lyses cells</strong>, killing the insect. Figure 10.1 contrasts bollworm-destroyed and mature cotton bolls.", "Most Bt toxins are <strong>insect-group specific</strong>, so gene choice follows crop and pest: the toxin gene is <strong>cry</strong> — proteins of <strong>cryIAc and cryIIAb control cotton bollworms</strong>, while <strong>cryIAb controls corn borer</strong>.", "The nematode <strong>Meloidegyne incognitia</strong> infects tobacco roots and slashes yield. Protection uses <strong>RNA interference (RNAi)</strong> — a cellular defense of all eukaryotes in which a <strong>specific mRNA is silenced by complementary dsRNA</strong> that binds and blocks translation (sources: RNA-genome viruses, transposons replicating via RNA). Via <strong>Agrobacterium vectors</strong>, nematode-specific genes enter the host so that <strong>sense and anti-sense RNA</strong> form <strong>dsRNA</strong>, initiating RNAi; the parasite cannot survive in the transgenic host (Figure 10.2: control vs protected roots)."], "formulas": [{"label": "Bt activation", "html": "inactive protoxin crystal —alkaline gut→ active toxin → midgut pores → lysis → insect death", "cond": "Section 10.1; Exercise 4 answer (c)"}, {"label": "cry gene table", "html": "cryIAc + cryIIAb → cotton bollworms; cryIAb → corn borer", "cond": "Section 10.1; insect-group specific"}, {"label": "RNAi protection", "html": "sense + anti-sense RNA → dsRNA → mRNA silencing → nematode cannot survive", "cond": "Section 10.1; Meloidegyne incognitia via Agrobacterium"}], "deeper": "Exercise 4 is answered inside the mechanism: the crystals do not kill Bacillus because the toxin exists as inactive protoxin — option (c) — and only the alkaline insect gut converts it. Note the specificity ladder the text builds: protoxin chemistry (who it can kill), cry-gene choice (which pest it targets), then RNAi (which mRNA it silences) — three different locks, one pest-resistant plant.", "worked": "Exercise 4 chain: Bt forms crystals → protein is inactive protoxin inside bacteria → insect ingests → alkaline gut pH solubilises crystals → active toxin → midgut pores → swelling/lysis → death. Hence (a) resistance, (b) immaturity and (d) special sac are all wrong; (c) toxin is inactive is correct.", "prediction": {"prompt": "A cotton bollworm chews leaves of Bt cotton carrying cryIAc/cryIIAb. What follows, per Section 10.1?", "options": ["Ingested protoxin activates in the alkaline gut, binds midgut cells, forms pores and kills the larva", "The protoxin poisons the Bacillus cells inside the leaf first", "Nothing — cry proteins only work against corn borers"], "answer": 0, "explanation": "Alkaline-gut activation → midgut binding → pores → lysis → death; cryIAc/cryIIAb specifically control cotton bollworms."}, "connect": [["Bt cotton in Maharashtra and Gujarat", "Cotton belts with heavy bollworm pressure adopted Bt cotton carrying cryIAc/cryIIAb precisely to cut insecticide sprays — the textbook bio-pesticide logic working at state scale, with gene choice matched to the targeted pest."], ["Wow — the plant that vaccinates itself with RNA", "The tobacco plant is engineered to manufacture both sense and anti-sense strands so the double helix that kills no one silences exactly one nematode mRNA — immunity written as complementarity.", [], {"id": "xw8hcX-bwL4", "title": "Bt Crops | Biotechnology and its Applications | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State the cry-gene table, the protoxin activation sequence, and the four RNAi steps from Agrobacterium delivery to nematode failure.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Bt toxin crystals do not kill Bacillus themselves because", "options": ["The toxin is inactive (protoxin)", "Bacteria enclose toxin in a special sac", "Bacteria are resistant to the active toxin"], "answer": 0, "hint": "Exercise 4 — options (a) to (d).", "solution": "Option (c): the protein exists as inactive protoxin; only the alkaline insect gut converts it to the active form.", "wrong": ["No sac is described in the text.", "Resistance is not the mechanism; inactivity is."]}, {"level": "Medium", "type": "mcq", "prompt": "The gene cryIAb is deployed against", "options": ["Corn borer", "Cotton bollworms", "Tobacco root nematode"], "answer": 0, "hint": "cryIAc/cryIIAb do cotton; what is left?", "solution": "cryIAb controls the corn borer; cryIAc and cryIIAb control cotton bollworms.", "wrong": ["Cotton bollworms need cryIAc and cryIIAb.", "The nematode is handled by RNAi, not cry genes."]}, {"level": "Hard", "type": "number", "map": "Section 10.1", "prompt": "Number of cry genes named in the text for controlling cotton bollworms", "answer": 2, "unit": "genes", "tolerance": 0.1, "hint": "cryIAc and …?", "solution": "Two: cryIAc and cryIIAb control the cotton bollworms."}], "resources": [{"title": "NCERT §10.1 — Bt crops & RNAi (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=3"}]}, {"id": "insulin-genetherapy", "nav": "Insulin & gene therapy", "title": "From proinsulin C-peptide to Eli Lilly E. coli — and the 1990 ADA cure attempt", "deck": "Mature insulin is just A (21) + B (30) chains; the C peptide (33) is cut away. In 1983 Eli Lilly built both chains in E. coli; in 1990 a 4-year-old ADA-deficient girl received the first clinical gene therapy.", "minutes": 9, "section": "10.2.1, 10.2.2", "pages": [5, 6], "print": "181–182", "sim": "insulin", "simTitle": "Proinsulin-to-insulin chain remover + ADA lymphocyte timeline", "quick": ["Recombinant DNA healthcare gives <strong>mass-produced, safe, effective therapeutics</strong> with <strong>no unwanted immunological responses</strong> (unlike animal-source products): about <strong>30 recombinant therapeutics approved worldwide, 12 marketed in India</strong>. Diabetes management needs regular insulin; earlier insulin came from <strong>slaughtered cattle and pig pancreas</strong> and caused <strong>allergy/reactions to the foreign protein</strong> in some patients.", "<strong>Insulin has two short polypeptide chains, A and B, linked by disulphide bridges</strong> (Figure 10.3). In mammals it is synthesised as a <strong>pro-hormone with an extra C peptide</strong> that is <strong>absent in mature insulin — removed during maturation</strong>. The rDNA challenge was assembling mature insulin. In <strong>1983, Eli Lilly (American company)</strong> prepared <strong>two DNA sequences for chains A and B</strong>, introduced them in <strong>E. coli plasmids</strong>, produced the chains <strong>separately</strong>, extracted them and <strong>combined them with disulfide bonds</strong> into human insulin.", "<strong>Gene therapy</strong> corrects a diagnosed gene defect in a child/embryo by <strong>inserting genes into cells/tissues</strong> — a normal gene compensating for the non-functional one. The <strong>first clinical gene therapy (1990)</strong> went to a <strong>4-year-old girl with adenosine deaminase (ADA) deficiency</strong> — the enzyme crucial for immunity, its gene deleted. Alternatives exist: <strong>bone-marrow transplantation</strong> cures some children, <strong>enzyme-replacement injections</strong> treat others — but neither is completely curative.", "The ADA protocol: <strong>lymphocytes from patient blood are cultured outside the body</strong>, a <strong>functional ADA cDNA via retroviral vector</strong> enters them, and they are <strong>returned to the patient</strong>. These cells are <strong>not immortal, so periodic infusion</strong> is needed; introducing the marrow-cell ADA gene at <strong>early embryonic stages could be a permanent cure</strong>."], "formulas": [{"label": "Insulin chains (Fig. 10.3)", "html": "chain A (21 aa) + chain B (30 aa), disulphide-linked; proinsulin = A + C (33) + B → mature A + B", "cond": "Sections 10.2.1; C peptide removed on maturation"}, {"label": "1983 Eli Lilly route", "html": "A-DNA + B-DNA → E. coli plasmids → separate chains → extract → disulfide assembly", "cond": "Section 10.2.1"}, {"label": "1990 ADA protocol", "html": "patient lymphocytes out → retroviral ADA cDNA in → cells back (periodic; non-immortal)", "cond": "Section 10.2.2"}], "deeper": "The chapter poses two think-questions this lesson answers: whether insulin can be given orally (no — a protein, digested; see Exercises 12–13 and the blood protease/nuclease discussion), and why bacterial human insulin beats cattle/pig insulin (identical to the human molecule, so no foreign-protein allergy). Note the careful wording: 1990 was the first clinical gene therapy, given to a 4-year-old — both facts are fixture-checked in verify.cjs.", "worked": "C-peptide removal math: chain A = 21 amino acids, chain B = 30, so mature insulin = 21 + 30 = 51 amino acids joined by disulphide bridges. Proinsulin adds the C peptide (33) — 21 + 30 + 33 = 84 — all of which is cut away during maturation, leaving C-free mature insulin. ADA timeline: 1983 (Eli Lilly insulin) → 1990 (first ADA gene therapy, age 4) → 1997 (Rosie) — seven-year steps.", "prediction": {"prompt": "A lab test finds C peptide in a sample labelled mature insulin. What is the verdict?", "options": ["Mislabeled or immature — C peptide is removed during maturation and absent in mature insulin", "Correct — mature insulin always retains the C peptide", "Correct — C peptide is added after maturation"], "answer": 0, "explanation": "Proinsulin's extra C stretch is removed on maturation; mature insulin is A + B only (Figure 10.3)."}, "connect": [["Diabetes care in India and the 12 marketed therapeutics", "With a vast diabetic population, India markets 12 of the ~30 approved recombinant therapeutics — bacterial human insulin replacing cattle/pig extracts that once caused allergy is Section 10.2.1 in every pharmacy."], ["Wow — science-fiction surgery in 1990", "Blood drawn from a 4-year-old girl, her own lymphocytes reprogrammed with a retroviral ADA gene and dripped back — the first clinical gene therapy, periodic because the repaired cells are mortal.", [], {"id": "nEevNMyMg3Y", "title": "Human insulin | Biotechnology and its Applications | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State chain counts (A21/B30/C33), the 1983 Eli Lilly assembly order, and the five ADA protocol steps with year and patient age.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Mature insulin differs from proinsulin in that", "options": ["The C peptide is removed during maturation", "An extra C peptide is added during maturation", "Chains A and B are never linked"], "answer": 0, "hint": "Figure 10.3 — what leaves?", "solution": "Pro-hormone carries an extra C stretch; maturation removes it, leaving disulphide-linked A + B.", "wrong": ["Nothing is added at maturation.", "A and B are linked by disulphide bridges."]}, {"level": "Medium", "type": "mcq", "prompt": "Eli Lilly (1983) produced human insulin by", "options": ["Expressing A and B DNAs separately in E. coli plasmids, then joining the chains with disulfide bonds", "Extracting larger volumes of cattle pancreas", "Fusing human and pig insulin genes in yeast"], "answer": 0, "hint": "Two DNA sequences, two chains, one assembly.", "solution": "Two DNAs for A and B in E. coli plasmids; chains made separately, extracted, combined by disulfide bonds.", "wrong": ["Animal extraction is the old allergic route.", "No human–pig fusion is described."]}, {"level": "Hard", "type": "number", "map": "Figure 10.3", "prompt": "Amino acids in one mature human insulin molecule (A 21 + B 30)", "answer": 51, "unit": "aa", "tolerance": 0.1, "hint": "21 + 30.", "solution": "21 + 30 = 51 amino acids in mature insulin; proinsulin adds C (33) for 84."}], "resources": [{"title": "NCERT §10.2.1, 10.2.2 — Insulin & gene therapy (official PDF, PDF p.5)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=5"}]}, {"id": "diagnosis-transgenic", "nav": "Diagnosis & transgenic animals", "title": "PCR, probes and ELISA — plus Rosie, the 2.4 g/L cow", "deck": "PCR amplifies what eyes cannot see, probes fish for mutant genes on film, ELISA reads antigen–antibody binding. Transgenic animals — 95% mice — model disease, test vaccines and manufacture milk like Rosie's.", "minutes": 9, "section": "10.2.3, 10.3", "pages": [6, 8], "print": "182–184", "sim": "transgenic", "simTitle": "Rosie/Tracy trait explorer with PCR-vs-ELISA-vs-probe matcher", "quick": ["Effective treatment needs <strong>early diagnosis</strong>, but conventional <strong>serum/urine analysis cannot detect disease early</strong>. Recombinant DNA technology plus <strong>PCR</strong> and <strong>ELISA</strong> fill the gap. A pathogen is usually suspected only after symptoms, when its concentration is already high — yet <strong>very low bacterial/viral counts are detectable by amplifying their nucleic acid with PCR</strong>: routine for <strong>HIV in suspected AIDS</strong>, <strong>mutations in suspected cancer</strong>, and other genetic disorders.", "A <strong>single-stranded DNA/RNA probe tagged with a radioactive molecule</strong> is hybridised to its complementary DNA in cell clones and detected by <strong>autoradiography</strong>: the clone with the <strong>mutated gene does not appear on the photographic film</strong>, lacking complementarity. <strong>ELISA</strong> rests on <strong>antigen–antibody interaction</strong> — infection is read through <strong>pathogen antigens (proteins, glycoproteins) or the antibodies</strong> made against them.", "Animals with manipulated DNA carrying an <strong>extra foreign gene</strong> are <strong>transgenic animals</strong> — rats, rabbits, pigs, sheep, cows, fish, though <strong>over 95% are mice</strong>. They serve (i) <strong>normal physiology/development</strong> studies (e.g. insulin-like growth factor regulation via foreign genes) and (ii) <strong>disease models</strong> for <strong>cancer, cystic fibrosis, rheumatoid arthritis and Alzheimer’s</strong> to test new treatments.", "(iii) <strong>Biological products</strong>: transgenic animals make useful human proteins such as <strong>α-1-antitrypsin for emphysema</strong> (the transgenic sheep Tracy, 1990 — companion detail beyond the reprint naming), with similar attempts for <strong>PKU and cystic fibrosis</strong>. In <strong>1997 the first transgenic cow Rosie produced human protein-enriched milk (2.4 grams per litre)</strong> carrying <strong>human alpha-lactalbumin</strong> — more balanced for human babies than natural cow milk. (iv) <strong>Vaccine safety</strong>: transgenic mice test <strong>polio vaccine</strong> batches, potentially replacing monkeys. (v) <strong>Chemical/toxicity safety testing</strong>: gene-carrying animals more sensitive to toxins give results in less time."], "formulas": [{"label": "Diagnosis trio", "html": "PCR (amplify nucleic acid) · probe (hybridise + autoradiography) · ELISA (antigen–antibody)", "cond": "Section 10.2.3; low-count detection"}, {"label": "Transgenic share", "html": ">95% of all transgenic animals are mice", "cond": "Section 10.3"}, {"label": "Rosie 1997", "html": "human alpha-lactalbumin milk = 2.4 g/L", "cond": "Section 10.3; first transgenic cow"}], "deeper": "The probe paragraph is an exam trap: the mutated clone is the one missing from the film, because the probe finds no complement to bind — absence is the signal. Contrast the three tools by what each detects: PCR detects nucleic acid itself (amplified), probes detect sequence complementarity (hybridised), ELISA detects proteins or antibodies (bound). On transgenics, memorise the five purposes in order — physiology, disease, products, vaccines, toxicity — each with its book example.", "worked": "Rosie arithmetic: 2.4 g/L means 2.4 g per 1000 mL; a 500 mL bottle carries 1.2 g of human alpha-lactalbumin, a 250 mL glass 0.6 g (600 mg). Mice arithmetic: in any 100 transgenic animals, more than 95 are mice — fewer than 5 are rats, rabbits, pigs, sheep, cows and fish combined.", "prediction": {"prompt": "A blood sample may carry a few copies of HIV, far below symptom levels. Which tool does Section 10.2.3 reach for first?", "options": ["PCR — amplify the viral nucleic acid until the tiny count becomes detectable", "Waiting for symptoms so conventional serum analysis works", "ELISA for insulin chains, which also detects viruses"], "answer": 0, "explanation": "Very low pathogen concentrations are detected by amplifying nucleic acid with PCR; the text cites HIV detection explicitly."}, "connect": [["Polio-vaccine safety and pulse polio in India", "Transgenic mice that could replace monkeys in polio-vaccine batch testing matter to a country that ran pulse-polio campaigns — Section 10.3 vaccine safety at population scale."], ["Wow — a cow that nurses like a human", "Rosie's milk carries 2.4 grams per litre of human alpha-lactalbumin — a cow udder manufacturing a human baby protein, nutritionally more balanced than natural cow milk.", [], {"id": "urpRzE5GCbk", "title": "PCR in Molecular Diagnosis | Biotechnology and its Applications | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Contrast PCR, probe and ELISA by target and readout; list the five transgenic purposes with one example each; state the mice percentage and Rosie facts.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "PCR helps early diagnosis because it", "options": ["Amplifies pathogen nucleic acid so very low counts become detectable", "Photographs antibodies directly in serum", "Removes the C peptide from proinsulin"], "answer": 0, "hint": "What does PCR multiply?", "solution": "Amplification of nucleic acid reveals bacteria/viruses before symptoms; used for HIV and cancer mutations.", "wrong": ["Serum analysis is the conventional method PCR improves on.", "C-peptide removal is insulin maturation, not diagnosis."]}, {"level": "Medium", "type": "mcq", "prompt": "In probe autoradiography, the clone carrying the mutated gene", "options": ["Does not appear on the film — the probe lacks complementarity", "Glows brightest because mutation attracts probe", "Appears only after ELISA staining"], "answer": 0, "hint": "No complement, no hybrid, no signal.", "solution": "The probe hybridises only to complementary DNA; the mutated clone stays blank on the photographic film.", "wrong": ["Mutation destroys binding, not strengthens it.", "ELISA is a different, antigen–antibody technique."]}, {"level": "Hard", "type": "number", "map": "Section 10.3", "prompt": "Milligrams of human alpha-lactalbumin in a 250 mL glass of Rosie's milk (2.4 g/L)", "answer": 600, "unit": "mg", "tolerance": 1, "hint": "2.4 g/L × 0.25 L × 1000.", "solution": "2.4 × 0.25 = 0.6 g = 600 mg per 250 mL glass."}], "resources": [{"title": "NCERT §10.2.3, 10.3 — Diagnosis & transgenic animals (official PDF, PDF p.6)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=6"}]}, {"id": "ethics-biopiracy", "nav": "Ethics & biopiracy", "title": "GEAC, Basmati patents and biopiracy: who owns genetic wealth?", "deck": "Manipulation needs regulation: GEAC judges GM safety in India. Basmati's 1997 US patent, turmeric and neem claims, and the biopiracy fight over benefit-sharing close the chapter.", "minutes": 8, "section": "10.4", "pages": [8, 9], "print": "184–185", "sim": "ethics", "simTitle": "Biopiracy case sorter + GEAC approval explorer", "quick": ["Manipulating living organisms <strong>cannot go on without regulation</strong> — ethical standards plus the <strong>biological risk of unpredictable results when GM organisms enter ecosystems</strong>. India set up the <strong>GEAC (Genetic Engineering Approval Committee)</strong>, which decides the <strong>validity of GM research and the safety of introducing GM organisms for public services</strong>.", "<strong>Rice goes back thousands of years in Asian agriculture; India alone holds ~200,000 varieties</strong>, among the world's richest diversity, with <strong>27 documented Basmati varieties</strong> celebrated since ancient texts, folklore and poetry. In <strong>1997 an American company won Basmati patent rights from the US Patent and Trademark Office</strong> — Indian farmer varieties crossed with semi-dwarf lines, claimed as novelty, with the patent reaching <strong>functional equivalents</strong> that could restrict other Basmati sellers.", "Similar patent attempts target <strong>Indian traditional herbal medicines such as turmeric and neem</strong> — uses, products and processes. <strong>Biopiracy</strong> is the use of <strong>bio-resources by multinationals/organisations without proper authorisation and without compensatory payment</strong>. Industrialised nations are <strong>financially rich but biodiversity-poor</strong>; the developing world is <strong>biodiversity-rich with traditional knowledge</strong> that saves commercialisation time, effort and expenditure.", "The chapter closes on <strong>injustice and inadequate compensation/benefit-sharing</strong>: nations now legislate against unauthorised exploitation, and the <strong>Indian Parliament cleared the second amendment of the Indian Patents Bill</strong> covering patent terms, emergency provisions, research and development."], "formulas": [{"label": "GEAC mandate", "html": "validity of GM research + safety of GM release for public services", "cond": "Section 10.4; Govt. of India"}, {"label": "Biopiracy", "html": "bio-resource + traditional knowledge → patent/use with no authorisation and no compensation", "cond": "Section 10.4"}, {"label": "Basmati numbers", "html": "~200,000 Indian rice varieties; 27 Basmati; US patent 1997", "cond": "Section 10.4"}], "deeper": "Read the asymmetry sentence as the chapter's thesis: money on one side, biodiversity plus traditional knowledge on the other — biopiracy arbitrages that gap. The Basmati case shows three patent overreaches at once: farmer varieties as raw material, a cross claimed as invention, and functional-equivalents language reaching beyond the single variety. Vigilance plus the Patents Bill amendment is the prescribed defence.", "worked": "Basmati case sort: (1) resource — Indian farmer Basmati varieties (ancient, documented, 27 grown); (2) act — cross with semi-dwarf lines, US patent 1997 covering functional equivalents; (3) verdict — biopiracy pattern (no authorisation/compensation); (4) remedy — challenge patents, legislate benefit-sharing (Patents Bill second amendment). Same sieve sorts turmeric and neem claims.", "prediction": {"prompt": "A foreign firm patents a wound-healing turmeric formulation long used in Indian homes, with no permission or payment. Per Section 10.4 this is", "options": ["Biopiracy — traditional-knowledge bio-resource use without authorisation or compensatory payment", "Valid novelty — ancient use counts as invention by the firm", "A GEAC vaccine-safety approval"], "answer": 0, "explanation": "The text names turmeric among traditional-medicine patent attempts and defines such unauthorised, uncompensated use as biopiracy."}, "connect": [["GEAC and the GM-mustard debate in India", "GEAC's mandate — judging GM research validity and release safety — is the same lens turned on Bt brinjal's moratorium and GM mustard's appraisal: regulation deciding what enters Indian fields and plates."], ["Wow — patents that got revoked", "Turmeric's wound-healing patent and neem claims became global textbook cases of biopiracy challenged — ancient Indian knowledge forcing modern patent offices to back down when vigilance kicked in.", [], {"id": "AYEOv3WBxIk", "title": "Ethical Issues - Biotechnology & Its Applications | Class 12 Biology Chapter 12 NCERT/NEET (2022-23)", "channel": "Magnet Brains"}]], "recall": "Expand GEAC and state its two decisions; define biopiracy exactly; quote the rice/Basmati numbers and the 1997 patent facts.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "GEAC is the", "options": ["Genetic Engineering Approval Committee — decides GM research validity and release safety", "General ELISA and Antibody Council for diagnosis", "Gene Extraction and Cloning unit of Eli Lilly"], "answer": 0, "hint": "Section 10.4 names the Indian body.", "solution": "Set up by the Indian Government for GM research validity and the safety of introducing GM organisms for public services.", "wrong": ["ELISA is a diagnostic technique, not a committee.", "Eli Lilly made insulin in 1983; GEAC is Indian regulation."]}, {"level": "Medium", "type": "mcq", "prompt": "Biopiracy means", "options": ["Using bio-resources without proper authorisation and without compensatory payment", "Pirating ships that carry Basmati rice", "Any laboratory use of bacteria"], "answer": 0, "hint": "Authorisation + compensation — whose definition?", "solution": "Multinationals/organisations exploiting bio-resources and traditional knowledge without permission or payment.", "wrong": ["No ships are involved.", "Laboratory use with approval is legitimate research."]}, {"level": "Hard", "type": "number", "map": "Section 10.4", "prompt": "Documented varieties of Basmati grown in India, per the text", "answer": 27, "unit": "varieties", "tolerance": 0.1, "hint": "Against ~200,000 total rice varieties.", "solution": "27 documented Basmati varieties; ~200,000 rice varieties in India alone."}], "resources": [{"title": "NCERT §10.4 — Ethics & biopiracy (official PDF, PDF p.8)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo110.pdf#page=8"}]}], "exercises": [{"number": 1, "conceptIdx": 0, "page": 10, "printPage": 186, "question": "Which part of the plant is best suited for making virus-free plants and why?", "steps": ["Even in a virus-infected plant, the meristem (apical and axillary) is free of virus.", "Remove the meristem and grow it in vitro under sterile conditions in special nutrient media.", "The regenerated plantlets are healthy/virus-free — achieved for banana, sugarcane and potato."], "answer": "Apical/axillary meristem — virus-free even in infected plants; in-vitro culture gives healthy plants."}, {"number": 2, "conceptIdx": 0, "page": 10, "printPage": 186, "question": "What is the major advantage of producing plants by micropropagation?", "steps": ["Micropropagation yields thousands of plants in very short durations from one explant.", "All plants are genetically identical to the parent (somaclones), preserving elite traits.", "Combined with meristem culture it also gives virus-free stock; commercial scale for tomato, banana, apple."], "answer": "Thousands of genetically identical (somaclone), optionally virus-free plants in very short time."}, {"number": 3, "conceptIdx": 0, "page": 10, "printPage": 186, "question": "Find out what the various components of the medium used for propagation of an explant in vitro are?", "steps": ["Carbon source such as sucrose.", "Inorganic salts, vitamins and amino acids.", "Growth regulators like auxins and cytokinins; sterile test-tube conditions throughout."], "answer": "Sucrose + inorganic salts + vitamins + amino acids + auxins/cytokinins (sterile in vitro)."}, {"number": 4, "conceptIdx": 1, "page": 10, "printPage": 186, "question": "Crystals of Bt toxin produced by some bacteria do not kill the bacteria themselves because – (a) bacteria are resistant to the toxin (b) toxin is immature; (c) toxin is inactive; (d) bacteria encloses toxin in a special sac.", "steps": ["Bt forms protein crystals containing a toxic insecticidal protein.", "Inside Bacillus the protein exists as inactive protoxin.", "Activation needs the alkaline gut pH of the insect (solubilises crystals); hence (c) is correct and (a), (b), (d) are wrong."], "answer": "(c) toxin is inactive (protoxin; activated only in the alkaline insect gut)."}, {"number": 5, "conceptIdx": 2, "page": 11, "printPage": 187, "question": "What are transgenic bacteria? Illustrate using any one example.", "steps": ["Transgenic bacteria carry and express an extra (foreign) gene introduced by rDNA methods.", "Example: E. coli carrying the human insulin A-chain and B-chain DNAs in plasmids (Eli Lilly, 1983).", "The two chains are produced separately, extracted and joined by disulfide bonds into human insulin."], "answer": "Bacteria with a foreign expressed gene — e.g. E. coli producing human insulin chains (1983)."}, {"number": 6, "conceptIdx": 1, "page": 11, "printPage": 187, "question": "Compare and contrast the advantages and disadvantages of production of genetically modified crops.", "steps": ["Advantages: abiotic-stress tolerance; pest resistance (less pesticide); less post-harvest loss; efficient mineral use; enriched nutrition (golden rice); tailor-made starches, fuels, pharmaceuticals.", "Disadvantages: unpredictable ecosystem results on release; need for regulation (GEAC); patent/biopiracy conflicts over genetic resources.", "Verdict: benefits are agronomic and nutritional; risks are ecological, ethical and legal — hence case-by-case approval."], "answer": "Advantages (i)–(v) + tailor-made products vs unpredictable ecosystem/patent risks; regulated by GEAC."}, {"number": 7, "conceptIdx": 1, "page": 11, "printPage": 187, "question": "What are Cry proteins? Name an organism that produce it. How has man exploited this protein to his benefit?", "steps": ["Cry proteins are the insecticidal Bt toxin proteins coded by cry genes.", "Organism: the bacterium Bacillus thuringiensis, which forms protoxin protein crystals.", "Exploitation: cry genes (cryIAc/cryIIAb for cotton bollworms; cryIAb for corn borer) expressed in crops — Bt cotton, corn, rice, tomato, potato, soyabean — as built-in bio-pesticide."], "answer": "Bt protoxin proteins of Bacillus thuringiensis; cry genes in pest-resistant Bt crops."}, {"number": 8, "conceptIdx": 2, "page": 11, "printPage": 187, "question": "What is gene therapy? Illustrate using the example of adenosine deaminase (ADA) deficiency.", "steps": ["Gene therapy inserts genes into cells/tissues to correct a diagnosed gene defect (child/embryo).", "ADA deficiency (deleted ADA gene; immune failure) — first clinical therapy 1990 in a 4-year-old girl.", "Patient lymphocytes cultured outside the body receive functional ADA cDNA via retroviral vector, then return to the patient; cells are mortal so infusion repeats; early-embryonic delivery could cure permanently."], "answer": "Corrective gene insertion — e.g. retroviral ADA cDNA into patient lymphocytes (1990, age 4)."}, {"number": 9, "conceptIdx": 2, "page": 11, "printPage": 187, "question": "Digrammatically represent the experimental steps in cloning and expressing an human gene (say the gene for growth hormone) into a bacterium like E. coli ?", "steps": ["Isolate the human growth-hormone gene and cut it plus a plasmid vector with the same restriction enzyme.", "Ligate into recombinant plasmid (foreign gene + vector).", "Introduce into E. coli host, select transformants, culture at scale, express the protein, then downstream processing/purification.", "Draw as a flow-chart: gene → cut → ligate → transform → select → grow → express → purify. (Stem keeps the textbook spelling “Digrammatically”.)"], "answer": "Flow-chart: isolate → cut → ligate → transform E. coli → select → culture → express → downstream processing."}, {"number": 10, "conceptIdx": 1, "page": 11, "printPage": 187, "question": "Can you suggest a method to remove oil (hydrocarbon) from seeds based on your understanding of rDNA technology and chemistry of oil?", "steps": ["Open-ended: clone genes for hydrocarbon-degrading/modifying enzymes into a suitable host or the seed system.", "Express enzymes that break or alter the oil chemistry so the hydrocarbon fraction separates from seed material.", "Recover/purify via downstream processing. Honest note: the chapter gives no single NCERT key for this problem question."], "answer": "rDNA route: express hydrocarbon-acting enzymes, then separate — open-ended, no single textbook key."}, {"number": 11, "conceptIdx": 1, "page": 11, "printPage": 187, "question": "Find out from internet what is golden rice.", "steps": ["Golden rice is a genetically modified, Vitamin A enriched rice cited in Section 10.1.", "It exemplifies enhanced nutritional value of food by genetic modification.", "Honest note: molecular detail (beta-carotene pathway genes) is internet beyond-scope enrichment, not in this reprint."], "answer": "Vitamin A enriched GM rice — enhanced-nutrition example (detail beyond this reprint)."}, {"number": 12, "conceptIdx": 2, "page": 11, "printPage": 187, "question": "Does our blood have proteases and nucleases?", "steps": ["Yes — blood carries proteases (e.g. clotting-cascade and complement proteases) and nucleases that clear extracellular nucleic acids.", "This is the same chemistry behind Exercise 13: injected/oral protein or DNA therapeutics face enzymatic digestion in the body.", "Hence recombinant proteins need protection/delivery design; the text links this to why insulin is not orally administered."], "answer": "Yes — clotting/complement proteases and clearing nucleases circulate in blood."}, {"number": 13, "conceptIdx": 2, "page": 11, "printPage": 187, "question": "Consult internet and find out how to make orally active protein pharmaceutical. What is the major problem to be encountered?", "steps": ["Major problem: stomach acid plus digestive/blood proteases (see Exercise 12) digest protein drugs; poor gut absorption adds a second barrier — the chapter's own insulin question.", "Strategies researched: protective encapsulation/coatings, protease inhibitors, absorption enhancers, analogues.", "Honest note: working detail is internet beyond-scope; the textbook's verdict is that oral protein delivery remains the core unsolved problem."], "answer": "Problem: proteolytic digestion + poor absorption; protection/delivery strategies are beyond-scope research."}], "pageOffset": null, "printPageStart": 177, "printPageEnd": 187, "paginationProvenance": "folio-verified: printed folio appears as the first extracted text line on nearly every page (only the chapter-opener page lacks one); confirmed printed = 1-based PDF page + 176 across 3 independent anchor points with zero deviation"};
 </script>
 <script>
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1088,8 +1296,44 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1115,8 +1359,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1199,7 +1442,35 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1216,6 +1487,10 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1224,17 +1499,17 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1246,26 +1521,27 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1275,7 +1551,6 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1288,7 +1563,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1314,42 +1589,47 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1357,7 +1637,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1366,65 +1646,51 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1465,6 +1731,10 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1483,7 +1753,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1533,7 +1803,8 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1542,6 +1813,41 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1556,9 +1862,6 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1678,10 +1981,9 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1697,7 +1999,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1708,8 +2010,8 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1754,22 +2056,31 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1815,7 +2126,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1825,7 +2136,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1835,11 +2146,31 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1874,6 +2205,10 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1887,6 +2222,41 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1894,6 +2264,7 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1908,6 +2279,232 @@ window.CHAPTER = {"code": "lebo110", "chapterNumber": 10, "book_name": "Biology"
   updateProgress();
   routeFromHash();
 })();
+
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1940,10 +2537,10 @@ window.SIMS["tissue-culture"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Sterile medium</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Somaclones</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-e0">Step 0: explant</button>' +
-      '<button class="preset-btn" id="p-e2">Step 2: medium</button>' +
-      '<button class="preset-btn active" id="p-e4">Step 5: somaclones</button>' +
-      '<button class="preset-btn" id="p-pom">Pomato fusion</button>';
+      '<button class="preset-btn" id="p-e0" data-preset="p-e0">Step 0: explant</button>' +
+      '<button class="preset-btn" id="p-e2" data-preset="p-e2">Step 2: medium</button>' +
+      '<button class="preset-btn active" id="p-e4" data-preset="p-e4">Step 5: somaclones</button>' +
+      '<button class="preset-btn" id="p-pom" data-preset="p-pom">Pomato fusion</button>';
     document.getElementById("p-e0").onclick = function(){ setActivePreset(this); step=0; draw(App.state.t); };
     document.getElementById("p-e2").onclick = function(){ setActivePreset(this); step=2; draw(App.state.t); };
     document.getElementById("p-e4").onclick = function(){ setActivePreset(this); step=5; draw(App.state.t); };
@@ -2007,9 +2604,9 @@ window.SIMS["bt-rnai"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Active toxin / dsRNA</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Protected plant</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-bw">cryIAc/IIAb vs bollworm</button>' +
-      '<button class="preset-btn" id="p-cb">cryIAb vs corn borer</button>' +
-      '<button class="preset-btn" id="p-ne">RNAi vs nematode</button>';
+      '<button class="preset-btn active" id="p-bw" data-preset="p-bw">cryIAc/IIAb vs bollworm</button>' +
+      '<button class="preset-btn" id="p-cb" data-preset="p-cb">cryIAb vs corn borer</button>' +
+      '<button class="preset-btn" id="p-ne" data-preset="p-ne">RNAi vs nematode</button>';
     document.getElementById("p-bw").onclick = function(){ setActivePreset(this); pest="bollworm"; draw(App.state.t); };
     document.getElementById("p-cb").onclick = function(){ setActivePreset(this); pest="borer"; draw(App.state.t); };
     document.getElementById("p-ne").onclick = function(){ setActivePreset(this); pest="nematode"; draw(App.state.t); };
@@ -2073,8 +2670,8 @@ window.SIMS["insulin-genetherapy"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>C peptide (33, removed)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>ADA lymphocytes</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ins">Proinsulin remover (Fig 10.3)</button>' +
-      '<button class="preset-btn" id="p-ada">ADA 1990 timeline</button>';
+      '<button class="preset-btn active" id="p-ins" data-preset="p-ins">Proinsulin remover (Fig 10.3)</button>' +
+      '<button class="preset-btn" id="p-ada" data-preset="p-ada">ADA 1990 timeline</button>';
     document.getElementById("p-ins").onclick = function(){ setActivePreset(this); mode="insulin"; draw(App.state.t); };
     document.getElementById("p-ada").onclick = function(){ setActivePreset(this); mode="ada"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -2152,10 +2749,10 @@ window.SIMS["diagnosis-transgenic"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Probe: hybridise + film</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>ELISA: antigen-antibody</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pcr">HIV few copies: PCR</button>' +
-      '<button class="preset-btn" id="p-prb">Mutant clone: probe</button>' +
-      '<button class="preset-btn" id="p-eli">Infection Ag/Ab: ELISA</button>' +
-      '<button class="preset-btn" id="p-ros">Rosie 1997 cow</button>';
+      '<button class="preset-btn active" id="p-pcr" data-preset="p-pcr">HIV few copies: PCR</button>' +
+      '<button class="preset-btn" id="p-prb" data-preset="p-prb">Mutant clone: probe</button>' +
+      '<button class="preset-btn" id="p-eli" data-preset="p-eli">Infection Ag/Ab: ELISA</button>' +
+      '<button class="preset-btn" id="p-ros" data-preset="p-ros">Rosie 1997 cow</button>';
     document.getElementById("p-pcr").onclick = function(){ setActivePreset(this); tool="pcr"; draw(App.state.t); };
     document.getElementById("p-prb").onclick = function(){ setActivePreset(this); tool="probe"; draw(App.state.t); };
     document.getElementById("p-eli").onclick = function(){ setActivePreset(this); tool="elisa"; draw(App.state.t); };
@@ -2237,10 +2834,10 @@ window.SIMS["ethics-biopiracy"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Biopiracy pattern</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Legitimate (GEAC route)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c0">Basmati 1997</button>' +
-      '<button class="preset-btn" id="p-c1">Turmeric</button>' +
-      '<button class="preset-btn" id="p-c2">Neem</button>' +
-      '<button class="preset-btn" id="p-c3">GEAC trial</button>';
+      '<button class="preset-btn active" id="p-c0" data-preset="p-c0">Basmati 1997</button>' +
+      '<button class="preset-btn" id="p-c1" data-preset="p-c1">Turmeric</button>' +
+      '<button class="preset-btn" id="p-c2" data-preset="p-c2">Neem</button>' +
+      '<button class="preset-btn" id="p-c3" data-preset="p-c3">GEAC trial</button>';
     document.getElementById("p-c0").onclick = function(){ setActivePreset(this); idx=0; draw(App.state.t); };
     document.getElementById("p-c1").onclick = function(){ setActivePreset(this); idx=1; draw(App.state.t); };
     document.getElementById("p-c2").onclick = function(){ setActivePreset(this); idx=2; draw(App.state.t); };

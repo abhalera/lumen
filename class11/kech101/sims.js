@@ -301,23 +301,23 @@ window.SIMS.reactionlaws = (function(){
       m += '<text x="360" y="32" fill="#38bdf8" font-size="15" font-weight="700" text-anchor="middle">DALTON’S LAW OF MULTIPLE PROPORTIONS (NCERT EX 1.21)</text>';
       m += '<text x="360" y="52" fill="#94a3b8" font-size="12" text-anchor="middle">Fixed 14 g Nitrogen combines with varying Oxygen in small integer ratios</text>';
 
-      // Table comparing the 4 oxides
+      // Table of the 4 data rows from NCERT Ex 1.21 (p. 27)
       var oxides = [
-        {name: "Nitric Oxide (NO)", n: 14, o: 16, ratio: 1},
-        {name: "Nitrogen Dioxide (NO₂)", n: 14, o: 32, ratio: 2},
-        {name: "Dinitrogen Trioxide (N₂O₃)", n: 14, o: 24, ratio: 1.5},
-        {name: "Dinitrogen Pentoxide (N₂O₅)", n: 14, o: 40, ratio: 2.5}
+        {name: "(i) Nitric Oxide (NO)", n: 14, o: 16, per14: 16},
+        {name: "(ii) Nitrogen Dioxide (NO₂)", n: 14, o: 32, per14: 32},
+        {name: "(iii) 28 g N + 32 g O (NO)", n: 28, o: 32, per14: 16},
+        {name: "(iv) 28 g N + 80 g O (N₂O₅)", n: 28, o: 80, per14: 40}
       ];
 
       for(var i = 0; i < oxides.length; i++){
         var ox = oxides[i];
         var y = 80 + i * 44;
-        var isCurrent = (nMass === 14 && oMass === ox.o);
+        var isCurrent = (nMass === ox.n && oMass === ox.o);
         m += '<rect x="60" y="' + y + '" width="600" height="36" rx="6" fill="' + (isCurrent ? "#1e3a5f" : "#0f172a") + '" stroke="' + (isCurrent ? "#38bdf8" : "#334155") + '"/>';
-        m += '<text x="80" y="' + (y + 22) + '" fill="#f8fafc" font-size="13" font-weight="700">' + ox.name + '</text>';
-        m += '<text x="280" y="' + (y + 22) + '" fill="#38bdf8" font-size="13">N: ' + ox.n + ' g</text>';
-        m += '<text x="380" y="' + (y + 22) + '" fill="#ef4444" font-size="13">O: ' + ox.o + ' g</text>';
-        m += '<text x="500" y="' + (y + 22) + '" fill="#34d399" font-size="13" font-weight="700">O-Ratio: ' + ox.ratio + ' (or ' + (ox.ratio * 2) + ')</text>';
+        m += '<text x="80" y="' + (y + 22) + '" fill="#f8fafc" font-size="12" font-weight="700">' + ox.name + '</text>';
+        m += '<text x="300" y="' + (y + 22) + '" fill="#38bdf8" font-size="12">N: ' + ox.n + ' g</text>';
+        m += '<text x="380" y="' + (y + 22) + '" fill="#ef4444" font-size="12">O: ' + ox.o + ' g</text>';
+        m += '<text x="470" y="' + (y + 22) + '" fill="#34d399" font-size="12" font-weight="700">Per 14 g N: ' + ox.per14 + ' g</text>';
       }
 
       var normalizedO = (14 / nMass) * oMass;
@@ -327,7 +327,7 @@ window.SIMS.reactionlaws = (function(){
         cell("Reacting O Mass", oMass + " g", "#ef4444") +
         cell("Combining Ratio", "1 : " + ratioFactor.toFixed(1), "#34d399")
       );
-      verdict("<b>Multiple Proportions Verified:</b> For fixed 14 g N, the oxygen masses 16 g, 32 g, 40 g form the simple integer ratio <b>1 : 2 : 2.5 (2 : 4 : 5)</b>. Atoms combine in whole units!");
+      verdict("<b>Multiple Proportions Verified (NCERT Ex 1.21):</b> Per fixed 14 g N, the oxygen masses are 16 g, 32 g, 16 g, 40 g — the simple integer ratio <b>2 : 4 : 2 : 5</b>. Atoms combine in whole units!");
     } else if(law === "definite"){
       m += '<text x="360" y="32" fill="#10b981" font-size="15" font-weight="700" text-anchor="middle">PROUST’S LAW OF DEFINITE PROPORTIONS</text>';
       m += '<text x="360" y="52" fill="#94a3b8" font-size="12" text-anchor="middle">Pure water from rain, river, or synthesis always contains 11.2% H and 88.8% O by mass</text>';
@@ -340,7 +340,7 @@ window.SIMS.reactionlaws = (function(){
 
       readout(
         cell("Hydrogen %", "11.19 %", "#38bdf8") +
-        cell("Oxygen %", "88.81 %", "#ef4444") +
+        cell("Oxygen %", "88.79 %", "#ef4444") +
         cell("Source Invariance", "100% Constant", "#34d399")
       );
       verdict("<b>Proust’s Law:</b> Irrespective of source (Glacier, Indus River, or laboratory combustion), pure water has strict 1:8 mass ratio.");
@@ -465,7 +465,9 @@ window.SIMS.atomicmass = (function(){
       cell("Weighted Atomic Mass", avgMass.toFixed(3) + " u", "#34d399")
     );
 
-    verdict("<b>NCERT Ex 1.9 Isotopic Calculation:</b> Average mass = (0.7577 × 34.9689) + (0.2423 × 36.9659) = <b>35.453 u</b>. Because neither isotope exists as a fraction, 35.453 u represents the statistical weighted average of millions of atoms.");
+    var f35 = cl35Pct / 100, f37 = cl37Pct / 100;
+    var tag = (cl35Pct === 75.77) ? "<b>NCERT Ex 1.9 Isotopic Calculation:</b> " : "<b>Isotopic average:</b> ";
+    verdict(tag + "Average mass = (" + f35.toFixed(4) + " × 34.9689) + (" + f37.toFixed(4) + " × 36.9659) = <b>" + avgMass.toFixed(3) + " u</b>. Because no single atom weighs a fraction, this is the statistical weighted average of millions of atoms.");
 
     svg.innerHTML = m;
   }
@@ -608,7 +610,7 @@ window.SIMS.formulalab = (function(){
       cName = "Welding Fuel Gas (NCERT Ex 1.34)";
       el1 = "Carbon (C)"; pct1 = 92.3;
       el2 = "Hydrogen (H)"; pct2 = 7.7;
-      emp = "CH"; mol = "C₂H₂ (Acetylene)"; nMult = 2; mm = 26.0;
+      emp = "CH"; mol = "C₂H₂ (Acetylene)"; nMult = 2; mm = 26.3;
     } else {
       cName = "Glucose Sugar Molecule";
       el1 = "Carbon (C)"; pct1 = 40.0;
@@ -660,7 +662,7 @@ window.SIMS.formulalab = (function(){
 window.SIMS.stoichiometrylab = (function(){
   var n2Mass = 2000; // g
   var h2Mass = 1000; // g
-  var concMode = "solutions"; // "reactor", "solutions"
+  var concMode = "reactor"; // "reactor", "solutions"
 
   function mount(){
     App.state.maxT = 6;
@@ -676,7 +678,7 @@ window.SIMS.stoichiometrylab = (function(){
       '<button class="preset-btn" id="p-conc">Solution Concentration Comparator (M vs m)</button>';
 
     document.getElementById("p-haber").onclick = function(){ setActivePreset(this); concMode = "reactor"; n2Mass = 2000; h2Mass = 1000; updateInputs(); draw(0); };
-    document.getElementById("p-stoch").onclick = function(){ setActivePreset(this); concMode = "reactor"; n2Mass = 2802; h2Mass = 605; updateInputs(); draw(0); };
+    document.getElementById("p-stoch").onclick = function(){ setActivePreset(this); concMode = "reactor"; n2Mass = 2802; h2Mass = 604.8; updateInputs(); draw(0); };
     document.getElementById("p-conc").onclick = function(){ setActivePreset(this); concMode = "solutions"; draw(0); };
 
     document.getElementById("lab-controls").innerHTML =
@@ -706,8 +708,8 @@ window.SIMS.stoichiometrylab = (function(){
   function updateInputs(){
     var s1 = document.getElementById("n2-slider"); if(s1) s1.value = n2Mass;
     var s2 = document.getElementById("h2-slider"); if(s2) s2.value = h2Mass;
-    var l1 = document.getElementById("n2-lbl"); if(l1) l1.textContent = n2Mass + " g";
-    var l2 = document.getElementById("h2-lbl"); if(l2) l2.textContent = h2Mass + " g";
+    var l1 = document.getElementById("n2-lbl"); if(l1) l1.textContent = n2Mass + " g (" + (n2Mass/1000).toFixed(1) + " kg)";
+    var l2 = document.getElementById("h2-lbl"); if(l2) l2.textContent = h2Mass + " g (" + (h2Mass/1000).toFixed(1) + " kg)";
   }
 
   function draw(t){
@@ -739,7 +741,7 @@ window.SIMS.stoichiometrylab = (function(){
         excessGrams = (molH2 - h2Needed) * 2.016;
       }
 
-      var nh3Mass = nh3Moles * 17.034;
+      var nh3Mass = nh3Moles * 17.03;
 
       // Reactor Chamber Graphic
       m += '<rect x="80" y="60" width="560" height="170" rx="10" fill="#0f1f2e" stroke="#334155" stroke-width="2"/>';
@@ -777,7 +779,11 @@ window.SIMS.stoichiometrylab = (function(){
         cell("Unreacted Excess", excessGrams.toFixed(1) + " g of " + excessGas, "#f59e0b")
       );
 
-      verdict("<b>NCERT Ex 1.24 Solution:</b> 2000 g N₂ (71.38 mol) requires 214.1 mol H₂. Because 496.0 mol H₂ is supplied, <b>N₂ is the Limiting Reagent</b>. The reaction terminates once N₂ is depleted, yielding <b>2.43 kg NH₃</b> with <b>568 g H₂ remaining unreacted</b>.");
+      var vTag = (n2Mass === 2000 && h2Mass === 1000) ? "NCERT Ex 1.24 Solution:" : "Reactor result:";
+      verdict("<b>" + vTag + "</b> " + n2Mass + " g N₂ (" + molN2.toFixed(2) + " mol) requires " + h2Needed.toFixed(1) +
+        " mol H₂; " + molH2.toFixed(1) + " mol supplied, so <b>" + limiting.split(" ")[0] +
+        " is the Limiting Reagent</b>. Yield: <b>" + (nh3Mass/1000).toFixed(2) + " kg NH₃</b> with <b>" +
+        excessGrams.toFixed(1) + " g " + excessGas.split(" ")[0] + " remaining unreacted</b>.");
     } else {
       m += '<text x="360" y="32" fill="#10b981" font-size="15" font-weight="700" text-anchor="middle">SOLUTION CONCENTRATION METRICS: TEMPERATURE DEPENDENCE</text>';
 
@@ -809,3 +815,61 @@ window.SIMS.stoichiometrylab = (function(){
 
   return { mount: mount, draw: draw };
 })();
+
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

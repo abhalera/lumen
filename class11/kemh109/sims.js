@@ -49,9 +49,9 @@ window.SIMS.coordrecall = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>P, Q</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Segment / triangle</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-dist">Distance (6,−4)→(3,0)</button>' +
-      '<button class="preset-btn" id="p-sec">Section 1:3 of A(1,−3) B(−3,9)</button>' +
-      '<button class="preset-btn" id="p-area">Area (4,4),(3,−2),(−3,16)</button>';
+      '<button class="preset-btn active" data-preset="p-dist" id="p-dist">Distance (6,−4)→(3,0)</button>' +
+      '<button class="preset-btn" data-preset="p-sec" id="p-sec">Section 1:3 of A(1,−3) B(−3,9)</button>' +
+      '<button class="preset-btn" data-preset="p-area" id="p-area">Area (4,4),(3,−2),(−3,16)</button>';
     document.getElementById("p-dist").onclick = function(){ setActivePreset(this); mode="dist"; draw(0); };
     document.getElementById("p-sec").onclick = function(){ setActivePreset(this); mode="sec"; draw(0); };
     document.getElementById("p-area").onclick = function(){ setActivePreset(this); mode="area"; draw(0); };
@@ -101,10 +101,10 @@ window.SIMS.slopeline = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Line ℓ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Inclination θ</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-0">θ = 0° (x-axis)</button>' +
-      '<button class="preset-btn active" id="p-60">θ = 60° (Ex 1d)</button>' +
-      '<button class="preset-btn" id="p-90">θ = 90° (undefined)</button>' +
-      '<button class="preset-btn" id="p-135">θ = 135°</button>';
+      '<button class="preset-btn" data-preset="p-0" id="p-0">θ = 0° (x-axis)</button>' +
+      '<button class="preset-btn active" data-preset="p-60" id="p-60">θ = 60° (Ex 1d)</button>' +
+      '<button class="preset-btn" data-preset="p-90" id="p-90">θ = 90° (undefined)</button>' +
+      '<button class="preset-btn" data-preset="p-135" id="p-135">θ = 135°</button>';
     document.getElementById("p-0").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=0; draw(0); };
     document.getElementById("p-60").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=60; draw(0); };
     document.getElementById("p-90").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-th").value=90; draw(0); };
@@ -133,7 +133,7 @@ window.SIMS.slopeline = (function(){
     m += '<path d="M '+(ox+r)+' '+oy+' A '+r+' '+r+' 0 '+(th>180?1:0)+' 0 '+(ox+r*Math.cos(rad))+' '+(oy-r*Math.sin(rad))+'" fill="none" stroke="#f59e0b" stroke-width="2"/>';
     m += '<text x="'+(ox+56)+'" y="'+(oy-18)+'" fill="#fbbf24" font-size="13">θ = '+th+'°</text>';
     var slopeStr, note;
-    if(Math.abs(th-90)<0.5){ slopeStr = "undefined"; note = "Vertical line: tan 90° is not defined. Slope of the y-axis is undefined."; }
+    if(Math.abs(th-90)<0.5){ slopeStr = "no finite value (vertical)"; note = "Vertical line: tan 90° has no finite value. The slope of the y-axis is not defined."; }
     else {
       var sl = Math.tan(rad);
       slopeStr = (Math.abs(sl)<1e-10 ? "0" : sl.toFixed(3));
@@ -153,9 +153,9 @@ window.SIMS.parperp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>ℓ₁ slope m₁</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>ℓ₂ slope m₂</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="pp-par">Parallel m₁=m₂</button>' +
-      '<button class="preset-btn active" id="pp-per">Perpendicular m₁m₂=−1</button>' +
-      '<button class="preset-btn" id="pp-ex2">Ex 2: θ=π/4, m₁=½</button>';
+      '<button class="preset-btn" data-preset="pp-par" id="pp-par">Parallel m₁=m₂</button>' +
+      '<button class="preset-btn active" data-preset="pp-per" id="pp-per">Perpendicular m₁m₂=−1</button>' +
+      '<button class="preset-btn" data-preset="pp-ex2" id="pp-ex2">Ex 2: θ=π/4, m₁=½</button>';
     document.getElementById("pp-par").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m1").value=1; document.getElementById("ctrl-m2").value=1; draw(0); };
     document.getElementById("pp-per").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m1").value=0.5; document.getElementById("ctrl-m2").value=-2; draw(0); };
     document.getElementById("pp-ex2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m1").value=0.5; document.getElementById("ctrl-m2").value=3; draw(0); };
@@ -202,9 +202,9 @@ window.SIMS.pointslope = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Line</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fixed point (x₀,y₀)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="ps-ex5">Ex 5: (−2,3), m=−4</button>' +
-      '<button class="preset-btn" id="ps-ex6">Ex 6 two-point (1,−1),(3,5)</button>' +
-      '<button class="preset-btn" id="ps-axes">Ex 4: axes through (−2,3)</button>';
+      '<button class="preset-btn active" data-preset="ps-ex5" id="ps-ex5">Ex 5: (−2,3), m=−4</button>' +
+      '<button class="preset-btn" data-preset="ps-ex6" id="ps-ex6">Ex 6 two-point (1,−1),(3,5)</button>' +
+      '<button class="preset-btn" data-preset="ps-axes" id="ps-axes">Ex 4: axes through (−2,3)</button>';
     document.getElementById("ps-ex5").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x0").value=-2; document.getElementById("ctrl-y0").value=3; document.getElementById("ctrl-m").value=-4; draw(0); };
     document.getElementById("ps-ex6").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x0").value=1; document.getElementById("ctrl-y0").value=-1; document.getElementById("ctrl-m").value=3; draw(0); };
     document.getElementById("ps-axes").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x0").value=-2; document.getElementById("ctrl-y0").value=3; document.getElementById("ctrl-m").value=0; draw(0); };
@@ -241,9 +241,9 @@ window.SIMS.slopeint = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>y-intercept c</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>x-intercept</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="si-ex7">Ex 7: m=½, c=−3/2</button>' +
-      '<button class="preset-btn" id="si-int">Intercept form a=−3, b=2</button>' +
-      '<button class="preset-btn" id="si-eq">Equal intercepts through (2,3)</button>';
+      '<button class="preset-btn active" data-preset="si-ex7" id="si-ex7">Ex 7: m=½, c=−3/2</button>' +
+      '<button class="preset-btn" data-preset="si-int" id="si-int">Intercept form a=−3, b=2</button>' +
+      '<button class="preset-btn" data-preset="si-eq" id="si-eq">Equal intercepts through (2,3)</button>';
     document.getElementById("si-ex7").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m").value=0.5; document.getElementById("ctrl-c").value=-1.5; draw(0); };
     document.getElementById("si-int").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m").value=2/3; document.getElementById("ctrl-c").value=2; draw(0); };
     document.getElementById("si-eq").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-m").value=-1; document.getElementById("ctrl-c").value=5; draw(0); };
@@ -284,8 +284,8 @@ window.SIMS.distptline = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Point P</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Perpendicular d</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="d-ex9">Ex 9: (3,−5) from 3x−4y−26=0</button>' +
-      '<button class="preset-btn" id="d-ex3">Ex 9.3 Q3: (−1,1) from 12x−5y+82=0</button>';
+      '<button class="preset-btn active" data-preset="d-ex9" id="d-ex9">Ex 9: (3,−5) from 3x−4y−26=0</button>' +
+      '<button class="preset-btn" data-preset="d-ex3" id="d-ex3">Ex 9.3 Q3: (−1,1) from 12x−5y+82=0</button>';
     document.getElementById("d-ex9").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=3; document.getElementById("ctrl-B").value=-4; document.getElementById("ctrl-C").value=-26; document.getElementById("ctrl-px").value=3; document.getElementById("ctrl-py").value=-5; draw(0); };
     document.getElementById("d-ex3").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=12; document.getElementById("ctrl-B").value=-5; document.getElementById("ctrl-C").value=82; document.getElementById("ctrl-px").value=-1; document.getElementById("ctrl-py").value=1; draw(0); };
     document.getElementById("lab-controls").innerHTML =
@@ -336,8 +336,8 @@ window.SIMS.parldist = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Ax+By+C₁=0</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Ax+By+C₂=0</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pd-ex10">Ex 10: 3x−4y+7=0 and +5=0</button>' +
-      '<button class="preset-btn" id="pd-q5">Ex 9.3 Q5: 15x+8y−34, +31</button>';
+      '<button class="preset-btn active" data-preset="pd-ex10" id="pd-ex10">Ex 10: 3x−4y+7=0 and +5=0</button>' +
+      '<button class="preset-btn" data-preset="pd-q5" id="pd-q5">Ex 9.3 Q5: 15x+8y−34, +31</button>';
     document.getElementById("pd-ex10").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=3; document.getElementById("ctrl-B").value=-4; document.getElementById("ctrl-C1").value=7; document.getElementById("ctrl-C2").value=5; draw(0); };
     document.getElementById("pd-q5").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-A").value=15; document.getElementById("ctrl-B").value=8; document.getElementById("ctrl-C1").value=-34; document.getElementById("ctrl-C2").value=31; draw(0); };
     document.getElementById("lab-controls").innerHTML =

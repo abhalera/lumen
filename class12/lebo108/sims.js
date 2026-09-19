@@ -27,10 +27,10 @@ window.SIMS["household-ferment"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>CO2 bubbles (rise / holes)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Product (curd / dough / cheese)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-cu">Curd: LAB + B12</button>' +
-      '<button class="preset-btn" id="p-br">Bread/idli: CO2 rise</button>' +
-      '<button class="preset-btn" id="p-ch">Swiss holes / Roquefort</button>' +
-      '<button class="preset-btn" id="p-to">Toddy: palm sap</button>';
+      '<button class="preset-btn active" id="p-cu" data-preset="p-cu">Curd: LAB + B12</button>' +
+      '<button class="preset-btn" id="p-br" data-preset="p-br">Bread/idli: CO2 rise</button>' +
+      '<button class="preset-btn" id="p-ch" data-preset="p-ch">Swiss holes / Roquefort</button>' +
+      '<button class="preset-btn" id="p-to" data-preset="p-to">Toddy: palm sap</button>';
     document.getElementById("p-cu").onclick = function(){ setActivePreset(this); food = "curd"; draw(App.state.t); };
     document.getElementById("p-br").onclick = function(){ setActivePreset(this); food = "bread"; draw(App.state.t); };
     document.getElementById("p-ch").onclick = function(){ setActivePreset(this); food = "cheese"; draw(App.state.t); };
@@ -115,9 +115,9 @@ window.SIMS["beverage-antibiotic"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Distilled: whisky / brandy / rum</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Penicillin halo (1928-1945)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-di">Distillation rule</button>' +
-      '<button class="preset-btn" id="p-fe">Fermentor + yield</button>' +
-      '<button class="preset-btn" id="p-pe">Penicillin timeline</button>';
+      '<button class="preset-btn active" id="p-di" data-preset="p-di">Distillation rule</button>' +
+      '<button class="preset-btn" id="p-fe" data-preset="p-fe">Fermentor + yield</button>' +
+      '<button class="preset-btn" id="p-pe" data-preset="p-pe">Penicillin timeline</button>';
     document.getElementById("p-di").onclick = function(){ setActivePreset(this); mode = "distil"; draw(App.state.t); };
     document.getElementById("p-fe").onclick = function(){ setActivePreset(this); mode = "ferm"; draw(App.state.t); };
     document.getElementById("p-pe").onclick = function(){ setActivePreset(this); mode = "pen"; draw(App.state.t); };
@@ -201,9 +201,9 @@ window.SIMS["chemical-enzyme"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Enzymes: lipase / pectinase / streptokinase</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Bioactives: cyclosporin / statins (Ex 12)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ac">Acid matcher (4)</button>' +
-      '<button class="preset-btn" id="p-en">Enzyme uses</button>' +
-      '<button class="preset-btn" id="p-bi">Ex 12 bioactives</button>';
+      '<button class="preset-btn active" id="p-ac" data-preset="p-ac">Acid matcher (4)</button>' +
+      '<button class="preset-btn" id="p-en" data-preset="p-en">Enzyme uses</button>' +
+      '<button class="preset-btn" id="p-bi" data-preset="p-bi">Ex 12 bioactives</button>';
     document.getElementById("p-ac").onclick = function(){ setActivePreset(this); item = 0; draw(App.state.t); };
     document.getElementById("p-en").onclick = function(){ setActivePreset(this); item = 5; draw(App.state.t); };
     document.getElementById("p-bi").onclick = function(){ setActivePreset(this); item = 6; draw(App.state.t); };
@@ -211,7 +211,7 @@ window.SIMS["chemical-enzyme"] = (function(){
       '<div class="control-item"><div class="control-label"><span>Product card</span><span class="val" id="ctrl-i">1 / 8</span></div>' +
       '<input type="range" id="ctrl-i-range" min="0" max="7" step="1" value="0"></div>' +
       '<div class="control-item"><div class="control-label"><span>Self-test</span><span class="val">book facts only</span></div>' +
-      '<div><button class="preset-btn" id="b-hide">Hide microbe</button> <button class="preset-btn" id="b-show">Reveal</button></div></div>';
+      '<div><button class="preset-btn" id="b-hide" data-preset="b-hide">Hide microbe</button> <button class="preset-btn" id="b-show" data-preset="b-show">Reveal</button></div></div>';
     document.getElementById("ctrl-i-range").oninput = function(){ item = numEl("ctrl-i-range", 0); draw(App.state.t); };
     var hidden = false;
     document.getElementById("b-hide").onclick = function(){ hidden = true; draw(App.state.t); verdict("<b>Self-test:</b> which book microbe makes <b>" + products[item] + "</b>? (" + notes[item] + "). Press Reveal to check (Sec 8.2.3)."); };
@@ -254,8 +254,8 @@ window.SIMS["sewage-bod"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Secondary: flocs eat organics (aeration)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>BOD = O2 to oxidise 1 L organics</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-st">STP stepper (Ex 8)</button>' +
-      '<button class="preset-btn" id="p-ex">Ex 11 labeller: 20 / 8 / 400</button>';
+      '<button class="preset-btn active" id="p-st" data-preset="p-st">STP stepper (Ex 8)</button>' +
+      '<button class="preset-btn" id="p-ex" data-preset="p-ex">Ex 11 labeller: 20 / 8 / 400</button>';
     document.getElementById("p-st").onclick = function(){ setActivePreset(this); stage = 0; App.state.t = 0; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 0; draw(0); };
     document.getElementById("p-ex").onclick = function(){ setActivePreset(this); stage = 1; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -334,8 +334,8 @@ window.SIMS["biogas-biocontrol"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Methane (predominant) + floating cover</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Biocontrol pairs (Sec 8.5)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-g">Gobar-gas flow (10-15 ft)</button>' +
-      '<button class="preset-btn" id="p-b">Biocontrol matcher (5)</button>';
+      '<button class="preset-btn active" id="p-g" data-preset="p-g">Gobar-gas flow (10-15 ft)</button>' +
+      '<button class="preset-btn" id="p-b" data-preset="p-b">Biocontrol matcher (5)</button>';
     document.getElementById("p-g").onclick = function(){ setActivePreset(this); mode = "gas"; draw(App.state.t); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); mode = "bio"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -412,9 +412,9 @@ window.SIMS["biofertiliser"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Mycorrhiza: Glomus gives P</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Paddy trio: Anabaena / Nostoc / Oscillatoria</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-rh">Rhizobium nodules</button>' +
-      '<button class="preset-btn" id="p-my">Glomus trade</button>' +
-      '<button class="preset-btn" id="p-pa">Paddy trio (3)</button>';
+      '<button class="preset-btn active" id="p-rh" data-preset="p-rh">Rhizobium nodules</button>' +
+      '<button class="preset-btn" id="p-my" data-preset="p-my">Glomus trade</button>' +
+      '<button class="preset-btn" id="p-pa" data-preset="p-pa">Paddy trio (3)</button>';
     document.getElementById("p-rh").onclick = function(){ setActivePreset(this); item = 0; var r = document.getElementById("ctrl-i-range"); if(r) r.value = 0; draw(App.state.t); };
     document.getElementById("p-my").onclick = function(){ setActivePreset(this); item = 2; var r = document.getElementById("ctrl-i-range"); if(r) r.value = 2; draw(App.state.t); };
     document.getElementById("p-pa").onclick = function(){ setActivePreset(this); item = 3; var r = document.getElementById("ctrl-i-range"); if(r) r.value = 3; draw(App.state.t); };

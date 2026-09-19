@@ -1,766 +1,297 @@
+// Class 9 Science, Chapter 6 (iesc106) — simulation labs.
+// Textbook numbers (Examples 6.1–6.8, Activities 6.1–6.7, exercises) are used where given; other values are labelled illustrative.
 var App = window.App;
+var LAB = window.LAB;
 window.SIMS = {};
 
-function setActivePreset(btn){
-  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-  if(btn) btn.classList.add("active");
-}
+function box6(L, x, y, w, h, label, fill){ return L.rect(x - w / 2, y - h / 2, w, h, fill || "#334155", ' rx="6" stroke="#e2e8f0" stroke-width="2"') + L.text(x, y + 5, label, {size: 14, color: "#f8fafc", weight: 700}); }
 
-// =========================================================================
-// 1. SIMULATION 1: Force & Net Equilibrium (lab_forces)
-// =========================================================================
+// Lab 1 — Net force: Example 6.1 and tug of war
 (function(){
-  var simState = {
-    f1: 15,  // N (East/Right)
-    f2: 9,   // N (West/Left)
-    mass: 3, // kg
-    x0: 360,
-    v: 0
+  var L = LAB, C = L.C;
+  var CFG = {
+    a: {forces: [10, 6], name: "Example 6.1 (a)"},
+    b: {forces: [10, -6], name: "Example 6.1 (b)"},
+    c: {forces: [-10, 6], name: "Example 6.1 (c)"},
+    tug: {forces: [300, -300], name: "Tug of war, equal pulls"}
   };
-
-  function mount(lesson){
-    simState.f1 = 15;
-    simState.f2 = 9;
-    simState.mass = 3;
-    simState.v = 0;
-    var maxT = 5.0;
-    App.state.maxT = maxT;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = maxT; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Force F₁ (Right/East)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f43f5e;"></span><span>Force F₂ (Left/West)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Net Resultant Vector (ΣF)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p1-unbalanced">Unbalanced: 15 N East vs 9 N West</button>' +
-      '<button class="preset-btn" id="p1-balanced">Balanced: 12 N East vs 12 N West (Equilibrium)</button>' +
-      '<button class="preset-btn" id="p1-snakeboat">Vallum Kali: 19 kN vs 1 kN</button>';
-
-    document.getElementById("p1-unbalanced").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.f1 = 15; simState.f2 = 9; simState.mass = 3;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Net force is +6 N East. The 3 kg crate accelerates at a = 2.0 m/s², visibly picking up speed to the right!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p1-balanced").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.f1 = 12; simState.f2 = 12; simState.mass = 3;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Net force is exactly 0 N. The opposing forces cancel completely: acceleration is 0 m/s² and the crate remains at rest!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p1-snakeboat").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.f1 = 19; simState.f2 = 1; simState.mass = 6;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Kerala Snake Boat Race model: 19 kN forward vs 1 kN mistake backward. Massive net forward surge of 18 kN!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Notice how the green Net Force arrow determines acceleration. Press Play or drag the Scrubber to see the crate move!";
-    draw(0);
+  var st = {preset: "a"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 1, speed: 1});
+    L.legend([[C.vel, "individual forces"], [C.path, "net force"]]);
+    L.watch(CFG[id].name + ": each arrow's length shows its size. The block (or rope) moves only if the net force is not zero. Motion is illustrative.");
+    L.controls(""); L.restart(true);
   }
-
   function draw(t){
-    var fNet = simState.f1 - simState.f2;
-    var a = fNet / simState.mass;
-    var x = 0.5 * a * t * t * 18; // scaled position
-    var v = a * t;
-    var currentX = simState.x0 + x;
-    if(currentX > 640) currentX = 640;
-    if(currentX < 80) currentX = 80;
-
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    // Background & Floor
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-    svg += '<line x1="40" y1="210" x2="680" y2="210" stroke="#334155" stroke-width="4"/>';
-    for(var i = 40; i <= 680; i += 40){
-      svg += '<line x1="' + i + '" y1="210" x2="' + (i - 15) + '" y2="225" stroke="#1e293b" stroke-width="2"/>';
-    }
-
-    // Crate Box
-    var boxW = 80, boxH = 60;
-    var boxY = 210 - boxH;
-    svg += '<rect x="' + (currentX - boxW/2) + '" y="' + boxY + '" width="' + boxW + '" height="' + boxH + '" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="6"/>';
-    svg += '<text x="' + currentX + '" y="' + (boxY + 34) + '" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">m = ' + simState.mass + ' kg</text>';
-
-    // Arrow F1 (Rightward)
-    var arrow1Len = simState.f1 * 7;
-    svg += '<line x1="' + (currentX + boxW/2) + '" y1="' + (boxY + 30) + '" x2="' + (currentX + boxW/2 + arrow1Len) + '" y2="' + (boxY + 30) + '" stroke="#38bdf8" stroke-width="4" marker-end="url(#arr-blue)"/>';
-    svg += '<text x="' + (currentX + boxW/2 + arrow1Len/2) + '" y="' + (boxY + 18) + '" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">F₁ = ' + simState.f1 + ' N</text>';
-
-    // Arrow F2 (Leftward)
-    var arrow2Len = simState.f2 * 7;
-    svg += '<line x1="' + (currentX - boxW/2) + '" y1="' + (boxY + 30) + '" x2="' + (currentX - boxW/2 - arrow2Len) + '" y2="' + (boxY + 30) + '" stroke="#f43f5e" stroke-width="4"/>';
-    svg += '<polygon points="' + (currentX - boxW/2 - arrow2Len) + ',' + (boxY + 30) + ' ' + (currentX - boxW/2 - arrow2Len + 8) + ',' + (boxY + 25) + ' ' + (currentX - boxW/2 - arrow2Len + 8) + ',' + (boxY + 35) + '" fill="#f43f5e"/>';
-    svg += '<text x="' + (currentX - boxW/2 - arrow2Len/2) + '" y="' + (boxY + 18) + '" fill="#f43f5e" font-size="12" font-weight="bold" text-anchor="middle">F₂ = ' + simState.f2 + ' N</text>';
-
-    // Resultant Vector
-    var netColor = fNet === 0 ? '#94a3b8' : '#10b981';
-    var netY = boxY - 35;
-    if(fNet !== 0){
-      var netLen = Math.abs(fNet) * 7;
-      var sign = fNet > 0 ? 1 : -1;
-      svg += '<line x1="' + currentX + '" y1="' + netY + '" x2="' + (currentX + sign * netLen) + '" y2="' + netY + '" stroke="' + netColor + '" stroke-width="4"/>';
-      svg += '<polygon points="' + (currentX + sign * netLen) + ',' + netY + ' ' + (currentX + sign * (netLen - 8)) + ',' + (netY - 5) + ' ' + (currentX + sign * (netLen - 8)) + ',' + (netY + 5) + '" fill="' + netColor + '"/>';
-    }
-    svg += '<text x="' + currentX + '" y="' + (netY - 10) + '" fill="' + netColor + '" font-size="13" font-weight="bold" text-anchor="middle">Net Force ΣF = ' + (fNet > 0 ? '+' : '') + fNet + ' N</text>';
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Time (t)</span><span class="v">' + t.toFixed(1) + ' s</span></div>' +
-      '<div class="metric"><span class="k">Net Force (ΣF)</span><span class="v" style="color:' + netColor + '">' + fNet + ' N</span></div>' +
-      '<div class="metric"><span class="k">Acceleration (a)</span><span class="v">' + a.toFixed(2) + ' m/s²</span></div>' +
-      '<div class="metric"><span class="k">Velocity (v)</span><span class="v">' + v.toFixed(2) + ' m/s</span></div>';
-
-    var verdictText = fNet === 0 
-      ? '<strong>Balanced Forces (Equilibrium):</strong> Net force is 0 N. Acceleration is zero. State of rest persists indefinitely.'
-      : '<strong>Unbalanced Net Force (' + fNet + ' N):</strong> Causes acceleration of ' + a.toFixed(2) + ' m/s² in the direction of the net force.';
-    document.getElementById("lab-verdict").innerHTML = verdictText;
+    var c = CFG[st.preset], net = c.forces[0] + c.forces[1], scale = st.preset === "tug" ? 0.35 : 9;
+    var shift = Math.max(-200, Math.min(200, 12 * Math.sign(net) * Math.min(t, 4) * Math.min(t, 4) * (Math.abs(net) > 0 ? 1 : 0)));
+    var x = 360 + shift, m = "";
+    m += L.line(60, 200, 660, 200, C.faint, 3);
+    m += box6(L, x, 170, 80, 60, st.preset === "tug" ? "rope" : "block");
+    c.forces.forEach(function(f, i){
+      var y = 140 + i * 30, len = Math.abs(f) * scale, dir = Math.sign(f);
+      var start = dir > 0 ? x - 40 - len : x + 40 + len, end = dir > 0 ? x - 42 : x + 42;
+      m += L.arrow(start, y - 50, end, y - 50, C.vel, 4) + L.text((start + end) / 2, y - 58, Math.abs(f) + " N", {size: 13, color: C.vel});
+    });
+    if(net !== 0){ m += L.arrow(x, 250, x + Math.sign(net) * Math.abs(net) * scale, 250, C.path, 6) + L.text(x + Math.sign(net) * Math.abs(net) * scale / 2, 275, "net " + Math.abs(net) + " N", {size: 14, color: C.path, weight: 700}); }
+    else m += L.text(x, 265, "net force = 0 (balanced)", {size: 15, color: C.path, weight: 700});
+    L.svg(m, c.name + ": net force " + net + " newtons", 300);
+    var dirTxt = net > 0 ? "towards the right" : net < 0 ? "towards the left" : "none";
+    L.readout([["Forces", c.forces.map(function(f){ return Math.abs(f) + " N " + (f > 0 ? "→" : "←"); }).join(" and ")], ["Net force", Math.abs(net) + " N " + (net ? dirTxt : ""), C.path], ["Motion", net ? "starts moving " + dirTxt : "no change"]]);
+    L.verdict(t < 4 ? "Adding the forces…" : st.preset === "tug" ? "<b>Balanced forces:</b> equal pulls in opposite directions give zero net force, so the rope does not move." :
+      "<b>" + c.name + ":</b> net force = <b>" + Math.abs(net) + " N " + dirTxt + "</b>" + (st.preset === "a" ? " (same direction: add)." : " (opposite directions: subtract, along the larger force)."));
   }
-
-  window.SIMS.lab_forces = { mount: mount, draw: draw };
+  function mount(){ L.presets([["a", "Example 6.1 (a)"], ["b", "Example 6.1 (b)"], ["c", "Example 6.1 (c)"], ["tug", "Tug of war"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.netForce = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 2. SIMULATION 2: Friction Test Bench (lab_friction)
-// =========================================================================
+// Lab 2 — Activity 6.1: coin stack on different surfaces (sample distances are illustrative)
 (function(){
-  var simState = {
-    fApp: 40,
-    muS: 0.5,
-    muK: 0.35,
-    mass: 10, // kg -> N = 100 N
-    mode: "static"
-  };
-
-  function mount(lesson){
-    simState.fApp = 40;
-    simState.mass = 10;
-    simState.muS = 0.5;
-    simState.muK = 0.35;
-    App.state.maxT = 5.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 5.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Applied Pull (F_app)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Friction Opposing Force (f)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Breakaway Threshold (f_s,max = 50 N)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p2-sub">Below Threshold: 30 N Pull (Stationary)</button>' +
-      '<button class="preset-btn" id="p2-limit">At Threshold: 50 N Pull (Limiting)</button>' +
-      '<button class="preset-btn" id="p2-sliding">Breakaway: 70 N Pull (Accelerating)</button>';
-
-    document.getElementById("p2-sub").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.fApp = 30;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Static friction self-adjusts to exactly 30 N. The block stays completely locked at rest (net force = 0).";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p2-limit").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.fApp = 50;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Applied force reaches the maximum static limit f_s,max = 50 N. Impending motion is on the verge of breakaway!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p2-sliding").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.fApp = 70;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Breakaway occurs! Kinetic friction drops to a constant 35 N. Net force is 35 N forward, accelerating the block!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  var L = LAB, C = L.C;
+  var U = 1.2;
+  var SURF = {wood: {name: "wooden table top", d: 0.30, col: "#a16207"}, laminate: {name: "laminated table top", d: 0.45, col: "#64748b"}, tiles: {name: "polished marble / tiles", d: 0.70, col: "#cbd5e1"}};
+  var st = {preset: "wood"};
+  function dec(s){ return U * U / (2 * SURF[s].d); }
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: U / dec(id), step: 0.1, speed: 0.5, format: function(t){ return "t = <b>" + L.num(t, 2) + " s</b>"; }});
+    L.legend([["#fbbf24", "coin stack"], [C.danger, "force of friction"]]);
+    L.watch("Activity 6.1 on a " + SURF[id].name + ". The rubber band launches the coins at the same speed every time (sample values).");
+    L.controls(""); L.restart(true);
   }
-
   function draw(t){
-    var normal = simState.mass * 10; // 100 N
-    var fsMax = simState.muS * normal; // 50 N
-    var fk = simState.muK * normal;    // 35 N
-    var fFrict = 0, a = 0, isSliding = false;
+    var a = dec(st.preset), tt = Math.min(t, U / a), v = Math.max(0, U - a * tt), s = U * tt - 0.5 * a * tt * tt, m = "";
+    var X = function(d){ return 80 + d * 800; };
+    m += L.rect(40, 180, 640, 30, SURF[st.preset].col, ' rx="4"');
+    for(var d = 0; d <= 0.7001; d += 0.1) m += L.line(X(d), 210, X(d), 222, C.muted, 2) + L.text(X(d), 240, Math.round(d * 100) + " cm", {size: 12, color: C.muted});
+    Object.keys(SURF).forEach(function(k){ m += L.line(X(SURF[k].d), 160, X(SURF[k].d), 180, SURF[k].col, 3) + L.text(X(SURF[k].d), 152, k, {size: 11, color: C.muted}); });
+    m += L.rect(X(s) - 14, 150, 28, 30, "#fbbf24", ' rx="4"');
+    if(v > 0.01) m += L.arrow(X(s) - 16, 130, X(s) - 16 - 30 * a, 130, C.danger, 4) + L.text(X(s) - 30, 120, "friction", {size: 12, color: C.danger});
+    L.svg(m, "Coins on " + SURF[st.preset].name, 280);
+    L.readout([["Surface", SURF[st.preset].name], ["Velocity", L.num(v, 2) + " m s⁻¹", "#fbbf24"], ["Distance from C", L.num(s * 100, 1) + " cm"], ["Slowing down by (friction)", L.num(a, 2) + " m s⁻² (illustrative)", C.danger]]);
+    L.verdict(v > 0.001 ? "The coins are slowing: only friction acts on them now." :
+      st.preset === "tiles" ? "<b>Smallest friction:</b> on polished tiles the velocity fell most slowly and the coins travelled farthest (" + Math.round(SURF.tiles.d * 100) + " cm)." :
+      st.preset === "wood" ? "<b>Largest friction:</b> on wood the coins lost velocity fastest and stopped after only " + Math.round(SURF.wood.d * 100) + " cm." :
+      "On the laminated top the coins went " + Math.round(SURF.laminate.d * 100) + " cm: less friction than wood, more than tiles.");
+  }
+  function mount(){ L.presets([["wood", "Wooden table top"], ["laminate", "Laminated top"], ["tiles", "Polished tiles"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.friction = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-    if(simState.fApp > fsMax){
-      isSliding = true;
-      fFrict = fk;
-      a = (simState.fApp - fk) / simState.mass;
+// Lab 3 — First law: frictionless, balanced push, at rest, push removed
+(function(){
+  var L = LAB, C = L.C;
+  var CFG = {
+    frictionless: {u: 2, a: 0, text: "Thought experiment: no friction and no push."},
+    balanced: {u: 2, a: 0, text: "Example 6.2: the push equals friction."},
+    rest: {u: 0, a: 0, text: "Example 6.3: an object at rest with no net force."},
+    removed: {u: 2, a: -0.5, text: "For contrast: friction acts and the push is removed."}
+  };
+  var st = {preset: "frictionless"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 8, step: 1, speed: 1});
+    L.legend([[C.vel, "velocity–time graph"], [C.path, "position–time graph"]]);
+    L.watch(CFG[id].text + " Watch both graphs. (Values illustrative.)");
+    L.controls(""); L.restart(true);
+  }
+  function state(c, t){ var ts = c.a < 0 ? Math.min(t, c.u / -c.a) : t; return {v: Math.max(0, c.u + c.a * ts), s: c.u * ts + 0.5 * c.a * ts * ts}; }
+  function draw(t){
+    var c = CFG[st.preset], s = state(c, t), m = "";
+    var X = function(p){ return 40 + p * 38; };
+    m += L.line(20, 90, 700, 90, C.faint, 3) + L.rect(X(s.s % 17) - 20, 60, 40, 30, "#334155", ' rx="4" stroke="#e2e8f0"');
+    if(st.preset === "balanced"){ m += L.arrow(X(s.s % 17) - 70, 75, X(s.s % 17) - 22, 75, C.vel, 3) + L.arrow(X(s.s % 17) + 70, 75, X(s.s % 17) + 22, 75, C.danger, 3); }
+    var gv = L.graph({x0: 60, y0: 270, w: 260, h: 130, tmax: 8, vmin: 0, vmax: 3, tStep: 2, vStep: 1, tLabel: "t", vLabel: "velocity"});
+    var gp = L.graph({x0: 420, y0: 270, w: 260, h: 130, tmax: 8, vmin: 0, vmax: 18, tStep: 2, vStep: 6, tLabel: "t", vLabel: "position"});
+    m += gv.svg + gp.svg;
+    var ptsV = [], ptsP = [];
+    for(var k = 0; k <= 40; k++){ var tk = t * k / 40, sk = state(c, tk); ptsV.push([tk, sk.v]); ptsP.push([tk, sk.s]); }
+    m += L.polyline(gv, ptsV, C.vel, 3) + L.polyline(gp, ptsP, C.path, 3);
+    L.svg(m, "Velocity " + L.num(s.v, 1), 300);
+    var net = c.a !== 0 ? "not zero (friction)" : "zero";
+    L.readout([["Net force", net, net === "zero" ? C.ok : C.danger], ["Velocity", L.num(s.v, 2) + " m s⁻¹", C.vel], ["Position", L.num(s.s, 1) + " m", C.path]]);
+    L.verdict(t < 8 ? "Watching the motion…" : st.preset === "removed" ? "With friction and no push, the net force is not zero: the velocity decreases to zero." :
+      st.preset === "rest" ? "<b>At rest stays at rest:</b> zero net force, zero velocity: position–time graph horizontal, velocity–time graph on the time axis." :
+      "<b>Newton's first law:</b> with zero net force the object keeps moving with <b>constant velocity</b>: a horizontal velocity–time graph and a straight position–time graph.");
+  }
+  function mount(){ L.presets([["frictionless", "No friction, no push"], ["balanced", "Example 6.2: push = friction"], ["rest", "At rest"], ["removed", "Push removed (with friction)"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.firstLaw = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 4 — Second law: Activities 6.3–6.4 and F = ma
+(function(){
+  var L = LAB, C = L.C;
+  var TABLE = 1.0, G = 9.8;
+  var st = {preset: "act63", F: 2, m: 1};
+  function runs(){
+    // Simplified as in the textbook analysis: constant pull F on the cart; cup mass and friction ignored.
+    if(st.preset === "act63") return [{F: 0.05 * G, M: 0.5, label: "cup 50 g"}, {F: 0.10 * G, M: 0.5, label: "cup 100 g (doubled)"}];
+    if(st.preset === "act64") return [{F: 0.05 * G, M: 0.5, label: "cart 500 g"}, {F: 0.05 * G, M: 1.0, label: "cart 1000 g (doubled)"}];
+    return [{F: st.F, M: st.m, label: "F = " + st.F + " N, m = " + st.m + " kg"}];
+  }
+  function retime(){ var a = st.F / st.m; L.timeline({maxT: Math.sqrt(2 * TABLE / a), step: 0.1, speed: 0.6, format: function(t){ return "t = <b>" + L.num(t, 2) + " s</b>"; }}); App.resetTimeline(); App.play(); }
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    var rs = runs(), tmax = Math.max.apply(null, rs.map(function(r){ return Math.sqrt(2 * TABLE / (r.F / r.M)); }));
+    L.timeline({maxT: tmax, step: 0.1, speed: 0.6, format: function(t){ return "t = <b>" + L.num(t, 2) + " s</b>"; }});
+    L.legend([[C.vel, "run 1"], [C.path, "run 2"]]);
+    L.watch(id === "act63" ? "Activity 6.3: the same cart, pulled by a cup of 50 g, then 100 g, over a 1.0 m table (ignoring friction and the cup's own mass)." : id === "act64" ? "Activity 6.4: the same cup, pulling a 500 g cart, then a 1000 g cart." : "Choose any force and mass: a = F ÷ m.");
+    if(id === "fma"){
+      L.controls(L.slider("s4-F", "Net force F", 1, 10, 1, st.F, st.F + " N") + L.slider("s4-m", "Mass m", 0.5, 5, 0.5, st.m, st.m + " kg"));
+      L.onInput("s4-F", function(v){ st.F = v; L.setVal("s4-F", v + " N"); retime(); });
+      L.onInput("s4-m", function(v){ st.m = v; L.setVal("s4-m", v + " kg"); retime(); });
+    } else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var rs = runs(), m = "", X = function(d){ return 60 + d * 560; };
+    rs.forEach(function(r, i){
+      var a = r.F / r.M, T = Math.sqrt(2 * TABLE / a), s = Math.min(TABLE, 0.5 * a * t * t), y = 90 + i * 110, col = i ? C.path : C.vel;
+      m += L.rect(40, y + 20, 600, 8, "#475569") + L.rect(X(s) - 30, y - 10, 60, 30, "#1e293b", ' rx="4" stroke="' + col + '" stroke-width="2"') + L.circle(X(s) - 18, y + 22, 6, "#94a3b8") + L.circle(X(s) + 18, y + 22, 6, "#94a3b8");
+      m += L.text(40, y - 20, r.label + ": a = " + L.num(a, 2) + " m s⁻²" + (t >= T - 1e-6 ? ", T = " + L.num(T, 2) + " s" : ""), {size: 13, color: col, anchor: "start"});
+    });
+    L.svg(m, "Carts accelerating", 280);
+    var a1 = rs[0].F / rs[0].M, cells = [["Run 1 acceleration", L.num(a1, 2) + " m s⁻²", C.vel]];
+    if(rs[1]){ var a2 = rs[1].F / rs[1].M, T1 = Math.sqrt(2 / a1), T2 = Math.sqrt(2 / a2); cells.push(["Run 2 acceleration", L.num(a2, 2) + " m s⁻²", C.path], ["a₂ ÷ a₁ = T₁² ÷ T₂²", L.num(a2 / a1, 2)]); }
+    L.readout(cells);
+    var done = t >= App.state.maxT - 1e-6;
+    L.verdict(!done ? "Carts moving…" : st.preset === "act63" ? "<b>Activity 6.3:</b> doubling the force on the same cart <b>doubled the acceleration</b> (a₂ ÷ a₁ = 2). A real cart gives a little less because of friction." :
+      st.preset === "act64" ? "<b>Activity 6.4:</b> doubling the mass with the same force <b>halved the acceleration</b>." :
+      "<b>F = ma:</b> a = " + st.F + " N ÷ " + st.m + " kg = " + L.num(st.F / st.m, 2) + " m s⁻².");
+  }
+  function mount(){ L.presets([["act63", "Activity 6.3: double the force"], ["act64", "Activity 6.4: double the mass"], ["fma", "Try F and m"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.secondLaw = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 5 — Stopping force, Example 6.6 and Example 6.5
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "catch"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: id === "car" ? 15 : id === "push" ? 2 : 1, step: id === "car" ? 1 : 0.1, speed: id === "car" ? 2 : id === "push" ? 1 : 0.5});
+    L.legend(id === "catch" ? [[C.danger, "stiff hands (0.01 s)"], [C.ok, "hands pulled back (0.1 s)"]] : id === "car" ? [[C.vel, "velocity (Fig. 6.21)"], [C.path, "force on the car"]] : [[C.vel, "applied force"], [C.danger, "friction"]]);
+    L.watch({catch: "A 0.16 kg ball at 30 m s⁻¹ is stopped in 0.01 s and in 0.1 s (illustrative values).", car: "Example 6.6: a 1500 kg sports car's velocity–time graph and the force in each interval.", push: "Example 6.5: a 25 kg block with maximum friction 50 N, pushed with 55 N for 2 s."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "catch"){
+      [[0.01, C.danger, 90], [0.1, C.ok, 200]].forEach(function(r){
+        var f = Math.min(1, t / 1), stopT = r[0], F = 0.16 * 30 / stopT;
+        m += L.text(40, r[2] - 30, "stops in " + stopT + " s → force " + L.num(F, 0) + " N", {size: 14, color: r[1], anchor: "start", weight: 700});
+        m += L.rect(40, r[2] - 10, Math.min(600, F * 1.2 * f), 24, r[1], ' rx="4"');
+      });
+      L.svg(m, "Stopping forces", 260);
+      L.readout([["Change in velocity", "30 m s⁻¹ → 0"], ["Stiff hands", "480 N", C.danger], ["Hands pulled back", "48 N", C.ok]]);
+      msg = t < 1 ? "Comparing…" : "<b>Longer stopping time, smaller force:</b> taking 10 times longer makes the force <b>10 times smaller</b> (480 N vs 48 N).";
+    } else if(st.preset === "car"){
+      var pts = [[0, 0], [5, 10], [10, 10], [15, 0]];
+      var g = L.graph({x0: 70, y0: 250, w: 560, h: 190, tmax: 15, vmin: 0, vmax: 12.5, tStep: 5, vStep: 2.5, tLabel: "Time (s)", vLabel: "Velocity (m s⁻¹)", vFmt: function(v){ return L.num(v, 1); }});
+      m += g.svg + L.polyline(g, pts, C.faint, 2, "5 4") + L.polyline(g, pts.filter(function(p){ return p[0] < t; }).concat([[t, L.interp(pts, t)]]), C.vel, 4);
+      var F = t < 5 ? 3000 : t < 10 ? 0 : -3000;
+      m += L.circle(g.X(t), g.Y(L.interp(pts, t)), 6, C.vel);
+      L.svg(m, "Sports car", 290);
+      L.readout([["Time", L.num(t, 1) + " s"], ["Velocity", L.num(L.interp(pts, t), 1) + " m s⁻¹", C.vel], ["Force (1500 kg)", F === 0 ? "0 N" : Math.abs(F) + " N " + (F > 0 ? "east" : "west"), C.path]]);
+      msg = t < 15 ? "Reading the graph…" : "<b>Example 6.6:</b> 0–5 s: a = 2 m s⁻², F = <b>3000 N</b> east; 5–10 s: constant velocity, F = 0; 10–15 s: a = −2 m s⁻², F = 3000 N west.";
     } else {
-      isSliding = false;
-      fFrict = simState.fApp;
-      a = 0;
+      var a = (55 - 50) / 25, s = 0.5 * a * t * t;
+      m += L.line(40, 200, 680, 200, C.faint, 3) + L.rect(120 + s * 500 - 40, 140, 80, 60, "#334155", ' rx="4" stroke="#e2e8f0"') + L.text(120 + s * 500, 175, "25 kg", {size: 13, color: "#fff"});
+      m += L.arrow(120 + s * 500 - 120, 160, 120 + s * 500 - 42, 160, C.vel, 4) + L.text(120 + s * 500 - 90, 150, "55 N", {size: 13, color: C.vel});
+      m += L.arrow(120 + s * 500 + 110, 185, 120 + s * 500 + 42, 185, C.danger, 4) + L.text(120 + s * 500 + 90, 215, "friction 50 N", {size: 13, color: C.danger});
+      L.svg(m, "Block pushed", 260);
+      L.readout([["Net force", "55 − 50 = 5 N"], ["Acceleration", "5 ÷ 25 = 0.2 m s⁻²"], ["Displacement", L.num(s, 2) + " m", C.path]]);
+      msg = t < 2 ? "Pushing…" : "<b>Example 6.5:</b> with 50 N the block stays still (balanced); with 55 N, a = 0.2 m s⁻² and in 2 s it moves <b>0.4 m</b>.";
     }
-
-    var x = isSliding ? 0.5 * a * t * t * 14 : 0;
-    var currentX = 260 + x;
-    if(currentX > 580) currentX = 580;
-
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-    // Rough Surface
-    svg += '<rect x="40" y="200" width="640" height="15" fill="#334155" rx="3"/>';
-    for(var j = 45; j < 670; j += 15){
-      svg += '<circle cx="' + j + '" cy="207" r="2" fill="#64748b"/>';
-    }
-
-    // Wooden Block
-    var bx = currentX - 50, by = 200 - 65, bw = 100, bh = 65;
-    svg += '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="#78350f" stroke="#d97706" stroke-width="2" rx="5"/>';
-    svg += '<text x="' + currentX + '" y="' + (by + 36) + '" fill="#fef3c7" font-size="13" font-weight="bold" text-anchor="middle">Block (10 kg)</text>';
-
-    // Applied Force Arrow
-    var appLen = simState.fApp * 1.5;
-    svg += '<line x1="' + (bx + bw) + '" y1="' + (by + 32) + '" x2="' + (bx + bw + appLen) + '" y2="' + (by + 32) + '" stroke="#38bdf8" stroke-width="4"/>';
-    svg += '<polygon points="' + (bx + bw + appLen) + ',' + (by + 32) + ' ' + (bx + bw + appLen - 8) + ',' + (by + 27) + ' ' + (bx + bw + appLen - 8) + ',' + (by + 37) + '" fill="#38bdf8"/>';
-    svg += '<text x="' + (bx + bw + appLen/2) + '" y="' + (by + 20) + '" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">F_app = ' + simState.fApp + ' N</text>';
-
-    // Friction Arrow
-    var frictLen = fFrict * 1.5;
-    svg += '<line x1="' + bx + '" y1="' + (by + bh - 6) + '" x2="' + (bx - frictLen) + '" y2="' + (by + bh - 6) + '" stroke="#fbbf24" stroke-width="4"/>';
-    svg += '<polygon points="' + (bx - frictLen) + ',' + (by + bh - 6) + ' ' + (bx - frictLen + 8) + ',' + (by + bh - 11) + ' ' + (bx - frictLen + 8) + ',' + (by + bh - 1) + '" fill="#fbbf24"/>';
-    svg += '<text x="' + (bx - frictLen/2) + '" y="' + (by + bh - 14) + '" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">f = ' + fFrict + ' N (' + (isSliding ? 'Kinetic' : 'Static') + ')</text>';
-
-    // Gauge Meter for Limiting Friction
-    svg += '<rect x="40" y="30" width="220" height="24" fill="#1e293b" rx="6" stroke="#475569"/>';
-    var fillW = Math.min(216, (simState.fApp / fsMax) * 216);
-    var gaugeCol = simState.fApp > fsMax ? '#ef4444' : '#38bdf8';
-    svg += '<rect x="42" y="32" width="' + fillW + '" height="20" fill="' + gaugeCol + '" rx="4"/>';
-    svg += '<text x="150" y="47" fill="#f8fafc" font-size="11" font-weight="bold" text-anchor="middle">Friction Demand: ' + simState.fApp + ' / ' + fsMax + ' N</text>';
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Applied Force</span><span class="v">' + simState.fApp + ' N</span></div>' +
-      '<div class="metric"><span class="k">Friction Type</span><span class="v">' + (isSliding ? 'Kinetic (f_k)' : 'Static (f_s)') + '</span></div>' +
-      '<div class="metric"><span class="k">Opposing Force</span><span class="v" style="color:#fbbf24">' + fFrict + ' N</span></div>' +
-      '<div class="metric"><span class="k">Acceleration</span><span class="v">' + a.toFixed(2) + ' m/s²</span></div>';
-
-    document.getElementById("lab-verdict").innerHTML = isSliding
-      ? '<strong>Sliding Motion:</strong> Applied force (' + simState.fApp + ' N) exceeded limiting static friction (50 N). Kinetic friction holds at ' + fk + ' N. Net force is ' + (simState.fApp - fk) + ' N.'
-      : '<strong>Static Equilibrium:</strong> Applied force (' + simState.fApp + ' N) does not exceed 50 N. Static friction self-adjusts to exactly ' + fFrict + ' N. Object remains stationary.';
+    L.verdict(msg);
   }
-
-  window.SIMS.lab_friction = { mount: mount, draw: draw };
+  function mount(){ L.presets([["catch", "Catching a fast ball"], ["car", "Example 6.6: sports car"], ["push", "Example 6.5: pushing a block"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.stopping = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 3. SIMULATION 3: Galileo's Incline & Inertia (lab_galileo)
-// =========================================================================
+// Lab 6 — Third law: gun recoil, spring balances, colliding carts, balloon rocket
 (function(){
-  var simState = {
-    thetaRight: 30, // degrees (30, 15, 0 = horizontal)
-    h: 120,
-    ballR: 12
-  };
-
-  function mount(lesson){
-    simState.thetaRight = 30;
-    App.state.maxT = 6.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 6.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#a855f7;"></span><span>Galileo Rolling Marble</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Initial Release Height (h)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Inertial Motion Path</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p3-steep">Equal Steep Slope (30° Right)</button>' +
-      '<button class="preset-btn" id="p3-gentle">Gentle Slope (15° Right)</button>' +
-      '<button class="preset-btn" id="p3-horizontal">Zero Slope: Flat Plane (0° Right - Newton 1st Law)</button>';
-
-    document.getElementById("p3-steep").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.thetaRight = 30;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Marble rolls down and climbs up the opposite slope to reach the exact same starting height h.";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p3-gentle").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.thetaRight = 15;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> The gentler slope forces the marble to travel much further along the ramp to attain the same height h.";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p3-horizontal").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.thetaRight = 0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Galileo's genius insight: With zero inclination on the right, the marble NEVER attains height h and continues rolling forever in a straight line!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  var L = LAB, C = L.C;
+  var st = {preset: "gun"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: id === "springs" ? 6 : 1, step: id === "springs" ? 1 : 0.1, speed: id === "springs" ? 1 : 0.4});
+    L.legend([[C.vel, "force on one object"], [C.path, "equal and opposite force on the other"]]);
+    L.watch({gun: "Example 6.8: a 2 N force pushes a 0.1 kg bullet forward and a 5 kg gun backward. Distances are shown for a 1 s push (illustrative).", springs: "Activity 6.6: two spring balances hooked together, pulled harder and harder.", carts: "Exercise Q9: a loaded cart (80 kg) meets an empty cart (40 kg); an interaction force of 200 N is illustrative.", balloon: "Activity 6.7: air rushes out of a balloon threaded on a string."}[id]);
+    L.controls(""); L.restart(true);
   }
-
   function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    // Left incline: (80, 80) to (300, 220)
-    var xL0 = 80, yL0 = 80, xV = 300, yV = 220;
-    // Right incline endpoint depending on thetaRight
-    var xR1, yR1;
-    if(simState.thetaRight === 30){
-      xR1 = 520; yR1 = 80;
-    } else if(simState.thetaRight === 15){
-      xR1 = 660; yR1 = 120;
+    var m = "", msg;
+    if(st.preset === "gun"){
+      var sb = 0.5 * 20 * t * t, sg = 0.5 * 0.4 * t * t;
+      m += L.rect(300 - sg * 60 - 90, 130, 100, 26, "#475569", ' rx="4"') + L.text(300 - sg * 60 - 40, 180, "gun 5 kg", {size: 13, color: C.muted});
+      m += L.circle(320 + Math.min(360, sb * 36), 143, 7, "#fbbf24") + L.text(320 + Math.min(360, sb * 36), 120, "bullet", {size: 13, color: "#fbbf24"});
+      m += L.arrow(330, 220, 400, 220, C.vel, 4) + L.text(365, 210, "2 N on bullet", {size: 12, color: C.vel}) + L.arrow(290, 220, 220, 220, C.path, 4) + L.text(255, 245, "2 N on gun", {size: 12, color: C.path});
+      L.svg(m, "Gun recoil", 280);
+      L.readout([["Force on bullet / gun", "2 N / 2 N"], ["Bullet acceleration", "2 ÷ 0.1 = 20 m s⁻²", C.vel], ["Gun acceleration", "2 ÷ 5 = 0.4 m s⁻²", C.path]]);
+      msg = t < 1 ? "Firing…" : "<b>Example 6.8:</b> equal forces, unequal accelerations: bullet <b>20 m s⁻²</b>, gun <b>0.4 m s⁻²</b> (backwards).";
+    } else if(st.preset === "springs"){
+      var pull = Math.round(Math.min(t, 6)) * 5;
+      [[180, "balance 1 (fixed end)"], [460, "balance 2 (your hand)"]].forEach(function(b){
+        m += L.rect(b[0] - 80, 120, 160, 50, "#1e293b", ' rx="8" stroke="#94a3b8"') + L.text(b[0], 152, pull + " N", {size: 22, color: C.path, weight: 700, mono: true}) + L.text(b[0], 195, b[1], {size: 12, color: C.muted});
+      });
+      m += L.line(260, 145, 380, 145, "#cbd5e1", 3) + L.rect(40, 120, 60, 50, "#475569");
+      L.svg(m, "Spring balances reading " + pull + " newtons", 240);
+      L.readout([["Balance 1 reading", pull + " N", C.path], ["Balance 2 reading", pull + " N", C.path]]);
+      msg = t < 6 ? "Pulling harder…" : "<b>Activity 6.6:</b> both balances always show the <b>same reading</b>: the forces they exert on each other are equal and opposite.";
+    } else if(st.preset === "carts"){
+      var F = 200, aL = F / 80, aE = F / 40, dl = 0.5 * aL * t * t, de = 0.5 * aE * t * t;
+      m += L.rect(300 - dl * 60 - 110, 120, 100, 50, "#16a34a", ' rx="6"') + L.text(300 - dl * 60 - 60, 150, "loaded", {size: 13, color: "#fff"}) + L.rect(320 + de * 60, 120, 100, 50, "#64748b", ' rx="6"') + L.text(370 + de * 60, 150, "empty", {size: 13, color: "#fff"});
+      m += L.arrow(310, 210, 240, 210, C.path, 4) + L.arrow(330, 210, 400, 210, C.vel, 4) + L.text(360, 240, "200 N each, opposite", {size: 13, color: C.text});
+      L.svg(m, "Carts pushing apart", 260);
+      L.readout([["Force on each cart", "200 N (equal)"], ["Loaded cart acceleration", L.num(aL, 1) + " m s⁻²", C.path], ["Empty cart acceleration", L.num(aE, 1) + " m s⁻²", C.vel]]);
+      msg = t < 1 ? "Colliding…" : "<b>Exercise Q9:</b> the carts exert <b>equal</b> forces on each other; the lighter empty cart simply accelerates twice as much.";
     } else {
-      xR1 = 680; yR1 = 220; // horizontal
+      var sBal = 0.5 * 3 * t * t;
+      m += L.line(40, 120, 680, 120, "#cbd5e1", 2) + '<ellipse cx="' + (500 - sBal * 150) + '" cy="150" rx="50" ry="32" fill="#ef4444"/>' + L.rect(480 - sBal * 150, 116, 40, 8, "#fde68a");
+      for(var i = 0; i < 6 && t > 0; i++) m += L.circle(560 - sBal * 150 + i * 18 + (t * 60 % 18), 150 + (i % 2 ? 8 : -8), 3, "#cbd5e1");
+      m += L.arrow(470 - sBal * 150, 210, 400 - sBal * 150, 210, C.vel, 4) + L.text(435 - sBal * 150, 235, "balloon pushed", {size: 12, color: C.vel}) + L.arrow(560 - sBal * 150, 210, 630 - sBal * 150, 210, C.path, 4) + L.text(595 - sBal * 150, 235, "air pushed out", {size: 12, color: C.path});
+      L.svg(m, "Balloon rocket", 260);
+      L.readout([["Air rushes", "towards the right", C.path], ["Balloon moves", "towards the left", C.vel]]);
+      msg = t < 1 ? "Air rushing out…" : "<b>Activity 6.7:</b> the balloon pushes air out one way and the air pushes the balloon the <b>opposite</b> way. Rockets work the same way.";
     }
-
-    // Incline track paths
-    svg += '<path d="M ' + xL0 + ' ' + yL0 + ' L ' + xV + ' ' + yV + ' L ' + xR1 + ' ' + yR1 + '" fill="none" stroke="#475569" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/>';
-    // Release height reference dashed line
-    svg += '<line x1="' + xL0 + '" y1="' + yL0 + '" x2="680" y2="' + yL0 + '" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="6,4"/>';
-    svg += '<text x="490" y="' + (yL0 - 8) + '" fill="#38bdf8" font-size="12">Initial Height h</text>';
-
-    // Ball motion physics approximation
-    var bx = xL0, by = yL0;
-    var tDown = 2.0;
-    if(t <= tDown){
-      var f1 = t / tDown;
-      bx = xL0 + (xV - xL0) * f1;
-      by = yL0 + (yV - yL0) * f1;
-    } else {
-      var tUp = t - tDown;
-      if(simState.thetaRight === 0){
-        // Continuous constant velocity on flat plane
-        var vH = (xV - xL0) / tDown;
-        bx = xV + vH * tUp * 0.9;
-        if(bx > 670) bx = 670;
-        by = yV;
-      } else {
-        var climbDur = simState.thetaRight === 30 ? 2.0 : 3.5;
-        var f2 = Math.min(1.0, tUp / climbDur);
-        bx = xV + (xR1 - xV) * f2;
-        by = yV + (yR1 - yV) * f2;
-      }
-    }
-
-    // Ball
-    svg += '<circle cx="' + bx + '" cy="' + (by - 12) + '" r="12" fill="#c084fc" stroke="#f3e8ff" stroke-width="2"/>';
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Time (t)</span><span class="v">' + t.toFixed(1) + ' s</span></div>' +
-      '<div class="metric"><span class="k">Right Inclination</span><span class="v">' + simState.thetaRight + '&deg;</span></div>' +
-      '<div class="metric"><span class="k">Ball Position X</span><span class="v">' + bx.toFixed(0) + ' px</span></div>' +
-      '<div class="metric"><span class="k">State of Motion</span><span class="v">' + (t <= 2 ? 'Accelerating Down' : (simState.thetaRight === 0 ? 'Uniform Motion (Inertia)' : 'Decelerating Up')) + '</span></div>';
-
-    document.getElementById("lab-verdict").innerHTML = simState.thetaRight === 0
-      ? '<strong>Galileo / Newton First Law:</strong> On a frictionless horizontal plane, no net force opposes motion. The marble continues moving in a straight line at constant velocity indefinitely.'
-      : '<strong>Conservation of Height:</strong> The marble climbs until it recovers its initial gravitational height h. A gentler slope requires a greater travel distance to reach height h.';
+    L.verdict(msg);
   }
-
-  window.SIMS.lab_galileo = { mount: mount, draw: draw };
+  function mount(){ L.presets([["gun", "Example 6.8: gun and bullet"], ["springs", "Activity 6.6: spring balances"], ["carts", "Exercise Q9: two carts"], ["balloon", "Activity 6.7: balloon rocket"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.thirdLaw = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 4. SIMULATION 4: Newton's Second Law Dynamic Cart (lab_second_law)
-// =========================================================================
+// Lab 7 — System of objects (Eq. 6.4) and Exercise Q15
 (function(){
-  var simState = {
-    cartM: 2.0,    // kg
-    hangM: 0.5,    // kg
-    trackL: 500
-  };
-
-  function mount(lesson){
-    simState.cartM = 2.0;
-    simState.hangM = 0.5;
-    App.state.maxT = 4.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 4.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Dynamic Cart (M)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Hanging Falling Mass (m)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Accelerating System (F = ma)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p4-base">Standard: Cart 2 kg, Hang 0.5 kg (a = 2.0 m/s²)</button>' +
-      '<button class="preset-btn" id="p4-double-f">Double Force: Hang 1.0 kg (a &propto; F)</button>' +
-      '<button class="preset-btn" id="p4-double-m">Double Cart Mass: Cart 4 kg (a &propto; 1/M)</button>';
-
-    document.getElementById("p4-base").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cartM = 2.0; simState.hangM = 0.5;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Base acceleration test. Observe the dynamic cart accelerate smoothly along the aluminum track.";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p4-double-f").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cartM = 2.0; simState.hangM = 1.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Activity 6.3: Doubling hanging pulling force increases system acceleration markedly!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p4-double-m").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.cartM = 4.0; simState.hangM = 0.5;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Activity 6.4: Doubling cart inertia halves the acceleration!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
+  var L = LAB, C = L.C;
+  var st = {preset: "boxes", F: 30, m1: 2, m2: 4};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    if(id === "boxes"){ st.F = 30; st.m1 = 2; st.m2 = 4; } else { st.F = 18; st.m1 = 3; st.m2 = 6; }
+    L.timeline({maxT: 2, step: 0.2, speed: 0.6, format: function(t){ return "t = <b>" + L.num(t, 1) + " s</b>"; }});
+    L.legend([[C.path, "external force F"], [C.vel, "tension (internal)"]]);
+    L.watch(id === "boxes" ? "Two boxes (2 kg and 4 kg) joined by a string on a frictionless floor, pulled by F = 30 N." : "Exercise Q15 with sample numbers: F = 18 N gives the harrow (3 kg) 6 m s⁻² and the trolley (6 kg) 3 m s⁻². Now pull both together.");
+    L.controls(L.slider("s7-F", "Force F", 6, 60, 6, st.F, st.F + " N") + L.slider("s7-m1", "m₁", 1, 10, 1, st.m1, st.m1 + " kg") + L.slider("s7-m2", "m₂", 1, 10, 1, st.m2, st.m2 + " kg"));
+    L.onInput("s7-F", function(v){ st.F = v; L.setVal("s7-F", v + " N"); App.seekTimeline(App.state.maxT); });
+    L.onInput("s7-m1", function(v){ st.m1 = v; L.setVal("s7-m1", v + " kg"); App.seekTimeline(App.state.maxT); });
+    L.onInput("s7-m2", function(v){ st.m2 = v; L.setVal("s7-m2", v + " kg"); App.seekTimeline(App.state.maxT); });
+    L.restart(true);
   }
-
   function draw(t){
-    var g = 9.8;
-    var fPull = simState.hangM * g; // N
-    var totalM = simState.cartM + simState.hangM;
-    var a = fPull / totalM;
-    var s = 0.5 * a * t * t * 20; // scale pixels
-    var cartX = Math.min(480, 100 + s);
-    var hangY = Math.min(220, 110 + s * 0.7);
-    var v = a * t;
-
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    // Track
-    svg += '<rect x="60" y="100" width="460" height="12" fill="#334155" rx="3"/>';
-    svg += '<circle cx="520" cy="106" r="14" fill="#64748b" stroke="#94a3b8" stroke-width="3"/>'; // Pulley
-
-    // Cart
-    svg += '<rect x="' + cartX + '" y="65" width="80" height="35" fill="#0284c7" stroke="#38bdf8" stroke-width="2" rx="4"/>';
-    svg += '<circle cx="' + (cartX + 18) + '" cy="100" r="6" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
-    svg += '<circle cx="' + (cartX + 62) + '" cy="100" r="6" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
-    svg += '<text x="' + (cartX + 40) + '" y="87" fill="#f0f9ff" font-size="11" font-weight="bold" text-anchor="middle">M = ' + simState.cartM + ' kg</text>';
-
-    // String
-    svg += '<line x1="' + (cartX + 80) + '" y1="80" x2="520" y2="80" stroke="#f8fafc" stroke-width="2"/>';
-    svg += '<line x1="534" y1="106" x2="534" y2="' + hangY + '" stroke="#f8fafc" stroke-width="2"/>';
-
-    // Hanging Mass
-    svg += '<rect x="520" y="' + hangY + '" width="28" height="36" fill="#d97706" stroke="#fbbf24" stroke-width="2" rx="3"/>';
-    svg += '<text x="534" y="' + (hangY + 22) + '" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">m=' + simState.hangM + '</text>';
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Time (t)</span><span class="v">' + t.toFixed(1) + ' s</span></div>' +
-      '<div class="metric"><span class="k">Pulling Force (mg)</span><span class="v">' + fPull.toFixed(1) + ' N</span></div>' +
-      '<div class="metric"><span class="k">Total Mass (M+m)</span><span class="v">' + totalM.toFixed(1) + ' kg</span></div>' +
-      '<div class="metric"><span class="k">Acceleration (a)</span><span class="v" style="color:#38bdf8">' + a.toFixed(2) + ' m/s²</span></div>';
-
-    document.getElementById("lab-verdict").innerHTML = 
-      "<strong>Newton's Second Law (F = ma):</strong> Net driving force is " + fPull.toFixed(1) + " N acting on total mass " + totalM.toFixed(1) + " kg &rarr; System acceleration is " + a.toFixed(2) + " m/s².";
+    var a = st.F / (st.m1 + st.m2), s = 0.5 * a * t * t, x = 180 + Math.min(300, s * 6), m = "";
+    m += L.line(20, 200, 700, 200, C.faint, 3);
+    m += box6(L, x, 170, 90, 60, (st.preset === "q15" ? "trolley " : "Box 2 ") + st.m2 + " kg") + L.line(x + 45, 170, x + 115, 170, "#cbd5e1", 3) + box6(L, x + 160, 170, 90, 60, (st.preset === "q15" ? "harrow " : "Box 1 ") + st.m1 + " kg");
+    m += L.arrow(x + 205, 170, x + 285, 170, C.path, 5) + L.text(x + 245, 155, "F = " + st.F + " N", {size: 14, color: C.path, weight: 700});
+    m += L.arrow(x + 112, 140, x + 60, 140, C.vel, 2) + L.arrow(x + 48, 140, x + 100, 140, C.vel, 2) + L.text(x + 80, 128, "T (internal)", {size: 11, color: C.vel});
+    L.svg(m, "System acceleration " + L.num(a, 2), 260);
+    var cells = [["System mass", (st.m1 + st.m2) + " kg"], ["a = F ÷ (m₁ + m₂)", st.F + " ÷ " + (st.m1 + st.m2) + " = " + L.num(a, 2) + " m s⁻²", C.path]];
+    if(st.preset === "q15") cells.push(["a₁a₂ ÷ (a₁ + a₂)", L.num(st.F / st.m1, 1) + " × " + L.num(st.F / st.m2, 1) + " ÷ (" + L.num(st.F / st.m1, 1) + " + " + L.num(st.F / st.m2, 1) + ") = " + L.num(a, 2) + " m s⁻²"]);
+    L.readout(cells);
+    var book = st.preset === "boxes" ? (st.F === 30 && st.m1 === 2 && st.m2 === 4) : (st.F === 18 && st.m1 === 3 && st.m2 === 6);
+    L.verdict(t < 2 ? "Pulling…" : !book ? "System acceleration = " + L.num(a, 2) + " m s⁻²." : st.preset === "boxes" ? "<b>Eq. 6.4:</b> treating both boxes as one system, a = 30 N ÷ 6 kg = <b>5 m s⁻²</b>; the tension is internal and does not appear." :
+      "<b>Exercise Q15:</b> a = 18 N ÷ 9 kg = <b>2 m s⁻²</b>, the same as a₁a₂ ÷ (a₁ + a₂) = 18 ÷ 9 = 2 m s⁻².");
   }
-
-  window.SIMS.lab_second_law = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 5. SIMULATION 5: Impulse & Contact Time (lab_impulse)
-// =========================================================================
-(function(){
-  var simState = {
-    mode: "catch", // "catch", "penalty", "highjump"
-    dt: 0.1,       // seconds
-    deltaP: 3.0    // kg m/s
-  };
-
-  function mount(lesson){
-    simState.mode = "catch";
-    simState.dt = 0.1;
-    simState.deltaP = 3.0;
-    App.state.maxT = 3.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 3.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Stiff Hands Catch (Short Δt = 0.02s)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Cushioned Hands Catch (Long Δt = 0.15s)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Impulse Area ∫ F dt = Δp</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p5-cushion">Cushioned Cricket Catch (Hands Pulled Back)</button>' +
-      '<button class="preset-btn" id="p5-stiff">Stiff Hands Catch (Painful 150 N Spike)</button>' +
-      '<button class="preset-btn" id="p5-penalty">Football Penalty: 108 km/h, 15 ms, 800 N</button>';
-
-    document.getElementById("p5-cushion").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "catch"; simState.dt = 0.15; simState.deltaP = 3.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> By pulling hands back along ball trajectory, contact time expands to 0.15 s. Peak force drops safely to just 20 N!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p5-stiff").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "catch"; simState.dt = 0.02; simState.deltaP = 3.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Stiff hands bring ball to instant dead stop in 0.02 s. The impact force spikes dangerously to 150 N!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p5-penalty").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "penalty"; simState.dt = 0.015; simState.deltaP = 12.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> NCERT Exercise 13: Boot imparts 800 N force over 15 milliseconds, launching football to 108 km/h!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
-  }
-
-  function draw(t){
-    var fAvg = simState.deltaP / simState.dt;
-
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    // Graph Axes: Force vs Time
-    svg += '<line x1="80" y1="230" x2="660" y2="230" stroke="#475569" stroke-width="2"/>';
-    svg += '<line x1="80" y1="230" x2="80" y2="40" stroke="#475569" stroke-width="2"/>';
-    svg += '<text x="650" y="220" fill="#94a3b8" font-size="11">Time t &rarr;</text>';
-    svg += '<text x="90" y="50" fill="#94a3b8" font-size="11">Impact Force F &rarr;</text>';
-
-    // Curve rendering
-    var color = simState.dt >= 0.1 ? '#10b981' : '#ef4444';
-    var peakH = Math.min(170, fAvg * 1.0);
-    var spanW = simState.dt * 1200;
-    var xStart = 200;
-
-    svg += '<path d="M ' + xStart + ' 230 Q ' + (xStart + spanW/2) + ' ' + (230 - peakH) + ' ' + (xStart + spanW) + ' 230" fill="' + color + '" fill-opacity="0.3" stroke="' + color + '" stroke-width="3"/>';
-
-    svg += '<circle cx="' + (xStart + spanW/2) + '" cy="' + (230 - peakH) + '" r="5" fill="' + color + '"/>';
-    svg += '<text x="' + (xStart + spanW/2) + '" y="' + (230 - peakH - 10) + '" fill="' + color + '" font-size="13" font-weight="bold" text-anchor="middle">Peak F = ' + fAvg.toFixed(0) + ' N</text>';
-    svg += '<text x="' + (xStart + spanW/2) + '" y="250" fill="#cbd5e1" font-size="12" text-anchor="middle">Contact Duration &Delta;t = ' + (simState.dt * 1000).toFixed(0) + ' ms</text>';
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Momentum Change (Δp)</span><span class="v">' + simState.deltaP.toFixed(1) + ' kg·m/s</span></div>' +
-      '<div class="metric"><span class="k">Contact Time (Δt)</span><span class="v">' + (simState.dt * 1000).toFixed(0) + ' ms</span></div>' +
-      '<div class="metric"><span class="k">Average Force (F_avg)</span><span class="v" style="color:' + color + '">' + fAvg.toFixed(1) + ' N</span></div>';
-
-    document.getElementById("lab-verdict").innerHTML = 
-      '<strong>Impulse Theorem (J = F · Δt = Δp):</strong> Extending contact time to ' + (simState.dt * 1000).toFixed(0) + ' ms lowers the average force to ' + fAvg.toFixed(1) + ' N. Softening impacts saves bones and equipment!';
-  }
-
-  window.SIMS.lab_impulse = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 6. SIMULATION 6: Third Law Action-Reaction (lab_action_reaction)
-// =========================================================================
-(function(){
-  var simState = {
-    pullF: 16, // N
-    mode: "springs"
-  };
-
-  function mount(lesson){
-    simState.pullF = 16;
-    App.state.maxT = 4.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 4.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Balance A Dial (Action on B)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f43f5e;"></span><span>Balance B Dial (Reaction on A)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Strict Magnitude Equality (|F_AB| = |F_BA|)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p6-16n">Activity 6.6: Pull with 16 N Force</button>' +
-      '<button class="preset-btn" id="p6-24n">Harder Pull: 24 N Force</button>' +
-      '<button class="preset-btn" id="p6-boat">Sailor Leaping from Boat (NCERT Ex 7)</button>';
-
-    document.getElementById("p6-16n").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.pullF = 16; simState.mode = "springs";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Balance A and Balance B both read exactly 16 N! Action and reaction are strictly equal and opposite.";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p6-24n").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.pullF = 24; simState.mode = "springs";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Increasing the pull to 24 N increases both balance readings simultaneously to 24 N.";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p6-boat").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "boat";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Sailor pushes boat backward (Action) to leap forward (Reaction). Boat moves backward into river!";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
-  }
-
-  function draw(t){
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    if(simState.mode === "boat"){
-      // Boat & Sailor Animation
-      svg += '<rect x="40" y="190" width="640" height="70" fill="#1e3a8a" opacity="0.6"/>'; // water
-      svg += '<rect x="520" y="170" width="160" height="90" fill="#334155"/>'; // shore
-      svg += '<text x="600" y="215" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">River Shore</text>';
-
-      var boatX = 240 - t * 25;
-      var sailorX = 360 + t * 45;
-
-      // Boat
-      svg += '<path d="M ' + boatX + ' 190 L ' + (boatX + 180) + ' 190 L ' + (boatX + 150) + ' 230 L ' + (boatX + 30) + ' 230 Z" fill="#78350f" stroke="#d97706" stroke-width="2"/>';
-      svg += '<text x="' + (boatX + 90) + '" y="215" fill="#fef3c7" font-size="12" font-weight="bold" text-anchor="middle">Boat &larr; Backward</text>';
-
-      // Sailor
-      if(sailorX < 560){
-        svg += '<circle cx="' + sailorX + '" cy="140" r="12" fill="#fcd34d"/>';
-        svg += '<line x1="' + sailorX + '" y1="152" x2="' + sailorX + '" y2="185" stroke="#fcd34d" stroke-width="4"/>';
-        svg += '<text x="' + sailorX + '" y="125" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Sailor &rarr;</text>';
-      }
-    } else {
-      // Dual Spring Balances
-      // Anchor left
-      svg += '<line x1="60" y1="90" x2="60" y2="190" stroke="#64748b" stroke-width="8"/>';
-
-      // Balance B (left)
-      svg += '<rect x="90" y="115" width="220" height="50" fill="#1e293b" stroke="#f43f5e" stroke-width="2" rx="6"/>';
-      svg += '<text x="200" y="145" fill="#f43f5e" font-size="14" font-weight="bold" text-anchor="middle">Balance B: ' + simState.pullF + ' N &larr;</text>';
-
-      // Hook connection
-      svg += '<path d="M 310 140 C 330 130 330 150 350 140" stroke="#f8fafc" stroke-width="4" fill="none"/>';
-
-      // Balance A (right)
-      svg += '<rect x="350" y="115" width="220" height="50" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="6"/>';
-      svg += '<text x="460" y="145" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">Balance A: ' + simState.pullF + ' N &rarr;</text>';
-
-      // Pulling hand arrow
-      svg += '<line x1="570" y1="140" x2="660" y2="140" stroke="#38bdf8" stroke-width="4"/>';
-      svg += '<polygon points="660,140 650,135 650,145" fill="#38bdf8"/>';
-    }
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Action Force (F_AB)</span><span class="v" style="color:#38bdf8">+' + simState.pullF + ' N</span></div>' +
-      '<div class="metric"><span class="k">Reaction Force (F_BA)</span><span class="v" style="color:#f43f5e">−' + simState.pullF + ' N</span></div>' +
-      '<div class="metric"><span class="k">Vector Sum (F_AB + F_BA)</span><span class="v" style="color:#10b981">0 N</span></div>';
-
-    document.getElementById("lab-verdict").innerHTML = 
-      "<strong>Newton's Third Law:</strong> F_AB = −F_BA. Action and reaction are simultaneous, strictly equal in magnitude (" + simState.pullF + " N), and act on two distinct bodies.";
-  }
-
-  window.SIMS.lab_action_reaction = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 7. SIMULATION 7: Momentum Conservation & Recoil (lab_recoil)
-// =========================================================================
-(function(){
-  var simState = {
-    mBullet: 0.1,  // kg
-    vBullet: 300,  // m/s
-    mGun: 5.0      // kg
-  };
-
-  function mount(lesson){
-    simState.mBullet = 0.1;
-    simState.vBullet = 300;
-    simState.mGun = 5.0;
-    App.state.maxT = 3.0;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = 3.0; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Forward Bullet Momentum (+30 kg·m/s)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Backward Gun Recoil (−30 kg·m/s)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Total System Momentum = 0 kg·m/s</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p7-ncert">NCERT Example 6.8: 5 kg Gun, 0.1 kg Bullet at 300 m/s</button>' +
-      '<button class="preset-btn" id="p7-heavy">Heavy 10 kg Gun (Halves Recoil Velocity)</button>' +
-      '<button class="preset-btn" id="p7-collision">Two Skaters Pushing Off (Activity 6.7)</button>';
-
-    document.getElementById("p7-ncert").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mGun = 5.0; simState.mBullet = 0.1; simState.vBullet = 300;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Bullet flies forward at +300 m/s. Rifle recoils backward at V = −6.0 m/s, strictly conserving momentum!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p7-heavy").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mGun = 10.0; simState.mBullet = 0.1; simState.vBullet = 300;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Doubling rifle mass to 10 kg cuts the recoil velocity in half to −3.0 m/s!";
-      App.resetTimeline(); App.play();
-    });
-
-    document.getElementById("p7-collision").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mGun = 60.0; simState.mBullet = 40.0; simState.vBullet = 2.5;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Two skaters pushing off: 40 kg skater recoils at 2.5 m/s, 60 kg skater recoils at 1.67 m/s.";
-      App.resetTimeline(); App.play();
-    });
-
-    draw(0);
-  }
-
-  function draw(t){
-    var vRecoil = -(simState.mBullet * simState.vBullet) / simState.mGun;
-    var pBullet = simState.mBullet * simState.vBullet;
-    var pGun = simState.mGun * vRecoil;
-    var pTotal = pBullet + pGun;
-
-    var gunX = 300 + (t > 0.2 ? vRecoil * (t - 0.2) * 15 : 0);
-    var bulletX = 380 + (t > 0.2 ? (t - 0.2) * 350 : 0);
-    if(gunX < 80) gunX = 80;
-    if(bulletX > 680) bulletX = 680;
-
-    var svg = '<svg viewBox="0 0 720 280" width="100%" height="280" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<rect width="720" height="280" fill="#0f172a" rx="12"/>';
-
-    // Stand
-    svg += '<line x1="40" y1="200" x2="680" y2="200" stroke="#334155" stroke-width="4"/>';
-
-    // Rifle Body
-    svg += '<rect x="' + (gunX - 120) + '" y="130" width="160" height="30" fill="#334155" stroke="#38bdf8" stroke-width="2" rx="4"/>';
-    svg += '<rect x="' + (gunX + 40) + '" y="138" width="60" height="12" fill="#475569" stroke="#94a3b8" stroke-width="1"/>'; // barrel
-    svg += '<text x="' + (gunX - 40) + '" y="150" fill="#f8fafc" font-size="11" font-weight="bold" text-anchor="middle">Gun (M = ' + simState.mGun + ' kg)</text>';
-
-    // Recoil arrow
-    if(t > 0.2){
-      svg += '<line x1="' + (gunX - 130) + '" y1="145" x2="' + (gunX - 180) + '" y2="145" stroke="#38bdf8" stroke-width="4"/>';
-      svg += '<polygon points="' + (gunX - 180) + ',145 ' + (gunX - 170) + ',140 ' + (gunX - 170) + ',150" fill="#38bdf8"/>';
-      svg += '<text x="' + (gunX - 155) + '" y="135" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">V = ' + vRecoil.toFixed(1) + ' m/s</text>';
-    }
-
-    // Bullet
-    if(t > 0.2){
-      svg += '<ellipse cx="' + bulletX + '" cy="144" rx="8" ry="4" fill="#ef4444"/>';
-      svg += '<text x="' + bulletX + '" y="130" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">v = +' + simState.vBullet + ' m/s</text>';
-    }
-
-    svg += '</svg>';
-    document.getElementById("diagram").innerHTML = svg;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="metric"><span class="k">Bullet Momentum</span><span class="v" style="color:#ef4444">+' + pBullet.toFixed(1) + ' kg·m/s</span></div>' +
-      '<div class="metric"><span class="k">Gun Momentum</span><span class="v" style="color:#38bdf8">' + pGun.toFixed(1) + ' kg·m/s</span></div>' +
-      '<div class="metric"><span class="k">Total Momentum</span><span class="v" style="color:#10b981">' + pTotal.toFixed(2) + ' kg·m/s</span></div>' +
-      '<div class="metric"><span class="k">Recoil Velocity</span><span class="v">' + vRecoil.toFixed(2) + ' m/s</span></div>';
-
-    document.getElementById("lab-verdict").innerHTML = 
-      '<strong>Conservation of Momentum:</strong> In the absence of external forces, total momentum remains strictly zero. Gun recoil velocity is ' + vRecoil.toFixed(2) + ' m/s.';
-  }
-
-  window.SIMS.lab_recoil = { mount: mount, draw: draw };
+  function mount(){ L.presets([["boxes", "Two boxes (Eq. 6.4)"], ["q15", "Exercise Q15: harrow + trolley"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.system = {mount: mount, draw: draw, select: select, state: st};
 })();

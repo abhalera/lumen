@@ -27,10 +27,10 @@ window.SIMS["tissue-culture"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Sterile medium</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Somaclones</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-e0">Step 0: explant</button>' +
-      '<button class="preset-btn" id="p-e2">Step 2: medium</button>' +
-      '<button class="preset-btn active" id="p-e4">Step 5: somaclones</button>' +
-      '<button class="preset-btn" id="p-pom">Pomato fusion</button>';
+      '<button class="preset-btn" id="p-e0" data-preset="p-e0">Step 0: explant</button>' +
+      '<button class="preset-btn" id="p-e2" data-preset="p-e2">Step 2: medium</button>' +
+      '<button class="preset-btn active" id="p-e4" data-preset="p-e4">Step 5: somaclones</button>' +
+      '<button class="preset-btn" id="p-pom" data-preset="p-pom">Pomato fusion</button>';
     document.getElementById("p-e0").onclick = function(){ setActivePreset(this); step=0; draw(App.state.t); };
     document.getElementById("p-e2").onclick = function(){ setActivePreset(this); step=2; draw(App.state.t); };
     document.getElementById("p-e4").onclick = function(){ setActivePreset(this); step=5; draw(App.state.t); };
@@ -94,9 +94,9 @@ window.SIMS["bt-rnai"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Active toxin / dsRNA</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Protected plant</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-bw">cryIAc/IIAb vs bollworm</button>' +
-      '<button class="preset-btn" id="p-cb">cryIAb vs corn borer</button>' +
-      '<button class="preset-btn" id="p-ne">RNAi vs nematode</button>';
+      '<button class="preset-btn active" id="p-bw" data-preset="p-bw">cryIAc/IIAb vs bollworm</button>' +
+      '<button class="preset-btn" id="p-cb" data-preset="p-cb">cryIAb vs corn borer</button>' +
+      '<button class="preset-btn" id="p-ne" data-preset="p-ne">RNAi vs nematode</button>';
     document.getElementById("p-bw").onclick = function(){ setActivePreset(this); pest="bollworm"; draw(App.state.t); };
     document.getElementById("p-cb").onclick = function(){ setActivePreset(this); pest="borer"; draw(App.state.t); };
     document.getElementById("p-ne").onclick = function(){ setActivePreset(this); pest="nematode"; draw(App.state.t); };
@@ -160,8 +160,8 @@ window.SIMS["insulin-genetherapy"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>C peptide (33, removed)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>ADA lymphocytes</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ins">Proinsulin remover (Fig 10.3)</button>' +
-      '<button class="preset-btn" id="p-ada">ADA 1990 timeline</button>';
+      '<button class="preset-btn active" id="p-ins" data-preset="p-ins">Proinsulin remover (Fig 10.3)</button>' +
+      '<button class="preset-btn" id="p-ada" data-preset="p-ada">ADA 1990 timeline</button>';
     document.getElementById("p-ins").onclick = function(){ setActivePreset(this); mode="insulin"; draw(App.state.t); };
     document.getElementById("p-ada").onclick = function(){ setActivePreset(this); mode="ada"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -239,10 +239,10 @@ window.SIMS["diagnosis-transgenic"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Probe: hybridise + film</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>ELISA: antigen-antibody</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pcr">HIV few copies: PCR</button>' +
-      '<button class="preset-btn" id="p-prb">Mutant clone: probe</button>' +
-      '<button class="preset-btn" id="p-eli">Infection Ag/Ab: ELISA</button>' +
-      '<button class="preset-btn" id="p-ros">Rosie 1997 cow</button>';
+      '<button class="preset-btn active" id="p-pcr" data-preset="p-pcr">HIV few copies: PCR</button>' +
+      '<button class="preset-btn" id="p-prb" data-preset="p-prb">Mutant clone: probe</button>' +
+      '<button class="preset-btn" id="p-eli" data-preset="p-eli">Infection Ag/Ab: ELISA</button>' +
+      '<button class="preset-btn" id="p-ros" data-preset="p-ros">Rosie 1997 cow</button>';
     document.getElementById("p-pcr").onclick = function(){ setActivePreset(this); tool="pcr"; draw(App.state.t); };
     document.getElementById("p-prb").onclick = function(){ setActivePreset(this); tool="probe"; draw(App.state.t); };
     document.getElementById("p-eli").onclick = function(){ setActivePreset(this); tool="elisa"; draw(App.state.t); };
@@ -324,10 +324,10 @@ window.SIMS["ethics-biopiracy"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Biopiracy pattern</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Legitimate (GEAC route)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c0">Basmati 1997</button>' +
-      '<button class="preset-btn" id="p-c1">Turmeric</button>' +
-      '<button class="preset-btn" id="p-c2">Neem</button>' +
-      '<button class="preset-btn" id="p-c3">GEAC trial</button>';
+      '<button class="preset-btn active" id="p-c0" data-preset="p-c0">Basmati 1997</button>' +
+      '<button class="preset-btn" id="p-c1" data-preset="p-c1">Turmeric</button>' +
+      '<button class="preset-btn" id="p-c2" data-preset="p-c2">Neem</button>' +
+      '<button class="preset-btn" id="p-c3" data-preset="p-c3">GEAC trial</button>';
     document.getElementById("p-c0").onclick = function(){ setActivePreset(this); idx=0; draw(App.state.t); };
     document.getElementById("p-c1").onclick = function(){ setActivePreset(this); idx=1; draw(App.state.t); };
     document.getElementById("p-c2").onclick = function(){ setActivePreset(this); idx=2; draw(App.state.t); };

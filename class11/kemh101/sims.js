@@ -27,9 +27,9 @@ window.SIMS.roster = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Roster braces</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Set-builder rule</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-school">SCHOOL</button>' +
-      '<button class="preset-btn" id="p-loyal">LOYAL = ALLOY</button>' +
-      '<button class="preset-btn" id="p-frac">Example 4 fractions</button>';
+      '<button class="preset-btn active" id="p-school" data-preset="p-school">SCHOOL</button>' +
+      '<button class="preset-btn" id="p-loyal" data-preset="p-loyal">LOYAL = ALLOY</button>' +
+      '<button class="preset-btn" id="p-frac" data-preset="p-frac">Example 4 fractions</button>';
     document.getElementById("p-school").onclick = function(){ setActivePreset(this); mode="school"; App.resetTimeline(); };
     document.getElementById("p-loyal").onclick = function(){ setActivePreset(this); mode="loyal"; App.resetTimeline(); };
     document.getElementById("p-frac").onclick = function(){ setActivePreset(this); mode="frac"; App.resetTimeline(); };
@@ -64,10 +64,10 @@ window.SIMS.finiteinf = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Finite</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Infinite</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-empty">Empty: Class X∩XI</button>' +
-      '<button class="preset-btn" id="p-evenp">Even primes {2}</button>' +
-      '<button class="preset-btn" id="p-primes">All primes</button>' +
-      '<button class="preset-btn" id="p-animals">Animals on Earth</button>';
+      '<button class="preset-btn active" id="p-empty" data-preset="p-empty">Empty: Class X∩XI</button>' +
+      '<button class="preset-btn" id="p-evenp" data-preset="p-evenp">Even primes {2}</button>' +
+      '<button class="preset-btn" id="p-primes" data-preset="p-primes">All primes</button>' +
+      '<button class="preset-btn" id="p-animals" data-preset="p-animals">Animals on Earth</button>';
     document.getElementById("p-empty").onclick = function(){ setActivePreset(this); mode="empty"; App.resetTimeline(); };
     document.getElementById("p-evenp").onclick = function(){ setActivePreset(this); mode="evenp"; App.resetTimeline(); };
     document.getElementById("p-primes").onclick = function(){ setActivePreset(this); mode="primes"; App.resetTimeline(); };
@@ -104,9 +104,9 @@ window.SIMS.equalsets = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Equal</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Unequal</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-alloy">ALLOY vs LOYAL</button>' +
-      '<button class="preset-btn" id="p-quad">n² ≤ 4 vs x²−3x+2=0</button>' +
-      '<button class="preset-btn" id="p-follow">FOLLOW vs WOLF</button>';
+      '<button class="preset-btn active" id="p-alloy" data-preset="p-alloy">ALLOY vs LOYAL</button>' +
+      '<button class="preset-btn" id="p-quad" data-preset="p-quad">n² ≤ 4 vs x²−3x+2=0</button>' +
+      '<button class="preset-btn" id="p-follow" data-preset="p-follow">FOLLOW vs WOLF</button>';
     document.getElementById("p-alloy").onclick = function(){ setActivePreset(this); mode="alloy"; App.resetTimeline(); };
     document.getElementById("p-quad").onclick = function(){ setActivePreset(this); mode="quad"; App.resetTimeline(); };
     document.getElementById("p-follow").onclick = function(){ setActivePreset(this); mode="follow"; App.resetTimeline(); };
@@ -143,16 +143,16 @@ window.SIMS.intervals = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Included endpoint (filled)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#09131d;border:2px solid #f59e0b;"></span><span>Excluded endpoint (open)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-open">(−4, 6]  Ex 1.3.5(i)</button>' +
-      '<button class="preset-btn" id="p-closed">[6, 12]</button>' +
-      '<button class="preset-btn" id="p-ray">[0, ∞)</button>';
+      '<button class="preset-btn active" id="p-open" data-preset="p-open">(−4, 6]  Ex 1.3.5(i)</button>' +
+      '<button class="preset-btn" id="p-closed" data-preset="p-closed">[6, 12]</button>' +
+      '<button class="preset-btn" id="p-ray" data-preset="p-ray">[0, ∞)</button>';
     document.getElementById("p-open").onclick = function(){ setActivePreset(this); mode="open"; App.resetTimeline(); };
     document.getElementById("p-closed").onclick = function(){ setActivePreset(this); mode="closed"; App.resetTimeline(); };
     document.getElementById("p-ray").onclick = function(){ setActivePreset(this); mode="ray"; App.resetTimeline(); };
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
-  function X(x){ return 80 + (x+8)*30; }
+  function X(x){ return 80 + (x+8)*26; }
   function draw(t){
     var svg = svgEl(); if(!svg) return;
     var m = '<rect width="720" height="300" fill="#09131d"/>';
@@ -168,7 +168,8 @@ window.SIMS.intervals = (function(){
     var x1=X(a), x2=X(Math.min(b,14));
     m += '<line x1="'+x1+'" y1="160" x2="'+x2+'" y2="160" stroke="#38bdf8" stroke-width="8"/>';
     m += '<circle cx="'+x1+'" cy="160" r="8" fill="'+(la?"#38bdf8":"#09131d")+'" stroke="#f59e0b" stroke-width="3"/>';
-    m += '<circle cx="'+x2+'" cy="160" r="8" fill="'+(lb?"#38bdf8":"#09131d")+'" stroke="#f59e0b" stroke-width="3"/>';
+    if(mode!=="ray") m += '<circle cx="'+x2+'" cy="160" r="8" fill="'+(lb?"#38bdf8":"#09131d")+'" stroke="#f59e0b" stroke-width="3"/>';
+    if(mode==="ray") m += '<path d="M642 150 L657 160 L642 170" fill="none" stroke="#38bdf8" stroke-width="5"/>';
     var pulse = 8+4*Math.sin((t||0)*2);
     m += '<circle cx="'+ (x1 + (x2-x1)*0.4) +'" cy="160" r="'+pulse+'" fill="#34d399"/>';
     m += '<text x="360" y="40" fill="#94a3b8" font-size="15" text-anchor="middle">'+label+'</text>';
@@ -189,10 +190,10 @@ window.SIMS.vennops = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A = {2,4,6,8}</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B = {6,8,10,12}</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-u">A ∪ B (Fig 1.4)</button>' +
-      '<button class="preset-btn" id="p-i">A ∩ B (Fig 1.5)</button>' +
-      '<button class="preset-btn" id="p-d">A − B (Fig 1.8)</button>' +
-      '<button class="preset-btn" id="p-dj">Disjoint (Fig 1.6)</button>';
+      '<button class="preset-btn active" id="p-u" data-preset="p-u">A ∪ B (Fig 1.4)</button>' +
+      '<button class="preset-btn" id="p-i" data-preset="p-i">A ∩ B (Fig 1.5)</button>' +
+      '<button class="preset-btn" id="p-d" data-preset="p-d">A − B (Fig 1.8)</button>' +
+      '<button class="preset-btn" id="p-dj" data-preset="p-dj">Disjoint (Fig 1.6)</button>';
     document.getElementById("p-u").onclick = function(){ setActivePreset(this); mode="union"; App.resetTimeline(); };
     document.getElementById("p-i").onclick = function(){ setActivePreset(this); mode="inter"; App.resetTimeline(); };
     document.getElementById("p-d").onclick = function(){ setActivePreset(this); mode="diff"; App.resetTimeline(); };
@@ -203,19 +204,12 @@ window.SIMS.vennops = (function(){
   function draw(){
     var svg = svgEl(); if(!svg) return;
     var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="none" stroke="#475569"/>';
-    m += '<text x="60" y="52" fill="#94a3b8" font-size="12">U</text>';
-    var ax=300, ay=150, bx=420, by=150, r=80;
-    if(mode==="disj"){ ax=260; bx=470; }
-    var fillA = (mode==="union"||mode==="diff"||mode==="disj") ? "#38bdf844" : "#38bdf811";
-    var fillB = (mode==="union"||mode==="disj") ? "#f59e0b44" : "#f59e0b11";
-    m += '<circle cx="'+ax+'" cy="'+ay+'" r="'+r+'" fill="'+fillA+'" stroke="#38bdf8" stroke-width="2"/>';
-    m += '<circle cx="'+bx+'" cy="'+by+'" r="'+r+'" fill="'+fillB+'" stroke="#f59e0b" stroke-width="2"/>';
-    if(mode==="inter"){
-      m += '<text x="360" y="155" fill="#34d399" font-size="14" text-anchor="middle">6, 8</text>';
-    }
-    m += '<text x="'+ (ax-40) +'" y="100" fill="#38bdf8" font-size="14">A</text>';
-    m += '<text x="'+ (bx+28) +'" y="100" fill="#f59e0b" font-size="14">B</text>';
+    if(mode==="disj") m += '<rect x="40" y="30" width="640" height="240" rx="8" fill="none" stroke="#475569"/>';
+    if(mode==="disj") m += '<text x="60" y="52" fill="#94a3b8" font-size="12">U</text>';
+    if(mode==="disj"){
+      m += '<circle cx="230" cy="150" r="75" fill="#34d39933" stroke="#38bdf8"/><circle cx="490" cy="150" r="75" fill="#34d39933" stroke="#f59e0b"/><text x="215" y="150" fill="#e2e8f0">A</text><text x="475" y="150" fill="#e2e8f0">B</text>';
+    } else m += '<g transform="translate(105,0) scale(1.5)">' + setRegions(mode, 'lab-venn', true) + '</g>';
+    document.getElementById("lab-legend").textContent = mode === "disj" ? "A = even integers; B = odd integers" : "A = {2,4,6,8}; B = {6,8,10,12}; green = selected region";
     var notes = {
       union: "Example 12: A ∪ B = {2,4,6,8,10,12}. Commons 6,8 listed once.",
       inter: "Example 15: A ∩ B = {6,8}. B ⊂ A would force A ∩ B = B.",
@@ -238,10 +232,10 @@ window.SIMS.demorgan = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Shaded = the named set</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-uc">(A ∪ B)′</button>' +
-      '<button class="preset-btn" id="p-ai">A′ ∩ B′</button>' +
-      '<button class="preset-btn" id="p-ic">(A ∩ B)′</button>' +
-      '<button class="preset-btn" id="p-au">A′ ∪ B′</button>';
+      '<button class="preset-btn active" id="p-uc" data-preset="p-uc">(A ∪ B)′</button>' +
+      '<button class="preset-btn" id="p-ai" data-preset="p-ai">A′ ∩ B′</button>' +
+      '<button class="preset-btn" id="p-ic" data-preset="p-ic">(A ∩ B)′</button>' +
+      '<button class="preset-btn" id="p-au" data-preset="p-au">A′ ∪ B′</button>';
     document.getElementById("p-uc").onclick = function(){ setActivePreset(this); mode="unioncomp"; App.resetTimeline(); };
     document.getElementById("p-ai").onclick = function(){ setActivePreset(this); mode="ainter"; App.resetTimeline(); };
     document.getElementById("p-ic").onclick = function(){ setActivePreset(this); mode="intercomp"; App.resetTimeline(); };
@@ -255,17 +249,7 @@ window.SIMS.demorgan = (function(){
     var m = '<rect width="720" height="300" fill="#09131d"/>';
     m += '<rect x="80" y="40" width="560" height="220" rx="6" fill="'+(pair?"#34d39933":"#34d39922")+'" stroke="#475569"/>';
     m += '<text x="100" y="62" fill="#94a3b8" font-size="12">U</text>';
-    var ax=300, bx=420, ay=150, r=78;
-    if(pair){
-      m += '<circle cx="'+ax+'" cy="'+ay+'" r="'+r+'" fill="#09131d" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<circle cx="'+bx+'" cy="'+ay+'" r="'+r+'" fill="#09131d" stroke="#f59e0b" stroke-width="2"/>';
-    } else {
-      m += '<circle cx="'+ax+'" cy="'+ay+'" r="'+r+'" fill="#34d39944" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<circle cx="'+bx+'" cy="'+ay+'" r="'+r+'" fill="#34d39944" stroke="#f59e0b" stroke-width="2"/>';
-      m += '<circle cx="360" cy="150" r="40" fill="#09131d" stroke="none"/>';
-    }
-    m += '<text x="240" y="100" fill="#38bdf8" font-size="14">A</text>';
-    m += '<text x="470" y="100" fill="#f59e0b" font-size="14">B</text>';
+    m = '<rect width="720" height="300" fill="#09131d"/><g transform="translate(105,0) scale(1.5)">' + setRegions(pair?'outside':'notinter', 'lab-demorgan', true) + '</g>';
     var title = {unioncomp:"(A ∪ B)′", ainter:"A′ ∩ B′", intercomp:"(A ∩ B)′", aunion:"A′ ∪ B′"}[mode];
     svg.innerHTML = m;
     readout(cell("Law", title) + cell("De Morgan pair", pair ? "(A ∪ B)′ = A′ ∩ B′" : "(A ∩ B)′ = A′ ∪ B′", "#34d399"));
@@ -283,9 +267,9 @@ window.SIMS.algebra = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B or C</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-abs">Absorption A ∪ (A ∩ B)</button>' +
-      '<button class="preset-btn" id="p-q8">Misc 8: A∩B=A∩C ⇏ B=C</button>' +
-      '<button class="preset-btn" id="p-q10">Misc 10: pairwise ≠ triple</button>';
+      '<button class="preset-btn active" id="p-abs" data-preset="p-abs">Absorption A ∪ (A ∩ B)</button>' +
+      '<button class="preset-btn" id="p-q8" data-preset="p-q8">Misc 8: A∩B=A∩C ⇏ B=C</button>' +
+      '<button class="preset-btn" id="p-q10" data-preset="p-q10">Misc 10: pairwise ≠ triple</button>';
     document.getElementById("p-abs").onclick = function(){ setActivePreset(this); mode="abs"; App.resetTimeline(); };
     document.getElementById("p-q8").onclick = function(){ setActivePreset(this); mode="q8"; App.resetTimeline(); };
     document.getElementById("p-q10").onclick = function(){ setActivePreset(this); mode="q10"; App.resetTimeline(); };
@@ -297,7 +281,7 @@ window.SIMS.algebra = (function(){
     var m = '<rect width="720" height="300" fill="#09131d"/>';
     if(mode==="abs"){
       m += '<circle cx="300" cy="150" r="90" fill="#38bdf844" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<circle cx="400" cy="150" r="70" fill="#f59e0b33" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<circle cx="400" cy="150" r="70" fill="none" stroke="#f59e0b" stroke-width="2"/>';
       m += '<text x="250" y="80" fill="#38bdf8">A</text><text x="450" y="90" fill="#f59e0b">B</text>';
       m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">A ∪ (A ∩ B) paints exactly A</text>';
       readout(cell("Identity", "A ∪ (A ∩ B) = A") + cell("Also", "A ∩ (A ∪ B) = A"));
@@ -313,11 +297,12 @@ window.SIMS.algebra = (function(){
       readout(cell("A ∩ B", "{1}") + cell("A ∩ C", "{1}") + cell("B = C?", "NO", "#f87171"));
       verdict("<b>Misc. Ex 8:</b> equal intersections with a fixed A hide the parts of B and C that live outside A.");
     } else {
-      m += '<circle cx="300" cy="140" r="70" fill="#38bdf833" stroke="#38bdf8"/>';
-      m += '<circle cx="420" cy="140" r="70" fill="#f59e0b33" stroke="#f59e0b"/>';
-      m += '<circle cx="360" cy="210" r="70" fill="#34d39933" stroke="#34d399"/>';
+      m += '<circle cx="300" cy="130" r="65" fill="#38bdf833" stroke="#38bdf8"/>';
+      m += '<circle cx="420" cy="130" r="65" fill="#f59e0b33" stroke="#f59e0b"/>';
+      m += '<circle cx="360" cy="234" r="65" fill="#34d39933" stroke="#34d399"/>';
       m += '<text x="250" y="100" fill="#38bdf8">A</text><text x="460" y="100" fill="#f59e0b">B</text><text x="400" y="255" fill="#34d399">C</text>';
       m += '<text x="360" y="36" fill="#94a3b8" font-size="13" text-anchor="middle">A={1,2} B={2,3} C={3,1} — lenses non-empty, centre empty</text>';
+      m += '<g fill="#fff" font-size="13" text-anchor="middle"><text x="360" y="134">2</text><text x="390" y="187">3</text><text x="330" y="187">1</text></g>';
       readout(cell("A ∩ B", "{2}") + cell("B ∩ C", "{3}") + cell("A ∩ C", "{1}") + cell("A ∩ B ∩ C", "φ", "#f87171"));
       verdict("<b>Misc. Ex 10:</b> pairwise overlap without a common triple. This reprint has no n(A∪B∪C) section; the witness still lives here.");
     }

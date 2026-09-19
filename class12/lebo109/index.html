@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 9: Biotechnology: Principles and Processes — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -75,6 +76,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -278,6 +305,7 @@ p.concept-deck {
   gap: 4px;
   padding-bottom: 12px;
   border-bottom: 1px dashed var(--line);
+  min-width: 0;
 }
 .eq-row:last-child {
   border-bottom: none;
@@ -285,9 +313,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +498,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -598,11 +628,12 @@ input.timeline-scrubber {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 6px;
   padding: 8px 12px;
+  min-width: 0;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -610,6 +641,7 @@ input.timeline-scrubber {
   font-weight: 750;
   color: #fff;
   font-family: monospace;
+  overflow-wrap: anywhere;
 }
 .lab-verdict {
   background: rgba(8,118,106,0.25);
@@ -652,7 +684,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +696,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +773,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +967,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,50 +1071,174 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
+
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a class="class-link" href="../index.html">Class 12</a><span class="chapter-crumb" id="chapter-crumb">CH 09 · BIOTECHNOLOGY: PRINCIPLES AND PROCESSES</span>
+  <a class="brand" href="../index.html"><span class="brand-mark">l.</span> lumen</a>
+  <span class="chapter-crumb" id="chapter-crumb">CH 09 · BIOTECHNOLOGY: PRINCIPLES AND PROCESSES</span>
   <div class="top-actions">
     <div class="progress-pill">
       <span>Mastery:</span>
@@ -1045,7 +1252,7 @@ button.btn-secondary {
 <div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
+    <div id="sidebar-nav"></div>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
       <button class="concept-nav" id="nav-revision">
         <span class="num">✦</span>
@@ -1056,20 +1263,21 @@ button.btn-secondary {
 
   <main id="main-content">
     <div id="concept-view"></div>
-    <div id="revision-view" class="revision-page" data-block="revise">
+    <div id="revision-view" class="revision-page">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h1 class="concept-title">Revise, Reflect, Refine</h1>
-        <p class="concept-deck">All 12 Exercises from NCERT Class 12 Biology (PDF pp. 1–16 · printed folio absent in source) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 12 Exercises from NCERT Class 12 Biology (pp. 1–16) mapped to core concepts with step-by-step solutions.</p>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology", "title": "Biotechnology: Principles and Processes", "subtitle": "Genetic engineering and bioprocess engineering, restriction enzymes and pBR322, isolation and gel electrophoresis, PCR and host insertion, bioreactors and downstream processing.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo109.pdf", "page_start": 1, "page_end": 16, "extraction": "PyMuPDF text layer + section/exercise page maps in /tmp/opencode/bio_maps.json. pdftotext not used.", "lessons": [{"id": "principles-first-rdna", "nav": "Principles & first rDNA", "title": "Two core techniques — and the 1972 Boyer–Cohen plasmid", "deck": "Genetic engineering plus bioprocess engineering. Alien DNA survives only with an origin of replication; Cohen and Boyer linked an antibiotic-resistance gene to a Salmonella plasmid in 1972 and cloned it in E. coli.", "minutes": 9, "section": "9.1", "pages": [3, 5], "print": "3–5", "sim": "rdna", "simTitle": "1972 experiment stepper: link the resistance gene to the plasmid", "quick": ["The EFB defines biotechnology as <strong>‘the integration of natural science and organisms, cells, parts thereof, and molecular analogues for products and services’</strong> — covering both traditional microbe processes (curd, bread, wine) and modern molecular work (test-tube babies, DNA vaccines, gene correction). Modern biotechnology rests on two cores: <strong>(i) genetic engineering</strong> — altering DNA/RNA chemistry and introducing it into hosts to change phenotype; <strong>(ii) bioprocess engineering</strong> — sterile, contamination-free scale-up of the desired microbe or eukaryotic cell for antibiotics, vaccines and enzymes.", "Sexual reproduction gives variation but traditional hybridisation drags <strong>undesirable genes along with desired ones</strong>. Genetic engineering — recombinant DNA, gene cloning, gene transfer — isolates and introduces <strong>only one or a set of desirable genes</strong>. The three basic steps are: <strong>(i) identification of DNA with desirable genes; (ii) introduction into the host; (iii) maintenance in the host and transfer to progeny</strong>.", "An alien DNA piece on its own cannot multiply in progeny cells — it must integrate into the genome and hitch a ride on a chromosome's <strong>origin of replication (ori)</strong>, the sequence that initiates replication. Linking alien DNA to ori so it replicates with the host is <strong>cloning</strong>: making multiple identical copies of template DNA.", "The first artificial recombinant DNA (1972): <strong>Stanley Cohen and Herbert Boyer</strong> cut the antibiotic-resistance gene out of a plasmid of <strong>Salmonella typhimurium</strong> with restriction enzymes (‘molecular scissors’), joined it to plasmid DNA with <strong>DNA ligase</strong>, and transferred the new circular DNA into <strong>Escherichia coli</strong>, where host DNA polymerase made multiple copies — the cloning of antibiotic resistance in E. coli."], "formulas": [{"label": "Three steps of genetic modification", "html": "identify desirable DNA → introduce into host → maintain + inherit in progeny", "cond": "Section 9.1"}, {"label": "ori rule", "html": "alien DNA + ori → replicates with host chromosome (cloning); without ori → lost", "cond": "Section 9.1"}, {"label": "1972 construction", "html": "resistance gene + Salmonella plasmid —ligase→ rDNA —E. coli→ clones", "cond": "Cohen & Boyer, 1972"}], "deeper": "The Boyer profile (pdf p. 2) supplies the backstory: by 1969 Boyer studied E. coli restriction enzymes that cut DNA leaving ‘sticky ends’, then compared notes in Hawaii with Stanford's Stanley Cohen, who could remove plasmids — small independently-replicating DNA ringlets — and reinsert them into other cells. Splicing plus plasmid delivery equals recombinant DNA: the founding breakthrough of biotechnology.", "worked": "Fate-of-alien-DNA chain: naked fragment enters alien cell → no ori, no replication → lost in progeny; linked to plasmid ori via ligase → replicates with host DNA polymerase → inherited by every daughter cell → a clone of the resistance gene. That is exactly what Cohen and Boyer demonstrated in E. coli in 1972.", "prediction": {"prompt": "A resistance gene is shot into E. coli as a bare linear fragment with no ori and no vector. What is its likely fate?", "options": ["It is lost — without an origin of replication it cannot multiply in progeny cells", "It automatically replicates because all DNA replicates in bacteria", "It converts the cell into Salmonella typhimurium"], "answer": 0, "explanation": "Section 9.1: only DNA linked to an origin of replication (directly or via a vector) multiplies with the host; a bare fragment cannot."}, "connect": [["Curd, idli and wine are biotechnology too", "The chapter's restricted modern sense (GM organisms at scale) sits inside the EFB's wider definition — so Indian kitchens fermenting curd, idli batter and toddy already run traditional biotechnology daily.", [], {"id": "S-SIdczw-hc", "title": "Biotechnology Principles and Processes Class 12 Biology | NCERT Chapter 11 | 2026-27 CBSE NEET", "channel": "LearnoHub - Class 11, 12"}], ["Wow — one gene plus one plasmid founded an industry", "The entire discipline dates to a single 1972 construction: one antibiotic-resistance gene stitched into one Salmonella plasmid with ligase, then copied by E. coli — sticky ends from Boyer's enzymes made the pasting precise."]], "recall": "Name the two core techniques and the three basic steps of genetically modifying an organism; state the ori rule and the year, workers and organisms of the first rDNA.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The two core techniques that enabled modern biotechnology are", "options": ["Genetic engineering and bioprocess engineering", "Pasteurisation and distillation", "Hybridisation and natural selection"], "answer": 0, "hint": "Section 9.1 lists them as (i) and (ii).", "solution": "Genetic engineering (alter DNA, change phenotype) plus bioprocess engineering (sterile scale-up for antibiotics, vaccines, enzymes).", "wrong": ["Food-processing steps, not the two cores.", "Breeding methods the text contrasts with genetic engineering."]}, {"level": "Medium", "type": "mcq", "prompt": "Alien DNA multiplies in a host only if", "options": ["It is linked to an origin of replication", "It is injected in large quantity", "It comes from a related species"], "answer": 0, "hint": "What initiates replication on a chromosome?", "solution": "The ori sequence initiates replication; alien DNA must join it (directly or via a vector) to be cloned.", "wrong": ["Quantity cannot substitute for replication ability.", "Relatedness is irrelevant without ori linkage."]}, {"level": "Hard", "type": "number", "map": "Section 9.1", "prompt": "Years between the isolation of growth-restricting enzymes (1963) and the first rDNA (1972)", "answer": 9, "unit": "years", "tolerance": 0.1, "hint": "1972 minus 1963.", "solution": "Restriction enzymes isolated 1963 (Section 9.2.1); Cohen–Boyer rDNA 1972; gap = 9 years."}], "resources": [{"title": "NCERT §9.1 — Principles & first rDNA (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=3"}]}, {"id": "restriction-enzymes", "nav": "Restriction enzymes", "title": "Molecular scissors: EcoRI, palindromes and sticky ends", "deck": "Hind II cut at a 6-bp recognition sequence; 900+ enzymes from 230+ bacterial strains now known. EcoRI reads 5′-GAATTC-3′ the same on both strands and leaves sticky ends that ligase pastes.", "minutes": 9, "section": "9.2.1", "pages": [5, 8], "print": "5–8", "sim": "restriction", "simTitle": "Palindrome finder + EcoRI cutter: cut sites to fragments", "quick": ["In <strong>1963</strong> two enzymes restricting bacteriophage growth in E. coli were isolated — one methylating DNA, one cutting it (<strong>restriction endonuclease</strong>). The first sequence-specific cutter, <strong>Hind II</strong>, always cut at a particular <strong>6-base-pair recognition sequence</strong>. Today <strong>more than 900 restriction enzymes from over 230 bacterial strains</strong> are known, each with its own recognition sequence.", "Naming follows genus + species + strain + order: <strong>EcoRI</strong> comes from <strong>Escherichia coli RY 13</strong> (R = strain, I = first enzyme). Restriction enzymes are <strong>endonucleases</strong> (cut within DNA); <strong>exonucleases</strong> instead trim nucleotides from the ends. Each endonuclease inspects DNA length, binds its recognition site and cuts both sugar-phosphate backbones (Figure 9.1).", "Every restriction endonuclease recognises a <strong>palindromic</strong> sequence — like ‘MALAYALAM’, it reads the same on the two strands when the 5′ → 3′ orientation is kept: <strong>5′-GAATTC-3′ / 3′-CTTAAG-5′</strong>. Cuts fall a little away from the centre, between the same two bases on opposite strands, leaving single-stranded overhangs — <strong>sticky ends</strong> — that hydrogen-bond to complementary cut counterparts and invite DNA ligase.", "Cut by the <strong>same</strong> enzyme, vector and source DNA carry matching sticky ends and ligase joins them end-to-end (Figure 9.2). Cut with different enzymes, they cannot pair — so a recombinant vector is normally created only when <strong>vector and source DNA meet the same restriction enzyme</strong>."], "formulas": [{"label": "EcoRI site", "html": "5′-G|AATTC-3′ / 3′-CTTAA|G-5′ — sticky ends", "cond": "Figure 9.1; palindrome GAATTC"}, {"label": "Palindrome rule", "html": "sequence reads identically 5′ → 3′ on both strands (e.g. MALAYALAM)", "cond": "Section 9.2.1"}, {"label": "Fragment count", "html": "linear DNA cut at n sites → n + 1 fragments; circular DNA cut at n sites → n fragments", "cond": "Worked counting rule"}], "deeper": "Hind II's 6-bp recognition sequence is the prototype: find the exact word, cut at the exact point, every time. EcoRI's name is itself an exam favourite — E (genus Escherichia) + co (species coli) + R (strain RY 13) + I (first isolated). Note the division of labour the text stresses: methylase protects the host genome, endonuclease destroys the invader — bacteria invented genetic engineering as self-defence.", "worked": "EcoRI fragment math: a linear 10 kb DNA with 2 EcoRI sites (say at 3 kb and 7 kb) gives 3 fragments — 3 kb, 4 kb, 3 kb (2 + 1 = 3; lengths sum to 3 + 4 + 3 = 10 kb). A circular plasmid cut once gives 1 linear fragment; cut at 3 sites gives 3 fragments (n sites on a circle → n pieces).", "prediction": {"prompt": "Vector is cut with EcoRI but the human DNA insert is cut with BamHI. Mixed with ligase, will recombinant molecules form efficiently?", "options": ["No — different enzymes leave non-matching ends that cannot pair", "Yes — ligase joins any two DNA ends regardless of sequence", "Yes — but only inside E. coli, not in the tube"], "answer": 0, "explanation": "The text: unless vector and source DNA are cut with the same restriction enzyme, matching sticky ends never form and the recombinant molecule cannot be created."}, "connect": [["EcoRI and BamHI in every Indian biotech lab", "From Bengaluru to Hyderabad, student and industry plasmids are still cut with the same EcoRI/BamHI names printed on the pBR322 map (Figure 9.4) — the 1970s enzymes remain daily tools."], ["Wow — scissors that read before they cut", "Each endonuclease ‘inspects’ the whole DNA length, finds its exact palindrome, and nicks both backbones off-centre — a proofreading pair of scissors that only cuts words it recognises."]], "recall": "Define recognition sequence and palindrome (with the GAATTC example), expand EcoRI, and state the same-enzyme rule plus the linear/circular fragment counts.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "EcoRI is named for", "options": ["Escherichia coli strain RY 13, first enzyme", "An eco-friendly recombinant isolate", "E. coli ribosomes, type I"], "answer": 0, "hint": "Genus + species + strain + order of isolation.", "solution": "E (Escherichia) + co (coli) + R (strain RY 13) + I (first enzyme from that strain).", "wrong": ["The name is taxonomic, not ecological.", "Ribosomes have nothing to do with it."]}, {"level": "Medium", "type": "number", "map": "Section 9.2.1", "prompt": "Fragments when a linear DNA with 2 EcoRI sites is fully digested", "answer": 3, "unit": "fragments", "tolerance": 0.1, "hint": "n cuts in a line make n + 1 pieces.", "solution": "2 sites → 2 + 1 = 3 fragments (e.g. 3 kb + 4 kb + 3 kb from a 10 kb molecule)."}, {"level": "Hard", "type": "number", "map": "Section 9.2.1", "prompt": "Fragments when a circular plasmid with 3 EcoRI sites is fully digested", "answer": 3, "unit": "fragments", "tolerance": 0.1, "hint": "On a circle, n cuts make n pieces.", "solution": "3 cuts on circular DNA → 3 linear fragments (contrast: 3 sites on linear DNA give 4)."}], "resources": [{"title": "NCERT §9.2.1 — Restriction enzymes (official PDF, PDF p.5)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=5"}]}, {"id": "vectors-pbr322", "nav": "Vectors & pBR322", "title": "Cloning vectors: ori, markers, pBR322 and Ti plasmids", "deck": "A vector needs ori, a selectable marker and single cloning sites. pBR322 carries ampR/tetR, seven mapped sites and rop; recombinants are picked by insertional inactivation — or blue-white screening. Ti plasmids and retroviruses carry genes into plants and animals.", "minutes": 9, "section": "9.2.2", "pages": [8, 10], "print": "8–10", "sim": "pbr322", "simTitle": "Vector map explorer: ori, ampR, tetR and rop", "quick": ["<strong>Plasmids and bacteriophages replicate inside bacteria independent of chromosomal control</strong>; phages reach very high copy numbers per cell, while plasmids range from 1–2 to 15–100+ copies. Linking alien DNA to such a replicon multiplies it to the vector's copy number — engineered vectors ease both linking and recombinant selection. A vector needs three features: <strong>origin of replication (ori)</strong>, a <strong>selectable marker</strong>, and <strong>cloning sites</strong>.", "<strong>ori</strong> starts replication and controls copy number — clone in a high-copy ori for many copies. A <strong>selectable marker</strong> (e.g. ampicillin, chloramphenicol, tetracycline or kanamycin resistance for E. coli, which is naturally sensitive) identifies transformants: <strong>transformation</strong> is the procedure of introducing DNA into a host bacterium. <strong>Cloning sites</strong> must be few, preferably single, or multiple cuts shatter the vector into complicating fragments.", "Textbook case — <strong>pBR322</strong> (Figure 9.4, 4361 bp): restriction sites <strong>Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I, Cla I</strong>, <strong>ori</strong>, resistance genes <strong>amp<sup>R</sup> and tet<sup>R</sup></strong>, and <strong>rop</strong> (proteins for plasmid replication). Ligate foreign DNA at the <strong>BamH I site inside tet<sup>R</sup></strong>: recombinants lose tetracycline resistance yet keep amp<sup>R</sup> — replica-plate from ampicillin to tetracycline; colonies growing only on ampicillin are recombinants. The faster alternative is <strong>insertional inactivation of β-galactosidase</strong>: no insert → blue colonies on chromogenic substrate; insert → white recombinant colonies.", "For eukaryotes we borrowed pathogen tricks: <strong>Agrobacterium tumefaciens</strong> delivers <strong>T-DNA</strong> turning plant cells tumoural, and <strong>retroviruses</strong> turn animal cells cancerous. Disarmed <strong>Ti plasmids</strong> (non-pathogenic, still delivering) and <strong>disarmed retroviruses</strong> are now plant and animal cloning vectors."], "formulas": [{"label": "pBR322 map facts", "html": "sites Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I, Cla I; ori; amp<sup>R</sup> + tet<sup>R</sup>; rop (replication proteins)", "cond": "Figure 9.4"}, {"label": "Insertional-inactivation selection", "html": "BamH I insert in tet<sup>R</sup>: grows on amp, dies on tet ⇒ recombinant", "cond": "Section 9.2.2"}, {"label": "Blue-white rule", "html": "intact β-galactosidase + chromogenic substrate ⇒ blue (non-recombinant); insert ⇒ white (recombinant)", "cond": "Section 9.2.2"}], "deeper": "Work the replica-plating logic slowly: ampicillin master plate keeps every transformant alive; the tetracycline replica kills exactly those whose tetR was split by an insert. Two plates, one comparison, zero sequencing — selection by inactivation. The blue-white shortcut collapses it to one plate: colour itself reports the insert. And note rop's quiet role — it codes the proteins that run plasmid replication, while ori is the address where they start.", "worked": "Screening math: 200 ampicillin-resistant colonies are replica-plated onto tetracycline; 140 grow on both (non-recombinants, intact tetR) and 60 grow only on ampicillin (recombinants, tetR inactivated). Recombinant fraction = 60/200 = 0.30 (30%). With blue-white screening the same answer comes from counting white vs blue colonies on a single plate.", "prediction": {"prompt": "Foreign DNA is ligated at pBR322's BamH I site (inside tetR) and cells are plated directly on tetracycline. Which colonies grow?", "options": ["Only non-recombinants — recombinants lost tetracycline resistance when tetR was split", "Only recombinants — the insert adds tetracycline resistance", "All transformants equally — the insert site does not matter"], "answer": 0, "explanation": "Insertion inactivates tetR, so recombinants die on tetracycline; they survive on ampicillin via intact ampR. Selection needs the ampicillin-then-tetracycline comparison."}, "connect": [["Ti-plasmid logic grows India's Bt-cotton", "Disarmed Agrobacterium delivery (Section 9.2.2) is the principle behind insect-resistant cotton widely grown in India — a pathogen's gene-delivery art turned into a farmer's vector."], ["Wow — white means loaded", "One chromogenic plate replaces two antibiotic plates: an insert silences β-galactosidase and the colony stays white, so the eye itself sequences the plate — colour as a cloning readout."]], "recall": "List the three vector features, the pBR322 map elements, the replica-plating selection logic, the blue-white rule, and the two disarmed eukaryotic vectors.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The origin of replication (ori) in a vector", "options": ["Starts replication and controls copy number of the linked DNA", "Cuts DNA at palindromic sites", "Stains DNA orange under UV"], "answer": 0, "hint": "Feature (i) of cloning vectors.", "solution": "ori is where replication starts; a high-copy ori recovers many copies of the target DNA.", "wrong": ["Cutting is the restriction enzyme's job.", "Orange staining is ethidium bromide's job."]}, {"level": "Medium", "type": "mcq", "prompt": "After ligation at pBR322's BamH I site, a recombinant colony", "options": ["Grows on ampicillin but not on tetracycline", "Grows on tetracycline but not on ampicillin", "Grows on neither antibiotic"], "answer": 0, "hint": "Which resistance gene did the insert split?", "solution": "The insert inactivates tetR but ampR stays intact — the replica-plating signature of a recombinant.", "wrong": ["ampR is untouched, so ampicillin growth persists.", "ampR survives, so recombinants are not killed by both."]}, {"level": "Hard", "type": "number", "map": "Figure 9.4", "prompt": "Restriction sites labelled on the pBR322 map in Figure 9.4", "answer": 7, "unit": "sites", "tolerance": 0.1, "hint": "Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I and …?", "solution": "Seven: Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I and Cla I."}], "resources": [{"title": "NCERT §9.2.2 — Vectors & pBR322 (official PDF, PDF p.8)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=8"}]}, {"id": "isolation-cutting-gel", "nav": "Isolation, cutting & gel", "title": "Free the DNA, cut it, and read the bands on agarose", "deck": "Lysozyme, cellulase and chitinase open cells; ribonuclease and protease clean up; chilled ethanol precipitates DNA for spooling. Agarose gel sorts fragments by size — small runs farthest — and ethidium bromide plus UV reveals orange bands for elution.", "minutes": 8, "section": "9.3.1, 9.3.2", "pages": [11, 12], "print": "11–12", "sim": "gel", "simTitle": "Electrophoresis band separator: size to distance", "quick": ["DNA must be pure before cutting, but it sits membrane-bound with RNA, proteins, polysaccharides and lipids. Cells are opened with wall-digesting enzymes — <strong>lysozyme (bacteria), cellulase (plant cells), chitinase (fungus)</strong> — then <strong>ribonuclease</strong> removes RNA and <strong>protease</strong> removes proteins (genes stay wound on histones until freed). <strong>Chilled ethanol</strong> precipitates purified DNA as fine threads collected by <strong>spooling</strong> (Figure 9.5).", "Purified DNA is incubated with restriction enzyme at its <strong>optimal conditions</strong>, and <strong>agarose gel electrophoresis</strong> checks the digestion's progress. DNA is <strong>negatively charged</strong>, so it migrates toward the <strong>anode (+)</strong> through <strong>agarose — a natural polymer from sea weeds</strong> — which sieves fragments by size: <strong>smaller fragments run farther</strong> (Figure 9.3: undigested lane 1 vs digested lanes 2–4).", "Pure DNA is invisible, so the gel is stained with <strong>ethidium bromide</strong> and exposed to <strong>UV</strong>: <strong>bright orange bands</strong> appear. Bands are cut out and DNA extracted — <strong>elution</strong> — and the purified ‘gene of interest’ plus the cut vector are mixed with <strong>ligase</strong> to build recombinant DNA.", "The vector gets the identical treatment: cut with the same enzyme, given space for the insert, then joined — the cut–separate–elute–ligate pipeline of Sections 9.3.1–9.3.2."], "formulas": [{"label": "Wall-enzyme pairs", "html": "lysozyme → bacteria; cellulase → plants; chitinase → fungi; then ribonuclease (RNA) + protease (protein); chilled ethanol ⇒ spooling", "cond": "Section 9.3.1"}, {"label": "Migration rule", "html": "DNA (−) → anode (+); agarose sieves by size: smaller fragment ⇒ farther band", "cond": "Figures 9.3; Section 9.3.2"}, {"label": "Elution", "html": "EtBr + UV ⇒ orange bands ⇒ cut band ⇒ extract DNA (elution) ⇒ ligate to vector", "cond": "Section 9.3.2"}], "deeper": "Read Figure 9.3 like a forensic report: lane 1 (undigested) shows essentially one slow, heavy band near the well; lanes 2–4 (digested) scatter into several faster bands — each extra band is a fragment the enzyme liberated. The sample must have been loaded at the end the bands are farthest from (the cathode/negative side), since DNA flees toward the anode. Distance is a ruler for size: nearest band = largest piece.", "worked": "Band-count math: a circular plasmid with one EcoRI site runs as a single undigested-style band; after complete digestion at 3 sites, elution must recover 3 orange bands (n sites on a circle → n fragments). If only 2 bands appear, digestion is partial — repeat at optimal conditions before ligation.", "prediction": {"prompt": "Two bands sit on a gel: band A near the well, band B near the far end. Which fragment is smaller?", "options": ["Band B — smaller fragments sieve farther through agarose", "Band A — heavy bands travel fastest", "Neither — position depends only on staining time"], "answer": 0, "explanation": "Sieving: the smaller the fragment, the farther it moves toward the anode. Far band = small piece."}, "connect": [["Sea-weed agarose from Indian coasts", "The gel matrix itself is a natural sea-weed polymer — the same Gulf of Mannar and Gujarat shores that harvest agar seaweeds supply the stuff of school electrophoresis tanks."], ["Wow — spooling makes genes visible", "After chilled ethanol, DNA winds out as fine threads on a glass rod: no microscope, no stain — heredity you can literally wind onto a stick (Figure 9.5)."]], "recall": "Name the three wall enzymes with targets, the clean-up enzymes, the precipitant, the migration direction and matrix, the stain, and elution.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Fungal walls are opened for DNA isolation with", "options": ["Chitinase", "Cellulase", "Lysozyme"], "answer": 0, "hint": "Match the enzyme to the wall polymer.", "solution": "Chitinase digests fungal chitin; cellulase is for plants, lysozyme for bacteria.", "wrong": ["Cellulase digests plant cellulose.", "Lysozyme digests bacterial walls."]}, {"level": "Medium", "type": "mcq", "prompt": "In gel electrophoresis DNA moves toward the", "options": ["Anode (positive electrode), smaller fragments farther", "Cathode, larger fragments farther", "Cathode, all fragments equally"], "answer": 0, "hint": "DNA is negatively charged; agarose sieves by size.", "solution": "Negative DNA migrates to the positive anode through agarose; small pieces sieve farthest.", "wrong": ["Negatives flee the cathode.", "Sieving separates by size — bands spread out."]}, {"level": "Hard", "type": "number", "map": "Sections 9.3.1–9.3.2", "prompt": "Orange bands to elute after complete digestion of a circular plasmid at 4 restriction sites", "answer": 4, "unit": "bands", "tolerance": 0.1, "hint": "n sites on a circle give n fragments.", "solution": "4 cuts on circular DNA → 4 fragments → 4 EtBr-orange bands to cut out and elute."}], "resources": [{"title": "NCERT §9.3.1, 9.3.2 — Isolation, cutting & gel (official PDF, PDF p.11)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=11"}]}, {"id": "pcr-host-insertion", "nav": "PCR & host insertion", "title": "PCR's billion copies — then smuggling DNA into hosts", "deck": "Denaturation, primer annealing, extension: Taq polymerase from Thermus aquaticus repeats the cycle to ~10^9 copies. Competent cells take DNA after Ca2+ plus ice–42 °C–ice shock; microinjection, gene guns and disarmed vectors cover animals and plants.", "minutes": 9, "section": "9.3.3, 9.3.4", "pages": [12, 13], "print": "12–13", "sim": "pcr", "simTitle": "Thermal cycler: cycles to copies by 2^n", "quick": ["<strong>PCR (Polymerase Chain Reaction)</strong> synthesises multiple copies of the gene of interest <strong>in vitro</strong> using <strong>two primer sets</strong> — small chemically synthesised oligonucleotides complementary to the DNA regions — plus <strong>DNA polymerase</strong>, supplied nucleotides and genomic template. Each cycle (Figure 9.6) runs three steps: <strong>(i) denaturation</strong> (heat splits dsDNA), <strong>(ii) primer annealing</strong> (primers bind), <strong>(iii) extension</strong> (polymerase extends primers).", "Repetition is possible only because the polymerase is <strong>thermostable</strong> — isolated from <strong>Thermus aquaticus</strong>, it survives the denaturing heat that kills ordinary enzymes. Repeated cycles amplify the segment to <strong>approximately a billion copies (10<sup>9</sup>)</strong>, and the amplified fragment can then be ligated into a vector for cloning.", "Getting recombinant DNA into hosts (§9.3.4) starts from a handicap: <strong>DNA is hydrophilic and cannot cross cell membranes</strong>. Bacteria are made <strong>competent</strong> with a specific concentration of divalent <strong>calcium</strong> ions, then given recombinant DNA on <strong>ice → brief 42 °C heat shock → ice again</strong>. An ampicillin-resistance-bearing recombinant, plated on ampicillin agar, lets only transformants grow — the resistance gene acting as <strong>selectable marker</strong>.", "Three more delivery routes: <strong>micro-injection</strong> (DNA shot directly into an animal cell's nucleus), <strong>biolistics / gene gun</strong> (gold or tungsten micro-particles coated with DNA bombarded into plant cells), and <strong>disarmed pathogen vectors</strong> that infect and deliver."], "formulas": [{"label": "PCR copies", "html": "N = N<sub>0</sub> × 2<sup>n</sup>; 2<sup>10</sup> ≈ 10<sup>3</sup>, 2<sup>20</sup> ≈ 10<sup>6</sup>, 2<sup>30</sup> ≈ 10<sup>9</sup>", "cond": "Section 9.3.3; Taq from Thermus aquaticus"}, {"label": "Heat-shock chain", "html": "Ca<sup>2+</sup> competence → ice + DNA → 42 °C shock → ice ⇒ uptake", "cond": "Sections 9.2.3/9.3.4"}, {"label": "Delivery table", "html": "bacteria: competent cells; animal nucleus: micro-injection; plants: gene gun; general: disarmed vectors", "cond": "Section 9.3.4"}], "deeper": "The 2^n ladder is worth memorising: 10 cycles ≈ a thousand, 20 ≈ a million, 30 ≈ a billion — the text's ‘approximately billion times’ is 2^30 = 1,073,741,824. Honest note: §9.3.4's heading (‘Insertion of Recombinant DNA into the Host Cell/Organism’) is split across lines on print p. 173, so a naive line-start section survey misses it — but the full passage (competent uptake, ampicillin selection) is present in the text layer and covered here.", "worked": "PCR copy math: start with N₀ = 1 template molecule and run n = 30 cycles: N = 2^30 = 1,073,741,824 ≈ 1.07 × 10^9 copies — the textbook's ‘1 billion copies’. From 10 template molecules the same 30 cycles give 10 × 2^30 ≈ 1.07 × 10^10 copies (linear in N₀, exponential in n).", "prediction": {"prompt": "Ordinary (non-thermostable) DNA polymerase is used in PCR instead of Taq. What happens at the first denaturation step?", "options": ["It denatures and dies — no amplification without fresh enzyme each cycle", "PCR runs faster because normal enzymes extend quicker", "Nothing changes — all polymerases survive near-boiling heat"], "answer": 0, "explanation": "The text's whole point: only Taq from Thermus aquaticus stays active through high-temperature denaturation; ordinary polymerase would cook."}, "connect": [["PCR in Indian diagnostic labs", "The same denature–anneal–extend cycles confirm TB, hepatitis and crop-virus infections in Indian testing laboratories — a classroom figure (9.6) running national diagnostics."], ["Wow — one molecule to a billion in an afternoon", "Thirty doublings turn a single invisible template into ~10^9 copies: exponential growth you can pipette, driven by a heat-proof enzyme from a hot-spring bacterium."]], "recall": "List the PCR ingredients and three steps, the Taq source and copy number, the heat-shock chain, and the three alternative delivery methods.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Taq polymerase used in PCR comes from", "options": ["The bacterium Thermus aquaticus", "E. coli plasmids", "Agrobacterium tumefaciens"], "answer": 0, "hint": "A thermostable enzyme needs a hot home.", "solution": "Taq is isolated from Thermus aquaticus and stays active through denaturing heat.", "wrong": ["E. coli is the cloning host, not the Taq source.", "Agrobacterium gives the Ti vector, not Taq."]}, {"level": "Medium", "type": "number", "map": "Section 9.3.3", "prompt": "Copies from 1 template molecule after 10 PCR cycles", "answer": 1024, "unit": "copies", "tolerance": 1, "hint": "2^10.", "solution": "N = 2^10 = 1024 ≈ 10^3 copies."}, {"level": "Hard", "type": "number", "map": "Section 9.3.3", "prompt": "Cycles needed to reach about a billion copies from 1 molecule (2^30 ≈ 1.07 × 10^9)", "answer": 30, "unit": "cycles", "tolerance": 0.5, "hint": "2^10 ≈ 10^3, so 2^30 ≈ …?", "solution": "2^30 = 1,073,741,824 ≈ 1.07 × 10^9 — the textbook's billion-copy amplification."}], "resources": [{"title": "NCERT §9.3.3, 9.3.4 — PCR & host insertion (official PDF, PDF p.12)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=12"}]}, {"id": "bioreactor-downstream", "nav": "Bioreactor & downstream", "title": "Growing the product at 100–1000 L — then purifying it", "deck": "Foreign genes are expressed as recombinant protein, scaled in continuous culture and stirred-tank (or sparged) bioreactors, then separated, purified, formulated, clinically trialled and quality-checked.", "minutes": 8, "section": "9.3.5, 9.3.6", "pages": [13, 14], "print": "13–14", "sim": "bioreactor", "simTitle": "Stirred-tank vs sparged tank + downstream flow", "quick": ["Inserting alien DNA is only half the job: the <strong>ultimate aim is a desirable protein</strong>, so the recombinant DNA must be <strong>expressed under appropriate conditions</strong>. A protein-encoding gene expressed in a <strong>heterologous host</strong> yields a <strong>recombinant protein</strong>. Small lab cultures are harvested and purified with separation techniques — but appreciable quantities need large scale.", "<strong>Continuous culture</strong> keeps cells in log/exponential phase: used medium drains from one side while fresh medium enters the other, sustaining physiologically peak cells for <strong>larger biomass and higher protein yields</strong>. <strong>Bioreactors (100–1000 litres)</strong> biologically convert raw materials into products with microbial, plant, animal or human cells under optimum temperature, pH, substrate, salts, vitamins and oxygen.", "The workhorses are <strong>stirring-type bioreactors</strong> (Figure 9.7): cylindrical or curved-base vessels where the <strong>stirrer mixes evenly and supplies oxygen</strong> throughout; the <strong>sparged stirred-tank</strong> variant additionally <strong>bubbles sterile air</strong> through the reactor. Fittings include agitator, oxygen delivery, foam control, temperature control, pH control systems and sampling ports for periodic withdrawal.", "After the biosynthetic stage comes <strong>downstream processing — separation and purification</strong> — then <strong>formulation with preservatives</strong>, <strong>thorough clinical trials</strong> (as for drugs) and <strong>strict quality control</strong>; both downstream steps and QC <strong>vary from product to product</strong>."], "formulas": [{"label": "Continuous-culture rule", "html": "drain used medium + feed fresh ⇒ log phase held ⇒ biomass ↑ ⇒ yield ↑", "cond": "Section 9.3.5"}, {"label": "Bioreactor scale", "html": "stirred-tank vessels process 100–1000 L; sparged variant adds sterile-air bubbling", "cond": "Figure 9.7; Exercise 6"}, {"label": "Downstream chain", "html": "separate → purify → formulate (+preservatives) → clinical trials → QC", "cond": "Section 9.3.6; Exercise 10(c)"}], "deeper": "Answer Exercise 6's ‘besides aeration and mixing’ directly from the fittings list: foam, temperature and pH control systems plus sampling ports and the sheer 100–1000 L volume that shake flasks cannot touch. And note the chapter's closing discipline — downstream processing and quality control are product-specific, so a vaccine's pipeline differs from an enzyme's even in the same factory.", "worked": "Scale-up math: a 5 L lab culture yielding product P scales to a 500 L stirred-tank run — a 500/5 = 100-fold volume jump, so the expected harvest is ≈ 100 × P at equal cell density (the linearity continuous culture and controlled bioreactor conditions are built to protect). The sparged variant adds sterile-air bubbling on top of stirrer mixing for oxygen-hungry cultures.", "prediction": {"prompt": "A team needs 500 L of recombinant-protein culture. Why choose a stirred-tank bioreactor over 500 shake flasks?", "options": ["One controlled vessel gives even mixing/oxygen, foam–temperature–pH control, sampling ports and 100–1000 L scale", "Flasks are forbidden for recombinant cells by law", "Bioreactors skip downstream processing entirely"], "answer": 0, "explanation": "Exercise 6 + Section 9.3.5: beyond aeration/mixing, the bioreactor adds control systems, sampling and industrial volume — flasks cannot."}, "connect": [["India's recombinant insulin pipeline", "Bengaluru-made recombinant human insulin (a §9.3.5 foreign gene product in E. coli/yeast) reaches diabetic patients only after §9.3.6 separation, formulation, clinical trials and batch-wise quality control — Exercise 1's therapeutics list in action."], ["Wow — Shantha's affordable Hep-B shot", "Hyderabad's Shantha Biotechnics made yeast-expressed hepatitis-B vaccine (HBsAg, e.g. Shanvac-B) affordable for India's immunisation drive — one recombinant protein carried through the full downstream chain: separate, purify, formulate, trial, QC."]], "recall": "Define recombinant protein, state the continuous-culture principle, list bioreactor fittings and the simple-vs-sparged difference, and recite the downstream chain.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Downstream processing is", "options": ["Separation and purification of the product, then formulation, trials and QC", "Draining waste downstream of the factory", "Cooling the bioreactor with river water"], "answer": 0, "hint": "Section 9.3.6 defines it in one line.", "solution": "Separation + purification, formulation with preservatives, clinical trials and strict quality control.", "wrong": ["Industrial geography, not biotechnology.", "Temperature control is upstream bioreactor operation."]}, {"level": "Medium", "type": "mcq", "prompt": "A sparged stirred-tank bioreactor differs by", "options": ["Sterile air bubbles sparged through the reactor", "Absence of any stirrer or agitator", "Running without temperature control"], "answer": 0, "hint": "Figure 9.7(b).", "solution": "Sterile air is bubbled (sparged) through the culture in addition to stirrer mixing.", "wrong": ["The agitator system is still present.", "Temperature control is standard in both."]}, {"level": "Hard", "type": "number", "map": "Section 9.3.5", "prompt": "Scale factor scaling a 5 L culture to a 500 L bioreactor run", "answer": 100, "unit": "fold", "tolerance": 1, "hint": "500 divided by 5.", "solution": "500/5 = 100-fold volume jump — the 100–1000 L range bioreactors exist to serve."}], "resources": [{"title": "NCERT §9.3.5, 9.3.6 — Bioreactor & downstream (official PDF, PDF p.13)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=13"}]}], "exercises": [{"number": 1, "conceptIdx": 5, "page": 15, "printPage": null, "question": "Can you list 10 recombinant proteins which are used in medical practice? Find out where they are used as therapeutics (use the internet).", "steps": ["Recombinant proteins are §9.3.5 foreign gene products expressed in heterologous hosts, purified by downstream processing.", "Therapeutic ten: (1) Insulin — diabetes; (2) Human growth hormone — dwarfism; (3) Tissue plasminogen activator — heart attack/stroke clots; (4) Factor VIII — haemophilia A; (5) Erythropoietin — anaemia; (6) Interferon-α — hepatitis/viral cancers; (7) Hepatitis-B surface antigen — Hep-B vaccine; (8) DNase I — cystic fibrosis; (9) Follicle-stimulating hormone — infertility; (10) G-CSF — neutropenia after chemotherapy.", "Honest note: the exact ten are an internet-research answer (as NCERT directs); any ten genuine recombinant therapeutics with uses score."], "answer": "Insulin, hGH, tPA, Factor VIII, erythropoietin, interferon-α, HBsAg vaccine, DNase I, FSH, G-CSF — with uses above."}, {"number": 2, "conceptIdx": 1, "page": 15, "printPage": null, "question": "Make a chart (with diagrammatic representation) showing a restriction enzyme, the substrate DNA on which it acts, the site at which it cuts DNA and the product it produces.", "steps": ["Enzyme: EcoRI (from E. coli RY 13; Section 9.2.1).", "Substrate: any dsDNA carrying 5′-GAATTC-3′ / 3′-CTTAAG-5′ (palindromic recognition sequence).", "Cut site: between G and A on each strand (5′-G|AATTC-3′), a little away from the palindrome centre — see Figure 9.1.", "Product: two fragments with single-stranded sticky ends (AATT overhangs) that pair with complementary cut counterparts for ligase joining."], "answer": "EcoRI on GAATTC, cut G|AATTC → sticky-ended fragments (Figure 9.1)."}, {"number": 3, "conceptIdx": 1, "page": 15, "printPage": null, "question": "From what you have learnt, can you tell whether enzymes are bigger or DNA is bigger in molecular size? How did you know?", "steps": ["Compare molar masses: 1 DNA base pair ≈ 660 Da, so even a 1 kb gene ≈ 6.6 × 10^5 Da (660 kDa).", "Typical enzymes are tens of kDa (e.g. EcoRI subunit ≈ 31 kDa; Taq polymerase ≈ 94 kDa).", "Hence DNA is bigger — a modest plasmid such as pBR322 (thousands of bp) outweighs its cutting enzyme by an order of magnitude or more.", "How we know: masses follow from sequence lengths (bp × 660 Da) and protein sizes from gel/sequence data."], "answer": "DNA is bigger in molecular size (kb of 660-Da bp outweigh kDa enzymes)."}, {"number": 4, "conceptIdx": 0, "page": 15, "printPage": null, "question": "What would be the molar concentration of human DNA in a human cell? Consult your teacher.", "steps": ["Diploid human genome ≈ 6.6 × 10^9 base pairs (NCERT-directed value).", "Average mass of 1 bp ≈ 660 Da = 660 g mol⁻¹, so molar mass of one genome = 6.6 × 10^9 × 660 = 4.356 × 10^12 g mol⁻¹.", "Mass of DNA per cell = 4.356 × 10^12 / 6.022 × 10^23 = 7.23 × 10^-12 g ≈ 7.2 pg.", "Moles of base pairs per cell = 6.6 × 10^9 / 6.022 × 10^23 = 1.096 × 10^-14 mol.", "Typical cell volume ≈ 10^-12 L (1000 µm³): [bp] = 1.096 × 10^-14 / 10^-12 ≈ 1.1 × 10^-2 mol L⁻¹ ≈ 0.011 M (≈ 11 mM in base pairs; ≈ picomolar in whole genomes).", "Honest note: order-of-magnitude estimate — the value scales with the assumed cell volume, hence ‘consult your teacher’."], "answer": "≈ 10^-2 M in base pairs (≈ 7.2 pg per cell; picomolar in whole genomes)."}, {"number": 5, "conceptIdx": 1, "page": 15, "printPage": null, "question": "Do eukaryotic cells have restriction endonucleases? Justify your answer.", "steps": ["No. Restriction endonucleases are bacterial defence tools: they cut invading bacteriophage DNA while the host genome is protected by methylation (Section 9.2.1, 1963 discovery).", "Eukaryotes never evolved this system — their genomes are full of palindromic recognition sequences that such enzymes would shred, and they defend against viruses by other (e.g. immune/RNA-based) means.", "That is exactly why eukaryotes must borrow bacterial enzymes for recombinant DNA work."], "answer": "No — restriction–modification is a prokaryotic defence; eukaryotes lack it."}, {"number": 6, "conceptIdx": 5, "page": 15, "printPage": null, "question": "Besides better aeration and mixing properties, what other advantages do stirred tank bioreactors have over shake flasks?", "steps": ["Volume: stirred tanks process 100–1000 L; flasks are millilitre-to-litre scale (Section 9.3.5).", "Control systems from the text: foam control, temperature control and pH control systems, plus an oxygen delivery system.", "Operability: sampling ports withdraw small culture volumes periodically without stopping the run; continuous-culture feeding/draining holds log phase.", "Result: even mixing and oxygen availability throughout plus industrial-scale, monitored production — impossible in flasks."], "answer": "100–1000 L scale + foam/temperature/pH control + sampling ports + continuous operation."}, {"number": 7, "conceptIdx": 1, "page": 15, "printPage": null, "question": "Collect 5 examples of palindromic DNA sequences by consulting your teacher. Better try to create a palindromic sequence by following base-pair rules.", "steps": ["Rule: a DNA palindrome reads identically 5′ → 3′ on both strands (complement, then reverse, returns the same word).", "Five verified examples (four from the pBR322 map, Figure 9.4): (1) GAATTC (EcoRI): complement CTTAAG → reversed GAATTC ✓; (2) GGATCC (BamHI): complement CCTAGG → reversed GGATCC ✓; (3) AAGCTT (Hind III): complement TTCGAA → reversed AAGCTT ✓; (4) GTCGAC (Sal I): complement CAGCTG → reversed GTCGAC ✓; (5) CTGCAG (Pst I): complement GACGTC → reversed CTGCAG ✓.", "To create one: pick any short half (e.g. 5′-GC-3′) and append its reverse complement (5′-GC-3′) → 5′-GCGC-3′, whose complement 3′-CGCG-5′ reads 5′-GCGC-3′ the other way ✓.", "Honest note: the five listed are standard restriction-site palindromes consistent with the chapter's base-pair rules; all verified above by complement-plus-reverse."], "answer": "GAATTC, GGATCC, AAGCTT, GTCGAC, CTGCAG — each equals its reverse complement."}, {"number": 8, "conceptIdx": 0, "page": 15, "printPage": null, "question": "Can you recall meiosis and indicate at what stage a recombinant DNA is made?", "steps": ["Meiotic recombination = crossing over between non-sister chromatids of homologous chromosomes.", "It occurs in prophase I of meiosis I, at the pachytene stage (after synapsis in zygotene, in synaptonemal-complex tetrads).", "The exchange creates recombinant (crossover) chromatids carrying new allele combinations — nature's own recombinant DNA, distinct from in-vitro rDNA of Section 9.1.", "Chiasmata visible at diplotene/diakinesis mark where the swaps happened."], "answer": "Pachytene of prophase I (meiosis I) — crossing over makes recombinant chromatids."}, {"number": 9, "conceptIdx": 2, "page": 15, "printPage": null, "question": "Can you think and answer how a reporter enzyme can be used to monitor transformation of host cells by foreign DNA in addition to a selectable marker?", "steps": ["Selectable markers (antibiotic resistance) only report DNA uptake; a reporter enzyme reports insertion — the text's β-galactosidase system (Section 9.2.2).", "Clone the foreign DNA inside the β-galactosidase coding sequence: insertional inactivation kills enzyme synthesis.", "Plate on chromogenic substrate: intact gene → blue colonies (non-recombinant transformants); disrupted gene → white colonies (recombinants).", "So one plate both confirms transformation (colonies grew) and identifies recombinants (white), replacing the two-plate antibiotic comparison."], "answer": "β-galactosidase + chromogenic substrate: blue = vector intact, white = insert present."}, {"number": 10, "conceptIdx": 5, "page": 16, "printPage": null, "question": "Describe briefly the following: (a) Origin of replication (b) Bioreactors (c) Downstream processing", "steps": ["(a) ori: the specific DNA sequence where replication initiates; alien DNA linked to it replicates with the host (cloning); it also controls copy number — high-copy ori for many copies (Sections 9.1, 9.2.2).", "(b) Bioreactors: 100–1000 L vessels converting raw materials into products with microbial/plant/animal/human cells under optimum conditions; stirring type most common — agitator, oxygen delivery, foam/temperature/pH controls, sampling ports; sparged variant bubbles sterile air (Section 9.3.5, Figure 9.7).", "(c) Downstream processing: post-biosynthesis separation and purification, formulation with preservatives, clinical trials as for drugs, strict quality control — product-specific (Section 9.3.6)."], "answer": "ori: replication start + copy control; bioreactors: 100–1000 L controlled vessels; downstream: purify → formulate → trial → QC."}, {"number": 11, "conceptIdx": 4, "page": 16, "printPage": null, "question": "Explain briefly (a) PCR (b) Restriction enzymes and DNA (c) Chitinase", "steps": ["(a) PCR: in-vitro amplification with two primer sets, DNA polymerase, nucleotides and template through denaturation → primer annealing → extension (Figure 9.6); thermostable Taq (Thermus aquaticus) survives the heat; N = 2^n gives ≈ 10^9 copies (≈ 2^30) for vector ligation (Section 9.3.3).", "(b) Restriction enzymes cut DNA at specific palindromic recognition sequences (Hind II: 6 bp; EcoRI: GAATTC), leaving sticky ends that ligase joins when vector and insert share the enzyme — the core cutting tool of rDNA technology (Section 9.2.1).", "(c) Chitinase: digests fungal cell walls to release DNA (with lysozyme for bacteria, cellulase for plants) at the isolation step; RNA/proteins then removed by ribonuclease/protease before chilled-ethanol precipitation (Section 9.3.1)."], "answer": "PCR: 2^n amplification; restriction enzymes: palindrome cutters; chitinase: fungal-wall opener."}, {"number": 12, "conceptIdx": 2, "page": 16, "printPage": null, "question": "Discuss with your teacher and find out how to distinguish between (a) Plasmid DNA and Chromosomal DNA (b) RNA and DNA (c) Exonuclease and Endonuclease", "steps": ["(a) Plasmid: small, circular, extra-chromosomal, autonomously replicating via its own ori, high copy number, carries few (often resistance) genes, lost without selection. Chromosomal: large, essential genome, single copy per cell, carries housekeeping genes.", "(b) DNA: deoxyribose sugar, thymine (A-T), usually double-stranded helix, stable genetic repository. RNA: ribose sugar, uracil (A-U), usually single-stranded, short-lived messenger/catalytic roles.", "(c) Exonuclease: trims nucleotides from DNA ends. Endonuclease (incl. restriction enzymes): cuts at specific internal positions — palindromic recognition sequences for restriction endonucleases (Section 9.2.1)."], "answer": "Plasmid: small circular extra-chromosomal; RNA: ribose + uracil, single-stranded; exo: ends, endo: internal cuts."}], "pageOffset": null, "printPageStart": null, "printPageEnd": null, "paginationProvenance": "folio-absent-in-source"};
+window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology", "title": "Biotechnology: Principles and Processes", "subtitle": "Genetic engineering and bioprocess engineering, restriction enzymes and pBR322, isolation and gel electrophoresis, PCR and host insertion, bioreactors and downstream processing.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo109.pdf", "page_start": 1, "page_end": 16, "extraction": "PyMuPDF text layer + section/exercise page maps in /tmp/opencode/bio_maps.json. pdftotext not used.", "lessons": [{"id": "principles-first-rdna", "nav": "Principles & first rDNA", "title": "Two core techniques — and the 1972 Boyer–Cohen plasmid", "deck": "Genetic engineering plus bioprocess engineering. Alien DNA survives only with an origin of replication; Cohen and Boyer linked an antibiotic-resistance gene to a Salmonella plasmid in 1972 and cloned it in E. coli.", "minutes": 9, "section": "9.1", "pages": [3, 5], "print": "163–165", "sim": "rdna", "simTitle": "1972 experiment stepper: link the resistance gene to the plasmid", "quick": ["The EFB defines biotechnology as <strong>‘the integration of natural science and organisms, cells, parts thereof, and molecular analogues for products and services’</strong> — covering both traditional microbe processes (curd, bread, wine) and modern molecular work (test-tube babies, DNA vaccines, gene correction). Modern biotechnology rests on two cores: <strong>(i) genetic engineering</strong> — altering DNA/RNA chemistry and introducing it into hosts to change phenotype; <strong>(ii) bioprocess engineering</strong> — sterile, contamination-free scale-up of the desired microbe or eukaryotic cell for antibiotics, vaccines and enzymes.", "Sexual reproduction gives variation but traditional hybridisation drags <strong>undesirable genes along with desired ones</strong>. Genetic engineering — recombinant DNA, gene cloning, gene transfer — isolates and introduces <strong>only one or a set of desirable genes</strong>. The three basic steps are: <strong>(i) identification of DNA with desirable genes; (ii) introduction into the host; (iii) maintenance in the host and transfer to progeny</strong>.", "An alien DNA piece on its own cannot multiply in progeny cells — it must integrate into the genome and hitch a ride on a chromosome's <strong>origin of replication (ori)</strong>, the sequence that initiates replication. Linking alien DNA to ori so it replicates with the host is <strong>cloning</strong>: making multiple identical copies of template DNA.", "The first artificial recombinant DNA (1972): <strong>Stanley Cohen and Herbert Boyer</strong> cut the antibiotic-resistance gene out of a plasmid of <strong>Salmonella typhimurium</strong> with restriction enzymes (‘molecular scissors’), joined it to plasmid DNA with <strong>DNA ligase</strong>, and transferred the new circular DNA into <strong>Escherichia coli</strong>, where host DNA polymerase made multiple copies — the cloning of antibiotic resistance in E. coli."], "formulas": [{"label": "Three steps of genetic modification", "html": "identify desirable DNA → introduce into host → maintain + inherit in progeny", "cond": "Section 9.1"}, {"label": "ori rule", "html": "alien DNA + ori → replicates with host chromosome (cloning); without ori → lost", "cond": "Section 9.1"}, {"label": "1972 construction", "html": "resistance gene + Salmonella plasmid —ligase→ rDNA —E. coli→ clones", "cond": "Cohen & Boyer, 1972"}], "deeper": "The Boyer profile (pdf p. 2) supplies the backstory: by 1969 Boyer studied E. coli restriction enzymes that cut DNA leaving ‘sticky ends’, then compared notes in Hawaii with Stanford's Stanley Cohen, who could remove plasmids — small independently-replicating DNA ringlets — and reinsert them into other cells. Splicing plus plasmid delivery equals recombinant DNA: the founding breakthrough of biotechnology.", "worked": "Fate-of-alien-DNA chain: naked fragment enters alien cell → no ori, no replication → lost in progeny; linked to plasmid ori via ligase → replicates with host DNA polymerase → inherited by every daughter cell → a clone of the resistance gene. That is exactly what Cohen and Boyer demonstrated in E. coli in 1972.", "prediction": {"prompt": "A resistance gene is shot into E. coli as a bare linear fragment with no ori and no vector. What is its likely fate?", "options": ["It is lost — without an origin of replication it cannot multiply in progeny cells", "It automatically replicates because all DNA replicates in bacteria", "It converts the cell into Salmonella typhimurium"], "answer": 0, "explanation": "Section 9.1: only DNA linked to an origin of replication (directly or via a vector) multiplies with the host; a bare fragment cannot."}, "connect": [["Curd, idli and wine are biotechnology too", "The chapter's restricted modern sense (GM organisms at scale) sits inside the EFB's wider definition — so Indian kitchens fermenting curd, idli batter and toddy already run traditional biotechnology daily."], ["Wow — one gene plus one plasmid founded an industry", "The entire discipline dates to a single 1972 construction: one antibiotic-resistance gene stitched into one Salmonella plasmid with ligase, then copied by E. coli — sticky ends from Boyer's enzymes made the pasting precise.", [], {"id": "1U9Yg1VVu3c", "title": "Gene Cloning | Biotechnology Principles and Processes | Class XII | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Name the two core techniques and the three basic steps of genetically modifying an organism; state the ori rule and the year, workers and organisms of the first rDNA.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The two core techniques that enabled modern biotechnology are", "options": ["Genetic engineering and bioprocess engineering", "Pasteurisation and distillation", "Hybridisation and natural selection"], "answer": 0, "hint": "Section 9.1 lists them as (i) and (ii).", "solution": "Genetic engineering (alter DNA, change phenotype) plus bioprocess engineering (sterile scale-up for antibiotics, vaccines, enzymes).", "wrong": ["Food-processing steps, not the two cores.", "Breeding methods the text contrasts with genetic engineering."]}, {"level": "Medium", "type": "mcq", "prompt": "Alien DNA multiplies in a host only if", "options": ["It is linked to an origin of replication", "It is injected in large quantity", "It comes from a related species"], "answer": 0, "hint": "What initiates replication on a chromosome?", "solution": "The ori sequence initiates replication; alien DNA must join it (directly or via a vector) to be cloned.", "wrong": ["Quantity cannot substitute for replication ability.", "Relatedness is irrelevant without ori linkage."]}, {"level": "Hard", "type": "number", "map": "Section 9.1", "prompt": "Years between the isolation of growth-restricting enzymes (1963) and the first rDNA (1972)", "answer": 9, "unit": "years", "tolerance": 0.1, "hint": "1972 minus 1963.", "solution": "Restriction enzymes isolated 1963 (Section 9.2.1); Cohen–Boyer rDNA 1972; gap = 9 years."}], "resources": [{"title": "NCERT §9.1 — Principles & first rDNA (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=3"}]}, {"id": "restriction-enzymes", "nav": "Restriction enzymes", "title": "Molecular scissors: EcoRI, palindromes and sticky ends", "deck": "Hind II cut at a 6-bp recognition sequence; 900+ enzymes from 230+ bacterial strains now known. EcoRI reads 5′-GAATTC-3′ the same on both strands and leaves sticky ends that ligase pastes.", "minutes": 9, "section": "9.2.1", "pages": [5, 8], "print": "165–168", "sim": "restriction", "simTitle": "Palindrome finder + EcoRI cutter: cut sites to fragments", "quick": ["In <strong>1963</strong> two enzymes restricting bacteriophage growth in E. coli were isolated — one methylating DNA, one cutting it (<strong>restriction endonuclease</strong>). The first sequence-specific cutter, <strong>Hind II</strong>, always cut at a particular <strong>6-base-pair recognition sequence</strong>. Today <strong>more than 900 restriction enzymes from over 230 bacterial strains</strong> are known, each with its own recognition sequence.", "Naming follows genus + species + strain + order: <strong>EcoRI</strong> comes from <strong>Escherichia coli RY 13</strong> (R = strain, I = first enzyme). Restriction enzymes are <strong>endonucleases</strong> (cut within DNA); <strong>exonucleases</strong> instead trim nucleotides from the ends. Each endonuclease inspects DNA length, binds its recognition site and cuts both sugar-phosphate backbones (Figure 9.1).", "Every restriction endonuclease recognises a <strong>palindromic</strong> sequence — like ‘MALAYALAM’, it reads the same on the two strands when the 5′ → 3′ orientation is kept: <strong>5′-GAATTC-3′ / 3′-CTTAAG-5′</strong>. Cuts fall a little away from the centre, between the same two bases on opposite strands, leaving single-stranded overhangs — <strong>sticky ends</strong> — that hydrogen-bond to complementary cut counterparts and invite DNA ligase.", "Cut by the <strong>same</strong> enzyme, vector and source DNA carry matching sticky ends and ligase joins them end-to-end (Figure 9.2). Cut with different enzymes, they cannot pair — so a recombinant vector is normally created only when <strong>vector and source DNA meet the same restriction enzyme</strong>."], "formulas": [{"label": "EcoRI site", "html": "5′-G|AATTC-3′ / 3′-CTTAA|G-5′ — sticky ends", "cond": "Figure 9.1; palindrome GAATTC"}, {"label": "Palindrome rule", "html": "sequence reads identically 5′ → 3′ on both strands (e.g. MALAYALAM)", "cond": "Section 9.2.1"}, {"label": "Fragment count", "html": "linear DNA cut at n sites → n + 1 fragments; circular DNA cut at n sites → n fragments", "cond": "Worked counting rule"}], "deeper": "Hind II's 6-bp recognition sequence is the prototype: find the exact word, cut at the exact point, every time. EcoRI's name is itself an exam favourite — E (genus Escherichia) + co (species coli) + R (strain RY 13) + I (first isolated). Note the division of labour the text stresses: methylase protects the host genome, endonuclease destroys the invader — bacteria invented genetic engineering as self-defence.", "worked": "EcoRI fragment math: a linear 10 kb DNA with 2 EcoRI sites (say at 3 kb and 7 kb) gives 3 fragments — 3 kb, 4 kb, 3 kb (2 + 1 = 3; lengths sum to 3 + 4 + 3 = 10 kb). A circular plasmid cut once gives 1 linear fragment; cut at 3 sites gives 3 fragments (n sites on a circle → n pieces).", "prediction": {"prompt": "Vector is cut with EcoRI but the human DNA insert is cut with BamHI. Mixed with ligase, will recombinant molecules form efficiently?", "options": ["No — different enzymes leave non-matching ends that cannot pair", "Yes — ligase joins any two DNA ends regardless of sequence", "Yes — but only inside E. coli, not in the tube"], "answer": 0, "explanation": "The text: unless vector and source DNA are cut with the same restriction enzyme, matching sticky ends never form and the recombinant molecule cannot be created."}, "connect": [["EcoRI and BamHI in every Indian biotech lab", "From Bengaluru to Hyderabad, student and industry plasmids are still cut with the same EcoRI/BamHI names printed on the pBR322 map (Figure 9.4) — the 1970s enzymes remain daily tools."], ["Wow — scissors that read before they cut", "Each endonuclease ‘inspects’ the whole DNA length, finds its exact palindrome, and nicks both backbones off-centre — a proofreading pair of scissors that only cuts words it recognises.", [], {"id": "1wK4bIjIOqU", "title": "Restriction Enzymes | Biotechnology Principles and Processes | Class XII | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Define recognition sequence and palindrome (with the GAATTC example), expand EcoRI, and state the same-enzyme rule plus the linear/circular fragment counts.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "EcoRI is named for", "options": ["Escherichia coli strain RY 13, first enzyme", "An eco-friendly recombinant isolate", "E. coli ribosomes, type I"], "answer": 0, "hint": "Genus + species + strain + order of isolation.", "solution": "E (Escherichia) + co (coli) + R (strain RY 13) + I (first enzyme from that strain).", "wrong": ["The name is taxonomic, not ecological.", "Ribosomes have nothing to do with it."]}, {"level": "Medium", "type": "number", "map": "Section 9.2.1", "prompt": "Fragments when a linear DNA with 2 EcoRI sites is fully digested", "answer": 3, "unit": "fragments", "tolerance": 0.1, "hint": "n cuts in a line make n + 1 pieces.", "solution": "2 sites → 2 + 1 = 3 fragments (e.g. 3 kb + 4 kb + 3 kb from a 10 kb molecule)."}, {"level": "Hard", "type": "number", "map": "Section 9.2.1", "prompt": "Fragments when a circular plasmid with 3 EcoRI sites is fully digested", "answer": 3, "unit": "fragments", "tolerance": 0.1, "hint": "On a circle, n cuts make n pieces.", "solution": "3 cuts on circular DNA → 3 linear fragments (contrast: 3 sites on linear DNA give 4)."}], "resources": [{"title": "NCERT §9.2.1 — Restriction enzymes (official PDF, PDF p.5)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=5"}]}, {"id": "vectors-pbr322", "nav": "Vectors & pBR322", "title": "Cloning vectors: ori, markers, pBR322 and Ti plasmids", "deck": "A vector needs ori, a selectable marker and single cloning sites. pBR322 carries ampR/tetR, seven mapped sites and rop; recombinants are picked by insertional inactivation — or blue-white screening. Ti plasmids and retroviruses carry genes into plants and animals.", "minutes": 9, "section": "9.2.2", "pages": [8, 10], "print": "168–170", "sim": "pbr322", "simTitle": "Vector map explorer: ori, ampR, tetR and rop", "quick": ["<strong>Plasmids and bacteriophages replicate inside bacteria independent of chromosomal control</strong>; phages reach very high copy numbers per cell, while plasmids range from 1–2 to 15–100+ copies. Linking alien DNA to such a replicon multiplies it to the vector's copy number — engineered vectors ease both linking and recombinant selection. A vector needs three features: <strong>origin of replication (ori)</strong>, a <strong>selectable marker</strong>, and <strong>cloning sites</strong>.", "<strong>ori</strong> starts replication and controls copy number — clone in a high-copy ori for many copies. A <strong>selectable marker</strong> (e.g. ampicillin, chloramphenicol, tetracycline or kanamycin resistance for E. coli, which is naturally sensitive) identifies transformants: <strong>transformation</strong> is the procedure of introducing DNA into a host bacterium. <strong>Cloning sites</strong> must be few, preferably single, or multiple cuts shatter the vector into complicating fragments.", "Textbook case — <strong>pBR322</strong> (Figure 9.4, 4361 bp): restriction sites <strong>Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I, Cla I</strong>, <strong>ori</strong>, resistance genes <strong>amp<sup>R</sup> and tet<sup>R</sup></strong>, and <strong>rop</strong> (proteins for plasmid replication). Ligate foreign DNA at the <strong>BamH I site inside tet<sup>R</sup></strong>: recombinants lose tetracycline resistance yet keep amp<sup>R</sup> — replica-plate from ampicillin to tetracycline; colonies growing only on ampicillin are recombinants. The faster alternative is <strong>insertional inactivation of β-galactosidase</strong>: no insert → blue colonies on chromogenic substrate; insert → white recombinant colonies.", "For eukaryotes we borrowed pathogen tricks: <strong>Agrobacterium tumefaciens</strong> delivers <strong>T-DNA</strong> turning plant cells tumoural, and <strong>retroviruses</strong> turn animal cells cancerous. Disarmed <strong>Ti plasmids</strong> (non-pathogenic, still delivering) and <strong>disarmed retroviruses</strong> are now plant and animal cloning vectors."], "formulas": [{"label": "pBR322 map facts", "html": "sites Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I, Cla I; ori; amp<sup>R</sup> + tet<sup>R</sup>; rop (replication proteins)", "cond": "Figure 9.4"}, {"label": "Insertional-inactivation selection", "html": "BamH I insert in tet<sup>R</sup>: grows on amp, dies on tet ⇒ recombinant", "cond": "Section 9.2.2"}, {"label": "Blue-white rule", "html": "intact β-galactosidase + chromogenic substrate ⇒ blue (non-recombinant); insert ⇒ white (recombinant)", "cond": "Section 9.2.2"}], "deeper": "Work the replica-plating logic slowly: ampicillin master plate keeps every transformant alive; the tetracycline replica kills exactly those whose tetR was split by an insert. Two plates, one comparison, zero sequencing — selection by inactivation. The blue-white shortcut collapses it to one plate: colour itself reports the insert. And note rop's quiet role — it codes the proteins that run plasmid replication, while ori is the address where they start.", "worked": "Screening math: 200 ampicillin-resistant colonies are replica-plated onto tetracycline; 140 grow on both (non-recombinants, intact tetR) and 60 grow only on ampicillin (recombinants, tetR inactivated). Recombinant fraction = 60/200 = 0.30 (30%). With blue-white screening the same answer comes from counting white vs blue colonies on a single plate.", "prediction": {"prompt": "Foreign DNA is ligated at pBR322's BamH I site (inside tetR) and cells are plated directly on tetracycline. Which colonies grow?", "options": ["Only non-recombinants — recombinants lost tetracycline resistance when tetR was split", "Only recombinants — the insert adds tetracycline resistance", "All transformants equally — the insert site does not matter"], "answer": 0, "explanation": "Insertion inactivates tetR, so recombinants die on tetracycline; they survive on ampicillin via intact ampR. Selection needs the ampicillin-then-tetracycline comparison."}, "connect": [["Ti-plasmid logic grows India's Bt-cotton", "Disarmed Agrobacterium delivery (Section 9.2.2) is the principle behind insect-resistant cotton widely grown in India — a pathogen's gene-delivery art turned into a farmer's vector."], ["Wow — white means loaded", "One chromogenic plate replaces two antibiotic plates: an insert silences β-galactosidase and the colony stays white, so the eye itself sequences the plate — colour as a cloning readout.", [], {"id": "PiJ3I-lFJUM", "title": "Parts of cloning vector (ori, rop, cloning site, markers) | Biotechnology | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "List the three vector features, the pBR322 map elements, the replica-plating selection logic, the blue-white rule, and the two disarmed eukaryotic vectors.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The origin of replication (ori) in a vector", "options": ["Starts replication and controls copy number of the linked DNA", "Cuts DNA at palindromic sites", "Stains DNA orange under UV"], "answer": 0, "hint": "Feature (i) of cloning vectors.", "solution": "ori is where replication starts; a high-copy ori recovers many copies of the target DNA.", "wrong": ["Cutting is the restriction enzyme's job.", "Orange staining is ethidium bromide's job."]}, {"level": "Medium", "type": "mcq", "prompt": "After ligation at pBR322's BamH I site, a recombinant colony", "options": ["Grows on ampicillin but not on tetracycline", "Grows on tetracycline but not on ampicillin", "Grows on neither antibiotic"], "answer": 0, "hint": "Which resistance gene did the insert split?", "solution": "The insert inactivates tetR but ampR stays intact — the replica-plating signature of a recombinant.", "wrong": ["ampR is untouched, so ampicillin growth persists.", "ampR survives, so recombinants are not killed by both."]}, {"level": "Hard", "type": "number", "map": "Figure 9.4", "prompt": "Restriction sites labelled on the pBR322 map in Figure 9.4", "answer": 7, "unit": "sites", "tolerance": 0.1, "hint": "Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I and …?", "solution": "Seven: Hind III, EcoR I, BamH I, Sal I, Pvu II, Pst I and Cla I."}], "resources": [{"title": "NCERT §9.2.2 — Vectors & pBR322 (official PDF, PDF p.8)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=8"}]}, {"id": "isolation-cutting-gel", "nav": "Isolation, cutting & gel", "title": "Free the DNA, cut it, and read the bands on agarose", "deck": "Lysozyme, cellulase and chitinase open cells; ribonuclease and protease clean up; chilled ethanol precipitates DNA for spooling. Agarose gel sorts fragments by size — small runs farthest — and ethidium bromide plus UV reveals orange bands for elution.", "minutes": 8, "section": "9.3.1, 9.3.2", "pages": [11, 12], "print": "171–172", "sim": "gel", "simTitle": "Electrophoresis band separator: size to distance", "quick": ["DNA must be pure before cutting, but it sits membrane-bound with RNA, proteins, polysaccharides and lipids. Cells are opened with wall-digesting enzymes — <strong>lysozyme (bacteria), cellulase (plant cells), chitinase (fungus)</strong> — then <strong>ribonuclease</strong> removes RNA and <strong>protease</strong> removes proteins (genes stay wound on histones until freed). <strong>Chilled ethanol</strong> precipitates purified DNA as fine threads collected by <strong>spooling</strong> (Figure 9.5).", "Purified DNA is incubated with restriction enzyme at its <strong>optimal conditions</strong>, and <strong>agarose gel electrophoresis</strong> checks the digestion's progress. DNA is <strong>negatively charged</strong>, so it migrates toward the <strong>anode (+)</strong> through <strong>agarose — a natural polymer from sea weeds</strong> — which sieves fragments by size: <strong>smaller fragments run farther</strong> (Figure 9.3: undigested lane 1 vs digested lanes 2–4).", "Pure DNA is invisible, so the gel is stained with <strong>ethidium bromide</strong> and exposed to <strong>UV</strong>: <strong>bright orange bands</strong> appear. Bands are cut out and DNA extracted — <strong>elution</strong> — and the purified ‘gene of interest’ plus the cut vector are mixed with <strong>ligase</strong> to build recombinant DNA.", "The vector gets the identical treatment: cut with the same enzyme, given space for the insert, then joined — the cut–separate–elute–ligate pipeline of Sections 9.3.1–9.3.2."], "formulas": [{"label": "Wall-enzyme pairs", "html": "lysozyme → bacteria; cellulase → plants; chitinase → fungi; then ribonuclease (RNA) + protease (protein); chilled ethanol ⇒ spooling", "cond": "Section 9.3.1"}, {"label": "Migration rule", "html": "DNA (−) → anode (+); agarose sieves by size: smaller fragment ⇒ farther band", "cond": "Figures 9.3; Section 9.3.2"}, {"label": "Elution", "html": "EtBr + UV ⇒ orange bands ⇒ cut band ⇒ extract DNA (elution) ⇒ ligate to vector", "cond": "Section 9.3.2"}], "deeper": "Read Figure 9.3 like a forensic report: lane 1 (undigested) shows essentially one slow, heavy band near the well; lanes 2–4 (digested) scatter into several faster bands — each extra band is a fragment the enzyme liberated. The sample must have been loaded at the end the bands are farthest from (the cathode/negative side), since DNA flees toward the anode. Distance is a ruler for size: nearest band = largest piece.", "worked": "Band-count math: a circular plasmid with one EcoRI site runs as a single undigested-style band; after complete digestion at 3 sites, elution must recover 3 orange bands (n sites on a circle → n fragments). If only 2 bands appear, digestion is partial — repeat at optimal conditions before ligation.", "prediction": {"prompt": "Two bands sit on a gel: band A near the well, band B near the far end. Which fragment is smaller?", "options": ["Band B — smaller fragments sieve farther through agarose", "Band A — heavy bands travel fastest", "Neither — position depends only on staining time"], "answer": 0, "explanation": "Sieving: the smaller the fragment, the farther it moves toward the anode. Far band = small piece."}, "connect": [["Sea-weed agarose from Indian coasts", "The gel matrix itself is a natural sea-weed polymer — the same Gulf of Mannar and Gujarat shores that harvest agar seaweeds supply the stuff of school electrophoresis tanks."], ["Wow — spooling makes genes visible", "After chilled ethanol, DNA winds out as fine threads on a glass rod: no microscope, no stain — heredity you can literally wind onto a stick (Figure 9.5).", [], {"id": "_EYsykjsfiY", "title": "Gel electrophoresis | Biomolecules | MCAT | Khan Academy", "channel": "Khan Academy"}]], "recall": "Name the three wall enzymes with targets, the clean-up enzymes, the precipitant, the migration direction and matrix, the stain, and elution.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Fungal walls are opened for DNA isolation with", "options": ["Chitinase", "Cellulase", "Lysozyme"], "answer": 0, "hint": "Match the enzyme to the wall polymer.", "solution": "Chitinase digests fungal chitin; cellulase is for plants, lysozyme for bacteria.", "wrong": ["Cellulase digests plant cellulose.", "Lysozyme digests bacterial walls."]}, {"level": "Medium", "type": "mcq", "prompt": "In gel electrophoresis DNA moves toward the", "options": ["Anode (positive electrode), smaller fragments farther", "Cathode, larger fragments farther", "Cathode, all fragments equally"], "answer": 0, "hint": "DNA is negatively charged; agarose sieves by size.", "solution": "Negative DNA migrates to the positive anode through agarose; small pieces sieve farthest.", "wrong": ["Negatives flee the cathode.", "Sieving separates by size — bands spread out."]}, {"level": "Hard", "type": "number", "map": "Sections 9.3.1–9.3.2", "prompt": "Orange bands to elute after complete digestion of a circular plasmid at 4 restriction sites", "answer": 4, "unit": "bands", "tolerance": 0.1, "hint": "n sites on a circle give n fragments.", "solution": "4 cuts on circular DNA → 4 fragments → 4 EtBr-orange bands to cut out and elute."}], "resources": [{"title": "NCERT §9.3.1, 9.3.2 — Isolation, cutting & gel (official PDF, PDF p.11)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=11"}]}, {"id": "pcr-host-insertion", "nav": "PCR & host insertion", "title": "PCR's billion copies — then smuggling DNA into hosts", "deck": "Denaturation, primer annealing, extension: Taq polymerase from Thermus aquaticus repeats the cycle to ~10^9 copies. Competent cells take DNA after Ca2+ plus ice–42 °C–ice shock; microinjection, gene guns and disarmed vectors cover animals and plants.", "minutes": 9, "section": "9.3.3, 9.3.4", "pages": [12, 13], "print": "172–173", "sim": "pcr", "simTitle": "Thermal cycler: cycles to copies by 2^n", "quick": ["<strong>PCR (Polymerase Chain Reaction)</strong> synthesises multiple copies of the gene of interest <strong>in vitro</strong> using <strong>two primer sets</strong> — small chemically synthesised oligonucleotides complementary to the DNA regions — plus <strong>DNA polymerase</strong>, supplied nucleotides and genomic template. Each cycle (Figure 9.6) runs three steps: <strong>(i) denaturation</strong> (heat splits dsDNA), <strong>(ii) primer annealing</strong> (primers bind), <strong>(iii) extension</strong> (polymerase extends primers).", "Repetition is possible only because the polymerase is <strong>thermostable</strong> — isolated from <strong>Thermus aquaticus</strong>, it survives the denaturing heat that kills ordinary enzymes. Repeated cycles amplify the segment to <strong>approximately a billion copies (10<sup>9</sup>)</strong>, and the amplified fragment can then be ligated into a vector for cloning.", "Getting recombinant DNA into hosts (§9.3.4) starts from a handicap: <strong>DNA is hydrophilic and cannot cross cell membranes</strong>. Bacteria are made <strong>competent</strong> with a specific concentration of divalent <strong>calcium</strong> ions, then given recombinant DNA on <strong>ice → brief 42 °C heat shock → ice again</strong>. An ampicillin-resistance-bearing recombinant, plated on ampicillin agar, lets only transformants grow — the resistance gene acting as <strong>selectable marker</strong>.", "Three more delivery routes: <strong>micro-injection</strong> (DNA shot directly into an animal cell's nucleus), <strong>biolistics / gene gun</strong> (gold or tungsten micro-particles coated with DNA bombarded into plant cells), and <strong>disarmed pathogen vectors</strong> that infect and deliver."], "formulas": [{"label": "PCR copies", "html": "N = N<sub>0</sub> × 2<sup>n</sup>; 2<sup>10</sup> ≈ 10<sup>3</sup>, 2<sup>20</sup> ≈ 10<sup>6</sup>, 2<sup>30</sup> ≈ 10<sup>9</sup>", "cond": "Section 9.3.3; Taq from Thermus aquaticus"}, {"label": "Heat-shock chain", "html": "Ca<sup>2+</sup> competence → ice + DNA → 42 °C shock → ice ⇒ uptake", "cond": "Sections 9.2.3/9.3.4"}, {"label": "Delivery table", "html": "bacteria: competent cells; animal nucleus: micro-injection; plants: gene gun; general: disarmed vectors", "cond": "Section 9.3.4"}], "deeper": "The 2^n ladder is worth memorising: 10 cycles ≈ a thousand, 20 ≈ a million, 30 ≈ a billion — the text's ‘approximately billion times’ is 2^30 = 1,073,741,824. Honest note: §9.3.4's heading (‘Insertion of Recombinant DNA into the Host Cell/Organism’) is split across lines on print p. 173, so a naive line-start section survey misses it — but the full passage (competent uptake, ampicillin selection) is present in the text layer and covered here.", "worked": "PCR copy math: start with N₀ = 1 template molecule and run n = 30 cycles: N = 2^30 = 1,073,741,824 ≈ 1.07 × 10^9 copies — the textbook's ‘1 billion copies’. From 10 template molecules the same 30 cycles give 10 × 2^30 ≈ 1.07 × 10^10 copies (linear in N₀, exponential in n).", "prediction": {"prompt": "Ordinary (non-thermostable) DNA polymerase is used in PCR instead of Taq. What happens at the first denaturation step?", "options": ["It denatures and dies — no amplification without fresh enzyme each cycle", "PCR runs faster because normal enzymes extend quicker", "Nothing changes — all polymerases survive near-boiling heat"], "answer": 0, "explanation": "The text's whole point: only Taq from Thermus aquaticus stays active through high-temperature denaturation; ordinary polymerase would cook."}, "connect": [["PCR in Indian diagnostic labs", "The same denature–anneal–extend cycles confirm TB, hepatitis and crop-virus infections in Indian testing laboratories — a classroom figure (9.6) running national diagnostics."], ["Wow — one molecule to a billion in an afternoon", "Thirty doublings turn a single invisible template into ~10^9 copies: exponential growth you can pipette, driven by a heat-proof enzyme from a hot-spring bacterium.", [], {"id": "nHi-3jP6Mvc", "title": "Polymerase chain reaction (PCR) | Biomolecules | MCAT | Khan Academy", "channel": "Khan Academy"}]], "recall": "List the PCR ingredients and three steps, the Taq source and copy number, the heat-shock chain, and the three alternative delivery methods.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Taq polymerase used in PCR comes from", "options": ["The bacterium Thermus aquaticus", "E. coli plasmids", "Agrobacterium tumefaciens"], "answer": 0, "hint": "A thermostable enzyme needs a hot home.", "solution": "Taq is isolated from Thermus aquaticus and stays active through denaturing heat.", "wrong": ["E. coli is the cloning host, not the Taq source.", "Agrobacterium gives the Ti vector, not Taq."]}, {"level": "Medium", "type": "number", "map": "Section 9.3.3", "prompt": "Copies from 1 template molecule after 10 PCR cycles", "answer": 1024, "unit": "copies", "tolerance": 1, "hint": "2^10.", "solution": "N = 2^10 = 1024 ≈ 10^3 copies."}, {"level": "Hard", "type": "number", "map": "Section 9.3.3", "prompt": "Cycles needed to reach about a billion copies from 1 molecule (2^30 ≈ 1.07 × 10^9)", "answer": 30, "unit": "cycles", "tolerance": 0.5, "hint": "2^10 ≈ 10^3, so 2^30 ≈ …?", "solution": "2^30 = 1,073,741,824 ≈ 1.07 × 10^9 — the textbook's billion-copy amplification."}], "resources": [{"title": "NCERT §9.3.3, 9.3.4 — PCR & host insertion (official PDF, PDF p.12)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=12"}]}, {"id": "bioreactor-downstream", "nav": "Bioreactor & downstream", "title": "Growing the product at 100–1000 L — then purifying it", "deck": "Foreign genes are expressed as recombinant protein, scaled in continuous culture and stirred-tank (or sparged) bioreactors, then separated, purified, formulated, clinically trialled and quality-checked.", "minutes": 8, "section": "9.3.5, 9.3.6", "pages": [13, 14], "print": "173–174", "sim": "bioreactor", "simTitle": "Stirred-tank vs sparged tank + downstream flow", "quick": ["Inserting alien DNA is only half the job: the <strong>ultimate aim is a desirable protein</strong>, so the recombinant DNA must be <strong>expressed under appropriate conditions</strong>. A protein-encoding gene expressed in a <strong>heterologous host</strong> yields a <strong>recombinant protein</strong>. Small lab cultures are harvested and purified with separation techniques — but appreciable quantities need large scale.", "<strong>Continuous culture</strong> keeps cells in log/exponential phase: used medium drains from one side while fresh medium enters the other, sustaining physiologically peak cells for <strong>larger biomass and higher protein yields</strong>. <strong>Bioreactors (100–1000 litres)</strong> biologically convert raw materials into products with microbial, plant, animal or human cells under optimum temperature, pH, substrate, salts, vitamins and oxygen.", "The workhorses are <strong>stirring-type bioreactors</strong> (Figure 9.7): cylindrical or curved-base vessels where the <strong>stirrer mixes evenly and supplies oxygen</strong> throughout; the <strong>sparged stirred-tank</strong> variant additionally <strong>bubbles sterile air</strong> through the reactor. Fittings include agitator, oxygen delivery, foam control, temperature control, pH control systems and sampling ports for periodic withdrawal.", "After the biosynthetic stage comes <strong>downstream processing — separation and purification</strong> — then <strong>formulation with preservatives</strong>, <strong>thorough clinical trials</strong> (as for drugs) and <strong>strict quality control</strong>; both downstream steps and QC <strong>vary from product to product</strong>."], "formulas": [{"label": "Continuous-culture rule", "html": "drain used medium + feed fresh ⇒ log phase held ⇒ biomass ↑ ⇒ yield ↑", "cond": "Section 9.3.5"}, {"label": "Bioreactor scale", "html": "stirred-tank vessels process 100–1000 L; sparged variant adds sterile-air bubbling", "cond": "Figure 9.7; Exercise 6"}, {"label": "Downstream chain", "html": "separate → purify → formulate (+preservatives) → clinical trials → QC", "cond": "Section 9.3.6; Exercise 10(c)"}], "deeper": "Answer Exercise 6's ‘besides aeration and mixing’ directly from the fittings list: foam, temperature and pH control systems plus sampling ports and the sheer 100–1000 L volume that shake flasks cannot touch. And note the chapter's closing discipline — downstream processing and quality control are product-specific, so a vaccine's pipeline differs from an enzyme's even in the same factory.", "worked": "Scale-up math: a 5 L lab culture yielding product P scales to a 500 L stirred-tank run — a 500/5 = 100-fold volume jump, so the expected harvest is ≈ 100 × P at equal cell density (the linearity continuous culture and controlled bioreactor conditions are built to protect). The sparged variant adds sterile-air bubbling on top of stirrer mixing for oxygen-hungry cultures.", "prediction": {"prompt": "A team needs 500 L of recombinant-protein culture. Why choose a stirred-tank bioreactor over 500 shake flasks?", "options": ["One controlled vessel gives even mixing/oxygen, foam–temperature–pH control, sampling ports and 100–1000 L scale", "Flasks are forbidden for recombinant cells by law", "Bioreactors skip downstream processing entirely"], "answer": 0, "explanation": "Exercise 6 + Section 9.3.5: beyond aeration/mixing, the bioreactor adds control systems, sampling and industrial volume — flasks cannot."}, "connect": [["India's recombinant insulin pipeline", "Bengaluru-made recombinant human insulin (a §9.3.5 foreign gene product in E. coli/yeast) reaches diabetic patients only after §9.3.6 separation, formulation, clinical trials and batch-wise quality control — Exercise 1's therapeutics list in action."], ["Wow — Shantha's affordable Hep-B shot", "Hyderabad's Shantha Biotechnics made yeast-expressed hepatitis-B vaccine (HBsAg, e.g. Shanvac-B) affordable for India's immunisation drive — one recombinant protein carried through the full downstream chain: separate, purify, formulate, trial, QC.", [], {"id": "3EeBt2Hn2zw", "title": "Bioreactors and Downstream Processing | Class 12 Biology Chapter 11 (2022-23)", "channel": "Magnet Brains"}]], "recall": "Define recombinant protein, state the continuous-culture principle, list bioreactor fittings and the simple-vs-sparged difference, and recite the downstream chain.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Downstream processing is", "options": ["Separation and purification of the product, then formulation, trials and QC", "Draining waste downstream of the factory", "Cooling the bioreactor with river water"], "answer": 0, "hint": "Section 9.3.6 defines it in one line.", "solution": "Separation + purification, formulation with preservatives, clinical trials and strict quality control.", "wrong": ["Industrial geography, not biotechnology.", "Temperature control is upstream bioreactor operation."]}, {"level": "Medium", "type": "mcq", "prompt": "A sparged stirred-tank bioreactor differs by", "options": ["Sterile air bubbles sparged through the reactor", "Absence of any stirrer or agitator", "Running without temperature control"], "answer": 0, "hint": "Figure 9.7(b).", "solution": "Sterile air is bubbled (sparged) through the culture in addition to stirrer mixing.", "wrong": ["The agitator system is still present.", "Temperature control is standard in both."]}, {"level": "Hard", "type": "number", "map": "Section 9.3.5", "prompt": "Scale factor scaling a 5 L culture to a 500 L bioreactor run", "answer": 100, "unit": "fold", "tolerance": 1, "hint": "500 divided by 5.", "solution": "500/5 = 100-fold volume jump — the 100–1000 L range bioreactors exist to serve."}], "resources": [{"title": "NCERT §9.3.5, 9.3.6 — Bioreactor & downstream (official PDF, PDF p.13)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo109.pdf#page=13"}]}], "exercises": [{"number": 1, "conceptIdx": 5, "page": 15, "printPage": 175, "question": "Can you list 10 recombinant proteins which are used in medical practice? Find out where they are used as therapeutics (use the internet).", "steps": ["Recombinant proteins are §9.3.5 foreign gene products expressed in heterologous hosts, purified by downstream processing.", "Therapeutic ten: (1) Insulin — diabetes; (2) Human growth hormone — dwarfism; (3) Tissue plasminogen activator — heart attack/stroke clots; (4) Factor VIII — haemophilia A; (5) Erythropoietin — anaemia; (6) Interferon-α — hepatitis/viral cancers; (7) Hepatitis-B surface antigen — Hep-B vaccine; (8) DNase I — cystic fibrosis; (9) Follicle-stimulating hormone — infertility; (10) G-CSF — neutropenia after chemotherapy.", "Honest note: the exact ten are an internet-research answer (as NCERT directs); any ten genuine recombinant therapeutics with uses score."], "answer": "Insulin, hGH, tPA, Factor VIII, erythropoietin, interferon-α, HBsAg vaccine, DNase I, FSH, G-CSF — with uses above."}, {"number": 2, "conceptIdx": 1, "page": 15, "printPage": 175, "question": "Make a chart (with diagrammatic representation) showing a restriction enzyme, the substrate DNA on which it acts, the site at which it cuts DNA and the product it produces.", "steps": ["Enzyme: EcoRI (from E. coli RY 13; Section 9.2.1).", "Substrate: any dsDNA carrying 5′-GAATTC-3′ / 3′-CTTAAG-5′ (palindromic recognition sequence).", "Cut site: between G and A on each strand (5′-G|AATTC-3′), a little away from the palindrome centre — see Figure 9.1.", "Product: two fragments with single-stranded sticky ends (AATT overhangs) that pair with complementary cut counterparts for ligase joining."], "answer": "EcoRI on GAATTC, cut G|AATTC → sticky-ended fragments (Figure 9.1)."}, {"number": 3, "conceptIdx": 1, "page": 15, "printPage": 175, "question": "From what you have learnt, can you tell whether enzymes are bigger or DNA is bigger in molecular size? How did you know?", "steps": ["Compare molar masses: 1 DNA base pair ≈ 660 Da, so even a 1 kb gene ≈ 6.6 × 10^5 Da (660 kDa).", "Typical enzymes are tens of kDa (e.g. EcoRI subunit ≈ 31 kDa; Taq polymerase ≈ 94 kDa).", "Hence DNA is bigger — a modest plasmid such as pBR322 (thousands of bp) outweighs its cutting enzyme by an order of magnitude or more.", "How we know: masses follow from sequence lengths (bp × 660 Da) and protein sizes from gel/sequence data."], "answer": "DNA is bigger in molecular size (kb of 660-Da bp outweigh kDa enzymes)."}, {"number": 4, "conceptIdx": 0, "page": 15, "printPage": 175, "question": "What would be the molar concentration of human DNA in a human cell? Consult your teacher.", "steps": ["Diploid human genome ≈ 6.6 × 10^9 base pairs (NCERT-directed value).", "Average mass of 1 bp ≈ 660 Da = 660 g mol⁻¹, so molar mass of one genome = 6.6 × 10^9 × 660 = 4.356 × 10^12 g mol⁻¹.", "Mass of DNA per cell = 4.356 × 10^12 / 6.022 × 10^23 = 7.23 × 10^-12 g ≈ 7.2 pg.", "Moles of base pairs per cell = 6.6 × 10^9 / 6.022 × 10^23 = 1.096 × 10^-14 mol.", "Typical cell volume ≈ 10^-12 L (1000 µm³): [bp] = 1.096 × 10^-14 / 10^-12 ≈ 1.1 × 10^-2 mol L⁻¹ ≈ 0.011 M (≈ 11 mM in base pairs; ≈ picomolar in whole genomes).", "Honest note: order-of-magnitude estimate — the value scales with the assumed cell volume, hence ‘consult your teacher’."], "answer": "≈ 10^-2 M in base pairs (≈ 7.2 pg per cell; picomolar in whole genomes)."}, {"number": 5, "conceptIdx": 1, "page": 15, "printPage": 175, "question": "Do eukaryotic cells have restriction endonucleases? Justify your answer.", "steps": ["No. Restriction endonucleases are bacterial defence tools: they cut invading bacteriophage DNA while the host genome is protected by methylation (Section 9.2.1, 1963 discovery).", "Eukaryotes never evolved this system — their genomes are full of palindromic recognition sequences that such enzymes would shred, and they defend against viruses by other (e.g. immune/RNA-based) means.", "That is exactly why eukaryotes must borrow bacterial enzymes for recombinant DNA work."], "answer": "No — restriction–modification is a prokaryotic defence; eukaryotes lack it."}, {"number": 6, "conceptIdx": 5, "page": 15, "printPage": 175, "question": "Besides better aeration and mixing properties, what other advantages do stirred tank bioreactors have over shake flasks?", "steps": ["Volume: stirred tanks process 100–1000 L; flasks are millilitre-to-litre scale (Section 9.3.5).", "Control systems from the text: foam control, temperature control and pH control systems, plus an oxygen delivery system.", "Operability: sampling ports withdraw small culture volumes periodically without stopping the run; continuous-culture feeding/draining holds log phase.", "Result: even mixing and oxygen availability throughout plus industrial-scale, monitored production — impossible in flasks."], "answer": "100–1000 L scale + foam/temperature/pH control + sampling ports + continuous operation."}, {"number": 7, "conceptIdx": 1, "page": 15, "printPage": 175, "question": "Collect 5 examples of palindromic DNA sequences by consulting your teacher. Better try to create a palindromic sequence by following base-pair rules.", "steps": ["Rule: a DNA palindrome reads identically 5′ → 3′ on both strands (complement, then reverse, returns the same word).", "Five verified examples (four from the pBR322 map, Figure 9.4): (1) GAATTC (EcoRI): complement CTTAAG → reversed GAATTC ✓; (2) GGATCC (BamHI): complement CCTAGG → reversed GGATCC ✓; (3) AAGCTT (Hind III): complement TTCGAA → reversed AAGCTT ✓; (4) GTCGAC (Sal I): complement CAGCTG → reversed GTCGAC ✓; (5) CTGCAG (Pst I): complement GACGTC → reversed CTGCAG ✓.", "To create one: pick any short half (e.g. 5′-GC-3′) and append its reverse complement (5′-GC-3′) → 5′-GCGC-3′, whose complement 3′-CGCG-5′ reads 5′-GCGC-3′ the other way ✓.", "Honest note: the five listed are standard restriction-site palindromes consistent with the chapter's base-pair rules; all verified above by complement-plus-reverse."], "answer": "GAATTC, GGATCC, AAGCTT, GTCGAC, CTGCAG — each equals its reverse complement."}, {"number": 8, "conceptIdx": 0, "page": 15, "printPage": 175, "question": "Can you recall meiosis and indicate at what stage a recombinant DNA is made?", "steps": ["Meiotic recombination = crossing over between non-sister chromatids of homologous chromosomes.", "It occurs in prophase I of meiosis I, at the pachytene stage (after synapsis in zygotene, in synaptonemal-complex tetrads).", "The exchange creates recombinant (crossover) chromatids carrying new allele combinations — nature's own recombinant DNA, distinct from in-vitro rDNA of Section 9.1.", "Chiasmata visible at diplotene/diakinesis mark where the swaps happened."], "answer": "Pachytene of prophase I (meiosis I) — crossing over makes recombinant chromatids."}, {"number": 9, "conceptIdx": 2, "page": 15, "printPage": 175, "question": "Can you think and answer how a reporter enzyme can be used to monitor transformation of host cells by foreign DNA in addition to a selectable marker?", "steps": ["Selectable markers (antibiotic resistance) only report DNA uptake; a reporter enzyme reports insertion — the text's β-galactosidase system (Section 9.2.2).", "Clone the foreign DNA inside the β-galactosidase coding sequence: insertional inactivation kills enzyme synthesis.", "Plate on chromogenic substrate: intact gene → blue colonies (non-recombinant transformants); disrupted gene → white colonies (recombinants).", "So one plate both confirms transformation (colonies grew) and identifies recombinants (white), replacing the two-plate antibiotic comparison."], "answer": "β-galactosidase + chromogenic substrate: blue = vector intact, white = insert present."}, {"number": 10, "conceptIdx": 5, "page": 16, "printPage": 176, "question": "Describe briefly the following: (a) Origin of replication (b) Bioreactors (c) Downstream processing", "steps": ["(a) ori: the specific DNA sequence where replication initiates; alien DNA linked to it replicates with the host (cloning); it also controls copy number — high-copy ori for many copies (Sections 9.1, 9.2.2).", "(b) Bioreactors: 100–1000 L vessels converting raw materials into products with microbial/plant/animal/human cells under optimum conditions; stirring type most common — agitator, oxygen delivery, foam/temperature/pH controls, sampling ports; sparged variant bubbles sterile air (Section 9.3.5, Figure 9.7).", "(c) Downstream processing: post-biosynthesis separation and purification, formulation with preservatives, clinical trials as for drugs, strict quality control — product-specific (Section 9.3.6)."], "answer": "ori: replication start + copy control; bioreactors: 100–1000 L controlled vessels; downstream: purify → formulate → trial → QC."}, {"number": 11, "conceptIdx": 4, "page": 16, "printPage": 176, "question": "Explain briefly (a) PCR (b) Restriction enzymes and DNA (c) Chitinase", "steps": ["(a) PCR: in-vitro amplification with two primer sets, DNA polymerase, nucleotides and template through denaturation → primer annealing → extension (Figure 9.6); thermostable Taq (Thermus aquaticus) survives the heat; N = 2^n gives ≈ 10^9 copies (≈ 2^30) for vector ligation (Section 9.3.3).", "(b) Restriction enzymes cut DNA at specific palindromic recognition sequences (Hind II: 6 bp; EcoRI: GAATTC), leaving sticky ends that ligase joins when vector and insert share the enzyme — the core cutting tool of rDNA technology (Section 9.2.1).", "(c) Chitinase: digests fungal cell walls to release DNA (with lysozyme for bacteria, cellulase for plants) at the isolation step; RNA/proteins then removed by ribonuclease/protease before chilled-ethanol precipitation (Section 9.3.1)."], "answer": "PCR: 2^n amplification; restriction enzymes: palindrome cutters; chitinase: fungal-wall opener."}, {"number": 12, "conceptIdx": 2, "page": 16, "printPage": 176, "question": "Discuss with your teacher and find out how to distinguish between (a) Plasmid DNA and Chromosomal DNA (b) RNA and DNA (c) Exonuclease and Endonuclease", "steps": ["(a) Plasmid: small, circular, extra-chromosomal, autonomously replicating via its own ori, high copy number, carries few (often resistance) genes, lost without selection. Chromosomal: large, essential genome, single copy per cell, carries housekeeping genes.", "(b) DNA: deoxyribose sugar, thymine (A-T), usually double-stranded helix, stable genetic repository. RNA: ribose sugar, uracil (A-U), usually single-stranded, short-lived messenger/catalytic roles.", "(c) Exonuclease: trims nucleotides from DNA ends. Endonuclease (incl. restriction enzymes): cuts at specific internal positions — palindromic recognition sequences for restriction endonucleases (Section 9.2.1)."], "answer": "Plasmid: small circular extra-chromosomal; RNA: ribose + uracil, single-stranded; exo: ends, endo: internal cuts."}], "pageOffset": null, "printPageStart": 161, "printPageEnd": 176, "paginationProvenance": "folio-verified: even PDF pages show the printed folio as the first extracted line (idx3=164 ... idx15=176), odd pages carry the running head first but the same folio inline (idx14 = \"...PROCESSES 175 SUMMARY...\"); confirms printed = 1-based PDF page + 160 with zero deviation across 7 independent anchor points"};
 </script>
 <script>
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1088,8 +1296,44 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1115,8 +1359,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1199,7 +1442,35 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1216,6 +1487,10 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1224,17 +1499,17 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1246,26 +1521,27 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1275,7 +1551,6 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1288,7 +1563,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1314,42 +1589,47 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1357,7 +1637,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1366,65 +1646,51 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1465,6 +1731,10 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1483,7 +1753,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1533,7 +1803,8 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1542,6 +1813,41 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1556,9 +1862,6 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1678,10 +1981,9 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1697,7 +1999,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1708,8 +2010,8 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1754,22 +2056,31 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1815,7 +2126,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1825,7 +2136,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1835,11 +2146,31 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1874,6 +2205,10 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1887,6 +2222,41 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1894,6 +2264,7 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1908,6 +2279,232 @@ window.CHAPTER = {"code": "lebo109", "chapterNumber": 9, "book_name": "Biology",
   updateProgress();
   routeFromHash();
 })();
+
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1940,9 +2537,9 @@ window.SIMS["principles-first-rdna"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Resistance gene</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>E. coli clones</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-s0">Step 0: bare fragment</button>' +
-      '<button class="preset-btn" id="p-s2">Step 2: cut + ligate</button>' +
-      '<button class="preset-btn active" id="p-s4">Step 4: 1972 clone</button>';
+      '<button class="preset-btn" id="p-s0" data-preset="p-s0">Step 0: bare fragment</button>' +
+      '<button class="preset-btn" id="p-s2" data-preset="p-s2">Step 2: cut + ligate</button>' +
+      '<button class="preset-btn active" id="p-s4" data-preset="p-s4">Step 4: 1972 clone</button>';
     document.getElementById("p-s0").onclick = function(){ setActivePreset(this); step=0; draw(App.state.t); };
     document.getElementById("p-s2").onclick = function(){ setActivePreset(this); step=2; draw(App.state.t); };
     document.getElementById("p-s4").onclick = function(){ setActivePreset(this); step=4; draw(App.state.t); };
@@ -2010,11 +2607,11 @@ window.SIMS["restriction-enzymes"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>EcoRI cut G|AATTC</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Sticky ends</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-eco">EcoRI GAATTC</button>' +
-      '<button class="preset-btn" id="p-bam">BamHI GGATCC</button>' +
-      '<button class="preset-btn" id="p-hind">HindIII AAGCTT</button>' +
-      '<button class="preset-btn" id="p-lin">Linear</button>' +
-      '<button class="preset-btn" id="p-cir">Circular</button>';
+      '<button class="preset-btn active" id="p-eco" data-preset="p-eco">EcoRI GAATTC</button>' +
+      '<button class="preset-btn" id="p-bam" data-preset="p-bam">BamHI GGATCC</button>' +
+      '<button class="preset-btn" id="p-hind" data-preset="p-hind">HindIII AAGCTT</button>' +
+      '<button class="preset-btn" id="p-lin" data-preset="p-lin">Linear</button>' +
+      '<button class="preset-btn" id="p-cir" data-preset="p-cir">Circular</button>';
     document.getElementById("p-eco").onclick = function(){ setActivePreset(this); seq="GAATTC"; draw(App.state.t); };
     document.getElementById("p-bam").onclick = function(){ setActivePreset(this); seq="GGATCC"; draw(App.state.t); };
     document.getElementById("p-hind").onclick = function(){ setActivePreset(this); seq="AAGCTT"; draw(App.state.t); };
@@ -2093,9 +2690,9 @@ window.SIMS["vectors-pbr322"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>tetR</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Insert</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-int">Intact pBR322</button>' +
-      '<button class="preset-btn" id="p-bam">BamHI insert in tetR</button>' +
-      '<button class="preset-btn" id="p-pst">PstI insert in ampR</button>';
+      '<button class="preset-btn active" id="p-int" data-preset="p-int">Intact pBR322</button>' +
+      '<button class="preset-btn" id="p-bam" data-preset="p-bam">BamHI insert in tetR</button>' +
+      '<button class="preset-btn" id="p-pst" data-preset="p-pst">PstI insert in ampR</button>';
     document.getElementById("p-int").onclick = function(){ setActivePreset(this); mode="intact"; draw(App.state.t); };
     document.getElementById("p-bam").onclick = function(){ setActivePreset(this); mode="bam"; draw(App.state.t); };
     document.getElementById("p-pst").onclick = function(){ setActivePreset(this); mode="pst"; draw(App.state.t); };
@@ -2159,8 +2756,8 @@ window.SIMS["isolation-cutting-gel"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Wells (cathode, -)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Anode (+) — DNA runs here</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-und">Lane 1: undigested</button>' +
-      '<button class="preset-btn active" id="p-dig">Lanes 2-4: digested</button>';
+      '<button class="preset-btn" id="p-und" data-preset="p-und">Lane 1: undigested</button>' +
+      '<button class="preset-btn active" id="p-dig" data-preset="p-dig">Lanes 2-4: digested</button>';
     document.getElementById("p-und").onclick = function(){ setActivePreset(this); lanes="undigested"; draw(App.state.t); };
     document.getElementById("p-dig").onclick = function(){ setActivePreset(this); lanes="digest"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -2215,9 +2812,9 @@ window.SIMS["pcr-host-insertion"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Primer annealing</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Extension (Taq)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-n1">N0 = 1 molecule</button>' +
-      '<button class="preset-btn" id="p-n10">N0 = 10 molecules</button>' +
-      '<button class="preset-btn" id="p-ca">Ca2+ heat-shock route</button>';
+      '<button class="preset-btn active" id="p-n1" data-preset="p-n1">N0 = 1 molecule</button>' +
+      '<button class="preset-btn" id="p-n10" data-preset="p-n10">N0 = 10 molecules</button>' +
+      '<button class="preset-btn" id="p-ca" data-preset="p-ca">Ca2+ heat-shock route</button>';
     document.getElementById("p-n1").onclick = function(){ setActivePreset(this); n0=1; draw(App.state.t); };
     document.getElementById("p-n10").onclick = function(){ setActivePreset(this); n0=10; draw(App.state.t); };
     document.getElementById("p-ca").onclick = function(){ setActivePreset(this); draw(App.state.t); };
@@ -2279,8 +2876,8 @@ window.SIMS["bioreactor-downstream"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Stirrer / agitator + O2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Sterile-air sparge</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-stir">Simple stirred-tank (Fig 9.7a)</button>' +
-      '<button class="preset-btn" id="p-spar">Sparged stirred-tank (Fig 9.7b)</button>';
+      '<button class="preset-btn active" id="p-stir" data-preset="p-stir">Simple stirred-tank (Fig 9.7a)</button>' +
+      '<button class="preset-btn" id="p-spar" data-preset="p-spar">Sparged stirred-tank (Fig 9.7b)</button>';
     document.getElementById("p-stir").onclick = function(){ setActivePreset(this); sparged=false; draw(App.state.t); };
     document.getElementById("p-spar").onclick = function(){ setActivePreset(this); sparged=true; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =

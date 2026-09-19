@@ -1,1312 +1,1203 @@
+// Class 9 Science, Chapter 4 (iesc104) — simulation labs.
+// Every scenario uses the numbers from the NCERT textbook unless its label says otherwise.
 var App = window.App;
+var LAB = window.LAB;
 window.SIMS = {};
 
-// =========================================================================
-// 1. SIMULATION 1: 1D Track Runner & Activity 4.1 Ball Toss (track1d)
-// =========================================================================
+// -------------------------------------------------------------------------
+// Lab 1 — Distance and displacement on a straight track (Fig. 4.4, Pause & Ponder Q1, Activity 4.1)
+// -------------------------------------------------------------------------
 (function(){
-  var simState = {
-    mode: "runner", // "runner" or "toss"
-    xTarget: 100,
-    leg2: 40,
-    totalDistance: 160,
-    netDisplacement: 40,
-    tossHeight: 140 // cm
+  var L = LAB, C = L.C;
+  var st = {preset: "fig44", turnAt: 100, stopAt: 40};
+
+  var TRIPS = {
+    // NCERT Fig. 4.4: O at 0 s, B (40 m) at 4 s, A (100 m) at 10 s, back to B at 16 s.
+    fig44: {pts: [[0, 0], [10, 100], [16, 40]], stamps: [[0, 0], [4, 40], [10, 100], [16, 40]],
+      labels: [[0, "O"], [40, "B"], [100, "A"]]},
+    // Pause & Ponder Q1: out to A and all the way back to O.
+    ponder1: {pts: [[0, 0], [10, 100], [20, 0]], stamps: [[0, 0], [10, 100], [20, 0]], labels: [[0, "O"], [100, "A"]]}
   };
 
-  function mount(lesson){
-    simState.mode = "runner";
-    var maxT = 6.0;
-    App.state.maxT = maxT;
-    var scrubber = document.getElementById("time-scrubber");
-    if(scrubber){ scrubber.max = maxT; scrubber.value = 0; }
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Forward Leg Trajectory</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Return Leg Trajectory</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#818cf8;"></span><span>Net Displacement Vector (Δs)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p1-run-both">Run to A (+100m) & Return to B (+40m)</button>' +
-      '<button class="preset-btn" id="p1-run-a">Run to A (+100m) Only</button>' +
-      '<button class="preset-btn" id="p1-ball-toss">Activity 4.1: Vertical Ball Toss (140 cm)</button>';
-
-    document.getElementById("p1-run-both").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "runner";
-      simState.xTarget = 100; simState.leg2 = 40;
-      App.state.maxT = 6.0;
-      document.getElementById("time-scrubber").max = 6.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Notice the green forward trail reach +100 m, then the orange return trail accumulate distance to 160 m while displacement shrinks back to +40 m!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p1-run-a").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "runner";
-      simState.xTarget = 100; simState.leg2 = 100;
-      App.state.maxT = 3.0;
-      document.getElementById("time-scrubber").max = 3.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Moving in one straight direction without turning: Distance travelled (100 m) strictly equals magnitude of displacement (+100 m).";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p1-ball-toss").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "toss";
-      App.state.maxT = 4.0;
-      document.getElementById("time-scrubber").max = 4.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (Activity 4.1):</strong> Ball rises to peak (140 cm), pauses, and falls back to hand. Watch how height resets to 0, displacement becomes 0, but total distance is 280 cm!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("lab-controls").innerHTML = 
-      '<div class="control-item"><div class="control-label"><span>Manual Position Scrubber</span><span class="val" id="ctrl-p1-val">0 m</span></div>' +
-      '<input type="range" id="ctrl-p1-pos" min="-40" max="100" value="0" step="1"></div>';
-
-    document.getElementById("ctrl-p1-pos").addEventListener("input", function(e){
-      App.pause();
-      simState.mode = "manual";
-      var x = Number(e.target.value);
-      drawManual(x);
-    });
-
-    draw(0);
+  function customTrip(){
+    var a = st.turnAt, b = st.stopAt, t1 = a / 10;
+    var pts = [[0, 0], [t1, a]];
+    if(b !== a) pts.push([t1 + Math.abs(a - b) / 10, b]);
+    var labels = [[0, "O"], [a, "A"]];
+    if(b !== a && b !== 0) labels.push([b, "B"]);
+    return {pts: pts, stamps: pts.slice(), labels: labels};
   }
 
-  function setActivePreset(btn){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
-  }
+  function trip(){ return st.preset === "custom" ? customTrip() : TRIPS[st.preset]; }
 
-  function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
+  // Toss (Activity 4.1): thrown up from O to B = 140 cm, falls back to O. g = 9.8 m s⁻².
+  var G = 9.8, H = 1.4, U0 = Math.sqrt(2 * G * H), TUP = U0 / G, TTOT = 2 * TUP;
+  function heightAt(t){ return Math.max(0, U0 * t - 0.5 * G * t * t) * 100; }
+  function timeUpAt(hcm){ var h = hcm / 100; return (U0 - Math.sqrt(U0 * U0 - 2 * G * h)) / G; }
+  function timeDownAt(hcm){ var h = hcm / 100; return (U0 + Math.sqrt(U0 * U0 - 2 * G * h)) / G; }
+  var TOSS_ROWS = [
+    ["O", 0, 0, 0],
+    ["A", timeUpAt(40), 40, 40],
+    ["B", TUP, 140, 140],
+    ["C", timeDownAt(80), 200, 80],
+    ["O", TTOT, 280, 0]
+  ];
 
-    if(simState.mode === "toss"){
-      drawBallToss(t, svg);
-      return;
-    }
-
-    var xOrigin = 220, scale = 4.4;
-    function toSvgX(x){ return xOrigin + x * scale; }
-
-    var xCurrent = 0;
-    var dist = 0;
-    var disp = 0;
-
-    if(t <= 3.0){
-      var frac = t / 3.0;
-      xCurrent = frac * simState.xTarget;
-      dist = xCurrent;
-      disp = xCurrent;
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    if(id === "toss"){
+      L.timeline({maxT: TTOT, step: 0.05, speed: 0.25, format: function(t){ return "t = <b>" + L.num(t, 2) + " s</b>"; }});
+      L.legend([[C.path, "path travelled (distance)"], [C.disp, "displacement from O (upward +)"]]);
+      L.watch("Activity 4.1 in slow motion. The table fills in as the ball passes O, A, B, C and returns to O. Two lines are drawn only for clarity; the ball really goes up and down the same line.");
     } else {
-      var frac2 = (t - 3.0) / 3.0;
-      xCurrent = 100 - frac2 * (100 - simState.leg2);
-      dist = 100 + (100 - xCurrent);
-      disp = xCurrent;
+      var tr = trip();
+      L.timeline({maxT: tr.pts[tr.pts.length - 1][0], step: 1, speed: 2});
+      L.legend([[C.path, "path travelled (distance)"], [C.disp, "displacement from O"], ["#f8fafc", "athlete"]]);
+      if(id === "fig44") L.watch("NCERT Fig. 4.4. The athlete passes B at 4 s, reaches A at 10 s, and is back at B at 16 s. Compare the amber path with the violet arrow.");
+      else if(id === "ponder1") L.watch("Pause & Ponder Q1: the athlete runs to A and all the way back to O. When is the displacement zero?");
+      else L.watch("Your own trip at 10 m s⁻¹. Set where the athlete turns (A) and stops (B). Try stopping to the left of O.");
     }
+    if(id === "custom") renderControls(); else L.controls("");
+    L.restart(id !== "custom");
+  }
 
-    var runnerX = toSvgX(xCurrent);
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    markup += '<line x1="40" y1="170" x2="680" y2="170" stroke="#334155" stroke-width="6" stroke-linecap="round"/>';
+  function renderControls(){
+    L.controls(
+      L.slider("c1-turn", "Make your own trip: turn back at A", 20, 100, 10, st.turnAt, st.turnAt + " m") +
+      L.slider("c1-stop", "…and stop at B", -40, 100, 10, st.stopAt, L.signed(st.stopAt, 0) + " m")
+    );
+    L.onInput("c1-turn", function(v){ st.turnAt = v; L.setVal("c1-turn", v + " m"); if(st.stopAt > v) { st.stopAt = v; var s = L.$("c1-stop"); if(s) s.value = v; L.setVal("c1-stop", L.signed(v, 0) + " m"); } goCustom(); });
+    L.onInput("c1-stop", function(v){ if(v > st.turnAt){ v = st.turnAt; L.$("c1-stop").value = v; } st.stopAt = v; L.setVal("c1-stop", L.signed(v, 0) + " m"); goCustom(); });
+  }
+  function goCustom(){
+    st.preset = "custom";
+    L.markPreset("custom");
+    var tr = customTrip();
+    L.timeline({maxT: tr.pts[tr.pts.length - 1][0], step: 1, speed: 2});
+    L.watch("Your own trip at 10 m s⁻¹: turn back at A = " + st.turnAt + " m, stop at B = " + L.signed(st.stopAt, 0) + " m. Press Play.");
+    App.resetTimeline();
+  }
 
-    for(var m = -40; m <= 100; m += 20){
-      var px = toSvgX(m);
-      markup += '<line x1="' + px + '" y1="' + 162 + '" x2="' + px + '" y2="' + 178 + '" stroke="#64748b" stroke-width="2"/>';
-      markup += '<text x="' + px + '" y="196" fill="#94a3b8" font-size="12" font-family="monospace" text-anchor="middle">' + (m > 0 ? "+" + m : m) + 'm</text>';
+  function distanceAt(pts, t){
+    var d = 0;
+    for(var i = 1; i < pts.length; i++){
+      var a = pts[i - 1], b = pts[i];
+      if(t >= b[0]) d += Math.abs(b[1] - a[1]);
+      else { if(t > a[0]) d += Math.abs(b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]); break; }
     }
+    return d;
+  }
 
-    markup += '<circle cx="' + toSvgX(0) + '" cy="170" r="5" fill="#38bdf8"/>';
-    markup += '<text x="' + toSvgX(0) + '" y="152" fill="#38bdf8" font-weight="700" font-size="13" text-anchor="middle">Origin O (0m)</text>';
-
-    markup += '<circle cx="' + toSvgX(100) + '" cy="170" r="4" fill="#f59e0b"/>';
-    markup += '<text x="' + toSvgX(100) + '" y="152" fill="#f59e0b" font-size="12" text-anchor="middle">A (+100m)</text>';
-
-    markup += '<circle cx="' + toSvgX(40) + '" cy="170" r="4" fill="#10b981"/>';
-    markup += '<text x="' + toSvgX(40) + '" y="152" fill="#10b981" font-size="12" text-anchor="middle">B (+40m)</text>';
-
-    var fwdReach = Math.min(100, dist);
-    if(fwdReach > 0){
-      markup += '<path d="M ' + toSvgX(0) + ' 130 L ' + toSvgX(fwdReach) + ' 130" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>';
-      markup += '<text x="' + (toSvgX(fwdReach/2)) + '" y="122" fill="#38bdf8" font-size="11" text-anchor="middle">Leg 1: Outward (' + fwdReach.toFixed(0) + 'm)</text>';
+  function drawTrack(t){
+    var tr = trip(), pts = tr.pts, end = pts[pts.length - 1][0];
+    var x = L.interp(pts, t), dist = distanceAt(pts, t), disp = x;
+    var X = function(p){ return 80 + (p + 40) * (560 / 140); };
+    var m = "";
+    // Track and scale
+    m += L.rect(40, 186, 640, 12, "#1e293b", ' rx="6"');
+    for(var p = -40; p <= 100; p += 20){
+      m += L.line(X(p), 180, X(p), 204, C.faint, 2);
+      m += L.text(X(p), 226, (p > 0 ? "+" : p < 0 ? "−" : "") + Math.abs(p) + " m", {size: 14, color: C.muted});
     }
-
-    if(t > 3.0 && dist > 100){
-      markup += '<path d="M ' + toSvgX(100) + ' 220 L ' + runnerX + ' 220" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>';
-      markup += '<text x="' + ((toSvgX(100) + runnerX)/2) + '" y="238" fill="#f59e0b" font-size="11" text-anchor="middle">Leg 2: Return (' + (dist - 100).toFixed(0) + 'm)</text>';
+    m += L.text(X(-40) - 30, 196, "−", {size: 18, color: C.muted}) + L.text(X(100) + 30, 197, "+", {size: 18, color: C.muted});
+    // Named points
+    tr.labels.forEach(function(lb){
+      m += L.circle(X(lb[0]), 192, 6, lb[1] === "O" ? C.vel : "#f8fafc");
+      m += L.text(X(lb[0]), 252, lb[1], {size: 16, weight: 700, color: lb[1] === "O" ? C.vel : "#f8fafc"});
+    });
+    // Path legs: one amber line per leg, stacked, drawn only as far as travelled.
+    for(var i = 1; i < pts.length; i++){
+      var a = pts[i - 1], b = pts[i];
+      if(t <= a[0]) break;
+      var f = Math.min(1, (t - a[0]) / (b[0] - a[0]));
+      var xe = a[1] + (b[1] - a[1]) * f, y = 90 + (i - 1) * 34;
+      m += L.arrow(X(a[1]), y, X(xe), y, C.path, 4);
+      m += L.text((X(a[1]) + X(xe)) / 2, y - 9, "leg " + i + ": " + L.num(Math.abs(xe - a[1]), 0) + " m", {size: 14, color: C.path});
     }
-
+    // Displacement arrow
     if(Math.abs(disp) > 0.5){
-      markup += '<defs><marker id="arrow-disp" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,1 L7,4 L0,7 Z" fill="#818cf8"/></marker></defs>';
-      markup += '<line x1="' + toSvgX(0) + '" y1="80" x2="' + runnerX + '" y2="80" stroke="#818cf8" stroke-width="5" marker-end="url(#arrow-disp)"/>';
-      markup += '<text x="' + ((toSvgX(0) + runnerX)/2) + '" y="70" fill="#818cf8" font-size="13" font-weight="700" text-anchor="middle">Displacement Δs = ' + (disp > 0 ? "+" : "") + disp.toFixed(1) + ' m</text>';
+      m += L.arrow(X(0), 40, X(disp), 40, C.disp, 5);
+      m += L.text((X(0) + X(disp)) / 2, 28, "displacement " + L.signed(disp, 0) + " m", {size: 15, color: C.disp, weight: 700});
+    } else if(t > 0){
+      m += L.text(X(0), 34, "displacement 0 m", {size: 15, color: C.disp, weight: 700});
     }
+    // Athlete
+    var ax = X(x);
+    m += '<g transform="translate(' + ax + ',186)">' + L.circle(0, -34, 7, "#f8fafc") + L.line(0, -27, 0, -12, "#f8fafc", 3) +
+      L.line(0, -12, -6, 0, "#f8fafc", 3) + L.line(0, -12, 6, 0, "#f8fafc", 3) + L.line(-7, -22, 7, -20, "#f8fafc", 3) + '</g>';
+    // Clock stamps reached so far (like Fig. 4.4)
+    var seen = {};
+    tr.stamps.forEach(function(s){
+      var key = String(s[1]);
+      var row = seen[key] || 0;
+      seen[key] = row + 1;
+      if(t + 1e-6 >= s[0]) m += L.text(X(s[1]), 272 + row * 15, "t = " + L.num(s[0], 0) + " s", {size: 12, color: C.muted});
+    });
+    L.svg(m, "Athlete at " + L.signed(x, 0) + " m after " + L.num(t, 1) + " s. Distance travelled " + L.num(dist, 0) + " m, displacement " + L.signed(disp, 0) + " m.", 290);
 
-    markup += '<g transform="translate(' + runnerX + ', 170)">';
-    markup += '<circle cx="0" cy="-22" r="9" fill="#f8fafc"/>';
-    markup += '<line x1="0" y1="-13" x2="0" y2="4" stroke="#f8fafc" stroke-width="3"/>';
-    markup += '<line x1="-7" y1="-5" x2="7" y2="-5" stroke="#f8fafc" stroke-width="2.5"/>';
-    markup += '<line x1="0" y1="4" x2="-6" y2="16" stroke="#f8fafc" stroke-width="2.5"/>';
-    markup += '<line x1="0" y1="4" x2="6" y2="16" stroke="#f8fafc" stroke-width="2.5"/>';
-    markup += '</g>';
+    var equal = Math.abs(dist - Math.abs(disp)) < 0.5;
+    L.readout([
+      ["Time", L.num(t, 1) + " s"],
+      ["Position", L.signed(x, 1) + " m"],
+      ["Distance travelled", L.num(dist, 1) + " m", C.path],
+      ["Displacement", L.signed(disp, 1) + " m", C.disp],
+      ["Distance = |displacement|?", t === 0 ? "—" : (equal ? "yes" : "no")]
+    ]);
 
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Runner at position " + xCurrent.toFixed(1) + " meters. Distance: " + dist.toFixed(1) + " meters. Displacement: " + disp.toFixed(1) + " meters.");
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Position x(t)</div><div class="telemetry-val">' + (xCurrent >= 0 ? "+" : "") + xCurrent.toFixed(1) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Total Distance Traversed (d)</div><div class="telemetry-val" style="color:#f59e0b;">' + dist.toFixed(1) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Net Displacement (Δs)</div><div class="telemetry-val" style="color:#818cf8;">' + (disp >= 0 ? "+" : "") + disp.toFixed(1) + ' m</div></div>';
-
-    var verdict = "";
-    if(dist === disp && dist > 0){
-      verdict = "<b>Motion in single straight direction:</b> Distance travelled (" + dist.toFixed(0) + " m) strictly equals magnitude of displacement (+" + disp.toFixed(0) + " m).";
-    } else if(dist > disp && disp > 0){
-      verdict = "<b>Reversal occurred:</b> The athlete turned around at point A! The odometer kept accumulating path length (<b>" + dist.toFixed(0) + " m</b>), while the displacement shrank back to the straight-line distance from O (<b>+" + disp.toFixed(0) + " m</b>). Distance > |Displacement|!";
-    } else {
-      verdict = "Athlete is at origin O. Ready to begin motion!";
-    }
-    document.getElementById("lab-verdict").innerHTML = verdict;
-    var pVal = document.getElementById("ctrl-p1-val");
-    if(pVal) pVal.textContent = xCurrent.toFixed(0) + " m";
+    var msg;
+    if(t <= 0) msg = "Press <b>Play</b>. The athlete starts at the reference point O (position 0 m).";
+    else if(t >= end - 1e-6){
+      if(st.preset === "fig44") msg = "<b>Fig. 4.4 result:</b> between t = 0 s and t = 16 s, distance = OA + AB = 100 m + 60 m = <b>160 m</b>, but displacement = <b>40 m in the positive direction</b>. They differ because she turned back.";
+      else if(st.preset === "ponder1") msg = "<b>Pause & Ponder Q1:</b> the displacement is zero when she is back at O. By then the distance travelled is 100 m + 100 m = <b>200 m</b>.";
+      else msg = "<b>Your trip:</b> distance = " + L.num(dist, 0) + " m, displacement = " + L.signed(disp, 0) + " m" + (disp < 0 ? " (negative: she ends to the left of O)." : disp === 0 ? " (back at O)." : ".") + (equal ? " She never turned back, so the two are equal." : " She turned back, so distance &gt; |displacement|.");
+    } else if(equal) msg = "Moving in one direction: distance travelled (" + L.num(dist, 0) + " m) equals the magnitude of displacement.";
+    else msg = "She has turned back. The distance keeps adding up (" + L.num(dist, 0) + " m) while the displacement shrinks (" + L.signed(disp, 0) + " m): it only compares where she is now with O.";
+    L.verdict(msg);
   }
 
-  function drawBallToss(t, svg){
-    var hMax = 140; // cm
-    var curH = 0;
-    var dist = 0;
-    var disp = 0;
-
-    if(t <= 2.0){
-      var fr = t / 2.0;
-      curH = fr * hMax;
-      dist = curH;
-      disp = curH;
-    } else {
-      var fr2 = (t - 2.0) / 2.0;
-      curH = hMax * (1 - fr2);
-      dist = hMax + (hMax - curH);
-      disp = curH;
-    }
-
-    var svgY = 240 - (curH / 140) * 160;
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    markup += '<line x1="280" y1="80" x2="280" y2="240" stroke="#475569" stroke-width="4"/>';
+  function drawToss(t){
+    var h = heightAt(t), rising = t <= TUP;
+    var dist = rising ? h : 140 + (140 - h), disp = h;
+    var Y = function(cm){ return 262 - cm * 1.55; };
+    var m = "";
+    m += L.line(250, Y(0), 250, Y(140) - 12, C.muted, 2);
     for(var cm = 0; cm <= 140; cm += 20){
-      var ry = 240 - (cm / 140) * 160;
-      markup += '<line x1="272" y1="' + ry + '" x2="288" y2="' + ry + '" stroke="#94a3b8" stroke-width="2"/>';
-      markup += '<text x="260" y="' + (ry + 4) + '" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="end">' + cm + ' cm</text>';
+      m += L.line(244, Y(cm), 256, Y(cm), C.muted, 2);
+      m += L.text(236, Y(cm) + 5, cm + " cm", {size: 13, color: C.muted, anchor: "end"});
     }
-
-    markup += '<path d="M 340 250 Q 360 235 370 245 T 390 255" stroke="#f59e0b" stroke-width="5" fill="none"/>';
-    markup += '<text x="360" y="275" fill="#94a3b8" font-size="12" text-anchor="middle">Student Hand (Origin y=0)</text>';
-
-    if(dist <= 140){
-      markup += '<line x1="355" y1="240" x2="355" y2="' + svgY + '" stroke="#38bdf8" stroke-width="3" stroke-dasharray="4"/>';
-    } else {
-      markup += '<line x1="355" y1="240" x2="355" y2="80" stroke="#38bdf8" stroke-width="3"/>';
-      markup += '<line x1="365" y1="80" x2="365" y2="' + svgY + '" stroke="#f59e0b" stroke-width="3" stroke-dasharray="4"/>';
+    // Hand at O
+    m += '<path d="M300 ' + (Y(0) + 14) + ' q30 -14 60 0" stroke="#fbbf24" stroke-width="6" fill="none" stroke-linecap="round"/>';
+    m += L.text(330, Y(0) + 34, "O (hand)", {size: 13, color: C.muted});
+    // Up path and down path (two lines for clarity, as in Fig. 4.5)
+    var upTop = rising ? h : 140;
+    if(t > 0) m += L.arrow(310, Y(0), 310, Y(upTop), C.path, 4);
+    if(!rising) m += L.arrow(350, Y(140), 350, Y(h), C.path, 4);
+    m += L.text(298, Y(115), "up", {size: 13, color: C.path, anchor: "end"}) + (rising ? "" : L.text(362, Y(115), "down", {size: 13, color: C.path, anchor: "start"}));
+    // Marked positions
+    [["A", 40, 310], ["B", 140, 330], ["C", 80, 350]].forEach(function(p){
+      m += L.text(p[2] + (p[0] === "B" ? 0 : (p[0] === "A" ? -22 : 22)), Y(p[1]) + 5, p[0], {size: 15, weight: 700, color: "#f8fafc"});
+    });
+    // Ball
+    m += L.circle(rising ? 310 : 350, Y(h), 11, "#fb923c", ' stroke="#fff" stroke-width="2"');
+    // Displacement arrow
+    if(disp > 1) {
+      m += L.arrow(420, Y(0), 420, Y(disp), C.disp, 5);
+      m += L.text(432, Y(disp / 2) + 5, "displacement " + L.num(disp, 0) + " cm up", {size: 14, color: C.disp, anchor: "start", weight: 700});
     }
+    m += L.text(600, 40, "distance so far", {size: 13, color: C.muted}) + L.text(600, 64, L.num(dist, 0) + " cm", {size: 20, color: C.path, weight: 700, mono: true});
+    L.svg(m, "Ball at height " + L.num(h, 0) + " centimetres. Distance travelled " + L.num(dist, 0) + " cm, displacement " + L.num(disp, 0) + " cm upward.", 300);
 
-    markup += '<circle cx="360" cy="' + svgY + '" r="12" fill="#38bdf8" stroke="#fff" stroke-width="2"/>';
-    markup += '<text x="382" y="' + (svgY + 4) + '" fill="#38bdf8" font-weight="700" font-size="13">' + curH.toFixed(0) + ' cm</text>';
+    var rows = TOSS_ROWS.map(function(r, k){
+      var done = t + 1e-4 >= r[1];
+      return "<tr" + (done ? "" : ' class="pending"') + "><td>" + (k + 1) + ".</td><td>" + r[0] + "</td><td>" + (done ? r[2] + " cm" : "?") + "</td><td>" +
+        (done ? (r[3] === 0 ? "0 cm" : r[3] + " cm upward") : "?") + "</td></tr>";
+    }).join("");
+    L.readoutHTML('<table class="lab-table"><caption>Table 4.1: distance travelled and displacement of the ball</caption>' +
+      '<thead><tr><th>S. No.</th><th>Position</th><th>Total distance from O</th><th>Displacement from O</th></tr></thead><tbody>' + rows + '</tbody></table>');
 
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Activity 4.1 Ball Toss: Height is " + curH.toFixed(0) + " cm. Distance so far: " + dist.toFixed(0) + " cm. Displacement: " + disp.toFixed(0) + " cm.");
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Ball Height y(t)</div><div class="telemetry-val">' + curH.toFixed(0) + ' cm</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Cumulative Distance</div><div class="telemetry-val" style="color:#f59e0b;">' + dist.toFixed(0) + ' cm</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Net Displacement</div><div class="telemetry-val" style="color:#818cf8;">+' + disp.toFixed(0) + ' cm</div></div>';
-
-    var verdict = "";
-    if(t >= 3.9){
-      verdict = "<b>Activity 4.1 Conclusion:</b> The ball returned back into the student's hand! The total path traversed is <b>280 cm</b> (140 cm up + 140 cm down), but the net straight-line displacement from starting position is exactly <b>0 cm</b>!";
-    } else if(t >= 1.9 && t <= 2.1){
-      verdict = "<b>At Peak (140 cm):</b> Instantaneous velocity is zero. Both distance (140 cm) and displacement (+140 cm upward) are equal at the highest point.";
-    } else {
-      verdict = "Ball is in flight. Watch how distance accumulates continuously while displacement reflects distance from hand!";
-    }
-    document.getElementById("lab-verdict").innerHTML = verdict;
+    var msg;
+    if(t <= 0) msg = "Press <b>Play</b> to throw the ball straight up from O.";
+    else if(t >= TTOT - 1e-3) msg = "<b>Activity 4.1:</b> back at O the distance is <b>280 cm</b> but the displacement is <b>0 cm</b>. Of the four statements, only <b>(iii)</b> is always true: the magnitude of displacement is less than or equal to the total distance travelled.";
+    else if(rising) msg = "Going up without turning back: distance (" + L.num(dist, 0) + " cm) = magnitude of displacement (" + L.num(disp, 0) + " cm).";
+    else msg = "Coming down: the distance keeps growing (" + L.num(dist, 0) + " cm) while the displacement from O decreases (" + L.num(disp, 0) + " cm).";
+    L.verdict(msg);
   }
 
-  function drawManual(x){
-    var svg = document.getElementById("diagram");
-    var xOrigin = 220, scale = 4.4;
-    var runnerX = xOrigin + x * scale;
-    var disp = x;
+  function draw(t){ if(st.preset === "toss") drawToss(t); else drawTrack(t); }
 
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    markup += '<line x1="40" y1="170" x2="680" y2="170" stroke="#334155" stroke-width="6" stroke-linecap="round"/>';
-    for(var m = -40; m <= 100; m += 20){
-      var px = xOrigin + m * scale;
-      markup += '<line x1="' + px + '" y1="162" x2="' + px + '" y2="178" stroke="#64748b" stroke-width="2"/>';
-      markup += '<text x="' + px + '" y="196" fill="#94a3b8" font-size="12" font-family="monospace" text-anchor="middle">' + (m > 0 ? "+" + m : m) + 'm</text>';
-    }
-    markup += '<circle cx="' + xOrigin + '" cy="170" r="5" fill="#38bdf8"/>';
-    markup += '<circle cx="' + runnerX + '" cy="148" r="8" fill="#f8fafc"/>';
-    markup += '<line x1="' + runnerX + '" y1="156" x2="' + runnerX + '" y2="170" stroke="#f8fafc" stroke-width="3"/>';
-    svg.innerHTML = markup;
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Position x</div><div class="telemetry-val">' + (x >= 0 ? "+" : "") + x + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Displacement from Origin</div><div class="telemetry-val" style="color:#818cf8;">' + (disp >= 0 ? "+" : "") + disp + ' m</div></div>';
-    document.getElementById("ctrl-p1-val").textContent = x + " m";
+  function mount(){
+    L.presets([["fig44", "Fig. 4.4: O → A → B"], ["ponder1", "Pause & Ponder Q1: back to O"], ["toss", "Activity 4.1: ball thrown up"], ["custom", "Your own trip"]], st.preset, select);
+    select(st.preset === "custom" ? "custom" : st.preset);
+    App.pause();
+    App.resetTimeline();
   }
 
-  window.SIMS.track1d = { mount: mount, draw: draw };
+  window.SIMS.track1d = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 2. SIMULATION 2: Speedometer & Signed Velocity Vector (speedvel)
-// =========================================================================
+// -------------------------------------------------------------------------
+// Lab 2 — Average speed and average velocity (Example 4.2, Pause & Ponder Q4, Example 4.1)
+// -------------------------------------------------------------------------
 (function(){
-  var simState = {
-    mode: "uniform",
-    speedKmh: 60,
-    direction: 1
-  };
+  var L = LAB, C = L.C;
+  var st = {preset: "sarang"};
 
-  function mount(lesson){
-    App.state.maxT = 5.0;
-    document.getElementById("time-scrubber").max = 5.0;
+  var SARANG = [[0, 0], [25, 25], [50, 0]];          // seconds, metres from the starting end
+  var TRIP = [[0, 0], [3, 200], [5, 0]];              // hours, km north of home
 
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Analog Speedometer (Magnitude ≥ 0)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Signed Velocity Vector (+ / −)</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p2-highway">Uniform Highway (+60 km/h East)</button>' +
-      '<button class="preset-btn" id="p2-reverse">Reverse Maneuver (−15 km/h West)</button>' +
-      '<button class="preset-btn" id="p2-sarang">Sarang 50m Pool (NCERT Pause & Ponder Q4)</button>';
-
-    document.getElementById("p2-highway").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "uniform"; simState.speedKmh = 60; simState.direction = 1;
-      App.state.maxT = 5.0;
-      document.getElementById("time-scrubber").max = 5.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Moving forward east: Speedometer needle reads 60 km/h; velocity vector points east with +60 km/h.";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p2-reverse").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "reverse"; simState.speedKmh = 15; simState.direction = -1;
-      App.state.maxT = 5.0;
-      document.getElementById("time-scrubber").max = 5.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> When backing up west: The speedometer needle STILL reads positive (+15 km/h) because speed has no direction! But the velocity vector is negative (−15 km/h).";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p2-sarang").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "sarang";
-      App.state.maxT = 25.0;
-      document.getElementById("time-scrubber").max = 25.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (NCERT Pause & Ponder Q4):</strong> Sarang swims 50m out in 10s (+5.0 m/s = 18 km/h), then 50m back in 15s (−3.3 m/s = 12 km/h). Observe average speed = 4.0 m/s while average velocity = 0 m/s!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("lab-controls").innerHTML = 
-      '<div class="control-item"><div class="control-label"><span>Vehicle Speed Slider</span><span class="val" id="ctrl-p2-val">60 km/h</span></div>' +
-      '<input type="range" id="ctrl-p2-spd" min="0" max="120" value="60" step="5"></div>';
-
-    document.getElementById("ctrl-p2-spd").addEventListener("input", function(e){
-      App.pause();
-      simState.mode = "custom";
-      simState.speedKmh = Number(e.target.value);
-      draw(App.state.t);
-    });
-
-    draw(0);
+  function dist(pts, t){
+    var d = 0;
+    for(var i = 1; i < pts.length; i++){
+      var a = pts[i - 1], b = pts[i];
+      if(t >= b[0]) d += Math.abs(b[1] - a[1]);
+      else { if(t > a[0]) d += Math.abs(b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]); break; }
+    }
+    return d;
   }
 
-  function setActivePreset(btn){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
-  }
-
-  function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
-
-    var curSpeed = simState.speedKmh;
-    var curDir = simState.direction;
-    var odo = 0;
-    var disp = 0;
-
-    if(simState.mode === "sarang"){
-      if(t <= 10){
-        curSpeed = 18;
-        curDir = 1;
-        var distM = (t / 10) * 50;
-        odo = distM;
-        disp = distM;
-      } else {
-        curSpeed = 12;
-        curDir = -1;
-        var backM = ((t - 10) / 15) * 50;
-        odo = 50 + backM;
-        disp = 50 - backM;
-      }
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    if(id === "sarang"){
+      L.timeline({maxT: 50, step: 5, speed: 5});
+      L.legend([[C.path, "path swum (distance)"], [C.disp, "displacement from the starting end"]]);
+      L.watch("NCERT Example 4.2. Sarang swims the 25 m pool and back in 50 s. Watch the last two readouts as he turns at the far end.");
+    } else if(id === "trip"){
+      L.timeline({maxT: 5, step: 0.25, speed: 0.5, format: function(t){ return "t = <b>" + L.num(t, 2) + " h</b>"; }});
+      L.legend([[C.path, "road travelled (distance)"], [C.disp, "displacement from home (north +)"]]);
+      L.watch("Pause & Ponder Q4. 200 km north in 3 h, then 200 km south in 2 h. During the first leg the two averages are equal; watch what happens after the turn.");
     } else {
-      var speedMs = (curSpeed * 1000) / 3600;
-      odo = speedMs * t;
-      disp = curDir * odo;
+      L.timeline({maxT: 15, step: 1, speed: 1.5, format: function(t){ return "day <b>" + L.num(t, 1) + "</b>"; }});
+      L.legend([[C.vel, "first postman (9 yojanas per day)"], [C.path, "second postman (5 yojanas per day)"]]);
+      L.watch("Example 4.1 from the Ganitakaumudi. Each day the gap between the postmen shrinks by 9 + 5 = 14 yojanas.");
     }
-
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    var cx = 160, cy = 160, r = 90;
-    markup += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#15263a" stroke="#334155" stroke-width="4"/>';
-    for(var k = 0; k <= 120; k += 20){
-      var ang = -140 + (k / 120) * 280;
-      var rad = (ang - 90) * Math.PI / 180;
-      var tx1 = cx + Math.cos(rad) * 76;
-      var ty1 = cy + Math.sin(rad) * 76;
-      var tx2 = cx + Math.cos(rad) * 86;
-      var ty2 = cy + Math.sin(rad) * 86;
-      markup += '<line x1="' + tx1 + '" y1="' + ty1 + '" x2="' + tx2 + '" y2="' + ty2 + '" stroke="#94a3b8" stroke-width="2"/>';
-      var lx = cx + Math.cos(rad) * 60;
-      var ly = cy + Math.sin(rad) * 60;
-      markup += '<text x="' + lx + '" y="' + (ly + 4) + '" fill="#cbd5e1" font-size="10" font-family="monospace" text-anchor="middle">' + k + '</text>';
-    }
-
-    var needleAng = -140 + (Math.min(120, curSpeed) / 120) * 280;
-    var needleRad = (needleAng - 90) * Math.PI / 180;
-    var nx = cx + Math.cos(needleRad) * 72;
-    var ny = cy + Math.sin(needleRad) * 72;
-    markup += '<line x1="' + cx + '" y1="' + cy + '" x2="' + nx + '" y2="' + ny + '" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>';
-    markup += '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="#f59e0b"/>';
-    markup += '<text x="' + cx + '" y="' + (cy + 40) + '" fill="#f59e0b" font-weight="700" font-size="14" text-anchor="middle">' + curSpeed.toFixed(0) + ' km/h</text>';
-    markup += '<text x="' + cx + '" y="' + (cy + 55) + '" fill="#94a3b8" font-size="11" text-anchor="middle">SPEEDOMETER</text>';
-
-    markup += '<rect x="300" y="110" width="390" height="100" rx="8" fill="#15263a" stroke="#334155"/>';
-    markup += '<line x1="320" y1="160" x2="670" y2="160" stroke="#475569" stroke-width="2" stroke-dasharray="6"/>';
-
-    var carOffset = 0;
-    if(simState.mode === "sarang"){
-      carOffset = (disp / 50) * 240;
-    } else {
-      carOffset = (t % 4) * 60;
-      if(curDir < 0) carOffset = 240 - carOffset;
-    }
-    var carX = 350 + carOffset;
-
-    markup += '<g transform="translate(' + carX + ', 140)">';
-    markup += '<rect x="-24" y="-12" width="48" height="20" rx="4" fill="#38bdf8"/>';
-    markup += '<circle cx="-14" cy="10" r="5" fill="#0f172a"/>';
-    markup += '<circle cx="14" cy="10" r="5" fill="#0f172a"/>';
-    if(curDir > 0){
-      markup += '<polygon points="24,-4 32,-8 32,0" fill="#fde047" opacity="0.8"/>';
-    } else {
-      markup += '<polygon points="-24,-4 -32,-8 -32,0" fill="#fde047" opacity="0.8"/>';
-    }
-    markup += '</g>';
-
-    var arrowLen = Math.min(80, (curSpeed / 120) * 100);
-    var arrowX2 = carX + (curDir > 0 ? arrowLen : -arrowLen);
-    markup += '<defs><marker id="vel-arr" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#38bdf8"/></marker></defs>';
-    if(curSpeed > 0.5){
-      markup += '<line x1="' + carX + '" y1="90" x2="' + arrowX2 + '" y2="90" stroke="#38bdf8" stroke-width="4" marker-end="url(#vel-arr)"/>';
-      markup += '<text x="' + carX + '" y="78" fill="#38bdf8" font-weight="700" font-size="12" text-anchor="middle">Velocity: ' + (curDir > 0 ? "+" : "−") + curSpeed.toFixed(0) + ' km/h (' + (curDir > 0 ? "East" : "West") + ')</text>';
-    }
-
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Speedometer reading " + curSpeed.toFixed(0) + " km/h. Velocity is " + (curDir > 0 ? "+" : "−") + curSpeed.toFixed(0) + " km/h.");
-
-    var speedMs = (curSpeed * 1000) / 3600;
-    var velMs = curDir * speedMs;
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Speedometer (Magnitude)</div><div class="telemetry-val" style="color:#f59e0b;">' + curSpeed.toFixed(0) + ' km/h</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Instantaneous Velocity</div><div class="telemetry-val" style="color:#38bdf8;">' + (velMs >= 0 ? "+" : "") + velMs.toFixed(1) + ' m/s</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Odometer (Total Path)</div><div class="telemetry-val">' + odo.toFixed(1) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Net Displacement</div><div class="telemetry-val">' + (disp >= 0 ? "+" : "") + disp.toFixed(1) + ' m</div></div>';
-
-    var verdict = "";
-    if(simState.mode === "sarang"){
-      verdict = "<b>NCERT Pause & Ponder Q4 Analysis:</b> Total distance = 100 m in 25 s ⟹ <b>Average Speed = 4.0 m/s (14.4 km/h)</b>. Because Sarang returns to his starting point, net displacement = 0 m ⟹ <b>Average Velocity = 0.0 m/s</b>. Speed and velocity are fundamentally distinct!";
-    } else if(curDir < 0){
-      verdict = "<b>Reversing Vehicle:</b> Notice that the speedometer never points negative—it measures the scalar rate of motion (15 km/h). Velocity, however, carries a negative sign (−15 km/h) because it points in the opposite direction!";
-    } else {
-      verdict = "<b>Uniform Straight Motion:</b> Vehicle is driving East at constant speed. Since direction is constant, average speed equals magnitude of average velocity.";
-    }
-    document.getElementById("lab-verdict").innerHTML = verdict;
-    var cVal = document.getElementById("ctrl-p2-val");
-    if(cVal) cVal.textContent = curSpeed.toFixed(0) + " km/h";
+    L.controls("");
+    L.restart(true);
   }
 
-  window.SIMS.speedvel = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 3. SIMULATION 3: Acceleration, Braking & Inertial Tilt (accel)
-// =========================================================================
-(function(){
-  var simState = {
-    a: 2.0,
-    u: 0,
-    tSpan: 6.0
-  };
-
-  function mount(lesson){
-    App.state.maxT = 6.0;
-    document.getElementById("time-scrubber").max = 6.0;
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Velocity Vector v⃗</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Acceleration Vector a⃗</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Passenger Inertial Tilt</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p3-accel">Uniform Acceleration (+2 m/s²)</button>' +
-      '<button class="preset-btn" id="p3-brake">Emergency Braking (−4 m/s²)</button>' +
-      '<button class="preset-btn" id="p3-cruise">Zero Acceleration / Cruise (a = 0)</button>';
-
-    document.getElementById("p3-accel").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.u = 0; simState.a = 2.0; App.state.maxT = 6.0;
-      document.getElementById("time-scrubber").max = 6.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Speeding up forward: a⃗ points forward with v⃗. Notice the passenger silhouette tilts backward into the seat due to inertia!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p3-brake").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.u = 24; simState.a = -4.0; App.state.maxT = 6.0;
-      document.getElementById("time-scrubber").max = 6.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Braking stop: Velocity v⃗ points forward (+), but acceleration a⃗ points backward (−). The passenger tilts forward!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p3-cruise").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.u = 15; simState.a = 0.0; App.state.maxT = 6.0;
-      document.getElementById("time-scrubber").max = 6.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Constant speed: a = 0 m/s². The passenger sits perfectly upright. No net force, no acceleration.";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("lab-controls").innerHTML = 
-      '<div class="control-item"><div class="control-label"><span>Acceleration (a)</span><span class="val" id="ctrl-p3-aval">+2.0 m/s²</span></div>' +
-      '<input type="range" id="ctrl-p3-a" min="-6" max="6" value="2" step="0.5"></div>' +
-      '<div class="control-item"><div class="control-label"><span>Initial Speed (u)</span><span class="val" id="ctrl-p3-uval">0 m/s</span></div>' +
-      '<input type="range" id="ctrl-p3-u" min="0" max="30" value="0" step="2"></div>';
-
-    document.getElementById("ctrl-p3-a").addEventListener("input", function(e){
-      App.pause();
-      simState.a = Number(e.target.value);
-      draw(App.state.t);
-    });
-    document.getElementById("ctrl-p3-u").addEventListener("input", function(e){
-      App.pause();
-      simState.u = Number(e.target.value);
-      draw(App.state.t);
-    });
-
-    draw(0);
+  function averages(d, s, t, unit, dp){
+    return [
+      ["Average speed so far", t > 0 ? L.num(d / t, dp) + " " + unit : "—", C.path],
+      ["Average velocity so far", t > 0 ? L.signed(s / t, dp) + " " + unit : "—", C.disp]
+    ];
   }
 
-  function setActivePreset(btn){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
+  function drawSarang(t){
+    var x = L.interp(SARANG, t), d = dist(SARANG, t), s = x;
+    var X = function(m){ return 110 + m * 20; };
+    var mk = "";
+    for(var m = 0; m <= 25; m += 5){
+      mk += L.line(X(m), 58, X(m), 68, C.muted, 2) + L.text(X(m), 52, m + " m", {size: 13, color: C.muted});
+    }
+    mk += L.rect(X(0), 72, 500, 130, "#0e4a6b", ' rx="4"');
+    [104, 136, 168].forEach(function(y){ mk += L.line(X(0), y, X(25), y, "#7dd3fc", 1.5, "3 6"); });
+    mk += L.rect(X(0) - 8, 72, 8, 130, "#cbd5e1") + L.rect(X(25), 72, 8, 130, "#cbd5e1");
+    mk += L.text(X(0) - 4, 222, "start", {size: 13, color: C.muted}) + L.text(X(25) + 4, 222, "far end", {size: 13, color: C.muted});
+    var goingOut = t <= 25;
+    mk += '<g transform="translate(' + X(x) + ',120)">' + L.circle(0, 0, 9, "#fde68a") +
+      L.line(goingOut ? -18 : 18, -6, goingOut ? 10 : -10, 6, "#fde68a", 3) + '</g>';
+    if(t > 0) mk += L.arrow(X(0), 244, X(Math.min(x, 25) * (goingOut ? 1 : 0) + (goingOut ? 0 : 25)), 244, C.path, 4);
+    if(!goingOut) mk += L.arrow(X(25), 266, X(x), 266, C.path, 4);
+    if(s > 0.3){
+      mk += L.arrow(X(0), 28, X(s), 28, C.disp, 5);
+      mk += L.text(X(s) + 8, 33, "displacement " + L.num(s, 1) + " m", {size: 14, color: C.disp, anchor: "start", weight: 700});
+    }
+    L.svg(mk, "Swimmer " + L.num(x, 1) + " metres from the starting end after " + L.num(t, 0) + " seconds.", 280);
+
+    L.readout([["Time", L.num(t, 1) + " s"], ["Distance swum", L.num(d, 1) + " m", C.path], ["Displacement", L.num(s, 1) + " m", C.disp]].concat(averages(d, s, t, "m s⁻¹", 2)));
+
+    var msg;
+    if(t <= 0) msg = "Press <b>Play</b>. Sarang starts at one end of the 25 m pool.";
+    else if(t >= 50 - 1e-6) msg = "<b>Example 4.2:</b> average speed = 50 m ÷ 50 s = <b>1 m s⁻¹</b>; he is back where he started, so average velocity = 0 m ÷ 50 s = <b>0 m s⁻¹</b>.";
+    else if(goingOut) msg = "Swimming in one direction: distance = displacement, so average speed = average velocity (" + L.num(d / t, 2) + " m s⁻¹).";
+    else msg = "He has turned back. The distance keeps growing, but the displacement shrinks, so the average velocity falls below the average speed.";
+    L.verdict(msg);
   }
 
-  function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
-
-    var u = simState.u;
-    var a = simState.a;
-    var v = u + a * t;
-    if(u > 0 && a < 0 && v < 0) v = 0;
-    var s = u * t + 0.5 * a * t * t;
-
-    var carX = 140 + (s % 120) * 3.5;
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    markup += '<rect x="40" y="140" width="640" height="90" fill="#15263a" rx="6"/>';
-    markup += '<line x1="40" y1="185" x2="680" y2="185" stroke="#475569" stroke-width="2" stroke-dasharray="10"/>';
-
-    markup += '<g transform="translate(' + carX + ', 175)">';
-    markup += '<rect x="-35" y="-20" width="70" height="26" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>';
-    markup += '<rect x="-18" y="-36" width="40" height="18" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>';
-    markup += '<circle cx="-20" cy="8" r="8" fill="#020617" stroke="#64748b" stroke-width="2"/>';
-    markup += '<circle cx="20" cy="8" r="8" fill="#020617" stroke="#64748b" stroke-width="2"/>';
-
-    var tiltDeg = -a * 4.5;
-    if(tiltDeg > 28) tiltDeg = 28;
-    if(tiltDeg < -28) tiltDeg = -28;
-    markup += '<g transform="translate(0, -20) rotate(' + tiltDeg + ')">';
-    markup += '<circle cx="0" cy="-8" r="5" fill="#ec4899"/>';
-    markup += '<line x1="0" y1="-3" x2="0" y2="10" stroke="#ec4899" stroke-width="3"/>';
-    markup += '</g>';
-    markup += '</g>';
-
-    var vLen = Math.min(90, v * 3);
-    if(v > 0.5){
-      markup += '<defs><marker id="arr-v" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#38bdf8"/></marker></defs>';
-      markup += '<line x1="' + carX + '" y1="115" x2="' + (carX + vLen) + '" y2="115" stroke="#38bdf8" stroke-width="4" marker-end="url(#arr-v)"/>';
-      markup += '<text x="' + (carX + vLen/2) + '" y="105" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">v = ' + v.toFixed(1) + ' m/s</text>';
+  function drawTrip(t){
+    var y = L.interp(TRIP, t), d = dist(TRIP, t), s = y;
+    var v = t < 3 ? 200 / 3 : 100;
+    var Y = function(km){ return 258 - km * 1.1; };
+    var mk = "";
+    mk += L.rect(186, Y(200) - 10, 28, 240, "#1e293b", ' rx="6"');
+    for(var km = 0; km <= 200; km += 50){
+      mk += L.line(172, Y(km), 180, Y(km), C.muted, 2) + L.text(166, Y(km) + 5, km + " km", {size: 13, color: C.muted, anchor: "end"});
     }
-
-    var aLen = Math.abs(a) * 14;
-    var aDir = a >= 0 ? 1 : -1;
-    if(Math.abs(a) > 0.1){
-      markup += '<defs><marker id="arr-a" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f59e0b"/></marker></defs>';
-      markup += '<line x1="' + carX + '" y1="75" x2="' + (carX + aDir * aLen) + '" y2="75" stroke="#f59e0b" stroke-width="4" marker-end="url(#arr-a)"/>';
-      markup += '<text x="' + (carX + aDir * aLen/2) + '" y="65" fill="#f59e0b" font-size="12" font-weight="700" text-anchor="middle">a = ' + (a > 0 ? "+" : "") + a.toFixed(1) + ' m/s²</text>';
+    mk += L.text(200, Y(0) + 30, "home", {size: 14, color: C.text, weight: 700});
+    mk += L.arrow(60, 110, 60, 50, C.text, 3) + L.text(60, 40, "N", {size: 16, weight: 700});
+    // Car
+    var north = t < 3;
+    mk += '<g transform="translate(200,' + Y(y) + ')">' + L.rect(-10, -16, 20, 32, "#f8fafc", ' rx="5"') +
+      L.rect(-7, north ? -12 : 4, 14, 8, "#38bdf8", ' rx="2"') + '</g>';
+    // Legs
+    if(t > 0) mk += L.arrow(260, Y(0), 260, Y(north ? y : 200), C.path, 4);
+    if(!north) mk += L.arrow(290, Y(200), 290, Y(y), C.path, 4);
+    mk += L.text(260, Y(0) + 18, "leg 1", {size: 12, color: C.path});
+    if(!north) mk += L.text(290, Y(200) - 14, "leg 2", {size: 12, color: C.path});
+    if(s > 1){
+      mk += L.arrow(340, Y(0), 340, Y(s), C.disp, 5);
+      mk += L.text(352, Y(s / 2) + 5, "displacement " + L.num(s, 0) + " km north", {size: 14, color: C.disp, anchor: "start", weight: 700});
     }
+    mk += L.text(700, 60, "leg 1: 200 km north in 3 h", {size: 14, color: north ? C.text : C.muted, anchor: "end"});
+    mk += L.text(700, 82, "(66.7 km h⁻¹)", {size: 13, color: C.muted, anchor: "end"});
+    mk += L.text(700, 116, "leg 2: 200 km south in 2 h", {size: 14, color: north ? C.muted : C.text, anchor: "end"});
+    mk += L.text(700, 138, "(100 km h⁻¹)", {size: 13, color: C.muted, anchor: "end"});
+    L.svg(mk, "Car " + L.num(y, 0) + " kilometres north of home after " + L.num(t, 2) + " hours.", 300);
 
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Acceleration lab: velocity is " + v.toFixed(1) + " m/s. Acceleration is " + a.toFixed(1) + " m/s².");
+    L.readout([["Time", L.num(t, 2) + " h"], ["Distance", L.num(d, 0) + " km", C.path], ["Displacement (north +)", L.signed(s, 0) + " km", C.disp],
+      ["Speedometer now", (t >= 5 ? "0" : L.num(v, 1)) + " km h⁻¹"]].concat(averages(d, s, t, "km h⁻¹", 1)));
 
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Current Velocity (v)</div><div class="telemetry-val" style="color:#38bdf8;">' + v.toFixed(1) + ' m/s</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Acceleration (a)</div><div class="telemetry-val" style="color:#f59e0b;">' + (a >= 0 ? "+" : "") + a.toFixed(1) + ' m/s²</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Distance Travelled (s)</div><div class="telemetry-val">' + s.toFixed(1) + ' m</div></div>';
-
-    var verdict = "";
-    if(a > 0){
-      verdict = "<b>Speeding Up:</b> Acceleration a⃗ points in the same direction as velocity v⃗. Velocity increases by " + a.toFixed(1) + " m/s every single second!";
-    } else if(a < 0){
-      verdict = "<b>Slowing Down (Deceleration / Retardation):</b> Acceleration a⃗ points backward, directly opposing forward velocity v⃗. <i>Rule:</i> Slowing down means acceleration and velocity have opposite directions.";
-    } else {
-      verdict = "<b>Zero Acceleration:</b> Velocity is completely constant. No inertial tilt is experienced by the passenger.";
-    }
-    document.getElementById("lab-verdict").innerHTML = verdict;
-
-    var aval = document.getElementById("ctrl-p3-aval");
-    var uval = document.getElementById("ctrl-p3-uval");
-    if(aval) aval.textContent = (a >= 0 ? "+" : "") + a.toFixed(1) + " m/s²";
-    if(uval) uval.textContent = u.toFixed(0) + " m/s";
+    var msg;
+    if(t <= 0) msg = "Press <b>Play</b> to start the road trip from home.";
+    else if(t >= 5 - 1e-6) msg = "<b>Pause & Ponder Q4:</b> average speed = 400 km ÷ 5 h = <b>80 km h⁻¹</b>; displacement = 0, so average velocity = <b>0 km h⁻¹</b>. Note: 80 is not the average of 66.7 and 100, because more time was spent on the slower leg.";
+    else if(north) msg = "Moving in one direction (north): average speed and average velocity are equal (" + L.num(d / t, 1) + " km h⁻¹).";
+    else msg = "Driving back south: the distance still increases, but the displacement from home decreases. The two averages are no longer equal.";
+    L.verdict(msg);
   }
 
-  window.SIMS.accel = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 4. SIMULATION 4: Position–Time Graphs & Slope Triangle (stgraph)
-// =========================================================================
-(function(){
-  var simState = {
-    mode: "triangle",
-    t1: 2,
-    t2: 6,
-    v: 10
-  };
-
-  function mount(lesson){
-    App.state.maxT = 10.0;
-    document.getElementById("time-scrubber").max = 10.0;
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Position Curve s(t)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Activity 4.4 Slope Triangle ABC</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p4-triangle">Activity 4.4: Interactive Slope Triangle (Δs / Δt)</button>' +
-      '<button class="preset-btn" id="p4-plot">Activity 4.3: Progressive Data Plotting</button>' +
-      '<button class="preset-btn" id="p4-rest">Object at Rest (Slope = 0)</button>';
-
-    document.getElementById("p4-triangle").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "triangle"; simState.v = 10;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (Activity 4.4):</strong> Triangle ABC on the s–t curve has vertical side BC = Δs and horizontal side AC = Δt. The ratio Δs / Δt equals the speed!";
-      draw(App.state.t);
-    });
-
-    document.getElementById("p4-plot").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "plot";
-      App.state.maxT = 10.0;
-      document.getElementById("time-scrubber").max = 10.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (Activity 4.3):</strong> Step or play through the timeline to plot each measured data point (t, s) one by one and watch the straight-line graph emerge!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p4-rest").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "rest";
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> A stationary object remains at s = 40 m for all t. The line is horizontal, Δs = 0, so slope = 0 m/s (velocity is zero).";
-      draw(App.state.t);
-    });
-
-    document.getElementById("lab-controls").innerHTML = 
-      '<div class="control-item"><div class="control-label"><span>Point A Time (t₁)</span><span class="val" id="ctrl-p4-t1val">2 s</span></div>' +
-      '<input type="range" id="ctrl-p4-t1" min="0" max="5" value="2" step="1"></div>' +
-      '<div class="control-item"><div class="control-label"><span>Point B Time (t₂)</span><span class="val" id="ctrl-p4-t2val">6 s</span></div>' +
-      '<input type="range" id="ctrl-p4-t2" min="6" max="10" value="6" step="1"></div>';
-
-    document.getElementById("ctrl-p4-t1").addEventListener("input", function(e){
-      simState.t1 = Number(e.target.value);
-      draw(App.state.t);
-    });
-    document.getElementById("ctrl-p4-t2").addEventListener("input", function(e){
-      simState.t2 = Number(e.target.value);
-      draw(App.state.t);
-    });
-
-    draw(0);
-  }
-
-  function setActivePreset(btn){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
-  }
-
-  function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
-
-    var originX = 120, originY = 240;
-    var scaleX = 48, scaleY = 1.9;
-
-    function toG(x, y){
-      return { x: originX + x * scaleX, y: originY - y * scaleY };
+  function drawPostmen(t){
+    var p1 = 9 * t, p2 = 210 - 5 * t;
+    var X = function(y){ return 60 + y * (600 / 210); };
+    var mk = "";
+    mk += L.rect(X(0), 144, 600, 12, "#1e293b", ' rx="6"');
+    for(var y = 0; y <= 210; y += 30){
+      mk += L.line(X(y), 160, X(y), 170, C.muted, 2) + L.text(X(y), 188, String(y), {size: 13, color: C.muted});
     }
-
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-
-    for(var s = 0; s <= 100; s += 20){
-      var pt = toG(0, s);
-      markup += '<line x1="' + originX + '" y1="' + pt.y + '" x2="640" y2="' + pt.y + '" stroke="#1e293b" stroke-width="1"/>';
-      markup += '<text x="' + (originX - 10) + '" y="' + (pt.y + 4) + '" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="end">' + s + '</text>';
-    }
-    for(var time = 0; time <= 10; time += 2){
-      var ptX = toG(time, 0);
-      markup += '<line x1="' + ptX.x + '" y1="' + originY + '" x2="' + ptX.x + '" y2="40" stroke="#1e293b" stroke-width="1"/>';
-      markup += '<text x="' + ptX.x + '" y="' + (originY + 18) + '" fill="#94a3b8" font-size="11" font-family="monospace" text-anchor="middle">' + time + 's</text>';
-    }
-
-    markup += '<line x1="' + originX + '" y1="' + originY + '" x2="650" y2="' + originY + '" stroke="#64748b" stroke-width="2"/>';
-    markup += '<line x1="' + originX + '" y1="' + originY + '" x2="' + originX + '" y2="30" stroke="#64748b" stroke-width="2"/>';
-    markup += '<text x="655" y="' + (originY + 4) + '" fill="#cbd5e1" font-size="12">Time t (s)</text>';
-    markup += '<text x="' + originX + '" y="20" fill="#cbd5e1" font-size="12" text-anchor="middle">Position s (m)</text>';
-
-    if(simState.mode === "plot"){
-      var pts = [ [0,0], [2,15], [4,30], [6,45], [8,60], [10,75] ];
-      var maxPlotIdx = Math.min(pts.length - 1, Math.floor(t / 1.6));
-      for(var pi = 0; pi <= maxPlotIdx; pi++){
-        var gp = toG(pts[pi][0], pts[pi][1]);
-        markup += '<circle cx="' + gp.x + '" cy="' + gp.y + '" r="6" fill="#38bdf8" stroke="#fff" stroke-width="1.5"/>';
-        markup += '<text x="' + gp.x + '" y="' + (gp.y - 10) + '" fill="#38bdf8" font-size="11" font-family="monospace" text-anchor="middle">(' + pts[pi][0] + 's, ' + pts[pi][1] + 'm)</text>';
-      }
-      if(maxPlotIdx > 0){
-        var lastPt = toG(pts[maxPlotIdx][0], pts[maxPlotIdx][1]);
-        markup += '<line x1="' + originX + '" y1="' + originY + '" x2="' + lastPt.x + '" y2="' + lastPt.y + '" stroke="#38bdf8" stroke-width="3"/>';
-      }
-    } else if(simState.mode === "rest"){
-      var rPt = toG(0, 40);
-      markup += '<line x1="' + originX + '" y1="' + rPt.y + '" x2="640" y2="' + rPt.y + '" stroke="#38bdf8" stroke-width="4"/>';
-      markup += '<text x="380" y="' + (rPt.y - 12) + '" fill="#38bdf8" font-size="13" font-weight="700">Stationary Object (s = 40 m, v = 0 m/s)</text>';
-    } else {
-      var vVal = simState.v;
-      var endG = toG(10, vVal * 10);
-      markup += '<line x1="' + originX + '" y1="' + originY + '" x2="' + endG.x + '" y2="' + endG.y + '" stroke="#38bdf8" stroke-width="3"/>';
-
-      var t1 = simState.t1, t2 = simState.t2;
-      var s1 = vVal * t1, s2 = vVal * t2;
-      var pA = toG(t1, s1);
-      var pB = toG(t2, s2);
-      var pC = toG(t2, s1);
-
-      markup += '<polygon points="' + pA.x + ',' + pA.y + ' ' + pC.x + ',' + pC.y + ' ' + pB.x + ',' + pB.y + '" fill="rgba(245,158,11,0.2)" stroke="#f59e0b" stroke-width="2"/>';
-      markup += '<circle cx="' + pA.x + '" cy="' + pA.y + '" r="5" fill="#fff" stroke="#f59e0b" stroke-width="2"/>';
-      markup += '<text x="' + (pA.x - 8) + '" y="' + (pA.y - 8) + '" fill="#fff" font-weight="700" font-size="12">A(' + t1 + 's,' + s1 + 'm)</text>';
-
-      markup += '<circle cx="' + pB.x + '" cy="' + pB.y + '" r="5" fill="#fff" stroke="#f59e0b" stroke-width="2"/>';
-      markup += '<text x="' + (pB.x + 8) + '" y="' + (pB.y - 8) + '" fill="#fff" font-weight="700" font-size="12">B(' + t2 + 's,' + s2 + 'm)</text>';
-      markup += '<text x="' + (pC.x + 8) + '" y="' + (pC.y + 14) + '" fill="#94a3b8" font-size="11">C</text>';
-
-      markup += '<text x="' + ((pA.x + pC.x)/2) + '" y="' + (pC.y + 16) + '" fill="#f59e0b" font-size="12" font-weight="700" text-anchor="middle">Δt = ' + (t2 - t1) + ' s</text>';
-      markup += '<text x="' + (pB.x + 10) + '" y="' + ((pB.y + pC.y)/2) + '" fill="#f59e0b" font-size="12" font-weight="700">Δs = ' + (s2 - s1) + ' m</text>';
-    }
-
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Position-time graph lab showing slope calculation.");
-
-    if(simState.mode === "triangle"){
-      var ds = simState.v * (simState.t2 - simState.t1);
-      var dt = simState.t2 - simState.t1;
-      var slope = ds / dt;
-      document.getElementById("lab-readout").innerHTML = 
-        '<div class="telemetry-cell"><div class="telemetry-label">Vertical Change (Δs)</div><div class="telemetry-val" style="color:#f59e0b;">' + ds + ' m</div></div>' +
-        '<div class="telemetry-cell"><div class="telemetry-label">Time Interval (Δt)</div><div class="telemetry-val" style="color:#f59e0b;">' + dt + ' s</div></div>' +
-        '<div class="telemetry-cell"><div class="telemetry-label">Slope = Δs / Δt (Velocity)</div><div class="telemetry-val" style="color:#38bdf8;">' + slope.toFixed(1) + ' m/s</div></div>';
-
-      document.getElementById("lab-verdict").innerHTML = 
-        "<b>Activity 4.4 Slope Principle:</b> Slope = BC / AC = Δs / Δt = <b>" + slope.toFixed(1) + " m/s</b>. Because the line is straight, you can pick ANY two points along the curve and you will obtain the exact same velocity!";
-    } else if(simState.mode === "rest"){
-      document.getElementById("lab-readout").innerHTML = 
-        '<div class="telemetry-cell"><div class="telemetry-label">Slope Δs / Δt</div><div class="telemetry-val" style="color:#38bdf8;">0.0 m/s</div></div>' +
-        '<div class="telemetry-cell"><div class="telemetry-label">State</div><div class="telemetry-val">At Rest</div></div>';
-      document.getElementById("lab-verdict").innerHTML = "Horizontal position line indicates zero motion. Slope = 0 ⟹ Object velocity = 0.";
-    }
-
-    var t1v = document.getElementById("ctrl-p4-t1val");
-    var t2v = document.getElementById("ctrl-p4-t2val");
-    if(t1v) t1v.textContent = simState.t1 + " s";
-    if(t2v) t2v.textContent = simState.t2 + " s";
-  }
-
-  window.SIMS.stgraph = { mount: mount, draw: draw };
-})();
-
-// =========================================================================
-// 5. SIMULATION 5: Velocity–Time Graphs & Progressive Area (vtgraph)
-// =========================================================================
-(function(){
-  var simState = {
-    scenario: "ex4_4"
-  };
-
-  function mount(lesson){
-    App.state.maxT = 4.0;
-    document.getElementById("time-scrubber").max = 4.0;
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Velocity Curve v(t)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:rgba(56,189,248,0.35);"></span><span>Cumulative Shaded Area = Displacement</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span><span>Dashed Ghost Line: Future Trajectory</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p5-ex44">NCERT Example 4.4 (Uniform Accel to 8 m/s)</button>' +
-      '<button class="preset-btn" id="p5-trip9">NCERT Ex Q9 (Car 3-Stage Trip: 310 m)</button>' +
-      '<button class="preset-btn" id="p5-cyc12">NCERT Ex Q12 (Cyclist Run: 150 m)</button>';
-
-    document.getElementById("p5-ex44").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.scenario = "ex4_4";
-      App.state.maxT = 4.0;
-      document.getElementById("time-scrubber").max = 4.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (Example 4.4):</strong> Car accelerates from rest at 2 m/s² for 4 s to reach 8 m/s. The area of the triangle is ½ × 4 × 8 = 16 m!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p5-trip9").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.scenario = "trip9";
-      App.state.maxT = 21.0;
-      document.getElementById("time-scrubber").max = 21.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (NCERT Ex Q9):</strong> 3-Stage Trip: 0–5s accel (area=50m) + 5–15s cruise (area=200m) + 15–21s braking (area=60m). Watch area accumulate progressively to 310 m without showing future area!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p5-cyc12").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.scenario = "cyclist12";
-      App.state.maxT = 20.0;
-      document.getElementById("time-scrubber").max = 20.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (NCERT Ex Q12):</strong> Cyclist accelerates for 5s to 10 m/s (25m), cruises for 10s (100m), and brakes to rest in 5s (25m). Total distance = 150 m!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("lab-controls").innerHTML = "";
-    draw(0);
-  }
-
-  function setActivePreset(btn){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
-  }
-
-  function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
-
-    var originX = 90, originY = 240;
-    var maxT = App.state.maxT;
-    var maxV = simState.scenario === "ex4_4" ? 10 : 25;
-    var scaleX = 540 / maxT;
-    var scaleY = 190 / maxV;
-
-    function toG(time, vel){
-      return { x: originX + time * scaleX, y: originY - vel * scaleY };
-    }
-
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    markup += '<line x1="' + originX + '" y1="' + originY + '" x2="660" y2="' + originY + '" stroke="#64748b" stroke-width="2"/>';
-    markup += '<line x1="' + originX + '" y1="' + originY + '" x2="' + originX + '" y2="30" stroke="#64748b" stroke-width="2"/>';
-    markup += '<text x="665" y="' + (originY + 4) + '" fill="#cbd5e1" font-size="12">Time t (s)</text>';
-    markup += '<text x="' + originX + '" y="22" fill="#cbd5e1" font-size="12" text-anchor="middle">Velocity v (m/s)</text>';
-
-    function getV(time){
-      if(simState.scenario === "ex4_4"){
-        return Math.min(8, 2 * time);
-      } else if(simState.scenario === "trip9"){
-        if(time <= 5) return (time / 5) * 20;
-        if(time <= 15) return 20;
-        if(time <= 21) return 20 - ((time - 15) / 6) * 20;
-        return 0;
-      } else {
-        if(time <= 5) return (time / 5) * 10;
-        if(time <= 15) return 10;
-        if(time <= 20) return 10 - ((time - 15) / 5) * 10;
-        return 0;
-      }
-    }
-
-    var futurePath = "M " + originX + " " + originY;
-    for(var step = 0; step <= maxT; step += 0.5){
-      var pt = toG(step, getV(step));
-      futurePath += " L " + pt.x + " " + pt.y;
-    }
-    markup += '<path d="' + futurePath + '" stroke="#475569" stroke-width="2" stroke-dasharray="4" fill="none"/>';
-
+    mk += L.text(360, 214, "yojanas from the first postman's starting point", {size: 13, color: C.muted});
     if(t > 0){
-      var areaPoly = "M " + originX + " " + originY;
-      for(var tau = 0; tau <= t; tau += 0.2){
-        var gp = toG(tau, getV(tau));
-        areaPoly += " L " + gp.x + " " + gp.y;
-      }
-      var endPt = toG(t, getV(t));
-      areaPoly += " L " + endPt.x + " " + endPt.y + " L " + endPt.x + " " + originY + " Z";
-      markup += '<path d="' + areaPoly + '" fill="rgba(56,189,248,0.3)" stroke="none"/>';
-
-      var activePath = "M " + originX + " " + originY;
-      for(var tau2 = 0; tau2 <= t; tau2 += 0.2){
-        var ap = toG(tau2, getV(tau2));
-        activePath += " L " + ap.x + " " + ap.y;
-      }
-      markup += '<path d="' + activePath + '" stroke="#38bdf8" stroke-width="3.5" fill="none"/>';
-      markup += '<circle cx="' + endPt.x + '" cy="' + endPt.y + '" r="5" fill="#38bdf8"/>';
+      mk += L.rect(X(0), 144, X(p1) - X(0), 12, C.vel, ' rx="6"');
+      mk += L.rect(X(p2), 144, X(210) - X(p2), 12, C.path, ' rx="6"');
     }
-
-    var totalArea = 0;
-    var dt = 0.05;
-    for(var tt = 0; tt <= t; tt += dt){
-      totalArea += getV(tt) * dt;
-    }
-
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Velocity-time graph: current velocity is " + getV(t).toFixed(1) + " m/s. Cumulative area is " + totalArea.toFixed(1) + " meters.");
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Current Velocity v(t)</div><div class="telemetry-val" style="color:#38bdf8;">' + getV(t).toFixed(1) + ' m/s</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Shaded Area = Displacement</div><div class="telemetry-val" style="color:#38bdf8;">' + totalArea.toFixed(1) + ' m</div></div>';
-
-    var verdict = "";
-    if(simState.scenario === "ex4_4"){
-      verdict = "<b>NCERT Example 4.4:</b> Area of triangle = ½ × base × height = ½ × 4s × 8 m/s = <b>16.0 m</b> displacement.";
-    } else if(simState.scenario === "trip9"){
-      if(t >= 20.9){
-        verdict = "<b>NCERT Ex Q9 Final Verification:</b> Total Area = Triangle (50 m) + Rectangle (200 m) + Braking Triangle (60 m) = <b>310 m</b> total displacement!";
-      } else {
-        verdict = "Progressively integrating displacement across 3 stages. Current displacement: " + totalArea.toFixed(1) + " m.";
-      }
+    mk += L.circle(X(p1), 120, 12, C.vel) + L.text(X(p1), 96, L.num(p1, 0), {size: 14, color: C.vel, weight: 700});
+    mk += L.circle(X(p2), 120, 12, C.path) + L.text(X(p2), 96, L.num(210 - p2, 0), {size: 14, color: C.path, weight: 700});
+    if(p2 - p1 > 8){
+      mk += L.line(X(p1) + 16, 60, X(p2) - 16, 60, C.muted, 1.5, "4 4");
+      mk += L.text((X(p1) + X(p2)) / 2, 52, "gap " + L.num(p2 - p1, 0) + " yojanas", {size: 14, color: C.text});
     } else {
-      if(t >= 19.9){
-        verdict = "<b>NCERT Ex Q12 Final Verification:</b> Cyclist accelerates (25 m) + cruises (100 m) + brakes (25 m) = <b>150 m</b> total distance.";
-      } else {
-        verdict = "Cyclist journey in progress. Current distance: " + totalArea.toFixed(1) + " m.";
-      }
+      mk += L.text(X(p1), 60, "they meet!", {size: 16, color: C.ok, weight: 700});
     }
-    document.getElementById("lab-verdict").innerHTML = verdict;
-  }
+    L.svg(mk, "Day " + L.num(t, 1) + ": first postman has walked " + L.num(p1, 0) + " yojanas, second " + L.num(210 - p2, 0) + " yojanas.", 230);
 
-  window.SIMS.vtgraph = { mount: mount, draw: draw };
-})();
+    L.readout([["Day", L.num(t, 1)], ["First postman walked", L.num(p1, 0) + " yojanas", C.vel], ["Second postman walked", L.num(210 - p2, 0) + " yojanas", C.path],
+      ["Covered together", L.num(14 * t, 0) + " yojanas"], ["Gap left", L.num(Math.max(0, p2 - p1), 0) + " yojanas"]]);
 
-// =========================================================================
-// 6. SIMULATION 6: Three Equations & Highway Emergency Stopping (kinematics)
-// =========================================================================
-(function(){
-  var simState = {
-    uKmh: 36,
-    tReact: 0.0,
-    brakeA: 2.0,
-    obstacleGap: 30
-  };
-
-  function mount(lesson){
-    App.state.maxT = 7.0;
-    document.getElementById("time-scrubber").max = 7.0;
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Thinking Zone s₁ (Reaction delay)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Braking Zone s₂ (Deceleration)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Obstacle Position</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p6-q10">NCERT Ex Q10 (Bus at 36 km/h, 30m Gap)</button>' +
-      '<button class="preset-btn" id="p6-fast">High Speed Crash (72 km/h, 30m Gap)</button>' +
-      '<button class="preset-btn" id="p6-abs">ABS Braking Test (54 km/h, a = −5 m/s²)</button>';
-
-    document.getElementById("p6-q10").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.uKmh = 36; simState.tReact = 0.0; simState.brakeA = 2.0; simState.obstacleGap = 30;
-      updateControls();
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (NCERT Ex Q10):</strong> Bus travelling at 36 km/h (10 m/s) brakes at 2 m/s². Braking distance is s = u²/(2|a|) = 100/4 = 25 m. Since 25 m < 30 m, it stops 5 m safely before the obstacle!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p6-fast").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.uKmh = 72; simState.tReact = 0.8; simState.brakeA = 3.0; simState.obstacleGap = 30;
-      updateControls();
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> High speed (72 km/h = 20 m/s) with 0.8s reaction delay: Thinking distance s₁ = 16 m, braking distance s₂ = 66.7 m! Total 82.7 m > 30 m gap ⟹ CRASH!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p6-abs").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.uKmh = 54; simState.tReact = 0.5; simState.brakeA = 5.0; simState.obstacleGap = 35;
-      updateControls();
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> ABS high deceleration (5 m/s²): s₁ = 7.5 m, s₂ = 22.5 m. Total stopping distance = 30 m ≤ 35 m. Safe stop!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("lab-controls").innerHTML = 
-      '<div class="control-item"><div class="control-label"><span>Initial Speed (u)</span><span class="val" id="ctrl-p6-uval">36 km/h</span></div>' +
-      '<input type="range" id="ctrl-p6-u" min="18" max="90" value="36" step="9"></div>' +
-      '<div class="control-item"><div class="control-label"><span>Driver Reaction Time</span><span class="val" id="ctrl-p6-trval">0.0 s</span></div>' +
-      '<input type="range" id="ctrl-p6-tr" min="0" max="1.5" value="0" step="0.1"></div>' +
-      '<div class="control-item"><div class="control-label"><span>Braking Deceleration (|a|)</span><span class="val" id="ctrl-p6-aval">2.0 m/s²</span></div>' +
-      '<input type="range" id="ctrl-p6-a" min="1" max="6" value="2" step="0.5"></div>';
-
-    document.getElementById("ctrl-p6-u").addEventListener("input", function(e){
-      App.pause();
-      clearPresetActive();
-      simState.uKmh = Number(e.target.value);
-      draw(App.state.t);
-    });
-    document.getElementById("ctrl-p6-tr").addEventListener("input", function(e){
-      App.pause();
-      clearPresetActive();
-      simState.tReact = Number(e.target.value);
-      draw(App.state.t);
-    });
-    document.getElementById("ctrl-p6-a").addEventListener("input", function(e){
-      App.pause();
-      clearPresetActive();
-      simState.brakeA = Number(e.target.value);
-      draw(App.state.t);
-    });
-
-    draw(0);
-  }
-
-  function clearPresetActive(){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-  }
-
-  function setActivePreset(btn){
-    clearPresetActive();
-    btn.classList.add("active");
-  }
-
-  function updateControls(){
-    var cu = document.getElementById("ctrl-p6-u");
-    var ctr = document.getElementById("ctrl-p6-tr");
-    var ca = document.getElementById("ctrl-p6-a");
-    if(cu) cu.value = simState.uKmh;
-    if(ctr) ctr.value = simState.tReact;
-    if(ca) ca.value = simState.brakeA;
+    L.verdict(t >= 15 - 1e-6
+      ? "<b>Example 4.1:</b> together they cover 9 + 5 = 14 yojanas per day, so they meet after 210 ÷ 14 = <b>15 days</b>. The first postman walks 135 yojanas and the second 75 yojanas."
+      : (t <= 0 ? "Press <b>Play</b>. The postmen start 210 yojanas apart and walk towards each other." : "Each day the gap shrinks by 14 yojanas."));
   }
 
   function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
-
-    var u = (simState.uKmh * 1000) / 3600;
-    var tR = simState.tReact;
-    var a = simState.brakeA;
-    var tBrake = u / a;
-
-    var s1 = u * tR;
-    var s2 = (u * u) / (2 * a);
-    var sTotal = s1 + s2;
-
-    var curPos = 0;
-    var curV = u;
-    if(t <= tR){
-      curPos = u * t;
-      curV = u;
-    } else {
-      var tDec = t - tR;
-      if(tDec <= tBrake){
-        curPos = s1 + u * tDec - 0.5 * a * tDec * tDec;
-        curV = Math.max(0, u - a * tDec);
-      } else {
-        curPos = sTotal;
-        curV = 0;
-      }
-    }
-
-    var scaleRoad = 520 / 60;
-    var busX = 80 + curPos * scaleRoad;
-    var obsX = 80 + simState.obstacleGap * scaleRoad;
-
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
-    markup += '<rect x="60" y="40" width="600" height="90" fill="#15263a" rx="6"/>';
-    markup += '<line x1="60" y1="85" x2="660" y2="85" stroke="#475569" stroke-width="2" stroke-dasharray="8"/>';
-
-    if(s1 > 0){
-      var z1w = s1 * scaleRoad;
-      markup += '<rect x="80" y="45" width="' + z1w + '" height="80" fill="rgba(245,158,11,0.25)"/>';
-      markup += '<text x="' + (80 + z1w/2) + '" y="60" fill="#f59e0b" font-size="11" text-anchor="middle">Thinking Zone s₁ = ' + s1.toFixed(1) + 'm</text>';
-    }
-    var z2x = 80 + s1 * scaleRoad;
-    var z2w = s2 * scaleRoad;
-    markup += '<rect x="' + z2x + '" y="45" width="' + z2w + '" height="80" fill="rgba(56,189,248,0.2)"/>';
-    markup += '<text x="' + (z2x + z2w/2) + '" y="60" fill="#38bdf8" font-size="11" text-anchor="middle">Braking Zone s₂ = ' + s2.toFixed(1) + 'm</text>';
-
-    markup += '<rect x="' + (obsX - 10) + '" y="55" width="20" height="60" fill="#ef4444" rx="3"/>';
-    markup += '<text x="' + obsX + '" y="50" fill="#ef4444" font-size="11" font-weight="700" text-anchor="middle">Obstacle (' + simState.obstacleGap + 'm)</text>';
-
-    markup += '<g transform="translate(' + busX + ', 85)">';
-    markup += '<rect x="-28" y="-18" width="56" height="32" rx="4" fill="#254ad7" stroke="#fff" stroke-width="1.5"/>';
-    markup += '<circle cx="-16" cy="14" r="5" fill="#020617"/>';
-    markup += '<circle cx="16" cy="14" r="5" fill="#020617"/>';
-    markup += '</g>';
-
-    var gOx = 80, gOy = 270;
-    markup += '<line x1="' + gOx + '" y1="' + gOy + '" x2="640" y2="' + gOy + '" stroke="#64748b" stroke-width="1.5"/>';
-    markup += '<line x1="' + gOx + '" y1="' + gOy + '" x2="' + gOx + '" y2="160" stroke="#64748b" stroke-width="1.5"/>';
-    markup += '<text x="645" y="' + (gOy + 4) + '" fill="#94a3b8" font-size="11">Time t</text>';
-    markup += '<text x="' + gOx + '" y="152" fill="#94a3b8" font-size="11" text-anchor="middle">Velocity v</text>';
-
-    var gScaleT = 500 / 8;
-    var gScaleV = 90 / 25;
-    var tR_px = tR * gScaleT;
-    var u_py = gOy - u * gScaleV;
-    if(tR > 0){
-      markup += '<rect x="' + gOx + '" y="' + u_py + '" width="' + tR_px + '" height="' + (gOy - u_py) + '" fill="rgba(245,158,11,0.3)"/>';
-    }
-    var tB_px = (tR + tBrake) * gScaleT;
-    markup += '<polygon points="' + (gOx + tR_px) + ',' + u_py + ' ' + (gOx + tB_px) + ',' + gOy + ' ' + (gOx + tR_px) + ',' + gOy + '" fill="rgba(56,189,248,0.3)"/>';
-    markup += '<line x1="' + gOx + '" y1="' + u_py + '" x2="' + (gOx + tR_px) + '" y2="' + u_py + '" stroke="#f59e0b" stroke-width="2"/>';
-    markup += '<line x1="' + (gOx + tR_px) + '" y1="' + u_py + '" x2="' + (gOx + tB_px) + '" y2="' + gOy + '" stroke="#38bdf8" stroke-width="2"/>';
-
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Emergency stopping lab: total stopping distance is " + sTotal.toFixed(1) + " meters.");
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Thinking Distance s₁ = u·t_r</div><div class="telemetry-val" style="color:#f59e0b;">' + s1.toFixed(1) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Braking Distance s₂ = u²/(2|a|)</div><div class="telemetry-val" style="color:#38bdf8;">' + s2.toFixed(1) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Total Stopping Distance (s_stop)</div><div class="telemetry-val">' + sTotal.toFixed(1) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Obstacle Gap</div><div class="telemetry-val" style="color:#ef4444;">' + simState.obstacleGap + ' m</div></div>';
-
-    var verdict = "";
-    if(sTotal <= simState.obstacleGap){
-      var margin = simState.obstacleGap - sTotal;
-      verdict = "<b>Safe Stop!</b> Total stopping distance is <b>" + sTotal.toFixed(1) + " m</b> (Thinking: " + s1.toFixed(1) + "m + Braking: " + s2.toFixed(1) + "m). The vehicle halts safely with a <b>" + margin.toFixed(1) + " m</b> safety buffer before the obstacle!";
-    } else {
-      var crashSpd = Math.sqrt(Math.max(0, u*u - 2*a*(simState.obstacleGap - s1)));
-      verdict = "<b>CRASH DETECTED!</b> Stopping distance (<b>" + sTotal.toFixed(1) + " m</b>) exceeds the obstacle gap (" + simState.obstacleGap + " m). Impact occurs at <b>" + (crashSpd * 3.6).toFixed(1) + " km/h</b> (" + crashSpd.toFixed(1) + " m/s)! Reduce speed or increase following distance.";
-    }
-    document.getElementById("lab-verdict").innerHTML = verdict;
-
-    var cuVal = document.getElementById("ctrl-p6-uval");
-    var ctrVal = document.getElementById("ctrl-p6-trval");
-    var caVal = document.getElementById("ctrl-p6-aval");
-    if(cuVal) cuVal.textContent = simState.uKmh + " km/h (" + u.toFixed(1) + " m/s)";
-    if(ctrVal) ctrVal.textContent = simState.tReact.toFixed(1) + " s";
-    if(caVal) caVal.textContent = simState.brakeA.toFixed(1) + " m/s²";
+    if(st.preset === "sarang") drawSarang(t);
+    else if(st.preset === "trip") drawTrip(t);
+    else drawPostmen(t);
   }
 
-  window.SIMS.kinematics = { mount: mount, draw: draw };
+  function mount(){
+    L.presets([["sarang", "Example 4.2: Sarang's swim"], ["trip", "Pause & Ponder Q4: road trip"], ["postmen", "Example 4.1: two postmen"]], st.preset, select);
+    select(st.preset);
+    App.pause();
+    App.resetTimeline();
+  }
+
+  window.SIMS.speedvel = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-// =========================================================================
-// 7. SIMULATION 7: Circular Motion & Tangential Velocity Release (circular)
-// =========================================================================
+// -------------------------------------------------------------------------
+// Lab 3 — Average acceleration (Example 4.3, Example 4.4, Activity 4.2)
+// -------------------------------------------------------------------------
 (function(){
-  var simState = {
-    mode: "marble",
-    rMeters: 0.8,
-    vMs: 2.0,
-    released: false,
-    releaseT: 0,
-    releaseX: 0,
-    releaseY: 0,
-    releaseVx: 0,
-    releaseVy: 0
-  };
+  var L = LAB, C = L.C;
+  var st = {preset: "busUp", t100: 10};
 
-  function mount(lesson){
-    simState.mode = "marble";
-    simState.released = false;
-    App.state.maxT = 6.0;
-    document.getElementById("time-scrubber").max = 6.0;
-
-    document.getElementById("lab-legend").innerHTML = 
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Tangential Velocity Vector v⃗</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Centripetal Acceleration a_c</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Tangential Release Trajectory</span></div>';
-
-    document.getElementById("preset-bar").innerHTML = 
-      '<button class="preset-btn active" id="p7-marble">Activity 4.5: Marble in Circular Ring</button>' +
-      '<button class="preset-btn" id="p7-lift">Lift Ring (Tangential Release!)</button>' +
-      '<button class="preset-btn" id="p7-clock">Rohan’s Clock (NCERT Ex Q16)</button>';
-
-    document.getElementById("p7-marble").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "marble";
-      simState.released = false;
-      simState.rMeters = 0.8;
-      simState.vMs = 2.0;
-      App.state.maxT = 6.0;
-      document.getElementById("time-scrubber").max = 6.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch:</strong> Particle moves at constant speed, but its velocity vector v⃗ is continuously turning tangentially! Inward centripetal acceleration a_c is directed toward center O.";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("p7-lift").addEventListener("click", function(){
-      simState.released = true;
-      simState.releaseT = App.state.t;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (Activity 4.5):</strong> Ring lifted! Without the inward normal force, the marble flies off in a straight line along the instantaneous tangent!";
-      draw(App.state.t);
-    });
-
-    document.getElementById("p7-clock").addEventListener("click", function(){
-      setActivePreset(this);
-      simState.mode = "clock";
-      simState.released = false;
-      simState.rMeters = 0.07;
-      App.state.maxT = 60.0;
-      document.getElementById("time-scrubber").max = 60.0;
-      document.getElementById("what-to-watch").innerHTML = "<strong>What to watch (NCERT Ex Q16):</strong> Minute hand radius r = 7 cm, Period T = 3600 s (60 min). Tip speed = 0.122 mm/s. In 15 min, distance = 11 cm and displacement = 9.9 cm!";
-      App.resetTimeline();
-      App.play();
-    });
-
-    document.getElementById("lab-controls").innerHTML = 
-      '<div class="control-item"><div class="control-label"><span>Circle Radius (r)</span><span class="val" id="ctrl-p7-rval">0.8 m</span></div>' +
-      '<input type="range" id="ctrl-p7-r" min="0.4" max="1.4" value="0.8" step="0.1"></div>' +
-      '<div class="control-item"><div class="control-label"><span>Speed (v)</span><span class="val" id="ctrl-p7-vval">2.0 m/s</span></div>' +
-      '<input type="range" id="ctrl-p7-v" min="0.5" max="4.0" value="2.0" step="0.5"></div>';
-
-    document.getElementById("ctrl-p7-r").addEventListener("input", function(e){
-      simState.rMeters = Number(e.target.value);
-      draw(App.state.t);
-    });
-    document.getElementById("ctrl-p7-v").addEventListener("input", function(e){
-      simState.vMs = Number(e.target.value);
-      draw(App.state.t);
-    });
-
-    draw(0);
+  function model(){
+    if(st.preset === "busUp") return {u: 10, a: 0.5, T: 10, name: "Example 4.3 (i)"};
+    if(st.preset === "busBrake") return {u: 15, a: -3, T: 5, name: "Example 4.3 (ii)"};
+    if(st.preset === "drop") return {u: 0, a: 9.8, T: 4, name: "Example 4.4"};
+    return {u: 0, a: (100 / 3.6) / st.t100, T: st.t100, name: "Activity 4.2"};
   }
 
-  function setActivePreset(btn){
-    document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-    btn.classList.add("active");
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    var m = model();
+    L.timeline({maxT: m.T, step: m.T <= 5 ? 0.5 : 1, speed: id === "drop" ? 0.5 : 1});
+    L.legend([[C.vel, "velocity"], [C.acc, "acceleration"]]);
+    if(id === "busUp") L.watch("Example 4.3 (i): the driver presses the accelerator. The bus goes from 36 km h⁻¹ (10 m s⁻¹) to 54 km h⁻¹ (15 m s⁻¹) in 10 s. Direction of motion is positive.");
+    else if(id === "busBrake") L.watch("Example 4.3 (ii): the driver brakes from 54 km h⁻¹ (15 m s⁻¹) to rest in 5 s. The velocity arrow still points forward, but the acceleration arrow points backward.");
+    else if(id === "drop") L.watch("Example 4.4 / Fig. 4.10: an object dropped from rest. Here downward is positive. Read the velocity at each second.");
+    else L.watch("Activity 4.2: a car goes from 0 to 100 km h⁻¹ (27.8 m s⁻¹). Set the time you found for a real car and compare accelerations.");
+    if(id === "car100"){
+      L.controls(L.slider("c3-t100", "Time from 0 to 100 km h⁻¹", 4, 15, 0.5, st.t100, L.num(st.t100, 1) + " s"));
+      L.onInput("c3-t100", function(v){
+        st.t100 = v;
+        L.setVal("c3-t100", L.num(v, 1) + " s");
+        L.timeline({maxT: v, step: 1, speed: 1});
+        App.resetTimeline();
+      });
+    } else {
+      L.controls("");
+    }
+    L.restart(true);
+  }
+
+  function chips(m, t){
+    var out = [];
+    for(var k = 0; k <= Math.floor(t + 1e-6); k++){
+      out.push('<span class="chip"><b>' + k + ' s</b> ' + L.num(m.u + m.a * k, 1) + '</span>');
+    }
+    return '<div class="lab-chips"><span class="lab-chips-label">Velocity at each second (m s⁻¹):</span>' + out.join("") + '</div>';
+  }
+
+  function cells(m, t, v){
+    var dv = v - m.u;
+    return [
+      ["Time", L.num(t, 1) + " s"],
+      ["Velocity", L.num(v, 1) + " m s⁻¹ (" + L.num(v * 3.6, 0) + " km h⁻¹)", C.vel],
+      ["Change in velocity", L.signed(dv, 1) + " m s⁻¹"],
+      ["Average acceleration so far", t > 0 ? L.signed(dv / t, 2) + " m s⁻²" : "—", C.acc]
+    ];
+  }
+
+  function cellsHTML(list){
+    return '<div class="lab-readout-grid">' + list.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("") + '</div>';
+  }
+
+  function drawRoad(m, t){
+    var v = m.u + m.a * t, s = m.u * t + 0.5 * m.a * t * t;
+    var sEnd = m.u * m.T + 0.5 * m.a * m.T * m.T;
+    var span = Math.max(20, Math.ceil(sEnd * 1.15 / 10) * 10);
+    var tick = span <= 60 ? 10 : span <= 160 ? 20 : 50;
+    var X = function(x){ return 90 + x * (540 / span); };
+    var vmax = Math.max(Math.abs(m.u), Math.abs(m.u + m.a * m.T));
+    var mk = "";
+    mk += L.rect(40, 176, 640, 54, "#1e293b");
+    mk += L.line(40, 203, 680, 203, C.faint, 2, "14 12");
+    for(var x = 0; x <= span + 1e-6; x += tick){
+      mk += L.line(X(x), 232, X(x), 242, C.muted, 2) + L.text(X(x), 260, x + " m", {size: 13, color: C.muted});
+    }
+    var bx = X(s);
+    mk += '<g transform="translate(' + bx + ',190)">' + L.rect(-64, -22, 64, 30, "#2563eb", ' rx="5" stroke="#fff" stroke-width="1.5"') +
+      L.rect(-58, -17, 12, 9, "#bfdbfe") + L.rect(-42, -17, 12, 9, "#bfdbfe") + L.rect(-26, -17, 12, 9, "#bfdbfe") +
+      L.circle(-50, 10, 6, "#0f172a") + L.circle(-14, 10, 6, "#0f172a") + '</g>';
+    if(Math.abs(v) > 0.05){
+      var vl = 150 * Math.abs(v) / vmax;
+      mk += L.arrow(bx, 136, bx + vl, 136, C.vel, 5) + L.text(bx + vl + 8, 141, "v = " + L.num(v, 1) + " m s⁻¹", {size: 15, color: C.vel, anchor: "start", weight: 700});
+    } else {
+      mk += L.text(bx, 141, "at rest", {size: 15, color: C.vel, weight: 700});
+    }
+    var al = 30 + 50 * Math.min(1, Math.abs(m.a) / 5), dir = m.a >= 0 ? 1 : -1;
+    var ax2 = bx + dir * al;
+    mk += L.arrow(bx, 88, ax2, 88, C.acc, 5) + L.text(dir > 0 ? ax2 + 8 : ax2 - 8, 93, "a = " + L.signed(m.a, 2) + " m s⁻²", {size: 15, color: C.acc, anchor: dir > 0 ? "start" : "end", weight: 700});
+    mk += L.text(60, 40, "positive direction →", {size: 14, color: C.muted, anchor: "start"});
+    L.svg(mk, m.name + ": at t = " + L.num(t, 1) + " s the velocity is " + L.num(v, 1) + " m/s and the acceleration is " + L.num(m.a, 2) + " m/s².", 280);
+    L.readoutHTML(cellsHTML(cells(m, t, v)) + chips(m, t));
+    return v;
+  }
+
+  function drawDrop(m, t){
+    var v = m.a * t, s = 0.5 * m.a * t * t;
+    var Y = function(x){ return 34 + x * 2.9; };
+    var mk = "";
+    mk += L.line(230, Y(0), 230, Y(80), C.muted, 2);
+    for(var x = 0; x <= 80; x += 10){
+      mk += L.line(222, Y(x), 238, Y(x), C.muted, 2) + L.text(214, Y(x) + 5, x + " m", {size: 13, color: C.muted, anchor: "end"});
+    }
+    mk += L.text(120, 60, "↓ positive", {size: 14, color: C.muted});
+    mk += L.arrow(120, 100, 120, 160, C.acc, 5) + L.text(120, 184, "a = +9.8 m s⁻²", {size: 14, color: C.acc, weight: 700});
+    for(var k = 0; k <= 4; k++){
+      if(t + 1e-6 >= k){
+        var yk = Y(0.5 * m.a * k * k);
+        mk += L.line(270, yk, 360, yk, C.faint, 1.5, "4 4");
+        mk += L.text(370, yk + 5, "t = " + k + " s, v = " + L.num(m.a * k, 1) + " m s⁻¹", {size: 14, color: C.text, anchor: "start"});
+      }
+    }
+    mk += L.circle(300, Y(s), 11, "#fb923c", ' stroke="#fff" stroke-width="2"');
+    if(v > 0.2) mk += L.arrow(270, Y(s), 270, Y(s) + 16 + 50 * v / 39.2, C.vel, 5);
+    L.svg(mk, "Dropped object after " + L.num(t, 1) + " seconds: fallen " + L.num(s, 1) + " metres, velocity " + L.num(v, 1) + " m/s downward.", 280);
+    L.readoutHTML(cellsHTML(cells(m, t, v).concat([["Distance fallen", L.num(s, 1) + " m"]])) + chips(m, t));
+    return v;
   }
 
   function draw(t){
-    var svg = document.getElementById("diagram");
-    if(!svg) return;
+    var m = model();
+    if(st.preset === "drop") drawDrop(m, t); else drawRoad(m, t);
+    var done = t >= m.T - 1e-6, msg;
+    if(t <= 0) msg = "Press <b>Play</b>. Watch how much the velocity changes in each second.";
+    else if(st.preset === "busUp") msg = done
+      ? "<b>Example 4.3 (i):</b> a = (15 − 10) m s⁻¹ ÷ 10 s = <b>+0.5 m s⁻²</b>. The speed increased, so the acceleration is in the direction of velocity."
+      : "The velocity grows by the same 0.5 m s⁻¹ every second, so the acceleration is constant.";
+    else if(st.preset === "busBrake") msg = done
+      ? "<b>Example 4.3 (ii):</b> a = (0 − 15) m s⁻¹ ÷ 5 s = <b>−3 m s⁻²</b>. The minus sign means the acceleration is opposite to the velocity: the bus is slowing down, not moving backward."
+      : "The bus still moves forward (velocity +), but loses 3 m s⁻¹ every second, so its acceleration is negative.";
+    else if(st.preset === "drop") msg = done
+      ? "<b>Example 4.4:</b> the velocity rises by 9.8 m s⁻¹ in every one-second interval, so the average acceleration is constant: <b>9.8 m s⁻²</b> in the direction of motion (downward). This is <i>g</i>."
+      : "Each second the velocity increases by another 9.8 m s⁻¹.";
+    else msg = done
+      ? "<b>Activity 4.2:</b> a = 27.8 m s⁻¹ ÷ " + L.num(st.t100, 1) + " s = <b>" + L.num(27.78 / st.t100, 2) + " m s⁻²</b>. A shorter 0–100 km h⁻¹ time means a larger acceleration."
+      : "Starting from rest, the car gains " + L.num(27.78 / st.t100, 2) + " m s⁻¹ every second.";
+    L.verdict(msg);
+  }
 
-    var cx = 360, cy = 150;
-    var rPix = 90;
-    var omega = simState.vMs / simState.rMeters;
-    var theta = (omega * t) % (2 * Math.PI);
+  function mount(){
+    L.presets([["busUp", "Example 4.3 (i): bus speeds up"], ["busBrake", "Example 4.3 (ii): bus brakes"], ["drop", "Example 4.4: dropped object"], ["car100", "Activity 4.2: 0–100 km h⁻¹"]], st.preset, select);
+    select(st.preset);
+    App.pause();
+    App.resetTimeline();
+  }
 
-    var px = cx + Math.cos(theta) * rPix;
-    var py = cy + Math.sin(theta) * rPix;
+  window.SIMS.accel = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-    var vxPix = -Math.sin(theta) * 45;
-    var vyPix = Math.cos(theta) * 45;
+// -------------------------------------------------------------------------
+// Lab 4 — Position–time graphs (Activity 4.3, Activity 4.4, Examples 4.5–4.6, Exercise Q6)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "act43", t1: 2, t2: 4};
+  var g = null;
 
-    var axPix = -Math.cos(theta) * 35;
-    var ayPix = -Math.sin(theta) * 35;
+  var CFG = {
+    act43: {data: [[0, 0], [1, 20], [2, 40], [3, 60], [4, 80], [5, 100], [6, 120]], s: function(t){ return 20 * t; },
+      tmax: 7, tStep: 1, smax: 140, sStep: 20, maxT: 6, step: 1, speed: 1, plot: true},
+    act44: {s: function(t){ return 20 * t; }, tmax: 7, tStep: 1, smax: 140, sStep: 20, maxT: 6, step: 1, speed: 1,
+      tri: true, triMin: 0, triMax: 6, triStep: 0.5, t1: 2, t2: 4},
+    ex45: {data: [[0, 0], [2, 1], [4, 4], [6, 9], [8, 16], [10, 25], [12, 36]], s: function(t){ return t * t / 4; },
+      tmax: 12, tStep: 2, smax: 40, sStep: 5, maxT: 12, step: 2, speed: 2, plot: true, tri: true, triMin: 0, triMax: 12, triStep: 1, t1: 4, t2: 6},
+    ex46: {s: function(){ return 40; }, tmax: 3, tStep: 1, smax: 60, sStep: 20, maxT: 3, step: 0.5, speed: 1},
+    q6: {sA: function(t){ return 10 * t; }, sB: function(t){ return 20 + 6 * t; }, tmax: 7, tStep: 1, smax: 80, sStep: 10, maxT: 6.5, step: 0.5, speed: 1}
+  };
 
-    var ac = (simState.vMs * simState.vMs) / simState.rMeters;
+  function cfg(){ return CFG[st.preset]; }
 
-    var markup = '<rect width="720" height="300" fill="#09131d"/>';
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    var c = cfg();
+    if(c.tri){ st.t1 = c.t1; st.t2 = c.t2; }
+    L.timeline({maxT: c.maxT, step: c.step, speed: c.speed});
+    if(id === "q6") L.legend([[C.vel, "object A"], ["#f472b6", "object B"]]);
+    else L.legend([[C.vel, "position–time graph"], ["#f8fafc", "vehicle on the road (left strip)"]].concat(c.tri ? [[C.path, "triangle ABC for the slope"]] : []));
+    var w = {
+      act43: "Activity 4.3 with Table 4.3. A point is plotted each second as the vehicle moves; once all points are plotted they are joined.",
+      act44: "Activity 4.4 / Fig. 4.14. Drag A or B (or use the sliders). BC is the change in position and CA the change in time; BC ÷ CA is the velocity.",
+      ex45: "Example 4.5 with Table 4.4: a vehicle starting from rest and speeding up. The points do not lie on a straight line. Compare the slope between 4–6 s with 10–12 s.",
+      ex46: "Example 4.6 / Fig. 4.15. Watch the vehicle strip: nothing moves. What does the graph look like?",
+      q6: "Exercise Q6 / Fig. 4.27 (numbers chosen to match the figure's shape). Two objects on parallel tracks. Watch the moment the lines cross."
+    };
+    L.watch(w[id]);
+    renderControls();
+    L.restart(true);
+  }
 
-    if(simState.mode === "clock"){
-      markup += '<circle cx="' + cx + '" cy="' + cy + '" r="100" fill="#15263a" stroke="#475569" stroke-width="4"/>';
-      for(var hr = 1; hr <= 12; hr++){
-        var hAng = (hr * 30 - 90) * Math.PI / 180;
-        markup += '<text x="' + (cx + Math.cos(hAng)*82) + '" y="' + (cy + Math.sin(hAng)*82 + 4) + '" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle">' + hr + '</text>';
-      }
-      var minAng = (t / 60) * 2 * Math.PI - Math.PI / 2;
-      var mx = cx + Math.cos(minAng) * 75;
-      var my = cy + Math.sin(minAng) * 75;
-      markup += '<line x1="' + cx + '" y1="' + cy + '" x2="' + mx + '" y2="' + my + '" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>';
-      markup += '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="#f59e0b"/>';
+  function renderControls(){
+    var c = cfg();
+    if(!c.tri){ L.controls(""); return; }
+    L.controls(
+      L.slider("c4-t1", "Point A at time t₁", c.triMin, c.triMax, c.triStep, st.t1, L.num(st.t1, 1) + " s") +
+      L.slider("c4-t2", "Point B at time t₂", c.triMin, c.triMax, c.triStep, st.t2, L.num(st.t2, 1) + " s")
+    );
+    L.onInput("c4-t1", function(v){ setT("t1", v); });
+    L.onInput("c4-t2", function(v){ setT("t2", v); });
+  }
 
-      var fracHour = (t % 60) / 60;
-      var distCm = fracHour * (2 * Math.PI * 7);
-      var dispCm = 2 * 7 * Math.sin(fracHour * Math.PI);
+  function setT(which, v){
+    var c = cfg();
+    v = Math.max(c.triMin, Math.min(c.triMax, Math.round(v / c.triStep) * c.triStep));
+    if(which === "t1") st.t1 = Math.min(v, st.t2 - c.triStep);
+    else st.t2 = Math.max(v, st.t1 + c.triStep);
+    var e1 = L.$("c4-t1"), e2 = L.$("c4-t2");
+    if(e1) e1.value = st.t1;
+    if(e2) e2.value = st.t2;
+    L.setVal("c4-t1", L.num(st.t1, 1) + " s");
+    L.setVal("c4-t2", L.num(st.t2, 1) + " s");
+    draw(App.state.t);
+  }
 
-      svg.innerHTML = markup;
-      svg.setAttribute("aria-label", "Clock simulation at minute " + t.toFixed(0) + ".");
+  function frame(c){
+    g = L.graph({x0: 150, y0: 262, w: 510, h: 214, tmax: c.tmax, vmin: 0, vmax: c.smax, tStep: c.tStep, vStep: c.sStep,
+      tLabel: "Time (s)", vLabel: "Position (m)"});
+    return g.svg;
+  }
 
-      document.getElementById("lab-readout").innerHTML = 
-        '<div class="telemetry-cell"><div class="telemetry-label">Hand Radius</div><div class="telemetry-val">7.0 cm (0.07 m)</div></div>' +
-        '<div class="telemetry-cell"><div class="telemetry-label">Tip Speed (v = 2πr/T)</div><div class="telemetry-val" style="color:#38bdf8;">0.122 mm/s</div></div>' +
-        '<div class="telemetry-cell"><div class="telemetry-label">Tip Distance Travelled</div><div class="telemetry-val" style="color:#f59e0b;">' + distCm.toFixed(1) + ' cm</div></div>' +
-        '<div class="telemetry-cell"><div class="telemetry-label">Tip Displacement</div><div class="telemetry-val" style="color:#818cf8;">' + dispCm.toFixed(1) + ' cm</div></div>';
+  function strip(x, s, color, label){
+    var top = g.Y(cfg().smax), bot = g.Y(0);
+    return L.rect(x - 7, top, 14, bot - top, "#1e293b", ' rx="7"') + L.rect(x - 11, g.Y(s) - 7, 22, 14, color, ' rx="3"') +
+      L.text(x, bot + 20, label, {size: 12, color: C.muted});
+  }
 
-      document.getElementById("lab-verdict").innerHTML = 
-        "<b>NCERT Ex Q16 Solution:</b> For Rohan's clock with minute hand radius 7 cm: In 15 minutes (quarter-turn), tip distance = ¼(2π×7) = <b>11.0 cm</b>, displacement = √(7² + 7²) = 7√2 = <b>9.9 cm</b>. In 60 minutes (full turn), tip distance = <b>44.0 cm</b>, displacement = <b>0 cm</b>!";
+  function draw(t){
+    var c = cfg(), mk = frame(c), id = st.preset;
+
+    if(id === "q6"){
+      var sa = c.sA(t), sb = c.sB(t);
+      mk += L.polyline(g, [[0, c.sA(0)], [c.maxT, c.sA(c.maxT)]], C.faint, 2, "5 5") + L.polyline(g, [[0, c.sB(0)], [c.maxT, c.sB(c.maxT)]], C.faint, 2, "5 5");
+      mk += L.polyline(g, [[0, c.sA(0)], [t, sa]], C.vel, 4) + L.polyline(g, [[0, c.sB(0)], [t, sb]], "#f472b6", 4);
+      mk += L.circle(g.X(t), g.Y(sa), 6, C.vel) + L.circle(g.X(t), g.Y(sb), 6, "#f472b6");
+      mk += L.text(g.X(c.maxT) + 6, g.Y(c.sA(c.maxT)) - 4, "A", {size: 16, color: C.vel, weight: 700, anchor: "start"});
+      mk += L.text(g.X(c.maxT) + 6, g.Y(c.sB(c.maxT)) + 14, "B", {size: 16, color: "#f472b6", weight: 700, anchor: "start"});
+      if(t >= 5) mk += L.line(g.X(5), g.Y(0), g.X(5), g.Y(50), C.text, 1.5, "6 4") + L.text(g.X(5), g.Y(50) - 12, "same position", {size: 13, color: C.text});
+      mk += strip(40, sa, C.vel, "A") + strip(80, sb, "#f472b6", "B");
+      L.svg(mk, "Position–time graph of A and B at t = " + L.num(t, 1) + " s: A at " + L.num(sa, 0) + " m, B at " + L.num(sb, 0) + " m.", 300);
+      L.readout([["Time", L.num(t, 1) + " s"], ["Position of A", L.num(sa, 1) + " m", C.vel], ["Position of B", L.num(sb, 1) + " m", "#f472b6"],
+        ["Velocity of A (slope)", "10 m s⁻¹", C.vel], ["Velocity of B (slope)", "6 m s⁻¹", "#f472b6"]]);
+      L.verdict(t <= 0 ? "Press <b>Play</b>. B starts 20 m ahead of A."
+        : t < 5 ? "A's line is steeper, so A is faster and is catching up with B."
+        : t < 5.25 ? "At t = 5 s the lines cross: A and B are at the <b>same position</b> (50 m). Their slopes are still different."
+        : "<b>Exercise Q6:</b> both lines are straight, so each velocity is constant, and A's slope (10 m s⁻¹) is always greater than B's (6 m s⁻¹). They <b>never</b> have equal velocity; at t = 5 s they only share a position.");
       return;
     }
 
-    markup += '<circle cx="' + cx + '" cy="' + cy + '" r="' + rPix + '" fill="none" stroke="#334155" stroke-width="3" stroke-dasharray="4"/>';
-    markup += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#64748b"/>';
-    markup += '<text x="' + cx + '" y="' + (cy + 18) + '" fill="#94a3b8" font-size="11" text-anchor="middle">Center O</text>';
-
-    if(simState.released){
-      var dtRel = t - simState.releaseT;
-      var flyX = px + vxPix * dtRel;
-      var flyY = py + vyPix * dtRel;
-      markup += '<line x1="' + px + '" y1="' + py + '" x2="' + flyX + '" y2="' + flyY + '" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4"/>';
-      markup += '<circle cx="' + flyX + '" cy="' + flyY + '" r="8" fill="#38bdf8" stroke="#fff" stroke-width="2"/>';
-      markup += '<text x="' + (flyX + 12) + '" y="' + flyY + '" fill="#f59e0b" font-size="12">Tangent Line</text>';
+    var s = c.s(t), plotted = 0;
+    var showTri = c.tri && (id === "act44" || t >= c.maxT - 1e-6 || st.touched);
+    if(c.plot){
+      var done = t >= c.maxT - 1e-6;
+      if(done){
+        var curve = [];
+        for(var k = 0; k <= 60; k++){ var tt = c.maxT * k / 60; curve.push([tt, c.s(tt)]); }
+        mk += L.polyline(g, curve, C.vel, 3);
+      }
+      c.data.forEach(function(p){
+        if(t + 1e-6 >= p[0]){
+          plotted++;
+          mk += L.circle(g.X(p[0]), g.Y(p[1]), 6, C.vel, ' stroke="#fff" stroke-width="1.5"');
+          // Coordinates are hidden once the slope triangle is shown (the readout lists A and B instead).
+          if(!showTri) mk += L.text(g.X(p[0]) - 6, g.Y(p[1]) - 10, "(" + p[0] + " s, " + p[1] + " m)", {size: 12, color: C.text, anchor: "end"});
+        }
+      });
+      mk += L.circle(g.X(t), g.Y(s), 4, "#f8fafc");
     } else {
-      markup += '<circle cx="' + px + '" cy="' + py + '" r="9" fill="#38bdf8" stroke="#fff" stroke-width="2"/>';
-
-      markup += '<defs><marker id="arr-c-v" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#38bdf8"/></marker></defs>';
-      markup += '<line x1="' + px + '" y1="' + py + '" x2="' + (px + vxPix) + '" y2="' + (py + vyPix) + '" stroke="#38bdf8" stroke-width="3.5" marker-end="url(#arr-c-v)"/>';
-      markup += '<text x="' + (px + vxPix*1.1) + '" y="' + (py + vyPix*1.1) + '" fill="#38bdf8" font-size="11" font-weight="700">v⃗</text>';
-
-      markup += '<defs><marker id="arr-c-a" markerWidth="6" markerHeight="6" refX="4" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#ef4444"/></marker></defs>';
-      markup += '<line x1="' + px + '" y1="' + py + '" x2="' + (px + axPix) + '" y2="' + (py + ayPix) + '" stroke="#ef4444" stroke-width="3" marker-end="url(#arr-c-a)"/>';
-      markup += '<text x="' + (px + axPix*0.6) + '" y="' + (py + ayPix*0.6 - 4) + '" fill="#ef4444" font-size="11" font-weight="700">a_c</text>';
+      var full = [], sofar = [];
+      for(var j = 0; j <= 60; j++){
+        var tj = c.maxT * j / 60;
+        full.push([tj, c.s(tj)]);
+        if(tj <= t) sofar.push([tj, c.s(tj)]);
+      }
+      sofar.push([t, s]);
+      mk += L.polyline(g, full, C.faint, 2, "5 5") + L.polyline(g, sofar, C.vel, 4) + L.circle(g.X(t), g.Y(s), 6, C.vel);
+      if(id === "ex46" && t > 0) mk += L.text(g.X(1.5), g.Y(40) - 14, "position stays 40 m", {size: 14, color: C.text});
     }
+    mk += L.line(g.X(0), g.Y(s), g.X(t), g.Y(s), "#f8fafc", 1, "3 5");
 
-    svg.innerHTML = markup;
-    svg.setAttribute("aria-label", "Circular motion lab: speed is " + simState.vMs.toFixed(1) + " m/s. Centripetal acceleration is " + ac.toFixed(1) + " m/s².");
-
-    document.getElementById("lab-readout").innerHTML = 
-      '<div class="telemetry-cell"><div class="telemetry-label">Radius (r)</div><div class="telemetry-val">' + simState.rMeters.toFixed(2) + ' m</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Constant Speed (v)</div><div class="telemetry-val" style="color:#38bdf8;">' + simState.vMs.toFixed(1) + ' m/s</div></div>' +
-      '<div class="telemetry-cell"><div class="telemetry-label">Centripetal Accel (v²/r)</div><div class="telemetry-val" style="color:#ef4444;">' + ac.toFixed(1) + ' m/s²</div></div>';
-
-    var verdict = "";
-    if(simState.released){
-      verdict = "<b>Activity 4.5 Tangential Release:</b> Without the inward normal force from the ring, the marble flies off along the exact tangent to the circle at the moment of release! Velocity is always directed along the tangent.";
-    } else {
-      verdict = "<b>Uniform Circular Motion:</b> Although speed is strictly constant, the velocity vector is continually turning. Therefore, circular motion is ALWAYS accelerated motion, with centripetal acceleration directed toward center O!";
+    var s1 = c.tri ? c.s(st.t1) : 0, s2 = c.tri ? c.s(st.t2) : 0;
+    if(showTri){
+      var A = [g.X(st.t1), g.Y(s1)], B = [g.X(st.t2), g.Y(s2)], Cc = [g.X(st.t2), g.Y(s1)];
+      mk += '<polygon points="' + A.join(",") + ' ' + Cc.join(",") + ' ' + B.join(",") + '" fill="rgba(245,158,11,0.18)" stroke="' + C.path + '" stroke-width="2"/>';
+      mk += L.text((A[0] + Cc[0]) / 2, Cc[1] + 20, "CA = " + L.num(st.t2 - st.t1, 1) + " s", {size: 13, color: C.path, weight: 700});
+      mk += L.text(B[0] + 10, (B[1] + Cc[1]) / 2 + 5, "BC = " + L.num(s2 - s1, 1) + " m", {size: 13, color: C.path, weight: 700, anchor: "start"});
+      mk += L.text(A[0] - 12, A[1] - 8, "A", {size: 15, weight: 700, color: "#f8fafc"}) + L.text(B[0] - 12, B[1] - 8, "B", {size: 15, weight: 700, color: "#f8fafc"}) +
+        L.text(Cc[0] + 12, Cc[1] + 4, "C", {size: 14, color: C.muted, anchor: "start"});
+      mk += '<circle cx="' + A[0] + '" cy="' + A[1] + '" r="11" fill="' + C.path + '" stroke="#fff" stroke-width="2" data-handle="t1" style="cursor:grab"/>';
+      mk += '<circle cx="' + B[0] + '" cy="' + B[1] + '" r="11" fill="' + C.path + '" stroke="#fff" stroke-width="2" data-handle="t2" style="cursor:grab"/>';
     }
-    document.getElementById("lab-verdict").innerHTML = verdict;
+    mk += strip(60, s, "#f8fafc", "vehicle");
+    L.svg(mk, "Position–time graph at t = " + L.num(t, 1) + " s, position " + L.num(s, 1) + " m.", 300);
 
-    var rv = document.getElementById("ctrl-p7-rval");
-    var vv = document.getElementById("ctrl-p7-vval");
-    if(rv) rv.textContent = simState.rMeters.toFixed(2) + " m";
-    if(vv) vv.textContent = simState.vMs.toFixed(1) + " m/s";
+    var cells = [["Time", L.num(t, 1) + " s"], ["Position", L.num(s, 1) + " m", C.vel]];
+    if(c.plot) cells.push(["Points plotted", plotted + " of " + c.data.length]);
+    if(showTri){
+      cells.push(["A (t₁, s₁)", "(" + L.num(st.t1, 1) + " s, " + L.num(s1, 1) + " m)"], ["B (t₂, s₂)", "(" + L.num(st.t2, 1) + " s, " + L.num(s2, 1) + " m)"],
+        ["Slope BC ÷ CA", L.num((s2 - s1) / (st.t2 - st.t1), 2) + " m s⁻¹", C.path]);
+    }
+    if(id === "ex46") cells.push(["Slope", "0 m s⁻¹"], ["Distance travelled", "0 m"]);
+    L.readout(cells);
+
+    var end = t >= c.maxT - 1e-6, msg;
+    if(t <= 0 && id !== "act44") msg = "Press <b>Play</b>.";
+    else if(id === "act43") msg = end ? "<b>Activity 4.3:</b> all points lie on a straight line. In every 1 s interval the position changes by the same 20 m, so the vehicle moves with <b>constant velocity</b>." : "Plotting (time, position) pairs from Table 4.3…";
+    else if(id === "act44") msg = "<b>Activity 4.4:</b> v = BC ÷ CA = (" + L.num(s2, 1) + " − " + L.num(s1, 1) + ") m ÷ (" + L.num(st.t2, 1) + " − " + L.num(st.t1, 1) + ") s = <b>" + L.num((s2 - s1) / (st.t2 - st.t1), 1) + " m s⁻¹</b>. Move A and B anywhere on this straight line: the slope stays the same.";
+    else if(id === "ex45") msg = end
+      ? "<b>Example 4.5:</b> the points lie on a curve, not a straight line, so the velocity is changing. Between " + L.num(st.t1, 0) + " s and " + L.num(st.t2, 0) + " s the average velocity is <b>" + L.num((s2 - s1) / (st.t2 - st.t1), 2) + " m s⁻¹</b>. Try 4–6 s and then 10–12 s: equal time intervals, larger displacement later, so the velocity is increasing."
+      : "The vehicle covers more distance in each successive 2 s interval…";
+    else msg = end ? "<b>Example 4.6:</b> a line parallel to the time axis means the position is not changing: the vehicle is <b>at rest</b>, 40 m from the origin. Its slope, and so its velocity, is zero." : "The time increases, but the position stays at 40 m.";
+    L.verdict(msg);
   }
 
-  window.SIMS.circular = { mount: mount, draw: draw };
+  function bindDrag(){
+    var svgEl = L.$("diagram");
+    if(!svgEl || !svgEl.addEventListener) return;
+    var dragging = null;
+    function move(e){
+      if(!dragging || !g) return;
+      var p = L.svgPoint(e);
+      if(!p) return;
+      st.touched = true;
+      setT(dragging, g.tFromX(p.x));
+      e.preventDefault();
+    }
+    function up(){ dragging = null; window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); }
+    svgEl.addEventListener("pointerdown", function(e){
+      var h = e.target && e.target.getAttribute && e.target.getAttribute("data-handle");
+      if(!h || !cfg().tri) return;
+      dragging = h;
+      App.pause();
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      e.preventDefault();
+    });
+  }
+
+  function mount(){
+    st.touched = false;
+    L.presets([["act43", "Activity 4.3: plot Table 4.3"], ["act44", "Activity 4.4: slope from A and B"], ["ex45", "Example 4.5: speeding up"], ["ex46", "Example 4.6: at rest"], ["q6", "Exercise Q6: A and B"]], st.preset, select);
+    bindDrag();
+    select(st.preset);
+    App.pause();
+    App.resetTimeline();
+  }
+
+  window.SIMS.stgraph = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 5 — Velocity–time graphs: slope and area (Figs. 4.17–4.18, Exercises Q9 and Q12)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "fig418b", t1: 10, t2: 20};
+
+  var CFG = {
+    fig418a: {pts: [[0, 20], [6, 20]], tmax: 6, tStep: 1, vmax: 30, vStep: 5, maxT: 6, step: 1, speed: 1, t1: 0, t2: 6, iStep: 1,
+      name: "Fig. 4.18(a): constant velocity"},
+    fig418b: {pts: [[0, 0], [30, 15]], tmax: 30, tStep: 5, vmax: 15, vStep: 2.5, vDp: 1, maxT: 30, step: 5, speed: 5, t1: 10, t2: 20, iStep: 5,
+      name: "Fig. 4.18(b): Table 4.5, speeding up"},
+    fig417c: {pts: [[0, 15], [30, 0]], tmax: 30, tStep: 5, vmax: 15, vStep: 2.5, vDp: 1, maxT: 30, step: 5, speed: 5, t1: 10, t2: 20, iStep: 5,
+      name: "Fig. 4.17(c): Table 4.6, slowing down"},
+    q9: {pts: [[0, 0], [5, 20], [15, 20], [21, 0]], tmax: 22, tStep: 2, vmax: 25, vStep: 5, maxT: 21, step: 1, speed: 2, t1: 0, t2: 21, iStep: 1,
+      stages: [[0, 5, "area", "speeding up"], [5, 15, "area2", "constant velocity"], [15, 21, "area3", "braking"]], name: "Exercise Q9"},
+    q12: {pts: [[0, 0], [20, 3], [100, 3], [120, 2]], tmax: 120, tStep: 20, vmax: 6, vStep: 1, maxT: 120, step: 10, speed: 10, t1: 0, t2: 120, iStep: 10,
+      stages: [[0, 20, "area", "speeding up"], [20, 100, "area2", "(i) constant velocity"], [100, 120, "area3", "(ii) decreasing velocity"]], name: "Exercise Q12 / Fig. 4.30"}
+  };
+  function cfg(){ return CFG[st.preset]; }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    var c = cfg();
+    st.t1 = c.t1; st.t2 = c.t2;
+    L.timeline({maxT: c.maxT, step: c.step, speed: c.speed});
+    if(c.stages) L.legend([[C.area, c.stages[0][3]], [C.area2, c.stages[1][3]], [C.area3, c.stages[2][3]]]);
+    else L.legend([[C.vel, "velocity–time graph"], [C.area, "area between t₁ and t₂ (displacement)"]]);
+    var w = {
+      fig418a: "Fig. 4.18(a): a car moving at a steady 20 m s⁻¹. The shaded rectangle grows as time passes.",
+      fig418b: "Fig. 4.18(b), Table 4.5: velocity increases by 2.5 m s⁻¹ every 5 s. The interval 10 s to 20 s is measured, as in the textbook.",
+      fig417c: "Fig. 4.17(c), Table 4.6: velocity decreases by 2.5 m s⁻¹ every 5 s. Note the sign of the slope.",
+      q9: "Exercise Q9: speeding up, steady, then braking. Each stage is shaded in its own colour.",
+      q12: "Exercise Q12 / Fig. 4.30: the cyclist. Shade (i) the constant-velocity part and (ii) the decreasing-velocity part in different colours."
+    };
+    L.watch(w[id] + " Change t₁ and t₂ to measure any interval.");
+    renderControls();
+    L.restart(true);
+  }
+
+  function renderControls(){
+    var c = cfg();
+    L.controls(
+      L.slider("c5-t1", "Measure from t₁", 0, c.maxT, c.iStep, st.t1, L.num(st.t1, 0) + " s") +
+      L.slider("c5-t2", "…to t₂", 0, c.maxT, c.iStep, st.t2, L.num(st.t2, 0) + " s")
+    );
+    L.onInput("c5-t1", function(v){ st.t1 = Math.min(v, st.t2 - c.iStep); L.$("c5-t1").value = st.t1; L.setVal("c5-t1", L.num(st.t1, 0) + " s"); draw(App.state.t); });
+    L.onInput("c5-t2", function(v){ st.t2 = Math.max(v, st.t1 + c.iStep); L.$("c5-t2").value = st.t2; L.setVal("c5-t2", L.num(st.t2, 0) + " s"); draw(App.state.t); });
+  }
+
+  function draw(t){
+    var c = cfg(), pts = c.pts;
+    var g = L.graph({x0: 90, y0: 262, w: 570, h: 214, tmax: c.tmax, vmin: 0, vmax: c.vmax, tStep: c.tStep, vStep: c.vStep,
+      tLabel: "Time (s)", vLabel: "Velocity (m s⁻¹)", vFmt: function(v){ return L.num(v, c.vDp || 0); }});
+    var mk = g.svg;
+    var hi = Math.min(t, st.t2);
+    if(c.stages){
+      c.stages.forEach(function(sg){
+        var a = Math.max(sg[0], st.t1), b = Math.min(sg[1], hi);
+        mk += L.areaPath(g, pts, a, b, C[sg[2]]);
+      });
+    } else {
+      mk += L.areaPath(g, pts, st.t1, hi, C.area);
+    }
+    mk += L.polyline(g, pts, C.faint, 2, "6 5");
+    var sofar = pts.filter(function(p){ return p[0] < t; }).concat([[t, L.interp(pts, t)]]);
+    mk += L.polyline(g, sofar, C.vel, 4);
+    var v = L.interp(pts, t);
+    mk += L.circle(g.X(t), g.Y(v), 6, C.vel, ' stroke="#fff" stroke-width="1.5"');
+    [[st.t1, "t₁"], [st.t2, "t₂"]].forEach(function(m){
+      mk += L.line(g.X(m[0]), g.Y(0), g.X(m[0]), g.Y(c.vmax), C.path, 1.5, "4 4") +
+        L.text(g.X(m[0]) + (m[1] === "t₁" ? 6 : -6), g.Y(c.vmax) + 16, m[1], {size: 14, color: C.path, weight: 700, anchor: m[1] === "t₁" ? "start" : "end"});
+    });
+    if(c.stages && t >= c.maxT - 1e-6){
+      c.stages.forEach(function(sg){
+        var ar = L.area(pts, sg[0], sg[1]), mid = (sg[0] + sg[1]) / 2;
+        mk += L.text(g.X(mid), g.Y(L.interp(pts, mid) / 2) + 5, L.num(ar, 0) + " m", {size: 15, color: "#f8fafc", weight: 700});
+      });
+    }
+    L.svg(mk, c.name + ": at t = " + L.num(t, 0) + " s velocity " + L.num(v, 2) + " m/s; area so far " + L.num(L.area(pts, st.t1, Math.max(st.t1, hi)), 1) + " m.", 300);
+
+    var v1 = L.interp(pts, st.t1), v2 = L.interp(pts, st.t2);
+    var slope = (v2 - v1) / (st.t2 - st.t1);
+    var areaSoFar = t > st.t1 ? L.area(pts, st.t1, hi) : 0;
+    var full = L.area(pts, st.t1, st.t2);
+    L.readout([
+      ["Time", L.num(t, 0) + " s"],
+      ["Velocity now", L.num(v, 2) + " m s⁻¹", C.vel],
+      ["Slope from t₁ to t₂ (average acceleration)", L.signed(slope, 3).replace(/0+$/, "").replace(/\.$/, "") + " m s⁻²", C.acc],
+      ["Area from t₁ so far", L.num(areaSoFar, 1) + " m", C.path],
+      ["Displacement t₁ → t₂", t >= st.t2 - 1e-6 ? L.num(full, 1) + " m" : "…", C.disp]
+    ]);
+
+    var end = t >= c.maxT - 1e-6, msg;
+    var id = st.preset;
+    var iv = " between " + L.num(st.t1, 0) + " s and " + L.num(st.t2, 0) + " s";
+    if(t <= 0) msg = "Press <b>Play</b>.";
+    else if(!end) msg = "The shaded area grows only up to the current time. Its size in metres is the displacement so far" + iv + ".";
+    else if(id === "fig418a") msg = "<b>Fig. 4.18(a):</b> the line is parallel to the time axis, so the slope (acceleration) is zero. Area of the rectangle = 20 m s⁻¹ × 6 s = <b>120 m</b> displacement" + (st.t1 === 0 && st.t2 === 6 ? "." : "; for your interval it is " + L.num(full, 1) + " m.");
+    else if(id === "fig418b") msg = "<b>Fig. 4.18(b):</b> slope = (10 − 5) m s⁻¹ ÷ (20 − 10) s = 0.5 m s⁻². Displacement from 10 s to 20 s = rectangle 50 m + triangle 25 m = <b>75 m</b>." + (st.t1 === 10 && st.t2 === 20 ? "" : " For your interval" + iv + ": slope " + L.num(slope, 2) + " m s⁻², area " + L.num(full, 1) + " m.");
+    else if(id === "fig417c") msg = "<b>Fig. 4.17(c):</b> the slope is <b>−0.5 m s⁻²</b>: the acceleration is opposite to the velocity because the car is slowing down. The area" + iv + " is still positive: " + L.num(full, 1) + " m.";
+    else if(id === "q9") msg = "<b>Exercise Q9:</b> total distance = 50 m (speeding up) + 200 m (steady) + 60 m (braking) = <b>310 m</b>.";
+    else msg = "<b>Exercise Q12:</b> (i) constant velocity, 20–100 s: <b>240 m</b>; (ii) decreasing velocity, 100–120 s: <b>50 m</b>. With 30 m while speeding up, the displacement in 120 s is <b>320 m</b>. Average acceleration = (2 − 0) m s⁻¹ ÷ 120 s ≈ <b>0.017 m s⁻²</b>.";
+    L.verdict(msg);
+  }
+
+  function mount(){
+    L.presets([["fig418a", "Fig. 4.18(a): steady 20 m s⁻¹"], ["fig418b", "Fig. 4.18(b): speeding up"], ["fig417c", "Fig. 4.17(c): slowing down"], ["q9", "Exercise Q9: car trip"], ["q12", "Exercise Q12: cyclist"]], st.preset, select);
+    select(st.preset);
+    App.pause();
+    App.resetTimeline();
+  }
+
+  window.SIMS.vtgraph = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 6 — Kinematic equations and stopping distance (Exercise Q10, Example 4.8)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PRESETS = {
+    q10: {uKmh: 36, tR: 0.5, a: 2.5, gap: 30},
+    ex48a: {uKmh: 54, tR: 0, a: 4, gap: 0},
+    ex48b: {uKmh: 108, tR: 0, a: 4, gap: 0}
+  };
+  var st = {preset: "q10", uKmh: 36, tR: 0.5, a: 2.5, gap: 30};
+
+  function model(){
+    var u = st.uKmh / 3.6, s1 = u * st.tR, tb = u / st.a, s2 = u * u / (2 * st.a);
+    var m = {u: u, s1: s1, tb: tb, s2: s2, total: s1 + s2, stopT: st.tR + tb, crash: false};
+    if(st.gap > 0 && m.total > st.gap + 1e-9){
+      m.crash = true;
+      if(st.gap <= s1){ m.tImp = st.gap / u; m.vImp = u; }
+      else {
+        var disc = u * u - 2 * st.a * (st.gap - s1);
+        m.tImp = st.tR + (u - Math.sqrt(disc)) / st.a;
+        m.vImp = Math.sqrt(disc);
+      }
+    }
+    m.endT = m.crash ? m.tImp : m.stopT;
+    return m;
+  }
+
+  function stateAt(m, t){
+    var tt = Math.min(t, m.endT);
+    if(tt <= st.tR) return {pos: m.u * tt, v: m.u};
+    var tau = Math.min(tt - st.tR, m.tb);
+    return {pos: m.s1 + m.u * tau - 0.5 * st.a * tau * tau, v: Math.max(0, m.u - st.a * tau)};
+  }
+
+  function applyTimeline(){
+    var m = model();
+    var maxT = Math.ceil((m.endT + 0.5) * 2) / 2;
+    L.timeline({maxT: maxT, step: 0.5, speed: maxT > 10 ? 2 : 1});
+  }
+
+  function select(id){
+    var p = PRESETS[id];
+    st.preset = id; st.uKmh = p.uKmh; st.tR = p.tR; st.a = p.a; st.gap = p.gap;
+    L.markPreset(id);
+    L.legend([[C.path, "reaction distance (constant speed)"], [C.vel, "braking distance (slowing down)"], [C.danger, "obstacle"]]);
+    if(id === "q10") L.watch("Exercise Q10: 36 km h⁻¹ (10 m s⁻¹), reaction time 0.5 s, braking at 2.5 m s⁻², obstacle 30 m ahead.");
+    else if(id === "ex48a") L.watch("Example 4.8 (i): braking at 4 m s⁻² from 54 km h⁻¹ (15 m s⁻¹). The textbook ignores reaction time here.");
+    else L.watch("Example 4.8 (ii): the same brakes from 108 km h⁻¹ (30 m s⁻¹), twice the speed. Compare the braking distance with (i).");
+    renderControls();
+    applyTimeline();
+    L.restart(true);
+  }
+
+  function renderControls(){
+    L.controls(
+      L.slider("c6-u", "Initial speed u", 18, 108, 9, st.uKmh, st.uKmh + " km h⁻¹") +
+      L.slider("c6-tr", "Reaction time", 0, 1.5, 0.1, st.tR, L.num(st.tR, 1) + " s") +
+      L.slider("c6-a", "Braking deceleration", 1, 8, 0.5, st.a, L.num(st.a, 1) + " m s⁻²") +
+      L.slider("c6-gap", "Obstacle ahead", 0, 150, 5, st.gap, st.gap > 0 ? st.gap + " m" : "none")
+    );
+    function custom(){ st.preset = "custom"; L.markPreset("custom"); applyTimeline(); App.resetTimeline(); }
+    L.onInput("c6-u", function(v){ st.uKmh = v; L.setVal("c6-u", v + " km h⁻¹"); custom(); });
+    L.onInput("c6-tr", function(v){ st.tR = v; L.setVal("c6-tr", L.num(v, 1) + " s"); custom(); });
+    L.onInput("c6-a", function(v){ st.a = v; L.setVal("c6-a", L.num(v, 1) + " m s⁻²"); custom(); });
+    L.onInput("c6-gap", function(v){ st.gap = v; L.setVal("c6-gap", v > 0 ? v + " m" : "none"); custom(); });
+  }
+
+  function niceCeil(x, steps){
+    for(var i = 0; i < steps.length; i++) if(x <= steps[i]) return steps[i];
+    return Math.ceil(x / 50) * 50;
+  }
+
+  function draw(t){
+    var m = model(), s = stateAt(m, t), done = t >= m.endT - 1e-6;
+    var span = niceCeil(Math.max(m.total, st.gap) * 1.12, [20, 30, 40, 50, 60, 80, 100, 120, 150, 200, 250, 300, 400]);
+    var tick = span <= 40 ? 5 : span <= 100 ? 10 : span <= 200 ? 20 : 50;
+    var X = function(d){ return 70 + d * (590 / span); };
+    var mk = "";
+    mk += L.rect(40, 50, 640, 62, "#1e293b") + L.line(40, 81, 680, 81, C.faint, 2, "14 12");
+    for(var d = 0; d <= span + 1e-6; d += tick){
+      mk += L.line(X(d), 114, X(d), 122, C.muted, 2) + L.text(X(d), 138, d + " m", {size: 12, color: C.muted});
+    }
+    var p1 = Math.min(s.pos, m.s1);
+    mk += L.rect(X(0), 54, X(p1) - X(0), 54, "rgba(245,158,11,0.35)");
+    if(s.pos > m.s1) mk += L.rect(X(m.s1), 54, X(s.pos) - X(m.s1), 54, "rgba(56,189,248,0.32)");
+    if(done){
+      if(m.s1 > 0.5) mk += L.text((X(0) + X(m.s1)) / 2, 44, "s₁ = " + L.num(m.s1, 1) + " m", {size: 13, color: C.path, weight: 700});
+      var bEnd = m.crash ? st.gap : m.total;
+      mk += L.text((X(m.s1) + X(bEnd)) / 2, 44, (m.crash ? "braking " : "s₂ = ") + L.num(bEnd - m.s1, 1) + " m", {size: 13, color: C.vel, weight: 700});
+    }
+    if(st.gap > 0){
+      mk += L.rect(X(st.gap), 46, 12, 70, C.danger, ' rx="2"') + L.text(X(st.gap) + 6, 24, "obstacle " + st.gap + " m", {size: 13, color: C.danger, weight: 700});
+    }
+    var bx = X(s.pos);
+    mk += '<g transform="translate(' + bx + ',81)">' + L.rect(-58, -17, 58, 30, "#2563eb", ' rx="4" stroke="#fff" stroke-width="1.5"') +
+      L.rect(-52, -12, 11, 8, "#bfdbfe") + L.rect(-37, -12, 11, 8, "#bfdbfe") + L.rect(-22, -12, 11, 8, "#bfdbfe") +
+      L.circle(-46, 13, 5, "#0f172a") + L.circle(-12, 13, 5, "#0f172a") + '</g>';
+    if(m.crash && t >= m.tImp - 1e-6) mk += L.text(bx + 18, 100, "✸", {size: 34, color: "#fbbf24", anchor: "start"});
+
+    // Synchronised velocity–time graph
+    var tmax = Math.max(2, Math.ceil(m.stopT + 0.5));
+    var tStep = tmax <= 8 ? 1 : tmax <= 16 ? 2 : 5;
+    tmax = Math.ceil(tmax / tStep) * tStep;
+    var vmax = niceCeil(m.u * 1.15, [5, 10, 15, 20, 25, 30, 35, 40]);
+    var g = L.graph({x0: 90, y0: 380, w: 560, h: 170, tmax: tmax, vmin: 0, vmax: vmax, tStep: tStep, vStep: vmax <= 10 ? 2 : 5,
+      tLabel: "Time (s)", vLabel: "Velocity (m s⁻¹)"});
+    mk += g.svg;
+    var vt = [[0, m.u], [st.tR, m.u], [st.tR + m.tb, 0]];
+    var tNow = Math.min(t, m.endT);
+    mk += L.polyline(g, vt, C.faint, 2, "6 5");
+    mk += L.areaPath(g, vt, 0, Math.min(tNow, st.tR), "rgba(245,158,11,0.35)");
+    if(tNow > st.tR) mk += L.areaPath(g, vt, st.tR, tNow, "rgba(56,189,248,0.32)");
+    var solid = vt.filter(function(p){ return p[0] < tNow; }).concat([[tNow, L.interp(vt, tNow)]]);
+    mk += L.polyline(g, solid, "#f8fafc", 3) + L.circle(g.X(tNow), g.Y(s.v), 5, "#f8fafc");
+    if(done && !m.crash){
+      if(st.tR > 0) mk += L.text(g.X(st.tR / 2), g.Y(m.u / 2) + 5, "area = s₁", {size: 13, color: "#f8fafc"});
+      mk += L.text(g.X(st.tR + m.tb / 3), g.Y(m.u / 3) + 5, "area = s₂", {size: 13, color: "#f8fafc"});
+    }
+    L.svg(mk, "Stopping-distance lab at t = " + L.num(t, 1) + " s: travelled " + L.num(s.pos, 1) + " m, velocity " + L.num(s.v, 1) + " m/s.", 410);
+
+    var uTxt = L.num(m.u, 1);
+    L.readout([
+      ["Time", L.num(t, 1) + " s"],
+      ["Velocity now", L.num(s.v, 1) + " m s⁻¹ (" + L.num(s.v * 3.6, 0) + " km h⁻¹)", "#f8fafc"],
+      ["Distance so far", L.num(s.pos, 1) + " m"],
+      ["Reaction distance s₁ = u × t", uTxt + " × " + L.num(st.tR, 1) + " = " + L.num(m.s1, 1) + " m", C.path],
+      ["Braking distance s₂ = u² ÷ (2 × decel.)", uTxt + "² ÷ (2 × " + L.num(st.a, 1) + ") = " + L.num(m.s2, 1) + " m", C.vel],
+      ["Total stopping distance", L.num(m.total, 1) + " m"]
+    ]);
+
+    var msg;
+    if(t <= 0) msg = "Press <b>Play</b>. At t = 0 the driver sees the obstacle.";
+    else if(!done && t < st.tR) msg = "Reacting: the brakes are not pressed yet, so the bus keeps moving at " + uTxt + " m s⁻¹ (v = u).";
+    else if(!done) msg = "Braking: v = u + at = " + uTxt + " + (−" + L.num(st.a, 1) + ") × " + L.num(t - st.tR, 1) + " = " + L.num(s.v, 1) + " m s⁻¹.";
+    else if(m.crash) msg = "<b>Collision.</b> The bus needs " + L.num(m.total, 1) + " m to stop, but the obstacle is only " + st.gap + " m away. It hits it at about " + L.num(m.vImp, 1) + " m s⁻¹ (" + L.num(m.vImp * 3.6, 0) + " km h⁻¹). Try a lower speed or a shorter reaction time.";
+    else if(st.preset === "q10") msg = "<b>Exercise Q10:</b> reaction distance 10 × 0.5 = 5 m, braking distance 10² ÷ (2 × 2.5) = 20 m, total <b>25 m</b>. Since 25 m &lt; 30 m, the bus <b>stops 5 m before</b> the obstacle.";
+    else if(st.preset === "ex48a") msg = "<b>Example 4.8 (i):</b> from v² = u² + 2as with v = 0 and a = −4 m s⁻²: s = 15² ÷ 8 = <b>28.1 m</b>.";
+    else if(st.preset === "ex48b") msg = "<b>Example 4.8 (ii):</b> s = 30² ÷ 8 = <b>112.5 m</b>, which is 4 × 28.1 m. Doubling the speed makes the braking distance four times as long, because it depends on u².";
+    else msg = "Stopped after <b>" + L.num(m.total, 1) + " m</b>" + (st.gap > 0 ? ", " + L.num(st.gap - m.total, 1) + " m before the obstacle." : ".") + " Change one slider at a time and see which part of the distance changes.";
+    L.verdict(msg);
+  }
+
+  function mount(){
+    L.presets([["q10", "Exercise Q10: bus and obstacle"], ["ex48a", "Example 4.8 (i): 54 km h⁻¹"], ["ex48b", "Example 4.8 (ii): 108 km h⁻¹"]], st.preset, select);
+    select(PRESETS[st.preset] ? st.preset : "q10");
+    App.pause();
+    App.resetTimeline();
+  }
+
+  window.SIMS.kinematics = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 7 — Uniform circular motion (Fig. 4.23, Activity 4.5, Exercise Q16)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var SIDES = [4, 6, 8, 12, 24, 0];
+  var SHAPE_NAMES = ["rectangle (square), 4 sides", "hexagon, 6 sides", "8 sides", "12 sides", "24 sides", "circle"];
+  var st = {preset: "polygon", shape: 0, released: false, relT: 0};
+  var CX = 330, CY = 160, RP = 115;
+
+  function select(id){
+    st.preset = id;
+    st.released = false;
+    L.markPreset(id);
+    if(id === "polygon"){
+      L.timeline({maxT: 16, step: 1, speed: 1.5});
+      L.legend([[C.path, "path run so far"], [C.vel, "velocity (direction of motion)"]]);
+      L.watch("Fig. 4.23: an athlete runs one round at a uniform speed. Count how often the velocity arrow changes direction, then move the slider towards ‘circle’.");
+      L.controls(L.slider("c7-shape", "Track shape", 0, 5, 1, st.shape, SHAPE_NAMES[st.shape]));
+      L.onInput("c7-shape", function(v){ st.shape = v; L.setVal("c7-shape", SHAPE_NAMES[v]); App.resetTimeline(); App.play(); });
+    } else if(id === "marble"){
+      L.timeline({maxT: 9, step: 0.25, speed: 0.5});
+      L.legend([[C.vel, "velocity (along the tangent)"], [C.path, "tangent at the release point"]]);
+      L.watch("Activity 4.5: predict first, then press <b>Lift the ring</b> while the marble is moving. Try releasing it at different points.");
+      L.controls('<div class="control-item control-buttons"><button type="button" class="toolbar-btn primary" id="c7-lift">Lift the ring</button>' +
+        '<button type="button" class="toolbar-btn" id="c7-ringback">Put the ring back</button></div>');
+      var lift = L.$("c7-lift"), back = L.$("c7-ringback");
+      if(lift) lift.addEventListener("click", function(){
+        if(st.released) return;
+        st.released = true;
+        st.relT = App.state.t >= App.state.maxT - 0.3 ? 0.8 : App.state.t;
+        if(App.state.t >= App.state.maxT - 0.3) App.seekTimeline(st.relT);
+        if(!App.state.playing) App.play();
+      });
+      if(back) back.addEventListener("click", function(){ st.released = false; App.resetTimeline(); App.play(); });
+    } else {
+      L.timeline({maxT: 90, step: 5, speed: 6, format: function(t){
+        var total = Math.round(t), h = 6 + Math.floor(total / 60), mm = total % 60;
+        return "<b>" + h + ":" + (mm < 10 ? "0" : "") + mm + " PM</b> (" + total + " min)";
+      }});
+      L.legend([[C.path, "path of the tip (distance)"], [C.disp, "displacement from the 6:00 position"], [C.vel, "minute hand"]]);
+      L.watch("Exercise Q16: Rohan studies from 6:00 PM to 7:30 PM. Follow the tip of the 7 cm minute hand for 1.5 revolutions.");
+      L.controls("");
+    }
+    L.restart(id !== "marble");
+    if(id === "marble") App.play();
+  }
+
+  function track(n){
+    // Vertices of an n-gon inscribed in the circle, starting at the top, going clockwise on screen.
+    var v = [];
+    for(var k = 0; k <= n; k++){
+      var th = -Math.PI / 2 + 2 * Math.PI * k / n + (n === 4 ? Math.PI / 4 : 0);
+      v.push([CX + RP * Math.cos(th), CY + RP * Math.sin(th)]);
+    }
+    return v;
+  }
+
+  function drawPolygon(t){
+    var n = SIDES[st.shape], f = Math.min(1, t / 16), mk = "", pos, dir, turns;
+    var R = 20;
+    var perim = n ? n * 2 * R * Math.sin(Math.PI / n) : 2 * Math.PI * R;
+    if(n){
+      var V = track(n);
+      mk += '<polygon points="' + V.slice(0, n).map(function(p){ return p.join(","); }).join(" ") + '" fill="none" stroke="' + C.faint + '" stroke-width="10" stroke-linejoin="round"/>';
+      for(var k = 0; k < n; k++){
+        var mx = (V[k][0] + V[k + 1][0]) / 2, my = (V[k][1] + V[k + 1][1]) / 2;
+        var dx = V[k + 1][0] - V[k][0], dy = V[k + 1][1] - V[k][1], dl = Math.sqrt(dx * dx + dy * dy);
+        if(n <= 12) mk += L.arrow(mx - dx / dl * 14, my - dy / dl * 14, mx + dx / dl * 14, my + dy / dl * 14, "rgba(56,189,248,0.35)", 2);
+      }
+      var sf = f * n, side = Math.min(n - 1, Math.floor(sf)), u = sf - side;
+      pos = [V[side][0] + (V[side + 1][0] - V[side][0]) * u, V[side][1] + (V[side + 1][1] - V[side][1]) * u];
+      var ddx = V[side + 1][0] - V[side][0], ddy = V[side + 1][1] - V[side][1], dd = Math.sqrt(ddx * ddx + ddy * ddy);
+      dir = [ddx / dd, ddy / dd];
+      var done = V.slice(0, side + 1).concat([pos]);
+      if(t > 0) mk += '<polyline points="' + done.map(function(p){ return p.join(","); }).join(" ") + '" fill="none" stroke="' + C.path + '" stroke-width="4" stroke-linejoin="round"/>';
+      turns = t >= 16 - 1e-6 ? n : side;
+    } else {
+      mk += L.circle(CX, CY, RP, "none", ' stroke="' + C.faint + '" stroke-width="10"');
+      for(var j = 0; j < 12; j++){
+        var a = -Math.PI / 2 + 2 * Math.PI * j / 12, px = CX + RP * Math.cos(a), py = CY + RP * Math.sin(a);
+        mk += L.arrow(px + Math.sin(a) * 14, py - Math.cos(a) * 14, px - Math.sin(a) * 14, py + Math.cos(a) * 14, "rgba(56,189,248,0.35)", 2);
+      }
+      var th = -Math.PI / 2 + 2 * Math.PI * f;
+      pos = [CX + RP * Math.cos(th), CY + RP * Math.sin(th)];
+      dir = [-Math.sin(th), Math.cos(th)];
+      if(t > 0){
+        var arc = [];
+        for(var q = 0; q <= 90; q++){ var aa = -Math.PI / 2 + 2 * Math.PI * f * q / 90; arc.push((CX + RP * Math.cos(aa)) + "," + (CY + RP * Math.sin(aa))); }
+        mk += '<polyline points="' + arc.join(" ") + '" fill="none" stroke="' + C.path + '" stroke-width="4"/>';
+      }
+    }
+    var start = n ? track(n)[0] : [CX, CY - RP];
+    mk += L.circle(start[0], start[1], 5, C.muted) + L.text(start[0], start[1] - 14, "start", {size: 12, color: C.muted});
+    mk += L.arrow(pos[0], pos[1], pos[0] + dir[0] * 62, pos[1] + dir[1] * 62, C.vel, 5);
+    mk += L.circle(pos[0], pos[1], 9, "#f8fafc");
+    mk += L.text(710, 290, SHAPE_NAMES[st.shape], {size: 15, color: C.text, anchor: "end", weight: 700});
+    mk += L.text(710, 312, n ? "direction changes " + n + " times per round" : "direction changes continuously", {size: 14, color: C.muted, anchor: "end"});
+    L.svg(mk, "Athlete on a " + SHAPE_NAMES[st.shape] + " track, " + L.num(f * 100, 0) + " percent of one round completed.", 320);
+
+    var chord = Math.sqrt(Math.pow(pos[0] - start[0], 2) + Math.pow(pos[1] - start[1], 2)) / RP * R;
+    L.readout([
+      ["Time", L.num(t, 1) + " s"],
+      ["Speed (constant)", L.num(perim / 16, 2) + " m s⁻¹"],
+      ["Distance run", L.num(f * perim, 1) + " m", C.path],
+      ["Displacement from start", L.num(chord, 1) + " m", C.disp],
+      ["Changes of direction so far", n ? String(turns) : (t > 0 ? "continuous" : "0"), C.vel]
+    ]);
+    L.verdict(t <= 0 ? "Press <b>Play</b>. The track fits inside a circle of radius 20 m; the athlete takes 16 s per round."
+      : t >= 16 - 1e-6 ? (n ? "One round: the speed never changed, but the direction of velocity changed <b>" + n + " times</b>. Increase the number of sides." : "<b>Uniform circular motion:</b> the speed stayed constant, but the direction of velocity changed <b>continuously</b>. So the velocity was changing all the time: uniform circular motion is <b>accelerated motion</b>. After one round, distance = 2πR ≈ 125.7 m but displacement = 0.")
+      : "Speed is constant. The velocity arrow points along the direction of motion" + (n ? " and only turns at the corners." : ", along the tangent, and turns at every instant."));
+  }
+
+  function drawMarble(t){
+    var T = 3, w = 2 * Math.PI / T, vpx = w * RP, mk = "";
+    var rel = st.released && t >= st.relT;
+    var thAt = function(tt){ return -Math.PI / 2 + w * tt; };
+    mk += L.circle(CX, CY, RP + 10, "none", ' stroke="' + (rel ? "rgba(148,163,184,0.25)" : "#cbd5e1") + '" stroke-width="12"' + (rel ? ' stroke-dasharray="6 8"' : ''));
+    if(rel) mk += L.text(CX, CY + 6, "ring lifted", {size: 15, color: C.muted});
+    var th = rel ? thAt(st.relT) : thAt(t);
+    var P = [CX + RP * Math.cos(th), CY + RP * Math.sin(th)], D = [-Math.sin(th), Math.cos(th)];
+    var M = P;
+    if(rel){
+      var dd = vpx * (t - st.relT);
+      M = [P[0] + D[0] * dd, P[1] + D[1] * dd];
+      mk += L.line(P[0] - D[0] * 400, P[1] - D[1] * 400, P[0] + D[0] * 700, P[1] + D[1] * 700, C.path, 2, "8 6");
+      mk += L.circle(P[0], P[1], 5, C.path) + L.text(P[0] + 12, P[1] - 10, "released here", {size: 13, color: C.path, anchor: "start"});
+      mk += L.line(P[0], P[1], M[0], M[1], "rgba(248,250,252,0.5)", 3);
+    }
+    mk += L.arrow(M[0], M[1], M[0] + D[0] * 60, M[1] + D[1] * 60, C.vel, 5);
+    mk += L.circle(M[0], M[1], 10, "#e2e8f0", ' stroke="#64748b" stroke-width="2"');
+    L.svg(mk, rel ? "Marble released: moving in a straight line along the tangent." : "Marble moving round inside the ring.", 320);
+    L.readout([
+      ["Time", L.num(t, 2) + " s"],
+      ["Marble", rel ? "released at t = " + L.num(st.relT, 2) + " s" : "rolling inside the ring"],
+      ["Speed", "constant", C.vel],
+      ["Direction of velocity", rel ? "fixed (straight line)" : "changing every instant", C.vel]
+    ]);
+    L.verdict(!st.released ? "The ring keeps turning the marble's direction. What will happen when you lift it? Make your prediction, then press <b>Lift the ring</b>."
+      : !rel ? "The ring will be lifted at t = " + L.num(st.relT, 2) + " s."
+      : "<b>Activity 4.5:</b> once released, the marble moves in a <b>straight line along the tangent</b> at the release point: it keeps moving in the direction it had at that instant. The velocity in circular motion is always along the tangent.");
+  }
+
+  function drawClock(t){
+    var th = 2 * Math.PI * t / 60, r = 7, mk = "";
+    var tip = function(a, rr){ return [CX + rr * Math.sin(a), CY - rr * Math.cos(a)]; };
+    mk += L.circle(CX, CY, RP + 26, "#0f2233", ' stroke="#b5654a" stroke-width="8"');
+    for(var h = 1; h <= 12; h++){
+      var p = tip(h * Math.PI / 6, RP + 8);
+      mk += L.text(p[0], p[1] + 5, String(h), {size: 14, color: C.muted, weight: 700});
+    }
+    var pts = [], lap1 = Math.min(th, 2 * Math.PI);
+    for(var k = 0; k <= 120; k++){ var p1 = tip(lap1 * k / 120, RP - 6); pts.push(p1.join(",")); }
+    if(t > 0) mk += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + C.path + '" stroke-width="4"/>';
+    if(th > 2 * Math.PI){
+      var pts2 = [];
+      for(var q = 0; q <= 90; q++){ var p2 = tip((th - 2 * Math.PI) * q / 90, RP - 20); pts2.push(p2.join(",")); }
+      mk += '<polyline points="' + pts2.join(" ") + '" fill="none" stroke="' + C.path + '" stroke-width="4" stroke-dasharray="7 5"/>';
+      mk += L.text(CX, CY + 60, "second round", {size: 12, color: C.path});
+    }
+    var hourA = (6 + t / 60) * Math.PI / 6, hp = tip(hourA, 55);
+    mk += L.line(CX, CY, hp[0], hp[1], "#94a3b8", 7);
+    var mp = tip(th, RP - 6), sp = tip(0, RP - 6);
+    mk += L.line(CX, CY, mp[0], mp[1], C.vel, 4) + L.circle(CX, CY, 6, "#f8fafc");
+    var chordPx = Math.sqrt(Math.pow(mp[0] - sp[0], 2) + Math.pow(mp[1] - sp[1], 2));
+    if(chordPx > 4) mk += L.arrow(sp[0], sp[1], mp[0], mp[1], C.disp, 4);
+    mk += L.circle(mp[0], mp[1], 6, "#f8fafc");
+    mk += L.text(710, 70, "minute hand R = 7 cm", {size: 14, color: C.text, anchor: "end"});
+    mk += L.text(710, 94, "one round = 2πR = 44 cm", {size: 14, color: C.muted, anchor: "end"});
+    L.svg(mk, "Clock at " + Math.round(t) + " minutes past 6 PM.", 320);
+
+    var dist = t / 60 * 44, disp = 2 * r * Math.abs(Math.sin(th / 2)), secs = t * 60;
+    L.readout([
+      ["Elapsed", Math.round(t) + " min = " + Math.round(secs) + " s"],
+      ["Distance of tip", L.num(dist, 1) + " cm", C.path],
+      ["Displacement of tip", L.num(disp, 1) + " cm", C.disp],
+      ["Average speed so far", t > 0 ? L.num(dist / secs, 4) + " cm s⁻¹" : "—"],
+      ["Average velocity so far", t > 0 ? L.num(disp / secs, 4) + " cm s⁻¹" : "—"]
+    ]);
+    L.verdict(t <= 0 ? "Press <b>Play</b>. At 6:00 PM the minute hand points to 12."
+      : t >= 90 - 1e-6 ? "<b>Exercise Q16 (6:00 → 7:30 PM, 1.5 rounds):</b> (i) distance = 1.5 × 44 = <b>66 cm</b>; (ii) displacement = diameter = <b>14 cm</b>, from 12 towards 6; (iii) speed = 66 cm ÷ 5400 s ≈ <b>0.0122 cm s⁻¹</b>; (iv) velocity = 14 cm ÷ 5400 s ≈ <b>0.0026 cm s⁻¹</b>, from 12 towards 6."
+      : Math.abs(t - 60) < 2.5 ? "At 7:00 PM the tip is back at 12: distance 44 cm, but displacement 0."
+      : "The tip moves at constant speed; its displacement depends only on where it is now compared with 6:00.");
+  }
+
+  function draw(t){
+    if(st.preset === "polygon") drawPolygon(t);
+    else if(st.preset === "marble") drawMarble(t);
+    else drawClock(t);
+  }
+
+  function mount(){
+    L.presets([["polygon", "Fig. 4.23: polygon to circle"], ["marble", "Activity 4.5: marble in a ring"], ["clock", "Exercise Q16: Rohan's clock"]], st.preset, select);
+    select(st.preset);
+    App.pause();
+    App.resetTimeline();
+  }
+
+  window.SIMS.circular = {mount: mount, draw: draw, select: select, state: st};
 })();

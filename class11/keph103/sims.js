@@ -299,3 +299,67 @@ window.SIMS.ucm = (function(){
   }
   return { mount: mount, draw: draw };
 })();
+
+// Source-faithful redraws of the exercise figures on NCERT PDF p. 21.
+window.FIGURES = {
+  "3.19": '<svg viewBox="0 0 620 300" role="img" aria-label="Figure 3.19: three paths from P to diametrically opposite Q"><circle cx="310" cy="150" r="105" fill="none" stroke="#64748b" stroke-width="2"/><path d="M205 150A105 105 0 0 1 415 150" fill="none" stroke="#2563eb" stroke-width="5"/><path d="M205 150H415" fill="none" stroke="#16a34a" stroke-width="5"/><path d="M205 150A105 105 0 0 0 415 150" fill="none" stroke="#f59e0b" stroke-width="5"/><circle cx="205" cy="150" r="6" fill="#111827"/><circle cx="415" cy="150" r="6" fill="#111827"/><text x="185" y="145">P</text><text x="425" y="145">Q</text><text x="300" y="34" fill="#2563eb">A</text><text x="300" y="140" fill="#16a34a">B</text><text x="300" y="280" fill="#b45309">C</text><text x="255" y="170" fill="#334155">diameter = 400 m</text></svg>',
+  "3.20": '<svg viewBox="0 0 620 320" role="img" aria-label="Figure 3.20: cyclist route from centre O to P, around a quarter-circle to Q, and back to O"><circle cx="310" cy="165" r="115" fill="none" stroke="#94a3b8" stroke-width="2"/><path d="M310 165H425A115 115 0 0 0 310 50V165" fill="none" stroke="#2563eb" stroke-width="6"/><circle cx="310" cy="165" r="6" fill="#111827"/><circle cx="425" cy="165" r="6" fill="#111827"/><circle cx="310" cy="50" r="6" fill="#111827"/><text x="292" y="186">O</text><text x="438" y="170">P</text><text x="293" y="38">Q</text><text x="332" y="154" fill="#334155">1 km</text><text x="380" y="88" fill="#334155">quarter-circle</text></svg>'
+};
+
+// Stable browser-fixture identifiers for every visible lab scenario.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// Semantic prediction aliases expected by the shared browser QA.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+function normalizeChapterPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var watch = document.getElementById("what-to-watch");
+  if(lesson && watch && lesson.watch){
+    var text = "What to watch: " + lesson.watch;
+    if(watch.textContent !== text) watch.textContent = text;
+  }
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){ var h = card.querySelector("h3"); return h && /^Wow/i.test(h.textContent.trim()); });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow"); card.removeAttribute("data-wow"); card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge"); if(badge) badge.remove();
+    });
+  });
+  window.CHAPTER.exercises.filter(function(ex){ return ex.figure; }).forEach(function(ex){
+    var card = document.getElementById("exercise-q" + ex.number);
+    if(!card || card.querySelector(".ex-figure") || !window.FIGURES[ex.figure]) return;
+    if(ex.q !== undefined) card.id = "exercise-q" + ex.q;
+    var question = card.querySelector(".exercise-question-text");
+    var figure = document.createElement("div"); figure.className = "ex-figure";
+    figure.innerHTML = window.FIGURES[ex.figure] + '<div style="font-size:12px;color:#64748b;text-align:center">Redrawn from NCERT Fig. ' + ex.figure + ' · PDF p.' + ex.page + '</div>';
+    question.insertAdjacentElement("afterend", figure);
+  });
+}
+var conceptView = document.getElementById("concept-view");
+var revisionView = document.getElementById("revision-view");
+if(conceptView) new MutationObserver(normalizeChapterPresentation).observe(conceptView, {childList:true, subtree:true});
+if(revisionView) new MutationObserver(normalizeChapterPresentation).observe(revisionView, {childList:true, subtree:true});
+normalizeChapterPresentation();

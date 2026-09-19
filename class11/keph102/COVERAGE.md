@@ -27,9 +27,15 @@
 | 2.6 | d_s ∝ v₀² |
 | 2.7 | t_r = √(2×0.21/9.8) ≈ 0.2 s |
 
-## Exercises 2.1–2.18
+## Exercises and figures
 
-All 18 mapped with steps in `chapter.json`. Fig. 2.9–2.15 read from zooms p.12–14. Open-ended graph-reading items (2.15–2.18) instruct the student to read the printed figure; numerical items are independently recomputed.
+All 18 end exercises plus worked Examples 2.1, 2.3, and 2.7 are mapped to the seven lessons in `chapter.json` (21 mappings total). Each end exercise includes source page metadata, givens where applicable, worked steps, and a final answer. Numerical results were independently recomputed, including the 37 s drunkard timeline and the rebounding-ball event times.
+
+Figures 2.9–2.15 were read from the p.12–14 source zooms and redrawn as accessible inline SVGs. The redraws support the graph-reading answers for Exercises 2.15–2.18 directly in the revision view.
+
+## Interactive and media QA
+
+The seven lessons contain 17 answerable interactive scenarios. Each lesson has one explicit “Wow!” video card wired to a verified, embeddable video; `work/class11-physics-videos/verify_videos.py keph102` reports zero problems. `tests/verify.cjs` checks source provenance, lesson structure, videos, exercises, figures, recomputations, and scenario syntax.
 
 ## Edition note
 

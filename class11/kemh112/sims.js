@@ -29,8 +29,8 @@ window.SIMS.secant = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Secant (average velocity)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Tangent v = 9.8 t</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-left">Table 12.2: intervals ending at t = 2</button>' +
-      '<button class="preset-btn" id="p-right">Table 12.3: intervals starting at t = 2</button>';
+      '<button class="preset-btn active" data-preset="p-left" id="p-left">Table 12.2: intervals ending at t = 2</button>' +
+      '<button class="preset-btn" data-preset="p-right" id="p-right">Table 12.3: intervals starting at t = 2</button>';
     document.getElementById("p-left").onclick = function(){ setActivePreset(this); side="left"; draw(App.state.t); };
     document.getElementById("p-right").onclick = function(){ setActivePreset(this); side="right"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -76,9 +76,9 @@ window.SIMS.twosided = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Approach from left</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Approach from right</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-step">Fig 12.3: 1 if x≤0, 2 if x&gt;0</button>' +
-      '<button class="preset-btn" id="p-abs">g(x) = |x|, x ≠ 0</button>' +
-      '<button class="preset-btn" id="p-poly">f(x) = x + 10 at x = 5</button>';
+      '<button class="preset-btn active" data-preset="p-step" id="p-step">Fig 12.3: 1 if x≤0, 2 if x&gt;0</button>' +
+      '<button class="preset-btn" data-preset="p-abs" id="p-abs">g(x) = |x|, x ≠ 0</button>' +
+      '<button class="preset-btn" data-preset="p-poly" id="p-poly">f(x) = x + 10 at x = 5</button>';
     document.getElementById("p-step").onclick = function(){ setActivePreset(this); mode="step"; draw(); };
     document.getElementById("p-abs").onclick = function(){ setActivePreset(this); mode="abs"; draw(); };
     document.getElementById("p-poly").onclick = function(){ setActivePreset(this); mode="poly"; draw(); };
@@ -137,8 +137,8 @@ window.SIMS.hole = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>h(x) = (x²−4)/(x−2), x ≠ 2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>The cancelled line y = x + 2</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-2">Approach x = 2 (Fig. 12.2)</button>' +
-      '<button class="preset-btn" id="p-far">Stand far from 2</button>';
+      '<button class="preset-btn active" data-preset="p-2" id="p-2">Approach x = 2 (Fig. 12.2)</button>' +
+      '<button class="preset-btn" data-preset="p-far" id="p-far">Stand far from 2</button>';
     document.getElementById("p-2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x-range").value = 2.3; draw(); };
     document.getElementById("p-far").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-x-range").value = 5; draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -167,7 +167,7 @@ window.SIMS.hole = (function(){
     m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Cancel (x−2): hole at (2, 4). The limit is the y-value of the hole.</text>';
     svg.innerHTML = m;
     readout(cell("x", x.toFixed(2)) + cell("h(x)", h(x).toFixed(3), "#38bdf8") + cell("x + 2", (x+2).toFixed(3), "#34d399"));
-    verdict("<b>Fig. 12.2:</b> h(2) is undefined (0/0), but lim<sub>x→2</sub> h(x) = 4 because (x²−4) = (x−2)(x+2) and the (x−2) cancels for x ≠ 2. Limit ≠ value.");
+    verdict("<b>Fig. 12.2:</b> h(2) has no value (0/0), but lim<sub>x→2</sub> h(x) = 4 because (x²−4) = (x−2)(x+2) and the (x−2) cancels for x ≠ 2. Limit ≠ value.");
   }
   return { mount: mount, draw: draw };
 })();
@@ -181,8 +181,8 @@ window.SIMS.sandwich = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = sin x / x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>y = cos x</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-unit">Unit-circle inequality (*)</button>' +
-      '<button class="preset-btn" id="p-ex4">Example 4: sin 4x / sin 2x</button>';
+      '<button class="preset-btn active" data-preset="p-unit" id="p-unit">Unit-circle inequality (*)</button>' +
+      '<button class="preset-btn" data-preset="p-ex4" id="p-ex4">Example 4: sin 4x / sin 2x</button>';
     document.getElementById("p-unit").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("p-ex4").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -238,9 +238,9 @@ window.SIMS.firstprin = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = f(x)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>[f(a+h)−f(a)]/h</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-lin">Ex 5: f(x) = 3x at a = 2</button>' +
-      '<button class="preset-btn" id="p-quad">Ex 6: 2x²+3x−5 at a = −1</button>' +
-      '<button class="preset-btn" id="p-sin">Ex 7: sin x at a = 0</button>';
+      '<button class="preset-btn active" data-preset="p-lin" id="p-lin">Ex 5: f(x) = 3x at a = 2</button>' +
+      '<button class="preset-btn" data-preset="p-quad" id="p-quad">Ex 6: 2x²+3x−5 at a = −1</button>' +
+      '<button class="preset-btn" data-preset="p-sin" id="p-sin">Ex 7: sin x at a = 0</button>';
     document.getElementById("p-lin").onclick = function(){ setActivePreset(this); fn="lin"; draw(); };
     document.getElementById("p-quad").onclick = function(){ setActivePreset(this); fn="quad"; draw(); };
     document.getElementById("p-sin").onclick = function(){ setActivePreset(this); fn="sin"; draw(); };
@@ -286,7 +286,7 @@ window.SIMS.prodrule = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v Δu</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Δu Δv (vanishes)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-uv">Leibnitz: (uv)′ = u′v + uv′</button>';
+      '<button class="preset-btn active" data-preset="p-uv" id="p-uv">Leibnitz: (uv)′ = u′v + uv′</button>';
     document.getElementById("p-uv").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>u</span><span class="val" id="ctrl-u">4.0</span></div>' +
@@ -334,9 +334,9 @@ window.SIMS.powertrig = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = f(x)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>tangent of slope f′(x)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pow">Theorem 6: (xⁿ)′ = n xⁿ⁻¹</button>' +
-      '<button class="preset-btn" id="p-sin">Ex 16: (sin x)′ = cos x</button>' +
-      '<button class="preset-btn" id="p-tan">Ex 17: (tan x)′ = sec² x</button>';
+      '<button class="preset-btn active" data-preset="p-pow" id="p-pow">Theorem 6: (xⁿ)′ = n xⁿ⁻¹</button>' +
+      '<button class="preset-btn" data-preset="p-sin" id="p-sin">Ex 16: (sin x)′ = cos x</button>' +
+      '<button class="preset-btn" data-preset="p-tan" id="p-tan">Ex 17: (tan x)′ = sec² x</button>';
     document.getElementById("p-pow").onclick = function(){ setActivePreset(this); kind="power"; draw(); };
     document.getElementById("p-sin").onclick = function(){ setActivePreset(this); kind="sin"; draw(); };
     document.getElementById("p-tan").onclick = function(){ setActivePreset(this); kind="tan"; draw(); };
@@ -397,9 +397,9 @@ window.SIMS.miscfirst = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = f(x)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>difference quotient</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-inv">Misc Ex 1(ii): (−x)⁻¹</button>' +
-      '<button class="preset-btn" id="p-shift">1(iii): sin(x+1)</button>' +
-      '<button class="preset-btn" id="p-cos">1(iv): cos(x − π/8)</button>';
+      '<button class="preset-btn active" data-preset="p-inv" id="p-inv">Misc Ex 1(ii): (−x)⁻¹</button>' +
+      '<button class="preset-btn" data-preset="p-shift" id="p-shift">1(iii): sin(x+1)</button>' +
+      '<button class="preset-btn" data-preset="p-cos" id="p-cos">1(iv): cos(x − π/8)</button>';
     document.getElementById("p-inv").onclick = function(){ setActivePreset(this); which="inv"; draw(); };
     document.getElementById("p-shift").onclick = function(){ setActivePreset(this); which="shift"; draw(); };
     document.getElementById("p-cos").onclick = function(){ setActivePreset(this); which="cos"; draw(); };

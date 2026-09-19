@@ -1,1289 +1,864 @@
-// kebo110 interactive simulations: Cell Cycle and Cell Division
-window.SIMS = window.SIMS || {};
+// kebo110 interactive simulations: Cell Cycle and Cell Division (Ch. 10, print pp. 120-130)
+var App = window.App;
+window.SIMS = {};
 
-function cell(title, val, color) {
-  return '<div class="readout-cell">' +
-    '<div class="readout-label">' + title + '</div>' +
-    '<div class="readout-val" style="color:' + (color || 'var(--primary)') + ';">' + val + '</div>' +
-    '</div>';
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
 }
-
-function readout(html) {
-  var r = document.getElementById("lab-readouts");
-  if (r) r.innerHTML = html;
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
 }
-
-function verdict(html) {
-  var n = document.getElementById("lab-verdict");
-  if (n) n.innerHTML = html;
-}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 
 // -------------------------------------------------------------------------
-// 1. SIMULATION 1: 24-Hour Cell Cycle Clock & G0 Phase (cellcyclerotator)
+// 1. Cell Cycle Clock & DNA Doubling Bench (cyclelab) - L1, 10.1-10.1.1
 // -------------------------------------------------------------------------
-window.SIMS.cellcyclerotator = (function(){
-  var currentPhase = "G1"; // "G1", "S", "G2", "M", "G0"
+window.SIMS.cyclelab = (function(){
+  var view = "clock"; // "clock", "dna", "yeast"
+  var phase = 0, sdone = false, org = 0;
+  var PHASES = [["G1", "grow, no replication"], ["S", "DNA 2C\u21924C"], ["G2", "mitotic proteins"], ["M", "~1 hour division"]];
+  var ORGS = [["Human cells", "about every 24 hours"], ["Yeast", "about 90 minutes"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>G1 Phase (~10h)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#818cf8;"></span><span>S Phase (~8h, DNA 2C->4C)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>G2 Phase (~4h, Tubulin)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>M Phase (~1h, Division)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>G0 Quiescent Stage</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.cellcyclerotator.setPhase(\'G1\')">1. G1 Phase (Growth)</button>' +
-      '<button class="preset-btn" onclick="SIMS.cellcyclerotator.setPhase(\'S\')">2. S Phase (Replication)</button>' +
-      '<button class="preset-btn" onclick="SIMS.cellcyclerotator.setPhase(\'G2\')">3. G2 Phase (Mitosis Prep)</button>' +
-      '<button class="preset-btn" onclick="SIMS.cellcyclerotator.setPhase(\'M\')">4. M Phase (~1h Mitosis)</button>' +
-      '<button class="preset-btn" onclick="SIMS.cellcyclerotator.setPhase(\'G0\')">5. G0 Quiescent Stage</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Interphase (&gt;95%)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>M phase (~1 hour)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>DNA doubled, number kept</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-clock">Cycle Clock</button>' +
+      '<button class="preset-btn" id="p-dna">DNA Doubling</button>' +
+      '<button class="preset-btn" id="p-yeast">Human vs Yeast</button>';
+    document.getElementById("p-clock").onclick = function(){ setActivePreset(this); setV("clock"); };
+    document.getElementById("p-dna").onclick = function(){ setActivePreset(this); setV("dna"); };
+    document.getElementById("p-yeast").onclick = function(){ setActivePreset(this); setV("yeast"); };
+    mountControls();
+    draw(0);
   }
 
-  function setPhase(p){
-    currentPhase = p;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">HUMAN 24-HOUR CELL CYCLE CLOCK & G0 CHECKPOINT</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-    var R = 110;
-    var r = 60;
-
-    // Outer donut clock
-    // G1: 0 to 150 deg (10 hours)
-    // S: 150 to 270 deg (8 hours)
-    // G2: 270 to 330 deg (4 hours)
-    // M: 330 to 360 deg (1 hour)
-    function arcD(startA, endA, ro, ri) {
-      var sRad = (startA - 90) * Math.PI / 180;
-      var eRad = (endA - 90) * Math.PI / 180;
-      var x1 = cx + ro * Math.cos(sRad), y1 = cy + ro * Math.sin(sRad);
-      var x2 = cx + ro * Math.cos(eRad), y2 = cy + ro * Math.sin(eRad);
-      var x3 = cx + ri * Math.cos(eRad), y3 = cy + ri * Math.sin(eRad);
-      var x4 = cx + ri * Math.cos(sRad), y4 = cy + ri * Math.sin(sRad);
-      var large = (endA - startA) > 180 ? 1 : 0;
-      return 'M ' + x1 + ' ' + y1 + ' A ' + ro + ' ' + ro + ' 0 ' + large + ' 1 ' + x2 + ' ' + y2 +
-             ' L ' + x3 + ' ' + y3 + ' A ' + ri + ' ' + ri + ' 0 ' + large + ' 0 ' + x4 + ' ' + y4 + ' Z';
-    }
-
-    var colG1 = (currentPhase === "G1") ? "#38bdf8" : "#0284c7";
-    var colS  = (currentPhase === "S")  ? "#a5b4fc" : "#4f46e5";
-    var colG2 = (currentPhase === "G2") ? "#fcd34d" : "#d97706";
-    var colM  = (currentPhase === "M")  ? "#f472b6" : "#db2777";
-
-    m += '<path d="' + arcD(0, 150, R, r) + '" fill="' + colG1 + '" stroke="#0f172a" stroke-width="2" style="cursor:pointer;" onclick="SIMS.cellcyclerotator.setPhase(\'G1\')"/>';
-    m += '<path d="' + arcD(150, 270, R, r) + '" fill="' + colS + '" stroke="#0f172a" stroke-width="2" style="cursor:pointer;" onclick="SIMS.cellcyclerotator.setPhase(\'S\')"/>';
-    m += '<path d="' + arcD(270, 330, R, r) + '" fill="' + colG2 + '" stroke="#0f172a" stroke-width="2" style="cursor:pointer;" onclick="SIMS.cellcyclerotator.setPhase(\'G2\')"/>';
-    m += '<path d="' + arcD(330, 360, R, r) + '" fill="' + colM + '" stroke="#0f172a" stroke-width="2" style="cursor:pointer;" onclick="SIMS.cellcyclerotator.setPhase(\'M\')"/>';
-
-    // Phase labels on arcs
-    m += '<text x="' + (cx + 80) + '" y="' + (cy + 25) + '" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">G1 (Gap 1)</text>';
-    m += '<text x="' + (cx - 70) + '" y="' + (cy + 45) + '" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">S (Synthesis)</text>';
-    m += '<text x="' + (cx - 60) + '" y="' + (cy - 65) + '" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">G2</text>';
-    m += '<text x="' + (cx + 10) + '" y="' + (cy - 120) + '" fill="#ec4899" font-size="12" font-weight="bold" text-anchor="middle">M Phase</text>';
-
-    // Center circle
-    m += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r - 8) + '" fill="#1e293b" stroke="#334155" stroke-width="2"/>';
-    m += '<text x="' + cx + '" y="' + (cy - 10) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">INTERPHASE</text>';
-    m += '<text x="' + cx + '" y="' + (cy + 8) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">&gt; 95% Duration</text>';
-    m += '<text x="' + cx + '" y="' + (cy + 24) + '" fill="#94a3b8" font-size="10" text-anchor="middle">(23 of 24 hrs)</text>';
-
-    // G0 Exit branch
-    var g0Fill = (currentPhase === "G0") ? "#10b981" : "#047857";
-    m += '<path d="M ' + (cx + 100) + ' ' + (cy + 60) + ' Q ' + (cx + 140) + ' ' + (cy + 100) + ' ' + (cx + 180) + ' ' + (cy + 100) + '" fill="none" stroke="#10b981" stroke-width="3" stroke-dasharray="4,2"/>';
-    m += '<rect x="' + (cx + 180) + '" y="' + (cy + 75) + '" width="110" height="50" rx="8" fill="' + g0Fill + '" stroke="#fff" stroke-width="1.5" style="cursor:pointer;" onclick="SIMS.cellcyclerotator.setPhase(\'G0\')"/>';
-    m += '<text x="' + (cx + 235) + '" y="' + (cy + 96) + '" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">G0 PHASE</text>';
-    m += '<text x="' + (cx + 235) + '" y="' + (cy + 112) + '" fill="#d1fae5" font-size="9" text-anchor="middle">(Quiescent Exit)</text>';
-
-    // Right details panel
-    var px = W - 185, py = 50;
-    m += '<rect x="' + px + '" y="' + py + '" width="175" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (px + 87) + '" y="' + (py + 24) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">PHASE PROFILE</text>';
-
-    if (currentPhase === "G1") {
-      m += '<text x="' + (px + 12) + '" y="' + (py + 55) + '" fill="#fcd34d" font-size="11" font-weight="bold">Phase: Gap 1 (G1)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">Duration: ~8-10 Hours</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 100) + '" fill="#38bdf8" font-size="10" font-weight="bold">Key Events:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 118) + '" fill="#e2e8f0" font-size="9.5">• Metabolically active</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 135) + '" fill="#e2e8f0" font-size="9.5">• Continuous cell growth</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 152) + '" fill="#e2e8f0" font-size="9.5">• Synthesizes RNA & proteins</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 175) + '" fill="#fcd34d" font-size="10" font-weight="bold">Genomic Status:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 195) + '" fill="#86efac" font-size="10">• Ploidy: 2n (46 chr)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 215) + '" fill="#86efac" font-size="10">• DNA Amount: 2C</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 240) + '" fill="#94a3b8" font-size="9.5">• Centrosomes: 1 pair</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 265) + '" fill="#38bdf8" font-size="9.5">• Checkpoint: G1/S restriction</text>';
-    } else if (currentPhase === "S") {
-      m += '<text x="' + (px + 12) + '" y="' + (py + 55) + '" fill="#818cf8" font-size="11" font-weight="bold">Phase: Synthesis (S)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">Duration: ~6-8 Hours</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 100) + '" fill="#38bdf8" font-size="10" font-weight="bold">Key Events:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 118) + '" fill="#e2e8f0" font-size="9.5">• DNA replication in nucleus</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 135) + '" fill="#e2e8f0" font-size="9.5">• Centrosome duplicates in cyto</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 152) + '" fill="#e2e8f0" font-size="9.5">• Histone protein synthesis</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 175) + '" fill="#fcd34d" font-size="10" font-weight="bold">Genomic Status:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 195) + '" fill="#f87171" font-size="10" font-weight="bold">• Ploidy: STILL 2n (46!)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 215) + '" fill="#4ade80" font-size="10" font-weight="bold">• DNA Doubles: 2C -> 4C</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 240) + '" fill="#94a3b8" font-size="9.5">• Centrosomes: 2 pairs</text>';
-    } else if (currentPhase === "G2") {
-      m += '<text x="' + (px + 12) + '" y="' + (py + 55) + '" fill="#f59e0b" font-size="11" font-weight="bold">Phase: Gap 2 (G2)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">Duration: ~4 Hours</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 100) + '" fill="#38bdf8" font-size="10" font-weight="bold">Key Events:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 118) + '" fill="#e2e8f0" font-size="9.5">• Tubulin protein synthesis</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 135) + '" fill="#e2e8f0" font-size="9.5">• Preparation for mitosis</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 152) + '" fill="#e2e8f0" font-size="9.5">• ATP stockpiling & growth</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 175) + '" fill="#fcd34d" font-size="10" font-weight="bold">Genomic Status:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 195) + '" fill="#86efac" font-size="10">• Ploidy: 2n (46 chr)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 215) + '" fill="#86efac" font-size="10">• DNA Amount: 4C</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 240) + '" fill="#94a3b8" font-size="9.5">• Checkpoint: G2/M DNA check</text>';
-    } else if (currentPhase === "M") {
-      m += '<text x="' + (px + 12) + '" y="' + (py + 55) + '" fill="#ec4899" font-size="11" font-weight="bold">Phase: Mitotic (M)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">Duration: ~1 Hour (<5%)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 100) + '" fill="#38bdf8" font-size="10" font-weight="bold">Key Events:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 118) + '" fill="#e2e8f0" font-size="9.5">• Karyokinesis (P-M-A-T)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 135) + '" fill="#e2e8f0" font-size="9.5">• Spindle chromosome pull</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 152) + '" fill="#e2e8f0" font-size="9.5">• Cytokinesis (division)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 175) + '" fill="#fcd34d" font-size="10" font-weight="bold">Genomic Status:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 195) + '" fill="#86efac" font-size="10">• Anaphase transient 4n</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 215) + '" fill="#86efac" font-size="10">• Daughters: 2n, 2C each</text>';
-    } else if (currentPhase === "G0") {
-      m += '<text x="' + (px + 12) + '" y="' + (py + 55) + '" fill="#10b981" font-size="11" font-weight="bold">Phase: Quiescent (G0)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">State: Suspended cycle</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 100) + '" fill="#38bdf8" font-size="10" font-weight="bold">Key Events:</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 118) + '" fill="#e2e8f0" font-size="9.5">• Exit from G1 phase</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 135) + '" fill="#4ade80" font-size="9.5">• METABOLICALLY ACTIVE</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 152) + '" fill="#f87171" font-size="9.5">• No proliferation</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 175) + '" fill="#fcd34d" font-size="10" font-weight="bold">Examples (NCERT):</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 195) + '" fill="#cbd5e1" font-size="9.5">• Heart muscle cells</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 215) + '" fill="#cbd5e1" font-size="9.5">• Nerve cells (neurons)</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 235) + '" fill="#cbd5e1" font-size="9.5">• Cells divide only to</text>';
-      m += '<text x="' + (px + 12) + '" y="' + (py + 250) + '" fill="#cbd5e1" font-size="9.5">  replace injury/loss</text>';
-    }
-
-    svg.innerHTML = m;
-
-    var dnaAmt = (currentPhase === "S" ? "2C -> 4C (Doubling)" : (currentPhase === "G2" || currentPhase === "M" ? "4C" : "2C"));
-    var chrNum = "2n = 46 (Constant)";
-    var centros = (currentPhase === "G1" || currentPhase === "G0") ? "1 Centrosome" : "2 Centrosomes (Duplicated)";
-
-    readout(
-      cell("Selected Phase", currentPhase === "G0" ? "G0 Quiescent" : currentPhase + " Phase", currentPhase === "G0" ? "#10b981" : "#38bdf8") +
-      cell("Duration in 24h", currentPhase === "M" ? "~1 Hour (~4%)" : (currentPhase === "G0" ? "Indefinite" : "> 95% total Interphase"), "#fcd34d") +
-      cell("DNA Content", dnaAmt, currentPhase === "S" ? "#818cf8" : "#38bdf8") +
-      cell("Chromosome Count", chrNum, "#10b981") +
-      cell("Centrosome State", centros, "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#38bdf8;font-weight:700;">NCERT 10.1 & 10.2 Concept Rule:</span> ' +
-      (currentPhase === "G0" ?
-       "Cells in the G0 quiescent stage exit the G1 phase and do not proliferate, yet they remain fully metabolically active, performing specialized tissue functions (e.g. heart cells) unless stimulated to replace lost or injured cells." :
-       (currentPhase === "S" ?
-        "In the S phase, DNA replication doubles the genomic content from 2C to 4C, but the chromosome number remains strictly 2n! Centrioles also duplicate in the cytoplasm." :
-        "Human cells divide once every 24 hours, of which the actual M phase lasts barely ~1 hour (<5%), while interphase occupies over 95% of the entire cycle."))
-    );
-  }
-
-  return { mount: mount, setPhase: setPhase, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 2. SIMULATION 2: 4-Stage Mitotic Karyokinesis (mitosisstagesim)
-// -------------------------------------------------------------------------
-window.SIMS.mitosisstagesim = (function(){
-  var stage = "metaphase"; // "prophase", "metaphase", "anaphase", "telophase"
-
-  function mount(){
-    App.state.maxT = 4;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Centrosome / Aster</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Spindle Fibres</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Chromosomes (Centromere + Kinetochore)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Equatorial Metaphase Plate</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.mitosisstagesim.setStage(\'prophase\')">1. Prophase (Condensation)</button>' +
-      '<button class="preset-btn" onclick="SIMS.mitosisstagesim.setStage(\'metaphase\')">2. Metaphase (Equator Align)</button>' +
-      '<button class="preset-btn" onclick="SIMS.mitosisstagesim.setStage(\'anaphase\')">3. Anaphase (Centromere Split)</button>' +
-      '<button class="preset-btn" onclick="SIMS.mitosisstagesim.setStage(\'telophase\')">4. Telophase (Reconstruction)</button>';
-  }
-
-  function setStage(s){
-    stage = s;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">MITOTIC KARYOKINESIS: 4 MORPHOLOGICAL STAGES</text>';
-
-    var cx = W / 2 - 60;
-    var cy = H / 2 + 15;
-    var cellW = 320, cellH = 220;
-
-    // Cell boundary
-    if (stage === "telophase") {
-      // Pinched dumbbell shape
-      m += '<path d="M ' + (cx - 150) + ' ' + (cy - 90) + ' C ' + (cx - 40) + ' ' + (cy - 90) + ', ' + (cx - 20) + ' ' + (cy - 30) + ', ' + cx + ' ' + (cy - 25) +
-           ' C ' + (cx + 20) + ' ' + (cy - 30) + ', ' + (cx + 40) + ' ' + (cy - 90) + ', ' + (cx + 150) + ' ' + (cy - 90) +
-           ' C ' + (cx + 180) + ' ' + (cy - 40) + ', ' + (cx + 180) + ' ' + (cy + 40) + ', ' + (cx + 150) + ' ' + (cy + 90) +
-           ' C ' + (cx + 40) + ' ' + (cy + 90) + ', ' + (cx + 20) + ' ' + (cy + 30) + ', ' + cx + ' ' + (cy + 25) +
-           ' C ' + (cx - 20) + ' ' + (cy + 30) + ', ' + (cx - 40) + ' ' + (cy + 90) + ', ' + (cx - 150) + ' ' + (cy + 90) +
-           ' C ' + (cx - 180) + ' ' + (cy + 40) + ', ' + (cx - 180) + ' ' + (cy - 40) + ', ' + (cx - 150) + ' ' + (cy - 90) + ' Z" ' +
-           ' fill="rgba(30,41,59,0.5)" stroke="#38bdf8" stroke-width="2.5"/>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "clock"){
+      c.innerHTML =
+        '<div class="control-group"><label>Phase:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        PHASES.map(function(ph, i){ return '<button class="preset-btn" data-ph="' + i + '">' + ph[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Shares:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">M ~1 h of 24 h; interphase &gt;95%.</div></div>';
+      c.querySelectorAll("[data-ph]").forEach(function(b){ b.onclick = function(){ phase = Number(b.dataset.ph); draw(0); }; });
+    } else if(view === "dna"){
+      c.innerHTML =
+        '<div class="control-group"><label>S phase:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-d0">Before (2C, 2n)</button>' +
+        '<button class="preset-btn" id="c-d1">After (4C, 2n)</button></div></div>' +
+        '<div class="control-group"><label>Rule:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Content doubles; number unchanged.</div></div>';
+      document.getElementById("c-d0").onclick = function(){ sdone = false; draw(0); };
+      document.getElementById("c-d1").onclick = function(){ sdone = true; draw(0); };
     } else {
-      m += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + (cellW/2) + '" ry="' + (cellH/2) + '" fill="rgba(30,41,59,0.4)" stroke="#38bdf8" stroke-width="2"/>';
+      c.innerHTML =
+        '<div class="control-group"><label>Organism:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-o0">Human cells</button>' +
+        '<button class="preset-btn" id="c-o1">Yeast</button></div></div>' +
+        '<div class="control-group"><label>Note:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Duration varies by organism and cell type.</div></div>';
+      document.getElementById("c-o0").onclick = function(){ org = 0; draw(0); };
+      document.getElementById("c-o1").onclick = function(){ org = 1; draw(0); };
     }
-
-    // Poles
-    var leftPoleX = cx - 120, rightPoleX = cx + 120;
-    var poleY = cy;
-
-    if (stage === "prophase") {
-      // Nuclear membrane fragmenting
-      m += '<circle cx="' + cx + '" cy="' + cy + '" r="65" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8,6"/>';
-      m += '<text x="' + cx + '" y="' + (cy - 75) + '" fill="#94a3b8" font-size="11" text-anchor="middle">Disintegrating Nuclear Envelope</text>';
-
-      // Centrosomes moving to opposite poles
-      m += '<circle cx="' + (cx - 80) + '" cy="' + (cy - 50) + '" r="6" fill="#38bdf8"/>';
-      m += '<circle cx="' + (cx + 80) + '" cy="' + (cy + 50) + '" r="6" fill="#38bdf8"/>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy - 62) + '" fill="#38bdf8" font-size="10" text-anchor="middle">Aster</text>';
-
-      // Chromosomes condensing into sister chromatids attached at centromere
-      function drawChr(x, y, rot, col) {
-        m += '<g transform="translate(' + x + ',' + y + ') rotate(' + rot + ')">';
-        m += '<line x1="-16" y1="-16" x2="16" y2="16" stroke="' + col + '" stroke-width="5" stroke-linecap="round"/>';
-        m += '<line x1="-16" y1="16" x2="16" y2="-16" stroke="' + col + '" stroke-width="5" stroke-linecap="round"/>';
-        m += '<circle cx="0" cy="0" r="4" fill="#fbbf24"/>';
-        m += '</g>';
-      }
-      drawChr(cx - 30, cy - 20, 25, "#ec4899");
-      drawChr(cx + 25, cy - 15, -30, "#38bdf8");
-      drawChr(cx - 15, cy + 30, 45, "#10b981");
-      drawChr(cx + 35, cy + 25, -15, "#f59e0b");
-
-    } else if (stage === "metaphase") {
-      // Centrosomes at poles with asters
-      m += '<circle cx="' + leftPoleX + '" cy="' + poleY + '" r="6" fill="#38bdf8"/>';
-      m += '<circle cx="' + rightPoleX + '" cy="' + poleY + '" r="6" fill="#38bdf8"/>';
-
-      // Spindle fibers converging to equatorial plate
-      m += '<line x1="' + leftPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy - 60) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-      m += '<line x1="' + leftPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy - 20) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-      m += '<line x1="' + leftPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy + 20) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-      m += '<line x1="' + leftPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy + 60) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-
-      m += '<line x1="' + rightPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy - 60) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-      m += '<line x1="' + rightPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy - 20) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-      m += '<line x1="' + rightPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy + 20) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-      m += '<line x1="' + rightPoleX + '" y1="' + poleY + '" x2="' + cx + '" y2="' + (cy + 60) + '" stroke="rgba(236,72,153,0.6)" stroke-width="1.5"/>';
-
-      // Equatorial Metaphase Plate line
-      m += '<line x1="' + cx + '" y1="' + (cy - 85) + '" x2="' + cx + '" y2="' + (cy + 85) + '" stroke="#10b981" stroke-width="2" stroke-dasharray="6,4"/>';
-      m += '<text x="' + cx + '" y="' + (cy - 92) + '" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">Metaphase Plate (Equator)</text>';
-
-      // Chromosomes aligned vertically along plate
-      var chrYs = [cy - 60, cy - 20, cy + 20, cy + 60];
-      var cols = ["#ec4899", "#38bdf8", "#f59e0b", "#a855f7"];
-      for (var i = 0; i < chrYs.length; i++) {
-        var y = chrYs[i];
-        m += '<rect x="' + (cx - 14) + '" y="' + (y - 12) + '" width="28" height="24" rx="4" fill="none"/>';
-        // 2 chromatids vertical, disc kinetochore facing poles
-        m += '<path d="M ' + (cx - 10) + ' ' + (y - 14) + ' Q ' + (cx - 3) + ' ' + y + ' ' + (cx - 10) + ' ' + (y + 14) + '" stroke="' + cols[i] + '" stroke-width="4.5" stroke-linecap="round" fill="none"/>';
-        m += '<path d="M ' + (cx + 10) + ' ' + (y - 14) + ' Q ' + (cx + 3) + ' ' + y + ' ' + (cx + 10) + ' ' + (y + 14) + '" stroke="' + cols[i] + '" stroke-width="4.5" stroke-linecap="round" fill="none"/>';
-        m += '<circle cx="' + cx + '" cy="' + y + '" r="4" fill="#fbbf24"/>'; // Centromere
-        m += '<rect x="' + (cx - 5) + '" y="' + (y - 3) + '" width="2.5" height="6" rx="1" fill="#ef4444"/>'; // kinetochore left
-        m += '<rect x="' + (cx + 2.5) + '" y="' + (y - 3) + '" width="2.5" height="6" rx="1" fill="#ef4444"/>'; // kinetochore right
-      }
-
-    } else if (stage === "anaphase") {
-      // Centrosomes at poles
-      m += '<circle cx="' + leftPoleX + '" cy="' + poleY + '" r="6" fill="#38bdf8"/>';
-      m += '<circle cx="' + rightPoleX + '" cy="' + poleY + '" r="6" fill="#38bdf8"/>';
-
-      // Chromosomes split! Centromere leading toward poles, arms trailing in V/J shapes
-      var anaphaseYs = [cy - 50, cy - 16, cy + 16, cy + 50];
-      var colsA = ["#ec4899", "#38bdf8", "#f59e0b", "#a855f7"];
-      for (var j = 0; j < anaphaseYs.length; j++) {
-        var yA = anaphaseYs[j];
-        // Left daughter chromosome pulled left
-        var xL = cx - 55;
-        m += '<line x1="' + leftPoleX + '" y1="' + poleY + '" x2="' + (xL - 8) + '" y2="' + yA + '" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>';
-        m += '<path d="M ' + (xL + 12) + ' ' + (yA - 10) + ' L ' + (xL - 8) + ' ' + yA + ' L ' + (xL + 12) + ' ' + (yA + 10) + '" fill="none" stroke="' + colsA[j] + '" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>';
-        m += '<circle cx="' + (xL - 8) + '" cy="' + yA + '" r="3.5" fill="#fbbf24"/>';
-
-        // Right daughter chromosome pulled right
-        var xR = cx + 55;
-        m += '<line x1="' + rightPoleX + '" y1="' + poleY + '" x2="' + (xR + 8) + '" y2="' + yA + '" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>';
-        m += '<path d="M ' + (xR - 12) + ' ' + (yA - 10) + ' L ' + (xR + 8) + ' ' + yA + ' L ' + (xR - 12) + ' ' + (yA + 10) + '" fill="none" stroke="' + colsA[j] + '" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>';
-        m += '<circle cx="' + (xR + 8) + '" cy="' + yA + '" r="3.5" fill="#fbbf24"/>';
-      }
-      m += '<text x="' + cx + '" y="' + (cy - 75) + '" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">Centromeres Split Simultaneously</text>';
-      m += '<text x="' + cx + '" y="' + (cy - 58) + '" fill="#cbd5e1" font-size="10" text-anchor="middle">Centromere leads poleward; arms trail</text>';
-
-    } else if (stage === "telophase") {
-      // Nuclear envelopes reforming at both poles
-      m += '<circle cx="' + (cx - 80) + '" cy="' + cy + '" r="48" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="6,3"/>';
-      m += '<circle cx="' + (cx + 80) + '" cy="' + cy + '" r="48" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="6,3"/>';
-
-      // Decondensing chromatin clusters inside nuclei
-      m += '<circle cx="' + (cx - 95) + '" cy="' + (cy - 10) + '" r="6" fill="#f43f5e"/>'; // Nucleolus reforming
-      m += '<text x="' + (cx - 95) + '" y="' + (cy + 3) + '" fill="#cbd5e1" font-size="8" text-anchor="middle">Nucl</text>';
-      m += '<path d="M ' + (cx - 85) + ' ' + (cy - 20) + ' Q ' + (cx - 65) + ' ' + cy + ' ' + (cx - 80) + ' ' + (cy + 25) + '" fill="none" stroke="#38bdf8" stroke-width="3"/>';
-      m += '<path d="M ' + (cx - 70) + ' ' + (cy - 15) + ' Q ' + (cx - 85) + ' ' + cy + ' ' + (cx - 65) + ' ' + (cy + 20) + '" fill="none" stroke="#ec4899" stroke-width="3"/>';
-
-      m += '<circle cx="' + (cx + 65) + '" cy="' + (cy - 10) + '" r="6" fill="#f43f5e"/>';
-      m += '<text x="' + (cx + 65) + '" y="' + (cy + 3) + '" fill="#cbd5e1" font-size="8" text-anchor="middle">Nucl</text>';
-      m += '<path d="M ' + (cx + 75) + ' ' + (cy - 20) + ' Q ' + (cx + 95) + ' ' + cy + ' ' + (cx + 80) + ' ' + (cy + 25) + '" fill="none" stroke="#38bdf8" stroke-width="3"/>';
-      m += '<path d="M ' + (cx + 90) + ' ' + (cy - 15) + ' Q ' + (cx + 75) + ' ' + cy + ' ' + (cx + 95) + ' ' + (cy + 20) + '" fill="none" stroke="#ec4899" stroke-width="3"/>';
-
-      m += '<text x="' + cx + '" y="' + (cy - 60) + '" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">Telophase: Nuclear Envelope Reassembles</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 75) + '" fill="#fcd34d" font-size="11" text-anchor="middle">Nucleolus, Golgi & ER Reappear</text>';
-    }
-
-    // Right metrics panel
-    var mx = W - 180, my = 50;
-    m += '<rect x="' + mx + '" y="' + my + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (mx + 85) + '" y="' + (my + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">STAGE DETAILS</text>';
-
-    if (stage === "prophase") {
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 50) + '" fill="#fcd34d" font-size="11" font-weight="bold">Stage 1: Prophase</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 75) + '" fill="#cbd5e1" font-size="10">• Chromatin condenses</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 95) + '" fill="#cbd5e1" font-size="10">• 2 chromatids / centromere</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 115) + '" fill="#cbd5e1" font-size="10">• Asters radiate microtubules</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 135) + '" fill="#cbd5e1" font-size="10">• Mitotic apparatus forms</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 160) + '" fill="#f87171" font-size="10" font-weight="bold">Disappearing Organelles:</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 180) + '" fill="#fca5a5" font-size="9.5">• Nucleolus disappears</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 198) + '" fill="#fca5a5" font-size="9.5">• Golgi complex dissolves</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 216) + '" fill="#fca5a5" font-size="9.5">• Endoplasmic reticulum dissolves</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 234) + '" fill="#fca5a5" font-size="9.5">• Nuclear envelope fragments</text>';
-    } else if (stage === "metaphase") {
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 50) + '" fill="#10b981" font-size="11" font-weight="bold">Stage 2: Metaphase</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 75) + '" fill="#cbd5e1" font-size="10">• Envelope fully dissolved</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 95) + '" fill="#4ade80" font-size="10" font-weight="bold">• BEST stage to study</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 110) + '" fill="#4ade80" font-size="10" font-weight="bold">  chromosome morphology!</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 135) + '" fill="#cbd5e1" font-size="10">• Disc-shaped kinetochores</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 155) + '" fill="#cbd5e1" font-size="10">• Spindle attach kinetochore</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 175) + '" fill="#cbd5e1" font-size="10">• Chromosomes align at</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 192) + '" fill="#fcd34d" font-size="10">  equator (Metaphase Plate)</text>';
-    } else if (stage === "anaphase") {
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 50) + '" fill="#f59e0b" font-size="11" font-weight="bold">Stage 3: Anaphase</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 75) + '" fill="#ef4444" font-size="10" font-weight="bold">• CENTROMERE SPLITS!</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 95) + '" fill="#cbd5e1" font-size="10">• Chromatids separate</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 115) + '" fill="#cbd5e1" font-size="10">• Daughter chromosomes</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 130) + '" fill="#cbd5e1" font-size="10">  migrate to opposite poles</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 155) + '" fill="#4ade80" font-size="10" font-weight="bold">• BEST stage to study</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 170) + '" fill="#4ade80" font-size="10" font-weight="bold">  chromosome shapes:</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 188) + '" fill="#e2e8f0" font-size="9.5">  - V shape (Metacentric)</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 204) + '" fill="#e2e8f0" font-size="9.5">  - L shape (Submetacentric)</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 220) + '" fill="#e2e8f0" font-size="9.5">  - J shape (Acrocentric)</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 236) + '" fill="#e2e8f0" font-size="9.5">  - I shape (Telocentric)</text>';
-    } else if (stage === "telophase") {
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 50) + '" fill="#ec4899" font-size="11" font-weight="bold">Stage 4: Telophase</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 75) + '" fill="#cbd5e1" font-size="10">• Chromosomes at poles</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 95) + '" fill="#cbd5e1" font-size="10">• Decondensation to chromatin</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 115) + '" fill="#cbd5e1" font-size="10">• Nuclear envelope reforms</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 140) + '" fill="#10b981" font-size="10" font-weight="bold">Organelles Reappearing:</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 160) + '" fill="#86efac" font-size="9.5">• Nucleolus reassembles</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 178) + '" fill="#86efac" font-size="9.5">• Golgi complex reforms</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 196) + '" fill="#86efac" font-size="9.5">• Endoplasmic reticulum reforms</text>';
-      m += '<text x="' + (mx + 10) + '" y="' + (my + 220) + '" fill="#fcd34d" font-size="10">• Cytokinesis initiated</text>';
-    }
-
-    svg.innerHTML = m;
-
-    var cState = (stage === "anaphase" || stage === "telophase") ? "Split (Sister Chromatids Disjoined)" : "Intact (Joined at Centromere)";
-    var nucEnv = (stage === "prophase") ? "Disintegrating" : (stage === "telophase" ? "Reforming" : "Absent / Dissolved");
-    var bestFor = (stage === "metaphase") ? "Chromosome Morphology & Size" : (stage === "anaphase" ? "Chromosome Shape (V, L, J, I)" : "Nuclear Transition");
-
-    readout(
-      cell("Active Stage", stage.toUpperCase(), "#38bdf8") +
-      cell("Centromere State", cState, stage === "anaphase" ? "#ef4444" : "#10b981") +
-      cell("Nuclear Membrane", nucEnv, stage === "telophase" ? "#10b981" : "#f59e0b") +
-      cell("Microscopic Value", bestFor, "#fcd34d")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT 10.2 Karyokinesis Rule:</span> ' +
-      (stage === "metaphase" ?
-       "Metaphase is the clearest stage to count and study the morphology of chromosomes because condensation is complete and chromosomes lie neatly aligned along the equatorial plane (metaphase plate) with kinetochores attached to spindle microtubules." :
-       (stage === "anaphase" ?
-        "In anaphase, the centromere splits simultaneously and sister chromatids separate into daughter chromosomes, migrating to opposite poles. The centromere leads towards the pole with the arms trailing behind, revealing characteristic V, L, J, or I shapes." :
-        (stage === "telophase" ?
-         "Telophase is effectively the reverse of prophase: chromosomes reach opposite poles, decondense back into diffuse chromatin, the nuclear envelope reforms around each group, and the nucleolus, Golgi complex, and ER reappear." :
-         "In prophase, chromatin undergoes condensation to form compact chromosomes, centrosomes radiate asters as they migrate to opposite poles, and the nucleolus, Golgi complex, and ER disappear.")))
-    );
   }
 
-  return { mount: mount, setStage: setStage, draw: draw };
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Cell Cycle (\u00A710.1\u2013\u00A710.1.1)</text>';
+    if(view === "clock"){
+      var cols = ["#38bdf8", "#38bdf8", "#38bdf8", "#f59e0b"];
+      for(var i = 0; i < 4; i++){
+        var x = 45 + i * 160;
+        var on = i === phase;
+        m += '<rect x="' + x + '" y="120" width="140" height="100" rx="8" fill="#0f172a" stroke="' + (on ? cols[i] : "#334155") + '" stroke-width="2.5"/>';
+        m += '<text x="' + (x + 70) + '" y="155" fill="' + (on ? cols[i] : "#475569") + '" font-size="14" font-weight="700" text-anchor="middle">' + PHASES[i][0] + "</text>";
+        m += '<text x="' + (x + 70) + '" y="178" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + PHASES[i][1] + "</text>";
+        if(i < 3) m += '<text x="' + (x + 150) + '" y="172" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Interphase: G1 + S + G2 (\u201crestes\u201d while preparing) \u00B7 M: karyokinesis \u2192 cytokinesis</text>';
+      readout(cell("Phase", PHASES[phase][0], cols[phase]) + cell("Job", PHASES[phase][1], "#94a3b8"));
+      verdict(phase === 3 ? "M Phase: actual division, about an hour." : "Interphase: between two successive M phases.");
+    } else if(view === "dna"){
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">S phase: DNA ' + (sdone ? "2C \u2192 4C (doubled)" : "2C (not yet doubled)") + " \u00B7 chromosomes 2n (unchanged)</text>";
+      var bars = sdone ? [4, 4] : [2, 4];
+      var bl = ["DNA content", "Chromosome number"];
+      var bv = sdone ? ["4C", "2n"] : ["2C", "2n"];
+      for(var j = 0; j < 2; j++){
+        var jx = 170 + j * 200;
+        var h = bars[j] * 32;
+        m += '<rect x="' + jx + '" y="' + (250 - h) + '" width="110" height="' + h + '" rx="6" fill="#0f172a" stroke="' + (j === 0 ? "#22c55e" : "#38bdf8") + '" stroke-width="2"/>';
+        m += '<text x="' + (jx + 55) + '" y="' + (240 - h) + '" fill="' + (j === 0 ? "#22c55e" : "#38bdf8") + '" font-size="13" font-weight="700" text-anchor="middle">' + bv[j] + "</text>";
+        m += '<text x="' + (jx + 55) + '" y="272" fill="#94a3b8" font-size="11" text-anchor="middle">' + bl[j] + "</text>";
+      }
+      readout(cell("DNA", bv[0], "#22c55e") + cell("Number", bv[1], "#38bdf8"));
+      verdict(sdone ? "Doubled content, same number." : "Run S phase to double the DNA.");
+    } else {
+      var o = ORGS[org];
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + o[0] + ": " + o[1] + "</text>";
+      var w = org === 0 ? 420 : 60;
+      m += '<rect x="140" y="140" width="' + w + '" height="60" rx="8" fill="#0f172a" stroke="' + (org === 0 ? "#38bdf8" : "#22c55e") + '" stroke-width="2.5"/>';
+      m += '<text x="' + (140 + w / 2) + '" y="176" fill="' + (org === 0 ? "#38bdf8" : "#22c55e") + '" font-size="12" font-weight="700" text-anchor="middle">' + (org === 0 ? "24 hours" : "90 minutes") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Figure 10.1: one cell \u2192 two cells per cycle</text>';
+      readout(cell("Organism", o[0], "#38bdf8") + cell("Cycle", o[1], "#22c55e"));
+      verdict("Same phases, very different pace.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 3. SIMULATION 3: Cleavage Furrow vs Cell Plate (cytokinesiscomparatorsim)
+// 2. G0 Exit & Mitosis Distribution Bench (quiesclab) - L2, 10.1.1-10.2
 // -------------------------------------------------------------------------
-window.SIMS.cytokinesiscomparatorsim = (function(){
-  var mode = "furrow"; // "furrow", "cellplate", "syncytium"
-  var progress = 0.6; // 0.0 to 1.0
+window.SIMS.quiesclab = (function(){
+  var view = "g0"; // "g0", "somatic", "equational"
+  var exited = false, realm = 0, divided = false;
+  var REALMS = [["Animals", "diploid somatic only (+ male honey bees)"], ["Plants", "haploid AND diploid cells"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Cleavage Furrow (Centripetal, Outside -> In)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Cell Plate / Phragmoplast (Centrifugal, Inside -> Out)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Middle Lamella (Calcium Pectate)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Syncytium (Coconut Liquid Endosperm)</span></div>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Cycling cells</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>G0 quiescent</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Equational outcome</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-g0">G1-G0 Exit</button>' +
+      '<button class="preset-btn" id="p-somatic">Who Divides</button>' +
+      '<button class="preset-btn" id="p-equational">Equational 2n-2n</button>';
+    document.getElementById("p-g0").onclick = function(){ setActivePreset(this); setV("g0"); };
+    document.getElementById("p-somatic").onclick = function(){ setActivePreset(this); setV("somatic"); };
+    document.getElementById("p-equational").onclick = function(){ setActivePreset(this); setV("equational"); };
+    mountControls();
+    draw(0);
+  }
 
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.cytokinesiscomparatorsim.setMode(\'furrow\')">1. Animal: Cleavage Furrow</button>' +
-      '<button class="preset-btn" onclick="SIMS.cytokinesiscomparatorsim.setMode(\'cellplate\')">2. Plant: Cell Plate</button>' +
-      '<button class="preset-btn" onclick="SIMS.cytokinesiscomparatorsim.setMode(\'syncytium\')">3. Syncytium (Coconut Endosperm)</button>';
-
-    var s = document.getElementById("lab-slider");
-    if (s) {
-      s.min = "10";
-      s.max = "100";
-      s.value = "60";
-      s.oninput = function(e){
-        progress = parseFloat(e.target.value) / 100.0;
-        draw();
-      };
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "g0"){
+      c.innerHTML =
+        '<div class="control-group"><label>Heart cell:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-q0">Stay in G1</button>' +
+        '<button class="preset-btn" id="c-q1">Exit to G0</button></div></div>' +
+        '<div class="control-group"><label>G0 means:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Active but not proliferating unless called on.</div></div>';
+      document.getElementById("c-q0").onclick = function(){ exited = false; draw(0); };
+      document.getElementById("c-q1").onclick = function(){ exited = true; draw(0); };
+    } else if(view === "somatic"){
+      c.innerHTML =
+        '<div class="control-group"><label>Realm:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-r0">Animals</button>' +
+        '<button class="preset-btn" id="c-r1">Plants</button></div></div>' +
+        '<div class="control-group"><label>Pointer:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Chapter 3: alternation of generations.</div></div>';
+      document.getElementById("c-r0").onclick = function(){ realm = 0; draw(0); };
+      document.getElementById("c-r1").onclick = function(){ realm = 1; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Mitosis:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-e0">Parent (2n)</button>' +
+        '<button class="preset-btn" id="c-e1">Divide</button></div></div>' +
+        '<div class="control-group"><label>Why equational:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Same number in parent and progeny.</div></div>';
+      document.getElementById("c-e0").onclick = function(){ divided = false; draw(0); };
+      document.getElementById("c-e1").onclick = function(){ divided = true; draw(0); };
     }
   }
 
-  function setMode(m){
-    mode = m;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">CYTOKINESIS: CLEAVAGE FURROW vs CELL PLATE vs SYNCYTIUM</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    if (mode === "furrow") {
-      // Animal Cell: Cleavage furrow constricting centripetally
-      var furrowDepth = progress * 75; // max 75 pinches close together
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#ec4899" font-size="14" font-weight="bold" text-anchor="middle">ANIMAL CELL: CENTRIPETAL CLEAVAGE FURROW (Outside-In)</text>';
-
-      // Draw top and bottom lobes with furrow indentation
-      m += '<path d="M ' + (cx - 150) + ' ' + (cy - 80) +
-           ' C ' + (cx - 60) + ' ' + (cy - 80) + ', ' + (cx - 20) + ' ' + (cy - 80 + furrowDepth) + ', ' + cx + ' ' + (cy - 80 + furrowDepth) +
-           ' C ' + (cx + 20) + ' ' + (cy - 80 + furrowDepth) + ', ' + (cx + 60) + ' ' + (cy - 80) + ', ' + (cx + 150) + ' ' + (cy - 80) +
-           ' C ' + (cx + 180) + ' ' + (cy - 30) + ', ' + (cx + 180) + ' ' + (cy + 30) + ', ' + (cx + 150) + ' ' + (cy + 80) +
-           ' C ' + (cx + 60) + ' ' + (cy + 80) + ', ' + (cx + 20) + ' ' + (cy + 80 - furrowDepth) + ', ' + cx + ' ' + (cy + 80 - furrowDepth) +
-           ' C ' + (cx - 20) + ' ' + (cy + 80 - furrowDepth) + ', ' + (cx - 60) + ' ' + (cy + 80) + ', ' + (cx - 150) + ' ' + (cy + 80) +
-           ' C ' + (cx - 180) + ' ' + (cy + 30) + ', ' + (cx - 180) + ' ' + (cy - 30) + ', ' + (cx - 150) + ' ' + (cy - 80) + ' Z" ' +
-           ' fill="rgba(236,72,153,0.15)" stroke="#ec4899" stroke-width="3"/>';
-
-      // Reconstituted daughter nuclei
-      m += '<circle cx="' + (cx - 80) + '" cy="' + cy + '" r="35" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<circle cx="' + (cx + 80) + '" cy="' + cy + '" r="35" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<text x="' + (cx - 80) + '" y="' + cy + '" fill="#38bdf8" font-size="11" text-anchor="middle">Daughter Nucleus 1</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + cy + '" fill="#38bdf8" font-size="11" text-anchor="middle">Daughter Nucleus 2</text>';
-
-      // Outside-in arrows
-      m += '<line x1="' + cx + '" y1="' + (cy - 100) + '" x2="' + cx + '" y2="' + (cy - 70 + furrowDepth) + '" stroke="#fcd34d" stroke-width="2.5" marker-end="url(#arrow)"/>';
-      m += '<line x1="' + cx + '" y1="' + (cy + 100) + '" x2="' + cx + '" y2="' + (cy + 70 - furrowDepth) + '" stroke="#fcd34d" stroke-width="2.5" marker-end="url(#arrow)"/>';
-      m += '<text x="' + (cx + 15) + '" y="' + (cy - 75) + '" fill="#fcd34d" font-size="11" font-weight="bold">Furrow deepens centripetally</text>';
-
-    } else if (mode === "cellplate") {
-      // Plant Cell: Cell plate growing centrifugally (inside-out)
-      var plateSpan = progress * 170; // expands from center out to walls (170 max)
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">PLANT CELL: CENTRIFUGAL CELL PLATE (Inside-Out)</text>';
-
-      // Rigid rectangular cell wall
-      m += '<rect x="' + (cx - 150) + '" y="' + (cy - 85) + '" width="300" height="170" rx="8" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="4"/>';
-      m += '<text x="' + (cx - 140) + '" y="' + (cy - 92) + '" fill="#86efac" font-size="10">Inextensible Cell Wall</text>';
-
-      // Daughter nuclei
-      m += '<circle cx="' + (cx - 80) + '" cy="' + cy + '" r="35" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<circle cx="' + (cx + 80) + '" cy="' + cy + '" r="35" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<text x="' + (cx - 80) + '" y="' + cy + '" fill="#38bdf8" font-size="11" text-anchor="middle">Daughter Nucleus 1</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + cy + '" fill="#38bdf8" font-size="11" text-anchor="middle">Daughter Nucleus 2</text>';
-
-      // Cell plate vesicles coalescing at center and expanding outward
-      var halfH = plateSpan / 2;
-      m += '<line x1="' + cx + '" y1="' + (cy - halfH) + '" x2="' + cx + '" y2="' + (cy + halfH) + '" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>';
-      m += '<text x="' + (cx + 10) + '" y="' + (cy - 20) + '" fill="#fbbf24" font-size="11" font-weight="bold">Phragmoplast / Cell Plate</text>';
-      m += '<text x="' + (cx + 10) + '" y="' + (cy - 5) + '" fill="#cbd5e1" font-size="9.5">(Precursor to Middle Lamella)</text>';
-      m += '<text x="' + (cx + 10) + '" y="' + (cy + 10) + '" fill="#86efac" font-size="9.5">[Rich in Calcium Pectate]</text>';
-
-      // Centrifugal arrows pointing outward towards walls
-      m += '<line x1="' + cx + '" y1="' + (cy - 10) + '" x2="' + cx + '" y2="' + (cy - halfH - 10) + '" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,2"/>';
-      m += '<line x1="' + cx + '" y1="' + (cy + 10) + '" x2="' + cx + '" y2="' + (cy + halfH + 10) + '" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,2"/>';
-      m += '<text x="' + (cx - 110) + '" y="' + (cy + 65) + '" fill="#38bdf8" font-size="10">Direction: Center -> Periphery</text>';
-
-    } else if (mode === "syncytium") {
-      // Syncytium / Coconut Liquid Endosperm
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">SYNCYTIUM: MULTINUCLEATE CONDITION (Coconut Endosperm)</text>';
-
-      // Coconut cavity
-      m += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="150" ry="85" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="3"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 105) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Liquid Endosperm: Free Nuclear Karyokinesis WITHOUT Cytokinesis</text>';
-
-      // Multiple free floating nuclei
-      var nCoords = [
-        [-90, -40], [-40, -45], [20, -50], [80, -35],
-        [-110, 0], [-60, 5], [0, -10], [60, 10], [100, -5],
-        [-80, 45], [-25, 40], [35, 45], [85, 40]
-      ];
-      for (var k = 0; k < nCoords.length; k++) {
-        var nx = cx + nCoords[k][0];
-        var ny = cy + nCoords[k][1];
-        m += '<circle cx="' + nx + '" cy="' + ny + '" r="14" fill="#fbbf24" stroke="#fff" stroke-width="1.5"/>';
-        m += '<circle cx="' + nx + '" cy="' + ny + '" r="5" fill="#d97706"/>';
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Quiescence &amp; M Phase (\u00A710.1.1\u2013\u00A710.2)</text>';
+    if(view === "g0"){
+      m += '<rect x="120" y="130" width="180" height="90" rx="8" fill="#0f172a" stroke="' + (!exited ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="210" y="168" fill="' + (!exited ? "#38bdf8" : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">G1</text>';
+      m += '<text x="210" y="188" fill="#64748b" font-size="10" text-anchor="middle">cycling</text>';
+      m += '<text x="330" y="178" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
+      m += '<rect x="360" y="130" width="180" height="90" rx="8" fill="#0f172a" stroke="' + (exited ? "#94a3b8" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="450" y="168" fill="' + (exited ? "#cbd5e1" : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">G0 (quiescent)</text>';
+      m += '<text x="450" y="188" fill="#64748b" font-size="10" text-anchor="middle">e.g. heart cells</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Question prints \u2018Go\u2019; body text prints \u2018G0\u2019 \u2014 same stage</text>';
+      readout(cell("State", exited ? "G0" : "G1", exited ? "#94a3b8" : "#38bdf8") + cell("Dividing", exited ? "no" : "yes", exited ? "#94a3b8" : "#22c55e"));
+      verdict(exited ? "Quiescent: active, not proliferating unless called on." : "Cycling in G1.");
+    } else if(view === "somatic"){
+      var r = REALMS[realm];
+      m += '<text x="350" y="110" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + r[0] + ": mitosis in</text>";
+      m += '<text x="350" y="170" fill="' + (realm === 0 ? "#38bdf8" : "#22c55e") + '" font-size="13" font-weight="700" text-anchor="middle">' + r[1] + "</text>";
+      if(realm === 0) m += '<text x="350" y="215" fill="#f59e0b" font-size="11" text-anchor="middle">Exception: haploid cells of male honey bees</text>';
+      else m += '<text x="350" y="215" fill="#94a3b8" font-size="11" text-anchor="middle">See Chapter 3 alternation of generations</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Mitosis distribution, PDF p. 3</text>';
+      readout(cell("Realm", r[0], "#38bdf8") + cell("Rule", r[1], "#22c55e"));
+      verdict(realm === 0 ? "Animals: diploid somatic (+ bee exception)." : "Plants: both ploidies divide.");
+    } else {
+      if(!divided){
+        m += '<circle cx="350" cy="170" r="50" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+        m += '<text x="350" y="178" fill="#38bdf8" font-size="16" font-weight="700" text-anchor="middle">2n</text>';
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Parent cell, diploid</text>';
+      } else {
+        m += '<circle cx="240" cy="170" r="50" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+        m += '<text x="240" y="178" fill="#22c55e" font-size="16" font-weight="700" text-anchor="middle">2n</text>';
+        m += '<circle cx="460" cy="170" r="50" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+        m += '<text x="460" y="178" fill="#22c55e" font-size="16" font-weight="700" text-anchor="middle">2n</text>';
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Two daughters, same number \u2014 equational division</text>';
       }
-      m += '<text x="' + cx + '" y="' + (cy - 15) + '" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">Thousands of Free Nuclei</text>';
+      readout(cell("Cells", divided ? "2" : "1", "#38bdf8") + cell("Number", "2n \u2192 2n", "#22c55e"));
+      verdict(divided ? "Equational: number conserved." : "Divide to see the equational outcome.");
     }
-
-    // Right comparison panel
-    var px = W - 180, py = 50;
-    m += '<rect x="' + px + '" y="' + py + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (px + 85) + '" y="' + (py + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">CYTOKINESIS RULE</text>';
-
-    if (mode === "furrow") {
-      m += '<text x="' + (px + 10) + '" y="' + (py + 50) + '" fill="#ec4899" font-size="11" font-weight="bold">Animal Furrow</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">• Plasma membrane</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 95) + '" fill="#fcd34d" font-size="10" font-weight="bold">• CENTRIPETAL flow:</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 110) + '" fill="#cbd5e1" font-size="9.5">  Outside towards center</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 135) + '" fill="#cbd5e1" font-size="10">• Actin-myosin ring</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 155) + '" fill="#cbd5e1" font-size="10">• Furrow deepens until</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 170) + '" fill="#cbd5e1" font-size="10">  it joins in middle</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 195) + '" fill="#86efac" font-size="10">• Completes cleavage</text>';
-    } else if (mode === "cellplate") {
-      m += '<text x="' + (px + 10) + '" y="' + (py + 50) + '" fill="#10b981" font-size="11" font-weight="bold">Plant Cell Plate</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 75) + '" fill="#cbd5e1" font-size="10">• Rigid inextensible wall</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 90) + '" fill="#cbd5e1" font-size="10">  prevents furrowing</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 115) + '" fill="#4ade80" font-size="10" font-weight="bold">• CENTRIFUGAL flow:</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 130) + '" fill="#cbd5e1" font-size="9.5">  Center towards outside</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 155) + '" fill="#cbd5e1" font-size="10">• Precursor: Cell Plate</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 175) + '" fill="#fcd34d" font-size="10">• Becomes Middle Lamella</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 195) + '" fill="#86efac" font-size="9.5">  (Calcium Pectate glue)</text>';
-    } else if (mode === "syncytium") {
-      m += '<text x="' + (px + 10) + '" y="' + (py + 50) + '" fill="#38bdf8" font-size="11" font-weight="bold">Syncytium State</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 75) + '" fill="#ef4444" font-size="10" font-weight="bold">• NO Cytokinesis!</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 95) + '" fill="#cbd5e1" font-size="10">• Repeated karyokinesis</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 115) + '" fill="#fcd34d" font-size="10">• Multinucleate state</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 140) + '" fill="#86efac" font-size="10" font-weight="bold">NCERT Example:</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 160) + '" fill="#cbd5e1" font-size="10">• Liquid endosperm in</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 175) + '" fill="#cbd5e1" font-size="10">  coconut (water)</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 195) + '" fill="#cbd5e1" font-size="10">• White kernel is the</text>';
-      m += '<text x="' + (px + 10) + '" y="' + (py + 210) + '" fill="#cbd5e1" font-size="10">  cellular endosperm</text>';
-    }
-
     svg.innerHTML = m;
-
-    var dir = (mode === "furrow") ? "Centripetal (Periphery to Center)" : (mode === "cellplate" ? "Centrifugal (Center to Periphery)" : "N/A (No Division)");
-    var endState = (mode === "furrow") ? "2 Distinct Animal Cells" : (mode === "cellplate" ? "2 Plant Cells with Middle Lamella" : "Multinucleate Syncytium");
-
-    readout(
-      cell("Cytokinesis Mode", mode.toUpperCase(), mode === "cellplate" ? "#10b981" : "#ec4899") +
-      cell("Formation Direction", dir, "#fcd34d") +
-      cell("Progress", Math.round(progress * 100) + "%", "#38bdf8") +
-      cell("Resulting Structure", endState, "#86efac")
-    );
-
-    verdict(
-      '<span style="color:#fcd34d;font-weight:700;">NCERT 10.2 Cytokinesis Rule:</span> ' +
-      (mode === "furrow" ?
-       "Animal cytokinesis occurs via a cleavage furrow in the plasma membrane that deepens centripetally (from outside to inside) until it meets at the center." :
-       (mode === "cellplate" ?
-        "Plant cells have a rigid, inextensible cell wall, so cytokinesis begins in the center with the cell plate (phragmoplast) and grows centrifugally (outwards) until it joins lateral walls, forming the middle lamella." :
-        "When karyokinesis is not followed by cytokinesis, a multinucleate condition called syncytium arises, as seen in the liquid endosperm of coconut."))
-    );
   }
 
-  return { mount: mount, setMode: setMode, draw: draw };
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 4. SIMULATION 4: 5-Substage Prophase I & Chiasmata (prophase1zoomer)
+// 3. Condensation, Asters & Plate Alignment Lab (prometalab) - L3, 10.2.1-2
 // -------------------------------------------------------------------------
-window.SIMS.prophase1zoomer = (function(){
-  var substage = "pachytene"; // "leptotene", "zygotene", "pachytene", "diplotene", "diakinesis"
+window.SIMS.prometalab = (function(){
+  var view = "condense"; // "condense", "asters", "plate"
+  var cond = 0, apart = 0, aligned = 1;
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Maternal Homologue</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Paternal Homologue</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Synaptonemal Complex / Recombination Nodule</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>X-Shaped Chiasma</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.prophase1zoomer.setSubstage(\'leptotene\')">1. Leptotene (Condensation)</button>' +
-      '<button class="preset-btn" onclick="SIMS.prophase1zoomer.setSubstage(\'zygotene\')">2. Zygotene (Synapsis)</button>' +
-      '<button class="preset-btn" onclick="SIMS.prophase1zoomer.setSubstage(\'pachytene\')">3. Pachytene (Crossing Over)</button>' +
-      '<button class="preset-btn" onclick="SIMS.prophase1zoomer.setSubstage(\'diplotene\')">4. Diplotene (Chiasmata)</button>' +
-      '<button class="preset-btn" onclick="SIMS.prophase1zoomer.setSubstage(\'diakinesis\')">5. Diakinesis (Terminalisation)</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chromosomes / sisters</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Centrosome + asters</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Metaphase plate</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-condense">Condensation</button>' +
+      '<button class="preset-btn" id="p-asters">Asters Apart</button>' +
+      '<button class="preset-btn" id="p-plate">Plate Line-up</button>';
+    document.getElementById("p-condense").onclick = function(){ setActivePreset(this); setV("condense"); };
+    document.getElementById("p-asters").onclick = function(){ setActivePreset(this); setV("asters"); };
+    document.getElementById("p-plate").onclick = function(){ setActivePreset(this); setV("plate"); };
+    mountControls();
+    draw(0);
   }
 
-  function setSubstage(s){
-    substage = s;
-    draw();
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "condense"){
+      c.innerHTML =
+        '<div class="control-group"><label>Material:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-k0">Intertwined</button>' +
+        '<button class="preset-btn" id="c-k1">Condensed</button></div></div>' +
+        '<div class="control-group"><label>Result:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Two chromatids at the centromere.</div></div>';
+      document.getElementById("c-k0").onclick = function(){ cond = 0; draw(0); };
+      document.getElementById("c-k1").onclick = function(){ cond = 1; draw(0); };
+    } else if(view === "asters"){
+      c.innerHTML =
+        '<div class="control-group"><label>Centrosomes:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-s0">Together</button>' +
+        '<button class="preset-btn" id="c-s1">Opposite poles</button></div></div>' +
+        '<div class="control-group"><label>Apparatus:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Two asters + spindle fibres.</div></div>';
+      document.getElementById("c-s0").onclick = function(){ apart = 0; draw(0); };
+      document.getElementById("c-s1").onclick = function(){ apart = 1; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Chromosomes:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-p0">Scattered</button>' +
+        '<button class="preset-btn" id="c-p1">At plate</button></div></div>' +
+        '<div class="control-group"><label>Wiring:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Sister kinetochores to opposite poles.</div></div>';
+      document.getElementById("c-p0").onclick = function(){ aligned = 0; draw(0); };
+      document.getElementById("c-p1").onclick = function(){ aligned = 1; draw(0); };
+    }
   }
 
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">PROPHASE I: 5 SEQUENTIAL MEIOTIC SUBSTAGES</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    // Outer meiotic cell nucleus
-    m += '<circle cx="' + cx + '" cy="' + cy + '" r="120" fill="rgba(30,41,59,0.35)" stroke="#64748b" stroke-width="2" ' + (substage === "diakinesis" ? 'stroke-dasharray="6,4"' : '') + '/>';
-
-    if (substage === "leptotene") {
-      m += '<text x="' + cx + '" y="' + (cy - 95) + '" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">LEPTOTENE: Progressive Compaction</text>';
-      // Long, slender chromatin threads
-      m += '<path d="M ' + (cx - 70) + ' ' + (cy - 60) + ' Q ' + (cx - 20) + ' ' + cy + ' ' + (cx - 50) + ' ' + (cy + 70) + '" fill="none" stroke="#38bdf8" stroke-width="3"/>';
-      m += '<path d="M ' + (cx + 60) + ' ' + (cy - 60) + ' Q ' + (cx + 10) + ' ' + cy + ' ' + (cx + 40) + ' ' + (cy + 70) + '" fill="none" stroke="#ec4899" stroke-width="3"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Chromosomes become gradually visible under light microscope</text>';
-
-    } else if (substage === "zygotene") {
-      m += '<text x="' + cx + '" y="' + (cy - 95) + '" fill="#818cf8" font-size="14" font-weight="bold" text-anchor="middle">ZYGOTENE: Synapsis & Synaptonemal Complex</text>';
-      // Two homologous chromosomes pairing closely side by side
-      m += '<line x1="' + (cx - 22) + '" y1="' + (cy - 70) + '" x2="' + (cx - 22) + '" y2="' + (cy + 70) + '" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>';
-      m += '<line x1="' + (cx + 22) + '" y1="' + (cy - 70) + '" x2="' + (cx + 22) + '" y2="' + (cy + 70) + '" stroke="#ec4899" stroke-width="6" stroke-linecap="round"/>';
-
-      // Synaptonemal complex ladder between them
-      for (var yl = cy - 55; yl <= cy + 55; yl += 15) {
-        m += '<line x1="' + (cx - 18) + '" y1="' + yl + '" x2="' + (cx + 18) + '" y2="' + yl + '" stroke="#fbbf24" stroke-width="2.5"/>';
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Prophase &amp; Metaphase (\u00A710.2.1\u2013\u00A710.2.2)</text>';
+    if(view === "condense"){
+      if(cond === 0){
+        m += '<path d="M150,150 q60,-60 120,0 t120,0 t120,0" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+        m += '<path d="M150,180 q60,60 120,0 t120,0 t120,0" fill="none" stroke="#38bdf8" stroke-width="3" opacity="0.6"/>';
+        m += '<text x="350" y="240" fill="#94a3b8" font-size="11" text-anchor="middle">New DNA: not distinct but intertwined</text>';
+      } else {
+        for(var i = 0; i < 3; i++){
+          var cx = 230 + i * 120;
+          m += '<rect x="' + (cx - 14) + '" y="110" width="12" height="100" rx="5" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+          m += '<rect x="' + (cx + 2) + '" y="110" width="12" height="100" rx="5" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+          m += '<circle cx="' + cx + '" cy="160" r="6" fill="#f59e0b"/>';
+        }
+        m += '<text x="350" y="240" fill="#22c55e" font-size="11" text-anchor="middle">Compact mitotic chromosomes: two chromatids at the centromere</text>';
       }
-      m += '<text x="' + (cx + 60) + '" y="' + cy + '" fill="#fbbf24" font-size="11" font-weight="bold">Synaptonemal Complex</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Forms Bivalent or Tetrad (Pair of Homologues)</text>';
-
-    } else if (substage === "pachytene") {
-      m += '<text x="' + cx + '" y="' + (cy - 95) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">PACHYTENE: Crossing Over at Recombination Nodules</text>';
-      // Bivalent clearly visible as 4 chromatids (tetrad)
-      // Maternal homologue (blue): 2 sister chromatids
-      m += '<path d="M ' + (cx - 30) + ' ' + (cy - 70) + ' L ' + (cx - 30) + ' ' + (cy + 70) + '" stroke="#38bdf8" stroke-width="4.5"/>';
-      m += '<path d="M ' + (cx - 15) + ' ' + (cy - 70) + ' L ' + cx + ' ' + cy + ' L ' + (cx + 15) + ' ' + (cy + 70) + '" stroke="#38bdf8" stroke-width="4.5"/>';
-
-      // Paternal homologue (pink): 2 sister chromatids
-      m += '<path d="M ' + (cx + 30) + ' ' + (cy - 70) + ' L ' + (cx + 30) + ' ' + (cy + 70) + '" stroke="#ec4899" stroke-width="4.5"/>';
-      m += '<path d="M ' + (cx + 15) + ' ' + (cy - 70) + ' L ' + cx + ' ' + cy + ' L ' + (cx - 15) + ' ' + (cy + 70) + '" stroke="#ec4899" stroke-width="4.5"/>';
-
-      // Recombination nodule at crossing point
-      m += '<circle cx="' + cx + '" cy="' + cy + '" r="10" fill="#fbbf24" stroke="#fff" stroke-width="2"/>';
-      m += '<text x="' + (cx + 45) + '" y="' + (cy - 12) + '" fill="#fbbf24" font-size="11" font-weight="bold">Recombination Nodule</text>';
-      m += '<text x="' + (cx + 45) + '" y="' + (cy + 4) + '" fill="#86efac" font-size="10">Enzyme: RECOMBINASE</text>';
-      m += '<text x="' + (cx + 45) + '" y="' + (cy + 18) + '" fill="#cbd5e1" font-size="9.5">Non-sister chromatid exchange</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#10b981" font-size="11" text-anchor="middle">Genetic Recombination & Crossing Over Completed</text>';
-
-    } else if (substage === "diplotene") {
-      m += '<text x="' + cx + '" y="' + (cy - 95) + '" fill="#f59e0b" font-size="14" font-weight="bold" text-anchor="middle">DIPLOTENE: Dissolution of Complex & X-Shaped CHIASMATA</text>';
-      // Dissolution of synaptonemal complex; homologues push apart except at chiasmata
-      // Left arm pushed out, crosses at chiasma
-      m += '<path d="M ' + (cx - 50) + ' ' + (cy - 70) + ' Q ' + (cx - 20) + ' ' + (cy - 20) + ' ' + cx + ' ' + cy +
-           ' Q ' + (cx - 20) + ' ' + (cy + 20) + ' ' + (cx - 50) + ' ' + (cy + 70) + '" fill="none" stroke="#38bdf8" stroke-width="5"/>';
-      // Right arm pushed out, crosses at chiasma
-      m += '<path d="M ' + (cx + 50) + ' ' + (cy - 70) + ' Q ' + (cx + 20) + ' ' + (cy - 20) + ' ' + cx + ' ' + cy +
-           ' Q ' + (cx + 20) + ' ' + (cy + 20) + ' ' + (cx + 50) + ' ' + (cy + 70) + '" fill="none" stroke="#ec4899" stroke-width="5"/>';
-
-      // Recombined segments visible after crossing over
-      m += '<line x1="' + (cx - 25) + '" y1="' + (cy + 35) + '" x2="' + (cx - 50) + '" y2="' + (cy + 70) + '" stroke="#ec4899" stroke-width="5"/>';
-      m += '<line x1="' + (cx + 25) + '" y1="' + (cy + 35) + '" x2="' + (cx + 50) + '" y2="' + (cy + 70) + '" stroke="#38bdf8" stroke-width="5"/>';
-
-      m += '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="#10b981"/>';
-      m += '<text x="' + (cx + 25) + '" y="' + cy + '" fill="#10b981" font-size="12" font-weight="bold">X-Shaped Chiasma</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#fcd34d" font-size="10.5" text-anchor="middle">Synaptonemal complex dissolves; held only at chiasmata</text>';
-
-    } else if (substage === "diakinesis") {
-      m += '<text x="' + cx + '" y="' + (cy - 95) + '" fill="#ec4899" font-size="14" font-weight="bold" text-anchor="middle">DIAKINESIS: Terminalisation of Chiasmata</text>';
-      // Chiasmata shifted completely to the tips (terminalised)
-      m += '<path d="M ' + (cx - 35) + ' ' + (cy - 60) + ' L ' + (cx + 35) + ' ' + (cy - 60) + '" stroke="#fbbf24" stroke-width="4"/>';
-      m += '<path d="M ' + (cx - 40) + ' ' + (cy - 60) + ' L ' + (cx - 40) + ' ' + (cy + 60) + '" stroke="#38bdf8" stroke-width="5"/>';
-      m += '<path d="M ' + (cx + 40) + ' ' + (cy - 60) + ' L ' + (cx + 40) + ' ' + (cy + 60) + '" stroke="#ec4899" stroke-width="5"/>';
-      m += '<path d="M ' + (cx - 35) + ' ' + (cy + 60) + ' L ' + (cx + 35) + ' ' + (cy + 60) + '" stroke="#fbbf24" stroke-width="4"/>';
-
-      m += '<text x="' + cx + '" y="' + (cy - 70) + '" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle">Terminalised Chiasma (Tips)</text>';
-      m += '<text x="' + cx + '" y="' + cy + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Nuclear envelope & nucleolus break down</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#f87171" font-size="10.5" text-anchor="middle">Meiotic spindle assembled; transition to Metaphase I</text>';
+      m += '<text x="350" y="268" fill="#94a3b8" font-size="11" text-anchor="middle">Figure 10.2 a \u00B7 untangled during chromatin condensation</text>';
+      readout(cell("Material", cond ? "condensed" : "intertwined", cond ? "#22c55e" : "#38bdf8"));
+      verdict(cond ? "Prophase completion event 1." : "Initiate condensation of chromosomal material.");
+    } else if(view === "asters"){
+      var lx = apart ? 120 : 300, rx = apart ? 580 : 400;
+      m += '<circle cx="' + lx + '" cy="170" r="12" fill="#f59e0b"/>';
+      m += '<circle cx="' + rx + '" cy="170" r="12" fill="#f59e0b"/>';
+      for(var a = 0; a < 8; a++){
+        var ang = a * Math.PI / 4;
+        m += '<line x1="' + lx + '" y1="170" x2="' + (lx + 34 * Math.cos(ang)) + '" y2="' + (170 + 34 * Math.sin(ang)) + '" stroke="#f59e0b" stroke-width="2" opacity="0.8"/>';
+        m += '<line x1="' + rx + '" y1="170" x2="' + (rx + 34 * Math.cos(ang)) + '" y2="' + (170 + 34 * Math.sin(ang)) + '" stroke="#f59e0b" stroke-width="2" opacity="0.8"/>';
+      }
+      if(apart){
+        m += '<line x1="154" y1="170" x2="546" y2="170" stroke="#64748b" stroke-width="2" stroke-dasharray="6,4"/>';
+        m += '<text x="350" y="150" fill="#94a3b8" font-size="10" text-anchor="middle">spindle fibres</text>';
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">' + (apart ? "Two asters + spindle fibres = mitotic apparatus" : "Centrosome duplicated in S; march to poles next") + "</text>";
+      readout(cell("Centrosomes", apart ? "opposite poles" : "together", apart ? "#22c55e" : "#f59e0b"));
+      verdict(apart ? "Prophase completion event 2." : "Move the centrosomes apart.");
+    } else {
+      m += '<line x1="350" y1="80" x2="350" y2="250" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,4"/>';
+      m += '<text x="350" y="268" fill="#22c55e" font-size="11" text-anchor="middle">metaphase plate (equator)</text>';
+      var pxs = aligned ? [350, 350, 350] : [220, 350, 470];
+      var pys = aligned ? [130, 170, 210] : [130, 190, 140];
+      for(var k = 0; k < 3; k++){
+        m += '<rect x="' + (pxs[k] - 12) + '" y="' + (pys[k] - 16) + '" width="10" height="32" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+        m += '<rect x="' + (pxs[k] + 2) + '" y="' + (pys[k] - 16) + '" width="10" height="32" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+        m += '<circle cx="' + pxs[k] + '" cy="' + pys[k] + '" r="4" fill="#f59e0b"/>';
+        m += '<line x1="' + pxs[k] + '" y1="' + pys[k] + '" x2="120" y2="' + pys[k] + '" stroke="#64748b" stroke-width="1.5"/>';
+        m += '<line x1="' + pxs[k] + '" y1="' + pys[k] + '" x2="580" y2="' + pys[k] + '" stroke="#64748b" stroke-width="1.5"/>';
+      }
+      m += '<text x="120" y="100" fill="#f59e0b" font-size="10" text-anchor="middle">pole</text>';
+      m += '<text x="580" y="100" fill="#f59e0b" font-size="10" text-anchor="middle">pole</text>';
+      readout(cell("Chromosomes", aligned ? "at plate" : "scattered", aligned ? "#22c55e" : "#38bdf8") + cell("Morphology", "best studied here", "#94a3b8"));
+      verdict(aligned ? "Metaphase: sisters wired to opposite poles." : "Move chromosomes to the spindle equator.");
     }
-
-    // Right info panel
-    var ix = W - 180, iy = 50;
-    m += '<rect x="' + ix + '" y="' + iy + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (ix + 85) + '" y="' + (iy + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">SUBSTAGE PROFILE</text>';
-
-    if (substage === "leptotene") {
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 50) + '" fill="#38bdf8" font-size="11" font-weight="bold">1. Leptotene</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 75) + '" fill="#cbd5e1" font-size="10">• Compaction continues</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 95) + '" fill="#cbd5e1" font-size="10">• Thin thread stage</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 115) + '" fill="#cbd5e1" font-size="10">• Chromatin becomes</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 130) + '" fill="#cbd5e1" font-size="10">  distinctly visible</text>';
-    } else if (substage === "zygotene") {
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 50) + '" fill="#818cf8" font-size="11" font-weight="bold">2. Zygotene</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 75) + '" fill="#fcd34d" font-size="10" font-weight="bold">• SYNAPSIS begins</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 95) + '" fill="#cbd5e1" font-size="10">• Homologous pairing</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 120) + '" fill="#86efac" font-size="10" font-weight="bold">• Synaptonemal</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 135) + '" fill="#86efac" font-size="10" font-weight="bold">  Complex forms</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 160) + '" fill="#cbd5e1" font-size="10">• Pair = Bivalent</text>';
-    } else if (substage === "pachytene") {
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 50) + '" fill="#10b981" font-size="11" font-weight="bold">3. Pachytene</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 75) + '" fill="#4ade80" font-size="10" font-weight="bold">• CROSSING OVER</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 95) + '" fill="#cbd5e1" font-size="10">• 4 chromatids distinct</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 115) + '" fill="#cbd5e1" font-size="10">• Recombination nodules</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 140) + '" fill="#fcd34d" font-size="10" font-weight="bold">• Enzyme: RECOMBINASE</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 165) + '" fill="#cbd5e1" font-size="10">• Exchange of genetic</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 180) + '" fill="#cbd5e1" font-size="10">  material between</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 195) + '" fill="#f87171" font-size="10">  non-sister chromatids</text>';
-    } else if (substage === "diplotene") {
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 50) + '" fill="#f59e0b" font-size="11" font-weight="bold">4. Diplotene</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 75) + '" fill="#ef4444" font-size="10" font-weight="bold">• Synaptonemal complex</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 90) + '" fill="#ef4444" font-size="10" font-weight="bold">  DISSOLVES</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 115) + '" fill="#4ade80" font-size="10" font-weight="bold">• X-shaped CHIASMATA</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 130) + '" fill="#cbd5e1" font-size="10">  become visible</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 155) + '" fill="#cbd5e1" font-size="10">• Oocytes can arrest</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 170) + '" fill="#cbd5e1" font-size="10">  for months/years</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 185) + '" fill="#cbd5e1" font-size="10">  (dictyotene stage)</text>';
-    } else if (substage === "diakinesis") {
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 50) + '" fill="#ec4899" font-size="11" font-weight="bold">5. Diakinesis</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 75) + '" fill="#fcd34d" font-size="10" font-weight="bold">• TERMINALISATION</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 90) + '" fill="#cbd5e1" font-size="10">  of chiasmata (to tips)</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 115) + '" fill="#cbd5e1" font-size="10">• Meiotic spindle forms</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 140) + '" fill="#f87171" font-size="10">• Nucleolus disappears</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 160) + '" fill="#f87171" font-size="10">• Nuclear envelope</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 175) + '" fill="#f87171" font-size="10">  breaks down</text>';
-      m += '<text x="' + (ix + 10) + '" y="' + (iy + 200) + '" fill="#86efac" font-size="10">• Enters Metaphase I</text>';
-    }
-
     svg.innerHTML = m;
-
-    var synComp = (substage === "zygotene" || substage === "pachytene") ? "Active / Intact" : "Dissolved / Absent";
-    var chiasState = (substage === "diplotene") ? "Visible X-Shaped" : (substage === "diakinesis" ? "Terminalised to Tips" : "Not yet formed");
-    var recStatus = (substage === "pachytene") ? "Active (Recombinase)" : (substage === "diplotene" || substage === "diakinesis" ? "Completed" : "Inactive");
-
-    readout(
-      cell("Prophase I Stage", substage.toUpperCase(), "#38bdf8") +
-      cell("Synaptonemal Complex", synComp, synComp === "Active / Intact" ? "#10b981" : "#94a3b8") +
-      cell("Chiasmata Status", chiasState, "#f59e0b") +
-      cell("Crossing Over", recStatus, "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#38bdf8;font-weight:700;">NCERT 10.3 Prophase I Rule:</span> ' +
-      (substage === "zygotene" ?
-       "In Zygotene, homologous chromosomes begin pairing together in a process called synapsis, accompanied by the formation of the complex nucleoprotein structure called the synaptonemal complex (forming a bivalent)." :
-       (substage === "pachytene" ?
-        "In Pachytene, crossing over occurs between non-sister chromatids of homologous chromosomes at recombination nodules, catalyzed by the enzyme recombinase, resulting in mutual genetic exchange." :
-        (substage === "diplotene" ?
-         "In Diplotene, the synaptonemal complex dissolves and the homologous chromosomes separate from each other except at the points of crossing over, forming the characteristic X-shaped chiasmata." :
-         (substage === "diakinesis" ?
-          "Diakinesis is marked by the terminalisation of chiasmata (shifting to the chromosome tips), assembly of the meiotic spindle, and the breakdown of the nucleolus and nuclear envelope." :
-          "In Leptotene, chromosomes undergo progressive condensation and compaction, gradually becoming visible as long, thin threads under the light microscope."))))
-    );
   }
 
-  return { mount: mount, setSubstage: setSubstage, draw: draw };
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 5. SIMULATION 5: Anaphase I vs Mitotic Anaphase (meiosis1segregationsim)
+// 4. Chromosome March & Cytokinesis Lab (divisionalab) - L4, 10.2.3-10.2.5
 // -------------------------------------------------------------------------
-window.SIMS.meiosis1segregationsim = (function(){
-  var divType = "anaphase1"; // "mitosis", "anaphase1", "compare"
+window.SIMS.divisionalab = (function(){
+  var view = "anaphase"; // "anaphase", "telo", "cytokinesis"
+  var split = false, rebuilt = false, plant = false;
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
-    App.state.maxT = 3;
+    App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Centromere Splits (Mitotic Anaphase)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Centromere INTACT (Meiotic Anaphase I)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Homologous Chromosomes Segregate</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Reduction to Haploid (2n -> n)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.meiosis1segregationsim.setType(\'anaphase1\')">1. Meiotic Anaphase I (Centromere INTACT)</button>' +
-      '<button class="preset-btn" onclick="SIMS.meiosis1segregationsim.setType(\'mitosis\')">2. Mitotic Anaphase (Centromere SPLITS)</button>' +
-      '<button class="preset-btn" onclick="SIMS.meiosis1segregationsim.setType(\'compare\')">3. Side-by-Side Comparison</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Daughter chromosomes</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Rebuilt nuclei</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Furrow / cell-plate</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-anaphase">Anaphase March</button>' +
+      '<button class="preset-btn" id="p-telo">Telophase Rebuild</button>' +
+      '<button class="preset-btn" id="p-cytokinesis">Furrow vs Plate</button>';
+    document.getElementById("p-anaphase").onclick = function(){ setActivePreset(this); setV("anaphase"); };
+    document.getElementById("p-telo").onclick = function(){ setActivePreset(this); setV("telo"); };
+    document.getElementById("p-cytokinesis").onclick = function(){ setActivePreset(this); setV("cytokinesis"); };
+    mountControls();
+    draw(0);
   }
 
-  function setType(t){
-    divType = t;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">CRUCIAL DISTINCTION: ANAPHASE I (MEIOSIS) vs ANAPHASE (MITOSIS)</text>';
-
-    if (divType === "anaphase1") {
-      var cx = W / 2 - 80;
-      var cy = H / 2 + 15;
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">ANAPHASE I OF MEIOSIS: Homologue Disjunction, Centromeres Intact</text>';
-
-      // Cell boundary
-      m += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="150" ry="90" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="2.5"/>';
-
-      // Left and right poles
-      var pL = cx - 130, pR = cx + 130;
-      m += '<circle cx="' + pL + '" cy="' + cy + '" r="5" fill="#38bdf8"/>';
-      m += '<circle cx="' + pR + '" cy="' + cy + '" r="5" fill="#38bdf8"/>';
-
-      // Chromosomes migrating poleward: Homologues separate, but EACH CHROMOSOME STILL HAS 2 CHROMATIDS ATTACHED AT CENTROMERE!
-      function drawIntactChr(x, y, col, isLeft) {
-        var dx = isLeft ? 8 : -8;
-        m += '<g transform="translate(' + x + ',' + y + ')">';
-        m += '<line x1="0" y1="0" x2="' + (isLeft ? -35 : 35) + '" y2="0" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>';
-        // V-shaped trailing arms (2 chromatids)
-        m += '<line x1="0" y1="0" x2="' + dx + '" y2="-15" stroke="' + col + '" stroke-width="4.5" stroke-linecap="round"/>';
-        m += '<line x1="0" y1="0" x2="' + (dx + 6) + '" y2="-12" stroke="' + col + '" stroke-width="4.5" stroke-linecap="round"/>';
-        m += '<line x1="0" y1="0" x2="' + dx + '" y2="15" stroke="' + col + '" stroke-width="4.5" stroke-linecap="round"/>';
-        m += '<line x1="0" y1="0" x2="' + (dx + 6) + '" y2="12" stroke="' + col + '" stroke-width="4.5" stroke-linecap="round"/>';
-        m += '<circle cx="0" cy="0" r="4.5" fill="#fbbf24"/>'; // Centromere intact!
-        m += '</g>';
-      }
-
-      drawIntactChr(cx - 65, cy - 35, "#38bdf8", true);
-      drawIntactChr(cx - 65, cy + 35, "#818cf8", true);
-      drawIntactChr(cx + 65, cy - 35, "#ec4899", false);
-      drawIntactChr(cx + 65, cy + 35, "#f43f5e", false);
-
-      m += '<text x="' + cx + '" y="' + (cy - 20) + '" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">CENTROMERES DO NOT SPLIT!</text>';
-      m += '<text x="' + cx + '" y="' + cy + '" fill="#cbd5e1" font-size="10.5" text-anchor="middle">Sister chromatids remain attached at their centromere</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 20) + '" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">Homologous Chromosomes Segregate to Opposite Poles</text>';
-
-    } else if (divType === "mitosis") {
-      var cxM = W / 2 - 80;
-      var cyM = H / 2 + 15;
-      m += '<text x="' + cxM + '" y="' + (cyM - 100) + '" fill="#ef4444" font-size="14" font-weight="bold" text-anchor="middle">MITOTIC ANAPHASE: Centromeres SPLIT Simultaneously</text>';
-
-      // Cell boundary
-      m += '<ellipse cx="' + cxM + '" cy="' + cyM + '" rx="150" ry="90" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="2.5"/>';
-
-      var pLM = cxM - 130, pRM = cxM + 130;
-      m += '<circle cx="' + pLM + '" cy="' + cyM + '" r="5" fill="#38bdf8"/>';
-      m += '<circle cx="' + pRM + '" cy="' + cyM + '" r="5" fill="#38bdf8"/>';
-
-      // Centromere split! Single sister chromatids migrating poleward
-      function drawSplitChr(x, y, col, isLeft) {
-        var dx = isLeft ? 10 : -10;
-        m += '<g transform="translate(' + x + ',' + y + ')">';
-        m += '<line x1="0" y1="0" x2="' + (isLeft ? -45 : 45) + '" y2="0" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>';
-        m += '<path d="M ' + dx + ' -12 L 0 0 L ' + dx + ' 12" fill="none" stroke="' + col + '" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>';
-        m += '<circle cx="0" cy="0" r="3.5" fill="#fbbf24"/>'; // Split centromere
-        m += '</g>';
-      }
-
-      drawSplitChr(cxM - 65, cyM - 45, "#38bdf8", true);
-      drawSplitChr(cxM - 65, cyM - 15, "#ec4899", true);
-      drawSplitChr(cxM - 65, cyM + 15, "#818cf8", true);
-      drawSplitChr(cxM - 65, cyM + 45, "#f59e0b", true);
-
-      drawSplitChr(cxM + 65, cyM - 45, "#38bdf8", false);
-      drawSplitChr(cxM + 65, cyM - 15, "#ec4899", false);
-      drawSplitChr(cxM + 65, cyM + 15, "#818cf8", false);
-      drawSplitChr(cxM + 65, cyM + 45, "#f59e0b", false);
-
-      m += '<text x="' + cxM + '" y="' + (cyM - 20) + '" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">CENTROMERES SPLIT SIMULTANEOUSLY!</text>';
-      m += '<text x="' + cxM + '" y="' + cyM + '" fill="#cbd5e1" font-size="10.5" text-anchor="middle">Sister chromatids become independent daughter chromosomes</text>';
-      m += '<text x="' + cxM + '" y="' + (cyM + 20) + '" fill="#86efac" font-size="11" font-weight="bold" text-anchor="middle">Ploidy Remains Equational (2n at each pole)</text>';
-
-    } else if (divType === "compare") {
-      // Comparison split screen
-      m += '<line x1="280" y1="50" x2="280" y2="340" stroke="#475569" stroke-width="2" stroke-dasharray="6,4"/>';
-
-      // Left: Meiosis Anaphase I
-      m += '<text x="140" y="60" fill="#10b981" font-size="13" font-weight="bold" text-anchor="middle">MEIOSIS: ANAPHASE I</text>';
-      m += '<ellipse cx="140" cy="180" rx="110" ry="70" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="2"/>';
-      m += '<circle cx="60" cy="180" r="4" fill="#38bdf8"/>';
-      m += '<circle cx="220" cy="180" r="4" fill="#38bdf8"/>';
-      m += '<circle cx="100" cy="160" r="4" fill="#fbbf24"/>'; // intact centromere left
-      m += '<line x1="100" y1="160" x2="108" y2="148" stroke="#38bdf8" stroke-width="4"/>';
-      m += '<line x1="100" y1="160" x2="108" y2="172" stroke="#38bdf8" stroke-width="4"/>';
-      m += '<circle cx="180" cy="160" r="4" fill="#fbbf24"/>'; // intact centromere right
-      m += '<line x1="180" y1="160" x2="172" y2="148" stroke="#ec4899" stroke-width="4"/>';
-      m += '<line x1="180" y1="160" x2="172" y2="172" stroke="#ec4899" stroke-width="4"/>';
-      m += '<text x="140" y="275" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">• Centromere INTACT</text>';
-      m += '<text x="140" y="295" fill="#cbd5e1" font-size="10" text-anchor="middle">• Homologues segregate</text>';
-      m += '<text x="140" y="315" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">• Reductional: 2n -> n</text>';
-
-      // Right: Mitotic Anaphase
-      m += '<text x="420" y="60" fill="#ef4444" font-size="13" font-weight="bold" text-anchor="middle">MITOSIS: ANAPHASE</text>';
-      m += '<ellipse cx="420" cy="180" rx="110" ry="70" fill="rgba(239,68,68,0.1)" stroke="#ef4444" stroke-width="2"/>';
-      m += '<circle cx="340" cy="180" r="4" fill="#38bdf8"/>';
-      m += '<circle cx="500" cy="180" r="4" fill="#38bdf8"/>';
-      m += '<circle cx="380" cy="160" r="3.5" fill="#fbbf24"/>'; // split centromere left
-      m += '<path d="M 388 150 L 380 160 L 388 170" fill="none" stroke="#38bdf8" stroke-width="4"/>';
-      m += '<circle cx="460" cy="160" r="3.5" fill="#fbbf24"/>'; // split centromere right
-      m += '<path d="M 452 150 L 460 160 L 452 170" fill="none" stroke="#38bdf8" stroke-width="4"/>';
-      m += '<text x="420" y="275" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">• Centromere SPLITS</text>';
-      m += '<text x="420" y="295" fill="#cbd5e1" font-size="10" text-anchor="middle">• Sister chromatids disjoin</text>';
-      m += '<text x="420" y="315" fill="#86efac" font-size="10" font-weight="bold" text-anchor="middle">• Equational: 2n -> 2n</text>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "anaphase"){
+      c.innerHTML =
+        '<div class="control-group"><label>Centromeres:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-n0">Joined at plate</button>' +
+        '<button class="preset-btn" id="c-n1">Split + march</button></div></div>' +
+        '<div class="control-group"><label>March order:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Centromere leads; arms trail behind.</div></div>';
+      document.getElementById("c-n0").onclick = function(){ split = false; draw(0); };
+      document.getElementById("c-n1").onclick = function(){ split = true; draw(0); };
+    } else if(view === "telo"){
+      c.innerHTML =
+        '<div class="control-group"><label>Poles:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-t0">Bare clusters</button>' +
+        '<button class="preset-btn" id="c-t1">Rebuild nuclei</button></div></div>' +
+        '<div class="control-group"><label>Reforms:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Envelope, nucleolus, golgi, ER.</div></div>';
+      document.getElementById("c-t0").onclick = function(){ rebuilt = false; draw(0); };
+      document.getElementById("c-t1").onclick = function(){ rebuilt = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Cell type:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-y0">Animal (furrow)</button>' +
+        '<button class="preset-btn" id="c-y1">Plant (cell-plate)</button></div></div>' +
+        '<div class="control-group"><label>Skip both:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Multinucleate syncytium (coconut).</div></div>';
+      document.getElementById("c-y0").onclick = function(){ plant = false; draw(0); };
+      document.getElementById("c-y1").onclick = function(){ plant = true; draw(0); };
     }
-
-    // Right details panel
-    var rx = W - 180, ry = 50;
-    m += '<rect x="' + rx + '" y="' + ry + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (rx + 85) + '" y="' + (ry + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">COMPARISON TABLE</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#10b981" font-size="11" font-weight="bold">Meiotic Anaphase I:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#86efac" font-size="10">• Centromere: INTACT</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 90) + '" fill="#cbd5e1" font-size="10">• Separates: Homologues</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 110) + '" fill="#cbd5e1" font-size="10">• Chromatids/Chr: 2</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 130) + '" fill="#fbbf24" font-size="10" font-weight="bold">• Result: HAPLOID (n)</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 165) + '" fill="#ef4444" font-size="11" font-weight="bold">Mitotic Anaphase:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 185) + '" fill="#fca5a5" font-size="10">• Centromere: SPLITS</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 205) + '" fill="#cbd5e1" font-size="10">• Separates: Sister Chr</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 225) + '" fill="#cbd5e1" font-size="10">• Chromatids/Chr: 1</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 245) + '" fill="#86efac" font-size="10" font-weight="bold">• Result: DIPLOID (2n)</text>';
-
-    svg.innerHTML = m;
-
-    var cStateText = (divType === "anaphase1") ? "INTACT (No splitting)" : (divType === "mitosis" ? "SPLIT (Simultaneous)" : "Intact in Ana I vs Split in Mitosis");
-    var ploidyText = (divType === "anaphase1") ? "Haploid (n) daughter cells" : (divType === "mitosis" ? "Diploid (2n) daughter cells" : "n vs 2n");
-
-    readout(
-      cell("Anaphase Type", divType === "anaphase1" ? "Meiosis I Anaphase" : (divType === "mitosis" ? "Mitosis Anaphase" : "Comparative Lab"), "#38bdf8") +
-      cell("Centromere State", cStateText, divType === "anaphase1" ? "#10b981" : "#ef4444") +
-      cell("Disjoining Unit", divType === "anaphase1" ? "Homologous Chromosomes" : "Sister Chromatids", "#fcd34d") +
-      cell("Resulting Ploidy", ploidyText, "#86efac")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT 10.3 Core Distinction:</span> ' +
-      (divType === "anaphase1" ?
-       "In Anaphase I of Meiosis, homologous chromosomes separate and migrate to opposite poles while sister chromatids remain firmly attached at their centromeres. Centromeres DO NOT split in Anaphase I; this results in reduction of chromosome number to haploid (n)." :
-       "In Mitotic Anaphase, centromeres split simultaneously, allowing sister chromatids to separate and move to opposite poles as individual daughter chromosomes, ensuring identical diploid (2n) genetic transmission.")
-    );
   }
 
-  return { mount: mount, setType: setType, draw: draw };
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Anaphase to Cytokinesis (\u00A710.2.3\u2013\u00A710.2.5)</text>';
+    if(view === "anaphase"){
+      if(!split){
+        for(var i = 0; i < 3; i++){
+          var iy = 120 + i * 45;
+          m += '<rect x="328" y="' + (iy - 14) + '" width="10" height="28" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+          m += '<rect x="342" y="' + (iy - 14) + '" width="10" height="28" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+          m += '<circle cx="345" cy="' + iy + '" r="4" fill="#f59e0b"/>';
+        }
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Chromosomes at the metaphase plate, centromeres whole</text>';
+      } else {
+        for(var j = 0; j < 3; j++){
+          var jy = 120 + j * 45;
+          m += '<circle cx="200" cy="' + jy + '" r="5" fill="#f59e0b"/>';
+          m += '<line x1="200" y1="' + jy + '" x2="245" y2="' + (jy - 12) + '" stroke="#38bdf8" stroke-width="3"/>';
+          m += '<line x1="200" y1="' + jy + '" x2="245" y2="' + (jy + 12) + '" stroke="#38bdf8" stroke-width="3"/>';
+          m += '<circle cx="500" cy="' + jy + '" r="5" fill="#f59e0b"/>';
+          m += '<line x1="500" y1="' + jy + '" x2="455" y2="' + (jy - 12) + '" stroke="#38bdf8" stroke-width="3"/>';
+          m += '<line x1="500" y1="' + jy + '" x2="455" y2="' + (jy + 12) + '" stroke="#38bdf8" stroke-width="3"/>';
+        }
+        m += '<text x="150" y="100" fill="#f59e0b" font-size="10" text-anchor="middle">pole</text>';
+        m += '<text x="550" y="100" fill="#f59e0b" font-size="10" text-anchor="middle">pole</text>';
+        m += '<text x="350" y="262" fill="#22c55e" font-size="11" text-anchor="middle">Simultaneous split \u00B7 centromere leading, arms trailing (Fig. 10.2 c)</text>';
+      }
+      readout(cell("Centromeres", split ? "split" : "whole", split ? "#22c55e" : "#38bdf8") + cell("Moving", split ? "to poles" : "at plate", "#94a3b8"));
+      verdict(split ? "Anaphase: chromatids march to opposite poles." : "Split all centromeres simultaneously.");
+    } else if(view === "telo"){
+      var items = rebuilt ? ["envelope", "nucleolus", "golgi", "ER"] : [];
+      [200, 500].forEach(function(px){
+        if(rebuilt){
+          m += '<circle cx="' + px + '" cy="170" r="55" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+          m += '<circle cx="' + px + '" cy="170" r="12" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+          m += '<text x="' + px + '" y="173" fill="#22c55e" font-size="8" text-anchor="middle">nucl</text>';
+        } else {
+          for(var d = 0; d < 5; d++) m += '<circle cx="' + (px - 24 + d * 12) + '" cy="' + (160 + (d % 2) * 18) + '" r="5" fill="#38bdf8"/>';
+        }
+        m += '<text x="' + px + '" y="250" fill="#94a3b8" font-size="10" text-anchor="middle">' + (rebuilt ? "daughter nucleus" : "bare cluster") + "</text>";
+      });
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">' + (rebuilt ? "Rebuilt: envelope + nucleolus + golgi + ER" : "Decondensed clusters, identity lost") + "</text>";
+      readout(cell("Nuclei", rebuilt ? "2 rebuilt" : "0 yet", rebuilt ? "#22c55e" : "#38bdf8"));
+      verdict(rebuilt ? "Telophase: two daughter nuclei." : "Chromosomes decondense at the poles.");
+    } else {
+      if(!plant){
+        m += '<ellipse cx="350" cy="170" rx="180" ry="80" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+        m += '<path d="M350,95 Q330,140 350,170 Q370,140 350,95" fill="none" stroke="#f59e0b" stroke-width="3"/>';
+        m += '<path d="M350,245 Q330,200 350,170 Q370,200 350,245" fill="none" stroke="#f59e0b" stroke-width="3"/>';
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Furrow deepens, joins in the centre \u2192 two cytoplasms</text>';
+      } else {
+        m += '<rect x="170" y="90" width="360" height="160" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+        m += '<line x1="350" y1="110" x2="350" y2="230" stroke="#f59e0b" stroke-width="4"/>';
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Cell-plate grows outward \u2192 middle lamella (wall inextensible)</text>';
+      }
+      m += '<text x="350" y="70" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">' + (plant ? "Plant cytokinesis: cell-plate" : "Animal cytokinesis: furrow") + "</text>";
+      readout(cell("Mechanism", plant ? "cell-plate" : "furrow", "#f59e0b") + cell("Direction", plant ? "centre-out" : "outside-in", "#38bdf8"));
+      verdict(plant ? "Wall grows from centre to lateral walls." : "Furrow joins in the centre.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 6. SIMULATION 6: Meiosis II & Tetrad Generator (meiosis2tetradsim)
+// 5. Mitosis Significance & Meiosis Overview Lab (signiflab) - L5, 10.3-10.4
 // -------------------------------------------------------------------------
-window.SIMS.meiosis2tetradsim = (function(){
-  var stageM2 = "anaphase2"; // "prophase2", "metaphase2", "anaphase2", "tetrad"
+window.SIMS.signiflab = (function(){
+  var view = "repair"; // "repair", "halve", "contract"
+  var job = 0, fused = false, feat = 0;
+  var JOBS = [
+    ["Growth", "multicellular bodies via mitosis"],
+    ["Ratio", "restore nucleo-cytoplasmic ratio"],
+    ["Repair", "epidermis, gut lining, blood"],
+    ["Meristems", "apical + lateral cambium"]
+  ];
+  var FEATS = [
+    ["Two divisions", "meiosis I and II"],
+    ["One replication", "single S phase"],
+    ["Pair + recombine", "non-sister chromatids"],
+    ["Four haploid", "end of meiosis II"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
-    App.state.maxT = 4;
+    App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Daughter Cell 1</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Daughter Cell 2</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Centromere Cleavage (Ana II)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>4 Haploid Gametes (Tetrad)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.meiosis2tetradsim.setStage(\'prophase2\')">1. Prophase II & Metaphase II</button>' +
-      '<button class="preset-btn" onclick="SIMS.meiosis2tetradsim.setStage(\'anaphase2\')">2. Anaphase II (Centromere Cleaves)</button>' +
-      '<button class="preset-btn" onclick="SIMS.meiosis2tetradsim.setStage(\'tetrad\')">3. Telophase II: 4 Gamete Tetrad</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Mitosis pays</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Meiosis halves</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fertilisation restores</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-repair">Mitosis Pays</button>' +
+      '<button class="preset-btn" id="p-halve">Halve + Restore</button>' +
+      '<button class="preset-btn" id="p-contract">Meiosis Contract</button>';
+    document.getElementById("p-repair").onclick = function(){ setActivePreset(this); setV("repair"); };
+    document.getElementById("p-halve").onclick = function(){ setActivePreset(this); setV("halve"); };
+    document.getElementById("p-contract").onclick = function(){ setActivePreset(this); setV("contract"); };
+    mountControls();
+    draw(0);
   }
 
-  function setStage(s){
-    stageM2 = s;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">MEIOSIS II: EQUATIONAL CENTROMERE CLEAVAGE & TETRAD FORMATION</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    if (stageM2 === "prophase2" || stageM2 === "metaphase2") {
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#818cf8" font-size="14" font-weight="bold" text-anchor="middle">METAPHASE II: Chromosomes Align at Two Separate Equators</text>';
-
-      // Two haploid cells from Meiosis I
-      m += '<ellipse cx="' + (cx - 75) + '" cy="' + cy + '" rx="65" ry="80" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<ellipse cx="' + (cx + 75) + '" cy="' + cy + '" rx="65" ry="80" fill="rgba(236,72,153,0.12)" stroke="#ec4899" stroke-width="2"/>';
-
-      // Plate lines
-      m += '<line x1="' + (cx - 75) + '" y1="' + (cy - 60) + '" x2="' + (cx - 75) + '" y2="' + (cy + 60) + '" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,2"/>';
-      m += '<line x1="' + (cx + 75) + '" y1="' + (cy - 60) + '" x2="' + (cx + 75) + '" y2="' + (cy + 60) + '" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,2"/>';
-
-      // Chromosomes aligned with recombined chromatids
-      function drawM2Chr(x, y, c1, c2) {
-        m += '<line x1="' + (x - 7) + '" y1="' + (y - 12) + '" x2="' + (x - 7) + '" y2="' + (y + 12) + '" stroke="' + c1 + '" stroke-width="3.5" stroke-linecap="round"/>';
-        m += '<line x1="' + (x + 7) + '" y1="' + (y - 12) + '" x2="' + (x + 7) + '" y2="' + (y + 12) + '" stroke="' + c2 + '" stroke-width="3.5" stroke-linecap="round"/>';
-        m += '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="#fbbf24"/>';
-      }
-
-      drawM2Chr(cx - 75, cy - 25, "#38bdf8", "#ec4899");
-      drawM2Chr(cx - 75, cy + 25, "#38bdf8", "#38bdf8");
-
-      drawM2Chr(cx + 75, cy - 25, "#ec4899", "#38bdf8");
-      drawM2Chr(cx + 75, cy + 25, "#ec4899", "#ec4899");
-
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Interkinesis has NO DNA replication! 2 haploid cells enter Meiosis II.</text>';
-
-    } else if (stageM2 === "anaphase2") {
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle">ANAPHASE II: Centromeres Split Simultaneously</text>';
-
-      // Two cells showing sister chromatid disjunction
-      m += '<ellipse cx="' + (cx - 75) + '" cy="' + cy + '" rx="65" ry="80" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<ellipse cx="' + (cx + 75) + '" cy="' + cy + '" rx="65" ry="80" fill="rgba(236,72,153,0.12)" stroke="#ec4899" stroke-width="2"/>';
-
-      // Disjoining chromatids
-      function drawDisjoin(xL, xR, y, col) {
-        m += '<path d="M ' + (xL - 6) + ' ' + (y - 8) + ' L ' + (xL - 14) + ' ' + y + ' L ' + (xL - 6) + ' ' + (y + 8) + '" fill="none" stroke="' + col + '" stroke-width="3.5"/>';
-        m += '<circle cx="' + (xL - 14) + '" cy="' + y + '" r="3" fill="#fbbf24"/>';
-
-        m += '<path d="M ' + (xR + 6) + ' ' + (y - 8) + ' L ' + (xR + 14) + ' ' + y + ' L ' + (xR + 6) + ' ' + (y + 8) + '" fill="none" stroke="' + col + '" stroke-width="3.5"/>';
-        m += '<circle cx="' + (xR + 14) + '" cy="' + y + '" r="3" fill="#fbbf24"/>';
-      }
-
-      drawDisjoin(cx - 85, cx - 65, cy - 25, "#38bdf8");
-      drawDisjoin(cx - 85, cx - 65, cy + 25, "#38bdf8");
-
-      drawDisjoin(cx + 65, cx + 85, cy - 25, "#ec4899");
-      drawDisjoin(cx + 65, cx + 85, cy + 25, "#ec4899");
-
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle">Centromeres split now, allowing non-identical sister chromatids to separate!</text>';
-
-    } else if (stageM2 === "tetrad") {
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">TELOPHASE II: 4 Genetically Unique Haploid Gametes (Tetrad)</text>';
-
-      // 4 distinct daughter cells (Tetrad of cells)
-      var tetradCoords = [
-        [cx - 80, cy - 45, "#38bdf8", "Gamete 1 (n, 1C)"],
-        [cx + 80, cy - 45, "#ec4899", "Gamete 2 (n, 1C)"],
-        [cx - 80, cy + 50, "#818cf8", "Gamete 3 (n, 1C)"],
-        [cx + 80, cy + 50, "#f59e0b", "Gamete 4 (n, 1C)"]
-      ];
-
-      for (var t = 0; t < tetradCoords.length; t++) {
-        var tc = tetradCoords[t];
-        m += '<ellipse cx="' + tc[0] + '" cy="' + tc[1] + '" rx="55" ry="38" fill="rgba(30,41,59,0.7)" stroke="' + tc[2] + '" stroke-width="2"/>';
-        m += '<circle cx="' + tc[0] + '" cy="' + tc[1] + '" r="16" fill="none" stroke="' + tc[2] + '" stroke-width="1.5" stroke-dasharray="3,2"/>';
-        m += '<text x="' + tc[0] + '" y="' + (tc[1] + 4) + '" fill="' + tc[2] + '" font-size="10" font-weight="bold" text-anchor="middle">n = 23</text>';
-        m += '<text x="' + tc[0] + '" y="' + (tc[1] + 28) + '" fill="#cbd5e1" font-size="9" text-anchor="middle">' + tc[3] + '</text>';
-      }
-
-      m += '<text x="' + cx + '" y="' + (cy + 105) + '" fill="#10b981" font-size="11" font-weight="bold" text-anchor="middle">All 4 gametes are genetically distinct due to crossing over in Pachytene!</text>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "repair"){
+      c.innerHTML =
+        '<div class="control-group"><label>Contribution:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        JOBS.map(function(j, i){ return '<button class="preset-btn" data-jb="' + i + '">' + j[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Haploid too:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Lower plants + social insects divide haploid cells.</div></div>';
+      c.querySelectorAll("[data-jb]").forEach(function(b){ b.onclick = function(){ job = Number(b.dataset.jb); draw(0); }; });
+    } else if(view === "halve"){
+      c.innerHTML =
+        '<div class="control-group"><label>Cycle:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-h0">Meiosis (2n\u2192n)</button>' +
+        '<button class="preset-btn" id="c-h1">+ fertilisation (n\u21922n)</button></div></div>' +
+        '<div class="control-group"><label>Net:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Species number conserved across generations.</div></div>';
+      document.getElementById("c-h0").onclick = function(){ fused = false; draw(0); };
+      document.getElementById("c-h1").onclick = function(){ fused = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Feature:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        FEATS.map(function(f, i){ return '<button class="preset-btn" data-ft="' + i + '">' + f[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Venue:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Gametogenesis in plants and animals.</div></div>';
+      c.querySelectorAll("[data-ft]").forEach(function(b){ b.onclick = function(){ feat = Number(b.dataset.ft); draw(0); }; });
     }
-
-    // Right details panel
-    var mx = W - 180, my = 50;
-    m += '<rect x="' + mx + '" y="' + my + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (mx + 85) + '" y="' + (my + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">MEIOSIS II RULES</text>';
-
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 50) + '" fill="#fcd34d" font-size="11" font-weight="bold">• Equational Division:</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 70) + '" fill="#cbd5e1" font-size="10">  Resembles standard</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 85) + '" fill="#cbd5e1" font-size="10">  mitotic division</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 110) + '" fill="#10b981" font-size="11" font-weight="bold">• Interkinesis:</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 130) + '" fill="#cbd5e1" font-size="10">  Short gap between</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 145) + '" fill="#ef4444" font-size="10" font-weight="bold">  Meiosis I & II; NO</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 160) + '" fill="#ef4444" font-size="10" font-weight="bold">  DNA replication!</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 185) + '" fill="#ec4899" font-size="11" font-weight="bold">• Centromere Cleavage:</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 205) + '" fill="#cbd5e1" font-size="10">  Occurs at Anaphase II</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 225) + '" fill="#86efac" font-size="11" font-weight="bold">• Final Harvest:</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 245) + '" fill="#cbd5e1" font-size="10">  4 Haploid Daughter</text>';
-    m += '<text x="' + (mx + 10) + '" y="' + (my + 260) + '" fill="#cbd5e1" font-size="10">  Cells (Tetrad of cells)</text>';
-
-    svg.innerHTML = m;
-
-    var cCount = (stageM2 === "tetrad") ? "4 Haploid Cells" : "2 Haploid Mother Cells";
-    var cStateVal = (stageM2 === "anaphase2" || stageM2 === "tetrad") ? "Cleaved / Split" : "Joined at Centromere";
-
-    readout(
-      cell("Stage of Meiosis II", stageM2.toUpperCase(), "#38bdf8") +
-      cell("Cell Number", cCount, "#10b981") +
-      cell("Centromere State", cStateVal, stageM2 === "anaphase2" ? "#fbbf24" : "#ec4899") +
-      cell("End Ploidy & DNA", "n Chromosomes, 1C DNA", "#86efac")
-    );
-
-    verdict(
-      '<span style="color:#fcd34d;font-weight:700;">NCERT 10.3 Meiosis II Rule:</span> ' +
-      (stageM2 === "tetrad" ?
-       "Meiosis ends with Telophase II and cytokinesis, yielding a tetrad of four haploid daughter cells (gametes or spores), each containing half the chromosome number (n) and 1C DNA, genetically distinct due to crossing over." :
-       (stageM2 === "anaphase2" ?
-        "In Anaphase II, the centromeres of each chromosome split simultaneously, allowing non-identical sister chromatids (modified by recombination in Pachytene) to migrate to opposite poles." :
-        "Meiosis II is initiated immediately after cytokinesis of Meiosis I, usually before chromosomes have fully elongated, without any intervening DNA replication during interkinesis."))
-    );
   }
 
-  return { mount: mount, setStage: setStage, draw: draw };
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Significance &amp; Meiosis (\u00A710.3\u2013\u00A710.4)</text>';
+    if(view === "repair"){
+      var jb = JOBS[job];
+      for(var i = 0; i < 4; i++){
+        var x = 45 + i * 160;
+        var on = i === job;
+        m += '<rect x="' + x + '" y="120" width="140" height="90" rx="8" fill="#0f172a" stroke="' + (on ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 70) + '" y="155" fill="' + (on ? "#22c55e" : "#475569") + '" font-size="11" font-weight="700" text-anchor="middle">' + JOBS[i][0] + "</text>";
+        m += '<text x="' + (x + 70) + '" y="175" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="8" text-anchor="middle">' + JOBS[i][1] + "</text>";
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Now viewing: ' + jb[0] + " \u2014 " + jb[1] + "</text>";
+      readout(cell("Pays for", jb[0], "#22c55e") + cell("Detail", jb[1], "#94a3b8"));
+      verdict("Mitosis: identical diploid daughters at work.");
+    } else if(view === "halve"){
+      if(!fused){
+        m += '<circle cx="250" cy="170" r="45" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+        m += '<text x="250" y="178" fill="#38bdf8" font-size="16" font-weight="700" text-anchor="middle">2n</text>';
+        m += '<text x="350" y="178" fill="#64748b" font-size="18" text-anchor="middle">\u2192</text>';
+        m += '<circle cx="450" cy="170" r="45" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+        m += '<text x="450" y="178" fill="#38bdf8" font-size="16" font-weight="700" text-anchor="middle">n</text>';
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Meiosis halves the number for gametes</text>';
+      } else {
+        m += '<circle cx="200" cy="170" r="40" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+        m += '<text x="200" y="177" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">n</text>';
+        m += '<text x="280" y="178" fill="#64748b" font-size="16" text-anchor="middle">+</text>';
+        m += '<circle cx="360" cy="170" r="40" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+        m += '<text x="360" y="177" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">n</text>';
+        m += '<text x="430" y="178" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
+        m += '<circle cx="520" cy="170" r="45" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5"/>';
+        m += '<text x="520" y="178" fill="#f59e0b" font-size="16" font-weight="700" text-anchor="middle">2n</text>';
+        m += '<text x="350" y="262" fill="#f59e0b" font-size="11" text-anchor="middle">Fertilisation restores diploidy \u2014 number conserved</text>';
+      }
+      readout(cell("Number", fused ? "n+n\u21922n" : "2n\u2192n", fused ? "#f59e0b" : "#38bdf8"));
+      verdict(fused ? "Halve + restore: conserved." : "Meiosis ensures the haploid phase.");
+    } else {
+      var f = FEATS[feat];
+      for(var k = 0; k < 4; k++){
+        var kx = 45 + k * 160;
+        var kon = k === feat;
+        m += '<rect x="' + kx + '" y="120" width="140" height="90" rx="8" fill="#0f172a" stroke="' + (kon ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (kx + 70) + '" y="155" fill="' + (kon ? "#38bdf8" : "#475569") + '" font-size="10" font-weight="700" text-anchor="middle">' + FEATS[k][0] + "</text>";
+        m += '<text x="' + (kx + 70) + '" y="175" fill="' + (kon ? "#94a3b8" : "#475569") + '" font-size="8" text-anchor="middle">' + FEATS[k][1] + "</text>";
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Key features of meiosis, PDF p. 6</text>';
+      readout(cell("Feature", f[0], "#38bdf8") + cell("Detail", f[1], "#94a3b8"));
+      verdict("Two divisions, one replication, four haploid cells.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 7. SIMULATION 7: N vs C Genomic Calculator (cytogeneticscalculator)
+// 6. Meiotic Phases & Dyad-to-Tetrad Lab (meiosislab) - L6, 10.4.1-10.4.2
 // -------------------------------------------------------------------------
-window.SIMS.cytogeneticscalculator = (function(){
-  var species = "human"; // "human" (2n=46), "onion" (2n=16), "drosophila" (2n=8)
-  var selectedStage = "g1"; // "g1", "s", "g2", "metaphase", "anaphase", "gamete"
+window.SIMS.meiosislab = (function(){
+  var view = "march"; // "march", "reduction", "dyad"
+  var sub = 1, ana1 = false, tetra = false;
+  var SUBS = [
+    ["Leptotene", "chromosomes visible"],
+    ["Zygotene", "synapsis \u2192 bivalent"],
+    ["Pachytene", "crossing over"],
+    ["Diplotene", "chiasmata"],
+    ["Diakinesis", "terminalisation"]
+  ];
 
-  var speciesData = {
-    human: { name: "Human (Homo sapiens)", n: 23, baseC: 3.3 },
-    onion: { name: "Onion (Allium cepa)", n: 8, baseC: 16.7 },
-    drosophila: { name: "Fruit Fly (Drosophila)", n: 4, baseC: 0.18 }
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Homologues</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Crossover links</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Haploid products</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-march">Prophase I March</button>' +
+      '<button class="preset-btn" id="p-reduction">Homologue Split</button>' +
+      '<button class="preset-btn" id="p-dyad">Dyad to Tetrad</button>';
+    document.getElementById("p-march").onclick = function(){ setActivePreset(this); setV("march"); };
+    document.getElementById("p-reduction").onclick = function(){ setActivePreset(this); setV("reduction"); };
+    document.getElementById("p-dyad").onclick = function(){ setActivePreset(this); setV("dyad"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "march"){
+      c.innerHTML =
+        '<div class="control-group"><label>Subphase:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        SUBS.map(function(s, i){ return '<button class="preset-btn" data-sb="' + i + '">' + s[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Enzyme:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Crossing over is mediated by recombinase.</div></div>';
+      c.querySelectorAll("[data-sb]").forEach(function(b){ b.onclick = function(){ sub = Number(b.dataset.sb); draw(0); }; });
+    } else if(view === "reduction"){
+      c.innerHTML =
+        '<div class="control-group"><label>Anaphase I:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-a0">Bivalents at plate</button>' +
+        '<button class="preset-btn" id="c-a1">Homologues part</button></div></div>' +
+        '<div class="control-group"><label>Sisters:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Stay associated at centromeres.</div></div>';
+      document.getElementById("c-a0").onclick = function(){ ana1 = false; draw(0); };
+      document.getElementById("c-a1").onclick = function(){ ana1 = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>After:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-d0">Meiosis I (dyad)</button>' +
+        '<button class="preset-btn" id="c-d1">Meiosis II (tetrad)</button></div></div>' +
+        '<div class="control-group"><label>Between:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Interkinesis: no DNA replication.</div></div>';
+      document.getElementById("c-d0").onclick = function(){ tetra = false; draw(0); };
+      document.getElementById("c-d1").onclick = function(){ tetra = true; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Meiotic Phases (\u00A710.4.1\u2013\u00A710.4.2)</text>';
+    if(view === "march"){
+      var s = SUBS[sub];
+      for(var i = 0; i < 5; i++){
+        var x = 30 + i * 130;
+        var on = i === sub;
+        m += '<rect x="' + x + '" y="120" width="118" height="95" rx="8" fill="#0f172a" stroke="' + (on ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 59) + '" y="155" fill="' + (on ? "#38bdf8" : "#475569") + '" font-size="10" font-weight="700" text-anchor="middle">' + SUBS[i][0] + "</text>";
+        m += '<text x="' + (x + 59) + '" y="178" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="8" text-anchor="middle">' + SUBS[i][1] + "</text>";
+        if(i < 4) m += '<text x="' + (x + 124) + '" y="170" fill="#64748b" font-size="14" text-anchor="middle">\u2192</text>';
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Oocyte diplotene can last months or years \u00B7 diakinesis \u2192 metaphase</text>';
+      readout(cell("Subphase", s[0], "#38bdf8") + cell("Marks", s[1], "#f59e0b"));
+      verdict("Prophase I: longer and more complex than mitotic prophase.");
+    } else if(view === "reduction"){
+      if(!ana1){
+        m += '<line x1="350" y1="80" x2="350" y2="250" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4"/>';
+        [130, 175, 220].forEach(function(by){
+          m += '<rect x="322" y="' + (by - 14) + '" width="12" height="28" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+          m += '<rect x="366" y="' + (by - 14) + '" width="12" height="28" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>';
+        });
+        m += '<text x="350" y="268" fill="#94a3b8" font-size="11" text-anchor="middle">Metaphase I: bivalents on the equatorial plate (Fig. 10.3)</text>';
+      } else {
+        [130, 175, 220].forEach(function(cy){
+          m += '<rect x="180" y="' + (cy - 14) + '" width="12" height="28" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+          m += '<rect x="508" y="' + (cy - 14) + '" width="12" height="28" rx="4" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>';
+        });
+        m += '<text x="350" y="268" fill="#22c55e" font-size="11" text-anchor="middle">Anaphase I: homologues part, sisters stay joined at centromeres</text>';
+      }
+      readout(cell("Parting", ana1 ? "homologues" : "aligned", ana1 ? "#22c55e" : "#38bdf8") + cell("Sisters", "joined", "#94a3b8"));
+      verdict(ana1 ? "Reduction: each pole gets half the number." : "Bivalents aligned; part them next.");
+    } else {
+      if(!tetra){
+        [270, 430].forEach(function(px){
+          m += '<circle cx="' + px + '" cy="170" r="48" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+          m += '<text x="' + px + '" y="166" fill="#38bdf8" font-size="13" font-weight="700" text-anchor="middle">n</text>';
+          m += '<text x="' + px + '" y="184" fill="#94a3b8" font-size="10" text-anchor="middle">2C</text>';
+        });
+        m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Dyad of cells (telophase I + cytokinesis) \u00B7 then interkinesis, no replication</text>';
+      } else {
+        [200, 300, 400, 500].forEach(function(px){
+          m += '<circle cx="' + px + '" cy="170" r="38" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+          m += '<text x="' + px + '" y="166" fill="#22c55e" font-size="12" font-weight="700" text-anchor="middle">n</text>';
+          m += '<text x="' + px + '" y="182" fill="#94a3b8" font-size="9" text-anchor="middle">C</text>';
+        });
+        m += '<text x="350" y="262" fill="#22c55e" font-size="11" text-anchor="middle">Tetrad of cells: four haploid daughters (Fig. 10.4)</text>';
+      }
+      readout(cell("Cells", tetra ? "4 (tetrad)" : "2 (dyad)", tetra ? "#22c55e" : "#38bdf8") + cell("Each", tetra ? "n, C" : "n, 2C", "#94a3b8"));
+      verdict(tetra ? "Meiosis II splits sisters without fresh replication." : "Dyad waits through interkinesis.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 7. Meiosis Significance & N/C Ledger Lab (comparelab) - L7, 10.5 + Summary
+// -------------------------------------------------------------------------
+window.SIMS.comparelab = (function(){
+  var view = "nc"; // "nc", "vs", "onion"
+  var stage = 0, row = 0, ostep = 0;
+  var STAGES = [
+    ["G1", "2n", "2C"], ["S", "2n", "4C"], ["G2-meta", "2n", "4C"],
+    ["Anaphase", "4n", "4C"], ["Daughters", "2n", "2C"],
+    ["Dyad", "n", "2C"], ["Tetrad", "n", "C"]
+  ];
+  var ROWS = [
+    ["Divisions", "one", "two (I, II)"],
+    ["Replication", "one S", "one S"],
+    ["Number", "equational 2n", "reductional n"],
+    ["Pairing", "none", "synapsis + crossing"],
+    ["Products", "2 diploid", "4 haploid"]
+  ];
+  var OSTEPS = [["G1", "16", "2C"], ["After S", "16", "4C"], ["G2", "16", "4C"], ["After M", "16", "2C"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chromosome number (N)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>DNA content (C)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Onion: 16 chromosomes</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-nc">N/C Ledger</button>' +
+      '<button class="preset-btn" id="p-vs">Mitosis vs Meiosis</button>' +
+      '<button class="preset-btn" id="p-onion">Onion 16</button>';
+    document.getElementById("p-nc").onclick = function(){ setActivePreset(this); setV("nc"); };
+    document.getElementById("p-vs").onclick = function(){ setActivePreset(this); setV("vs"); };
+    document.getElementById("p-onion").onclick = function(){ setActivePreset(this); setV("onion"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "nc"){
+      c.innerHTML =
+        '<div class="control-group"><label>Stage:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        STAGES.map(function(s, i){ return '<button class="preset-btn" data-st="' + i + '">' + s[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Rules:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">N doubles only at anaphase; C doubles only in S.</div></div>';
+      c.querySelectorAll("[data-st]").forEach(function(b){ b.onclick = function(){ stage = Number(b.dataset.st); draw(0); }; });
+    } else if(view === "vs"){
+      c.innerHTML =
+        '<div class="control-group"><label>Aspect:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        ROWS.map(function(r, i){ return '<button class="preset-btn" data-rw="' + i + '">' + r[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Purpose:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Growth/repair vs gametes.</div></div>';
+      c.querySelectorAll("[data-rw]").forEach(function(b){ b.onclick = function(){ row = Number(b.dataset.rw); draw(0); }; });
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Point:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        OSTEPS.map(function(o, i){ return '<button class="preset-btn" data-os="' + i + '">' + o[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Given:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">16 chromosomes; 2C after M.</div></div>';
+      c.querySelectorAll("[data-os]").forEach(function(b){ b.onclick = function(){ ostep = Number(b.dataset.os); draw(0); }; });
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">N/C Ledger &amp; Contrasts (\u00A710.5 + Summary)</text>';
+    if(view === "nc"){
+      var st = STAGES[stage];
+      m += '<text x="350" y="100" fill="#f8fafc" font-size="15" font-weight="700" text-anchor="middle">' + st[0] + "</text>";
+      m += '<rect x="170" y="130" width="150" height="80" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+      m += '<text x="245" y="168" fill="#38bdf8" font-size="18" font-weight="700" text-anchor="middle">' + st[1] + "</text>";
+      m += '<text x="245" y="190" fill="#64748b" font-size="10" text-anchor="middle">chromosomes (N)</text>';
+      m += '<rect x="380" y="130" width="150" height="80" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+      m += '<text x="455" y="168" fill="#22c55e" font-size="18" font-weight="700" text-anchor="middle">' + st[2] + "</text>";
+      m += '<text x="455" y="190" fill="#64748b" font-size="10" text-anchor="middle">DNA content (C)</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Q16 ledger \u00B7 anaphase promotes chromatids to chromosomes \u00B7 meiosis I halves N</text>';
+      readout(cell("Stage", st[0], "#f8fafc") + cell("N", st[1], "#38bdf8") + cell("C", st[2], "#22c55e"));
+      verdict("Number and content tracked separately.");
+    } else if(view === "vs"){
+      var rw = ROWS[row];
+      m += '<rect x="60" y="120" width="170" height="80" rx="8" fill="#0f172a" stroke="#94a3b8" stroke-width="2"/>';
+      m += '<text x="145" y="160" fill="#cbd5e1" font-size="12" font-weight="700" text-anchor="middle">' + rw[0] + "</text>";
+      m += '<rect x="250" y="120" width="190" height="80" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="345" y="150" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">Mitosis</text>';
+      m += '<text x="345" y="172" fill="#94a3b8" font-size="11" text-anchor="middle">' + rw[1] + "</text>";
+      m += '<rect x="450" y="120" width="190" height="80" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+      m += '<text x="545" y="150" fill="#22c55e" font-size="11" font-weight="700" text-anchor="middle">Meiosis</text>';
+      m += '<text x="545" y="172" fill="#94a3b8" font-size="11" text-anchor="middle">' + rw[2] + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Q11 comparison \u00B7 equational vs reductional</text>';
+      readout(cell("Aspect", rw[0], "#cbd5e1") + cell("Mitosis", rw[1], "#38bdf8") + cell("Meiosis", rw[2], "#22c55e"));
+      verdict("One division, same number \u2014 vs \u2014 two divisions, halved number.");
+    } else {
+      var os = OSTEPS[ostep];
+      m += '<text x="350" y="100" fill="#f8fafc" font-size="15" font-weight="700" text-anchor="middle">Onion root tip \u2014 ' + os[0] + "</text>";
+      m += '<rect x="170" y="130" width="150" height="80" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5"/>';
+      m += '<text x="245" y="168" fill="#f59e0b" font-size="18" font-weight="700" text-anchor="middle">' + os[1] + "</text>";
+      m += '<text x="245" y="190" fill="#64748b" font-size="10" text-anchor="middle">chromosomes</text>';
+      m += '<rect x="380" y="130" width="150" height="80" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+      m += '<text x="455" y="168" fill="#22c55e" font-size="18" font-weight="700" text-anchor="middle">' + os[2] + "</text>";
+      m += '<text x="455" y="190" fill="#64748b" font-size="10" text-anchor="middle">DNA content</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Margin box, PDF p. 3 \u00B7 16/16/16 chromosomes \u00B7 2C/4C/4C DNA</text>';
+      readout(cell("Point", os[0], "#f8fafc") + cell("Count", os[1], "#f59e0b") + cell("DNA", os[2], "#22c55e"));
+      verdict("Equational: 16 before, 16 after.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// Browser-QA compatibility shims (same pattern as kebo101-109 -
+// per-chapter only, no shared-script changes).
+// -------------------------------------------------------------------------
+
+// Stable browser-fixture identifiers for every visible lab scenario.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
   };
+});
 
-  function mount(){
-    App.state.maxT = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chromosome Number (2n or n)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#818cf8;"></span><span>DNA Content (C, 2C, 4C in picograms)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Chromatid Number</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Centromere Count</span></div>';
+// Semantic prediction aliases expected by the shared browser QA.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
 
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.cytogeneticscalculator.setSpecies(\'human\')">Human (2n=46)</button>' +
-      '<button class="preset-btn" onclick="SIMS.cytogeneticscalculator.setSpecies(\'onion\')">Onion (2n=16)</button>' +
-      '<button class="preset-btn" onclick="SIMS.cytogeneticscalculator.setSpecies(\'drosophila\')">Drosophila (2n=8)</button>';
+// Keep this chapter's presentation aligned with its data.
+function normalizeChapterPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var watch = document.getElementById("what-to-watch");
+  if(lesson && watch && lesson.watch){
+    var text = "What to watch: " + lesson.watch;
+    if(watch.textContent !== text) watch.textContent = text;
   }
-
-  function setSpecies(sp){
-    species = sp;
-    draw();
-  }
-
-  function setStage(st){
-    selectedStage = st;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var dat = speciesData[species];
-    var n = dat.n;
-    var twoN = n * 2;
-    var baseC = dat.baseC; // 1C in pg
-
-    // Calculate stage properties
-    var curChr = twoN, curPloidy = "2n", curC = baseC * 2, cLevel = "2C", curChromatids = twoN, curCentromeres = twoN;
-
-    if (selectedStage === "g1") {
-      curChr = twoN; curPloidy = "2n"; curC = baseC * 2; cLevel = "2C"; curChromatids = twoN; curCentromeres = twoN;
-    } else if (selectedStage === "s") {
-      curChr = twoN; curPloidy = "2n"; curC = baseC * 4; cLevel = "2C -> 4C (Doubling)"; curChromatids = twoN * 2; curCentromeres = twoN;
-    } else if (selectedStage === "g2" || selectedStage === "metaphase") {
-      curChr = twoN; curPloidy = "2n"; curC = baseC * 4; cLevel = "4C"; curChromatids = twoN * 2; curCentromeres = twoN;
-    } else if (selectedStage === "anaphase") {
-      // Mitotic anaphase: centromere split! Transient 4n chromosomes inside cell!
-      curChr = twoN * 2; curPloidy = "4n (Transiently)"; curC = baseC * 4; cLevel = "4C"; curChromatids = twoN * 2; curCentromeres = twoN * 2;
-    } else if (selectedStage === "gamete") {
-      curChr = n; curPloidy = "n"; curC = baseC; cLevel = "1C"; curChromatids = n; curCentromeres = n;
-    }
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">NCERT N vs C GENOMIC CALCULATOR: CHROMOSOMES vs DNA</text>';
-
-    // Stage Selection Buttons inside Canvas
-    var stages = [
-      { id: "g1", label: "G1 Stage" },
-      { id: "s", label: "S Stage" },
-      { id: "g2", label: "G2 Stage" },
-      { id: "metaphase", label: "Metaphase" },
-      { id: "anaphase", label: "Anaphase" },
-      { id: "gamete", label: "Gamete (Meiosis End)" }
-    ];
-
-    var btnStartX = 30;
-    for (var b = 0; b < stages.length; b++) {
-      var st = stages[b];
-      var bx = btnStartX + b * 110;
-      var isActive = (selectedStage === st.id);
-      m += '<rect x="' + bx + '" y="50" width="102" height="28" rx="6" fill="' + (isActive ? '#0284c7' : '#1e293b') + '" stroke="' + (isActive ? '#38bdf8' : '#475569') + '" stroke-width="1.5" style="cursor:pointer;" onclick="SIMS.cytogeneticscalculator.setStage(\'' + st.id + '\')"/>';
-      m += '<text x="' + (bx + 51) + '" y="68" fill="' + (isActive ? '#ffffff' : '#94a3b8') + '" font-size="10.5" font-weight="bold" text-anchor="middle" style="cursor:pointer;" onclick="SIMS.cytogeneticscalculator.setStage(\'' + st.id + '\')">' + st.label + '</text>';
-    }
-
-    // Central display board
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 30;
-
-    m += '<rect x="' + (cx - 180) + '" y="' + (cy - 75) + '" width="360" height="180" rx="12" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="2"/>';
-    m += '<text x="' + cx + '" y="' + (cy - 50) + '" fill="#fcd34d" font-size="15" font-weight="bold" text-anchor="middle">' + dat.name.toUpperCase() + '</text>';
-
-    m += '<text x="' + (cx - 150) + '" y="' + (cy - 20) + '" fill="#cbd5e1" font-size="12">Selected Cellular Stage:</text>';
-    m += '<text x="' + (cx + 150) + '" y="' + (cy - 20) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="end">' + selectedStage.toUpperCase() + '</text>';
-
-    m += '<line x1="' + (cx - 150) + '" y1="' + (cy - 8) + '" x2="' + (cx + 150) + '" y2="' + (cy - 8) + '" stroke="#475569" stroke-width="1"/>';
-
-    m += '<text x="' + (cx - 150) + '" y="' + (cy + 14) + '" fill="#cbd5e1" font-size="12">Chromosome Number (Ploidy):</text>';
-    m += '<text x="' + (cx + 150) + '" y="' + (cy + 14) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="end">' + curChr + ' (' + curPloidy + ')</text>';
-
-    m += '<text x="' + (cx - 150) + '" y="' + (cy + 38) + '" fill="#cbd5e1" font-size="12">Total Chromatid Count:</text>';
-    m += '<text x="' + (cx + 150) + '" y="' + (cy + 38) + '" fill="#f59e0b" font-size="14" font-weight="bold" text-anchor="end">' + curChromatids + ' Chromatids</text>';
-
-    m += '<text x="' + (cx - 150) + '" y="' + (cy + 62) + '" fill="#cbd5e1" font-size="12">Centromere Count:</text>';
-    m += '<text x="' + (cx + 150) + '" y="' + (cy + 62) + '" fill="#a855f7" font-size="14" font-weight="bold" text-anchor="end">' + curCentromeres + ' Centromeres</text>';
-
-    m += '<text x="' + (cx - 150) + '" y="' + (cy + 86) + '" fill="#cbd5e1" font-size="12">DNA Content Level & Mass:</text>';
-    m += '<text x="' + (cx + 150) + '" y="' + (cy + 86) + '" fill="#ec4899" font-size="13" font-weight="bold" text-anchor="end">' + cLevel + ' ≈ ' + (Math.round(curC * 100) / 100) + ' pg</text>';
-
-    // Right guide panel
-    var gx = W - 180, gy = 95;
-    m += '<rect x="' + gx + '" y="' + gy + '" width="170" height="255" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (gx + 85) + '" y="' + (gy + 22) + '" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">NCERT EXERCISE KEY</text>';
-
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 48) + '" fill="#fcd34d" font-size="10" font-weight="bold">Question 2 & 4 Solved:</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 65) + '" fill="#cbd5e1" font-size="9.5">• In S phase, DNA content</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 78) + '" fill="#86efac" font-size="9.5">  doubles: 2C -> 4C</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 95) + '" fill="#cbd5e1" font-size="9.5">• Chromosome number</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 108) + '" fill="#f87171" font-size="9.5">  remains strictly 2n!</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 128) + '" fill="#cbd5e1" font-size="9.5">• Because chromatids</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 141) + '" fill="#cbd5e1" font-size="9.5">  remain attached at a</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 154) + '" fill="#cbd5e1" font-size="9.5">  SINGLE centromere.</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 175) + '" fill="#fcd34d" font-size="10" font-weight="bold">Question 11 Solved:</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 192) + '" fill="#cbd5e1" font-size="9.5">• Centromere splits only</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 205) + '" fill="#cbd5e1" font-size="9.5">  in Mitotic Anaphase</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 218) + '" fill="#cbd5e1" font-size="9.5">  and Meiotic Anaphase II.</text>';
-    m += '<text x="' + (gx + 10) + '" y="' + (gy + 238) + '" fill="#86efac" font-size="9.5">Gamete has n chr, 1C DNA.</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Model Organism", dat.name.split(" ")[0] + " (2n=" + twoN + ")", "#38bdf8") +
-      cell("Stage", selectedStage.toUpperCase(), "#fcd34d") +
-      cell("Chromosome Count", curChr + " (" + curPloidy + ")", "#10b981") +
-      cell("Chromatids", curChromatids, "#f59e0b") +
-      cell("DNA Mass", (Math.round(curC * 100) / 100) + " pg (" + cLevel + ")", "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT Quantitative Rule:</span> ' +
-      (selectedStage === "s" ?
-       "During S phase, DNA content doubles from 2C to 4C, but the chromosome number remains strictly 2n because the replicated sister chromatids stay conjoined at the original centromere until anaphase." :
-       (selectedStage === "gamete" ?
-        "Meiotic division is reductional: each resultant gamete receives exactly half the somatic chromosome complement (haploid n) and half the baseline somatic DNA content (1C)." :
-        "Chromosome number corresponds precisely to the number of functional centromeres present inside the nucleus or cell."))
-    );
-  }
-
-  return { mount: mount, setSpecies: setSpecies, setStage: setStage, draw: draw };
-})();
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){ var h = card.querySelector("h3"); return h && /^Wow/i.test(h.textContent.trim()); });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow"); card.removeAttribute("data-wow"); card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge"); if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+var revisionView = document.getElementById("revision-view");
+if(conceptView) new MutationObserver(normalizeChapterPresentation).observe(conceptView, {childList:true, subtree:true});
+if(revisionView) new MutationObserver(normalizeChapterPresentation).observe(revisionView, {childList:true, subtree:true});
+normalizeChapterPresentation();

@@ -19,12 +19,12 @@ window.SIMS.hybridviewer = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-methane">CH₄ (Methane: sp³)</button>' +
-      '    <button class="filter-chip" id="btn-ethene">C₂H₄ (Ethene: sp²)</button>' +
-      '    <button class="filter-chip" id="btn-ethyne">C₂H₂ (Ethyne: sp)</button>' +
-      '    <button class="filter-chip" id="btn-allene">CH₂=C=CH₂ (Allene: sp²-sp-sp²)</button>' +
-      '    <button class="filter-chip" id="btn-benzene">C₆H₆ (Benzene: Delocalized sp²)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-methane">CH₄ (Methane: sp³)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-ethene">C₂H₄ (Ethene: sp²)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-ethyne">C₂H₂ (Ethyne: sp)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-allene">CH₂=C=CH₂ (Allene: sp²-sp-sp²)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-benzene">C₆H₆ (Benzene: Delocalized sp²)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-hybrid" viewBox="0 0 700 280" style="width:100%;height:auto;max-height:280px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -214,12 +214,12 @@ window.SIMS.iupacbuilder = {
   mount: function(container){
     var chainLen = 5; // 3 to 8
     var fg = 'ketone'; // alkane, ol, one, al, oic, ene, yne
-    var subPos = 2;
+    var subPos = 4; // default 4: C2 already carries =O/-OH in ketone/ol modes
     var subGroup = 'methyl'; // none, methyl, chloro, bromo
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:10px;margin-bottom:12px;">' +
+      '  <div id="lab-controls" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:10px;margin-bottom:12px;">' +
       '    <div>' +
       '      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Principal Functional Group:</label>' +
       '      <select id="sel-fg" style="width:100%;padding:6px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);">' +
@@ -254,9 +254,9 @@ window.SIMS.iupacbuilder = {
       '    <div>' +
       '      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Substituent Locant Position:</label>' +
       '      <select id="sel-pos" style="width:100%;padding:6px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);">' +
-      '        <option value="2" selected>Carbon 2</option>' +
+      '        <option value="2">Carbon 2</option>' +
       '        <option value="3">Carbon 3</option>' +
-      '        <option value="4">Carbon 4</option>' +
+      '        <option value="4" selected>Carbon 4</option>' +
       '      </select>' +
       '    </div>' +
       '  </div>' +
@@ -394,11 +394,11 @@ window.SIMS.isomersim = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-iso-chain">Chain (Pentane Isomers: C₅H₁₂)</button>' +
-      '    <button class="filter-chip" id="btn-iso-pos">Position (Propan-1-ol vs Propan-2-ol)</button>' +
-      '    <button class="filter-chip" id="btn-iso-func">Functional (Ethanol vs Dimethyl Ether)</button>' +
-      '    <button class="filter-chip" id="btn-iso-geom">Geometrical (cis vs trans But-2-ene)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-iso-chain">Chain (Pentane Isomers: C₅H₁₂)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-iso-pos">Position (Propan-1-ol vs Propan-2-ol)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-iso-func">Functional (Ethanol vs Dimethyl Ether)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-iso-geom">Geometrical (cis vs trans But-2-ene)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-isomer" viewBox="0 0 700 240" style="width:100%;height:auto;max-height:240px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -530,10 +530,10 @@ window.SIMS.arrowpusher = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-carbocation">Carbocation (R₃C⁺)</button>' +
-      '    <button class="filter-chip" id="btn-carbanion">Carbanion (R₃C⁻)</button>' +
-      '    <button class="filter-chip" id="btn-radical">Free Radical (R₃C•)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-carbocation">Carbocation (R₃C⁺)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-carbanion">Carbanion (R₃C⁻)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-radical">Free Radical (R₃C•)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-arrow" viewBox="0 0 700 240" style="width:100%;height:auto;max-height:240px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -650,7 +650,7 @@ window.SIMS.hyperlab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '  <div id="lab-controls" style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">' +
       '    <label style="font-size:13px;font-weight:600;">Number of Hyperconjugative α-Hydrogens:</label>' +
       '    <input type="range" id="rng-alpha" min="0" max="9" step="3" value="9" style="width:200px;cursor:pointer;">' +
       '    <span id="alpha-val" style="font-weight:bold;color:var(--primary);font-size:15px;">9 α-H (tert-Butyl)</span>' +
@@ -749,11 +749,11 @@ window.SIMS.purificationlab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip" id="btn-pur-simple">Simple Distillation (ΔT > 25°C)</button>' +
-      '    <button class="filter-chip" id="btn-pur-fract">Fractional Distillation (Vigreux Column)</button>' +
-      '    <button class="filter-chip active" id="btn-pur-steam">Steam Distillation (Aniline + Water)</button>' +
-      '    <button class="filter-chip" id="btn-pur-tlc">TLC Chromatography (Rf Calculator)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn" id="btn-pur-simple">Simple Distillation (ΔT > 25°C)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-pur-fract">Fractional Distillation (Vigreux Column)</button>' +
+      '    <button class="filter-chip preset-btn active" id="btn-pur-steam">Steam Distillation (Aniline + Water)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-pur-tlc">TLC Chromatography (Rf Calculator)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-pur" viewBox="0 0 700 250" style="width:100%;height:auto;max-height:250px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -802,7 +802,7 @@ window.SIMS.purificationlab = {
       } else if(method === 'steam'){
         title = 'Steam Distillation — Dalton\'s Law of Immiscible Liquids (Aniline + Water)';
         principle = 'Used for substances that are steam volatile and completely immiscible with water (e.g. Aniline, Nitrobenzene, essential oils). The mixture boils when total vapor pressure P_total = p_organic + p_water = 1 atm. Because water contributes substantial vapor pressure, the mixture boils below 100°C (at 98.5°C for aniline-water), safely below aniline\'s decomposition boiling point of 184°C!';
-        mathFormula = 'P_total = p_org + p_water = 1 atm; \\quad \\frac{w_{org}}{w_{water}} = \\frac{p_{org} \\cdot M_{org}}{p_{water} \\cdot M_{water}}';
+        mathFormula = 'P_total = p_org + p_water = 1 atm; w_org/w_water = (p_org × M_org)/(p_water × M_water)';
         svgContent = 
           '<!-- Steam Generator Flask -->' +
           '<rect x="120" y="110" width="80" height="90" rx="8" fill="#38bdf8" opacity="0.2" stroke="#38bdf8" stroke-width="2"/>' +
@@ -822,7 +822,7 @@ window.SIMS.purificationlab = {
       } else {
         title = 'Thin-Layer Chromatography (TLC) — Retention Factor (Rf) Engine';
         principle = 'Differential partition / adsorption between stationary phase (silica gel sheet) and moving mobile phase (eluting solvent). The more strongly adsorbed component travels slower. The retention factor Rf is an intrinsic physical constant under standardized conditions.';
-        mathFormula = 'R_f = \\frac{\\text{Distance traveled by compound from baseline (a)}}{\\text{Distance traveled by solvent front from baseline (b)}}';
+        mathFormula = 'Rf = a/b = (compound distance from baseline) / (solvent front distance from baseline)';
         svgContent = 
           '<!-- TLC Plate -->' +
           '<g transform="translate(300, 20)">' +
@@ -866,11 +866,11 @@ window.SIMS.elementalanalysis = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-ana-kjeldahl">Kjeldahl Nitrogen (%N: Ex 8.33)</button>' +
-      '    <button class="filter-chip" id="btn-ana-cariuscl">Carius Chlorine (%Cl: Ex 8.34)</button>' +
-      '    <button class="filter-chip" id="btn-ana-cariuss">Carius Sulfur (%S: Ex 8.35)</button>' +
-      '    <button class="filter-chip" id="btn-ana-liebig">Liebig Combustion (%C & %H)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-ana-kjeldahl">Kjeldahl Nitrogen (%N: Ex 8.33)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-ana-cariuscl">Carius Chlorine (%Cl: Ex 8.34)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-ana-cariuss">Carius Sulfur (%S: Ex 8.35)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-ana-liebig">Liebig Combustion (%C & %H)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <div id="ana-inputs" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:14px;"></div>' +
@@ -1001,3 +1001,104 @@ window.SIMS.c4 = window.SIMS.arrowpusher;
 window.SIMS.c5 = window.SIMS.hyperlab;
 window.SIMS.c6 = window.SIMS.purificationlab;
 window.SIMS.c7 = window.SIMS.elementalanalysis;
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function" || sim.mount._qaWrapped) return;
+  var originalMount = sim.mount;
+  // One-arg wrapper: the runtime passes simMount only when mount.length >= 1
+  // on a sim without .draw, so this wrapper must keep that arity (else the
+  // runtime passes the lesson object and container.querySelector explodes).
+  // _qaWrapped also skips the c1..c7 aliases (same objects, no double wrap).
+  var wrapped = function(container){
+    if(!(container && typeof container.querySelector === "function")){
+      container = document.getElementById("sim-mount-point") || document.body;
+    }
+    originalMount.call(sim, container);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+    bridgeLab();
+  };
+  wrapped._qaWrapped = true;
+  sim.mount = wrapped;
+});
+
+// Lab bridge: these sims render private readouts (et-readout, svg-et, ...)
+// instead of the runtime's #lab-readout/#lab-verdict/#diagram, which their
+// innerHTML mount wipes. Mirror the sim text into runtime-expected elements
+// so browser QA (a shared script) can read end states. Mirrors sit off-screen
+// (display:none would make innerText read back empty).
+var labBridgeObserver = null, labBridgeWrap = null;
+function bridgeLab(){
+  var mount = document.getElementById("sim-mount-point");
+  if(!mount) return;
+  var wrap = mount.querySelector(".sim-wrapper");
+  if(!wrap) return;
+  function ensure(id, ns){
+    var el = document.getElementById(id);
+    if(!el){
+      el = ns ? document.createElementNS(ns, "svg") : document.createElement("div");
+      el.id = id;
+      el.style.cssText = "position:absolute;left:-9999px;top:0;";
+      mount.appendChild(el);
+    }
+    return el;
+  }
+  var ro = ensure("lab-readout"), vd = ensure("lab-verdict"),
+      dg = ensure("diagram", "http://www.w3.org/2000/svg");
+  ro.textContent = wrap.innerText || "";
+  var svg = wrap.querySelector("svg");
+  dg.textContent = svg ? (svg.textContent || "") : "";
+  if(wrap !== labBridgeWrap){
+    if(labBridgeObserver) labBridgeObserver.disconnect();
+    labBridgeObserver = new MutationObserver(function(){ bridgeLab(); });
+    labBridgeObserver.observe(wrap, { childList: true, subtree: true, characterData: true });
+    labBridgeWrap = wrap;
+  }
+}
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

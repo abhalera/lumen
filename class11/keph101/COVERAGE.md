@@ -32,7 +32,11 @@ This reprint has **no “Errors in measurement / least count / combination of er
 
 ## Exercises 1.1–1.17
 
-All 17 mapped with steps in `chapter.json`. Numerical items independently recomputed (g = 9.8 where gravity enters, Ex 1.17 Sun density). Open qualitative items (1.4, 1.8, 1.16) keep NCERT wording and do not invent extra parts.
+All 17 are mapped with steps in `chapter.json`. Numerical items were independently recomputed, including Ex 1.12 (2.34032 kg rounds to 2.34 kg), Ex 1.14 (3.15×10⁻⁷ m³ atomic volume per mole), Ex 1.15 (molar-to-molecular volume ratio ≈ 8.9×10³), and Ex 1.17 (mean solar density ≈ 1.4×10³ kg m⁻³). Open qualitative items (1.4, 1.8, 1.16) keep NCERT wording and do not invent extra parts.
+
+## Videos and QA
+
+Each of the seven lessons has one real YouTube video on its explicit Wow card. IDs, titles and channels were independently checked through YouTube oEmbed and are recorded in `work/class11-physics-videos/results/keph101.json`. The chapter fixture verifies the exact source PDF hash, all exercise pages, worked numerical results, video metadata, scenario coverage and single-file packaging. Browser QA covers all 24 lab presets at desktop, tablet and 390 px phone widths.
 
 ## Edition notes / honest gaps
 

@@ -38,7 +38,16 @@ This reprint has **no separate relative-velocity section** (rain-man, river-boat
 
 All 22 mapped. Fig. 3.19–3.20 read from zoom p.21. Numerical items independently recomputed with g=9.8 unless an example used another value (none of the in-chapter projectile examples use g=10).
 
+The qualitative audit also checks every classification and truth-value item. In 3.4(f), the wording means adding the component vector to its parent vector, which is meaningful and preserves vector type and dimensions. Exercise 3.6 records the equality conditions for all four triangle inequalities explicitly.
+
 Ex 3.22 uses the symmetric 15°+15° geometry (observer under the midpoint of the 10 s chord): v=2×3400×tan 15° / 10 ≈ 182 m s⁻¹. The PDF does not print a numerical key; this is the standard reading of “angle subtended … 30°”.
+
+## Verification and browser QA
+
+- `tests/verify.cjs`: 584 source, structure, exercise, figure, video, calculation, scenario and packaging checks.
+- `tests/expect.json`: 11 named simulation presets with concrete final-state assertions.
+- Browser QA: 110 checks at desktop and mobile widths, 0 failures, 0 console errors. Full concept, revision and exercise-figure screenshots inspected; the revision page exceeded the harness's 12,000 px full-page capture cap but remained correctly scrollable.
+- Videos: two candidates per lesson were independently checked through YouTube oEmbed; the first verified result is wired to each lesson's explicit Wow card.
 
 ## Edition notes / honest gaps
 

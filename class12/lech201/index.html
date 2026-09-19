@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 06 · HALOALKANES AND HALOARENES</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,95 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 22 Exercises from NCERT Class 12 Chemistry (pp. 159–192) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 22 Exercises from NCERT Class 12 Chemistry Part 2 (pp. 159–192) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry", "title": "Haloalkanes and Haloarenes", "subtitle": "Classification and IUPAC names, polar C–X, SN1 vs SN2, stereochemistry, haloarene inertness, and polyhalogen compounds of this reprint.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech201.pdf", "page_start": 159, "page_end": 192, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "classification", "nav": "Classification of C–X", "title": "How do we sort haloalkanes from haloarenes?", "deck": "Mono/di/polyhalogen compounds; sp³ C–X (alkyl, allylic, benzylic) versus sp² C–X (vinylic, aryl). Polar C–X is the chemical handle.", "minutes": 10, "section": "6.1", "pages": [1, 3], "print": "159–161", "sim": "classifycx", "simTitle": "Classify the C–X carbon", "quick": ["<strong>Haloalkanes</strong> have halogen on an <em>sp³</em> carbon of an alkyl group; <strong>haloarenes</strong> have halogen on an <em>sp²</em> carbon of an aryl ring. Replacement of H in aliphatic or aromatic hydrocarbons by halogen gives these families (Unit 6 opener, reprint 2026–27).", "Count the halogens: <strong>mono, di, poly</strong> (tri-, tetra-, …). Then look at hybridisation of the carbon that bears X. Allylic and benzylic halides still have <em>sp³</em> C–X, but the carbon is next to C=C or an aryl ring. Vinylic and aryl have <em>sp²</em> C–X and are sluggish in SN1/SN2.", "Chloramphenicol (typhoid), chloroquine (malaria), halothane (anaesthetic) and thyroxine (iodine hormone; deficiency → goitre) are clinically useful organohalogens. Fully fluorinated compounds have been considered as blood substitutes."], "formulas": [{"label": "Homologous alkyl halides", "html": "C<sub>n</sub>H<sub>2n+1</sub>X", "cond": "X = F, Cl, Br, I"}, {"label": "1° / 2° / 3° test", "html": "count carbons attached to the C–X carbon", "cond": "1°: one C; 2°: two C; 3°: three C"}, {"label": "Allylic vs vinylic", "html": "allylic: C=C–C(sp³)–X &nbsp;|&nbsp; vinylic: C=C(sp²)–X", "cond": "benzylic analogous to allylic"}], "deeper": "Halogen is more electronegative than carbon, so C–X is polar (C<sup>δ+</sup>–X<sup>δ−</sup>). That partial positive charge is why nucleophiles attack haloalkanes. Aryl and vinyl C–X bonds have partial double-bond character from resonance and extra s-character (sp²), so they do not behave like alkyl C–X. Polyhalogen compounds persist in soil because bacteria struggle to break C–X bonds.", "worked": {"title": "Example 6.1 (partial) — C₅H₁₁Br classes", "problem": "Among the eight structural isomers of C₅H₁₁Br, classify 1-bromopentane, 2-bromopentane and 2-bromo-2-methylbutane as 1°, 2° or 3°.", "steps": ["1-Bromopentane: Br on a CH₂ attached to one carbon → 1°.", "2-Bromopentane: Br on CH attached to two carbons → 2°.", "2-Bromo-2-methylbutane: Br on C attached to three carbons → 3°."], "answer": "1°; 2°; 3°."}, "prediction": {"prompt": "Is benzyl chloride (PhCH₂Cl) an aryl halide or a benzylic halide — and is its C–Cl carbon sp² or sp³?", "options": ["Aryl halide; sp² carbon of the ring.", "Benzylic halide; sp³ carbon attached to the ring.", "Vinylic halide; sp² carbon of a double bond."], "answer": 1, "explanation": "Table 6.1: benzyl chloride is chlorophenylmethane. Halogen is on the sp³ benzylic carbon, not on the ring. Chlorobenzene is the aryl analogue."}, "connect": [["Thyroxine and goitre", "The body makes the iodine-containing hormone thyroxine. Iodine deficiency still causes goitre in parts of the Himalayan belt — iodised salt is a public-health organohalogen."], ["Wow — chloramphenicol from a microbe", "A chlorine-containing antibiotic produced by microorganisms is effective against typhoid. Not all organohalogens are synthetic pollutants.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "State the hybridisation of the C–X carbon in alkyl, allylic, benzylic, vinylic and aryl halides.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Haloalkanes contain halogen attached to which kind of carbon?", "options": ["sp³ carbon of an alkyl group", "sp² carbon of an aryl ring", "sp carbon of an alkyne"], "answer": 0, "hint": "Unit opener, first paragraph.", "solution": "Haloalkanes: halogen on sp³ alkyl carbon. Haloarenes: halogen on sp² aryl carbon."}, {"level": "Medium", "type": "mcq", "prompt": "CH₂=CHCH₂Br is best classified as", "options": ["vinylic halide", "allylic halide", "aryl halide"], "answer": 1, "hint": "Halogen on sp³ carbon adjacent to C=C.", "solution": "Allylic: the C–Br carbon is sp³ and next to the double bond. Vinyl bromide would be CH₂=CHBr."}, {"level": "Hard", "type": "mcq", "prompt": "Which compound has halogen on an sp² carbon?", "options": ["(CH₃)₃CBr", "PhCH₂Cl", "CH₂=CHCl"], "answer": 2, "hint": "Vinylic and aryl are sp² C–X.", "solution": "Chloroethene is vinylic (Table 6.1). tert-Butyl bromide is 3° alkyl; benzyl chloride is benzylic sp³."}]}, {"id": "nomenclature", "nav": "IUPAC names & isomers", "title": "How does this reprint name alkyl and aryl halides?", "deck": "Halo as a substituent on the parent hydrocarbon. Eight C₅H₁₁Br isomers (Example 6.1). gem vs vic dihalides. Table 6.1 common vs IUPAC.", "minutes": 12, "section": "6.2", "pages": [3, 5], "print": "161–163", "sim": "iupac8", "simTitle": "Eight isomers of C₅H₁₁Br", "quick": ["Common names: alkyl group + halide (sec-butyl chloride). <strong>IUPAC:</strong> halo-substituted hydrocarbons (2-chlorobutane). For monosubstituted benzenes, common and IUPAC names coincide; for disubstituted, o/m/p in common names become locants 1,2 / 1,3 / 1,4.", "<strong>gem-dihalides</strong> (both X on the same carbon) are alkylidene dihalides in the common system, e.g. ethylidene chloride = 1,1-dichloroethane. <strong>vic-dihalides</strong> (adjacent carbons) are alkylene dihalides, e.g. ethylene dichloride = 1,2-dichloroethane.", "Table 6.1 (zoom p.04): neo-pentyl bromide = 1-bromo-2,2-dimethylpropane; vinyl chloride = chloroethene; allyl bromide = 3-bromopropene; chloroform = trichloromethane; CCl₄ = tetrachloromethane; benzyl chloride = chlorophenylmethane; o-chlorotoluene = 1-chloro-2-methylbenzene."], "formulas": [{"label": "Example 6.1 count", "html": "C<sub>5</sub>H<sub>11</sub>Br has <strong>eight</strong> structural isomers", "cond": "four 1°, three 2°, one 3°"}, {"label": "gem vs vic", "html": "gem: X–C–X on one carbon &nbsp;|&nbsp; vic: X–C–C–X", "cond": "IUPAC: both are dihaloalkanes"}], "deeper": "Number the longest chain so that the halogen gets the lowest possible locant; then number substituents. For alkenyl halides the double bond often takes precedence in the suffix, and halogen is a prefix (4-bromopent-2-ene, Example 6.2). Do not invent extra isomers: C₅H₁₁Br has exactly the eight listed on p.04–05 of this reprint.", "worked": {"title": "Example 6.1 — all eight C₅H₁₁Br isomers (zoom p.04–05)", "problem": "Draw, name (IUPAC) and classify every structural isomer of C₅H₁₁Br.", "steps": ["1-Bromopentane (1°); 2-bromopentane (2°); 3-bromopentane (2°).", "1-Bromo-3-methylbutane (1°); 2-bromo-3-methylbutane (2°); 2-bromo-2-methylbutane (3°).", "1-Bromo-2-methylbutane (1°); 1-bromo-2,2-dimethylpropane (1°)."], "answer": "Eight isomers: four 1°, three 2°, one 3°."}, "prediction": {"prompt": "What is the IUPAC name of (CH₃)₃CCH₂Br (common: neo-pentyl bromide)?", "options": ["2-Bromo-2-methylbutane", "1-Bromo-2,2-dimethylpropane", "2-Bromo-2-methylpropane"], "answer": 1, "explanation": "Table 6.1: neo-pentyl bromide is 1-bromo-2,2-dimethylpropane. The Br is on the CH₂, not the tertiary carbon."}, "connect": [["Vinyl chloride and PVC", "Chloroethene (vinyl chloride) is polymerised to PVC — pipes and cables in every Indian city. The monomer is a vinylic halide, not an alkyl halide."], ["Wow — chloroform is trichloromethane", "The common name hides a simple IUPAC: replace every H of methane by Cl except one, and you have CHCl₃. Store it in the dark — light plus air makes phosgene.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "Give IUPAC names of neo-pentyl bromide, vinyl chloride, allyl bromide and benzyl chloride as in Table 6.1.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "IUPAC name of CHCl₃ in this reprint is", "options": ["chloroform", "trichloromethane", "methylene chloride"], "answer": 1, "hint": "Table 6.1.", "solution": "Common: chloroform; IUPAC: trichloromethane. Methylene chloride is CH₂Cl₂."}, {"level": "Medium", "type": "mcq", "prompt": "How many structural isomers does C₅H₁₁Br have (Example 6.1)?", "options": ["5", "8", "10"], "answer": 1, "hint": "Zoom p.04–05 lists all eight.", "solution": "Eight: 1-/2-/3-bromopentane, 1-bromo-3-methylbutane, 2-bromo-3-methylbutane, 2-bromo-2-methylbutane, 1-bromo-2-methylbutane, 1-bromo-2,2-dimethylpropane."}, {"level": "Hard", "type": "mcq", "prompt": "1,1-Dichloroethane is a", "options": ["vic-dihalide (ethylene dichloride)", "gem-dihalide (ethylidene chloride)", "aryl halide"], "answer": 1, "hint": "Zoom p.04: gem vs vic.", "solution": "Both Cl on the same carbon: gem / alkylidene. 1,2-Dichloroethane is vic / ethylene dichloride."}]}, {"id": "cx-bond-prep", "nav": "C–X bond & preparation", "title": "Why is SOCl₂ preferred — and how do we make R–X and Ar–X?", "deck": "Table 6.2 bond lengths/enthalpies/dipoles. From alcohols (HX, PCl₅, SOCl₂), hydrocarbons, halogen exchange (Finkelstein, Swarts), and electrophilic / Sandmeyer routes to haloarenes.", "minutes": 14, "section": "6.3–6.5", "pages": [5, 9], "print": "163–167", "sim": "cxprep", "simTitle": "Preparation routes to R–X and Ar–X", "quick": ["Table 6.2 (zoom-verified): CH₃–F 139 pm, 452 kJ mol⁻¹, 1.847 D; CH₃–Cl 178 pm, 351, 1.860 D; CH₃–Br 193 pm, 293, 1.830 D; CH₃–I 214 pm, 234, 1.636 D. Down the group, C–X lengthens and weakens; dipole is largest for CH₃Cl.", "From alcohols: conc. HX, PCl₅ / PCl₃ / PBr₃, or <strong>SOCl₂</strong>. Thionyl chloride is preferred because SO₂ and HCl escape as gases, leaving pure alkyl chloride. Phenols do not give Ar–X this way — the C–O bond has partial double-bond character.", "Halogen exchange: <strong>Finkelstein</strong> RCl/RBr + NaI in dry acetone (NaCl/NaBr precipitates). <strong>Swarts</strong> fluorides from RCl + AgF / Hg₂F₂ / CoF₂ / SbF₃. Aryl halides: electrophilic halogenation of arenes, or Sandmeyer / Gattermann from ArN₂⁺."], "formulas": [{"label": "SOCl₂ (preferred)", "html": "R–OH + SOCl₂ → R–Cl + SO₂↑ + HCl↑", "cond": "pure alkyl chloride"}, {"label": "Finkelstein", "html": "R–Cl + NaI (dry acetone) → R–I + NaCl↓", "cond": "precipitation drives equilibrium"}, {"label": "Swarts", "html": "R–Cl + AgF (or Hg₂F₂, CoF₂, SbF₃) → R–F", "cond": "alkyl fluorides; Freon-12 from CCl₄"}, {"label": "C–X trend (Table 6.2)", "html": "length C–F &lt; C–Cl &lt; C–Br &lt; C–I; enthalpy reverse", "cond": "CH₃–X"}], "deeper": "Free-radical halogenation of alkanes is indiscriminate (mixtures). Addition of HX to alkenes follows Markovnikov unless peroxides reverse HBr (Kharasch). Electrophilic halogenation of benzene needs a Lewis acid (FeCl₃/AlCl₃). Iodination is reversible and needs an oxidant. Direct fluorination is too violent — use Swarts.", "worked": {"title": "Example 6.3 style — choosing the reagent", "problem": "Convert butan-1-ol to 1-chlorobutane as a pure product, and 1-chlorobutane to 1-iodobutane.", "steps": ["ROH + SOCl₂ → RCl + gases (pure).", "RCl + NaI / dry acetone → RI (Finkelstein)."], "answer": "SOCl₂ then NaI/acetone."}, "prediction": {"prompt": "Why can you not convert phenol to chlorobenzene with HCl or SOCl₂ under the alcohol conditions of §6.4?", "options": ["Phenol is too weakly acidic.", "The phenolic C–O bond has partial double-bond character and is hard to cleave.", "Chlorobenzene would immediately hydrolyse back."], "answer": 1, "explanation": "The reprint is explicit: aryl C–O is stronger than a single bond because of resonance. Haloarenes are made by electrophilic substitution or from diazonium salts, not from phenols + HX."}, "connect": [["Swarts and the air-conditioner", "Freon-12 (CCl₂F₂) is manufactured from CCl₄ by Swarts reaction — the same halogen-exchange idea as alkyl fluorides."], ["Wow — two gases leave, so the chloride is pure", "SOCl₂ is the laboratory favourite because purification is built into the stoichiometry: SO₂ and HCl bubble away.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "Write the Finkelstein and Swarts equations and quote the four CH₃–X bond lengths from Table 6.2.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "SOCl₂ is preferred for RCl from ROH because", "options": ["it is the cheapest chloride", "SO₂ and HCl are gases so RCl is obtained pure", "it works for phenols too"], "answer": 1, "hint": "§6.4.1.", "solution": "Gaseous by-products escape. Phenols do not react usefully this way."}, {"level": "Medium", "type": "mcq", "prompt": "CH₃–I bond enthalpy in Table 6.2 is", "options": ["452 kJ mol⁻¹", "351 kJ mol⁻¹", "234 kJ mol⁻¹"], "answer": 2, "hint": "Table 6.2: F 452, Cl 351, Br 293, I 234.", "solution": "C–I is the longest (214 pm) and weakest."}, {"level": "Hard", "type": "mcq", "prompt": "Finkelstein conversion of RCl to RI is run in dry acetone because", "options": ["acetone is a polar protic solvent that stabilises carbocations", "NaCl is poorly soluble in dry acetone, so precipitation pulls the equilibrium to RI", "acetone oxidises chloride to chlorine"], "answer": 1, "hint": "Halogen-exchange paragraph.", "solution": "Classic solubility trick. Polar protic solvents are the SN1 story, not this."}]}, {"id": "physical", "nav": "Physical properties", "title": "Why is para-dichlorobenzene a high-melting mothball?", "deck": "Boiling points: RI > RBr > RCl > RF; branching lowers b.p. Para isomers pack and melt higher. Densities in Table 6.3. Slight water solubility.", "minutes": 10, "section": "6.6", "pages": [9, 11], "print": "167–169", "sim": "halobp", "simTitle": "Boiling point, packing and density", "quick": ["Methyl chloride, methyl bromide, ethyl chloride and some chlorofluoromethanes are gases; higher members are liquids or solids. Polar C–X plus higher mass → stronger dipole–dipole and van der Waals forces than the parent hydrocarbon, so boiling points are higher.", "Same alkyl group: <strong>RI > RBr > RCl > RF</strong> (Fig. 6.1). Isomeric haloalkanes: more branching, lower b.p. (smaller surface). Isomeric dihalobenzenes have similar b.p., but the <strong>para isomer melts higher</strong> because symmetry packs the crystal (p-dichlorobenzene mothballs).", "Table 6.3 densities (g mL⁻¹): n-C₃H₇Cl 0.89; CH₂Cl₂ 1.336; n-C₃H₇Br 1.335; CHCl₃ 1.489; n-C₃H₇I 1.747; CCl₄ 1.595. Bromo, iodo and polychloro compounds are heavier than water. Haloalkanes are only slightly water-soluble: you must pay the hydrogen-bond cost of water without getting it back."], "formulas": [{"label": "b.p. vs halogen", "html": "RI &gt; RBr &gt; RCl &gt; RF", "cond": "same alkyl group; van der Waals"}, {"label": "Dipole moment order (Ex 6.4)", "html": "μ(CH₂Cl₂) &gt; μ(CHCl₃) &gt; μ(CCl₄) = 0", "cond": "CCl₄ tetrahedral cancellation"}, {"label": "Table 6.3", "html": "d(CH₂Cl₂)=1.336, d(CHCl₃)=1.489, d(CCl₄)=1.595 g mL⁻¹", "cond": "heavier than water"}], "deeper": "Intext 6.6: boiling-point order bromomethane &lt; chloromethane? No — bromoform, dibromomethane, bromomethane, chloromethane: mass and number of Br dominate. (i) Chloromethane &lt; bromomethane &lt; dibromomethane &lt; bromoform. (ii) Isopropyl chloride &lt; 1-chloropropane &lt; 1-chlorobutane (branching plus chain length).", "worked": {"title": "Example / Ex 6.4 dipole moments", "problem": "Which has the highest dipole moment: CH₂Cl₂, CHCl₃ or CCl₄?", "steps": ["CCl₄ is tetrahedral and symmetric: vector sum of four C–Cl dipoles is zero.", "CHCl₃ has three Cl vs one H; the dipoles cancel partly.", "CH₂Cl₂ has two Cl on one side: largest net μ."], "answer": "CH₂Cl₂ highest; CCl₄ zero."}, "prediction": {"prompt": "p-Dichlorobenzene melts much higher than the o- and m-isomers, yet their boiling points are nearly equal. Why?", "options": ["The para isomer is more polar, so dipole–dipole forces are stronger in the liquid.", "Symmetry of the para isomer packs the crystal lattice better, raising m.p.; the liquids have similar intermolecular forces.", "The para isomer hydrogen-bonds."], "answer": 1, "explanation": "§6.6: boiling points of isomeric dihalobenzenes are very nearly the same; para-isomers are high melting because they fit the crystal better."}, "connect": [["Mothballs and crystal packing", "p-Dichlorobenzene is the classic high-melting isomer used as a moth repellent — a packing story, not a polarity story."], ["Wow — CCl₄ is denser than CHCl₃ even without hydrogen", "Table 6.3: 1.595 vs 1.489 g mL⁻¹. Four heavy chlorines beat three, and both sink in water.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "State the b.p. order for a given alkyl group as X changes, and quote three densities from Table 6.3.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For the same alkyl group, boiling points follow", "options": ["RF > RCl > RBr > RI", "RI > RBr > RCl > RF", "RCl > RF > RBr > RI"], "answer": 1, "hint": "§6.6 / Fig. 6.1.", "solution": "Larger, more polarisable halogen → stronger van der Waals."}, {"level": "Medium", "type": "mcq", "prompt": "Density of CHCl₃ in Table 6.3 is", "options": ["0.89 g mL⁻¹", "1.336 g mL⁻¹", "1.489 g mL⁻¹"], "answer": 2, "hint": "Table 6.3.", "solution": "CH₂Cl₂ 1.336; CHCl₃ 1.489; CCl₄ 1.595."}, {"level": "Hard", "type": "mcq", "prompt": "Highest dipole moment among CH₂Cl₂, CHCl₃, CCl₄ is", "options": ["CCl₄", "CHCl₃", "CH₂Cl₂"], "answer": 2, "hint": "Ex 6.4.", "solution": "CCl₄ μ=0; CH₂Cl₂ has the least cancellation."}]}, {"id": "sn1sn2", "nav": "SN1 vs SN2 stepper", "title": "One step or two — inversion or racemisation?", "deck": "Table 6.4 nucleophiles. Ambident CN⁻/NO₂⁻. Hughes–Ingold SN2 (concerted, inversion, 1° > 3°). SN1 (carbocation, racemisation, 3° > 1°). Same R: R–I > R–Br > R–Cl ≫ R–F.", "minutes": 16, "section": "6.7.1", "pages": [11, 17], "print": "169–175", "sim": "sn1sn2", "simTitle": "SN1 / SN2 mechanism stepper", "quick": ["Nucleophilic substitution: Nu⁻ attacks C<sup>δ+</sup> of R–X; X⁻ leaves. Table 6.4 maps reagents to products (alcohol, ether, nitrile, isonitrile, nitrite, nitroalkane, ester, alkane…). <strong>Ambident</strong> nucleophiles (CN⁻, NO₂⁻) have two nucleophilic atoms. KCN (ionic) → RCN; AgCN (covalent) → RNC (Example 6.5).", "<strong>SN2</strong> (Hughes &amp; Ingold, 1937): CH₃Cl + OH⁻ is second-order. Backside attack, pentacoordinate transition state, <em>inversion of configuration</em> (umbrella in the wind). Order <strong>CH₃X > 1° > 2° > 3°</strong> (steric, Fig. 6.3). Polar aprotic solvents help.", "<strong>SN1</strong>: tert-butyl bromide in polar protic solvent is first-order. Slow reversible ionisation to a planar carbocation, then fast capture of Nu from either face → <em>racemisation</em>. Order <strong>3° > 2° > 1° > CH₃</strong>. Allylic and benzylic C⁺ are resonance-stabilised, so they are SN1-fast. Leaving group for both mechanisms: <strong>R–I > R–Br > R–Cl ≫ R–F</strong>."], "formulas": [{"label": "SN2 rate", "html": "rate = k[RX][Nu]", "cond": "concerted; inversion; CH₃ > 1° > 2° > 3°"}, {"label": "SN1 rate", "html": "rate = k[RX]", "cond": "RDS = ionisation; 3° > 2° > 1°; racemisation"}, {"label": "Leaving-group order", "html": "R–I &gt; R–Br &gt; R–Cl ≫ R–F", "cond": "both SN1 and SN2; Table 6.2 enthalpies"}, {"label": "Ambident cyanide", "html": "KCN → R–C≡N &nbsp;|&nbsp; AgCN → R–N≡C", "cond": "Example 6.5"}], "deeper": "Example 6.6: cyclohexylmethyl chloride (1°) beats chlorocyclohexane in SN2; n-butyl iodide beats n-butyl chloride (better leaving group). Example 6.7 bromobutanes: SN1 n-BuBr < i-BuBr < s-BuBr < t-BuBr; SN2 is the reverse. For C₆H₅CH₂Br vs C₆H₅CH(C₆H₅)Br vs C₆H₅CH(CH₃)Br vs C₆H₅C(CH₃)(C₆H₅)Br, extra phenyls accelerate SN1 (resonance) and slow SN2 (bulk).", "worked": {"title": "Example 6.7(i) — four bromobutanes", "problem": "Order the four isomeric bromobutanes in SN1 and in SN2.", "steps": ["SN1 follows C⁺ stability: 1° n-Bu < 1° i-Bu (extra +I) < 2° s-Bu < 3° t-Bu.", "SN2 follows steric hindrance: the reverse order.", "Leaving group is Br in all four, so it does not change the comparison."], "answer": "SN1: n-Bu < i-Bu < s-Bu < t-Bu. SN2: n-Bu > i-Bu > s-Bu > t-Bu."}, "prediction": {"prompt": "Play the SN2 stepper for CH₃Cl + OH⁻. At the transition state, how many groups are attached to carbon, and what happens to configuration?", "options": ["Four groups; configuration retained.", "Five groups; configuration inverted.", "Three groups; a free carbocation racemises."], "answer": 1, "explanation": "The reprint: in the TS, carbon is simultaneously bonded to five atoms; the umbrella inverts. A carbocation (three groups, planar) is the SN1 intermediate, not SN2."}, "connect": [["Finkelstein in acetone is SN2", "Iodide is an excellent nucleophile and leaving group; primary RCl in dry acetone is a textbook SN2 — used in Ex 6.14(i) and 6.7(ii)."], ["Wow — 1937 kinetics still run your JEE paper", "Hughes and Ingold split substitution into SN1 and SN2 with rate laws you can still measure in a college lab: change [OH⁻] and see whether the rate budges.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "Write the SN1 and SN2 rate laws, the two reactivity orders, and the stereochemical outcome of each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "SN2 of a chiral alkyl halide is characterised by", "options": ["racemisation", "inversion of configuration", "retention only"], "answer": 1, "hint": "Chapter summary and §6.7.1.", "solution": "Concerted backside attack inverts. SN1 racemises."}, {"level": "Medium", "type": "mcq", "prompt": "Rate law for SN1 of tert-butyl bromide is", "options": ["k[(CH₃)₃CBr][OH⁻]", "k[(CH₃)₃CBr]", "k[OH⁻]"], "answer": 1, "hint": "Slow step is ionisation.", "solution": "First-order in alkyl halide only. Polar protic solvent helps."}, {"level": "Hard", "type": "mcq", "prompt": "Among C₆H₅CH₂Br, C₆H₅CH(C₆H₅)Br, C₆H₅CH(CH₃)Br and C₆H₅C(CH₃)(C₆H₅)Br, the fastest SN1 is", "options": ["C₆H₅CH₂Br", "C₆H₅CH(CH₃)Br", "C₆H₅C(CH₃)(C₆H₅)Br"], "answer": 2, "hint": "Example 6.7(ii).", "solution": "Most substituted benzylic C⁺ — two phenyls plus methyl. That same compound is the slowest SN2."}]}, {"id": "stereo-elim", "nav": "Chirality, E2, Grignard", "title": "Hands, alkenes and a dry-ether Grignard", "deck": "Optical activity, chirality, enantiomers, racemic mixture. Retention vs inversion. β-Elimination (Saytzeff). Aqueous vs alcoholic KOH. Grignard, Wurtz, Wurtz–Fittig, Fittig.", "minutes": 14, "section": "6.7.1c–metals", "pages": [17, 23], "print": "175–181", "sim": "stereoelim", "simTitle": "Chirality, Saytzeff and organometallics", "quick": ["Plane-polarised light (Nicol prism) is rotated by optically active compounds. (+) dextrorotatory, (−) laevorotatory. A carbon with four different substituents is a stereocentre; non-superimposable mirror images are <strong>enantiomers</strong> (butan-2-ol, 2-chlorobutane). Propan-2-ol is achiral (two methyls). Equal mix: <strong>racemic</strong> (±), zero net rotation. Sign of rotation is not the absolute configuration.", "<strong>Elimination:</strong> alcoholic KOH / EtONa gives alkenes (E2); aqueous KOH gives alcohols (substitution). Saytzeff: the more substituted alkene is major. 3° and 2° lean elimination; 1° lean SN2 unless the base is bulky.", "R–X + Mg (dry ether) → RMgX (Grignard, Nobel 1912). C–Mg is polar covalent (C<sup>δ−</sup>); any proton source (H₂O, ROH, RNH₂) gives RH — hence anhydrous conditions (Ex 6.12). Wurtz: 2 RX + 2 Na → R–R. Wurtz–Fittig: ArX + RX + Na → Ar–R. Fittig: 2 ArX + Na → Ar–Ar."], "formulas": [{"label": "Grignard", "html": "R–X + Mg (dry ether) → RMgX", "cond": "destroy with any H–Z"}, {"label": "Wurtz", "html": "2 R–X + 2 Na (dry ether) → R–R + 2 NaX", "cond": "even carbon count"}, {"label": "Saytzeff", "html": "more substituted alkene is the major β-elimination product", "cond": "alc. KOH / EtONa"}], "deeper": "Retention means the spatial arrangement of groups around carbon is preserved; inversion means it is reversed. SN2 inverts; SN1 racemises (planar C⁺ attacked from both faces). Ex 6.20: aqueous KOH → substitution because water solvates OH⁻ as a nucleophile; alcoholic KOH favours elimination. Ex 6.21 uses Wurtz as a fingerprint: a primary C₄H₉Br that does not give n-octane must be isobutyl bromide.", "worked": {"title": "Example 6.8 flavour — chiral or not?", "problem": "Is butan-2-ol chiral? Is propan-2-ol?", "steps": ["Butan-2-ol: C-2 bears H, OH, CH₃, C₂H₅ — four different groups; enantiomers D/E in Fig. 6.6.", "Propan-2-ol: two methyls; mirror image superimposes after a 180° rotation (Fig. 6.5)."], "answer": "Butan-2-ol chiral; propan-2-ol achiral."}, "prediction": {"prompt": "Why must a Grignard reagent be prepared in dry ether with no trace of water, alcohol or amine?", "options": ["Ether coordinates Mg; water would freeze at the reaction temperature.", "RMgX is a strong carbon base/nucleophile and abstracts any O–H or N–H proton to give RH.", "Water oxidises magnesium to MgO, which is inert."], "answer": 1, "explanation": "The reprint: even water, alcohols and amines are acidic enough to convert RMgX to RH. Dry ether is both solvent and ligand."}, "connect": [["Wurtz as a structure proof", "Ex 6.21: primary C₄H₉Br + Na gives C₈H₁₈ different from n-octane → the halide is isobutyl, not n-butyl. Coupling doubles the chain you already have."], ["Wow — Grignard started in mathematics", "Victor Grignard took a maths degree, switched to organic chemistry, tried Mg in ether because Zn in ether was known, and shared the 1912 Nobel with Sabatier.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "Define enantiomer and racemic mixture. Write the Grignard equation and state why moisture kills it.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A 1:1 mixture of enantiomers is called", "options": ["a meso compound", "a racemic mixture", "a diastereomer"], "answer": 1, "hint": "§6.7.1c.", "solution": "Zero net rotation because equal and opposite rotations cancel."}, {"level": "Medium", "type": "mcq", "prompt": "Alcoholic KOH on a 2°/3° alkyl halide mainly gives", "options": ["alcohol (substitution)", "alkene (elimination, Saytzeff)", "ether (Williamson)"], "answer": 1, "hint": "Ex 6.20.", "solution": "Aqueous KOH → alcohol; alcoholic KOH → alkene."}, {"level": "Hard", "type": "mcq", "prompt": "Wurtz reaction of n-butyl bromide yields", "options": ["n-octane", "2,5-dimethylhexane", "but-1-ene"], "answer": 0, "hint": "2 R–X → R–R.", "solution": "n-C₄H₉–C₄H₉-n = n-octane. Isobutyl bromide would give 2,5-dimethylhexane (Ex 6.21)."}]}, {"id": "haloarenes-poly", "nav": "Haloarenes & polyhalogens", "title": "Why won’t chlorobenzene SN2 — and why store chloroform in the dark?", "deck": "Four reasons Ar–X resists nucleophilic substitution; o/p-NO₂ SNAr; EAS o,p-directing but deactivating (Ex 6.9). CH₂Cl₂, CHCl₃, CHI₃, CCl₄, freons, DDT.", "minutes": 14, "section": "6.7.2–6.8", "pages": [23, 30], "print": "181–188", "sim": "haloarene", "simTitle": "Haloarene SNAr and polyhalogen hazards", "quick": ["Aryl halides are sluggish toward Nu substitution: (i) resonance gives C–X partial double-bond character; (ii) sp² C (more s-character) holds the pair — C–Cl 169 pm in PhCl vs 177 pm in RCl; (iii) phenyl cation is not resonance-stabilised, so SN1 is out; (iv) the electron-rich ring repels Nu. Dow phenol: PhCl + aq. NaOH, 623 K, 300 atm.", "o/p-NO₂ groups activate SNAr (addition–elimination): they withdraw density and stabilise the Meisenheimer anion. meta-NO₂ does not place negative charge on the carbon bearing NO₂ — no rate boost. EAS of Ph–X is <strong>o,p-directing but deactivating</strong> (Ex 6.9): −I controls reactivity, +R controls orientation.", "Polyhalogens (§6.8): CH₂Cl₂ solvent/paint remover (CNS toxin). CHCl₃ once an anaesthetic; oxidised by air/light to <strong>phosgene</strong> — store in dark, full bottles. CHI₃ antiseptic via free iodine. CCl₄: refrigerants feedstock, ozone depleter, liver/heart toxin. Freon-12 CCl₂F₂ (Swarts from CCl₄) — stratospheric radical chains. DDT (Müller 1939, Nobel 1948) — malaria mosquito; banned in the US 1973; fat-soluble, biomagnifies."], "formulas": [{"label": "C–Cl lengths", "html": "haloalkane 177 pm; haloarene 169 pm", "cond": "sp³ vs sp² + resonance"}, {"label": "Dow phenol", "html": "PhCl + NaOH, 623 K, 300 atm → PhOH", "cond": "industrial SNAr, harsh"}, {"label": "Phosgene from chloroform", "html": "CHCl₃ + ½ O₂ (light) → COCl₂ + HCl", "cond": "store dark, filled bottles"}, {"label": "Freon-12", "html": "CCl₂F₂  (from CCl₄, Swarts)", "cond": "refrigerant; ozone chemistry"}], "deeper": "Ex 6.12(i): chlorobenzene has a lower dipole moment than cyclohexyl chloride because of the shorter C–Cl, sp² carbon and resonance donation from Cl into the ring. Ex 6.18: p-dichlorobenzene, higher m.p. from packing. Wurtz–Fittig and Fittig close the haloarene metal chapter.", "worked": {"title": "Example 6.9 — o,p-directing yet deactivating", "problem": "Although chlorine is electron-withdrawing, it is ortho/para-directing in EAS. Why?", "steps": ["−I withdraws electrons and destabilises the Wheland intermediate — net deactivation vs benzene.", "+R donates at o/p, so those positions are less deactivated than meta.", "Reactivity is controlled by the stronger inductive effect; orientation by resonance."], "answer": "Deactivating by −I; o,p-directing by +R."}, "prediction": {"prompt": "Chloroform is stored in completely filled, dark bottles. What poisonous gas forms if air and light get in?", "options": ["Chlorine", "Phosgene (carbonyl chloride)", "Mustard gas"], "answer": 1, "explanation": "§6.8.2: CHCl₃ is slowly oxidised by air in light to COCl₂ (phosgene). Fill the bottle so air is kept out; amber glass so light is kept out."}, "connect": [["DDT and malaria", "After World War II DDT was used worldwide against the Anopheles mosquito. Chemical stability and fat solubility turned a miracle insecticide into a persistent pollutant — still discussed in Indian public-health history."], ["Wow — 900 ppm chloroform for a short time", "The reprint’s occupational number: 900 parts per million in air already causes dizziness, fatigue and headache. Chronic exposure hits liver (where CHCl₃ is metabolised to phosgene) and kidneys.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}]]], "recall": "List four reasons Ar–X resists SN reactions, and state how chloroform must be stored and why.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "C–Cl bond length in chlorobenzene vs a typical haloalkane is", "options": ["longer in the arene (weaker bond)", "shorter in the arene (169 vs 177 pm)", "identical"], "answer": 1, "hint": "§6.7.2 hybridisation argument.", "solution": "sp² + resonance → shorter, stronger C–Cl."}, {"level": "Medium", "type": "mcq", "prompt": "A nitro group activates nucleophilic substitution of chlorobenzene when it is", "options": ["only at the meta position", "at ortho or para, not meta", "anywhere on the ring equally"], "answer": 1, "hint": "Meisenheimer-anion resonance.", "solution": "Negative charge in the addition intermediate sits o/p to Cl, where NO₂ can hold it."}, {"level": "Hard", "type": "mcq", "prompt": "Freon-12 is", "options": ["CHCl₃", "CCl₄", "CCl₂F₂"], "answer": 2, "hint": "§6.8.5.", "solution": "CCl₂F₂, from CCl₄ by Swarts. Stratospheric radical chemistry depletes ozone."}]}], "exercises": [{"number": "6.1", "section": "Exercises", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Name the following halides according to IUPAC system and classify them as alkyl, allyl, benzyl (primary, secondary, tertiary), vinyl or aryl halides:\n(i) (CH₃)₂CHCH(Cl)CH₃\n(ii) CH₃CH₂CH(CH₃)CH(C₂H₅)Cl\n(iii) CH₃CH₂C(CH₃)₂CH₂I\n(iv) (CH₃)₃CCH₂CH(Br)C₆H₅\n(v) CH₃CH(CH₃)CH(Br)CH₃\n(vi) CH₃C(C₂H₅)₂CH₂Br\n(vii) CH₃C(Cl)(C₂H₅)CH₂CH₃\n(viii) CH₃CH=C(Cl)CH₂CH(CH₃)₂\n(ix) CH₃CH=CHC(Br)(CH₃)₂\n(x) p-ClC₆H₄CH₂CH(CH₃)₂\n(xi) m-ClCH₂C₆H₄CH₂C(CH₃)₃\n(xii) o-Br-C₆H₄CH(CH₃)CH₂CH₃", "steps": ["Assign the longest chain / parent arene; halogen as prefix; then classify the carbon that bears X (alkyl 1°/2°/3°, allyl, benzyl, vinyl, aryl).", "(i) 2-chloro-3-methylbutane — 2° alkyl. (ii) 3-chloro-4-methylhexane — 2° alkyl.", "(iii) 1-iodo-2,2-dimethylbutane — 1° alkyl. (iv) 1-bromo-3,3-dimethyl-1-phenylbutane — 2° benzylic.", "(v) 2-bromo-3-methylbutane — 2° alkyl. (vi) 1-bromo-2-ethyl-2-methylbutane — 1° alkyl.", "(vii) 3-chloro-3-methylpentane — 3° alkyl. (viii) 3-chloro-5-methylhex-2-ene — vinylic.", "(ix) 4-bromo-4-methylpent-2-ene — 3° allylic. (x) 1-chloro-4-(2-methylpropyl)benzene — aryl.", "(xi) 1-(chloromethyl)-3-(2,2-dimethylpropyl)benzene — 1° benzylic. (xii) 1-bromo-2-(butan-2-yl)benzene — aryl."], "answer": "(i) 2-chloro-3-methylbutane, 2° alkyl; (ii) 3-chloro-4-methylhexane, 2° alkyl; (iii) 1-iodo-2,2-dimethylbutane, 1° alkyl; (iv) 1-bromo-3,3-dimethyl-1-phenylbutane, 2° benzylic; (v) 2-bromo-3-methylbutane, 2° alkyl; (vi) 1-bromo-2-ethyl-2-methylbutane, 1° alkyl; (vii) 3-chloro-3-methylpentane, 3° alkyl; (viii) 3-chloro-5-methylhex-2-ene, vinyl; (ix) 4-bromo-4-methylpent-2-ene, 3° allyl; (x) 1-chloro-4-(2-methylpropyl)benzene, aryl; (xi) 1-(chloromethyl)-3-(2,2-dimethylpropyl)benzene, 1° benzyl; (xii) 1-bromo-2-(butan-2-yl)benzene, aryl."}, {"number": "6.2", "section": "Exercises", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Give the IUPAC names of the following compounds:\n(i) CH₃CH(Cl)CH(Br)CH₃\n(ii) CHF₂CBrClF\n(iii) ClCH₂C≡CCH₂Br\n(iv) (CCl₃)₃CCl\n(v) CH₃C(p-ClC₆H₄)₂CH(Br)CH₃\n(vi) (CH₃)₃CCH=CClC₆H₄I-p", "steps": ["(i) 2-bromo-3-chlorobutane (lowest set of locants).", "(ii) 1-bromo-1-chloro-1,2,2-trifluoroethane.", "(iii) 1-bromo-4-chlorobut-2-yne.", "(iv) 2-(trichloromethyl)-1,1,1,2,3,3,3-heptachloropropane.", "(v) 2-bromo-3,3-bis(4-chlorophenyl)butane.", "(vi) 1-chloro-1-(4-iodophenyl)-3,3-dimethylbut-1-ene."], "answer": "(i) 2-bromo-3-chlorobutane; (ii) 1-bromo-1-chloro-1,2,2-trifluoroethane; (iii) 1-bromo-4-chlorobut-2-yne; (iv) 2-(trichloromethyl)-1,1,1,2,3,3,3-heptachloropropane; (v) 2-bromo-3,3-bis(4-chlorophenyl)butane; (vi) 1-chloro-1-(4-iodophenyl)-3,3-dimethylbut-1-ene."}, {"number": "6.3", "section": "Exercises", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Write the structures of the following organic halogen compounds.\n(i) 2-Chloro-3-methylpentane\n(ii) p-Bromochlorobenzene\n(iii) 1-Chloro-4-ethylcyclohexane\n(iv) 2-(2-Chlorophenyl)-1-iodooctane\n(v) 2-Bromobutane\n(vi) 4-tert-Butyl-3-iodoheptane\n(vii) 1-Bromo-4-sec-butyl-2-methylbenzene\n(viii) 1,4-Dibromobut-2-ene", "steps": ["Translate each IUPAC name into a condensed or bond-line structure; halogen locant first, then alkyl branches.", "(i) CH₃CH₂CH(CH₃)CHClCH₃. (ii) 1-bromo-4-chlorobenzene.", "(iii) 1-chloro-4-ethylcyclohexane. (iv) 1-iodo-2-(2-chlorophenyl)octane skeleton.", "(v) CH₃CHBrCH₂CH₃. (vi) heptane with t-Bu at C-4, I at C-3.", "(vii) benzene with Br at C-1, Me at C-2, sec-butyl at C-4. (viii) BrCH₂CH=CHCH₂Br."], "answer": "(i) CH₃CHClCH(CH₃)CH₂CH₃; (ii) p-BrC₆H₄Cl; (iii) 1-Cl-4-Et-cyclohexane; (iv) ICH₂CH(2-ClC₆H₄)C₆H₁₃; (v) CH₃CHBrCH₂CH₃; (vi) CH₃CH₂CH₂CHI(CMe₃)CH₂CH₂CH₃ numbered as 4-tert-butyl-3-iodoheptane; (vii) 1-Br-2-Me-4-(butan-2-yl)benzene; (viii) BrCH₂CH=CHCH₂Br."}, {"number": "6.4", "section": "Exercises", "conceptIdx": 3, "page": 31, "printPage": 189, "question": "Which one of the following has the highest dipole moment?\n(i) CH₂Cl₂  (ii) CHCl₃  (iii) CCl₄", "steps": ["CCl₄ is tetrahedral: four identical C–Cl dipoles cancel, μ = 0.", "CHCl₃: three Cl vs one H — partial cancellation.", "CH₂Cl₂: two Cl on one side — largest net dipole."], "answer": "CH₂Cl₂ has the highest dipole moment; CCl₄ has μ = 0."}, {"number": "6.5", "section": "Exercises", "conceptIdx": 0, "page": 31, "printPage": 189, "question": "A hydrocarbon C₅H₁₀ does not react with chlorine in dark but gives a single monochloro compound C₅H₉Cl in bright sunlight. Identify the hydrocarbon.", "steps": ["No reaction in the dark ⇒ no C=C (not an alkene addition).", "Sunlight ⇒ free-radical substitution of an alkane/cycloalkane.", "A single monochloro product ⇒ all hydrogens equivalent.", "C₅H₁₀ with all H equivalent is cyclopentane (not pentene)."], "answer": "Cyclopentane."}, {"number": "6.6", "section": "Exercises", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Write the isomers of the compound having formula C₄H₉Br.", "steps": ["Four isomeric bromobutanes:", "CH₃CH₂CH₂CH₂Br (1-bromobutane, 1°); CH₃CH₂CHBrCH₃ (2-bromobutane, 2°);", "(CH₃)₂CHCH₂Br (1-bromo-2-methylpropane, 1°); (CH₃)₃CBr (2-bromo-2-methylpropane, 3°)."], "answer": "1-bromobutane; 2-bromobutane; 1-bromo-2-methylpropane; 2-bromo-2-methylpropane."}, {"number": "6.7", "section": "Exercises", "conceptIdx": 2, "page": 31, "printPage": 189, "question": "Write the equations for the preparation of 1-iodobutane from\n(i) 1-butanol\n(ii) 1-chlorobutane\n(iii) but-1-ene.", "steps": ["(i) CH₃CH₂CH₂CH₂OH + red P/I₂ (or KI/H₃PO₄) → CH₃CH₂CH₂CH₂I. Avoid H₂SO₄+KI (intext 6.2: H₂SO₄ oxidises HI to I₂).", "(ii) Finkelstein: CH₃CH₂CH₂CH₂Cl + NaI, dry acetone → CH₃CH₂CH₂CH₂I + NaCl↓.", "(iii) Anti-Markovnikov: but-1-ene + HBr/peroxide → 1-bromobutane, then NaI/acetone → 1-iodobutane. Direct HI would be Markovnikov (2-iodobutane)."], "answer": "(i) n-BuOH → n-BuI (P/I₂ or KI/H₃PO₄); (ii) n-BuCl + NaI/acetone; (iii) but-1-ene + HBr/ROOR then Finkelstein."}, {"number": "6.8", "section": "Exercises", "conceptIdx": 4, "page": 31, "printPage": 189, "question": "What are ambident nucleophiles? Explain with an example.", "steps": ["Nucleophiles with two nucleophilic centres that can bond through either atom.", "Cyanide: ⁻C≡N ↔ :C=N⁻. KCN (ionic) attacks through C → alkyl cyanides RCN. AgCN (covalent) attacks through N → isocyanides RNC (Example 6.5).", "Nitrite: KNO₂ → R–O–N=O (alkyl nitrite); AgNO₂ → R–NO₂ (nitroalkane)."], "answer": "Ambident nucleophiles have two donor atoms (CN⁻, NO₂⁻). KCN → RCN; AgCN → RNC."}, {"number": "6.9", "section": "Exercises", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Which compound in each of the following pairs will react faster in SN2 reaction with ⁻OH?\n(i) CH₃Br or CH₃I\n(ii) (CH₃)₃CCl or CH₃Cl", "steps": ["(i) CH₃I: iodide is the better leaving group (weaker C–I, Table 6.2: 234 vs 351 kJ mol⁻¹).", "(ii) CH₃Cl: methyl is unhindered; tert-butyl chloride is sterically blocked and prefers SN1/elimination."], "answer": "(i) CH₃I; (ii) CH₃Cl."}, {"number": "6.10", "section": "Exercises", "conceptIdx": 5, "page": 32, "printPage": 190, "question": "Predict all the alkenes that would be formed by dehydrohalogenation of the following halides with sodium ethoxide in ethanol and identify the major alkene:\n(i) 1-Bromo-1-methylcyclohexane\n(ii) 2-Chloro-2-methylbutane\n(iii) 2,2,3-Trimethyl-3-bromopentane.", "steps": ["Saytzeff: more substituted alkene major.", "(i) 1-methylcyclohexene (major, endocyclic trisubstituted) and methylenecyclohexane (minor, exo).", "(ii) 2-methylbut-2-ene (major) and 2-methylbut-1-ene (minor).", "(iii) 3,4,4-trimethylpent-2-ene (major) and 2-ethyl-3,3-dimethylbut-1-ene (minor)."], "answer": "(i) 1-methylcyclohexene major, methylenecyclohexane minor; (ii) 2-methylbut-2-ene major, 2-methylbut-1-ene minor; (iii) 3,4,4-trimethylpent-2-ene major, 2-ethyl-3,3-dimethylbut-1-ene minor."}, {"number": "6.11", "section": "Exercises", "conceptIdx": 5, "page": 32, "printPage": 190, "question": "How will you bring about the following conversions?\n(i) Ethanol to but-1-yne\n(ii) Ethane to bromoethene\n(iii) Propene to 1-nitropropane\n(iv) Toluene to benzyl alcohol\n(v) Propene to propyne\n(vi) Ethanol to ethyl fluoride\n(vii) Bromomethane to propanone\n(viii) But-1-ene to but-2-ene\n(ix) 1-Chlorobutane to n-octane\n(x) Benzene to biphenyl.", "steps": ["(i) EtOH → EtBr (HBr) → HC≡CNa / NaNH₂ then EtBr → but-1-yne (after making sodium acetylide from ethyne via two-carbon build: actually EtBr + NaC≡CH).", "Standard: CH₃CH₂OH → CH₃CH₂Br; HC≡CH + NaNH₂ → HC≡CNa; HC≡CNa + CH₃CH₂Br → CH₃CH₂C≡CH.", "(ii) C₂H₆ + Br₂/hν → C₂H₅Br; alc. KOH → C₂H₄; Br₂ → CH₂BrCH₂Br; alc. KOH → CH₂=CHBr.", "(iii) CH₃CH=CH₂ + HBr/peroxide → CH₃CH₂CH₂Br; AgNO₂ → CH₃CH₂CH₂NO₂.", "(iv) PhCH₃ + Cl₂/hν → PhCH₂Cl; aq. KOH → PhCH₂OH.", "(v) Propene + Br₂ → 1,2-dibromopropane; alc. KOH / NaNH₂ → propyne.", "(vi) EtOH → EtCl (SOCl₂) then Swarts (AgF) → EtF; or EtOH → EtOTs then KF.", "(vii) CH₃Br → CH₃CN (KCN) → CH₃COOH (hydrolysis) then further? Standard: 2 CH₃Br + 2 Na → C₂H₆ not ketone. Textbook path: CH₃Br + KCN → CH₃CN; CH₃MgBr + CH₃CN then hydrolyse → propanone? CH₃CN + CH₃MgBr → CH₃C(=NMgBr)CH₃ → CH₃COCH₃.", "(viii) But-1-ene + HBr → 2-bromobutane; alc. KOH → but-2-ene (Saytzeff).", "(ix) Wurtz: 2 CH₃CH₂CH₂CH₂Cl + 2 Na → n-octane.", "(x) Fittig: 2 PhBr + 2 Na / dry ether → Ph–Ph (or benzene → PhBr then Fittig)."], "answer": "(i) EtOH→EtBr; HC≡CNa + EtBr → but-1-yne. (ii) C₂H₆→C₂H₅Br→C₂H₄→Br₂ adduct→CH₂=CHBr. (iii) peroxide HBr then AgNO₂. (iv) side-chain Cl₂/hν then aq. KOH. (v) Br₂ then strong base. (vi) SOCl₂ then Swarts. (vii) CH₃Br→CH₃CN; CH₃MgBr then H₃O⁺ → Me₂CO. (viii) HBr then alc. KOH (Saytzeff). (ix) Wurtz. (x) halogenate then Fittig."}, {"number": "6.12", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 190, "question": "Explain why\n(i) the dipole moment of chlorobenzene is lower than that of cyclohexyl chloride?\n(ii) alkyl halides, though polar, are immiscible with water?\n(iii) Grignard reagents should be prepared under anhydrous conditions?", "steps": ["(i) In PhCl the C–Cl is shorter (169 vs 177 pm), carbon is sp² (more electronegative), and Cl donates by resonance into the ring — smaller net C–Cl dipole than cyclohexyl chloride.", "(ii) To dissolve, you must break water’s H-bonds and haloalkane–haloalkane attractions; the new water–RX attractions are weaker, so ΔsolH does not pay. They dissolve in organic solvents of similar forces.", "(iii) RMgX + H₂O / ROH / RNH₂ → RH. Any proton source destroys the reagent; dry ether is mandatory."], "answer": "(i) shorter sp² C–Cl + resonance lowers μ of PhCl; (ii) cannot replace water H-bonds; (iii) RMgX is destroyed by even traces of proton sources."}, {"number": "6.13", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 190, "question": "Give the uses of freon 12, DDT, carbon tetrachloride and iodoform.", "steps": ["Freon-12 (CCl₂F₂): aerosol propellant, refrigeration and air-conditioning (now restricted — ozone).", "DDT: insecticide against malaria mosquito and typhus lice (use curtailed; persistence, fish toxicity, biomagnification).", "CCl₄: feedstock for CFCs, pharmaceutical manufacture, former cleaning fluid/fire extinguisher — toxic, ozone-depleting.", "Iodoform: former antiseptic (action due to free iodine); replaced because of smell."], "answer": "Freon-12: refrigerant/propellant; DDT: insecticide; CCl₄: solvent/feedstock (toxic, ozone); iodoform: old antiseptic via I₂."}, {"number": "6.14", "section": "Exercises", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Write the structure of the major organic product in each of the following reactions:\n(i) CH₃CH₂CH₂Cl + NaI  (acetone, heat)\n(ii) (CH₃)₃CBr + KOH  (ethanol, heat)\n(iii) CH₃CH(Br)CH₂CH₃ + NaOH  (water)\n(iv) CH₃CH₂Br + KCN  (aq. ethanol)\n(v) C₆H₅ONa + C₂H₅Cl\n(vi) CH₃CH₂CH₂OH + SOCl₂\n(vii) CH₃CH₂CH=CH₂ + HBr  (peroxide)\n(viii) CH₃CH=C(CH₃)₂ + HBr", "steps": ["(i) Finkelstein: CH₃CH₂CH₂I.", "(ii) 3° halide, alcoholic KOH, heat: 2-methylpropene (elimination).", "(iii) 2° halide, aqueous NaOH: butan-2-ol.", "(iv) KCN ionic: CH₃CH₂CN (propanenitrile), not isocyanide.", "(v) Williamson: phenetole C₆H₅OC₂H₅.", "(vi) CH₃CH₂CH₂Cl + SO₂ + HCl.", "(vii) Kharasch anti-Markovnikov: 1-bromobutane.", "(viii) Markovnikov: 2-bromo-2-methylbutane (CH₃)₂CBrCH₂CH₃."], "answer": "(i) n-PrI; (ii) (CH₃)₂C=CH₂; (iii) butan-2-ol; (iv) EtCN; (v) PhOEt; (vi) n-PrCl; (vii) n-BuBr; (viii) (CH₃)₂CBrCH₂CH₃."}, {"number": "6.15", "section": "Exercises", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Write the mechanism of the following reaction:\nnBuBr + KCN  (EtOH–H₂O)  →  nBuCN", "steps": ["KCN is ionic; ⁻CN is the nucleophile (carbon end).", "n-Butyl bromide is 1° → SN2: backside attack of ⁻CN on C–Br, concerted C–C bond making and C–Br breaking, inversion at that carbon.", "Leaving group Br⁻. Polar solvent pair EtOH–H₂O dissolves KCN without forcing SN1 on a 1° substrate.", "Product is pentanenitrile (n-butyl cyanide), not the isocyanide (that would need AgCN)."], "answer": "SN2 attack of ⁻CN (from ionic KCN) on 1° n-BuBr → n-BuCN + Br⁻, inversion."}, {"number": "6.16", "section": "Exercises", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Arrange the compounds of each set in order of reactivity towards SN2 displacement:\n(i) 2-Bromo-2-methylbutane, 1-Bromopentane, 2-Bromopentane\n(ii) 1-Bromo-3-methylbutane, 2-Bromo-2-methylbutane, 2-Bromo-3-methylbutane\n(iii) 1-Bromobutane, 1-Bromo-2,2-dimethylpropane, 1-Bromo-2-methylbutane, 1-Bromo-3-methylbutane.", "steps": ["SN2: less crowding at the electrophilic carbon, faster. 1° ≫ 2° ≫ 3°. Among 1°, β-branching slows (neopentyl slowest).", "(i) 1-bromopentane > 2-bromopentane > 2-bromo-2-methylbutane.", "(ii) 1-bromo-3-methylbutane > 2-bromo-3-methylbutane > 2-bromo-2-methylbutane.", "(iii) 1-bromobutane > 1-bromo-3-methylbutane > 1-bromo-2-methylbutane > 1-bromo-2,2-dimethylpropane (neopentyl, intext 6.7)."], "answer": "(i) 1-bromopentane > 2-bromopentane > 2-bromo-2-methylbutane; (ii) 1-bromo-3-methylbutane > 2-bromo-3-methylbutane > 2-bromo-2-methylbutane; (iii) 1-bromobutane > 1-bromo-3-methylbutane > 1-bromo-2-methylbutane > 1-bromo-2,2-dimethylpropane."}, {"number": "6.17", "section": "Exercises", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Out of C₆H₅CH₂Cl and C₆H₅CHClC₆H₅, which is more easily hydrolysed by aqueous KOH.", "steps": ["Aqueous KOH, benzylic chlorides → SN1 (resonance-stabilised C⁺).", "C₆H₅CHClC₆H₅ gives a carbocation stabilised by two phenyl rings; C₆H₅CH₂Cl by one.", "Therefore diphenylmethyl chloride hydrolyses faster."], "answer": "C₆H₅CHClC₆H₅ (benzhydryl chloride) hydrolyses faster — more stable C⁺."}, {"number": "6.18", "section": "Exercises", "conceptIdx": 3, "page": 32, "printPage": 190, "question": "p-Dichlorobenzene has higher m.p. than those of o- and m-isomers. Discuss.", "steps": ["Boiling points of the three isomers are nearly equal (similar polarity/mass).", "The para isomer is symmetric and packs more efficiently in the crystal lattice, so more energy is needed to melt it.", "o- and m-isomers pack poorly → lower m.p."], "answer": "Para symmetry → better crystal packing → higher melting point."}, {"number": "6.19", "section": "Exercises", "conceptIdx": 5, "page": 32, "printPage": 190, "question": "How the following conversions can be carried out?\n(i) Propene to propan-1-ol\n(ii) Ethanol to but-1-yne\n(iii) 1-Bromopropane to 2-bromopropane\n(iv) Toluene to benzyl alcohol\n(v) Benzene to 4-bromonitrobenzene\n(vi) Benzyl alcohol to 2-phenylethanoic acid\n(vii) Ethanol to propanenitrile\n(viii) Aniline to chlorobenzene\n(ix) 2-Chlorobutane to 3,4-dimethylhexane\n(x) 2-Methyl-1-propene to 2-chloro-2-methylpropane\n(xi) Ethyl chloride to propanoic acid\n(xii) But-1-ene to n-butyliodide\n(xiii) 2-Chloropropane to 1-propanol\n(xiv) Isopropyl alcohol to iodoform\n(xv) Chlorobenzene to p-nitrophenol\n(xvi) 2-Bromopropane to 1-bromopropane\n(xvii) Chloroethane to butane\n(xviii) Benzene to diphenyl\n(xix) tert-Butyl bromide to isobutyl bromide\n(xx) Aniline to phenylisocyanide", "steps": ["(i) HBr/peroxide then aq. KOH (or hydroboration–oxidation — Unit 7). (ii) as 6.11(i).", "(iii) alc. KOH → propene; HBr (no peroxide) → 2-bromopropane.", "(iv) Cl₂/hν then aq. KOH. (v) Br₂/Fe then HNO₃/H₂SO₄ (Br is o,p-director) — isolate para.", "(vi) PCl₅ → PhCH₂Cl; KCN → PhCH₂CN; hydrolyse → PhCH₂COOH.", "(vii) SOCl₂ → EtCl; KCN → EtCN. (viii) NaNO₂/HCl, 273 K then CuCl (Sandmeyer).", "(ix) Wurtz of 2-chlorobutane → 3,4-dimethylhexane. (x) HCl, Markovnikov.", "(xi) KCN → EtCN; hydrolyse → EtCOOH. (xii) HBr/peroxide then NaI/acetone.", "(xiii) alc. KOH → propene; HBr/ROOR → 1-bromopropane; aq. KOH → propan-1-ol.", "(xiv) I₂/NaOH (iodoform test — 2° alcohol with CH₃CH(OH)–).", "(xv) HNO₃/H₂SO₄ → p-nitrochlorobenzene (plus ortho); aq. NaOH heat then H⁺ (activated SNAr).", "(xvi) alc. KOH → propene; HBr/ROOR → 1-bromopropane.", "(xvii) Wurtz: 2 EtCl + 2 Na → n-butane. (xviii) Br₂/Fe then Fittig.", "(xix) alc. KOH → 2-methylpropene; HBr/ROOR → isobutyl bromide (anti-Markovnikov).", "(xx) Carbylamine: CHCl₃ / alc. KOH → PhNC."], "answer": "Standard two-to-four-step sequences as listed in steps; (viii) Sandmeyer; (xx) carbylamine; (ix)(xvii) Wurtz; (xix) elimination then peroxide HBr."}, {"number": "6.20", "section": "Exercises", "conceptIdx": 5, "page": 33, "printPage": 191, "question": "The treatment of alkyl chlorides with aqueous KOH leads to the formation of alcohols but in the presence of alcoholic KOH, alkenes are major products. Explain.", "steps": ["In water, OH⁻ is a good nucleophile, strongly solvated, and substitution (SN1/SN2) dominates → alcohols.", "In alcohol, the medium is less polar, OH⁻/OR⁻ behaves more as a base, and β-elimination (E2) dominates → alkenes.", "3° substrates eliminate especially easily; heat and alc. KOH are the classic E2 conditions of this unit."], "answer": "Aq. KOH: substitution to alcohols. Alc. KOH: elimination to alkenes (base in a less polar medium)."}, {"number": "6.21", "section": "Exercises", "conceptIdx": 5, "page": 33, "printPage": 191, "question": "Primary alkyl halide C₄H₉Br (a) reacted with alcoholic KOH to give compound (b). Compound (b) is reacted with HBr to give (c) which is an isomer of (a). When (a) is reacted with sodium metal it gives compound (d), C₈H₁₈ which is different from the compound formed when n-butyl bromide is reacted with sodium. Give the structural formula of (a) and write the equations for all the reactions.", "steps": ["(a) is primary C₄H₉Br but Wurtz product ≠ n-octane ⇒ (a) is isobutyl bromide (CH₃)₂CHCH₂Br, not n-butyl.", "alc. KOH: (CH₃)₂CHCH₂Br → (CH₃)₂C=CH₂ (b) 2-methylpropene.", "HBr (Markovnikov): (CH₃)₂C=CH₂ → (CH₃)₃CBr (c), isomer of (a).", "Wurtz: 2 (CH₃)₂CHCH₂Br + 2 Na → (CH₃)₂CHCH₂CH₂CH(CH₃)₂  (2,5-dimethylhexane), not n-octane."], "answer": "(a) isobutyl bromide (CH₃)₂CHCH₂Br; (b) 2-methylpropene; (c) tert-butyl bromide; (d) 2,5-dimethylhexane."}, {"number": "6.22", "section": "Exercises", "conceptIdx": 5, "page": 33, "printPage": 191, "question": "What happens when\n(i) n-butyl chloride is treated with alcoholic KOH,\n(ii) bromobenzene is treated with Mg in the presence of dry ether,\n(iii) chlorobenzene is subjected to hydrolysis,\n(iv) ethyl chloride is treated with aqueous KOH,\n(v) methyl bromide is treated with sodium in the presence of dry ether,\n(vi) methyl chloride is treated with KCN?", "steps": ["(i) but-1-ene (E2).", "(ii) phenylmagnesium bromide PhMgBr.", "(iii) no reaction under ordinary conditions (Ar–X inert); industrial: 623 K, 300 atm → phenol.", "(iv) ethanol (SN2).", "(v) Wurtz: ethane.", "(vi) acetonitrile CH₃CN (not isocyanide)."], "answer": "(i) but-1-ene; (ii) PhMgBr; (iii) no ordinary hydrolysis / Dow conditions → phenol; (iv) ethanol; (v) ethane; (vi) CH₃CN."}]};
+window.CHAPTER = {"code": "lech201", "chapterNumber": "06", "title": "Haloalkanes and Haloarenes", "subtitle": "Classification and IUPAC names, polar C–X, SN1 vs SN2, stereochemistry, haloarene inertness, and polyhalogen compounds of this reprint.", "book_name": "Chemistry Part 2", "edition": "NCERT Chemistry Part 2, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lech201.pdf", "page_start": 159, "page_end": 192, "exercisesNote": "All 22 exercises from the NCERT exercises (printed pp. 189–191), each mapped to the concept it practises, with the data given and a full step-by-step solution; textbook structures are redrawn where the question cites one.", "lessons": [{"id": "classification", "nav": "Classification of C–X", "group": "01 / CLASSIFY THE C–X BOND", "title": "How do we sort haloalkanes from haloarenes?", "deck": "Mono/di/polyhalogen compounds; sp³ C–X (alkyl, allylic, benzylic) versus sp² C–X (vinylic, aryl). Polar C–X is the chemical handle.", "minutes": 10, "section": "6.1", "pages": [1, 3], "print": "159–161", "sim": "classifycx", "simTitle": "Classify the C–X carbon", "watch": "Click each family: the readout shows the hybridisation of the C–X carbon. sp³ (alkyl, allylic, benzylic) is reactive; sp² (vinylic, aryl) is not.", "quick": ["<strong>Haloalkanes</strong> have halogen on an <em>sp³</em> carbon of an alkyl group; <strong>haloarenes</strong> have halogen on an <em>sp²</em> carbon of an aryl ring. Replacement of H in aliphatic or aromatic hydrocarbons by halogen gives these families (Unit 6 opener, reprint 2026–27).", "Count the halogens: <strong>mono, di, poly</strong> (tri-, tetra-, …). Then look at hybridisation of the carbon that bears X. Allylic and benzylic halides still have <em>sp³</em> C–X, but the carbon is next to C=C or an aryl ring. Vinylic and aryl have <em>sp²</em> C–X and are sluggish in SN1/SN2.", "Chloramphenicol (typhoid), chloroquine (malaria), halothane (anaesthetic) and thyroxine (iodine hormone; deficiency → goitre) are clinically useful organohalogens. Fully fluorinated compounds have been considered as blood substitutes."], "formulas": [{"label": "Homologous alkyl halides", "html": "C<sub>n</sub>H₂ₙ₊₁X", "cond": "X = F, Cl, Br, I"}, {"label": "1° / 2° / 3° test", "html": "count carbons attached to the C–X carbon", "cond": "1°: one C; 2°: two C; 3°: three C"}, {"label": "Allylic vs vinylic", "html": "allylic: C=C–C(sp³)–X &nbsp;|&nbsp; vinylic: C=C(sp²)–X", "cond": "benzylic analogous to allylic"}], "deeper": "Halogen is more electronegative than carbon, so C–X is polar (C<sup>δ+</sup>–X<sup>δ−</sup>). That partial positive charge is why nucleophiles attack haloalkanes. Aryl and vinyl C–X bonds have partial double-bond character from resonance and extra s-character (sp²), so they do not behave like alkyl C–X. Polyhalogen compounds persist in soil because bacteria struggle to break C–X bonds.", "worked": {"title": "Example 6.1 (partial) — C₅H₁₁Br classes", "problem": "Among the eight structural isomers of C₅H₁₁Br, classify 1-bromopentane, 2-bromopentane and 2-bromo-2-methylbutane as 1°, 2° or 3°.", "given": "1-bromopentane CH₃CH₂CH₂CH₂CH₂Br; 2-bromopentane CH₃CH₂CH₂CH(Br)CH₃; 2-bromo-2-methylbutane (CH₃)₂CBrCH₂CH₃.", "steps": ["1-Bromopentane: Br on a CH₂ attached to one carbon → 1°.", "2-Bromopentane: Br on CH attached to two carbons → 2°.", "2-Bromo-2-methylbutane: Br on C attached to three carbons → 3°."], "answer": "1°; 2°; 3°."}, "prediction": {"prompt": "Is benzyl chloride (PhCH₂Cl) an aryl halide or a benzylic halide — and is its C–Cl carbon sp² or sp³?", "options": ["Aryl halide; sp² carbon of the ring.", "Benzylic halide; sp³ carbon attached to the ring.", "Vinylic halide; sp² carbon of a double bond."], "answer": 1, "explanation": "Table 6.1: benzyl chloride is chlorophenylmethane. Halogen is on the sp³ benzylic carbon, not on the ring. Chlorobenzene is the aryl analogue."}, "connect": [{"title": "Thyroxine and goitre", "text": "The body makes the iodine-containing hormone thyroxine. Iodine deficiency still causes goitre in parts of the Himalayan belt — iodised salt is a public-health organohalogen."}, {"title": "Halothane and modern anaesthesia", "text": "CF₃CHClBr (halothane) is a non-flammable halogenated anaesthetic. Adding halogens to a small hydrocarbon changes its physical behaviour enough to put a patient safely to sleep."}, {"title": "Wow: chloramphenicol from a microbe", "text": "A chlorine-containing antibiotic produced by microorganisms is effective against typhoid. Not all organohalogens are synthetic pollutants.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "YO1lecuaqHI", "title": "Antibiotics - Chloramphenicol: Nursing Pharmacology", "channel": "Osmosis from Elsevier"}}], "recall": "State the hybridisation of the C–X carbon in alkyl, allylic, benzylic, vinylic and aryl halides.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many structural isomers does C₅H₁₁Br have (Example 6.1)?", "answer": 8, "tolerance": 0.001, "unit": "", "hint": "Count 1°, 2° and 3° bromides separately.", "solution": "Four primary + three secondary + one tertiary = eight structural isomers."}, {"level": "Medium", "type": "mcq", "prompt": "CH₂=CHCH₂Br is best classified as", "options": ["vinylic halide", "allylic halide", "aryl halide"], "answer": 1, "hint": "Halogen on sp³ carbon adjacent to C=C.", "solution": "Allylic: the C–Br carbon is sp³ and next to the double bond. Vinyl bromide would be CH₂=CHBr.", "wrong": ["Vinyl bromide CH₂=CHBr has X on the sp² carbon.", "", "An aryl halide needs the halogen on a benzene ring."]}, {"level": "Hard", "type": "mcq", "prompt": "Which compound has halogen on an sp² carbon?", "options": ["(CH₃)₃CBr", "PhCH₂Cl", "CH₂=CHCl"], "answer": 2, "hint": "Vinylic and aryl are sp² C–X.", "solution": "Chloroethene is vinylic (Table 6.1). tert-Butyl bromide is 3° alkyl; benzyl chloride is benzylic sp³.", "wrong": ["tert-Butyl bromide is a 3° alkyl halide (sp³ carbon).", "Benzyl chloride is benzylic: its C–Cl carbon is sp³.", ""]}]}, {"id": "nomenclature", "nav": "IUPAC names & isomers", "group": "02 / NAMES & ISOMERS", "title": "How does this reprint name alkyl and aryl halides?", "deck": "Halo as a substituent on the parent hydrocarbon. Eight C₅H₁₁Br isomers (Example 6.1). gem vs vic dihalides. Table 6.1 common vs IUPAC.", "minutes": 12, "section": "6.2", "pages": [3, 5], "print": "161–163", "sim": "iupac8", "simTitle": "Eight isomers of C₅H₁₁Br", "watch": "Step through the eight isomers of C₅H₁₁Br. Count the carbons bonded to the C–Br carbon to label each as 1°, 2° or 3°.", "quick": ["Common names: alkyl group + halide (sec-butyl chloride). <strong>IUPAC:</strong> halo-substituted hydrocarbons (2-chlorobutane). For monosubstituted benzenes, common and IUPAC names coincide; for disubstituted, o/m/p in common names become locants 1,2 / 1,3 / 1,4.", "<strong>gem-dihalides</strong> (both X on the same carbon) are alkylidene dihalides in the common system, e.g. ethylidene chloride = 1,1-dichloroethane. <strong>vic-dihalides</strong> (adjacent carbons) are alkylene dihalides, e.g. ethylene dichloride = 1,2-dichloroethane.", "Table 6.1 (zoom p.04): neo-pentyl bromide = 1-bromo-2,2-dimethylpropane; vinyl chloride = chloroethene; allyl bromide = 3-bromopropene; chloroform = trichloromethane; CCl₄ = tetrachloromethane; benzyl chloride = chlorophenylmethane; o-chlorotoluene = 1-chloro-2-methylbenzene."], "formulas": [{"label": "Example 6.1 count", "html": "C₅H₁₁Br has <strong>eight</strong> structural isomers", "cond": "four 1°, three 2°, one 3°"}, {"label": "gem vs vic", "html": "gem: X–C–X on one carbon &nbsp;|&nbsp; vic: X–C–C–X", "cond": "IUPAC: both are dihaloalkanes"}], "deeper": "Number the longest chain so that the halogen gets the lowest possible locant; then number substituents. For alkenyl halides the double bond often takes precedence in the suffix, and halogen is a prefix (4-bromopent-2-ene, Example 6.2). Do not invent extra isomers: C₅H₁₁Br has exactly the eight listed on p.04–05 of this reprint.", "worked": {"title": "Example 6.1 — all eight C₅H₁₁Br isomers (zoom p.04–05)", "problem": "Draw, name (IUPAC) and classify every structural isomer of C₅H₁₁Br.", "given": "Formula C₅H₁₁Br; halogen treated as a substituent on the parent alkane.", "steps": ["1-Bromopentane (1°); 2-bromopentane (2°); 3-bromopentane (2°).", "1-Bromo-3-methylbutane (1°); 2-bromo-3-methylbutane (2°); 2-bromo-2-methylbutane (3°).", "1-Bromo-2-methylbutane (1°); 1-bromo-2,2-dimethylpropane (1°)."], "answer": "Eight isomers: four 1°, three 2°, one 3°."}, "prediction": {"prompt": "What is the IUPAC name of (CH₃)₃CCH₂Br (common: neo-pentyl bromide)?", "options": ["2-Bromo-2-methylbutane", "1-Bromo-2,2-dimethylpropane", "2-Bromo-2-methylpropane"], "answer": 1, "explanation": "Table 6.1: neo-pentyl bromide is 1-bromo-2,2-dimethylpropane. The Br is on the CH₂, not the tertiary carbon."}, "connect": [{"title": "Vinyl chloride and PVC", "text": "Chloroethene (vinyl chloride) is polymerised to PVC — pipes and cables in every Indian city. The monomer is a vinylic halide, not an alkyl halide."}, {"title": "Common names still rule the shelf", "text": "sec-Butyl chloride and 2-chlorobutane are the same compound; ethylene dichloride is 1,2-dichloroethane. Table 6.1 pairs the old trivial names with the IUPAC names now used in exams."}, {"title": "Wow: chloroform is trichloromethane", "text": "The common name hides a simple IUPAC: replace every H of methane by Cl except one, and you have CHCl₃. Store it in the dark — light plus air makes phosgene.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "9mGs_4sFhmw", "title": "Nomenclature of alkyl & aryl halides| Haloalkanes & haloarenes | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Give IUPAC names of neo-pentyl bromide, vinyl chloride, allyl bromide and benzyl chloride as in Table 6.1.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many structural isomers does C₄H₉Br have?", "answer": 4, "tolerance": 0.001, "unit": "", "hint": "One chain of four carbons gives two, the branched chain gives two more.", "solution": "1-bromobutane, 2-bromobutane, 1-bromo-2-methylpropane and 2-bromo-2-methylpropane: four isomers."}, {"level": "Medium", "type": "mcq", "prompt": "How many structural isomers does C₅H₁₁Br have (Example 6.1)?", "options": ["5", "8", "10"], "answer": 1, "hint": "Zoom p.04–05 lists all eight.", "solution": "Eight: 1-/2-/3-bromopentane, 1-bromo-3-methylbutane, 2-bromo-3-methylbutane, 2-bromo-2-methylbutane, 1-bromo-2-methylbutane, 1-bromo-2,2-dimethylpropane.", "wrong": ["Too few: the reprint lists eight.", "", "Ten is not the structural count; C₅H₁₁Br has eight."]}, {"level": "Hard", "type": "mcq", "prompt": "1,1-Dichloroethane is a", "options": ["vic-dihalide (ethylene dichloride)", "gem-dihalide (ethylidene chloride)", "aryl halide"], "answer": 1, "hint": "Zoom p.04: gem vs vic.", "solution": "Both Cl on the same carbon: gem / alkylidene. 1,2-Dichloroethane is vic / ethylene dichloride.", "wrong": ["vic means adjacent carbons (1,2-dichloroethane).", "", "No ring is present in this compound."]}]}, {"id": "cx-bond-prep", "nav": "C–X bond & preparation", "group": "03 / C–X BOND & PREPARATION", "title": "Why is SOCl₂ preferred — and how do we make R–X and Ar–X?", "deck": "Table 6.2 bond lengths/enthalpies/dipoles. From alcohols (HX, PCl₅, SOCl₂), hydrocarbons, halogen exchange (Finkelstein, Swarts), and electrophilic / Sandmeyer routes to haloarenes.", "minutes": 14, "section": "6.3–6.5", "pages": [5, 9], "print": "163–167", "sim": "cxprep", "simTitle": "Preparation routes to R–X and Ar–X", "watch": "Pick a route and watch the progress bar with its equation. SOCl₂ is preferred because both by-products leave as gases.", "quick": ["Table 6.2 (zoom-verified): CH₃–F 139 pm, 452 kJ mol⁻¹, 1.847 D; CH₃–Cl 178 pm, 351, 1.860 D; CH₃–Br 193 pm, 293, 1.830 D; CH₃–I 214 pm, 234, 1.636 D. Down the group, C–X lengthens and weakens; dipole is largest for CH₃Cl.", "From alcohols: conc. HX, PCl₅ / PCl₃ / PBr₃, or <strong>SOCl₂</strong>. Thionyl chloride is preferred because SO₂ and HCl escape as gases, leaving pure alkyl chloride. Phenols do not give Ar–X this way — the C–O bond has partial double-bond character.", "Halogen exchange: <strong>Finkelstein</strong> RCl/RBr + NaI in dry acetone (NaCl/NaBr precipitates). <strong>Swarts</strong> fluorides from RCl + AgF / Hg₂F₂ / CoF₂ / SbF₃. Aryl halides: electrophilic halogenation of arenes, or Sandmeyer / Gattermann from ArN₂⁺."], "formulas": [{"label": "SOCl₂ (preferred)", "html": "R–OH + SOCl₂ → R–Cl + SO₂↑ + HCl↑", "cond": "pure alkyl chloride"}, {"label": "Finkelstein", "html": "R–Cl + NaI (dry acetone) → R–I + NaCl↓", "cond": "precipitation drives equilibrium"}, {"label": "Swarts", "html": "R–Cl + AgF (or Hg₂F₂, CoF₂, SbF₃) → R–F", "cond": "alkyl fluorides; Freon-12 from CCl₄"}], "deeper": "Free-radical halogenation of alkanes is indiscriminate (mixtures). Addition of HX to alkenes follows Markovnikov unless peroxides reverse HBr (Kharasch). Electrophilic halogenation of benzene needs a Lewis acid (FeCl₃/AlCl₃). Iodination is reversible and needs an oxidant. Direct fluorination is too violent — use Swarts.", "worked": {"title": "Example 6.3 style — choosing the reagent", "problem": "Convert butan-1-ol to 1-chlorobutane as a pure product, and 1-chlorobutane to 1-iodobutane.", "given": "Butan-1-ol; 1-chlorobutane; SOCl₂; NaI in dry acetone.", "steps": ["ROH + SOCl₂ → RCl + gases (pure).", "RCl + NaI / dry acetone → RI (Finkelstein).", "No water or acid is needed and both by-products are easy to separate: SO₂ and HCl escape as gases, while NaCl precipitates from dry acetone."], "answer": "SOCl₂ then NaI/acetone."}, "prediction": {"prompt": "Why can you not convert phenol to chlorobenzene with HCl or SOCl₂ under the alcohol conditions of §6.4?", "options": ["Phenol is too weakly acidic.", "The phenolic C–O bond has partial double-bond character and is hard to cleave.", "Chlorobenzene would immediately hydrolyse back."], "answer": 1, "explanation": "The reprint is explicit: aryl C–O is stronger than a single bond because of resonance. Haloarenes are made by electrophilic substitution or from diazonium salts, not from phenols + HX."}, "connect": [{"title": "Swarts and the air-conditioner", "text": "Freon-12 (CCl₂F₂) is manufactured from CCl₄ by Swarts reaction — the same halogen-exchange idea as alkyl fluorides."}, {"title": "Sandmeyer makes aryl halides", "text": "Aniline is diazotised at 273 K and treated with CuCl or CuBr to give chlorobenzene or bromobenzene — the route to Ar–X that phenols cannot provide."}, {"title": "Wow: two gases leave, so the chloride is pure", "text": "SOCl₂ is the laboratory favourite because purification is built into the stoichiometry: SO₂ and HCl bubble away.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "LccmkSz-Y-w", "title": "Preparation of alkyl halides from alcohols | Organic chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Write the Finkelstein and Swarts equations and quote the four CH₃–X bond lengths from Table 6.2.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "From Table 6.2, what is the C–I bond enthalpy in CH₃–I (kJ mol⁻¹)?", "answer": 234, "tolerance": 0.5, "unit": "kJ mol⁻¹", "hint": "C–I is the longest and weakest carbon–halogen bond.", "solution": "Table 6.2: C–I 214 pm and 234 kJ mol⁻¹."}, {"level": "Medium", "type": "mcq", "prompt": "CH₃–I bond enthalpy in Table 6.2 is", "options": ["452 kJ mol⁻¹", "351 kJ mol⁻¹", "234 kJ mol⁻¹"], "answer": 2, "hint": "Table 6.2: F 452, Cl 351, Br 293, I 234.", "solution": "C–I is the longest (214 pm) and weakest.", "wrong": ["452 kJ mol⁻¹ is the C–F value.", "351 kJ mol⁻¹ is the C–Cl value.", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Finkelstein conversion of RCl to RI is run in dry acetone because", "options": ["acetone is a polar protic solvent that stabilises carbocations", "NaCl is poorly soluble in dry acetone, so precipitation pulls the equilibrium to RI", "acetone oxidises chloride to chlorine"], "answer": 1, "hint": "Halogen-exchange paragraph.", "solution": "Classic solubility trick. Polar protic solvents are the SN1 story, not this.", "wrong": ["Acetone is polar aprotic, not polar protic.", "", "No redox step is involved in a Finkelstein exchange."]}]}, {"id": "physical", "nav": "Physical properties", "group": "04 / PHYSICAL PROPERTIES", "title": "Why is para-dichlorobenzene a high-melting mothball?", "deck": "Boiling points: RI > RBr > RCl > RF; branching lowers b.p. Para isomers pack and melt higher. Densities in Table 6.3. Slight water solubility.", "minutes": 10, "section": "6.6", "pages": [9, 11], "print": "167–169", "sim": "halobp", "simTitle": "Boiling point, packing and density", "watch": "Switch between the four sets: same alkyl with different X, branching, para vs ortho/meta, and the Table 6.3 densities.", "quick": ["Methyl chloride, methyl bromide, ethyl chloride and some chlorofluoromethanes are gases; higher members are liquids or solids. Polar C–X plus higher mass → stronger dipole–dipole and van der Waals forces than the parent hydrocarbon, so boiling points are higher.", "Same alkyl group: <strong>RI > RBr > RCl > RF</strong> (Fig. 6.1). Isomeric haloalkanes: more branching, lower b.p. (smaller surface). Isomeric dihalobenzenes have similar b.p., but the <strong>para isomer melts higher</strong> because symmetry packs the crystal (p-dichlorobenzene mothballs).", "Table 6.3 densities (g mL⁻¹): n-C₃H₇Cl 0.89; CH₂Cl₂ 1.336; n-C₃H₇Br 1.335; CHCl₃ 1.489; n-C₃H₇I 1.747; CCl₄ 1.595. Bromo, iodo and polychloro compounds are heavier than water. Haloalkanes are only slightly water-soluble: you must pay the hydrogen-bond cost of water without getting it back."], "formulas": [{"label": "b.p. vs halogen", "html": "RI &gt; RBr &gt; RCl &gt; RF", "cond": "same alkyl group; van der Waals"}, {"label": "Dipole moment order (Ex 6.4)", "html": "μ(CH₂Cl₂) &gt; μ(CHCl₃) &gt; μ(CCl₄) = 0", "cond": "CCl₄ tetrahedral cancellation"}, {"label": "Table 6.3", "html": "d(CH₂Cl₂)=1.336, d(CHCl₃)=1.489, d(CCl₄)=1.595 g mL⁻¹", "cond": "heavier than water"}], "deeper": "Intext 6.6: boiling-point order bromomethane &lt; chloromethane? No — bromoform, dibromomethane, bromomethane, chloromethane: mass and number of Br dominate. (i) Chloromethane &lt; bromomethane &lt; dibromomethane &lt; bromoform. (ii) Isopropyl chloride &lt; 1-chloropropane &lt; 1-chlorobutane (branching plus chain length).", "worked": {"title": "Example / Ex 6.4 dipole moments", "problem": "Which has the highest dipole moment: CH₂Cl₂, CHCl₃ or CCl₄?", "given": "CH₂Cl₂, CHCl₃ and CCl₄; CCl₄ is tetrahedral with four identical C–Cl dipoles.", "steps": ["CCl₄ is tetrahedral and symmetric: vector sum of four C–Cl dipoles is zero.", "CHCl₃ has three Cl vs one H; the dipoles cancel partly.", "CH₂Cl₂ has two Cl on one side: largest net μ."], "answer": "CH₂Cl₂ highest; CCl₄ zero."}, "prediction": {"prompt": "p-Dichlorobenzene melts much higher than the o- and m-isomers, yet their boiling points are nearly equal. Why?", "options": ["The para isomer is more polar, so dipole–dipole forces are stronger in the liquid.", "Symmetry of the para isomer packs the crystal lattice better, raising m.p.; the liquids have similar intermolecular forces.", "The para isomer hydrogen-bonds."], "answer": 1, "explanation": "§6.6: boiling points of isomeric dihalobenzenes are very nearly the same; para-isomers are high melting because they fit the crystal better."}, "connect": [{"title": "Mothballs and crystal packing", "text": "p-Dichlorobenzene is the classic high-melting isomer used as a moth repellent — a packing story, not a polarity story."}, {"title": "Dry cleaning and degreasing", "text": "Haloalkanes dissolve greases and oils but hardly mix with water. Chlorinated solvents — including CCl₄ before its toxicity was recognised — were the classic dry-cleaning fluids."}, {"title": "Wow: CCl₄ is denser than CHCl₃ even without hydrogen", "text": "Table 6.3: 1.595 vs 1.489 g mL⁻¹. Four heavy chlorines beat three, and both sink in water.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "08-aGBW4ub8", "title": "Physical properties of haloalkanes| Haloalkanes and haloarenes | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State the b.p. order for a given alkyl group as X changes, and quote three densities from Table 6.3.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "What is the density of CHCl₃ from Table 6.3 (g mL⁻¹, 3 decimal places)?", "answer": 1.489, "tolerance": 0.0005, "unit": "g mL⁻¹", "hint": "Between CH₂Cl₂ (1.336) and CCl₄ (1.595).", "solution": "Table 6.3: chloroform, 1.489 g mL⁻¹."}, {"level": "Medium", "type": "mcq", "prompt": "Density of CHCl₃ in Table 6.3 is", "options": ["0.89 g mL⁻¹", "1.336 g mL⁻¹", "1.489 g mL⁻¹"], "answer": 2, "hint": "Table 6.3.", "solution": "CH₂Cl₂ 1.336; CHCl₃ 1.489; CCl₄ 1.595.", "wrong": ["0.89 is n-C₃H₇Cl.", "1.336 is CH₂Cl₂.", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Highest dipole moment among CH₂Cl₂, CHCl₃, CCl₄ is", "options": ["CCl₄", "CHCl₃", "CH₂Cl₂"], "answer": 2, "hint": "Ex 6.4.", "solution": "CCl₄ μ=0; CH₂Cl₂ has the least cancellation.", "wrong": ["CCl₄ is symmetric: the four C–Cl dipoles cancel, μ = 0.", "CHCl₃ cancels more of its C–Cl dipoles than CH₂Cl₂.", ""]}]}, {"id": "sn1sn2", "nav": "SN1 vs SN2 stepper", "group": "05 / SN1 & SN2", "title": "One step or two — inversion or racemisation?", "deck": "Table 6.4 nucleophiles. Ambident CN⁻/NO₂⁻. Hughes–Ingold SN2 (concerted, inversion, 1° > 3°). SN1 (carbocation, racemisation, 3° > 1°). Same R: R–I > R–Br > R–Cl ≫ R–F.", "minutes": 16, "section": "6.7.1", "pages": [11, 17], "print": "169–175", "sim": "sn1sn2", "simTitle": "SN1 / SN2 mechanism stepper", "watch": "Play the SN2 timeline to see the umbrella invert; SN1 goes through a planar carbocation attacked from both faces — racemisation.", "quick": ["Nucleophilic substitution: Nu⁻ attacks C<sup>δ+</sup> of R–X; X⁻ leaves. Table 6.4 maps reagents to products (alcohol, ether, nitrile, isonitrile, nitrite, nitroalkane, ester, alkane…). <strong>Ambident</strong> nucleophiles (CN⁻, NO₂⁻) have two nucleophilic atoms. KCN (ionic) → RCN; AgCN (covalent) → RNC (Example 6.5).", "<strong>SN2</strong> (Hughes &amp; Ingold, 1937): CH₃Cl + OH⁻ is second-order. Backside attack, pentacoordinate transition state, <em>inversion of configuration</em> (umbrella in the wind). Order <strong>CH₃X > 1° > 2° > 3°</strong> (steric, Fig. 6.3). Polar aprotic solvents help.", "<strong>SN1</strong>: tert-butyl bromide in polar protic solvent is first-order. Slow reversible ionisation to a planar carbocation, then fast capture of Nu from either face → <em>racemisation</em>. Order <strong>3° > 2° > 1° > CH₃</strong>. Allylic and benzylic C⁺ are resonance-stabilised, so they are SN1-fast. Leaving group for both mechanisms: <strong>R–I > R–Br > R–Cl ≫ R–F</strong>."], "formulas": [{"label": "SN2 rate", "html": "rate = k[RX][Nu]", "cond": "concerted; inversion; CH₃ > 1° > 2° > 3°"}, {"label": "SN1 rate", "html": "rate = k[RX]", "cond": "RDS = ionisation; 3° > 2° > 1°; racemisation"}, {"label": "Leaving-group order", "html": "R–I &gt; R–Br &gt; R–Cl ≫ R–F", "cond": "both SN1 and SN2; Table 6.2 enthalpies"}], "deeper": "Example 6.6: cyclohexylmethyl chloride (1°) beats chlorocyclohexane in SN2; n-butyl iodide beats n-butyl chloride (better leaving group). Example 6.7 bromobutanes: SN1 n-BuBr < i-BuBr < s-BuBr < t-BuBr; SN2 is the reverse. For C₆H₅CH₂Br vs C₆H₅CH(C₆H₅)Br vs C₆H₅CH(CH₃)Br vs C₆H₅C(CH₃)(C₆H₅)Br, extra phenyls accelerate SN1 (resonance) and slow SN2 (bulk).", "worked": {"title": "Example 6.7(i) — four bromobutanes", "problem": "Order the four isomeric bromobutanes in SN1 and in SN2.", "given": "Four isomeric bromobutanes; Br is the leaving group in all four reactions.", "steps": ["SN1 follows C⁺ stability: 1° n-Bu < 1° i-Bu (extra +I) < 2° s-Bu < 3° t-Bu.", "SN2 follows steric hindrance: the reverse order.", "Leaving group is Br in all four, so it does not change the comparison."], "answer": "SN1: n-Bu < i-Bu < s-Bu < t-Bu. SN2: n-Bu > i-Bu > s-Bu > t-Bu."}, "prediction": {"prompt": "Play the SN2 stepper for CH₃Cl + OH⁻. At the transition state, how many groups are attached to carbon, and what happens to configuration?", "options": ["Four groups; configuration retained.", "Five groups; configuration inverted.", "Three groups; a free carbocation racemises."], "answer": 1, "explanation": "The reprint: in the TS, carbon is simultaneously bonded to five atoms; the umbrella inverts. A carbocation (three groups, planar) is the SN1 intermediate, not SN2."}, "connect": [{"title": "Finkelstein in acetone is SN2", "text": "Iodide is an excellent nucleophile and leaving group; primary RCl in dry acetone is a textbook SN2 — used in Ex 6.14(i) and 6.7(ii)."}, {"title": "One nucleophile, two products", "text": "Ionic KCN delivers carbon as the nucleophile and gives an alkyl cyanide R–C≡N; covalent AgCN delivers nitrogen and gives an isocyanide R–N≡C. The reagent chooses the product."}, {"title": "Wow: 1937 kinetics still run your JEE paper", "text": "Hughes and Ingold split substitution into SN1 and SN2 with rate laws you can still measure in a college lab: change [OH⁻] and see whether the rate budges.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "VKRlMWAYcOk", "title": "Nucleophilic substitution reactions | Haloalkanes and Haloarenes | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the SN1 and SN2 rate laws, the two reactivity orders, and the stereochemical outcome of each.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "In the SN2 transition state of CH₃Cl + OH⁻, how many groups are bonded to the carbon atom?", "answer": 5, "tolerance": 0.001, "unit": "", "hint": "Three H, the incoming OH and the leaving Cl are all partly bonded.", "solution": "The pentacoordinate transition state has five groups around carbon; it cannot be isolated."}, {"level": "Medium", "type": "mcq", "prompt": "Rate law for SN1 of tert-butyl bromide is", "options": ["k[(CH₃)₃CBr][OH⁻]", "k[(CH₃)₃CBr]", "k[OH⁻]"], "answer": 1, "hint": "Slow step is ionisation.", "solution": "First-order in alkyl halide only. Polar protic solvent helps.", "wrong": ["That second-order form is the SN2 rate law.", "", "OH⁻ does not appear in the slow ionisation step."]}, {"level": "Hard", "type": "mcq", "prompt": "Among C₆H₅CH₂Br, C₆H₅CH(C₆H₅)Br, C₆H₅CH(CH₃)Br and C₆H₅C(CH₃)(C₆H₅)Br, the fastest SN1 is", "options": ["C₆H₅CH₂Br", "C₆H₅CH(CH₃)Br", "C₆H₅C(CH₃)(C₆H₅)Br"], "answer": 2, "hint": "Example 6.7(ii).", "solution": "Most substituted benzylic C⁺ — two phenyls plus methyl. That same compound is the slowest SN2.", "wrong": ["One phenyl ring only: less resonance stabilisation.", "One phenyl and one methyl: still less stabilisation than two phenyls.", ""]}]}, {"id": "stereo-elim", "nav": "Chirality, E2, Grignard", "group": "06 / STEREOCHEMISTRY & ELIMINATION", "title": "Hands, alkenes and a dry-ether Grignard", "deck": "Optical activity, chirality, enantiomers, racemic mixture. Retention vs inversion. β-Elimination (Saytzeff). Aqueous vs alcoholic KOH. Grignard, Wurtz, Wurtz–Fittig, Fittig.", "minutes": 14, "section": "6.7.1c–metals", "pages": [17, 23], "print": "175–181", "sim": "stereoelim", "simTitle": "Chirality, Saytzeff and organometallics", "watch": "Toggle chirality, racemisation, Saytzeff elimination and the Grignard/Wurtz cards; note why dry ether is mandatory.", "quick": ["Plane-polarised light (Nicol prism) is rotated by optically active compounds. (+) dextrorotatory, (−) laevorotatory. A carbon with four different substituents is a stereocentre; non-superimposable mirror images are <strong>enantiomers</strong> (butan-2-ol, 2-chlorobutane). Propan-2-ol is achiral (two methyls). Equal mix: <strong>racemic</strong> (±), zero net rotation. Sign of rotation is not the absolute configuration.", "<strong>Elimination:</strong> alcoholic KOH / EtONa gives alkenes (E2); aqueous KOH gives alcohols (substitution). Saytzeff: the more substituted alkene is major. 3° and 2° lean elimination; 1° lean SN2 unless the base is bulky.", "R–X + Mg (dry ether) → RMgX (Grignard, Nobel 1912). C–Mg is polar covalent (C<sup>δ−</sup>); any proton source (H₂O, ROH, RNH₂) gives RH — hence anhydrous conditions (Ex 6.12). Wurtz: 2 RX + 2 Na → R–R. Wurtz–Fittig: ArX + RX + Na → Ar–R. Fittig: 2 ArX + Na → Ar–Ar."], "formulas": [{"label": "Grignard", "html": "R–X + Mg (dry ether) → RMgX", "cond": "destroy with any H–Z"}, {"label": "Wurtz", "html": "2 R–X + 2 Na (dry ether) → R–R + 2 NaX", "cond": "even carbon count"}, {"label": "Saytzeff", "html": "more substituted alkene is the major β-elimination product", "cond": "alc. KOH / EtONa"}], "deeper": "Retention means the spatial arrangement of groups around carbon is preserved; inversion means it is reversed. SN2 inverts; SN1 racemises (planar C⁺ attacked from both faces). Ex 6.20: aqueous KOH → substitution because water solvates OH⁻ as a nucleophile; alcoholic KOH favours elimination. Ex 6.21 uses Wurtz as a fingerprint: a primary C₄H₉Br that does not give n-octane must be isobutyl bromide.", "worked": {"title": "Example 6.8 flavour — chiral or not?", "problem": "Is butan-2-ol chiral? Is propan-2-ol?", "given": "Butan-2-ol: C-2 carries H, OH, CH₃ and C₂H₅. Propan-2-ol: C-2 carries OH and two identical CH₃ groups.", "steps": ["Butan-2-ol: C-2 bears H, OH, CH₃, C₂H₅ — four different groups; enantiomers D/E in Fig. 6.6.", "Propan-2-ol: two methyls; mirror image superimposes after a 180° rotation (Fig. 6.5).", "Count the groups on the carbon: four different groups make the centre chiral; two identical methyls make the mirror image superimposable."], "answer": "Butan-2-ol chiral; propan-2-ol achiral."}, "prediction": {"prompt": "Why must a Grignard reagent be prepared in dry ether with no trace of water, alcohol or amine?", "options": ["Ether coordinates Mg; water would freeze at the reaction temperature.", "RMgX is a strong carbon base/nucleophile and abstracts any O–H or N–H proton to give RH.", "Water oxidises magnesium to MgO, which is inert."], "answer": 1, "explanation": "The reprint: even water, alcohols and amines are acidic enough to convert RMgX to RH. Dry ether is both solvent and ligand."}, "connect": [{"title": "Wurtz as a structure proof", "text": "Ex 6.21: primary C₄H₉Br + Na gives C₈H₁₈ different from n-octane → the halide is isobutyl, not n-butyl. Coupling doubles the chain you already have."}, {"title": "Aqueous or alcoholic KOH?", "text": "The same bottle of KOH gives an alcohol in water and an alkene in ethanol. Solvent and medium decide whether substitution or β-elimination wins."}, {"title": "Wow: Grignard started in mathematics", "text": "Victor Grignard took a maths degree, switched to organic chemistry, tried Mg in ether because Zn in ether was known, and shared the 1912 Nobel with Sabatier.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "T3p-dEMdQQM", "title": "Grignard Reagents | Haloalkanes and Haloarenes | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Define enantiomer and racemic mixture. Write the Grignard equation and state why moisture kills it.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many alkene products are formed when 2-chloro-2-methylbutane is treated with sodium ethoxide?", "answer": 2, "tolerance": 0.001, "unit": "", "hint": "Saytzeff gives a major and a minor alkene.", "solution": "2-methylbut-2-ene (major) and 2-methylbut-1-ene (minor): two alkenes."}, {"level": "Medium", "type": "mcq", "prompt": "Alcoholic KOH on a 2°/3° alkyl halide mainly gives", "options": ["alcohol (substitution)", "alkene (elimination, Saytzeff)", "ether (Williamson)"], "answer": 1, "hint": "Ex 6.20.", "solution": "Aqueous KOH → alcohol; alcoholic KOH → alkene.", "wrong": ["Aqueous KOH gives the alcohol, not alcoholic KOH.", "", "Williamson ether synthesis needs an alkoxide, not KOH."]}, {"level": "Hard", "type": "mcq", "prompt": "Wurtz reaction of n-butyl bromide yields", "options": ["n-octane", "2,5-dimethylhexane", "but-1-ene"], "answer": 0, "hint": "2 R–X → R–R.", "solution": "n-C₄H₉–C₄H₉-n = n-octane. Isobutyl bromide would give 2,5-dimethylhexane (Ex 6.21).", "wrong": ["", "2,5-Dimethylhexane comes from isobutyl bromide (Ex 6.21).", "Elimination needs a base; sodium metal causes coupling."]}]}, {"id": "haloarenes-poly", "nav": "Haloarenes & polyhalogens", "group": "07 / HALOARENES & POLYHALOGENS", "title": "Why won’t chlorobenzene SN2 — and why store chloroform in the dark?", "deck": "Four reasons Ar–X resists nucleophilic substitution; o/p-NO₂ SNAr; EAS o,p-directing but deactivating (Ex 6.9). CH₂Cl₂, CHCl₃, CHI₃, CCl₄, freons, DDT.", "minutes": 14, "section": "6.7.2–6.8", "pages": [23, 30], "print": "181–188", "sim": "haloarene", "simTitle": "Haloarene SNAr and polyhalogen hazards", "watch": "Cycle the four cards: four reasons Ar–X is inert, o/p-NO₂ activation, EAS orientation, and polyhalogen hazards.", "quick": ["Aryl halides are sluggish toward Nu substitution: (i) resonance gives C–X partial double-bond character; (ii) sp² C (more s-character) holds the pair — C–Cl 169 pm in PhCl vs 177 pm in RCl; (iii) phenyl cation is not resonance-stabilised, so SN1 is out; (iv) the electron-rich ring repels Nu. Dow phenol: PhCl + aq. NaOH, 623 K, 300 atm.", "o/p-NO₂ groups activate SNAr (addition–elimination): they withdraw density and stabilise the Meisenheimer anion. meta-NO₂ does not place negative charge on the carbon bearing NO₂ — no rate boost. EAS of Ph–X is <strong>o,p-directing but deactivating</strong> (Ex 6.9): −I controls reactivity, +R controls orientation.", "Polyhalogens (§6.8): CH₂Cl₂ solvent/paint remover (CNS toxin). CHCl₃ once an anaesthetic; oxidised by air/light to <strong>phosgene</strong> — store in dark, full bottles. CHI₃ antiseptic via free iodine. CCl₄: refrigerants feedstock, ozone depleter, liver/heart toxin. Freon-12 CCl₂F₂ (Swarts from CCl₄) — stratospheric radical chains. DDT (Müller 1939, Nobel 1948) — malaria mosquito; banned in the US 1973; fat-soluble, biomagnifies."], "formulas": [{"label": "C–Cl lengths", "html": "haloalkane 177 pm; haloarene 169 pm", "cond": "sp³ vs sp² + resonance"}, {"label": "Dow phenol", "html": "PhCl + NaOH, 623 K, 300 atm → PhOH", "cond": "industrial SNAr, harsh"}, {"label": "Phosgene from chloroform", "html": "CHCl₃ + ½ O₂ (light) → COCl₂ + HCl", "cond": "store dark, filled bottles"}], "deeper": "Ex 6.12(i): chlorobenzene has a lower dipole moment than cyclohexyl chloride because of the shorter C–Cl, sp² carbon and resonance donation from Cl into the ring. Ex 6.18: p-dichlorobenzene, higher m.p. from packing. Wurtz–Fittig and Fittig close the haloarene metal chapter.", "worked": {"title": "Example 6.9 — o,p-directing yet deactivating", "problem": "Although chlorine is electron-withdrawing, it is ortho/para-directing in EAS. Why?", "given": "Chlorine withdraws inductively (−I) but donates by resonance (+R) in the aromatic ring.", "steps": ["−I withdraws electrons and destabilises the Wheland intermediate — net deactivation vs benzene.", "+R donates at o/p, so those positions are less deactivated than meta.", "Reactivity is controlled by the stronger inductive effect; orientation by resonance."], "answer": "Deactivating by −I; o,p-directing by +R."}, "prediction": {"prompt": "Chloroform is stored in completely filled, dark bottles. What poisonous gas forms if air and light get in?", "options": ["Chlorine", "Phosgene (carbonyl chloride)", "Mustard gas"], "answer": 1, "explanation": "§6.8.2: CHCl₃ is slowly oxidised by air in light to COCl₂ (phosgene). Fill the bottle so air is kept out; amber glass so light is kept out."}, "connect": [{"title": "DDT and malaria", "text": "After World War II DDT was used worldwide against the Anopheles mosquito. Chemical stability and fat solubility turned a miracle insecticide into a persistent pollutant — still discussed in Indian public-health history."}, {"title": "Dow process: phenol from chlorobenzene", "text": "Chlorobenzene is inert under ordinary conditions but reacts with aqueous NaOH at 623 K and 300 atm to give phenol — an industrial-scale nucleophilic aromatic substitution."}, {"title": "Wow: 900 ppm chloroform for a short time", "text": "The reprint’s occupational number: 900 parts per million in air already causes dizziness, fatigue and headache. Chronic exposure hits liver (where CHCl₃ is metabolised to phosgene) and kidneys.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech201.pdf"}], "video": {"id": "0Gouw2HTCDw", "title": "They Tried Recycling Chloroform with Phosgene", "channel": "That Chemist"}}], "recall": "List four reasons Ar–X resists SN reactions, and state how chloroform must be stored and why.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "What is the difference between the C–Cl bond lengths in a haloalkane and in a haloarene (pm)?", "answer": 8, "tolerance": 0.5, "unit": "pm", "hint": "177 pm in the haloalkane, 169 pm in the haloarene.", "solution": "177 − 169 = 8 pm shorter in the arene because of sp² carbon and resonance."}, {"level": "Medium", "type": "mcq", "prompt": "A nitro group activates nucleophilic substitution of chlorobenzene when it is", "options": ["only at the meta position", "at ortho or para, not meta", "anywhere on the ring equally"], "answer": 1, "hint": "Meisenheimer-anion resonance.", "solution": "Negative charge in the addition intermediate sits o/p to Cl, where NO₂ can hold it.", "wrong": ["meta-NO₂ cannot stabilise the Meisenheimer anion.", "", "Position matters: only o/p-NO₂ activate the ring."]}, {"level": "Hard", "type": "mcq", "prompt": "Freon-12 is", "options": ["CHCl₃", "CCl₄", "CCl₂F₂"], "answer": 2, "hint": "§6.8.5.", "solution": "CCl₂F₂, from CCl₄ by Swarts. Stratospheric radical chemistry depletes ozone.", "wrong": ["CHCl₃ is chloroform.", "CCl₄ is carbon tetrachloride.", ""]}]}], "exercises": [{"q": 1, "title": "Name and classify twelve halides", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Name the following halides according to IUPAC system and classify them as alkyl, allyl, benzyl (primary, secondary, tertiary), vinyl or aryl halides:\n(i) (CH₃)₂CHCH(Cl)CH₃\n(ii) CH₃CH₂CH(CH₃)CH(C₂H₅)Cl\n(iii) CH₃CH₂C(CH₃)₂CH₂I\n(iv) (CH₃)₃CCH₂CH(Br)C₆H₅\n(v) CH₃CH(CH₃)CH(Br)CH₃\n(vi) CH₃C(C₂H₅)₂CH₂Br\n(vii) CH₃C(Cl)(C₂H₅)CH₂CH₃\n(viii) CH₃CH=C(Cl)CH₂CH(CH₃)₂\n(ix) CH₃CH=CHC(Br)(CH₃)₂\n(x) p-ClC₆H₄CH₂CH(CH₃)₂\n(xi) m-ClCH₂C₆H₄CH₂C(CH₃)₃\n(xii) o-Br-C₆H₄CH(CH₃)CH₂CH₃", "given": "Twelve condensed formulas labelled (i)–(xii).", "steps": ["Assign the longest chain / parent arene; halogen as prefix; then classify the carbon that bears X (alkyl 1°/2°/3°, allyl, benzyl, vinyl, aryl).", "(i) 2-chloro-3-methylbutane — 2° alkyl. (ii) 3-chloro-4-methylhexane — 2° alkyl.", "(iii) 1-iodo-2,2-dimethylbutane — 1° alkyl. (iv) 1-bromo-3,3-dimethyl-1-phenylbutane — 2° benzylic.", "(v) 2-bromo-3-methylbutane — 2° alkyl. (vi) 1-bromo-2-ethyl-2-methylbutane — 1° alkyl.", "(vii) 3-chloro-3-methylpentane — 3° alkyl. (viii) 3-chloro-5-methylhex-2-ene — vinylic.", "(ix) 4-bromo-4-methylpent-2-ene — 3° allylic. (x) 1-chloro-4-(2-methylpropyl)benzene — aryl.", "(xi) 1-(chloromethyl)-3-(2,2-dimethylpropyl)benzene — 1° benzylic. (xii) 1-bromo-2-(butan-2-yl)benzene — aryl."], "answer": "(i) 2-chloro-3-methylbutane, 2° alkyl; (ii) 3-chloro-4-methylhexane, 2° alkyl; (iii) 1-iodo-2,2-dimethylbutane, 1° alkyl; (iv) 1-bromo-3,3-dimethyl-1-phenylbutane, 2° benzylic; (v) 2-bromo-3-methylbutane, 2° alkyl; (vi) 1-bromo-2-ethyl-2-methylbutane, 1° alkyl; (vii) 3-chloro-3-methylpentane, 3° alkyl; (viii) 3-chloro-5-methylhex-2-ene, vinyl; (ix) 4-bromo-4-methylpent-2-ene, 3° allyl; (x) 1-chloro-4-(2-methylpropyl)benzene, aryl; (xi) 1-(chloromethyl)-3-(2,2-dimethylpropyl)benzene, 1° benzyl; (xii) 1-bromo-2-(butan-2-yl)benzene, aryl.", "takeaway": "Name the parent chain first, then classify the carbon bearing X (1°/2°/3°, allyl, benzyl, vinyl, aryl).", "conceptName": "IUPAC nomenclature"}, {"q": 2, "title": "IUPAC names of six compounds", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Give the IUPAC names of the following compounds:\n(i) CH₃CH(Cl)CH(Br)CH₃\n(ii) CHF₂CBrClF\n(iii) ClCH₂C≡CCH₂Br\n(iv) (CCl₃)₃CCl\n(v) CH₃C(p-ClC₆H₄)₂CH(Br)CH₃\n(vi) (CH₃)₃CCH=CClC₆H₄I-p", "given": "Six formulas including the polyhalide (CCl₃)₃CCl.", "steps": ["(i) 2-bromo-3-chlorobutane (lowest set of locants).", "(ii) 1-bromo-1-chloro-1,2,2-trifluoroethane.", "(iii) 1-bromo-4-chlorobut-2-yne.", "(iv) 2-(trichloromethyl)-1,1,1,2,3,3,3-heptachloropropane.", "(v) 2-bromo-3,3-bis(4-chlorophenyl)butane.", "(vi) 1-chloro-1-(4-iodophenyl)-3,3-dimethylbut-1-ene."], "answer": "(i) 2-bromo-3-chlorobutane; (ii) 1-bromo-1-chloro-1,2,2-trifluoroethane; (iii) 1-bromo-4-chlorobut-2-yne; (iv) 2-(trichloromethyl)-1,1,1,2,3,3,3-heptachloropropane; (v) 2-bromo-3,3-bis(4-chlorophenyl)butane; (vi) 1-chloro-1-(4-iodophenyl)-3,3-dimethylbut-1-ene.", "takeaway": "Lowest locant set and alphabetical prefixes decide the name.", "conceptName": "IUPAC nomenclature"}, {"q": 3, "title": "Structures from eight IUPAC names", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Write the structures of the following organic halogen compounds.\n(i) 2-Chloro-3-methylpentane\n(ii) p-Bromochlorobenzene\n(iii) 1-Chloro-4-ethylcyclohexane\n(iv) 2-(2-Chlorophenyl)-1-iodooctane\n(v) 2-Bromobutane\n(vi) 4-tert-Butyl-3-iodoheptane\n(vii) 1-Bromo-4-sec-butyl-2-methylbenzene\n(viii) 1,4-Dibromobut-2-ene", "given": "Eight names (i)–(viii) including ring and branched-chain compounds.", "steps": ["Translate each IUPAC name into a condensed or bond-line structure; halogen locant first, then alkyl branches.", "(i) CH₃CH₂CH(CH₃)CHClCH₃. (ii) 1-bromo-4-chlorobenzene.", "(iii) 1-chloro-4-ethylcyclohexane. (iv) 1-iodo-2-(2-chlorophenyl)octane skeleton.", "(v) CH₃CHBrCH₂CH₃. (vi) heptane with t-Bu at C-4, I at C-3.", "(vii) benzene with Br at C-1, Me at C-2, sec-butyl at C-4. (viii) BrCH₂CH=CHCH₂Br."], "answer": "(i) CH₃CHClCH(CH₃)CH₂CH₃; (ii) p-BrC₆H₄Cl; (iii) 1-Cl-4-Et-cyclohexane; (iv) ICH₂CH(2-ClC₆H₄)C₆H₁₃; (v) CH₃CHBrCH₂CH₃; (vi) CH₃CH₂CH₂CHI(CMe₃)CH₂CH₂CH₃ numbered as 4-tert-butyl-3-iodoheptane; (vii) 1-Br-2-Me-4-(butan-2-yl)benzene; (viii) BrCH₂CH=CHCH₂Br.", "takeaway": "Place the halogen locant first, then the branches or ring substituents.", "conceptName": "IUPAC nomenclature", "figure": "6.3"}, {"q": 4, "title": "Highest dipole moment of three chloromethanes", "conceptIdx": 3, "page": 31, "printPage": 189, "question": "Which one of the following has the highest dipole moment?\n(i) CH₂Cl₂  (ii) CHCl₃  (iii) CCl₄", "given": "CH₂Cl₂, CHCl₃ and CCl₄.", "steps": ["CCl₄ is tetrahedral: four identical C–Cl dipoles cancel, μ = 0.", "CHCl₃: three Cl vs one H — partial cancellation.", "CH₂Cl₂: two Cl on one side — largest net dipole."], "answer": "CH₂Cl₂ has the highest dipole moment; CCl₄ has μ = 0.", "takeaway": "Symmetry cancels C–Cl dipoles; CH₂Cl₂ has the largest net moment and CCl₄ has μ = 0.", "conceptName": "Physical properties"}, {"q": 5, "title": "Identify a C₅H₁₀ hydrocarbon", "conceptIdx": 0, "page": 31, "printPage": 189, "question": "A hydrocarbon C₅H₁₀ does not react with chlorine in dark but gives a single monochloro compound C₅H₉Cl in bright sunlight. Identify the hydrocarbon.", "given": "No reaction with Cl₂ in the dark; one monochloro product in bright sunlight.", "steps": ["No reaction in the dark ⇒ no C=C (not an alkene addition).", "Sunlight ⇒ free-radical substitution of an alkane/cycloalkane.", "A single monochloro product ⇒ all hydrogens equivalent.", "C₅H₁₀ with all H equivalent is cyclopentane (not pentene)."], "answer": "Cyclopentane.", "takeaway": "No C=C addition plus all-equivalent hydrogens points to cyclopentane.", "conceptName": "Classification of C–X"}, {"q": 6, "title": "Isomers of C₄H₉Br", "conceptIdx": 1, "page": 31, "printPage": 189, "question": "Write the isomers of the compound having formula C₄H₉Br.", "given": "Molecular formula C₄H₉Br.", "steps": ["Four isomeric bromobutanes:", "CH₃CH₂CH₂CH₂Br (1-bromobutane, 1°); CH₃CH₂CHBrCH₃ (2-bromobutane, 2°);", "(CH₃)₂CHCH₂Br (1-bromo-2-methylpropane, 1°); (CH₃)₃CBr (2-bromo-2-methylpropane, 3°)."], "answer": "1-bromobutane; 2-bromobutane; 1-bromo-2-methylpropane; 2-bromo-2-methylpropane.", "takeaway": "Four isomeric bromobutanes: two primary, one secondary and one tertiary.", "conceptName": "IUPAC nomenclature"}, {"q": 7, "title": "Prepare 1-iodobutane three ways", "conceptIdx": 2, "page": 31, "printPage": 189, "question": "Write the equations for the preparation of 1-iodobutane from\n(i) 1-butanol\n(ii) 1-chlorobutane\n(iii) but-1-ene.", "given": "Starting materials: 1-butanol, 1-chlorobutane and but-1-ene.", "steps": ["(i) CH₃CH₂CH₂CH₂OH + red P/I₂ (or KI/H₃PO₄) → CH₃CH₂CH₂CH₂I. Avoid H₂SO₄+KI (intext 6.2: H₂SO₄ oxidises HI to I₂).", "(ii) Finkelstein: CH₃CH₂CH₂CH₂Cl + NaI, dry acetone → CH₃CH₂CH₂CH₂I + NaCl↓.", "(iii) Anti-Markovnikov: but-1-ene + HBr/peroxide → 1-bromobutane, then NaI/acetone → 1-iodobutane. Direct HI would be Markovnikov (2-iodobutane)."], "answer": "(i) n-BuOH → n-BuI (P/I₂ or KI/H₃PO₄); (ii) n-BuCl + NaI/acetone; (iii) but-1-ene + HBr/ROOR then Finkelstein.", "takeaway": "P/I₂ or KI/H₃PO₄; Finkelstein exchange; anti-Markovnikov HBr followed by exchange.", "conceptName": "C–X bond & preparation"}, {"q": 8, "title": "Ambident nucleophiles explained", "conceptIdx": 4, "page": 31, "printPage": 189, "question": "What are ambident nucleophiles? Explain with an example.", "given": "CN⁻ and NO₂⁻ as ionic or covalent metal salts.", "steps": ["Nucleophiles with two nucleophilic centres that can bond through either atom.", "Cyanide: ⁻C≡N ↔ :C=N⁻. KCN (ionic) attacks through C → alkyl cyanides RCN. AgCN (covalent) attacks through N → isocyanides RNC (Example 6.5).", "Nitrite: KNO₂ → R–O–N=O (alkyl nitrite); AgNO₂ → R–NO₂ (nitroalkane)."], "answer": "Ambident nucleophiles have two donor atoms (CN⁻, NO₂⁻). KCN → RCN; AgCN → RNC.", "takeaway": "KCN gives RCN, AgCN gives RNC; KNO₂ gives RONO, AgNO₂ gives RNO₂.", "conceptName": "SN1 & SN2"}, {"q": 9, "title": "Faster SN2 partner", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Which compound in each of the following pairs will react faster in SN2 reaction with ⁻OH?\n(i) CH₃Br or CH₃I\n(ii) (CH₃)₃CCl or CH₃Cl", "given": "Pairs (i) CH₃Br/CH₃I and (ii) (CH₃)₃CCl/CH₃Cl.", "steps": ["(i) CH₃I: iodide is the better leaving group (weaker C–I, Table 6.2: 234 vs 351 kJ mol⁻¹).", "(ii) CH₃Cl: methyl is unhindered; tert-butyl chloride is sterically blocked and prefers SN1/elimination."], "answer": "(i) CH₃I; (ii) CH₃Cl.", "takeaway": "A better leaving group and less crowding both speed up SN2.", "conceptName": "SN1 & SN2"}, {"q": 10, "title": "Dehydrohalogenation products", "conceptIdx": 5, "page": 32, "printPage": 190, "question": "Predict all the alkenes that would be formed by dehydrohalogenation of the following halides with sodium ethoxide in ethanol and identify the major alkene:\n(i) 1-Bromo-1-methylcyclohexane\n(ii) 2-Chloro-2-methylbutane\n(iii) 2,2,3-Trimethyl-3-bromopentane.", "given": "Three halides treated with sodium ethoxide in ethanol.", "steps": ["Saytzeff: more substituted alkene major.", "(i) 1-methylcyclohexene (major, endocyclic trisubstituted) and methylenecyclohexane (minor, exo).", "(ii) 2-methylbut-2-ene (major) and 2-methylbut-1-ene (minor).", "(iii) 3,4,4-trimethylpent-2-ene (major) and 2-ethyl-3,3-dimethylbut-1-ene (minor)."], "answer": "(i) 1-methylcyclohexene major, methylenecyclohexane minor; (ii) 2-methylbut-2-ene major, 2-methylbut-1-ene minor; (iii) 3,4,4-trimethylpent-2-ene major, 2-ethyl-3,3-dimethylbut-1-ene minor.", "takeaway": "Saytzeff’s rule: the more substituted alkene is the major product.", "conceptName": "Stereochemistry & elimination"}, {"q": 11, "title": "Ten conversions", "conceptIdx": 5, "page": 32, "printPage": 190, "question": "How will you bring about the following conversions?\n(i) Ethanol to but-1-yne\n(ii) Ethane to bromoethene\n(iii) Propene to 1-nitropropane\n(iv) Toluene to benzyl alcohol\n(v) Propene to propyne\n(vi) Ethanol to ethyl fluoride\n(vii) Bromomethane to propanone\n(viii) But-1-ene to but-2-ene\n(ix) 1-Chlorobutane to n-octane\n(x) Benzene to biphenyl.", "given": "Ten starting materials and target molecules (i)–(x).", "steps": ["(i) EtOH → EtBr (HBr) → HC≡CNa / NaNH₂ then EtBr → but-1-yne (after making sodium acetylide from ethyne via two-carbon build: actually EtBr + NaC≡CH).", "Standard: CH₃CH₂OH → CH₃CH₂Br; HC≡CH + NaNH₂ → HC≡CNa; HC≡CNa + CH₃CH₂Br → CH₃CH₂C≡CH.", "(ii) C₂H₆ + Br₂/hν → C₂H₅Br; alc. KOH → C₂H₄; Br₂ → CH₂BrCH₂Br; alc. KOH → CH₂=CHBr.", "(iii) CH₃CH=CH₂ + HBr/peroxide → CH₃CH₂CH₂Br; AgNO₂ → CH₃CH₂CH₂NO₂.", "(iv) PhCH₃ + Cl₂/hν → PhCH₂Cl; aq. KOH → PhCH₂OH.", "(v) Propene + Br₂ → 1,2-dibromopropane; alc. KOH / NaNH₂ → propyne.", "(vi) EtOH → EtCl (SOCl₂) then Swarts (AgF) → EtF; or EtOH → EtOTs then KF.", "(vii) CH₃Br → CH₃CN (KCN) → CH₃COOH (hydrolysis) then further? Standard: 2 CH₃Br + 2 Na → C₂H₆ not ketone. Textbook path: CH₃Br + KCN → CH₃CN; CH₃MgBr + CH₃CN then hydrolyse → propanone? CH₃CN + CH₃MgBr → CH₃C(=NMgBr)CH₃ → CH₃COCH₃.", "(viii) But-1-ene + HBr → 2-bromobutane; alc. KOH → but-2-ene (Saytzeff).", "(ix) Wurtz: 2 CH₃CH₂CH₂CH₂Cl + 2 Na → n-octane.", "(x) Fittig: 2 PhBr + 2 Na / dry ether → Ph–Ph (or benzene → PhBr then Fittig)."], "answer": "(i) EtOH→EtBr; HC≡CNa + EtBr → but-1-yne. (ii) C₂H₆→C₂H₅Br→C₂H₄→Br₂ adduct→CH₂=CHBr. (iii) peroxide HBr then AgNO₂. (iv) side-chain Cl₂/hν then aq. KOH. (v) Br₂ then strong base. (vi) SOCl₂ then Swarts. (vii) CH₃Br→CH₃CN; CH₃MgBr then H₃O⁺ → Me₂CO. (viii) HBr then alc. KOH (Saytzeff). (ix) Wurtz. (x) halogenate then Fittig.", "takeaway": "Combine halogenation, elimination and organometallic steps in the right order.", "conceptName": "Stereochemistry & elimination"}, {"q": 12, "title": "Three explanatory questions", "conceptIdx": 6, "page": 32, "printPage": 190, "question": "Explain why\n(i) the dipole moment of chlorobenzene is lower than that of cyclohexyl chloride?\n(ii) alkyl halides, though polar, are immiscible with water?\n(iii) Grignard reagents should be prepared under anhydrous conditions?", "given": "Dipole moments of PhCl vs cyclohexyl chloride; water immiscibility; Grignard conditions.", "steps": ["(i) In PhCl the C–Cl is shorter (169 vs 177 pm), carbon is sp² (more electronegative), and Cl donates by resonance into the ring — smaller net C–Cl dipole than cyclohexyl chloride.", "(ii) To dissolve, you must break water’s H-bonds and haloalkane–haloalkane attractions; the new water–RX attractions are weaker, so ΔsolH does not pay. They dissolve in organic solvents of similar forces.", "(iii) RMgX + H₂O / ROH / RNH₂ → RH. Any proton source destroys the reagent; dry ether is mandatory."], "answer": "(i) shorter sp² C–Cl + resonance lowers μ of PhCl; (ii) cannot replace water H-bonds; (iii) RMgX is destroyed by even traces of proton sources.", "takeaway": "Resonance and sp² carbon shrink the C–Cl dipole; no hydrogen bonding with water; RMgX needs dryness.", "conceptName": "Haloarenes & polyhalogens"}, {"q": 13, "title": "Uses of four polyhalogens", "conceptIdx": 6, "page": 32, "printPage": 190, "question": "Give the uses of freon 12, DDT, carbon tetrachloride and iodoform.", "given": "Freon-12, DDT, carbon tetrachloride and iodoform.", "steps": ["Freon-12 (CCl₂F₂): aerosol propellant, refrigeration and air-conditioning (now restricted — ozone).", "DDT: insecticide against malaria mosquito and typhus lice (use curtailed; persistence, fish toxicity, biomagnification).", "CCl₄: feedstock for CFCs, pharmaceutical manufacture, former cleaning fluid/fire extinguisher — toxic, ozone-depleting.", "Iodoform: former antiseptic (action due to free iodine); replaced because of smell."], "answer": "Freon-12: refrigerant/propellant; DDT: insecticide; CCl₄: solvent/feedstock (toxic, ozone); iodoform: old antiseptic via I₂.", "takeaway": "Refrigerant, insecticide, solvent and antiseptic — each with ozone, persistence or toxicity costs.", "conceptName": "Haloarenes & polyhalogens"}, {"q": 14, "title": "Major products of eight reactions", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Write the structure of the major organic product in each of the following reactions:\n(i) CH₃CH₂CH₂Cl + NaI  (acetone, heat)\n(ii) (CH₃)₃CBr + KOH  (ethanol, heat)\n(iii) CH₃CH(Br)CH₂CH₃ + NaOH  (water)\n(iv) CH₃CH₂Br + KCN  (aq. ethanol)\n(v) C₆H₅ONa + C₂H₅Cl\n(vi) CH₃CH₂CH₂OH + SOCl₂\n(vii) CH₃CH₂CH=CH₂ + HBr  (peroxide)\n(viii) CH₃CH=C(CH₃)₂ + HBr", "given": "Eight reactions with conditions: acetone/heat, ethanol/heat, water, aq. ethanol, peroxide.", "steps": ["(i) Finkelstein: CH₃CH₂CH₂I.", "(ii) 3° halide, alcoholic KOH, heat: 2-methylpropene (elimination).", "(iii) 2° halide, aqueous NaOH: butan-2-ol.", "(iv) KCN ionic: CH₃CH₂CN (propanenitrile), not isocyanide.", "(v) Williamson: phenetole C₆H₅OC₂H₅.", "(vi) CH₃CH₂CH₂Cl + SO₂ + HCl.", "(vii) Kharasch anti-Markovnikov: 1-bromobutane.", "(viii) Markovnikov: 2-bromo-2-methylbutane (CH₃)₂CBrCH₂CH₃."], "answer": "(i) n-PrI; (ii) (CH₃)₂C=CH₂; (iii) butan-2-ol; (iv) EtCN; (v) PhOEt; (vi) n-PrCl; (vii) n-BuBr; (viii) (CH₃)₂CBrCH₂CH₃.", "takeaway": "Match each condition to substitution, elimination or anti-Markovnikov addition.", "conceptName": "SN1 & SN2"}, {"q": 15, "title": "Mechanism of nBuBr + KCN", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Write the mechanism of the following reaction:\nnBuBr + KCN  (EtOH–H₂O)  →  nBuCN", "given": "A primary bromide with ionic KCN in EtOH–H₂O.", "steps": ["KCN is ionic; ⁻CN is the nucleophile (carbon end).", "n-Butyl bromide is 1° → SN2: backside attack of ⁻CN on C–Br, concerted C–C bond making and C–Br breaking, inversion at that carbon.", "Leaving group Br⁻. Polar solvent pair EtOH–H₂O dissolves KCN without forcing SN1 on a 1° substrate.", "Product is pentanenitrile (n-butyl cyanide), not the isocyanide (that would need AgCN)."], "answer": "SN2 attack of ⁻CN (from ionic KCN) on 1° n-BuBr → n-BuCN + Br⁻, inversion.", "takeaway": "SN2 backside attack by CN⁻ gives pentanenitrile with inversion.", "conceptName": "SN1 & SN2"}, {"q": 16, "title": "Order SN2 reactivity", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Arrange the compounds of each set in order of reactivity towards SN2 displacement:\n(i) 2-Bromo-2-methylbutane, 1-Bromopentane, 2-Bromopentane\n(ii) 1-Bromo-3-methylbutane, 2-Bromo-2-methylbutane, 2-Bromo-3-methylbutane\n(iii) 1-Bromobutane, 1-Bromo-2,2-dimethylpropane, 1-Bromo-2-methylbutane, 1-Bromo-3-methylbutane.", "given": "Three sets of isomeric bromides.", "steps": ["SN2: less crowding at the electrophilic carbon, faster. 1° ≫ 2° ≫ 3°. Among 1°, β-branching slows (neopentyl slowest).", "(i) 1-bromopentane > 2-bromopentane > 2-bromo-2-methylbutane.", "(ii) 1-bromo-3-methylbutane > 2-bromo-3-methylbutane > 2-bromo-2-methylbutane.", "(iii) 1-bromobutane > 1-bromo-3-methylbutane > 1-bromo-2-methylbutane > 1-bromo-2,2-dimethylpropane (neopentyl, intext 6.7)."], "answer": "(i) 1-bromopentane > 2-bromopentane > 2-bromo-2-methylbutane; (ii) 1-bromo-3-methylbutane > 2-bromo-3-methylbutane > 2-bromo-2-methylbutane; (iii) 1-bromobutane > 1-bromo-3-methylbutane > 1-bromo-2-methylbutane > 1-bromo-2,2-dimethylpropane.", "takeaway": "1° > 2° > 3°; β-branching slows primary halides, neopentyl being slowest.", "conceptName": "SN1 & SN2"}, {"q": 17, "title": "Which benzylic chloride hydrolyses faster?", "conceptIdx": 4, "page": 32, "printPage": 190, "question": "Out of C₆H₅CH₂Cl and C₆H₅CHClC₆H₅, which is more easily hydrolysed by aqueous KOH.", "given": "C₆H₅CH₂Cl compared with C₆H₅CHClC₆H₅ in aqueous KOH.", "steps": ["Aqueous KOH, benzylic chlorides → SN1 (resonance-stabilised C⁺).", "C₆H₅CHClC₆H₅ gives a carbocation stabilised by two phenyl rings; C₆H₅CH₂Cl by one.", "Therefore diphenylmethyl chloride hydrolyses faster."], "answer": "C₆H₅CHClC₆H₅ (benzhydryl chloride) hydrolyses faster — more stable C⁺.", "takeaway": "Two phenyl rings stabilise the SN1 carbocation: diphenylmethyl chloride reacts faster.", "conceptName": "SN1 & SN2"}, {"q": 18, "title": "Why p-dichlorobenzene melts high", "conceptIdx": 3, "page": 32, "printPage": 190, "question": "p-Dichlorobenzene has higher m.p. than those of o- and m-isomers. Discuss.", "given": "o-, m- and p-C₆H₄Cl₂ compared.", "steps": ["Boiling points of the three isomers are nearly equal (similar polarity/mass).", "The para isomer is symmetric and packs more efficiently in the crystal lattice, so more energy is needed to melt it.", "o- and m-isomers pack poorly → lower m.p."], "answer": "Para symmetry → better crystal packing → higher melting point.", "takeaway": "The isomers boil at similar temperatures, but para symmetry packs the crystal and raises the melting point.", "conceptName": "Physical properties"}, {"q": 19, "title": "Twenty conversions", "conceptIdx": 5, "page": 32, "printPage": 190, "question": "How the following conversions can be carried out?\n(i) Propene to propan-1-ol\n(ii) Ethanol to but-1-yne\n(iii) 1-Bromopropane to 2-bromopropane\n(iv) Toluene to benzyl alcohol\n(v) Benzene to 4-bromonitrobenzene\n(vi) Benzyl alcohol to 2-phenylethanoic acid\n(vii) Ethanol to propanenitrile\n(viii) Aniline to chlorobenzene\n(ix) 2-Chlorobutane to 3,4-dimethylhexane\n(x) 2-Methyl-1-propene to 2-chloro-2-methylpropane\n(xi) Ethyl chloride to propanoic acid\n(xii) But-1-ene to n-butyliodide\n(xiii) 2-Chloropropane to 1-propanol\n(xiv) Isopropyl alcohol to iodoform\n(xv) Chlorobenzene to p-nitrophenol\n(xvi) 2-Bromopropane to 1-bromopropane\n(xvii) Chloroethane to butane\n(xviii) Benzene to diphenyl\n(xix) tert-Butyl bromide to isobutyl bromide\n(xx) Aniline to phenylisocyanide", "given": "Twenty conversions (i)–(xx) across aliphatic and aromatic chemistry.", "steps": ["(i) HBr/peroxide then aq. KOH (or hydroboration–oxidation — Unit 7). (ii) as 6.11(i).", "(iii) alc. KOH → propene; HBr (no peroxide) → 2-bromopropane.", "(iv) Cl₂/hν then aq. KOH. (v) Br₂/Fe then HNO₃/H₂SO₄ (Br is o,p-director) — isolate para.", "(vi) PCl₅ → PhCH₂Cl; KCN → PhCH₂CN; hydrolyse → PhCH₂COOH.", "(vii) SOCl₂ → EtCl; KCN → EtCN. (viii) NaNO₂/HCl, 273 K then CuCl (Sandmeyer).", "(ix) Wurtz of 2-chlorobutane → 3,4-dimethylhexane. (x) HCl, Markovnikov.", "(xi) KCN → EtCN; hydrolyse → EtCOOH. (xii) HBr/peroxide then NaI/acetone.", "(xiii) alc. KOH → propene; HBr/ROOR → 1-bromopropane; aq. KOH → propan-1-ol.", "(xiv) I₂/NaOH (iodoform test — 2° alcohol with CH₃CH(OH)–).", "(xv) HNO₃/H₂SO₄ → p-nitrochlorobenzene (plus ortho); aq. NaOH heat then H⁺ (activated SNAr).", "(xvi) alc. KOH → propene; HBr/ROOR → 1-bromopropane.", "(xvii) Wurtz: 2 EtCl + 2 Na → n-butane. (xviii) Br₂/Fe then Fittig.", "(xix) alc. KOH → 2-methylpropene; HBr/ROOR → isobutyl bromide (anti-Markovnikov).", "(xx) Carbylamine: CHCl₃ / alc. KOH → PhNC."], "answer": "(i) HBr/peroxide then aq. KOH; (ii) ethanol → bromoethane (HBr), then sodium acetylide + bromoethane → but-1-yne; (iii) alc. KOH → propene, then HBr (no peroxide) → 2-bromopropane; (iv) Cl₂/hν then aq. KOH; (v) Br₂/Fe then HNO₃/H₂SO₄, isolate the para isomer; (vi) PCl₅ → PhCH₂Cl, KCN → PhCH₂CN, hydrolysis → PhCH₂COOH; (vii) SOCl₂ → EtCl, KCN → EtCN; (viii) NaNO₂/HCl at 273 K then CuCl (Sandmeyer); (ix) Wurtz coupling of 2-chlorobutane; (x) HCl (Markovnikov addition); (xi) KCN → EtCN then hydrolysis; (xii) HBr/peroxide then NaI/acetone; (xiii) alc. KOH → propene, HBr/peroxide → 1-bromopropane, aq. KOH → propan-1-ol; (xiv) I₂/NaOH (iodoform reaction); (xv) HNO₃/H₂SO₄ then aq. NaOH with heat and acid work-up; (xvi) alc. KOH → propene, HBr/peroxide → 1-bromopropane; (xvii) Wurtz coupling of chloroethane; (xviii) Br₂/Fe then Fittig coupling; (xix) alc. KOH → 2-methylpropene, HBr/peroxide → isobutyl bromide; (xx) CHCl₃/alc. KOH (carbylamine reaction) → phenyl isocyanide.", "takeaway": "Standard sequences: halogenation, elimination, halogen exchange, Sandmeyer and Wurtz coupling.", "conceptName": "Stereochemistry & elimination"}, {"q": 20, "title": "Aqueous vs alcoholic KOH", "conceptIdx": 5, "page": 33, "printPage": 191, "question": "The treatment of alkyl chlorides with aqueous KOH leads to the formation of alcohols but in the presence of alcoholic KOH, alkenes are major products. Explain.", "given": "Alkyl chlorides treated with aqueous and with alcoholic KOH.", "steps": ["In water, OH⁻ is a good nucleophile, strongly solvated, and substitution (SN1/SN2) dominates → alcohols.", "In alcohol, the medium is less polar, OH⁻/OR⁻ behaves more as a base, and β-elimination (E2) dominates → alkenes.", "3° substrates eliminate especially easily; heat and alc. KOH are the classic E2 conditions of this unit."], "answer": "Aq. KOH: substitution to alcohols. Alc. KOH: elimination to alkenes (base in a less polar medium).", "takeaway": "Water favours substitution to the alcohol; alcohol favours elimination to the alkene.", "conceptName": "Stereochemistry & elimination"}, {"q": 21, "title": "Deduce C₄H₉Br from its reactions", "conceptIdx": 5, "page": 33, "printPage": 191, "question": "Primary alkyl halide C₄H₉Br (a) reacted with alcoholic KOH to give compound (b). Compound (b) is reacted with HBr to give (c) which is an isomer of (a). When (a) is reacted with sodium metal it gives compound (d), C₈H₁₈ which is different from the compound formed when n-butyl bromide is reacted with sodium. Give the structural formula of (a) and write the equations for all the reactions.", "given": "Primary C₄H₉Br; its Wurtz product C₈H₁₈ is not n-octane; HBr adds to compound (b).", "steps": ["(a) is primary C₄H₉Br but Wurtz product ≠ n-octane ⇒ (a) is isobutyl bromide (CH₃)₂CHCH₂Br, not n-butyl.", "alc. KOH: (CH₃)₂CHCH₂Br → (CH₃)₂C=CH₂ (b) 2-methylpropene.", "HBr (Markovnikov): (CH₃)₂C=CH₂ → (CH₃)₃CBr (c), isomer of (a).", "Wurtz: 2 (CH₃)₂CHCH₂Br + 2 Na → (CH₃)₂CHCH₂CH₂CH(CH₃)₂  (2,5-dimethylhexane), not n-octane."], "answer": "(a) isobutyl bromide (CH₃)₂CHCH₂Br; (b) 2-methylpropene; (c) tert-butyl bromide; (d) 2,5-dimethylhexane.", "takeaway": "The halide is isobutyl bromide; products are 2-methylpropene, tert-butyl bromide and 2,5-dimethylhexane.", "conceptName": "Stereochemistry & elimination"}, {"q": 22, "title": "Six reaction outcomes", "conceptIdx": 5, "page": 33, "printPage": 191, "question": "What happens when\n(i) n-butyl chloride is treated with alcoholic KOH,\n(ii) bromobenzene is treated with Mg in the presence of dry ether,\n(iii) chlorobenzene is subjected to hydrolysis,\n(iv) ethyl chloride is treated with aqueous KOH,\n(v) methyl bromide is treated with sodium in the presence of dry ether,\n(vi) methyl chloride is treated with KCN?", "given": "Six substrate/reagent combinations (i)–(vi).", "steps": ["(i) but-1-ene (E2).", "(ii) phenylmagnesium bromide PhMgBr.", "(iii) no reaction under ordinary conditions (Ar–X inert); industrial: 623 K, 300 atm → phenol.", "(iv) ethanol (SN2).", "(v) Wurtz: ethane.", "(vi) acetonitrile CH₃CN (not isocyanide)."], "answer": "(i) but-1-ene; (ii) PhMgBr; (iii) no ordinary hydrolysis / Dow conditions → phenol; (iv) ethanol; (v) ethane; (vi) CH₃CN.", "takeaway": "Alc. KOH eliminates; Mg/ether gives PhMgBr; Ar–Cl survives; aq. KOH substitutes; Na couples; KCN gives the nitrile.", "conceptName": "Stereochemistry & elimination"}], "exerciseMap": [[1, "Name and classify twelve halides", 1, 31], [2, "IUPAC names of six compounds", 1, 31], [3, "Structures from eight IUPAC names", 1, 31], [4, "Highest dipole moment of three chloromethanes", 3, 31], [5, "Identify a C₅H₁₀ hydrocarbon", 0, 31], [6, "Isomers of C₄H₉Br", 1, 31], [7, "Prepare 1-iodobutane three ways", 2, 31], [8, "Ambident nucleophiles explained", 4, 31], [9, "Faster SN2 partner", 4, 32], [10, "Dehydrohalogenation products", 5, 32], [11, "Ten conversions", 5, 32], [12, "Three explanatory questions", 6, 32], [13, "Uses of four polyhalogens", 6, 32], [14, "Major products of eight reactions", 4, 32], [15, "Mechanism of nBuBr + KCN", 4, 32], [16, "Order SN2 reactivity", 4, 32], [17, "Which benzylic chloride hydrolyses faster?", 4, 32], [18, "Why p-dichlorobenzene melts high", 3, 32], [19, "Twenty conversions", 5, 32], [20, "Aqueous vs alcoholic KOH", 5, 33], [21, "Deduce C₄H₉Br from its reactions", 5, 33], [22, "Six reaction outcomes", 5, 33]]};
+</script>
+<script>
+// Textbook structures used by Exercise 6.3, redrawn as SVG from the names printed in
+// books/originals/Class12-Chemistry-Pt2_lech201.pdf (Exercise 6.3, printed p. 189).
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", AMBER = "#f59e0b", BLUE = "#60a5fa",
+      GREEN = "#34d399", RED = "#f87171", VIOLET = "#c4b5fd";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 13) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace,monospace"' : '') + '>' + s + '</text>';
+  }
+
+  var figs = {};
+
+  figs["6.3"] = {
+    caption: "Exercise 6.3 — Structures of the eight organic halogen compounds (redrawn as condensed formulas).",
+    svg: function(){
+      var panels = [
+        ["(i) 2-Chloro-3-methylpentane", "CH\u2083CH\u2082CH(CH\u2083)CHClCH\u2083", AMBER],
+        ["(ii) p-Bromochlorobenzene", "p-Br\u2013C\u2086H\u2084\u2013Cl", AMBER],
+        ["(iii) 1-Chloro-4-ethylcyclohexane", "Cl\u2013C\u2086H\u2081\u2080\u2013CH\u2082CH\u2083 (Cl at C1, Et at C4)", BLUE],
+        ["(iv) 2-(2-Chlorophenyl)-1-iodooctane", "ICH\u2082CH(C\u2086H\u2084Cl)(CH\u2082)\u2085CH\u2083", BLUE],
+        ["(v) 2-Bromobutane", "CH\u2083CHBrCH\u2082CH\u2083", GREEN],
+        ["(vi) 4-tert-Butyl-3-iodoheptane", "CH\u2083CH\u2082CH(I)CH(C(CH\u2083)\u2083)CH\u2082CH\u2082CH\u2083", GREEN],
+        ["(vii) 1-Bromo-4-sec-butyl-2-methylbenzene", "1-Br, 2-CH\u2083, 4-CH(CH\u2083)CH\u2082CH\u2083 (C\u2086H\u2084)", RED],
+        ["(viii) 1,4-Dibromobut-2-ene", "BrCH\u2082CH=CHCH\u2082Br", VIOLET]
+      ];
+      var s = '<svg viewBox="0 0 720 520" role="img" aria-label="Structures of eight organic halogen compounds">';
+      panels.forEach(function(p, i){
+        var col = i % 2, row = Math.floor(i / 2);
+        var x = 20 + col * 350, y = 20 + row * 122;
+        s += '<rect x="' + x + '" y="' + y + '" width="330" height="106" rx="10" fill="#0f172a" stroke="#334155"/>';
+        s += text(x + 165, y + 30, p[0], {color: p[2], size: 12, weight: 700});
+        s += text(x + 165, y + 66, p[1], {color: INK, size: 12, mono: true});
+      });
+      s += text(360, 512, "Halogen substituents are shown in the condensed formulas; the parent chain/ring is numbered as in the IUPAC name.", {color: MUTED, size: 11});
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1358,44 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1421,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1504,35 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1549,10 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1561,17 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1583,15 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1604,6 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1613,6 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1625,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1651,47 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1699,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1708,46 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1793,10 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1815,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +1865,8 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +1875,41 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +1924,6 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +1958,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +2043,9 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2073,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2118,31 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2188,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2198,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2208,31 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2252,12 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2267,10 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2284,41 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2326,7 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1895,27 +2335,237 @@ window.CHAPTER = {"code": "lech201", "chapterNumber": 6, "book_name": "Chemistry
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1943,12 +2593,12 @@ window.SIMS.classifycx = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sp³ C–X</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>sp² C–X</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="k-a1">1° alkyl</button>' +
-      '<button class="preset-btn" id="k-a3">3° alkyl</button>' +
-      '<button class="preset-btn" id="k-al">Allylic</button>' +
-      '<button class="preset-btn" id="k-bz">Benzylic</button>' +
-      '<button class="preset-btn" id="k-v">Vinylic</button>' +
-      '<button class="preset-btn" id="k-ar">Aryl</button>';
+      '<button class="preset-btn active" data-preset="alkyl1" id="k-a1">1° alkyl</button>' +
+      '<button class="preset-btn" data-preset="alkyl3" id="k-a3">3° alkyl</button>' +
+      '<button class="preset-btn" data-preset="allyl" id="k-al">Allylic</button>' +
+      '<button class="preset-btn" data-preset="benzyl" id="k-bz">Benzylic</button>' +
+      '<button class="preset-btn" data-preset="vinyl" id="k-v">Vinylic</button>' +
+      '<button class="preset-btn" data-preset="aryl" id="k-ar">Aryl</button>';
     [["k-a1","alkyl1"],["k-a3","alkyl3"],["k-al","allyl"],["k-bz","benzyl"],["k-v","vinyl"],["k-ar","aryl"]].forEach(function(p){
       document.getElementById(p[0]).onclick = function(){ setActivePreset(this); kind=p[1]; App.resetTimeline(); };
     });
@@ -2003,7 +2653,7 @@ window.SIMS.iupac8 = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>2° C–Br</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>3° C–Br</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      isomers.map(function(it,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="iso'+i+'">'+(i+1)+'</button>'; }).join("");
+      isomers.map(function(it,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="iso'+(i+1)+'" id="iso'+i+'">'+(i+1)+'</button>'; }).join("");
     isomers.forEach(function(_,i){
       document.getElementById("iso"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -2037,11 +2687,11 @@ window.SIMS.cxprep = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Preferred (pure RX)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Halogen exchange</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-so">SOCl₂ from ROH</button>' +
-      '<button class="preset-btn" id="p-hx">HX from ROH</button>' +
-      '<button class="preset-btn" id="p-fink">Finkelstein (RCl→RI)</button>' +
-      '<button class="preset-btn" id="p-sw">Swarts (RCl→RF)</button>' +
-      '<button class="preset-btn" id="p-sand">Sandmeyer ArN₂⁺</button>';
+      '<button class="preset-btn active" data-preset="socl2" id="p-so">SOCl₂ from ROH</button>' +
+      '<button class="preset-btn" data-preset="hx" id="p-hx">HX from ROH</button>' +
+      '<button class="preset-btn" data-preset="finkelstein" id="p-fink">Finkelstein (RCl→RI)</button>' +
+      '<button class="preset-btn" data-preset="swarts" id="p-sw">Swarts (RCl→RF)</button>' +
+      '<button class="preset-btn" data-preset="sandmeyer" id="p-sand">Sandmeyer ArN₂⁺</button>';
     document.getElementById("p-so").onclick = function(){ setActivePreset(this); mode="socl2"; App.resetTimeline(); };
     document.getElementById("p-hx").onclick = function(){ setActivePreset(this); mode="hx"; App.resetTimeline(); };
     document.getElementById("p-fink").onclick = function(){ setActivePreset(this); mode="fink"; App.resetTimeline(); };
@@ -2080,10 +2730,10 @@ window.SIMS.halobp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Boiling point</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Density / packing</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="s-m">Same alkyl, vary X (Fig 6.1)</button>' +
-      '<button class="preset-btn" id="s-b">Branching (isomeric C₄H₉Br)</button>' +
-      '<button class="preset-btn" id="s-p">p- vs o-/m-C₆H₄Cl₂ (m.p.)</button>' +
-      '<button class="preset-btn" id="s-d">Density Table 6.3</button>';
+      '<button class="preset-btn active" data-preset="varyx" id="s-m">Same alkyl, vary X (Fig 6.1)</button>' +
+      '<button class="preset-btn" data-preset="branching" id="s-b">Branching (isomeric C₄H₉Br)</button>' +
+      '<button class="preset-btn" data-preset="para" id="s-p">p- vs o-/m-C₆H₄Cl₂ (m.p.)</button>' +
+      '<button class="preset-btn" data-preset="density" id="s-d">Density Table 6.3</button>';
     document.getElementById("s-m").onclick = function(){ setActivePreset(this); set="mass"; draw(0); };
     document.getElementById("s-b").onclick = function(){ setActivePreset(this); set="branch"; draw(0); };
     document.getElementById("s-p").onclick = function(){ setActivePreset(this); set="para"; draw(0); };
@@ -2147,11 +2797,11 @@ window.SIMS.sn1sn2 = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Leaving X⁻</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Carbon under attack</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="m-sn2">SN2 inversion (CH₃Cl + OH⁻)</button>' +
-      '<button class="preset-btn" id="m-ster">SN2 steric order</button>' +
-      '<button class="preset-btn" id="m-sn1">SN1 two-step (t-BuBr)</button>' +
-      '<button class="preset-btn" id="m-lg">Leaving group I vs Cl</button>' +
-      '<button class="preset-btn" id="m-allyl">Allylic/benzylic SN1</button>';
+      '<button class="preset-btn active" data-preset="sn2" id="m-sn2">SN2 inversion (CH₃Cl + OH⁻)</button>' +
+      '<button class="preset-btn" data-preset="steric" id="m-ster">SN2 steric order</button>' +
+      '<button class="preset-btn" data-preset="sn1" id="m-sn1">SN1 two-step (t-BuBr)</button>' +
+      '<button class="preset-btn" data-preset="leaving" id="m-lg">Leaving group I vs Cl</button>' +
+      '<button class="preset-btn" data-preset="allylic" id="m-allyl">Allylic/benzylic SN1</button>';
     document.getElementById("m-sn2").onclick = function(){ setActivePreset(this); mode="sn2"; App.resetTimeline(); App.play(); };
     document.getElementById("m-ster").onclick = function(){ setActivePreset(this); mode="ster"; App.resetTimeline(); };
     document.getElementById("m-sn1").onclick = function(){ setActivePreset(this); mode="sn1"; App.resetTimeline(); App.play(); };
@@ -2252,10 +2902,10 @@ window.SIMS.stereoelim = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chiral / inversion</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Elimination / metal</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="t-ch">Chirality (butan-2-ol)</button>' +
-      '<button class="preset-btn" id="t-rac">SN1 racemisation vs SN2 inversion</button>' +
-      '<button class="preset-btn" id="t-say">Saytzeff elimination</button>' +
-      '<button class="preset-btn" id="t-gr">Grignard / Wurtz</button>';
+      '<button class="preset-btn active" data-preset="chirality" id="t-ch">Chirality (butan-2-ol)</button>' +
+      '<button class="preset-btn" data-preset="racemisation" id="t-rac">SN1 racemisation vs SN2 inversion</button>' +
+      '<button class="preset-btn" data-preset="saytzeff" id="t-say">Saytzeff elimination</button>' +
+      '<button class="preset-btn" data-preset="grignard" id="t-gr">Grignard / Wurtz</button>';
     document.getElementById("t-ch").onclick = function(){ setActivePreset(this); mode="chiral"; draw(0); };
     document.getElementById("t-rac").onclick = function(){ setActivePreset(this); mode="rac"; draw(0); };
     document.getElementById("t-say").onclick = function(){ setActivePreset(this); mode="say"; draw(0); };
@@ -2314,10 +2964,10 @@ window.SIMS.haloarene = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Haloarene C–X</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Activated o/p-NO₂</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-w">Why Ar–X resists SN</button>' +
-      '<button class="preset-btn" id="h-no2">o/p-NO₂ activation (SNAr)</button>' +
-      '<button class="preset-btn" id="h-e">EAS: o,p-directing but deactivating</button>' +
-      '<button class="preset-btn" id="h-poly">Polyhalogen: CHCl₃, CCl₄, Freon, DDT</button>';
+      '<button class="preset-btn active" data-preset="why" id="h-w">Why Ar–X resists SN</button>' +
+      '<button class="preset-btn" data-preset="no2" id="h-no2">o/p-NO₂ activation (SNAr)</button>' +
+      '<button class="preset-btn" data-preset="eas" id="h-e">EAS: o,p-directing but deactivating</button>' +
+      '<button class="preset-btn" data-preset="poly" id="h-poly">Polyhalogen: CHCl₃, CCl₄, Freon, DDT</button>';
     document.getElementById("h-w").onclick = function(){ setActivePreset(this); mode="why"; draw(0); };
     document.getElementById("h-no2").onclick = function(){ setActivePreset(this); mode="no2"; App.resetTimeline(); App.play(); };
     document.getElementById("h-e").onclick = function(){ setActivePreset(this); mode="eas"; draw(0); };

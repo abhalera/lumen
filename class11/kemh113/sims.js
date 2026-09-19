@@ -36,9 +36,9 @@ window.SIMS.batsmen = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Batsman B (steady)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Mean = median = 53</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-both">Fig. 13.1–13.2 both series</button>' +
-      '<button class="preset-btn" id="p-a">A only</button>' +
-      '<button class="preset-btn" id="p-b">B only</button>';
+      '<button class="preset-btn active" data-preset="p-both" id="p-both">Fig. 13.1–13.2 both series</button>' +
+      '<button class="preset-btn" data-preset="p-a" id="p-a">A only</button>' +
+      '<button class="preset-btn" data-preset="p-b" id="p-b">B only</button>';
     document.getElementById("p-both").onclick = function(){ setActivePreset(this); who="both"; draw(); };
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); who="A"; draw(); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); who="B"; draw(); };
@@ -84,8 +84,8 @@ window.SIMS.mdungroup = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>observation</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>|xᵢ − c|</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-mean">Example 1: MD about mean</button>' +
-      '<button class="preset-btn" id="p-med">Same data: MD about median</button>';
+      '<button class="preset-btn active" data-preset="p-mean" id="p-mean">Example 1: MD about mean</button>' +
+      '<button class="preset-btn" data-preset="p-med" id="p-med">Same data: MD about median</button>';
     document.getElementById("p-mean").onclick = function(){ setActivePreset(this); about="mean"; draw(); };
     document.getElementById("p-med").onclick = function(){ setActivePreset(this); about="median"; draw(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -127,8 +127,8 @@ window.SIMS.histmean = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>class mark xᵢ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>mean</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-inc">Ex 13.1 Q9: income / day</button>' +
-      '<button class="preset-btn" id="p-ht">Ex 13.1 Q10: height of boys</button>';
+      '<button class="preset-btn active" data-preset="p-inc" id="p-inc">Ex 13.1 Q9: income / day</button>' +
+      '<button class="preset-btn" data-preset="p-ht" id="p-ht">Ex 13.1 Q10: height of boys</button>';
     document.getElementById("p-inc").onclick = function(){
       setActivePreset(this);
       edges = [0,100,200,300,400,500,600,700,800];
@@ -186,9 +186,9 @@ window.SIMS.variance = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>set A (n=6, mean 30)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>set B (n=31, mean 30)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-a">Zoom p.16 set A: 5,15,…,55</button>' +
-      '<button class="preset-btn" id="p-b">Set B: 15 through 45</button>' +
-      '<button class="preset-btn" id="p-ex8">Example 8: 6,8,…,24</button>';
+      '<button class="preset-btn active" data-preset="p-a" id="p-a">Zoom p.16 set A: 5,15,…,55</button>' +
+      '<button class="preset-btn" data-preset="p-b" id="p-b">Set B: 15 through 45</button>' +
+      '<button class="preset-btn" data-preset="p-ex8" id="p-ex8">Example 8: 6,8,…,24</button>';
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); set="A"; draw(); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); set="B"; draw(); };
     document.getElementById("p-ex8").onclick = function(){ setActivePreset(this); set="E8"; draw(); };
@@ -230,7 +230,7 @@ window.SIMS.freqsd = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>xᵢ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>fᵢ (xᵢ − x̄)²</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ex9">Example 9 (Table 13.8)</button>';
+      '<button class="preset-btn active" data-preset="p-ex9" id="p-ex9">Example 9 (Table 13.8)</button>';
     document.getElementById("p-ex9").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML = "";
     draw();
@@ -269,7 +269,7 @@ window.SIMS.shortcut = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>y = (x − A)/h</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ex8">Example 8 step-deviation, A = 14, h = 2</button>';
+      '<button class="preset-btn active" data-preset="p-ex8" id="p-ex8">Example 8 step-deviation, A = 14, h = 2</button>';
     document.getElementById("p-ex8").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Assumed mean A</span><span class="val" id="ctrl-A">14</span></div>' +
@@ -323,8 +323,8 @@ window.SIMS.scale = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>original x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>a x  (scale)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m3">Misc Q3: each observation × 3</button>' +
-      '<button class="preset-btn" id="p-add">Example 15: each xᵢ increased by a</button>';
+      '<button class="preset-btn active" data-preset="p-m3" id="p-m3">Misc Q3: each observation × 3</button>' +
+      '<button class="preset-btn" data-preset="p-add" id="p-add">Example 15: each xᵢ increased by a</button>';
     var mode = "mul";
     document.getElementById("p-m3").onclick = function(){ setActivePreset(this); mode="mul"; draw(); };
     document.getElementById("p-add").onclick = function(){ setActivePreset(this); mode="add"; draw(); };

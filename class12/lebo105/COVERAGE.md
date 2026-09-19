@@ -1,6 +1,8 @@
 # COVERAGE — lebo105 Molecular Basis of Inheritance
 
-**Source:** `books/originals/Class12-Biology_lebo105.pdf` (31 pdf pages, printed folio absent in source, Reprint 2026-27).
+**Source:** `books/originals/Class12-Biology_lebo105.pdf` (31 pdf pages, printed folio = pdf page + 78 (verified, see correction note below), Reprint 2026-27).
+
+**Correction (2026-09-19):** an earlier pass wrongly recorded this chapter as folio-absent. Verified directly against the PDF: the printed folio appears as the first extracted text line on almost every page (only the chapter-opener page lacks one). Confirmed printed = 1-based PDF page + 78 across 3 independent anchor points with zero deviation. `printPage` on every exercise and `print` on every lesson now hold the real printed folio.
 **SHA-256:** `21d77cdaf37c11b26956bbdae0b9eff9700d723135ac55c1a2141b1caee8f017` (in `/tmp/opencode/bio_maps.json`, key `lebo105`).
 **Extraction:** PyMuPDF text layer (`/tmp/opencode/bio_text/lebo105.txt`) + section/exercise page maps in `/tmp/opencode/bio_maps.json`. **pdftotext was not used.**
 **NCERT:** https://ncert.nic.in/textbook/pdf/lebo105.pdf
@@ -38,7 +40,7 @@ Honest notes: end-of-chapter questions print as bare numerals (Q1 prints as `1` 
 
 ## End-of-Chapter Exercises 1–14
 
-All **14** exercises from this reprint mapped with verbatim stems and NCERT-faithful stepwise solutions in `chapter.json` (all on pdf p. 31; printed folio absent in source).
+All **14** exercises from this reprint mapped with verbatim stems and NCERT-faithful stepwise solutions in `chapter.json` (all on pdf p. 31; printed folio = pdf page + 78 (verified, see correction note below)).
 
 ## Pedagogical Simulations (sims.js — separate script)
 

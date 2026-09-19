@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 07 · ALCOHOLS, PHENOLS AND ETHERS</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,236 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 33 Exercises from NCERT Class 12 Chemistry (pp. 193–226) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 33 Exercises from NCERT Class 12 Chemistry Part 2 (pp. 193–226) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry", "title": "Alcohols, Phenols and Ethers", "subtitle": "IUPAC names, hydrogen bonding, preparation, phenol acidity (Table 7.3), alcohol/phenol reactions, Williamson ethers and HI cleavage.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech202.pdf", "page_start": 193, "page_end": 226, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "class-nom", "nav": "Classification & IUPAC", "title": "How does this reprint name alcohols, phenols and ethers?", "deck": "Mono/di/tri hydric; 1°/2°/3°, allylic, benzylic, vinylic, phenols. Tables 7.1–7.2. Ethers as alkoxyalkanes.", "minutes": 12, "section": "7.1–7.2", "pages": [1, 6], "print": "193–198", "sim": "classnom", "simTitle": "Sort alcohols, phenols and ethers", "quick": ["Alcohols, phenols and ethers are the basic compounds for detergents, antiseptics and fragrances (Unit 7 opener). Classify alcohols by the number of –OH groups and by the carbon that bears OH (sp³: 1°/2°/3°, allylic, benzylic; sp² vinylic). Phenols have OH on an aryl sp² carbon. Ethers are classified by the two groups on oxygen (simple vs mixed).", "IUPAC: alkanols with the lowest locant to OH; phenols named as phenol or as hydroxyarenes; ethers as alkoxyalkanes (smaller alkyl as alkoxy). Table 7.1: isopropyl alcohol = propan-2-ol; tert-butyl alcohol = 2-methylpropan-2-ol. Table 7.2: anisole = methoxybenzene.", "Intext 7.1–7.2 (answers p.33): primary (i)(ii)(iii); secondary (iv)(v); tertiary (vi). Allylic: (ii) and (vi) of that set."], "formulas": [{"label": "1° / 2° / 3° alcohol", "html": "RCH<sub>2</sub>OH &nbsp;|&nbsp; R<sub>2</sub>CHOH &nbsp;|&nbsp; R<sub>3</sub>COH", "cond": "count carbons on the carbinol carbon"}, {"label": "Phenol vs alcohol", "html": "Ar–OH (sp² aryl) vs R–OH (sp³ alkyl)", "cond": "different acidity and C–O chemistry"}, {"label": "Ether IUPAC", "html": "alkoxyalkane (smaller alkyl as alkoxy)", "cond": "PhOCH₃ = methoxybenzene (anisole)"}], "deeper": "Intext 7.3 names: 4-chloro-3-ethyl-2-(1-methylethyl)butan-1-ol; 2,5-dimethylhexane-1,3-diol; 3-bromocyclohexanol; hex-1-en-3-ol; 2-bromo-3-methylbut-2-en-1-ol. Longest chain including the carbon that bears OH; unsaturation as suffix when present.", "worked": {"title": "Table 7.1 spot-check", "problem": "Give IUPAC names of tert-butyl alcohol and glycerol.", "steps": ["tert-Butyl alcohol is 2-methylpropan-2-ol (3°).", "Glycerol is propane-1,2,3-triol."], "answer": "2-methylpropan-2-ol; propane-1,2,3-triol."}, "prediction": {"prompt": "Is benzyl alcohol (PhCH₂OH) a phenol?", "options": ["Yes — any Ar–C–OH is a phenol.", "No — phenol requires OH directly on the aryl carbon; this is a benzylic 1° alcohol.", "It is vinylic."], "answer": 1, "explanation": "Benzylic alcohols have OH on an sp³ carbon attached to the ring. Phenol is Ar–OH."}, "connect": [["Detergents, antiseptics, fragrances", "The reprint’s one-line map: alcohols → detergents (after sulphation), phenols → antiseptics (Dettol is chloroxylenol), ethers → fragrances (anisole)."], ["Wow — glycerol is a triol", "Propane-1,2,3-triol is the backbone of fats and of soap-making in every Indian oil mill.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "Define 1°, 2°, 3°, allylic and phenolic OH. Name anisole and tert-butyl alcohol.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Anisole in Table 7.2 is", "options": ["ethoxybenzene", "methoxybenzene", "phenetole"], "answer": 1, "hint": "Table 7.2.", "solution": "Anisole = methoxybenzene = methyl phenyl ether."}, {"level": "Medium", "type": "mcq", "prompt": "Allylic alcohols have the OH group on", "options": ["an sp² carbon of C=C", "an sp³ carbon adjacent to C=C", "an aryl carbon"], "answer": 1, "hint": "§7.1.", "solution": "Vinylic is sp² of C=C; phenolic is aryl sp²."}, {"level": "Hard", "type": "mcq", "prompt": "IUPAC name of (CH₃)₃COH is", "options": ["tert-butyl alcohol", "2-methylpropan-2-ol", "1,1-dimethylethanol as preferred"], "answer": 1, "hint": "Table 7.1.", "solution": "Common: tert-butyl alcohol. IUPAC: 2-methylpropan-2-ol."}]}, {"id": "structure-phys", "nav": "H-bonding & physical properties", "title": "Why does ethanol boil so much higher than methoxymethane?", "deck": "C–O polar; intermolecular H-bonds in alcohols/phenols. Solubility. o-nitrophenol steam-volatile (intramolecular H-bond).", "minutes": 10, "section": "7.3, 7.5", "pages": [6, 15], "print": "198–207", "sim": "hbonds", "simTitle": "Hydrogen bonds, boiling points, steam distillation", "quick": ["The C–O and O–H bonds are polar. Alcohols and phenols associate through intermolecular O–H···O hydrogen bonds, so they boil far above hydrocarbons, ethers and haloalkanes of similar mass (Ex 7.4, 7.22).", "They H-bond to water, so lower members are water-soluble; a long hydrophobic chain kills solubility (Ex 7.5). Ethers cannot donate H-bonds, so their boiling points resemble alkanes, but oxygen can still accept H-bonds from water, so solubility resembles isomeric alcohols.", "Ex 7.8: o-nitrophenol is steam-volatile because of intramolecular H-bonding; p-nitrophenol associates intermolecularly and is not steam-volatile — the classic laboratory separation."], "formulas": [{"label": "H-bond in alcohols", "html": "R–O–H···O(H)–R", "cond": "raises b.p.; enables water solubility"}, {"label": "o- vs p-nitrophenol", "html": "intra-H-bond (steam volatile) vs inter-H-bond (not)", "cond": "Ex 7.8"}], "deeper": "Branching lowers boiling point (smaller surface) just as in haloalkanes. Phenol (182 °C) boils higher than ethanol (78 °C) because of stronger intermolecular H-bonds and higher mass.", "worked": {"title": "Ex 7.22", "problem": "Why is the b.p. of ethanol higher than that of methoxymethane?", "steps": ["Both C₂H₆O. Ethanol has O–H and forms intermolecular H-bonds.", "Methoxymethane has no O–H; only weak dipole and van der Waals forces."], "answer": "Intermolecular H-bonding in ethanol."}, "prediction": {"prompt": "Which nitrophenol comes over with steam, and why?", "options": ["para — it is more polar.", "ortho — intramolecular H-bond, less associated, steam-volatile.", "They co-distil."], "answer": 1, "explanation": "Ex 7.8: o-nitrophenol intramolecular H-bond → steam-volatile; para intermolecular → not."}, "connect": [["Steam distillation in the Indian lab", "Every Class 12 practical still separates o- and p-nitrophenol by steam — a hydrogen-bond experiment, not a fancy column."], ["Wow — same formula C₂H₆O, 80 °C apart", "Ethanol 78 °C vs dimethyl ether −25 °C: one extra hydrogen bond donor.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "Explain Ex 7.4, 7.5, 7.8 and 7.22 in one sentence each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Alcohols boil higher than ethers of similar mass because of", "options": ["higher density", "intermolecular hydrogen bonding", "free-radical association"], "answer": 1, "hint": "§7.5 / Ex 7.22.", "solution": "O–H···O in alcohols; ethers lack O–H."}, {"level": "Medium", "type": "mcq", "prompt": "The steam-volatile isomer of nitrophenol is", "options": ["para", "meta", "ortho"], "answer": 2, "hint": "Ex 7.8.", "solution": "Intramolecular H-bond in the ortho isomer."}, {"level": "Hard", "type": "mcq", "prompt": "Ethers have boiling points like alkanes but water solubility like alcohols because", "options": ["they ionise in water", "they cannot donate H-bonds (low b.p.) but can accept them from water (soluble)", "they are always gases"], "answer": 1, "hint": "§7.6.2.", "solution": "Oxygen lone pairs accept H-bonds; there is no O–H to donate."}]}, {"id": "prep-alc-ph", "nav": "Preparation of ROH and ArOH", "title": "From alkenes, carbonyls, cumene and diazonium salts", "deck": "Acid hydration vs hydroboration–oxidation. Grignard. Catalytic / hydride reduction. Phenol: Dow, sulphonate fusion, diazonium, cumene process.", "minutes": 14, "section": "7.4", "pages": [7, 14], "print": "199–206", "sim": "prepalc", "simTitle": "Routes to alcohols and phenols", "quick": ["Alkenes + H₃O⁺ → Markovnikov alcohols (carbocation; may rearrange). Hydroboration–oxidation → anti-Markovnikov 1° alcohols without rearrangement (Ex 7.6). Ex 7.11: mechanism of ethene hydration (protonate, water, deprotonate).", "Carbonyls: H₂/Ni, NaBH₄, LiAlH₄ → alcohols. Grignard: HCHO → 1°, RCHO → 2°, R₂C=O → 3° (then H₃O⁺). Carboxylic acids / esters + LiAlH₄ → 1° alcohols.", "Phenol: (i) chlorobenzene + NaOH, 623 K, 300 atm; (ii) sodium benzene sulphonate fusion; (iii) ArN₂⁺ hydrolysis; (iv) industrial cumene hydroperoxide → phenol + acetone (Ex 7.9). Ex 7.12: benzene, conc. H₂SO₄, NaOH → phenol via the sulphonate."], "formulas": [{"label": "Hydroboration–oxidation", "html": "RCH=CH₂ + (BH₃) then H₂O₂/OH⁻ → RCH₂CH₂OH", "cond": "anti-Markovnikov, syn, no rearrangement"}, {"label": "Grignard to alcohols", "html": "HCHO → 1°; RCHO → 2°; R₂C=O → 3°", "cond": "then dilute acid"}, {"label": "Cumene process", "html": "PhCHMe₂ + O₂ then H⁺ → PhOH + Me₂CO", "cond": "industrial phenol"}], "deeper": "Ex 7.33 is a warning: 3-methylbutan-2-ol + HBr rearranges (2° C⁺ → 3° C⁺ by hydride shift). Acid hydration of 2°/3° alkenes can do the same. Hydroboration avoids C⁺.", "worked": {"title": "Example 7.2 flavour — propene", "problem": "Convert propene to propan-1-ol and to propan-2-ol.", "steps": ["Propan-2-ol: acid hydration (Markovnikov).", "Propan-1-ol: hydroboration–oxidation (anti-Markovnikov)."], "answer": "H₃O⁺ → propan-2-ol; BH₃/H₂O₂/OH⁻ → propan-1-ol."}, "prediction": {"prompt": "Cumene oxidation followed by acid work-up yields phenol and which co-product?", "options": ["Ethanol", "Acetone (propanone)", "Benzoic acid"], "answer": 1, "explanation": "Ex 7.9: cumene hydroperoxide rearranges to phenol + acetone — the industrial pair."}, "connect": [["Phenol + acetone from one plant", "The cumene process is how much of the world’s phenol (Bakelite, bisphenol A, aspirin precursor) and acetone is made."], ["Wow — 623 K and 300 atm for Dow phenol", "Chlorobenzene only surrenders to OH⁻ under brutal SNAr conditions unless o/p-NO₂ groups help.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "Write hydroboration–oxidation, the three Grignard cases, and the cumene equation.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Hydroboration–oxidation of propene gives", "options": ["propan-2-ol", "propan-1-ol", "propane-1,2-diol"], "answer": 1, "hint": "Anti-Markovnikov.", "solution": "BH₃ adds B to the less substituted carbon; H₂O₂/OH⁻ replaces B by OH."}, {"level": "Medium", "type": "mcq", "prompt": "Industrial phenol + acetone come from", "options": ["Dow chlorobenzene hydrolysis only", "cumene hydroperoxide", "diazonium salt of aniline only"], "answer": 1, "hint": "Ex 7.9.", "solution": "Cumene process."}, {"level": "Hard", "type": "mcq", "prompt": "Grignard + formaldehyde, after H₃O⁺, yields a", "options": ["3° alcohol", "2° alcohol", "1° alcohol"], "answer": 2, "hint": "HCHO has no R on carbon.", "solution": "RMgX + HCHO → RCH₂OMgX → RCH₂OH."}]}, {"id": "phenol-acidity", "nav": "Phenol acidity", "title": "Why is phenol a million times more acidic than ethanol?", "deck": "Table 7.3 pKa values. Phenoxide resonance I–V. EWG at o/p increase acidity; alkyl groups decrease it. Ex 7.4 order.", "minutes": 14, "section": "7.4.4 acidity", "pages": [14, 16], "print": "206–208", "sim": "phenolacidity", "simTitle": "Phenol acidity lab (Table 7.3)", "quick": ["Alcohols are extremely weak acids (ethanol pKa 15.9). Phenol (pKa 10.0) is about a million times more acidic: the phenoxide ion is resonance-delocalised over the ring (structures I–V, zoom p.15), while alkoxide charge sits on oxygen. Phenol + aq. NaOH → sodium phenoxide; alcohols do not react with NaOH.", "Table 7.3 (zoom-verified): o-nitrophenol 7.2, m-nitrophenol 8.3, p-nitrophenol 7.1, phenol 10.0, o-cresol 10.2, m-cresol 10.1, p-cresol 10.2, ethanol 15.9. The greater the pKa, the weaker the acid.", "Electron-withdrawing groups (especially o/p-NO₂) stabilise phenoxide and increase acidity; electron-releasing alkyl groups decrease it. Ex 7.4: propan-1-ol < 4-methylphenol < phenol < 3-nitrophenol < 3,5-dinitrophenol < 2,4,6-trinitrophenol."], "formulas": [{"label": "Table 7.3 phenol", "html": "pK<sub>a</sub>(PhOH) = 10.0; pK<sub>a</sub>(EtOH) = 15.9", "cond": "Ka ratio ≈ 10<sup>5.9</sup> ≈ 10<sup>6</sup>"}, {"label": "o / m / p-nitrophenol", "html": "pK<sub>a</sub> = 7.2 / 8.3 / 7.1", "cond": "o,p resonance + −I; meta only −I"}, {"label": "Cresols", "html": "pK<sub>a</sub> ≈ 10.1–10.2", "cond": "CH₃ is weakly deactivating toward acidity"}], "deeper": "Two effects make phenol more acidic than alcohols: (i) the sp² carbon of the ring is more electronegative, polarising O–H; (ii) phenoxide is more stable than phenol because phenol’s own resonance forms separate charge. Picric acid (2,4,6-trinitrophenol) is a strong organic acid. Ex 7.15: o-nitrophenol is more acidic than o-methoxyphenol because NO₂ withdraws and OCH₃ donates.", "worked": {"title": "Example 7.4 (zoom p.15)", "problem": "Arrange propan-1-ol, 2,4,6-trinitrophenol, 3-nitrophenol, 3,5-dinitrophenol, phenol, 4-methylphenol in increasing acid strength.", "steps": ["Alcohol weakest; then EDG-phenol (cresol); phenol; one NO₂ (meta); two NO₂; three NO₂ (picric)."], "answer": "propan-1-ol < 4-methylphenol < phenol < 3-nitrophenol < 3,5-dinitrophenol < 2,4,6-trinitrophenol."}, "prediction": {"prompt": "Ka(phenol)/Ka(ethanol) using Table 7.3 pKa 10.0 and 15.9 is about", "options": ["10 (ten times)", "10⁶ (a million times, as the reprint states)", "equal"], "answer": 1, "explanation": "ΔpKa = 5.9, so Ka ratio = 10^5.9 ≈ 8×10⁵ ≈ 10⁶. The reprint: ‘phenol is million times more acidic than ethanol.’"}, "connect": [["Aspirin from a phenoxide story", "Salicylic acid’s phenolic OH is acetylated to aspirin — you need that acidic phenol to make the sodium salt and to esterify it."], ["Wow — picric acid explodes and dyes", "2,4,6-Trinitrophenol is both a strong acid (Ex 7.4) and a historical explosive/dye — three nitro groups on a phenoxide.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "Quote Table 7.3 pKa for phenol, ethanol and the three nitrophenols. State Ex 7.4 order.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "pKa of phenol in Table 7.3 is", "options": ["15.9", "10.0", "7.1"], "answer": 1, "hint": "Table 7.3.", "solution": "Ethanol 15.9; p-nitrophenol 7.1."}, {"level": "Medium", "type": "mcq", "prompt": "Phenol is more acidic than ethanol mainly because", "options": ["phenol has a higher molecular mass", "phenoxide is resonance-stabilised; ethoxide is not", "phenol H-bonds more in the undissociated form"], "answer": 1, "hint": "Zoom p.15 structures I–V.", "solution": "Delocalisation of negative charge favours ionisation."}, {"level": "Hard", "type": "mcq", "prompt": "Among o-, m- and p-nitrophenol, the weakest acid is", "options": ["ortho (pKa 7.2)", "meta (pKa 8.3)", "para (pKa 7.1)"], "answer": 1, "hint": "Table 7.3.", "solution": "Meta cannot delocalise the charge onto NO₂ by resonance; only −I remains."}]}, {"id": "rxn-alcohols", "nav": "Reactions of alcohols", "title": "Lucas, dehydration, oxidation — and a hydride shift", "deck": "C–O cleavage with HX (Lucas). Acid dehydration (Ex 7.19). Oxidation 1°/2°/3°. Esterification. Ex 7.33 rearrangement.", "minutes": 12, "section": "7.4.4 reactions", "pages": [16, 21], "print": "208–213", "sim": "rxnalc", "simTitle": "Alcohol reactions and rearrangement", "quick": ["C–O cleavage (alcohols, not phenols except Zn dust): ROH + HX → RX. Lucas (anhyd. ZnCl₂ + conc. HCl): 3° immediate turbidity, 2° in minutes, 1° not at room temperature.", "Dehydration: conc. H₂SO₄, 443 K → alkene (Ex 7.19 E1-like: oxonium → C⁺ → lose H⁺). Lower temperature / excess alcohol → ether. 3° > 2° > 1°. Oxidation: 1° —mild (PCC, Cu 573 K)→ aldehyde —strong KMnO₄→ acid; 2° → ketone; 3° resistant.", "Esterification with RCOOH / RCOCl / (RCO)₂O. Ex 7.33: 3-methylbutan-2-ol + HBr → 2-bromo-2-methylbutane via 2° C⁺ → 3° C⁺ hydride shift."], "formulas": [{"label": "Lucas", "html": "3° instant; 2° minutes; 1° no turbidity at RT", "cond": "ZnCl₂ / conc. HCl"}, {"label": "Ethanol dehydration", "html": "CH₃CH₂OH  (H₂SO₄, 443 K)  → CH₂=CH₂", "cond": "Ex 7.19"}, {"label": "1° oxidation", "html": "RCH₂OH → RCHO → RCOOH", "cond": "PCC stops at RCHO"}], "deeper": "Intext 7.7: 1-methylcyclohexene from the corresponding 3° alcohol; butan-2-ol gives but-1-ene + but-2-ene (major, rearrangement to 2° C⁺ already is 2° — Saytzeff). Always inspect C⁺ for a hydride/methide path to a more stable cation.", "worked": {"title": "Ex 7.19 mechanism", "problem": "Write the mechanism of acid dehydration of ethanol to ethene.", "steps": ["Protonate OH → CH₃CH₂OH₂⁺.", "Lose water (slow) → CH₃CH₂⁺.", "Lose β-H → CH₂=CH₂, regenerate H⁺."], "answer": "E1-like: oxonium → carbocation → alkene."}, "prediction": {"prompt": "3-Methylbutan-2-ol + HBr gives 2-bromo-2-methylbutane, not 2-bromo-3-methylbutane. Why?", "options": ["Concerted SN2 inversion.", "The 2° carbocation rearranges by a hydride shift to a 3° carbocation before Br⁻ attacks.", "Bromine always attacks the end of the chain."], "answer": 1, "explanation": "Ex 7.33 hint: secondary C⁺ formed in step II rearranges to a more stable tertiary C⁺ by a hydride shift from C-3."}, "connect": [["Lucas in the practical exam", "Turbidity time is still the Class 12 way to sort 1°/2°/3° alcohols without a spectrometer."], ["Wow — PCC vs alkaline KMnO₄", "Same 1° alcohol: stop at the aldehyde or burn through to the acid — reagent choice is the whole lesson.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "State Lucas times, the ethanol-dehydration mechanism, and the Ex 7.33 rearrangement.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Lucas reagent distinguishes alcohols by", "options": ["colour with FeCl₃", "speed of turbidity with ZnCl₂/HCl", "b.p. only"], "answer": 1, "hint": "§7.4.4.", "solution": "3° instant, 2° minutes, 1° no RT reaction."}, {"level": "Medium", "type": "mcq", "prompt": "Conc. H₂SO₄ at 443 K on ethanol yields", "options": ["diethyl ether", "ethene", "ethanal"], "answer": 1, "hint": "443 K alkene; lower T ether.", "solution": "Ex 7.19."}, {"level": "Hard", "type": "mcq", "prompt": "Pentan-1-ol with alkaline KMnO₄ gives", "options": ["pentanal", "pentanoic acid (as pentanoate)", "pentan-2-one"], "answer": 1, "hint": "Strong oxidation of 1°.", "solution": "Ex 7.17(i) analogue: propan-1-ol → propanoate."}]}, {"id": "rxn-phenols", "nav": "Phenol EAS, Kolbe, Reimer–Tiemann", "title": "Why does the –OH group light up the ring?", "deck": "OH is strongly o,p-directing. Br₂ water → 2,4,6-tribromophenol. Kolbe, Reimer–Tiemann, nitration, acetylation (aspirin).", "minutes": 12, "section": "7.4.4 phenol rxns", "pages": [16, 22], "print": "208–214", "sim": "rxnph", "simTitle": "Phenol ring reactions", "quick": ["The –OH group activates the benzene ring toward electrophiles and directs o/p by resonance (Ex 7.16). Phenoxide is even more reactive. Br₂/H₂O → 2,4,6-tribromophenol (white ppt); Br₂/CS₂ → o + p-bromophenol (Ex 7.17). Dil. HNO₃ → o + p-nitrophenol.", "Kolbe (Kolbe–Schmitt): PhONa + CO₂, heat/pressure, then H⁺ → salicylic acid. Reimer–Tiemann: PhOH + CHCl₃ + aq. NaOH → salicylaldehyde (dichlorocarbene). Acetylation of salicylic acid → aspirin.", "Esterification of phenol with acid chlorides needs pyridine. Zn dust distils phenol to benzene (the rare C–O cleavage of phenols)."], "formulas": [{"label": "Tribromophenol", "html": "PhOH + 3 Br₂(aq) → 2,4,6-C₆H₂Br₃OH + 3 HBr", "cond": "white ppt; qualitative test"}, {"label": "Kolbe", "html": "PhONa + CO₂ → o-HOC₆H₄COONa → salicylic acid", "cond": "Ex 7.18"}, {"label": "Reimer–Tiemann", "html": "PhOH + CHCl₃ / aq. NaOH → o-HOC₆H₄CHO", "cond": ":CCl₂ electrophile"}], "deeper": "Electrophilic substitution of phenol is so fast that bromine water does not stop at monobromination. In a less polar solvent (CS₂) the ring is less ionised to phenoxide and you can isolate monobromo products.", "worked": {"title": "Ex 7.18 Kolbe vs Reimer–Tiemann", "problem": "State reagents and ortho products.", "steps": ["Kolbe: CO₂ on sodium phenoxide → salicylic acid.", "Reimer–Tiemann: CHCl₃/NaOH → salicylaldehyde."], "answer": "o-COOH vs o-CHO on phenol."}, "prediction": {"prompt": "Bromine water with phenol gives a white precipitate of", "options": ["p-bromophenol only", "2,4,6-tribromophenol", "bromobenzene"], "answer": 1, "explanation": "The ring is so activated that three bromines enter. In CS₂ you get mainly mono-bromo products."}, "connect": [["Aspirin is an acetate of a phenol", "Acetylation of salicylic acid’s phenolic OH is the industrial and school-lab route to acetylsalicylic acid."], ["Wow — dichlorocarbene in a conical flask", "Reimer–Tiemann generates :CCl₂ from CHCl₃/NaOH — the same chloroform you were told to store in the dark in Unit 6.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "Write equations for tribromination, Kolbe and Reimer–Tiemann.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Reimer–Tiemann formylates phenol to", "options": ["benzoic acid", "salicylaldehyde", "anisole"], "answer": 1, "hint": "CHCl₃ / aq. NaOH.", "solution": "Ortho-hydroxybenzaldehyde."}, {"level": "Medium", "type": "mcq", "prompt": "Kolbe’s reaction needs", "options": ["PhOH + CHCl₃", "sodium phenoxide + CO₂ under pressure", "PhOH + Br₂/CS₂"], "answer": 1, "hint": "Ex 7.18.", "solution": "Phenoxide attacks CO₂ at ortho."}, {"level": "Hard", "type": "mcq", "prompt": "OH activates the ring toward EAS because", "options": ["it is meta-directing by −I", "lone pair on oxygen conjugates, raising o/p electron density", "it withdraws by −I only"], "answer": 1, "hint": "Ex 7.16.", "solution": "Resonance donation dominates orientation; the ring is strongly activated."}]}, {"id": "ethers", "nav": "Ethers: Williamson & cleavage", "title": "SN2 to make an ether — SN2 (or SN1) to break it", "deck": "Williamson (1° RX + alkoxide). Limitations with 3° RX. HI cleavage mechanism (Ex 7.30). Anisole EAS o/p.", "minutes": 12, "section": "7.6", "pages": [22, 29], "print": "214–221", "sim": "ethersim", "simTitle": "Williamson, HI cleavage, anisole", "quick": ["Williamson: R–O⁻ + R′X (1°) → ROR′ (SN2). Put the hindered partner in the alkoxide; 2°/3° alkyl halides eliminate (Ex 7.25). Acid dehydration of 1° alcohols (excess, lower T) also gives ethers; 2°/3° alcohols give alkenes (Ex 7.27).", "HI (best), HBr, HCl cleave ethers. Mechanism for methoxymethane (Ex 7.30): protonate, I⁻ SN2 on carbon, CH₃I + CH₃OH; excess HI → 2 CH₃I. Unsymmetrical dialkyl: I attacks the less hindered alkyl. Alkyl aryl: the aryl–O bond never cleaves → PhOH + RI. Benzyl ethers can go SN1 at the benzyl carbon.", "Anisole: –OCH₃ activates and directs o/p (Ex 7.29). Friedel–Crafts alkylation/acylation, nitration, bromination in AcOH (Ex 7.31)."], "formulas": [{"label": "Williamson", "html": "R–ONa + R′–X (1°) → R–O–R′", "cond": "SN2; 3° R′X → alkene"}, {"label": "HI + Me₂O (Ex 7.30)", "html": "CH₃OCH₃ + HI → CH₃I + CH₃OH  (excess HI → 2 CH₃I)", "cond": "protonate then SN2"}, {"label": "Anisole EAS", "html": "–OCH₃ is o,p-directing and activating", "cond": "Ex 7.29, 7.31"}], "deeper": "Ex 7.10 Williamson of 2-ethoxy-3-methylpentane: make the alkoxide from the secondary alcohol and use a 1° halide (bromoethane), not the reverse. Intext 7.11: p-nitroanisole is made from p-nitrophenoxide + CH₃I, not from methoxide + p-nitrochlorobenzene under ordinary conditions? Actually both can work because p-NO₂ activates SNAr — the reprint prefers the phenoxide + CH₃X set (ii).", "worked": {"title": "Ex 7.24(iii) 2-methoxy-2-methylpropane", "problem": "Choose reagents so Williamson succeeds.", "steps": ["tert-Butoxide + bromomethane (1° RX).", "The reverse (methoxide + tert-butyl bromide) is E2 to 2-methylpropene."], "answer": "(CH₃)₃CONa + CH₃Br."}, "prediction": {"prompt": "HI with methoxybenzene yields", "options": ["iodobenzene + methanol", "phenol + iodomethane", "two molecules of iodobenzene"], "answer": 1, "explanation": "Aryl–O is not cleaved. Protonated anisole is attacked by I⁻ at the methyl carbon → PhOH + CH₃I (Ex 7.28)."}, "connect": [["Diethyl ether is still the extraction solvent", "Low b.p., unreactive, slightly water-soluble — the physical-properties lesson in a bottle. Keep away from peroxides."], ["Wow — anisole smells like anise", "Methoxybenzene is both a directing-group teaching tool and a fragrance ether — the unit opener’s promise.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}]]], "recall": "Write Williamson, its 3° limitation, the Ex 7.30 mechanism, and the products of HI with anisole.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Williamson synthesis is", "options": ["electrophilic aromatic substitution", "SN2 of alkoxide on 1° alkyl halide", "free-radical coupling"], "answer": 1, "hint": "§7.6.1.", "solution": "R–O⁻ is the nucleophile."}, {"level": "Medium", "type": "mcq", "prompt": "Excess HI on methoxymethane gives", "options": ["CH₃OH only", "2 CH₃I + H₂O", "HCHO"], "answer": 1, "hint": "Ex 7.30.", "solution": "First CH₃I + CH₃OH, then the alcohol is converted to a second CH₃I."}, {"level": "Hard", "type": "mcq", "prompt": "To make tert-butyl methyl ether cleanly, use", "options": ["methoxide + tert-butyl bromide", "tert-butoxide + bromomethane", "acid dehydration of tert-butanol with methanol at high T (alkene)"], "answer": 1, "hint": "Ex 7.24–7.25.", "solution": "1° halide with the 3° alkoxide. The reverse eliminates."}]}], "exercises": [{"number": "7.1", "section": "Exercises", "conceptIdx": 0, "page": 30, "printPage": 222, "question": "Write IUPAC names of the following compounds (structures on zoom p.30):\n(i) CH₃CH(CH₃)CH(OH)C(CH₃)₂CH₃\n(ii) CH₃CH(OH)CH₂CH(OH)CH(C₂H₅)CH₂CH₃\n(iii) CH₃CH(OH)CH(OH)CH₃\n(iv) HOCH₂CH(OH)CH₂OH\n(v) 2-methylphenol\n(vi) 4-methylphenol\n(vii) 2,5-dimethylphenol\n(viii) 2,6-dimethylphenol\n(ix) CH₃OCH₂CH(CH₃)CH₃\n(x) C₆H₅OC₂H₅\n(xi) C₆H₅O–C₇H₁₅(n)\n(xii) CH₃CH₂OCH(CH₃)CH₂CH₃", "steps": ["(i) 2,2,4-trimethylpentan-3-ol. (ii) 5-ethylheptane-2,4-diol.", "(iii) butane-2,3-diol. (iv) propane-1,2,3-triol.", "(v) 2-methylphenol. (vi) 4-methylphenol.", "(vii) 2,5-dimethylphenol. (viii) 2,6-dimethylphenol.", "(ix) 1-methoxy-2-methylpropane. (x) ethoxybenzene.", "(xi) 1-phenoxyheptane. (xii) 2-ethoxybutane."], "answer": "(i) 2,2,4-trimethylpentan-3-ol; (ii) 5-ethylheptane-2,4-diol; (iii) butane-2,3-diol; (iv) propane-1,2,3-triol; (v) 2-methylphenol; (vi) 4-methylphenol; (vii) 2,5-dimethylphenol; (viii) 2,6-dimethylphenol; (ix) 1-methoxy-2-methylpropane; (x) ethoxybenzene; (xi) 1-phenoxyheptane; (xii) 2-ethoxybutane."}, {"number": "7.2", "section": "Exercises", "conceptIdx": 0, "page": 30, "printPage": 222, "question": "Write structures of the compounds whose IUPAC names are as follows:\n(i) 2-Methylbutan-2-ol (ii) 1-Phenylpropan-2-ol (iii) 3,5-Dimethylhexane-1,3,5-triol (iv) 2,3-Diethylphenol (v) 1-Ethoxypropane (vi) 2-Ethoxy-3-methylpentane (vii) Cyclohexylmethanol (viii) 3-Cyclohexylpentan-3-ol (ix) Cyclopent-3-en-1-ol (x) 4-Chloro-3-ethylbutan-1-ol.", "steps": ["Translate names: carbinol locant, then branches. (x) the chain is butan-1-ol with Cl at C-4 and ethyl at C-3 — note the reprint’s unusual ‘4-chloro-3-ethylbutan-1-ol’ (C-4 already bears Cl; ethyl on C-3)."], "answer": "(i) (CH₃)₂C(OH)CH₂CH₃; (ii) PhCH₂CH(OH)CH₃; (iii) HOCH₂C(OH)(CH₃)CH₂CH(OH)CH(CH₃)CH₂CH₃ numbered as 3,5-dimethylhexane-1,3,5-triol; (iv) 2,3-diethylphenol; (v) CH₃CH₂CH₂OCH₂CH₃; (vi) CH₃CH₂CH(CH₃)CH(OCH₂CH₃)CH₃; (vii) C₆H₁₁CH₂OH; (viii) (C₂H₅)₂C(OH)C₆H₁₁; (ix) cyclopent-3-en-1-ol; (x) HOCH₂CH₂CH(C₂H₅)CH₂Cl."}, {"number": "7.3", "section": "Exercises", "conceptIdx": 0, "page": 30, "printPage": 222, "question": "(i) Draw the structures of all isomeric alcohols of molecular formula C₅H₁₂O and give their IUPAC names.\n(ii) Classify the isomers of alcohols in question 7.3(i) as primary, secondary and tertiary alcohols. (Reprint text says ‘11.3’ — a carry-over; it means 7.3(i).)", "steps": ["Eight alcohols of C₅H₁₂O:", "Pentan-1-ol (1°), pentan-2-ol (2°), pentan-3-ol (2°), 2-methylbutan-1-ol (1°), 3-methylbutan-1-ol (1°), 2-methylbutan-2-ol (3°), 3-methylbutan-2-ol (2°), 2,2-dimethylpropan-1-ol (1°)."], "answer": "Eight isomers: 1° pentan-1-ol, 2-methylbutan-1-ol, 3-methylbutan-1-ol, 2,2-dimethylpropan-1-ol; 2° pentan-2-ol, pentan-3-ol, 3-methylbutan-2-ol; 3° 2-methylbutan-2-ol."}, {"number": "7.4", "section": "Exercises", "conceptIdx": 1, "page": 30, "printPage": 222, "question": "Explain why propanol has higher boiling point than that of the hydrocarbon, butane?", "steps": ["Both ~C₄ mass. Propanol has intermolecular O–H···O hydrogen bonds; butane has only weak van der Waals forces.", "Extra energy is needed to separate H-bonded propanol molecules."], "answer": "Propanol H-bonds; butane does not."}, {"number": "7.5", "section": "Exercises", "conceptIdx": 1, "page": 30, "printPage": 222, "question": "Alcohols are comparatively more soluble in water than hydrocarbons of comparable molecular masses. Explain this fact.", "steps": ["Alcohols form hydrogen bonds with water (O–H donor and acceptor).", "Hydrocarbons cannot; mixing them with water pays the H-bond cost of water without compensation."], "answer": "Alcohols H-bond to water; hydrocarbons cannot."}, {"number": "7.6", "section": "Exercises", "conceptIdx": 2, "page": 30, "printPage": 222, "question": "What is meant by hydroboration-oxidation reaction? Illustrate it with an example.", "steps": ["Alkene + diborane, then H₂O₂/OH⁻, replaces B by OH, anti-Markovnikov, syn, no C⁺ rearrangement.", "Example: CH₃CH=CH₂ → CH₃CH₂CH₂OH (propan-1-ol). Acid hydration of the same alkene gives propan-2-ol."], "answer": "BH₃ then H₂O₂/OH⁻; propene → propan-1-ol."}, {"number": "7.7", "section": "Exercises", "conceptIdx": 0, "page": 30, "printPage": 222, "question": "Give the structures and IUPAC names of monohydric phenols of molecular formula, C₇H₈O.", "steps": ["C₇H₈O phenols are the three cresols: OH plus one methyl on the ring.", "2-methylphenol, 3-methylphenol, 4-methylphenol (o, m, p-cresol). Benzyl alcohol is C₇H₈O but is not a phenol."], "answer": "2-, 3- and 4-methylphenol."}, {"number": "7.8", "section": "Exercises", "conceptIdx": 1, "page": 30, "printPage": 222, "question": "While separating a mixture of ortho and para nitrophenols by steam distillation, name the isomer which will be steam volatile. Give reason.", "steps": ["o-Nitrophenol has intramolecular H-bonding, so it is less associated and steam-volatile.", "p-Nitrophenol has intermolecular H-bonding, higher b.p., not steam-volatile."], "answer": "o-Nitrophenol (intramolecular H-bond)."}, {"number": "7.9", "section": "Exercises", "conceptIdx": 2, "page": 30, "printPage": 222, "question": "Give the equations of reactions for the preparation of phenol from cumene.", "steps": ["Cumene (isopropylbenzene) is oxidised by air to cumene hydroperoxide.", "Acid-catalysed rearrangement/hydrolysis yields phenol and acetone."], "answer": "PhCHMe₂ + O₂ → PhC(Me)₂OOH → (H⁺) PhOH + CH₃COCH₃."}, {"number": "7.10", "section": "Exercises", "conceptIdx": 2, "page": 30, "printPage": 222, "question": "Write chemical reaction for the preparation of phenol from chlorobenzene.", "steps": ["Dow: chlorobenzene + aq. NaOH, 623 K, 300 atm → sodium phenoxide; acidify → phenol.", "Harsh SNAr because unactivated Ar–Cl is inert at ordinary temperature (Unit 6)."], "answer": "PhCl + NaOH, 623 K, 300 atm → PhONa → (H⁺) PhOH."}, {"number": "7.11", "section": "Exercises", "conceptIdx": 2, "page": 30, "printPage": 222, "question": "Write the mechanism of hydration of ethene to yield ethanol.", "steps": ["Step 1: protonation of ethene → CH₃CH₂⁺ (slow).", "Step 2: nucleophilic capture by water → CH₃CH₂OH₂⁺.", "Step 3: deprotonation → ethanol, H⁺ regenerated."], "answer": "H⁺ addition, water capture, deprotonation."}, {"number": "7.12", "section": "Exercises", "conceptIdx": 2, "page": 30, "printPage": 222, "question": "You are given benzene, conc. H₂SO₄ and NaOH. Write the equations for the preparation of phenol using these reagents.", "steps": ["Benzene + conc. H₂SO₄ (heat) → benzene sulphonic acid.", "NaOH fusion → sodium phenoxide (+ Na₂SO₃).", "Acidify (the sulphonic acid / mineral acid) → phenol. (NaOH is given; acidification uses the sulphonic acid already made or added acid in the usual work-up.)"], "answer": "PhH → PhSO₃H → (NaOH fusion) PhONa → PhOH."}, {"number": "7.13", "section": "Exercises", "conceptIdx": 2, "page": 31, "printPage": 223, "question": "Show how will you synthesise:\n(i) 1-phenylethanol from a suitable alkene.\n(ii) cyclohexylmethanol using an alkyl halide by an SN2 reaction.\n(iii) pentan-1-ol using a suitable alkyl halide?", "steps": ["(i) Styrene + H₂O/H⁺ (Markovnikov) → PhCH(OH)CH₃.", "(ii) Cyclohexylmethyl bromide (1°) + aq. NaOH / OH⁻, SN2 → C₆H₁₁CH₂OH. (A 3° halide would not be SN2.)", "(iii) 1-bromopentane + aq. KOH, SN2 → pentan-1-ol. Or hydroboration of pent-1-ene."], "answer": "(i) PhCH=CH₂ hydration; (ii) C₆H₁₁CH₂Br SN2; (iii) n-C₅H₁₁Br SN2."}, {"number": "7.14", "section": "Exercises", "conceptIdx": 3, "page": 31, "printPage": 223, "question": "Give two reactions that show the acidic nature of phenol. Compare acidity of phenol with that of ethanol.", "steps": ["(i) Phenol + NaOH → sodium phenoxide + H₂O (alcohols do not).", "(ii) Phenol + Na → PhONa + ½ H₂.", "pKa phenol 10.0 vs ethanol 15.9 — phenol ~10⁶ times more acidic (phenoxide resonance)."], "answer": "Reacts with NaOH and Na; much stronger acid than ethanol (Table 7.3)."}, {"number": "7.15", "section": "Exercises", "conceptIdx": 3, "page": 31, "printPage": 223, "question": "Explain why is ortho nitrophenol more acidic than ortho methoxyphenol ?", "steps": ["o-NO₂ withdraws electrons (−I and −R), stabilises the phenoxide, lowers pKa.", "o-OCH₃ donates electrons (+R), destabilises the phenoxide, raises pKa (weaker acid)."], "answer": "NO₂ is EWG (stabilises PhO⁻); OCH₃ is EDG (destabilises PhO⁻)."}, {"number": "7.16", "section": "Exercises", "conceptIdx": 5, "page": 31, "printPage": 223, "question": "Explain how does the –OH group attached to a carbon of benzene ring activate it towards electrophilic substitution?", "steps": ["Lone pair on oxygen conjugates into the ring, increasing electron density at ortho and para positions.", "The Wheland intermediate for o/p attack is resonance-stabilised by that lone pair.", "Hence electrophiles enter faster than on benzene, and at o/p."], "answer": "Resonance donation from OH activates o/p positions."}, {"number": "7.17", "section": "Exercises", "conceptIdx": 5, "page": 31, "printPage": 223, "question": "Give equations of the following reactions:\n(i) Oxidation of propan-1-ol with alkaline KMnO₄ solution.\n(ii) Bromine in CS₂ with phenol.\n(iii) Dilute HNO₃ with phenol.\n(iv) Treating phenol with chloroform in presence of aqueous NaOH.", "steps": ["(i) CH₃CH₂CH₂OH + [O] → CH₃CH₂COO⁻ (then acid → propanoic acid).", "(ii) PhOH + Br₂/CS₂ → o- and p-bromophenol.", "(iii) PhOH + dil. HNO₃ → o- and p-nitrophenol.", "(iv) Reimer–Tiemann → salicylaldehyde."], "answer": "(i) propanoate/propanoic acid; (ii) o/p-bromophenol; (iii) o/p-nitrophenol; (iv) salicylaldehyde."}, {"number": "7.18", "section": "Exercises", "conceptIdx": 5, "page": 31, "printPage": 223, "question": "Explain the following with an example.\n(i) Kolbe’s reaction.\n(ii) Reimer-Tiemann reaction.\n(iii) Williamson ether synthesis.\n(iv) Unsymmetrical ether.", "steps": ["(i) PhONa + CO₂ → salicylic acid. (ii) PhOH + CHCl₃/NaOH → salicylaldehyde.", "(iii) R–ONa + R′X (1°) → ROR′. (iv) ether with two different alkyl/aryl groups, e.g. CH₃OC₂H₅ or anisole."], "answer": "Kolbe: o-hydroxybenzoic acid; RT: salicylaldehyde; Williamson: SN2 ether; unsymmetrical: two different groups on O."}, {"number": "7.19", "section": "Exercises", "conceptIdx": 4, "page": 31, "printPage": 223, "question": "Write the mechanism of acid dehydration of ethanol to yield ethene.", "steps": ["Protonate ethanol → CH₃CH₂OH₂⁺.", "Lose H₂O (slow) → ethyl cation.", "Lose β-proton → ethene; H⁺ regenerated."], "answer": "Oxonium → carbocation → ethene (Ex 7.19)."}, {"number": "7.20", "section": "Exercises", "conceptIdx": 2, "page": 31, "printPage": 223, "question": "How are the following conversions carried out?\n(i) Propene → propan-2-ol.\n(ii) Benzyl chloride → benzyl alcohol.\n(iii) Ethyl magnesium chloride → propan-1-ol.\n(iv) Methyl magnesium bromide → 2-methylpropan-2-ol.", "steps": ["(i) H₂O/H⁺ (Markovnikov) or oxymercuration.", "(ii) aq. KOH, SN1/SN2 benzylic.", "(iii) EtMgCl + HCHO then H₃O⁺ → PrOH? Wait: EtMgCl + HCHO → 1-propanol. Yes.", "(iv) 2 CH₃MgBr wait: MeMgBr + acetone then H₃O⁺ → 2-methylpropan-2-ol. (Acetone from CO₂? Standard: MeMgBr + CH₃COCH₃.)"], "answer": "(i) acid hydration; (ii) aq. KOH; (iii) HCHO then H₃O⁺; (iv) acetone then H₃O⁺."}, {"number": "7.21", "section": "Exercises", "conceptIdx": 4, "page": 31, "printPage": 223, "question": "Name the reagents used in the following reactions:\n(i) Oxidation of a primary alcohol to carboxylic acid.\n(ii) Oxidation of a primary alcohol to aldehyde.\n(iii) Bromination of phenol to 2,4,6-tribromophenol.\n(iv) Benzyl alcohol to benzoic acid.\n(v) Dehydration of propan-2-ol to propene.\n(vi) Butan-2-one to butan-2-ol.", "steps": ["(i) alk. KMnO₄ or acidified K₂Cr₂O₇ (heat).", "(ii) PCC, or Cu at 573 K.", "(iii) Br₂/H₂O.", "(iv) alk. KMnO₄ / acidified K₂Cr₂O₇.", "(v) conc. H₂SO₄ heat, or Al₂O₃ 623 K.", "(vi) NaBH₄ or LiAlH₄ or H₂/Ni."], "answer": "(i) alk. KMnO₄; (ii) PCC; (iii) Br₂ water; (iv) alk. KMnO₄; (v) conc. H₂SO₄; (vi) NaBH₄."}, {"number": "7.22", "section": "Exercises", "conceptIdx": 1, "page": 31, "printPage": 223, "question": "Give reason for the higher boiling point of ethanol in comparison to methoxymethane.", "steps": ["Both C₂H₆O. Ethanol forms intermolecular H-bonds; methoxymethane cannot (no O–H).", "More energy to vapourise ethanol."], "answer": "Intermolecular H-bonding in ethanol only."}, {"number": "7.23", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Give IUPAC names of the following ethers (zoom p.32):\n(i) C₂H₅OCH₂CH(CH₃)CH₃\n(ii) CH₃OCH₂CH₂Cl\n(iii) p-O₂NC₆H₄OCH₃\n(iv) CH₃CH₂CH₂OCH₃\n(v) 1,1-dimethyl-4-ethoxycyclohexane\n(vi) PhOC₂H₅", "steps": ["(i) 1-ethoxy-2-methylpropane. (ii) 1-chloro-2-methoxyethane.", "(iii) 1-methoxy-4-nitrobenzene. (iv) 1-methoxypropane.", "(v) 4-ethoxy-1,1-dimethylcyclohexane. (vi) ethoxybenzene."], "answer": "(i) 1-ethoxy-2-methylpropane; (ii) 1-chloro-2-methoxyethane; (iii) 1-methoxy-4-nitrobenzene; (iv) 1-methoxypropane; (v) 4-ethoxy-1,1-dimethylcyclohexane; (vi) ethoxybenzene."}, {"number": "7.24", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Write the names of reagents and equations for the preparation of the following ethers by Williamson’s synthesis:\n(i) 1-Propoxypropane (ii) Ethoxybenzene (iii) 2-Methoxy-2-methylpropane (iv) 1-Methoxyethane", "steps": ["(i) CH₃CH₂CH₂ONa + CH₃CH₂CH₂Br.", "(ii) C₆H₅ONa + C₂H₅Br (not PhBr + EtONa — Ar–X does not SN2).", "(iii) (CH₃)₃CONa + CH₃Br (not the reverse).", "(iv) CH₃ONa + C₂H₅Br (or EtONa + CH₃Br)."], "answer": "(i) n-PrONa + n-PrBr; (ii) PhONa + EtBr; (iii) t-BuONa + MeBr; (iv) MeONa + EtBr."}, {"number": "7.25", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Illustrate with examples the limitations of Williamson synthesis for the preparation of certain types of ethers.", "steps": ["If the alkyl halide is 2° or 3°, alkoxide acts as a base → elimination (alkene) instead of SN2.", "Example: (CH₃)₃CBr + CH₃ONa → 2-methylpropene, not tert-butyl methyl ether.", "Aryl halides do not undergo SN2 with alkoxide under ordinary conditions, so alkyl aryl ethers are made from phenoxide + 1° RX."], "answer": "3°/2° RX eliminate; Ar–X does not SN2. Use 1° RX + the more hindered alkoxide/phenoxide."}, {"number": "7.26", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "How is 1-propoxypropane synthesised from propan-1-ol? Write mechanism of this reaction.", "steps": ["Two molecules of propan-1-ol, conc. H₂SO₄, 413 K (lower than alkene temperature).", "Mechanism: protonate one ROH → SN2 of a second ROH on the oxonium → protonated ether → deprotonate.", "Alternatively Williamson: convert one molecule to PrONa (Na) and one to PrBr (HBr), then combine."], "answer": "Acid dehydration of 1° alcohol (413 K) via SN2 on oxonium, or Williamson."}, {"number": "7.27", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Preparation of ethers by acid dehydration of secondary or tertiary alcohols is not a suitable method. Give reason.", "steps": ["2°/3° alcohols protonate and lose water to carbocations that eliminate to alkenes (E1) far faster than they are captured by a second alcohol.", "Saytzeff alkenes dominate. Only 1° alcohols give ethers cleanly this way."], "answer": "2°/3° ROH dehydrate to alkenes via C⁺; not to ethers."}, {"number": "7.28", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Write the equation of the reaction of hydrogen iodide with:\n(i) 1-propoxypropane (ii) methoxybenzene and (iii) benzyl ethyl ether.", "steps": ["(i) CH₃CH₂CH₂OCH₂CH₂CH₃ + HI → CH₃CH₂CH₂I + CH₃CH₂CH₂OH; excess HI → 2 PrI + H₂O.", "(ii) PhOCH₃ + HI → PhOH + CH₃I (aryl–O uncleaved).", "(iii) PhCH₂OCH₂CH₃ + HI → PhCH₂I + CH₃CH₂OH (benzyl side, SN1/SN2 at benzylic carbon)."], "answer": "(i) PrI + PrOH (then 2 PrI); (ii) PhOH + MeI; (iii) PhCH₂I + EtOH."}, {"number": "7.29", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Explain the fact that in aryl alkyl ethers (i) the alkoxy group activates the benzene ring towards electrophilic substitution and (ii) it directs the incoming substituents to ortho and para positions in benzene ring.", "steps": ["Lone pair on oxygen conjugates into the ring, raising electron density (activation).", "The extra density is largest at ortho and para (resonance structures with negative charge there), so electrophiles enter o/p."], "answer": "–OR is +R activating and o,p-directing, analogous to phenol but milder."}, {"number": "7.30", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Write the mechanism of the reaction of HI with methoxymethane.", "steps": ["Protonation: CH₃OCH₃ + H⁺ ⇌ CH₃O⁺HCH₃.", "I⁻ SN2 on methyl: CH₃I + CH₃OH.", "If HI is in excess, methanol is converted similarly to a second CH₃I + H₂O."], "answer": "Protonate, SN2 by I⁻, then second substitution if excess HI (Ex 7.30)."}, {"number": "7.31", "section": "Exercises", "conceptIdx": 6, "page": 32, "printPage": 224, "question": "Write equations of the following reactions:\n(i) Friedel-Crafts reaction – alkylation of anisole.\n(ii) Nitration of anisole.\n(iii) Bromination of anisole in ethanoic acid medium.\n(iv) Friedel-Craft’s acetylation of anisole.", "steps": ["All o/p, often para major.", "(i) PhOCH₃ + CH₃Cl / AlCl₃ → o- and p-methylanisole.", "(ii) conc. HNO₃/H₂SO₄ → o- and p-nitroanisole.", "(iii) Br₂/AcOH → mainly p-bromoanisole.", "(iv) CH₃COCl / AlCl₃ → o- and p-methoxyacetophenone."], "answer": "Anisole EAS at o/p: methyl, nitro, bromo, acetyl products as named."}, {"number": "7.32", "section": "Exercises", "conceptIdx": 2, "page": 32, "printPage": 224, "question": "Show how would you synthesise the following alcohols from appropriate alkenes? (zoom p.32)\n(i) 1-methylcyclohexanol\n(ii) 3-ethylpentan-3-ol\n(iii) pentan-2-ol\n(iv) 1-ethylcyclohexanol", "steps": ["Markovnikov hydration (H₃O⁺ or oxymercuration) of the more substituted alkene that yields the same C⁺.", "(i) 1-methylcyclohexene or methylenecyclohexane.", "(ii) 3-ethylpent-2-ene (or 2-ethylpent-1-ene).", "(iii) pent-1-ene or pent-2-ene.", "(iv) 1-ethylcyclohexene or ethylidenecyclohexane."], "answer": "Acid hydration of: (i) 1-methylcyclohexene; (ii) 3-ethylpent-2-ene; (iii) pent-1-ene; (iv) 1-ethylcyclohexene."}, {"number": "7.33", "section": "Exercises", "conceptIdx": 4, "page": 32, "printPage": 224, "question": "When 3-methylbutan-2-ol is treated with HBr, the following reaction takes place:\nCH₃CH(CH₃)CH(OH)CH₃ + HBr → (CH₃)₂CBrCH₂CH₃\nGive a mechanism for this reaction.\n(Hint: The secondary carbocation formed in step II rearranges to a more stable tertiary carbocation by a hydride ion shift from 3rd carbon atom.)", "steps": ["Protonate OH; lose water → 3-methylbutan-2-yl cation (2°).", "Hydride shift from C-3 (the CHMe₂ carbon) → 2-methylbutan-2-yl cation (3°).", "Br⁻ captures the 3° cation → 2-bromo-2-methylbutane."], "answer": "2° C⁺ rearranges by H⁻ shift to 3° C⁺; then Br⁻ attack (reprint hint)."}]};
+window.CHAPTER = {"code": "lech202", "chapterNumber": "07", "book_name": "Chemistry Part 2", "title": "Alcohols, Phenols and Ethers", "subtitle": "NCERT Class 12 Chemistry Part 2, Chapter 7", "edition": "NCERT Chemistry Part 2, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lech202.pdf", "page_start": 193, "page_end": 226, "lessons": [{"id": "class-nom", "nav": "Classification & IUPAC", "title": "How does this reprint name alcohols, phenols and ethers?", "deck": "Mono/di/tri hydric; 1°/2°/3°, allylic, benzylic, vinylic, phenols. Tables 7.1–7.2. Ethers as alkoxyalkanes.", "minutes": 12, "section": "7.1–7.2", "pages": [1, 6], "print": "193–198", "sim": "classnom", "simTitle": "Sort alcohols, phenols and ethers", "quick": ["Alcohols, phenols and ethers are the basic compounds for detergents, antiseptics and fragrances (Unit 7 opener). Classify alcohols by the number of –OH groups and by the carbon that bears OH (sp³: 1°/2°/3°, allylic, benzylic; sp² vinylic). Phenols have OH on an aryl sp² carbon. Ethers are classified by the two groups on oxygen (simple vs mixed).", "IUPAC: alkanols with the lowest locant to OH; phenols named as phenol or as hydroxyarenes; ethers as alkoxyalkanes (smaller alkyl as alkoxy). Table 7.1: isopropyl alcohol = propan-2-ol; tert-butyl alcohol = 2-methylpropan-2-ol. Table 7.2: anisole = methoxybenzene.", "Intext 7.1–7.2 (answers p.33): primary (i)(ii)(iii); secondary (iv)(v); tertiary (vi). Allylic: (ii) and (vi) of that set."], "formulas": [{"label": "1° / 2° / 3° alcohol", "html": "RCH₂OH &nbsp;|&nbsp; R₂CHOH &nbsp;|&nbsp; R₃COH", "cond": "count carbons on the carbinol carbon"}, {"label": "Phenol vs alcohol", "html": "Ar–OH (sp² aryl) vs R–OH (sp³ alkyl)", "cond": "different acidity and C–O chemistry"}, {"label": "Ether IUPAC", "html": "alkoxyalkane (smaller alkyl as alkoxy)", "cond": "PhOCH₃ = methoxybenzene (anisole)"}], "deeper": "Intext 7.3 names: 4-chloro-3-ethyl-2-(1-methylethyl)butan-1-ol; 2,5-dimethylhexane-1,3-diol; 3-bromocyclohexanol; hex-1-en-3-ol; 2-bromo-3-methylbut-2-en-1-ol. Longest chain including the carbon that bears OH; unsaturation as suffix when present.", "worked": {"title": "Table 7.1 spot-check", "problem": "Give the IUPAC names of isopropyl alcohol, tert-butyl alcohol and glycerol.", "given": "Table 7.1 common names (isopropyl alcohol, tert-butyl alcohol) and the triol glycerol.", "steps": ["Isopropyl alcohol: a three-carbon chain with OH on the middle carbon → propan-2-ol (a 2° alcohol).", "tert-Butyl alcohol: a four-carbon chain with OH and a methyl on C-2 → 2-methylpropan-2-ol (a 3° alcohol).", "Glycerol: a propane chain carrying OH on C-1, C-2 and C-3 → propane-1,2,3-triol."], "answer": "Propan-2-ol; 2-methylpropan-2-ol; propane-1,2,3-triol."}, "prediction": {"prompt": "Is benzyl alcohol (PhCH₂OH) a phenol?", "options": ["Yes — any Ar–C–OH is a phenol.", "No — phenol requires OH directly on the aryl carbon; this is a benzylic 1° alcohol.", "It is vinylic."], "answer": 1, "explanation": "Benzylic alcohols have OH on an sp³ carbon attached to the ring. Phenol is Ar–OH."}, "connect": [{"title": "Detergents, antiseptics and fragrances", "text": "The unit opener maps the three families: alcohols are sulphated into detergents, phenols such as chloroxylenol are antiseptics (Dettol), and ethers such as anisole supply fragrances."}, {"title": "Glycerol: the triol in every soap kettle", "text": "Propane-1,2,3-triol (glycerol) is the trihydric alcohol released when fats and oils are saponified. Its three –OH groups make it water-soluble and are why soaps form at all."}, {"title": "Wow: anisole smells of anise", "text": "Methoxybenzene is the simplest aromatic ether — the fragrance of aniseed and the teaching example for alkoxy naming. Table 7.2: anisole = methoxybenzene.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "kFpLDQfEg1E", "title": "Alcohol nomenclature | Alcohols, ethers, epoxides, sulfides | Organic chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Define 1°, 2°, 3°, allylic and phenolic OH. Name anisole and tert-butyl alcohol.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many isomeric saturated monoalcohols have the molecular formula C₅H₁₂O?", "answer": 8, "tolerance": 0.01, "unit": "isomers", "hint": "Fix the OH-bearing carbon on each C₅ skeleton; include the branched and neopentyl-type alcohols.", "solution": "Eight: pentan-1-ol, pentan-2-ol, pentan-3-ol, 2-methylbutan-1-ol, 2-methylbutan-2-ol, 3-methylbutan-1-ol, 3-methylbutan-2-ol and 2,2-dimethylpropan-1-ol."}, {"level": "Medium", "type": "mcq", "prompt": "Allylic alcohols have the OH group on", "options": ["an sp² carbon of C=C", "an sp³ carbon adjacent to C=C", "an aryl carbon"], "answer": 1, "hint": "§7.1.", "solution": "Vinylic is sp² of C=C; phenolic is aryl sp².", "wrong": ["Vinylic alcohols have OH on the sp² carbon of the double bond.", "", "Phenolic OH sits on an aryl sp² carbon."]}, {"level": "Hard", "type": "mcq", "prompt": "The IUPAC name of (CH₃)₃COH is", "options": ["tert-butyl alcohol", "2-methylpropan-2-ol", "1,1-dimethylethanol as preferred"], "answer": 1, "hint": "Table 7.1.", "solution": "Common: tert-butyl alcohol. IUPAC: 2-methylpropan-2-ol.", "wrong": ["That is the common name, not the systematic name.", "", "1,1-Dimethylethanol is a non-preferred form; the systematic name is 2-methylpropan-2-ol."]}], "group": "01 / CLASSIFY & NAME", "watch": "Click each family button. The readout names the class and the verdict gives the naming rule; the panel text repeats the Table 7.1/7.2 names."}, {"id": "structure-phys", "nav": "H-bonding & physical properties", "title": "Why does ethanol boil so much higher than methoxymethane?", "deck": "C–O polar; intermolecular H-bonds in alcohols/phenols. Solubility. o-nitrophenol steam-volatile (intramolecular H-bond).", "minutes": 10, "section": "7.3, 7.5", "pages": [6, 15], "print": "198–207", "sim": "hbonds", "simTitle": "Hydrogen bonds, boiling points, steam distillation", "quick": ["The C–O and O–H bonds are polar. Alcohols and phenols associate through intermolecular O–H···O hydrogen bonds, so they boil far above hydrocarbons, ethers and haloalkanes of similar mass (§7.4.3; Ex 7.4, 7.22).", "They H-bond to water, so lower members are water-soluble; a long hydrophobic chain kills solubility (Ex 7.5). Ethers cannot donate H-bonds, so their boiling points resemble alkanes, but oxygen can still accept H-bonds from water, so solubility resembles isomeric alcohols.", "Ex 7.8: o-nitrophenol is steam-volatile because of intramolecular H-bonding; p-nitrophenol associates intermolecularly and is not steam-volatile — the classic laboratory separation."], "formulas": [{"label": "H-bond in alcohols", "html": "R–O–H···O(H)–R", "cond": "raises b.p.; enables water solubility"}, {"label": "§7.5 C₄H₁₀O pair", "html": "CH₃CH₂OCH₂CH₃ 307.6 K &nbsp;&lt;&nbsp; CH₃CH₂CH₂CH₂OH 390 K", "cond": "same formula; only the alcohol donates O–H···O bonds"}], "deeper": "Branching lowers the boiling point (smaller surface area) just as in haloalkanes. §7.5 gives the verified pair ethoxyethane 307.6 K vs butan-1-ol 390 K, while n-pentane is 309.1 K; ethanol (351 K) sits well above its isomer methoxymethane because only ethanol has an O–H donor.", "worked": {"title": "Ex 7.22 and §7.5: why the boiling-point gap?", "problem": "Ethanol and methoxymethane are both C₂H₆O. Explain ethanol's much higher boiling point, and compare the C₄H₁₀O pair.", "given": "Ethanol b.p. 351 K; §7.5 gives ethoxyethane 307.6 K and butan-1-ol 390 K (both C₄H₁₀O).", "steps": ["Ethanol has an O–H group and forms intermolecular O–H···O hydrogen bonds; methoxymethane has no O–H donor.", "More energy is needed to separate the hydrogen-bonded ethanol molecules, so ethanol boils far higher.", "The same pattern appears for the isomers ethoxyethane (307.6 K) and butan-1-ol (390 K): only the alcohol can donate hydrogen bonds."], "answer": "Ethanol and butan-1-ol form intermolecular hydrogen bonds; the ethers cannot donate O–H."}, "prediction": {"prompt": "Which nitrophenol comes over with steam, and why?", "options": ["para — it is more polar.", "ortho — intramolecular H-bond, less associated, steam-volatile.", "They co-distil."], "answer": 1, "explanation": "Ex 7.8: o-nitrophenol intramolecular H-bond → steam-volatile; para intermolecular → not."}, "connect": [{"title": "Steam distillation in the school lab", "text": "Separating o- and p-nitrophenol by steam distillation is a hydrogen-bond experiment: the ortho isomer ties its own –OH up internally and distils, while the para isomer stays associated."}, {"title": "The C₄H₁₀O physical-properties pair", "text": "Ethoxyethane boils at 307.6 K, close to n-pentane (309.1 K), because ethers cannot donate hydrogen bonds. Butan-1-ol (same formula) boils at 390 K."}, {"title": "Wow: same formula, 80 K apart", "text": "C₂H₆O is either ethanol (351 K, an O–H donor) or methoxymethane (no O–H). One hydrogen-bond donor changes the boiling point of a covalent liquid by tens of kelvin.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "27Rp3BrHGVc", "title": "Physical properties of alcohols and phenols | Alcohols, phenols & acids | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Explain Ex 7.4, 7.5, 7.8 and 7.22 in one sentence each.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Butan-1-ol boils at 390 K and its isomer ethoxyethane at 307.6 K. By how many kelvin does butan-1-ol boil higher?", "answer": 82.4, "tolerance": 0.05, "unit": "K", "hint": "Use the §7.5 data for the C₄H₁₀O pair.", "solution": "390 K − 307.6 K = 82.4 K; only butan-1-ol donates O–H···O hydrogen bonds."}, {"level": "Medium", "type": "mcq", "prompt": "The steam-volatile isomer of nitrophenol is", "options": ["para", "meta", "ortho"], "answer": 2, "hint": "Ex 7.8.", "solution": "Intramolecular H-bond in the ortho isomer.", "wrong": ["para associates intermolecularly and is not steam-volatile.", "meta is not the steam-volatile member of this pair.", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Ethers have boiling points like alkanes but water solubility like alcohols because", "options": ["they ionise in water", "they cannot donate H-bonds (low b.p.) but can accept them from water (soluble)", "they are always gases"], "answer": 1, "hint": "§7.5.", "solution": "Oxygen lone pairs accept H-bonds; there is no O–H to donate.", "wrong": ["Ethers do not ionise in water.", "", "Ethers are liquids or gases; that is not the reason for the solubility."]}], "group": "02 / H-BONDS IN ACTION", "watch": "Switch between boiling points, solubility and the nitrophenol pair. Compare the bar heights and read why only the ortho isomer distils with steam."}, {"id": "prep-alc-ph", "nav": "Preparation of ROH and ArOH", "title": "From alkenes, carbonyls, cumene and diazonium salts", "deck": "Acid hydration vs hydroboration–oxidation. Grignard. Catalytic / hydride reduction. Phenol: Dow, sulphonate fusion, diazonium, cumene process.", "minutes": 14, "section": "7.4", "pages": [7, 14], "print": "199–206", "sim": "prepalc", "simTitle": "Routes to alcohols and phenols", "quick": ["Alkenes + H₃O⁺ → Markovnikov alcohols (carbocation; may rearrange). Hydroboration–oxidation → anti-Markovnikov 1° alcohols without rearrangement (Ex 7.6). Ex 7.11: mechanism of ethene hydration (protonate, water, deprotonate).", "Carbonyls: H₂/Ni, NaBH₄, LiAlH₄ → alcohols. Grignard: HCHO → 1°, RCHO → 2°, R₂C=O → 3° (then H₃O⁺). Carboxylic acids / esters + LiAlH₄ → 1° alcohols.", "Phenol: (i) chlorobenzene + NaOH, 623 K, 320 atm (the value printed in this reprint); (ii) sodium benzene sulphonate fusion; (iii) ArN₂⁺ hydrolysis; (iv) industrial cumene hydroperoxide → phenol + acetone (Ex 7.9). Ex 7.12: benzene, conc. H₂SO₄, NaOH → phenol via the sulphonate."], "formulas": [{"label": "Hydroboration–oxidation", "html": "RCH=CH₂ + (BH₃) then H₂O₂/OH⁻ → RCH₂CH₂OH", "cond": "anti-Markovnikov, syn, no rearrangement"}, {"label": "Grignard to alcohols", "html": "HCHO → 1°; RCHO → 2°; R₂C=O → 3°", "cond": "then dilute acid"}, {"label": "Cumene process", "html": "PhCHMe₂ + O₂ then H⁺ → PhOH + Me₂CO", "cond": "industrial phenol"}], "deeper": "Ex 7.33 is a warning: 3-methylbutan-2-ol + HBr rearranges (2° C⁺ → 3° C⁺ by hydride shift). Acid hydration of 2°/3° alkenes can do the same. Hydroboration avoids C⁺.", "worked": {"title": "Hydroboration vs acid hydration", "problem": "Convert propene into propan-1-ol and separately into propan-2-ol.", "given": "One alkene, two complementary addition methods.", "steps": ["Propan-2-ol: acid-catalysed hydration (H₃O⁺) follows Markovnikov's rule — OH on the more substituted carbon.", "Propan-1-ol: hydroboration with (BH₃)₂, then oxidation with H₂O₂/OH⁻, places OH on the less substituted carbon (anti-Markovnikov, syn).", "The hydroboration route avoids a free carbocation, so no rearrangement is possible."], "answer": "H₃O⁺ → propan-2-ol; (BH₃)₂ then H₂O₂/OH⁻ → propan-1-ol."}, "prediction": {"prompt": "Cumene oxidation followed by acid work-up yields phenol and which co-product?", "options": ["Ethanol", "Acetone (propanone)", "Benzoic acid"], "answer": 1, "explanation": "Ex 7.9: cumene hydroperoxide rearranges to phenol + acetone — the industrial pair."}, "connect": [{"title": "Phenol and acetone from one plant", "text": "The cumene process delivers two industrial chemicals at once: phenol for Bakelite, bisphenol A and aspirin precursors, and acetone as a solvent and feedstock."}, {"title": "Hydroboration: the anti-Markovnikov trick", "text": "Brown's hydroboration–oxidation adds water anti-Markovnikov with syn selectivity and no carbocation, so it never rearranges. It helped win Brown a share of the 1979 Nobel Prize in Chemistry."}, {"title": "Wow: 623 K and 320 atm for Dow phenol", "text": "The reprint's Dow conditions (chlorobenzene + NaOH, 623 K, 320 atm) show how badly an unactivated aryl chloride keeps its C–Cl bond. Older editions print 300 atm; the solution follows this reprint.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "VcpWMV2zLzY", "title": "Preparation of phenol| Alcohols, phenols and ethers | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write hydroboration–oxidation, the three Grignard cases, and the cumene equation.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "What pressure (in atmospheres) does this reprint print for the Dow fusion of chlorobenzene with NaOH at 623 K?", "answer": 320, "tolerance": 0.01, "unit": "atm", "hint": "See §7.4.2(1) 'From haloarenes'.", "solution": "The reprint prints 623 K and 320 atm; older editions quote 300 atm."}, {"level": "Medium", "type": "mcq", "prompt": "Hydroboration–oxidation of propene gives", "options": ["propan-2-ol", "propan-1-ol", "propane-1,2-diol"], "answer": 1, "hint": "Anti-Markovnikov addition.", "solution": "BH₃ adds B to the less substituted carbon; H₂O₂/OH⁻ replaces B by OH.", "wrong": ["Markovnikov acid hydration gives propan-2-ol.", "", "Hydroboration–oxidation introduces only one OH."]}, {"level": "Hard", "type": "mcq", "prompt": "Grignard reagent + formaldehyde, after H₃O⁺, yields a", "options": ["3° alcohol", "2° alcohol", "1° alcohol"], "answer": 2, "hint": "HCHO has no carbon substituent.", "solution": "RMgX + HCHO → RCH₂OMgX → RCH₂OH.", "wrong": ["Ketones give tertiary alcohols.", "Other aldehydes give secondary alcohols.", ""]}], "group": "03 / ROUTES TO –OH", "watch": "Pick a route: hydroboration, acid hydration, Grignard, cumene or Dow. The verdict states the reagent conditions; the Dow panel now carries the reprint's 320 atm."}, {"id": "phenol-acidity", "nav": "Phenol acidity", "title": "Why is phenol a million times more acidic than ethanol?", "deck": "Table 7.3 pKa values. Phenoxide resonance I–V. EWG at o/p increase acidity; alkyl groups decrease it. Ex 7.4 order.", "minutes": 14, "section": "7.4.4 acidity", "pages": [14, 16], "print": "206–208", "sim": "phenolacidity", "simTitle": "Phenol acidity lab (Table 7.3)", "quick": ["Alcohols are extremely weak acids (ethanol pKa 15.9). Phenol (pKa 10.0) is about a million times more acidic: the phenoxide ion is resonance-delocalised over the ring (structures I–V, zoom p.15), while alkoxide charge sits on oxygen. Phenol + aq. NaOH → sodium phenoxide; alcohols do not react with NaOH.", "Table 7.3 (zoom-verified): o-nitrophenol 7.2, m-nitrophenol 8.3, p-nitrophenol 7.1, phenol 10.0, o-cresol 10.2, m-cresol 10.1, p-cresol 10.2, ethanol 15.9. The greater the pKa, the weaker the acid.", "Electron-withdrawing groups (especially o/p-NO₂) stabilise phenoxide and increase acidity; electron-releasing alkyl groups decrease it. Ex 7.4: propan-1-ol < 4-methylphenol < phenol < 3-nitrophenol < 3,5-dinitrophenol < 2,4,6-trinitrophenol."], "formulas": [{"label": "Table 7.3 phenol", "html": "pK<sub>a</sub>(PhOH) = 10.0; pK<sub>a</sub>(EtOH) = 15.9", "cond": "Ka ratio ≈ 10<sup>5.9</sup> ≈ 10<sup>6</sup>"}, {"label": "o / m / p-nitrophenol", "html": "pK<sub>a</sub> = 7.2 / 8.3 / 7.1", "cond": "o,p resonance + −I; meta only −I"}, {"label": "Cresols", "html": "pK<sub>a</sub> ≈ 10.1–10.2", "cond": "CH₃ is weakly deactivating toward acidity"}], "deeper": "Two effects make phenol more acidic than alcohols: (i) the sp² carbon of the ring is more electronegative, polarising O–H; (ii) phenoxide is more stable than phenol because phenol’s own resonance forms separate charge. Picric acid (2,4,6-trinitrophenol) is a strong organic acid. Ex 7.15: o-nitrophenol is more acidic than o-methoxyphenol because NO₂ withdraws and OCH₃ donates.", "worked": {"title": "Example 7.4 (zoom p.15)", "problem": "Arrange propan-1-ol, 2,4,6-trinitrophenol, 3-nitrophenol, 3,5-dinitrophenol, phenol and 4-methylphenol in increasing acid strength.", "given": "Table 7.3 pKa values and the EWG/EDG rules.", "steps": ["Propan-1-ol has no resonance-stabilised anion, so it is the weakest acid (pKa ≈ 16).", "4-Methylphenol carries an electron-donating CH₃, so it is slightly weaker than phenol (10.0); next comes phenol itself.", "Electron-withdrawing NO₂ groups strengthen the acid: 3-nitrophenol < 3,5-dinitrophenol < 2,4,6-trinitrophenol (picric acid)."], "answer": "propan-1-ol < 4-methylphenol < phenol < 3-nitrophenol < 3,5-dinitrophenol < 2,4,6-trinitrophenol."}, "prediction": {"prompt": "Ka(phenol)/Ka(ethanol) using Table 7.3 pKa 10.0 and 15.9 is about", "options": ["10 (ten times)", "10⁶ (a million times, as the reprint states)", "equal"], "answer": 1, "explanation": "ΔpKa = 5.9, so Ka ratio = 10^5.9 ≈ 8×10⁵ ≈ 10⁶. The reprint: ‘phenol is million times more acidic than ethanol.’"}, "connect": [{"title": "Aspirin starts from a phenoxide", "text": "Salicylic acid carries both a phenolic –OH and a –COOH. Acetylating the phenol gives aspirin; its acidity is what lets it be handled as the sodium salt and esterified."}, {"title": "Why cresols are slightly weaker acids", "text": "Table 7.3: o- and p-cresol have pKa 10.2 and m-cresol 10.1, all above phenol's 10.0. The electron-releasing methyl group destabilises the phenoxide, raising pKa."}, {"title": "Wow: a million-fold acidity jump", "text": "pKa 10.0 for phenol against 15.9 for ethanol means Ka is 10^5.9 ≈ 8 × 10⁵ times larger — which the reprint rounds to 'a million times more acidic'.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "0QBtQwbz-BY", "title": "Acidity of alcohols and phenols| Alcohols, phenols and carb.acids | Grade12 |Chemistry| Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Quote Table 7.3 pKa for phenol, ethanol and the three nitrophenols. State Ex 7.4 order.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Table 7.3 gives pKa(phenol) = 10.0 and pKa(ethanol) = 15.9. Calculate Ka(phenol)/Ka(ethanol).", "answer": 794328, "tolerance": 1000, "unit": "times", "hint": "Ka ratio = 10^(pKa difference).", "solution": "10^(15.9 − 10.0) = 10^5.9 ≈ 7.9 × 10⁵; the reprint rounds this to 'a million times'."}, {"level": "Medium", "type": "mcq", "prompt": "Phenol is more acidic than ethanol mainly because", "options": ["phenol has a higher molecular mass", "phenoxide is resonance-stabilised; ethoxide is not", "phenol H-bonds more in the undissociated form"], "answer": 1, "hint": "§7.4.3, structures I–V.", "solution": "Delocalisation of the negative charge over the ring favours ionisation.", "wrong": ["Molecular mass does not control acidity here.", "", "Hydrogen bonding in the undissociated form stabilises the acid and would reduce acidity."]}, {"level": "Hard", "type": "mcq", "prompt": "Among o-, m- and p-nitrophenol, the weakest acid is", "options": ["ortho (pKa 7.2)", "meta (pKa 8.3)", "para (pKa 7.1)"], "answer": 1, "hint": "Table 7.3.", "solution": "Meta cannot delocalise the charge onto NO₂ by resonance; only −I remains, so pKa is highest.", "wrong": ["ortho and para both delocalise the charge onto NO₂.", "", "para (pKa 7.1) is the strongest of the three."]}], "group": "04 / WHY PHENOL IS ACIDIC", "watch": "Compare pKa values on the bar. Smaller pKa = stronger acid; watch Ka/Ka(EtOH) grow to ~10⁶ for the nitrophenols and picric acid."}, {"id": "rxn-alcohols", "nav": "Reactions of alcohols", "title": "Lucas, dehydration, oxidation — and a hydride shift", "deck": "C–O cleavage with HX (Lucas). Acid dehydration (Ex 7.19). Oxidation 1°/2°/3°. Esterification. Ex 7.33 rearrangement.", "minutes": 12, "section": "7.4.4 reactions", "pages": [16, 21], "print": "208–213", "sim": "rxnalc", "simTitle": "Alcohol reactions and rearrangement", "quick": ["C–O cleavage (alcohols, not phenols except Zn dust): ROH + HX → RX. Lucas (anhyd. ZnCl₂ + conc. HCl): 3° immediate turbidity, 2° in minutes, 1° not at room temperature.", "Dehydration: conc. H₂SO₄, 443 K → alkene (Ex 7.19 E1-like: oxonium → C⁺ → lose H⁺). Lower temperature / excess alcohol → ether. 3° > 2° > 1°. Oxidation: 1° —mild (PCC, Cu 573 K)→ aldehyde —strong KMnO₄→ acid; 2° → ketone; 3° resistant.", "Esterification with RCOOH / RCOCl / (RCO)₂O. Ex 7.33: 3-methylbutan-2-ol + HBr → 2-bromo-2-methylbutane via 2° C⁺ → 3° C⁺ hydride shift."], "formulas": [{"label": "Lucas", "html": "3° instant; 2° minutes; 1° no turbidity at RT", "cond": "ZnCl₂ / conc. HCl"}, {"label": "Ethanol dehydration", "html": "CH₃CH₂OH  (H₂SO₄, 443 K)  → CH₂=CH₂", "cond": "Ex 7.19"}, {"label": "1° oxidation", "html": "RCH₂OH → RCHO → RCOOH", "cond": "PCC stops at RCHO"}], "deeper": "Intext 7.7: 1-methylcyclohexene from the corresponding 3° alcohol; butan-2-ol gives but-1-ene + but-2-ene (major, rearrangement to 2° C⁺ already is 2° — Saytzeff). Always inspect C⁺ for a hydride/methide path to a more stable cation.", "worked": {"title": "Ex 7.19 mechanism", "problem": "Write the mechanism of acid dehydration of ethanol to ethene.", "given": "Ethanol + conc. H₂SO₄ at 443 K.", "steps": ["Protonate the –OH group to the oxonium ion CH₃CH₂OH₂⁺.", "Lose water (slow step) to form the ethyl carbocation CH₃CH₂⁺.", "Lose a β-proton to give CH₂=CH₂ and regenerate H⁺."], "answer": "E1-like: oxonium → carbocation → alkene."}, "prediction": {"prompt": "3-Methylbutan-2-ol + HBr gives 2-bromo-2-methylbutane, not 2-bromo-3-methylbutane. Why?", "options": ["Concerted SN2 inversion.", "The 2° carbocation rearranges by a hydride shift to a 3° carbocation before Br⁻ attacks.", "Bromine always attacks the end of the chain."], "answer": 1, "explanation": "Ex 7.33 hint: secondary C⁺ formed in step II rearranges to a more stable tertiary C⁺ by a hydride shift from C-3."}, "connect": [{"title": "Lucas in the practical exam", "text": "Turbidity time with anhydrous ZnCl₂/conc. HCl still sorts 1°, 2° and 3° alcohols: immediate, within minutes, and no reaction at room temperature."}, {"title": "PCC versus alkaline KMnO₄", "text": "One oxidant stops a primary alcohol at the aldehyde; the other carries it all the way to the carboxylate. Choosing the oxidant is the whole lesson."}, {"title": "Wow: a hydride shift rewrites the product", "text": "3-Methylbutan-2-ol + HBr gives 2-bromo-2-methylbutane: the secondary carbocation rearranges by a hydride shift from C-3 to the more stable tertiary carbocation before Br⁻ attacks.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "0miwpA4j1go", "title": "Dehydration of alcohols | Alcohols, phenols and ethers | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State Lucas times, the ethanol-dehydration mechanism, and the Ex 7.33 rearrangement.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "At what temperature (K) does conc. H₂SO₄ convert ethanol to ethene?", "answer": 443, "tolerance": 0.5, "unit": "K", "hint": "§7.4.4 dehydration.", "solution": "Conc. H₂SO₄ at 443 K gives ethene; lower temperature with excess alcohol gives the ether."}, {"level": "Medium", "type": "mcq", "prompt": "Conc. H₂SO₄ at 443 K on ethanol yields", "options": ["diethyl ether", "ethene", "ethanal"], "answer": 1, "hint": "443 K alkene; lower T ether.", "solution": "Ex 7.19.", "wrong": ["Lower temperature and excess alcohol favour the ether.", "", "Ethanal comes from oxidation, not from acid dehydration."]}, {"level": "Hard", "type": "mcq", "prompt": "Pentan-1-ol with alkaline KMnO₄ gives", "options": ["pentanal", "pentanoic acid (as pentanoate)", "pentan-2-one"], "answer": 1, "hint": "Strong oxidation of a 1° alcohol.", "solution": "Ex 7.17(i) analogue: propan-1-ol → propanoate.", "wrong": ["PCC/controlled oxidation stops at the aldehyde.", "", "A 2° alcohol would give the ketone; pentan-1-ol is primary."]}], "group": "05 / ALCOHOL REACTIONS", "watch": "Choose oxidation, dehydration, Lucas or rearrangement. Dehydration animates through the oxonium ion; the rearrangement panel shows the 2° → 3° hydride shift."}, {"id": "rxn-phenols", "nav": "Phenol EAS, Kolbe, Reimer–Tiemann", "title": "Why does the –OH group light up the ring?", "deck": "OH is strongly o,p-directing. Br₂ water → 2,4,6-tribromophenol. Kolbe, Reimer–Tiemann, nitration, acetylation (aspirin).", "minutes": 12, "section": "7.4.4 phenol rxns", "pages": [16, 22], "print": "208–214", "sim": "rxnph", "simTitle": "Phenol ring reactions", "quick": ["The –OH group activates the benzene ring toward electrophiles and directs o/p by resonance (Ex 7.16). Phenoxide is even more reactive. Br₂/H₂O → 2,4,6-tribromophenol (white ppt); Br₂/CS₂ → o + p-bromophenol (Ex 7.17). Dil. HNO₃ → o + p-nitrophenol.", "Kolbe (Kolbe–Schmitt): PhONa + CO₂, heat/pressure, then H⁺ → salicylic acid. Reimer–Tiemann: PhOH + CHCl₃ + aq. NaOH → salicylaldehyde (dichlorocarbene). Acetylation of salicylic acid → aspirin.", "Esterification of phenol with acid chlorides needs pyridine. Zn dust distils phenol to benzene (the rare C–O cleavage of phenols)."], "formulas": [{"label": "Tribromophenol", "html": "PhOH + 3 Br₂(aq) → 2,4,6-C₆H₂Br₃OH + 3 HBr", "cond": "white ppt; qualitative test"}, {"label": "Kolbe", "html": "PhONa + CO₂ → o-HOC₆H₄COONa → salicylic acid", "cond": "Ex 7.18"}, {"label": "Reimer–Tiemann", "html": "PhOH + CHCl₃ / aq. NaOH → o-HOC₆H₄CHO", "cond": ":CCl₂ electrophile"}], "deeper": "Electrophilic substitution of phenol is so fast that bromine water does not stop at monobromination. In a less polar solvent (CS₂) the ring is less ionised to phenoxide and you can isolate monobromo products.", "worked": {"title": "Ex 7.18 Kolbe vs Reimer–Tiemann", "problem": "State the reagents and the ortho product for each named reaction.", "given": "Phenol and sodium phenoxide as substrates.", "steps": ["Kolbe: sodium phenoxide + CO₂ under pressure, then acid → salicylic acid (o-hydroxybenzoic acid).", "Reimer–Tiemann: phenol + CHCl₃ + aq. NaOH → salicylaldehyde (o-hydroxybenzaldehyde), via dichlorocarbene.", "Both reactions substitute at the ortho position of the activated ring."], "answer": "Kolbe gives o-COOH; Reimer–Tiemann gives o-CHO on phenol."}, "prediction": {"prompt": "Bromine water with phenol gives a white precipitate of", "options": ["p-bromophenol only", "2,4,6-tribromophenol", "bromobenzene"], "answer": 1, "explanation": "The ring is so activated that three bromines enter. In CS₂ you get mainly mono-bromo products."}, "connect": [{"title": "Aspirin is an acetate of a phenol", "text": "Acetylation of salicylic acid's phenolic –OH with acetic anhydride is the industrial and school-lab route to acetylsalicylic acid."}, {"title": "Dichlorocarbene in a conical flask", "text": "Reimer–Tiemann generates :CCl₂ from chloroform and aqueous NaOH; the electrophile formylates phenol at the ortho position to salicylaldehyde."}, {"title": "Wow: phenol decolourises bromine water three times over", "text": "Phenol reacts with three molecules of Br₂ water to give 2,4,6-tribromophenol as a white precipitate — so activated is the ring. In CS₂ the reaction stops at mono-bromination.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "6UkqjsBegyU", "title": "Reimer Tiemann Reaction | Electrophilic Aromatic Substitution Reactions | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write equations for tribromination, Kolbe and Reimer–Tiemann.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many bromine atoms are in the white precipitate formed when phenol reacts with bromine water?", "answer": 3, "tolerance": 0.01, "unit": "Br atoms", "hint": "§7.4.4 reactions of phenols.", "solution": "Phenol + 3 Br₂(aq) → 2,4,6-tribromophenol (white precipitate) + 3 HBr."}, {"level": "Medium", "type": "mcq", "prompt": "Kolbe’s reaction needs", "options": ["PhOH + CHCl₃", "sodium phenoxide + CO₂ under pressure", "PhOH + Br₂/CS₂"], "answer": 1, "hint": "Ex 7.18.", "solution": "Phenoxide attacks CO₂ at the ortho position to give salicylic acid after acidification.", "wrong": ["CHCl₃/NaOH is Reimer–Tiemann.", "", "Br₂/CS₂ gives bromophenols."]}, {"level": "Hard", "type": "mcq", "prompt": "OH activates the ring toward EAS because", "options": ["it is meta-directing by −I", "the lone pair on oxygen conjugates, raising o/p electron density", "it withdraws by −I only"], "answer": 1, "hint": "Ex 7.16.", "solution": "Resonance donation dominates orientation; the ring is strongly activated.", "wrong": ["–OH is o,p-directing.", "", "The +R effect dominates over −I."]}], "group": "06 / PHENOL RING CHEMISTRY", "watch": "Pick Kolbe, Reimer–Tiemann, bromination or aspirin. The verdict explains why –OH is such a strong activating, o,p-directing group."}, {"id": "ethers", "nav": "Ethers: Williamson & cleavage", "title": "SN2 to make an ether — SN2 (or SN1) to break it", "deck": "Williamson (1° RX + alkoxide). Limitations with 3° RX. HI cleavage mechanism (Ex 7.30). Anisole EAS o/p.", "minutes": 12, "section": "7.6", "pages": [22, 29], "print": "214–221", "sim": "ethersim", "simTitle": "Williamson, HI cleavage, anisole", "quick": ["Williamson: R–O⁻ + R′X (1°) → ROR′ (SN2). Put the hindered partner in the alkoxide; 2°/3° alkyl halides eliminate (Ex 7.25). Acid dehydration of 1° alcohols (excess, lower T) also gives ethers; 2°/3° alcohols give alkenes (Ex 7.27).", "HI (best), HBr, HCl cleave ethers. Mechanism for methoxymethane (Ex 7.30): protonate, I⁻ SN2 on carbon, CH₃I + CH₃OH; excess HI → 2 CH₃I. Unsymmetrical dialkyl: I attacks the less hindered alkyl. Alkyl aryl: the aryl–O bond never cleaves → PhOH + RI. Benzyl ethers can go SN1 at the benzyl carbon.", "Anisole: –OCH₃ activates and directs o/p (Ex 7.29). Friedel–Crafts alkylation/acylation, nitration, bromination in AcOH (Ex 7.31)."], "formulas": [{"label": "Williamson", "html": "R–ONa + R′–X (1°) → R–O–R′", "cond": "SN2; 3° R′X → alkene"}, {"label": "HI + Me₂O (Ex 7.30)", "html": "CH₃OCH₃ + HI → CH₃I + CH₃OH  (excess HI → 2 CH₃I)", "cond": "protonate then SN2"}, {"label": "Anisole EAS", "html": "–OCH₃ is o,p-directing and activating", "cond": "Ex 7.29, 7.31"}], "deeper": "Ex 7.10 Williamson of 2-ethoxy-3-methylpentane: make the alkoxide from the secondary alcohol and use a 1° halide (bromoethane), not the reverse. Intext 7.11: p-nitroanisole is made from p-nitrophenoxide + CH₃I, not from methoxide + p-nitrochlorobenzene under ordinary conditions? Actually both can work because p-NO₂ activates SNAr — the reprint prefers the phenoxide + CH₃X set (ii).", "worked": {"title": "Ex 7.24(iii) 2-methoxy-2-methylpropane", "problem": "Choose Williamson reagents so that the ether forms cleanly.", "given": "Target (CH₃)₃COCH₃; the alkoxide and the alkyl halide can be chosen independently.", "steps": ["Use the tertiary alkoxide (CH₃)₃CONa with the primary halide CH₃Br.", "SN2 at the primary methyl carbon is fast and gives the ether.", "The reverse pairing — methoxide + tert-butyl bromide — makes methoxide act as a base and eliminates to 2-methylpropene."], "answer": "(CH₃)₃CONa + CH₃Br."}, "prediction": {"prompt": "HI with methoxybenzene yields", "options": ["iodobenzene + methanol", "phenol + iodomethane", "two molecules of iodobenzene"], "answer": 1, "explanation": "Aryl–O is not cleaved. Protonated anisole is attacked by I⁻ at the methyl carbon → PhOH + CH₃I (Ex 7.28)."}, "connect": [{"title": "Diethyl ether, the classic extraction solvent", "text": "Low boiling point, low reactivity and slight water solubility — ethoxyethane is the physical-properties lesson in a bottle. Keep it away from peroxides."}, {"title": "Anisole directs and activates", "text": "–OCH₃ activates the ring and directs electrophiles ortho/para, exactly as –OH does but more mildly; anisole is also the fragrance ether of the unit opener."}, {"title": "Wow: aryl–O bonds refuse to break", "text": "HI cleaves anisole at the methyl–oxygen bond, never at the aryl–oxygen bond, giving phenol + CH₃I. That is why alkyl aryl ethers need a 1° alkyl halide in Williamson synthesis.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech202.pdf"}], "video": {"id": "_vpHLmxJ3rM", "title": "Preparation of ethers | Alcohols, phenols & ethers | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write Williamson, its 3° limitation, the Ex 7.30 mechanism, and the products of HI with anisole.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many moles of CH₃I are formed when 1 mol of methoxymethane reacts with excess HI?", "answer": 2, "tolerance": 0.01, "unit": "mol", "hint": "§7.6.2 cleavage of C–O; Ex 7.30.", "solution": "CH₃OCH₃ + 2 HI → 2 CH₃I + H₂O with excess HI."}, {"level": "Medium", "type": "mcq", "prompt": "Excess HI on methoxymethane gives", "options": ["CH₃OH only", "2 CH₃I + H₂O", "HCHO"], "answer": 1, "hint": "Ex 7.30.", "solution": "First CH₃I + CH₃OH, then the alcohol is converted to a second CH₃I.", "wrong": ["Methanol is only the intermediate; excess HI converts it too.", "", "HI does not oxidise the ether to formaldehyde."]}, {"level": "Hard", "type": "mcq", "prompt": "To make tert-butyl methyl ether cleanly by Williamson synthesis, use", "options": ["methoxide + tert-butyl bromide", "tert-butoxide + bromomethane", "acid dehydration of tert-butanol with methanol at high T"], "answer": 1, "hint": "Ex 7.24–7.25.", "solution": "Use a 1° halide with the 3° alkoxide. The reverse eliminates to 2-methylpropene.", "wrong": ["tert-Butyl bromide undergoes E2 with methoxide.", "", "2°/3° alcohols give alkenes under acid dehydration."]}], "group": "07 / ETHERS: MAKE & BREAK", "watch": "Choose Williamson, its limitation, HI cleavage or anisole EAS. The HI panel animates protonation then SN2 at the less hindered carbon."}], "exercises": [{"q": 1, "title": "IUPAC names of twelve compounds", "conceptIdx": 0, "page": 30, "question": "Write IUPAC names of the following compounds:\n(i) CH₃CH(CH₃)CH(OH)C(CH₃)₂CH₃  (ii) CH₃CH(OH)CH₂CH(OH)CH(C₂H₅)CH₂CH₃  (iii) CH₃CH(OH)CH(OH)CH₃  (iv) HOCH₂CH(OH)CH₂OH  (v)–(viii) four methyl-substituted phenols  (ix) CH₃OCH₂CH(CH₃)CH₃  (x) C₆H₅OC₂H₅  (xi) C₆H₅O–C₇H₁₅(n)  (xii) CH₃CH₂OCH(CH₃)CH₂CH₃. All twelve structures are redrawn in Fig. 7.1.", "given": "Twelve structures reproduced in Fig. 7.1; (v)–(viii) are cresols/dimethylphenols with the aromatic ring drawn.", "steps": ["(i) Longest chain through the OH-bearing carbon has five carbons; OH at C-3, methyls at C-2 and C-4: 2,2,4-trimethylpentan-3-ol.", "(ii) Seven-carbon chain, OH at C-2 and C-4, ethyl at C-5: 5-ethylheptane-2,4-diol.", "(iii) Four-carbon chain with OH at C-2 and C-3: butane-2,3-diol. (iv) Three-carbon chain with OH on every carbon: propane-1,2,3-triol.", "(v) 2-methylphenol. (vi) 4-methylphenol. (vii) 2,5-dimethylphenol. (viii) 2,6-dimethylphenol — number the ring to give the OH carbon C-1, then place the methyls.", "(ix) Longest chain through the ether oxygen is CH₃O–CH₂–CH(CH₃)–CH₃: 1-methoxy-2-methylpropane.", "(x) Ethoxybenzene. (xi) 1-Phenoxyheptane. (xii) Oxygen sits at C-2 of a four-carbon chain: 2-ethoxybutane."], "answer": "(i) 2,2,4-Trimethylpentan-3-ol; (ii) 5-ethylheptane-2,4-diol; (iii) butane-2,3-diol; (iv) propane-1,2,3-triol; (v) 2-methylphenol; (vi) 4-methylphenol; (vii) 2,5-dimethylphenol; (viii) 2,6-dimethylphenol; (ix) 1-methoxy-2-methylpropane; (x) ethoxybenzene; (xi) 1-phenoxyheptane; (xii) 2-ethoxybutane.", "takeaway": "Number the chain/ring to give the –OH (or –OR) carbon the lowest locant; name ethers as alkoxyalkanes.", "conceptName": "Classification & IUPAC nomenclature", "figure": "7.1", "printPage": 222}, {"q": 2, "title": "Structures from IUPAC names", "conceptIdx": 0, "page": 30, "question": "Write structures of the compounds whose IUPAC names are as follows:\n(i) 2-Methylbutan-2-ol (ii) 1-Phenylpropan-2-ol (iii) 3,5-Dimethylhexane-1,3,5-triol (iv) 2,3-Diethylphenol (v) 1-Ethoxypropane (vi) 2-Ethoxy-3-methylpentane (vii) Cyclohexylmethanol (viii) 3-Cyclohexylpentan-3-ol (ix) Cyclopent-3-en-1-ol (x) 4-Chloro-3-ethylbutan-1-ol.", "given": "Ten names exactly as printed; build the skeleton from the parent name first, then attach the substituents.", "steps": ["(i) 2-Methylbutan-2-ol: CH₃C(OH)(CH₃)CH₂CH₃.", "(ii) 1-Phenylpropan-2-ol: PhCH₂CH(OH)CH₃.", "(iii) 3,5-Dimethylhexane-1,3,5-triol: HOCH₂CH₂C(OH)(CH₃)CH₂C(OH)(CH₃)CH₃.", "(iv) 2,3-Diethylphenol: benzene with OH at C-1, ethyl at C-2 and ethyl at C-3.", "(v) 1-Ethoxypropane: CH₃CH₂CH₂OCH₂CH₃.", "(vi) 2-Ethoxy-3-methylpentane: CH₃CH(OCH₂CH₃)CH(CH₃)CH₂CH₃.", "(vii) Cyclohexylmethanol: C₆H₁₁CH₂OH; (viii) 3-cyclohexylpentan-3-ol: (C₂H₅)₂C(OH)C₆H₁₁.", "(ix) Cyclopent-3-en-1-ol: cyclopentene with OH at C-1 and the double bond at C-3–C-4.", "(x) 4-Chloro-3-ethylbutan-1-ol: HOCH₂CH₂CH(CH₂CH₃)CH₂Cl — C-3 carries both the ethyl branch and the chloromethyl group."], "answer": "(i) CH₃C(OH)(CH₃)CH₂CH₃; (ii) PhCH₂CH(OH)CH₃; (iii) HOCH₂CH₂C(OH)(CH₃)CH₂C(OH)(CH₃)CH₃; (iv) 1-hydroxy-2,3-diethylbenzene; (v) CH₃CH₂CH₂OCH₂CH₃; (vi) CH₃CH(OCH₂CH₃)CH(CH₃)CH₂CH₃; (vii) C₆H₁₁CH₂OH; (viii) (C₂H₅)₂C(OH)C₆H₁₁; (ix) cyclopent-3-en-1-ol; (x) HOCH₂CH₂CH(CH₂CH₃)CH₂Cl.", "takeaway": "Always build the parent chain/ring first and number it; the –OH carbon gets the lowest locant.", "conceptName": "Classification & IUPAC nomenclature", "printPage": 222}, {"q": 3, "title": "All C₅H₁₂O alcohols and their classes", "conceptIdx": 0, "page": 30, "question": "(i) Draw the structures of all isomeric alcohols of molecular formula C₅H₁₂O and give their IUPAC names. (ii) Classify the isomers of alcohols in question 7.3(i) as primary, secondary and tertiary alcohols. (The reprint prints ‘question 11.3 (i)’ — a carry-over typo for 7.3(i).)", "given": "Molecular formula C₅H₁₂O — saturated monoalcohols only.", "steps": ["Fix the OH-bearing carbon on each C₅ skeleton; eight saturated monoalcohols are possible.", "Primary (four): pentan-1-ol, 2-methylbutan-1-ol, 3-methylbutan-1-ol, 2,2-dimethylpropan-1-ol.", "Secondary (three): pentan-2-ol, pentan-3-ol, 3-methylbutan-2-ol.", "Tertiary (one): 2-methylbutan-2-ol."], "answer": "Eight isomers — primary: pentan-1-ol, 2-methylbutan-1-ol, 3-methylbutan-1-ol, 2,2-dimethylpropan-1-ol; secondary: pentan-2-ol, pentan-3-ol, 3-methylbutan-2-ol; tertiary: 2-methylbutan-2-ol.", "takeaway": "Classify by the number of carbon groups bonded to the carbinol carbon: 1°, 2° or 3°.", "conceptName": "Classification & IUPAC nomenclature", "printPage": 222}, {"q": 4, "title": "Why propanol boils above butane", "conceptIdx": 1, "page": 30, "question": "Explain why propanol has higher boiling point than that of the hydrocarbon, butane?", "given": "Propanol C₃H₈O (M ≈ 60) and butane C₄H₁₀ (M ≈ 58) have comparable molecular masses.", "steps": ["Propanol has an O–H group and forms strong intermolecular O–H···O hydrogen bonds.", "Butane has no O–H; only weak van der Waals (dispersion) forces act between its molecules.", "Extra energy must be supplied to break the hydrogen-bond network of propanol, so its boiling point is much higher."], "answer": "Propanol boils higher because of intermolecular O–H···O hydrogen bonding, which is absent in butane.", "takeaway": "Hydrogen bonding is the single biggest reason alcohols boil far above hydrocarbons/ethers of similar mass.", "conceptName": "Hydrogen bonding & physical properties", "printPage": 222}, {"q": 5, "title": "Water solubility of alcohols", "conceptIdx": 1, "page": 30, "question": "Alcohols are comparatively more soluble in water than hydrocarbons of comparable molecular masses. Explain this fact.", "given": "Lower alcohols are miscible with water in all proportions; hydrocarbons are not.", "steps": ["Alcohols can both donate (O–H) and accept (oxygen lone pairs) hydrogen bonds to water molecules.", "Hydrocarbons cannot form hydrogen bonds with water and must disrupt water's own hydrogen-bond network without compensation.", "So alcohols dissolve readily, while hydrocarbons separate out."], "answer": "Alcohols hydrogen-bond to water (O–H donor and acceptor); hydrocarbons cannot, so they stay insoluble.", "takeaway": "The –OH group is the water-loving head; the alkyl chain is the water-hating tail.", "conceptName": "Hydrogen bonding & physical properties", "printPage": 222}, {"q": 6, "title": "Hydroboration–oxidation", "conceptIdx": 2, "page": 30, "question": "What is meant by hydroboration-oxidation reaction? Illustrate it with an example.", "given": "Diborane, (BH₃)₂, adds to alkenes; the trialkylborane is then oxidised with H₂O₂/OH⁻.", "steps": ["Boron adds to the less substituted sp² carbon (anti-Markovnikov), and H to the more substituted carbon; the addition is syn.", "H₂O₂ in aqueous NaOH replaces boron by –OH with retention of configuration.", "Example: CH₃CH=CH₂ → (i) (BH₃)₂, (ii) H₂O₂/OH⁻ → CH₃CH₂CH₂OH (propan-1-ol).", "The same alkene with acid-catalysed hydration gives propan-2-ol (Markovnikov) — the two routes complement each other."], "answer": "Hydroboration–oxidation converts an alkene to an anti-Markovnikov alcohol (BH₃ then H₂O₂/OH⁻); propene gives propan-1-ol.", "takeaway": "Anti-Markovnikov, syn addition, no carbocation rearrangement.", "conceptName": "Preparation of alcohols & phenols", "printPage": 222}, {"q": 7, "title": "Monohydric phenols of C₇H₈O", "conceptIdx": 0, "page": 30, "question": "Give the structures and IUPAC names of monohydric phenols of molecular formula, C₇H₈O.", "given": "C₇H₈O = benzene ring + one –OH and one –CH₃ (cresols). Benzyl alcohol has the same formula but is not a phenol.", "steps": ["Place –OH and –CH₃ on the ring; only three distinct arrangements exist.", "2-methylphenol (o-cresol), 3-methylphenol (m-cresol), 4-methylphenol (p-cresol).", "Benzyl alcohol (C₆H₅CH₂OH) also has formula C₇H₈O but its OH lies on an sp³ carbon, so it is not a phenol."], "answer": "2-, 3- and 4-methylphenol (ortho-, meta- and para-cresol).", "takeaway": "A phenol needs –OH directly on the aromatic ring; benzylic –CH₂OH is an alcohol.", "conceptName": "Classification & IUPAC nomenclature", "printPage": 222}, {"q": 8, "title": "Steam-volatile nitrophenol", "conceptIdx": 1, "page": 30, "question": "While separating a mixture of ortho and para nitrophenols by steam distillation, name the isomer which will be steam volatile. Give reason.", "given": "A mixture of o- and p-nitrophenol is steam-distilled.", "steps": ["The ortho isomer forms an intramolecular hydrogen bond between –OH and the adjacent –NO₂.", "With its –OH tied up internally it cannot associate with neighbouring molecules, so its boiling point is lower and it is steam-volatile.", "The para isomer forms intermolecular hydrogen bonds, remains strongly associated and is not steam-volatile."], "answer": "o-Nitrophenol is steam volatile (intramolecular hydrogen bonding); p-nitrophenol is not.", "takeaway": "Intramolecular H-bonding lowers boiling point relative to the intermolecularly bonded isomer.", "conceptName": "Hydrogen bonding & physical properties", "printPage": 222}, {"q": 9, "title": "Phenol from cumene", "conceptIdx": 2, "page": 30, "question": "Give the equations of reactions for the preparation of phenol from cumene.", "given": "Cumene = (1-methylethyl)benzene, C₉H₁₂; oxidation with air gives cumene hydroperoxide.", "steps": ["Oxidation: C₆H₅CH(CH₃)₂ + O₂ → C₆H₅C(CH₃)₂OOH (cumene hydroperoxide).", "Acid-catalysed rearrangement: C₆H₅C(CH₃)₂OOH → (H⁺) C₆H₅OH + (CH₃)₂C=O.", "Atom check: C₉H₁₂O₂ → C₆H₆O (phenol) + C₃H₆O (propanone); carbon 9 = 6+3, hydrogen 12 = 6+6, oxygen 2 = 1+1."], "answer": "C₆H₅CH(CH₃)₂ + O₂ → C₆H₅C(CH₃)₂OOH; the hydroperoxide rearranges with dilute acid to give phenol + propanone (acetone).", "takeaway": "The cumene process makes two useful products at once: phenol and acetone.", "conceptName": "Preparation of alcohols & phenols", "printPage": 222}, {"q": 10, "title": "Phenol from chlorobenzene (Dow process)", "conceptIdx": 2, "page": 30, "question": "Write chemical reaction for the preparation of phenol from chlorobenzene.", "given": "Chlorobenzene + aqueous NaOH; the reprint's Dow conditions are 623 K and 320 atmospheres.", "steps": ["Fuse C₆H₅Cl with NaOH at 623 K and 320 atm (the value printed in this reprint) to give sodium phenoxide.", "C₆H₅Cl + 2 NaOH → C₆H₅ONa + NaCl + H₂O.", "Acidify the sodium phenoxide with a mineral acid: C₆H₅ONa + H⁺ → C₆H₅OH + Na⁺."], "answer": "C₆H₅Cl + NaOH (623 K, 320 atm) → C₆H₅ONa → (H⁺) C₆H₅OH. (Many older editions print 300 atm; this reprint prints 320 atm, so the solution follows the book.)", "takeaway": "An unactivated aryl chloride needs brutal SNAr conditions to replace Cl by OH.", "conceptName": "Preparation of alcohols & phenols", "printPage": 222}, {"q": 11, "title": "Mechanism of ethene hydration", "conceptIdx": 2, "page": 30, "question": "Write the mechanism of hydration of ethene to yield ethanol.", "given": "Ethene + water in the presence of an acid catalyst (H₃O⁺).", "steps": ["Step 1 (slow): H₃O⁺ protonates the alkene to give the ethyl carbocation, CH₃CH₂⁺.", "Step 2: water attacks the carbocation; the oxygen of water donates its lone pair to give the protonated alcohol CH₃CH₂OH₂⁺.", "Step 3 (fast): loss of a proton from the oxonium ion gives ethanol and regenerates the acid catalyst."], "answer": "Protonation to a carbocation, nucleophilic attack by water, then deprotonation — Markovnikov addition of water.", "takeaway": "Acid-catalysed hydration is an ionic (Markovnikov) addition; rearrangements are possible for higher alkenes.", "conceptName": "Preparation of alcohols & phenols", "printPage": 222}, {"q": 12, "title": "Phenol from benzene, H₂SO₄ and NaOH", "conceptIdx": 2, "page": 30, "question": "You are given benzene, conc. H₂SO₄ and NaOH. Write the equations for the preparation of phenol using these reagents.", "given": "Benzene, concentrated H₂SO₄ (sulphonation) and NaOH (fuse with the sulphonic acid).", "steps": ["Sulphonation: C₆H₆ + conc. H₂SO₄ (heat) → C₆H₅SO₃H + H₂O.", "Fusion with alkali: C₆H₅SO₃H + 3 NaOH → C₆H₅ONa + Na₂SO₃ + 2 H₂O (nucleophilic substitution of –SO₃Na by –ONa).", "Acidify the sodium phenoxide (the acid used in the work-up) → C₆H₅OH."], "answer": "C₆H₆ → C₆H₅SO₃H → (NaOH fusion) C₆H₅ONa → (H⁺) C₆H₅OH. The official key states the hint: sulphonation followed by nucleophilic substitution.", "takeaway": "–SO₃H is a good leaving group, so sulphonation followed by alkali fusion is a laboratory route to phenol.", "conceptName": "Preparation of alcohols & phenols", "printPage": 222}, {"q": 13, "title": "Three syntheses: alkene, SN2, alkyl halide", "conceptIdx": 2, "page": 31, "question": "Show how will you synthesise:\n(i) 1-phenylethanol from a suitable alkene. (ii) cyclohexylmethanol using an alkyl halide by an SN2 reaction. (iii) pentan-1-ol using a suitable alkyl halide?", "given": "Choose an alkene for hydration in (i); a primary alkyl halide is required for SN2 in (ii) and (iii).", "steps": ["(i) Styrene (PhCH=CH₂) + H₂O/H⁺ undergoes Markovnikov hydration to 1-phenylethanol, PhCH(OH)CH₃.", "(ii) (Bromomethyl)cyclohexane, C₆H₁₁CH₂Br, is a primary halide; aq. NaOH displaces Br⁻ by SN2 to give C₆H₁₁CH₂OH. A tertiary halide would not react by SN2.", "(iii) 1-Bromopentane + aq. KOH → pentan-1-ol (SN2, clean inversion). Hydroboration–oxidation of pent-1-ene is an alternative.", "In (ii) and (iii) the halide must be primary so that the alkoxide/hydroxide acts as a nucleophile and not as a base."], "answer": "(i) PhCH=CH₂ + H⁺/H₂O; (ii) C₆H₁₁CH₂Br + aq. NaOH (SN2); (iii) CH₃(CH₂)₄Br + aq. KOH.", "takeaway": "Match the mechanism to the substrate: hydration for the Markovnikov alcohol, SN2 only with a primary halide.", "conceptName": "Preparation of alcohols & phenols", "printPage": 223}, {"q": 14, "title": "Two reactions showing phenol's acidity", "conceptIdx": 3, "page": 31, "question": "Give two reactions that show the acidic nature of phenol. Compare acidity of phenol with that of ethanol.", "given": "Phenol and ethanol; Table 7.3 gives pKa values 10.0 (phenol) and 15.9 (ethanol).", "steps": ["Phenol reacts with sodium metal to give sodium phenoxide and hydrogen: 2 C₆H₅OH + 2 Na → 2 C₆H₅ONa + H₂.", "Phenol also reacts with aqueous NaOH to give sodium phenoxide: C₆H₅OH + NaOH → C₆H₅ONa + H₂O. Ethanol does not react with NaOH.", "Table 7.3: pKa 10.0 for phenol vs 15.9 for ethanol. Smaller pKa means stronger acid, so Ka(phenol)/Ka(ethanol) = 10^(15.9−10.0) = 10^5.9 ≈ 7.9 × 10⁵."], "answer": "Phenol reacts with both Na and aq. NaOH; ethanol reacts only with Na. Phenol (pKa 10.0) is about a million times more acidic than ethanol (pKa 15.9).", "takeaway": "Phenoxide is resonance-stabilised over the ring; ethoxide keeps its negative charge localised on oxygen.", "conceptName": "Phenol acidity", "printPage": 223}, {"q": 15, "title": "o-Nitrophenol vs o-methoxyphenol", "conceptIdx": 3, "page": 31, "question": "Explain why is ortho nitrophenol more acidic than ortho methoxyphenol ?", "given": "Compare o-O₂N–C₆H₄–OH with o-CH₃O–C₆H₄–OH.", "steps": ["The –NO₂ group withdraws electron density by both the inductive (−I) and resonance (−R) effects.", "That withdrawal stabilises the negative charge of the phenoxide ion, so o-nitrophenol ionises more easily — it is the stronger acid.", "The –OCH₃ group donates electron density by resonance (+R), destabilising the phenoxide and raising the pKa, so o-methoxyphenol is the weaker acid."], "answer": "o-Nitrophenol is more acidic because –NO₂ is electron withdrawing (stabilises the phenoxide); –OCH₃ is electron releasing (destabilises it).", "takeaway": "Anything that stabilises the conjugate base increases acidity; electron-releasing groups do the opposite.", "conceptName": "Phenol acidity", "printPage": 223}, {"q": 16, "title": "How –OH activates the ring", "conceptIdx": 5, "page": 31, "question": "Explain how does the –OH group attached to a carbon of benzene ring activate it towards electrophilic substitution?", "given": "Phenol ring bearing an –OH substituent.", "steps": ["The oxygen lone pair conjugates with the aromatic π system, pushing electron density into the ring (+R effect).", "This raises the electron density at the ortho and para positions in particular.", "The Wheland intermediate formed when an electrophile attacks o/p is stabilised by oxygen's lone pair.", "As a result the ring is more reactive than benzene and electrophiles enter at o/p — the group is activating and o,p-directing."], "answer": "Resonance donation of oxygen's lone pair raises o/p electron density and stabilises the intermediate, so –OH activates the ring toward EAS.", "takeaway": "Activation and o,p-direction both come from the same +R resonance effect of –OH.", "conceptName": "Phenol ring reactions", "printPage": 223}, {"q": 17, "title": "Four equations from the chapter", "conceptIdx": 5, "page": 31, "question": "Give equations of the following reactions:\n(i) Oxidation of propan-1-ol with alkaline KMnO₄ solution. (ii) Bromine in CS₂ with phenol. (iii) Dilute HNO₃ with phenol. (iv) Treating phenol with chloroform in presence of aqueous NaOH.", "given": "Reagents: alkaline KMnO₄; Br₂/CS₂; dilute HNO₃; CHCl₃ + aq. NaOH.", "steps": ["(i) CH₃CH₂CH₂OH + [O] —alk. KMnO₄→ CH₃CH₂COOH (isolated as propanoate in alkaline medium; the acid on acidification).", "(ii) C₆H₅OH + Br₂/CS₂ → mainly o- and p-bromophenol (monosubstitution, less ionised medium).", "(iii) C₆H₅OH + dil. HNO₃ → o- and p-nitrophenol.", "(iv) Reimer–Tiemann: C₆H₅OH + CHCl₃ + aq. NaOH → salicylaldehyde (2-hydroxybenzaldehyde) via dichlorocarbene :CCl₂."], "answer": "(i) propanoic acid/propanoate; (ii) o- and p-bromophenol; (iii) o- and p-nitrophenol; (iv) salicylaldehyde.", "takeaway": "Strong oxidation takes a 1° alcohol to the acid; phenol's ring is so activated that Br₂/CS₂ can still monosubstitute.", "conceptName": "Phenol ring reactions", "printPage": 223}, {"q": 18, "title": "Kolbe, Reimer–Tiemann, Williamson, unsymmetrical ether", "conceptIdx": 5, "page": 31, "question": "Explain the following with an example.\n(i) Kolbe’s reaction. (ii) Reimer-Tiemann reaction. (iii) Williamson ether synthesis. (iv) Unsymmetrical ether.", "given": "Four terms/reactions from §§7.4.4 and 7.6.", "steps": ["(i) Kolbe (Kolbe–Schmitt): sodium phenoxide + CO₂ under pressure, then acid → salicylic acid (2-hydroxybenzoic acid); the phenoxide attacks CO₂ at the ortho position.", "(ii) Reimer–Tiemann: phenol + CHCl₃ + aq. NaOH → salicylaldehyde; the electrophile is dichlorocarbene :CCl₂.", "(iii) Williamson ether synthesis: an alkoxide/phenoxide attacks a primary alkyl halide by SN2, e.g. C₂H₅ONa + CH₃CH₂Br → C₂H₅OCH₂CH₃ + NaBr.", "(iv) An unsymmetrical ether has two different carbon groups on oxygen, e.g. CH₃OC₂H₅ (methoxyethane) or C₆H₅OCH₃ (anisole)."], "answer": "Examples: (i) salicylic acid; (ii) salicylaldehyde; (iii) ethoxyethane; (iv) methoxyethane/anisole.", "takeaway": "Kolbe and Reimer–Tiemann both substitute at the ortho position of phenol; Williamson builds ethers by SN2.", "conceptName": "Phenol ring reactions", "printPage": 223}, {"q": 19, "title": "Acid dehydration mechanism", "conceptIdx": 4, "page": 31, "question": "Write the mechanism of acid dehydration of ethanol to yield ethene.", "given": "Ethanol with concentrated H₂SO₄ at 443 K.", "steps": ["Step 1: protonation of the –OH group gives the oxonium ion CH₃CH₂OH₂⁺.", "Step 2 (slow): loss of a water molecule leaves the ethyl carbocation CH₃CH₂⁺.", "Step 3: loss of a β-hydrogen by the base (HSO₄⁻/H₂O) gives ethene and regenerates H⁺."], "answer": "Oxonium ion → carbocation → alkene (E1-like), with H⁺ regenerated.", "takeaway": "Acid dehydration proceeds through a carbocation, so tertiary alcohols react fastest and rearrangements are possible.", "conceptName": "Reactions of alcohols", "printPage": 223}, {"q": 20, "title": "Four conversions", "conceptIdx": 2, "page": 31, "question": "How are the following conversions carried out?\n(i) Propene → Propan-2-ol. (ii) Benzyl chloride → Benzyl alcohol. (iii) Ethyl magnesium chloride → Propan-1-ol. (iv) Methyl magnesium bromide → 2-Methylpropan-2-ol.", "given": "Starting materials (i)–(iv); choose hydration, nucleophilic substitution or Grignard chemistry.", "steps": ["(i) Hydration of propene with water in the presence of an acid (H⁺) gives propan-2-ol by Markovnikov addition.", "(ii) Benzyl chloride + dilute NaOH undergoes nucleophilic substitution of –Cl to give benzyl alcohol.", "(iii) C₂H₅MgBr + HCHO → C₂H₅CH₂OMgBr → (H₂O) C₂H₅CH₂OH (propan-1-ol); formaldehyde gives a primary alcohol.", "(iv) CH₃MgBr + CH₃COCH₃ (acetone) → (CH₃)₃C–OMgBr → (H₂O) (CH₃)₃C–OH (2-methylpropan-2-ol); a ketone gives a tertiary alcohol."], "answer": "(i) H⁺/H₂O (Markovnikov hydration); (ii) dilute NaOH; (iii) HCHO then H₃O⁺; (iv) acetone then H₃O⁺.", "takeaway": "Grignard + HCHO → 1°, + RCHO → 2°, + ketone → 3° alcohol.", "conceptName": "Preparation of alcohols & phenols", "printPage": 223}, {"q": 21, "title": "Reagents for six reactions", "conceptIdx": 4, "page": 31, "question": "Name the reagents used in the following reactions:\n(i) Oxidation of a primary alcohol to carboxylic acid. (ii) Oxidation of a primary alcohol to aldehyde. (iii) Bromination of phenol to 2,4,6-tribromophenol. (iv) Benzyl alcohol to benzoic acid. (v) Dehydration of propan-2-ol to propene. (vi) Butan-2-one to butan-2-ol.", "given": "Six transformations (i)–(vi).", "steps": ["(i) Alkaline KMnO₄ (or acidified K₂Cr₂O₇ with heat) — strong oxidant, takes 1° alcohol to the acid.", "(ii) PCC (pyridinium chlorochromate), or copper at 573 K — controlled oxidation stops at the aldehyde.", "(iii) Bromine water (Br₂/H₂O).", "(iv) Alkaline KMnO₄ or acidified K₂Cr₂O₇ (benzylic oxidation).", "(v) Concentrated H₂SO₄ with heat (443 K), or Al₂O₃ at 623 K.", "(vi) NaBH₄ or LiAlH₄ (or H₂/Ni) — reduction of the ketone back to the secondary alcohol."], "answer": "(i) alk. KMnO₄; (ii) PCC (or Cu/573 K); (iii) Br₂ water; (iv) alk. KMnO₄; (v) conc. H₂SO₄, heat; (vi) NaBH₄ (or LiAlH₄/H₂–Ni).", "takeaway": "Reagent choice decides the oxidation level: PCC stops at RCHO, KMnO₄ goes on to RCOOH.", "conceptName": "Reactions of alcohols", "printPage": 223}, {"q": 22, "title": "Ethanol vs methoxymethane boiling points", "conceptIdx": 1, "page": 31, "question": "Give reason for the higher boiling point of ethanol in comparison to methoxymethane.", "given": "Ethanol and methoxymethane are structural isomers, both C₂H₆O.", "steps": ["Ethanol has an O–H group and forms intermolecular O–H···O hydrogen bonds.", "Methoxymethane has no O–H; only weaker dipole–dipole and van der Waals forces act between its molecules.", "More energy is therefore needed to separate ethanol molecules, so its boiling point (351 K) is much higher."], "answer": "Intermolecular hydrogen bonding in ethanol (absent in methoxymethane) raises its boiling point.", "takeaway": "Same formula and molar mass, but an O–H donor changes the boiling point by tens of kelvin.", "conceptName": "Hydrogen bonding & physical properties", "printPage": 223}, {"q": 23, "title": "IUPAC names of six ethers", "conceptIdx": 6, "page": 32, "question": "Give IUPAC names of the following ethers:\n(i) C₂H₅OCH₂CH(CH₃)CH₃  (ii) CH₃OCH₂CH₂Cl  (iii) p-O₂NC₆H₄OCH₃  (iv) CH₃CH₂CH₂OCH₃  (v) 1,1-dimethyl-4-ethoxycyclohexane skeleton  (vi) C₆H₅OC₂H₅. The six structures are redrawn in Fig. 7.23.", "given": "Six ether structures reproduced in Fig. 7.23; name each as an alkoxyalkane, numbering to give the alkoxy carbon the lowest locant (the convention of the official key).", "steps": ["(i) C₂H₅O–CH₂–CH(CH₃)–CH₃ → 1-ethoxy-2-methylpropane.", "(ii) CH₃O–CH₂–CH₂Cl → the key numbers the methoxy carbon C-1: 2-chloro-1-methoxyethane (the same compound is often written 1-chloro-2-methoxyethane under strict alphabetical substitution).", "(iii) p-O₂N–C₆H₄–OCH₃ → 4-nitroanisole (1-methoxy-4-nitrobenzene).", "(iv) CH₃CH₂CH₂OCH₃ → 1-methoxypropane.", "(v) The ring carbon bearing the two methyls is C-1 and the ethoxy carbon is C-4: 1-ethoxy-4,4-dimethylcyclohexane (official key).", "(vi) C₆H₅OC₂H₅ → ethoxybenzene."], "answer": "(i) 1-Ethoxy-2-methylpropane; (ii) 2-chloro-1-methoxyethane; (iii) 4-nitroanisole; (iv) 1-methoxypropane; (v) 1-ethoxy-4,4-dimethylcyclohexane; (vi) ethoxybenzene.", "takeaway": "Ethers are alkoxyalkanes; the official key uses the lowest locant for the alkoxy carbon.", "conceptName": "Ethers: Williamson & cleavage", "figure": "7.23", "printPage": 224}, {"q": 24, "title": "Williamson syntheses of four ethers", "conceptIdx": 6, "page": 32, "question": "Write the names of reagents and equations for the preparation of the following ethers by Williamson’s synthesis:\n(i) 1-Propoxypropane (ii) Ethoxybenzene (iii) 2-Methoxy-2-methylpropane (iv) 1-Methoxyethane", "given": "Williamson synthesis joins an alkoxide/phenoxide to a primary alkyl halide (SN2).", "steps": ["(i) CH₃CH₂CH₂ONa + CH₃CH₂CH₂Br → CH₃CH₂CH₂OCH₂CH₂CH₃ + NaBr (both partners can be primary).", "(ii) C₆H₅ONa + C₂H₅Br → C₆H₅OC₂H₅ + NaBr. The reverse (PhBr + EtONa) fails: aryl halides do not undergo SN2.", "(iii) (CH₃)₃CONa + CH₃Br → (CH₃)₃COCH₃ + NaBr. Use the 1° halide; methoxide + tert-butyl bromide would eliminate to 2-methylpropene.", "(iv) CH₃ONa + C₂H₅Br → CH₃OCH₂CH₃ + NaBr (or EtONa + CH₃Br)."], "answer": "(i) n-PrONa + n-PrBr; (ii) PhONa + EtBr; (iii) t-BuONa + MeBr; (iv) MeONa + EtBr.", "takeaway": "Put the hindered group in the alkoxide and keep the halide primary — that is the Williamson rule.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 25, "title": "Limitations of Williamson synthesis", "conceptIdx": 6, "page": 32, "question": "Illustrate with examples the limitations of Williamson synthesis for the preparation of certain types of ethers.", "given": "Consider the alkyl halide (1°, 2°, 3° or aryl) used in the SN2 step.", "steps": ["If the alkyl halide is secondary or tertiary, the alkoxide acts as a base and elimination (E2) competes: (CH₃)₃CBr + CH₃ONa → 2-methylpropene, not tert-butyl methyl ether.", "Aryl halides do not undergo SN2 under ordinary conditions, so an aryl alkyl ether cannot be made from ArX + RONa; instead use the phenoxide + a 1° alkyl halide (PhONa + RBr).", "Hence the method works cleanly only when the halide is primary (and for aryl ethers, when the phenol/phenoxide supplies the oxygen)."], "answer": "2°/3° halides give alkenes by elimination and Ar–X does not undergo SN2; use a 1° halide with the more hindered alkoxide/phenoxide.", "takeaway": "Williamson is an SN2 reaction, so both steric hindrance and aryl C–X bonds set hard limits.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 26, "title": "1-Propoxypropane from propan-1-ol", "conceptIdx": 6, "page": 32, "question": "How is 1-propoxypropane synthesised from propan-1-ol? Write mechanism of this reaction.", "given": "Propan-1-ol; bimolecular acid-catalysed dehydration or Williamson synthesis.", "steps": ["Acid route: 2 CH₃CH₂CH₂OH with conc. H₂SO₄ at 413 K (below the alkene temperature) → CH₃CH₂CH₂OCH₂CH₂CH₃ + H₂O.", "Mechanism: protonate one alcohol to the oxonium ion; a second alcohol molecule attacks it by SN2; loss of a proton gives the ether.", "Williamson alternative: convert one molecule to CH₃CH₂CH₂ONa (Na) and another to CH₃CH₂CH₂Br (HBr), then mix — SN2 gives the same ether."], "answer": "Acid dehydration of propan-1-ol at 413 K via SN2 attack on the oxonium ion, or Williamson (PrONa + PrBr).", "takeaway": "Low temperature and excess alcohol favour ether; high temperature (443 K) favours the alkene.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 27, "title": "Why 2°/3° alcohols do not give ethers", "conceptIdx": 6, "page": 32, "question": "Preparation of ethers by acid dehydration of secondary or tertiary alcohols is not a suitable method. Give reason.", "given": "Compare the carbocations from 1° and 2°/3° alcohols under acid.", "steps": ["A 2° or 3° alcohol protonates and loses water to form a relatively stable carbocation.", "That carbocation eliminates a β-proton (E1) to an alkene far faster than a second alcohol molecule can capture it.", "Saytzeff alkenes therefore dominate; only primary alcohols are captured by a second alcohol to give ethers cleanly."], "answer": "2°/3° alcohols dehydrate through stable carbocations to alkenes; they are not captured as ethers.", "takeaway": "Ether formation needs a 1° alcohol (or Williamson synthesis); otherwise elimination wins.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 28, "title": "HI cleavage of three ethers", "conceptIdx": 6, "page": 32, "question": "Write the equation of the reaction of hydrogen iodide with:\n(i) 1-propoxypropane (ii) methoxybenzene and (iii) benzyl ethyl ether.", "given": "Cleavage of the C–O bond by HI; dialkyl, alkyl aryl and benzyl ethers behave differently.", "steps": ["(i) CH₃CH₂CH₂OCH₂CH₂CH₃ + HI → CH₃CH₂CH₂I + CH₃CH₂CH₂OH; with excess HI the alcohol gives a second molecule of CH₃CH₂CH₂I.", "(ii) C₆H₅OCH₃ + HI → C₆H₅OH + CH₃I. The aryl–oxygen bond is not cleaved; I⁻ attacks the methyl carbon.", "(iii) C₆H₅CH₂OCH₂CH₃ + HI → C₆H₅CH₂I + CH₃CH₂OH (attack at the benzylic carbon, which can also ionise by an SN1-like path)."], "answer": "(i) 2 CH₃CH₂CH₂I + H₂O (with excess HI); (ii) C₆H₅OH + CH₃I; (iii) C₆H₅CH₂I + C₂H₅OH.", "takeaway": "HI cleaves the less hindered/benzylic C–O bond; the aryl–O bond survives.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 29, "title": "Why alkoxy activates and o,p-directs", "conceptIdx": 6, "page": 32, "question": "Explain the fact that in aryl alkyl ethers (i) the alkoxy group activates the benzene ring towards electrophilic substitution and (ii) it directs the incoming substituents to ortho and para positions in benzene ring.", "given": "An aryl alkyl ether ArOR (for example anisole, C₆H₅OCH₃).", "steps": ["The oxygen lone pair conjugates with the ring (+R effect), raising the overall electron density — the ring is activated.", "Resonance structures place extra negative charge specifically at the ortho and para carbons.", "An electrophile therefore attacks preferentially at o/p, and the Wheland intermediate is stabilised by oxygen's lone pair."], "answer": "–OR is activating and ortho/para-directing by resonance donation, exactly like –OH but somewhat milder.", "takeaway": "Same reasoning as phenol: lone-pair conjugation controls both reactivity and orientation.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 30, "title": "Mechanism of HI + methoxymethane", "conceptIdx": 6, "page": 32, "question": "Write the mechanism of the reaction of HI with methoxymethane.", "given": "Methoxymethane (dimethyl ether) with HI; with excess HI the alcohol product reacts further.", "steps": ["Protonation: CH₃OCH₃ + H⁺ ⇌ CH₃O⁺HCH₃.", "Nucleophilic attack: I⁻ attacks a methyl carbon by SN2, giving CH₃I + CH₃OH.", "With excess HI, methanol is protonated and attacked again: CH₃OH + HI → CH₃I + H₂O."], "answer": "Protonate the ether, displace one methyl as CH₃I, then convert the methanol to a second CH₃I if HI is in excess.", "takeaway": "Ether cleavage is protonation followed by SN2 at the less hindered carbon.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 31, "title": "EAS reactions of anisole", "conceptIdx": 6, "page": 32, "question": "Write equations of the following reactions:\n(i) Friedel-Crafts reaction – alkylation of anisole. (ii) Nitration of anisole. (iii) Bromination of anisole in ethanoic acid medium. (iv) Friedel-Craft’s acetylation of anisole.", "given": "Anisole (methoxybenzene) undergoes EAS at o/p positions.", "steps": ["(i) C₆H₅OCH₃ + CH₃Cl/AlCl₃ → o- and p-methylanisole (friedel-crafts alkylation).", "(ii) C₆H₅OCH₃ + conc. HNO₃/conc. H₂SO₄ → o- and p-nitroanisole.", "(iii) C₆H₅OCH₃ + Br₂/CH₃COOH → mainly p-bromoanisole (bromination in ethanoic acid medium).", "(iv) C₆H₅OCH₃ + CH₃COCl/AlCl₃ → o- and p-methoxyacetophenone (acylation)."], "answer": "All four substitutions occur at o/p and the para isomer usually predominates. Main products: (i) o- and p-methylanisole (Friedel–Crafts alkylation); (ii) o- and p-nitroanisole (nitration); (iii) mainly p-bromoanisole (bromination in ethanoic acid medium); (iv) o- and p-methoxyacetophenone (Friedel–Crafts acetylation).", "takeaway": "–OCH₃ activates anisole and directs o/p, so the reactions are far milder than for benzene.", "conceptName": "Ethers: Williamson & cleavage", "printPage": 224}, {"q": 32, "title": "Alcohols from alkenes", "conceptIdx": 2, "page": 32, "question": "Show how would you synthesise the following alcohols from appropriate alkenes?\n(i) 1-methylcyclohexanol (ii) 4-methylheptan-4-ol (iii) pentan-2-ol (iv) 2-cyclohexylbutan-2-ol. The four target structures are redrawn in Fig. 7.32.", "given": "Four target alcohols drawn in Fig. 7.32; use acid-catalysed hydration of an alkene chosen so that the –OH lands on the more substituted carbon (Markovnikov).", "steps": ["(i) 1-Methylcyclohexene (or methylenecyclohexane) + H₂O/H⁺ → 1-methylcyclohexanol.", "(ii) The drawn alcohol has two propyl groups and a methyl on the carbinol carbon: 4-methylheptan-4-ol. Hydrate 4-methylhept-3-ene; H⁺ adds to C-3 so the tertiary C-4 cation is captured by water.", "(iii) Pent-1-ene or pent-2-ene + H₂O/H⁺ → pentan-2-ol.", "(iv) The drawn alcohol is CH₃–C(OH)(C₆H₁₁)(C₂H₅): 2-cyclohexylbutan-2-ol. Hydrate 2-cyclohexylbut-2-ene."], "answer": "Acid-catalysed hydration of: (i) 1-methylcyclohexene; (ii) 4-methylhept-3-ene → 4-methylheptan-4-ol; (iii) pent-1-ene (or pent-2-ene) → pentan-2-ol; (iv) 2-cyclohexylbut-2-ene → 2-cyclohexylbutan-2-ol.", "takeaway": "Choose the alkene so that the double bond is adjacent to the alcohol carbon and Markovnikov hydration puts OH there.", "conceptName": "Preparation of alcohols & phenols", "figure": "7.32", "printPage": 224}, {"q": 33, "title": "Rearrangement with HBr", "conceptIdx": 4, "page": 32, "question": "When 3-methylbutan-2-ol is treated with HBr, the following reaction takes place:\nCH₃CH(CH₃)CH(OH)CH₃ + HBr → (CH₃)₂CBrCH₂CH₃.\nGive a mechanism for this reaction. (Hint: The secondary carbocation formed in step II rearranges to a more stable tertiary carbocation by a hydride ion shift from 3rd carbon atom.)", "given": "3-Methylbutan-2-ol + HBr; the reprint's hint points to a 1,2-hydride shift.", "steps": ["Step I: protonation of the –OH group and loss of water gives the secondary carbocation at C-2, CH₃CH(CH₃)CH⁺CH₃.", "Step II: a hydride ion shifts from C-3 to C-2, giving the more stable tertiary carbocation (CH₃)₂C⁺CH₂CH₃.", "Step III: Br⁻ captures the tertiary carbocation to give 2-bromo-2-methylbutane, (CH₃)₂CBrCH₂CH₃."], "answer": "A 1,2-hydride shift converts the 2° carbocation into a 3° carbocation; Br⁻ then attacks to give 2-bromo-2-methylbutane.", "takeaway": "Before predicting an HX product, check whether the carbocation can rearrange to a more stable one.", "conceptName": "Reactions of alcohols", "figure": "7.33", "printPage": 224}], "exercisesNote": "All 33 questions from the NCERT exercises (printed pp. 222–224), each mapped to the concept it practises, with a full step-by-step solution. Answers follow the NCERT key (Answers to Some Questions in Exercises, pp. 303–305) and the printed structures of the chapter.", "exerciseMap": [[1, "IUPAC names of twelve compounds", 0, 30], [2, "Structures from IUPAC names", 0, 30], [3, "All C₅H₁₂O alcohols and their classes", 0, 30], [4, "Why propanol boils above butane", 1, 30], [5, "Water solubility of alcohols", 1, 30], [6, "Hydroboration–oxidation", 2, 30], [7, "Monohydric phenols of C₇H₈O", 0, 30], [8, "Steam-volatile nitrophenol", 1, 30], [9, "Phenol from cumene", 2, 30], [10, "Phenol from chlorobenzene (Dow process)", 2, 30], [11, "Mechanism of ethene hydration", 2, 30], [12, "Phenol from benzene, H₂SO₄ and NaOH", 2, 30], [13, "Three syntheses: alkene, SN2, alkyl halide", 2, 31], [14, "Two reactions showing phenol's acidity", 3, 31], [15, "o-Nitrophenol vs o-methoxyphenol", 3, 31], [16, "How –OH activates the ring", 5, 31], [17, "Four equations from the chapter", 5, 31], [18, "Kolbe, Reimer–Tiemann, Williamson, unsymmetrical ether", 5, 31], [19, "Acid dehydration mechanism", 4, 31], [20, "Four conversions", 2, 31], [21, "Reagents for six reactions", 4, 31], [22, "Ethanol vs methoxymethane boiling points", 1, 31], [23, "IUPAC names of six ethers", 6, 32], [24, "Williamson syntheses of four ethers", 6, 32], [25, "Limitations of Williamson synthesis", 6, 32], [26, "1-Propoxypropane from propan-1-ol", 6, 32], [27, "Why 2°/3° alcohols do not give ethers", 6, 32], [28, "HI cleavage of three ethers", 6, 32], [29, "Why alkoxy activates and o,p-directs", 6, 32], [30, "Mechanism of HI + methoxymethane", 6, 32], [31, "EAS reactions of anisole", 6, 32], [32, "Alcohols from alkenes", 2, 32], [33, "Rearrangement with HBr", 4, 32]]};
+</script>
+<script>
+// Textbook structures used by the lech202 exercises, redrawn as SVG from the printed
+// structures in books/originals/Class12-Chemistry-Pt2_lech202.pdf (exercise pp. 222–224).
+// Rings are drawn as skeletal formulae; chains and equations as condensed formulae.
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", RED = "#f87171", BLUE = "#60a5fa", GOLD = "#fbbf24";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 15) + '" ' +
+      'text-anchor="' + (o.anchor || "middle") + '"' + (o.weight ? ' font-weight="' + o.weight + '"' : '') +
+      (o.mono ? ' font-family="ui-monospace,monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + (color || INK) +
+      '" stroke-width="' + (w || 2) + '" stroke-linecap="round"/>';
+  }
+  function pts(cx, cy, r, rot){
+    var out = [];
+    for(var k = 0; k < 6; k++){
+      var a = Math.PI / 180 * (60 * k - 90 + (rot || 0));
+      out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    return out;
+  }
+  function cyclo(cx, cy, r, rot){
+    var p = pts(cx, cy, r, rot), s = "";
+    for(var k = 0; k < 6; k++){
+      var q = p[(k + 1) % 6];
+      s += line(p[k][0], p[k][1], q[0], q[1], INK, 2);
+    }
+    return s;
+  }
+  function benzene(cx, cy, r, rot){
+    var p = pts(cx, cy, r, rot), s = cyclo(cx, cy, r, rot);
+    [0, 2, 4].forEach(function(k){
+      var a = p[k], b = p[(k + 1) % 6];
+      var ax = cx + (a[0] - cx) * 0.72, ay = cy + (a[1] - cy) * 0.72;
+      var bx = cx + (b[0] - cx) * 0.72, by = cy + (b[1] - cy) * 0.72;
+      s += line(ax, ay, bx, by, INK, 2);
+    });
+    return s;
+  }
+  function poly(pl, color, w){
+    var s = "";
+    for(var k = 1; k < pl.length; k++){
+      s += line(pl[k - 1][0], pl[k - 1][1], pl[k][0], pl[k][1], color || INK, w || 2);
+    }
+    return s;
+  }
+
+  var figs = {};
+
+  figs["7.1"] = {
+    caption: "Fig. 7.1 — Exercise 7.1: structures (i)–(xii) redrawn (chains as condensed formulae, phenols as skeletal rings).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 960 640" role="img" aria-label="Structures (i) to (xii) of Exercise 7.1">';
+      s += '<rect width="960" height="640" fill="#09131d"/>';
+      s += text(30, 42, "(i)  CH₃–CH(CH₃)–CH(OH)–C(CH₃)₂–CH₃", {anchor: "start", size: 16});
+      s += text(510, 42, "(ii)  H₃C–CH(OH)–CH₂–CH(OH)–CH(C₂H₅)–CH₂–CH₃", {anchor: "start", size: 16});
+      s += text(30, 96, "(iii)  CH₃–CH(OH)–CH(OH)–CH₃", {anchor: "start", size: 16});
+      s += text(510, 96, "(iv)  HO–CH₂–CH(OH)–CH₂–OH", {anchor: "start", size: 16});
+      // (v)–(viii): four rings with labels
+      var r = 40, y = 230, xs = [120, 340, 560, 780];
+      var v = xs.map(function(x){ return pts(x, y, r); });
+      s += benzene(xs[0], y, r);
+      s += text(xs[0], y - r - 12, "CH₃", {size: 15});
+      s += text(v[0][1][0] + 26, v[0][1][1] - 4, "OH", {color: BLUE, size: 15});
+      s += text(xs[0], y + r + 30, "(v) 2-methylphenol", {size: 13, color: MUTED});
+      s += benzene(xs[1], y, r);
+      s += text(xs[1], y - r - 12, "CH₃", {size: 15});
+      s += text(xs[1], y + r + 22, "OH", {color: BLUE, size: 15});
+      s += text(xs[1], y + r + 48, "(vi) 4-methylphenol", {size: 13, color: MUTED});
+      s += benzene(xs[2], y, r);
+      s += text(xs[2], y - r - 12, "CH₃", {size: 15});
+      s += text(v[2][2][0] + 28, v[2][2][1] + 4, "OH", {color: BLUE, size: 15});
+      s += text(xs[2], y + r + 22, "CH₃", {size: 15});
+      s += text(xs[2], y + r + 48, "(vii) 2,5-dimethylphenol", {size: 13, color: MUTED});
+      s += benzene(xs[3], y, r);
+      s += text(xs[3], y - r - 12, "CH₃", {size: 15});
+      s += text(v[3][1][0] + 26, v[3][1][1] - 4, "OH", {color: BLUE, size: 15});
+      s += text(v[3][2][0] + 26, v[3][2][1] + 12, "CH₃", {size: 15});
+      s += text(xs[3], y + r + 48, "(viii) 2,6-dimethylphenol", {size: 13, color: MUTED});
+      // (ix)–(xii)
+      s += text(30, 400, "(ix)  CH₃–O–CH₂–CH(CH₃)–CH₃", {anchor: "start", size: 16});
+      s += text(510, 400, "(x)  C₆H₅–O–C₂H₅", {anchor: "start", size: 16});
+      s += text(30, 470, "(xi)  C₆H₅–O–C₇H₁₅(n–)", {anchor: "start", size: 16});
+      s += text(510, 470, "(xii)  CH₃–CH₂–O–CH(CH₃)–CH₂–CH₃", {anchor: "start", size: 16});
+      s += text(480, 560, "Exercise 7.1 · structures (i)–(xii) · redrawn from the NCERT chapter", {size: 12, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["7.23"] = {
+    caption: "Fig. 7.23 — Exercise 7.23: the six ether structures (i)–(vi) redrawn (rings as skeletal formulae).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 860 430" role="img" aria-label="Ether structures (i) to (vi) of Exercise 7.23">';
+      s += '<rect width="860" height="430" fill="#09131d"/>';
+      s += text(30, 46, "(i)  C₂H₅OCH₂–CH(CH₃)–CH₃", {anchor: "start", size: 16});
+      s += text(470, 46, "(ii)  CH₃OCH₂CH₂Cl", {anchor: "start", size: 16});
+      s += text(30, 100, "(iii)  O₂N–C₆H₄–OCH₃ (p)", {anchor: "start", size: 16});
+      s += text(470, 100, "(iv)  CH₃CH₂CH₂OCH₃", {anchor: "start", size: 16});
+      var r = 46, cy = 255;
+      // (v) cyclohexane: gem-dimethyl top, OC2H5 bottom
+      var x5 = 190;
+      s += cyclo(x5, cy, r);
+      s += line(x5, cy - r, x5 - 24, cy - r - 20, INK, 2);
+      s += text(x5 - 44, cy - r - 26, "H₃C", {size: 14});
+      s += line(x5, cy - r, x5 + 24, cy - r - 20, INK, 2);
+      s += text(x5 + 42, cy - r - 26, "CH₃", {size: 14});
+      s += line(x5, cy + r, x5, cy + r + 14, GOLD, 2);
+      s += text(x5, cy + r + 32, "OC₂H₅", {size: 15, color: GOLD});
+      s += text(x5, cy + r + 56, "(v) 1-ethoxy-4,4-dimethylcyclohexane", {size: 12, color: MUTED});
+      // (vi) benzene with OC2H5
+      var x6 = 620;
+      s += benzene(x6, cy, r);
+      s += line(x6, cy + r, x6, cy + r + 14, GOLD, 2);
+      s += text(x6, cy + r + 32, "OC₂H₅", {size: 15, color: GOLD});
+      s += text(x6, cy + r + 56, "(vi) ethoxybenzene", {size: 12, color: MUTED});
+      s += text(430, 400, "Exercise 7.23 · redrawn from the printed structures", {size: 12, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["7.32"] = {
+    caption: "Fig. 7.32 — Exercise 7.32: the four target alcohols (i)–(iv) redrawn as skeletal structures.",
+    svg: function(){
+      var s = '<svg viewBox="0 0 860 430" role="img" aria-label="Target alcohols of Exercise 7.32">';
+      s += '<rect width="860" height="430" fill="#09131d"/>';
+      // (i) 1-methylcyclohexanol
+      var r = 44, cx = 140, cy = 150;
+      s += cyclo(cx, cy, r);
+      s += line(cx, cy - r, cx - 26, cy - r - 34, INK, 2);
+      s += text(cx - 42, cy - r - 40, "CH₃", {size: 14});
+      s += line(cx, cy - r, cx + 30, cy - r - 26, BLUE, 2);
+      s += text(cx + 44, cy - r - 26, "OH", {size: 14, color: BLUE});
+      s += text(cx, cy + r + 30, "(i) 1-methylcyclohexanol", {size: 13, color: MUTED});
+      // (ii) 4-methylheptan-4-ol (central C with two propyls + methyl + OH)
+      var c = [430, 190];
+      s += poly([[c[0] - 120, c[1] - 45], [c[0] - 80, c[1] - 70], [c[0] - 40, c[1] - 45], c], INK, 2);
+      s += poly([c, [c[0] + 40, c[1] - 45], [c[0] + 80, c[1] - 70], [c[0] + 120, c[1] - 45]], INK, 2);
+      s += line(c[0], c[1], c[0], c[1] - 42, BLUE, 2);
+      s += text(c[0], c[1] - 52, "OH", {size: 14, color: BLUE});
+      s += line(c[0], c[1], c[0] + 26, c[1] + 26, INK, 2);
+      s += text(c[0] + 50, c[1] + 32, "CH₃", {size: 14, anchor: "start"});
+      s += text(c[0], c[1] + 86, "(ii) 4-methylheptan-4-ol", {size: 13, color: MUTED});
+      // (iii) pentan-2-ol
+      var p3 = [[90, 330], [130, 305], [170, 330], [210, 305], [250, 330]];
+      s += poly(p3, INK, 2);
+      s += line(130, 305, 130, 268, BLUE, 2);
+      s += text(130, 258, "OH", {size: 14, color: BLUE});
+      s += text(170, 372, "(iii) pentan-2-ol", {size: 13, color: MUTED});
+      // (iv) 2-cyclohexylbutan-2-ol
+      var x4 = 560, y4 = 320;
+      s += cyclo(x4, y4, 46);
+      var a4 = [x4 + 46 * Math.cos(Math.PI / 180 * 90), y4 - 46 * Math.sin(Math.PI / 180 * 90)];
+      s += line(x4 + 40, y4 - 22, x4 + 92, y4 - 48, INK, 2);
+      s += line(x4 + 92, y4 - 48, x4 + 92, y4 - 10, BLUE, 2);
+      s += text(x4 + 92, y4, "OH", {size: 14, color: BLUE});
+      s += line(x4 + 92, y4 - 48, x4 + 118, y4 - 78, INK, 2);
+      s += text(x4 + 142, y4 - 84, "CH₃", {size: 14});
+      s += poly([[x4 + 92, y4 - 48], [x4 + 140, y4 - 30], [x4 + 172, y4 - 58]], INK, 2);
+      s += text(x4 + 90, y4 + 84, "(iv) 2-cyclohexylbutan-2-ol", {size: 13, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["7.33"] = {
+    caption: "Fig. 7.33 — Exercise 7.33: 3-methylbutan-2-ol + HBr → 2-bromo-2-methylbutane (redrawn reaction).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 900 230" role="img" aria-label="HBr rearrangement of 3-methylbutan-2-ol">';
+      s += '<rect width="900" height="230" fill="#09131d"/>';
+      s += text(30, 105, "CH₃–CH(CH₃)–CH(OH)–CH₃", {anchor: "start", size: 18});
+      s += line(290, 98, 370, 98, INK, 2);
+      s += '<polygon points="370,98 358,92 358,104" fill="' + INK + '"/>';
+      s += text(330, 80, "HBr", {size: 16, color: GOLD});
+      s += text(400, 105, "(CH₃)₂CBr–CH₂–CH₃", {anchor: "start", size: 18});
+      s += text(450, 180, "2° carbocation → 3° carbocation by a 1,2-hydride shift, then Br⁻ attacks", {size: 13, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1499,44 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1562,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1645,35 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1690,10 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1702,17 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1724,15 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1745,6 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1754,6 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1766,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1792,47 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1840,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1849,46 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1934,10 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1956,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +2006,8 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +2016,41 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +2065,6 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +2099,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +2184,9 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2214,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2259,31 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2329,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2339,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2349,31 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2393,12 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2408,10 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2425,41 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2467,7 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1895,27 +2476,237 @@ window.CHAPTER = {"code": "lech202", "chapterNumber": 7, "book_name": "Chemistry
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1943,11 +2734,11 @@ window.SIMS.classnom = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Alcohol C(sp³)–OH</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Phenol / ether</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c1">1° alcohol</button>' +
-      '<button class="preset-btn" id="c2">2° / 3°</button>' +
-      '<button class="preset-btn" id="c3">Allylic / benzylic</button>' +
-      '<button class="preset-btn" id="c4">Phenol</button>' +
-      '<button class="preset-btn" id="c5">Ether</button>';
+      '<button class="preset-btn active" data-preset="primary" id="c1">1° alcohol</button>' +
+      '<button class="preset-btn" data-preset="secondary-tertiary" id="c2">2° / 3°</button>' +
+      '<button class="preset-btn" data-preset="allylic-benzylic" id="c3">Allylic / benzylic</button>' +
+      '<button class="preset-btn" data-preset="phenol" id="c4">Phenol</button>' +
+      '<button class="preset-btn" data-preset="ether" id="c5">Ether</button>';
     document.getElementById("c1").onclick = function(){ setActivePreset(this); kind="1alc"; draw(0); };
     document.getElementById("c2").onclick = function(){ setActivePreset(this); kind="23"; draw(0); };
     document.getElementById("c3").onclick = function(){ setActivePreset(this); kind="allyl"; draw(0); };
@@ -1982,9 +2773,9 @@ window.SIMS.hbonds = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>H-bonding</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-bp">b.p. vs ethers / alkanes</button>' +
-      '<button class="preset-btn" id="h-sol">Water solubility</button>' +
-      '<button class="preset-btn" id="h-onp">o- vs p-nitrophenol steam</button>';
+      '<button class="preset-btn active" data-preset="bp" id="h-bp">b.p. vs ethers / alkanes</button>' +
+      '<button class="preset-btn" data-preset="solubility" id="h-sol">Water solubility</button>' +
+      '<button class="preset-btn" data-preset="nitrophenol" id="h-onp">o- vs p-nitrophenol steam</button>';
     document.getElementById("h-bp").onclick = function(){ setActivePreset(this); mode="bp"; draw(0); };
     document.getElementById("h-sol").onclick = function(){ setActivePreset(this); mode="sol"; draw(0); };
     document.getElementById("h-onp").onclick = function(){ setActivePreset(this); mode="onp"; draw(0); };
@@ -2037,11 +2828,11 @@ window.SIMS.prepalc = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Alcohol route</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Phenol route</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-hb">Hydroboration–oxidation</button>' +
-      '<button class="preset-btn" id="p-h3">Acid hydration</button>' +
-      '<button class="preset-btn" id="p-gr">Grignard + carbonyl</button>' +
-      '<button class="preset-btn" id="p-cu">Cumene → phenol</button>' +
-      '<button class="preset-btn" id="p-dow">Dow / diazonium</button>';
+      '<button class="preset-btn active" data-preset="hydroboration" id="p-hb">Hydroboration–oxidation</button>' +
+      '<button class="preset-btn" data-preset="hydration" id="p-h3">Acid hydration</button>' +
+      '<button class="preset-btn" data-preset="grignard" id="p-gr">Grignard + carbonyl</button>' +
+      '<button class="preset-btn" data-preset="cumene" id="p-cu">Cumene → phenol</button>' +
+      '<button class="preset-btn" data-preset="dow" id="p-dow">Dow / diazonium</button>';
     document.getElementById("p-hb").onclick = function(){ setActivePreset(this); mode="hb"; draw(0); };
     document.getElementById("p-h3").onclick = function(){ setActivePreset(this); mode="h3"; draw(0); };
     document.getElementById("p-gr").onclick = function(){ setActivePreset(this); mode="gr"; draw(0); };
@@ -2058,7 +2849,7 @@ window.SIMS.prepalc = (function(){
     else if(mode==="h3"){ eq="CH₂=CH₂ + H₂O  (H⁺)  →  CH₃CH₂OH"; n="Ex 7.11 mechanism: protonation → carbocation → water capture → deprotonation. 2°/3° C⁺ may rearrange (Ex 7.33)."; }
     else if(mode==="gr"){ eq="RMgX + HCHO → 1° ; RCHO → 2° ; R₂C=O → 3°  (then H₃O⁺)"; n="Carbon of Grignard is nucleophilic. Also catalytic H₂ or LiAlH₄/NaBH₄ reduce carbonyls to alcohols."; }
     else if(mode==="cu"){ eq="PhCHMe₂ + O₂ → cumene hydroperoxide  (H⁺)  →  PhOH + Me₂C=O"; n="Industrial phenol + acetone from cumene (Ex 7.9)."; }
-    else { eq="PhCl + NaOH, 623 K, 300 atm → PhONa  (H⁺)  →  PhOH"; n="Also: ArSO₃Na fusion; ArN₂⁺ hydrolysis. Ex 7.10, 7.12 (benzene → PhSO₃H → PhOH)."; }
+    else { eq="PhCl + NaOH, 623 K, 320 atm → PhONa  (H⁺)  →  PhOH"; n="Also: ArSO₃Na fusion; ArN₂⁺ hydrolysis. Ex 7.10, 7.12 (benzene → PhSO₃H → PhOH)."; }
     m += '<text x="360" y="90" fill="#e2e8f0" font-size="15" text-anchor="middle">' + eq + '</text>';
     svg.innerHTML = m;
     readout(cell("Route", mode));
@@ -2085,13 +2876,13 @@ window.SIMS.phenolacidity = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Stronger acid (low pKa)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Weaker acid</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="a-et">Ethanol 15.9</button>' +
-      '<button class="preset-btn" id="a-cr">p-Cresol 10.2</button>' +
-      '<button class="preset-btn active" id="a-ph">Phenol 10.0</button>' +
-      '<button class="preset-btn" id="a-mn">m-NO₂ 8.3</button>' +
-      '<button class="preset-btn" id="a-on">o-NO₂ 7.2</button>' +
-      '<button class="preset-btn" id="a-pn">p-NO₂ 7.1</button>' +
-      '<button class="preset-btn" id="a-pi">Picric ~0.4</button>';
+      '<button class="preset-btn" data-preset="ethanol" id="a-et">Ethanol 15.9</button>' +
+      '<button class="preset-btn" data-preset="cresol" id="a-cr">p-Cresol 10.2</button>' +
+      '<button class="preset-btn active" data-preset="phenol" id="a-ph">Phenol 10.0</button>' +
+      '<button class="preset-btn" data-preset="m-nitrophenol" id="a-mn">m-NO₂ 8.3</button>' +
+      '<button class="preset-btn" data-preset="o-nitrophenol" id="a-on">o-NO₂ 7.2</button>' +
+      '<button class="preset-btn" data-preset="p-nitrophenol" id="a-pn">p-NO₂ 7.1</button>' +
+      '<button class="preset-btn" data-preset="picric" id="a-pi">Picric ~0.4</button>';
     [["a-et","etoh"],["a-cr","cresol"],["a-ph","ph"],["a-mn","mn"],["a-on","on"],["a-pn","pn"],["a-pi","pic"]].forEach(function(p){
       document.getElementById(p[0]).onclick = function(){ setActivePreset(this); id=p[1]; App.resetTimeline(); App.play(); };
     });
@@ -2130,10 +2921,10 @@ window.SIMS.rxnalc = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>C–O chemistry</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="r-ox">Oxidation 1°/2°/3°</button>' +
-      '<button class="preset-btn" id="r-de">Acid dehydration</button>' +
-      '<button class="preset-btn" id="r-lu">Lucas / HX</button>' +
-      '<button class="preset-btn" id="r-rearr">C⁺ rearrangement (Ex 7.33)</button>';
+      '<button class="preset-btn active" data-preset="oxidation" id="r-ox">Oxidation 1°/2°/3°</button>' +
+      '<button class="preset-btn" data-preset="dehydration" id="r-de">Acid dehydration</button>' +
+      '<button class="preset-btn" data-preset="lucas" id="r-lu">Lucas / HX</button>' +
+      '<button class="preset-btn" data-preset="rearrangement" id="r-rearr">C⁺ rearrangement (Ex 7.33)</button>';
     document.getElementById("r-ox").onclick = function(){ setActivePreset(this); mode="ox"; draw(0); };
     document.getElementById("r-de").onclick = function(){ setActivePreset(this); mode="de"; App.resetTimeline(); App.play(); };
     document.getElementById("r-lu").onclick = function(){ setActivePreset(this); mode="lu"; draw(0); };
@@ -2191,10 +2982,10 @@ window.SIMS.rxnph = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Phenoxide (more reactive)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="k-k">Kolbe–Schmitt</button>' +
-      '<button class="preset-btn" id="k-rt">Reimer–Tiemann</button>' +
-      '<button class="preset-btn" id="k-br">Br₂ / HNO₃ / Friedel–Crafts</button>' +
-      '<button class="preset-btn" id="k-as">Acetylation → aspirin</button>';
+      '<button class="preset-btn active" data-preset="kolbe" id="k-k">Kolbe–Schmitt</button>' +
+      '<button class="preset-btn" data-preset="reimer-tiemann" id="k-rt">Reimer–Tiemann</button>' +
+      '<button class="preset-btn" data-preset="bromination" id="k-br">Br₂ / HNO₃ / Friedel–Crafts</button>' +
+      '<button class="preset-btn" data-preset="aspirin" id="k-as">Acetylation → aspirin</button>';
     document.getElementById("k-k").onclick = function(){ setActivePreset(this); mode="kolbe"; draw(0); };
     document.getElementById("k-rt").onclick = function(){ setActivePreset(this); mode="rt"; draw(0); };
     document.getElementById("k-br").onclick = function(){ setActivePreset(this); mode="br"; draw(0); };
@@ -2227,10 +3018,10 @@ window.SIMS.ethersim = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Williamson SN2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>HI cleavage</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-w">Williamson</button>' +
-      '<button class="preset-btn" id="e-lim">Limitation (3° RX)</button>' +
-      '<button class="preset-btn" id="e-hi">HI cleavage</button>' +
-      '<button class="preset-btn" id="e-an">Anisole EAS</button>';
+      '<button class="preset-btn active" data-preset="williamson" id="e-w">Williamson</button>' +
+      '<button class="preset-btn" data-preset="limitation" id="e-lim">Limitation (3° RX)</button>' +
+      '<button class="preset-btn" data-preset="hi-cleavage" id="e-hi">HI cleavage</button>' +
+      '<button class="preset-btn" data-preset="anisole" id="e-an">Anisole EAS</button>';
     document.getElementById("e-w").onclick = function(){ setActivePreset(this); mode="will"; draw(0); };
     document.getElementById("e-lim").onclick = function(){ setActivePreset(this); mode="lim"; draw(0); };
     document.getElementById("e-hi").onclick = function(){ setActivePreset(this); mode="hi"; App.resetTimeline(); App.play(); };

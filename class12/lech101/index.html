@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 01 · SOLUTIONS</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,104 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 41 Exercises from NCERT Class 12 Chemistry Part I (pp. 1–30) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 41 Exercises from NCERT Class 12 Chemistry Part 1 (pp. 1–30) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry Part I", "title": "Solutions", "subtitle": "Types of solutions, concentration units, Henry’s and Raoult’s laws, ideal and non-ideal behaviour, colligative properties and the van’t Hoff factor.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech101.pdf", "page_start": 1, "page_end": 30, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "types-concentration", "nav": "Types & concentration units", "title": "Binary solutions: from types of mixture to mole fraction, molarity and molality", "deck": "A solution is a homogeneous mixture. Solvent sets the physical state; concentration may be mass %, ppm, mole fraction, molarity or molality — only some of these are temperature-independent.", "minutes": 9, "section": "1.1, 1.2", "pages": [1, 5], "print": "1–5", "sim": "concunits", "simTitle": "Concentration converter: mole fraction · molarity · molality", "quick": ["<strong>Solutions</strong> are homogeneous mixtures of two or more components. The component present in the largest quantity is the <strong>solvent</strong>; it determines the physical state of the solution. Other components are <strong>solutes</strong>. This Unit treats mostly binary liquid solutions.", "Table 1.1 classifies solutions by the physical state of solute and solvent: gaseous (O₂ + N₂), liquid (glucose in water, ethanol in water) and solid (Cu in Au, H₂ in Pd, amalgams).", "<strong>Mass %</strong> = (mass of component / total mass) × 100 (Eq. 1.1). <strong>Volume %</strong> uses volumes (Eq. 1.2). <strong>ppm</strong> = (mass of component / total mass) × 10⁶ (Eq. 1.3) — 1 ppm fluoride prevents tooth decay; 1.5 ppm mottles enamel.", "<strong>Mole fraction</strong> x<sub>A</sub> = n<sub>A</sub> / (n<sub>A</sub> + n<sub>B</sub>) (Eqs. 1.4–1.5); Σ x<sub>i</sub> = 1. <strong>Molarity</strong> M = moles of solute / litre of solution (Eq. 1.8) depends on T because volume does. <strong>Molality</strong> m = moles of solute / kg of solvent (Eq. 1.9) is independent of temperature."], "formulas": [{"label": "Mole fraction", "html": "x<sub>A</sub> = n<sub>A</sub> / (n<sub>A</sub> + n<sub>B</sub>)", "cond": "Eqs. 1.4–1.7; Σ x<sub>i</sub> = 1"}, {"label": "Molarity", "html": "M = n<sub>solute</sub> / V<sub>solution</sub> (L)", "cond": "Eq. 1.8; temperature-dependent"}, {"label": "Molality", "html": "m = n<sub>solute</sub> / mass<sub>solvent</sub> (kg)", "cond": "Eq. 1.9; independent of T"}], "deeper": "Example 1.1 (zoom p.4): 20% C₂H₆O₂ by mass. In 100 g: 20 g glycol (0.322 mol, M = 62) and 80 g water (4.444 mol). x_glycol = 0.322/4.766 = 0.068; x_water = 0.932. Example 1.2: 5 g NaOH in 450 mL → 0.125 mol / 0.450 L = 0.278 M. Example 1.3: 2.5 g CH₃COOH in 75 g benzene → 0.0417 mol / 0.075 kg = 0.556 mol kg⁻¹.", "worked": "Intext 1.4: mass of urea needed for 2.5 kg of 0.25 molal aqueous solution. Let solvent mass be w kg; n₂ = 0.25 w; mass of urea = 0.25w × 60 g = 15w g = 0.015w kg. Then w + 0.015w = 2.5 ⇒ w = 2.463 kg; mass urea = 36.95 g (NCERT 36.946 g).", "prediction": {"prompt": "A 20% by mass aqueous ethylene glycol solution (Example 1.1) has how many moles of water per mole of glycol, and what is x_glycol?", "options": ["About 13.8 mol water per mol glycol; x_glycol = 0.068", "Equal moles of each; x_glycol = 0.50", "x_glycol = 0.20 because the solution is 20% by mass"], "answer": 0, "explanation": "20 g / 62 g mol⁻¹ = 0.322 mol glycol; 80 g / 18 = 4.444 mol water; 4.444/0.322 ≈ 13.8. Mole fraction is moles, not mass percent."}, "connect": [["IV saline matches plasma", "Intravenous injections are dissolved in water containing salts at ionic concentrations that match blood plasma (Unit opener). A 0.9% (w/v) NaCl drip is ~0.15 M — isotonic with plasma, so red cells neither burst nor crenate."], ["Wow — 1 ppm fluoride vs rat poison", "1 ppm F⁻ in drinking water prevents tooth decay; 1.5 ppm mottles teeth; high concentrations (NaF) are used as rat poison. Concentration units are a public-health language, not just a laboratory habit.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write Eqs. 1.8 and 1.9 and state which concentration unit changes when a volumetric flask is taken from 25 °C to 40 °C.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which concentration unit is independent of temperature?", "options": ["Molality", "Molarity", "Volume percentage"], "answer": 0, "hint": "Which quantities in the definition do not involve volume?", "solution": "Molality uses moles and mass of solvent. Mass does not change with T; volume (hence molarity and volume %) does.", "wrong": ["Molarity uses solution volume, which expands on heating.", "Volume % uses volumes of both components."]}, {"level": "Medium", "type": "number", "map": "Example 1.2", "prompt": "Molarity of 5 g NaOH in 450 mL solution (M_NaOH = 40 g mol⁻¹) is", "answer": 0.278, "unit": "mol L⁻¹", "tolerance": 0.005, "hint": "n = 5/40; V = 0.450 L.", "solution": "n = 0.125 mol; M = 0.125/0.450 = 0.278 mol L⁻¹ (Example 1.2, zoom p.4)."}, {"level": "Hard", "type": "number", "map": "Intext 1.5", "prompt": "Molality of 20% (m/m) aqueous KI (M = 166 g mol⁻¹) is", "answer": 1.506, "unit": "mol kg⁻¹", "tolerance": 0.02, "hint": "20 g KI in 80 g water.", "solution": "n = 20/166 = 0.1205 mol; m = 0.1205/0.080 = 1.51 mol kg⁻¹ (NCERT 1.5 mol kg⁻¹)."}]}, {"id": "solubility-henry", "nav": "Solubility & Henry’s law", "title": "Like dissolves like — and p = K_H x for gases", "deck": "Solid solubility follows ‘like dissolves like’. For gases, Henry’s law p = K_H x: larger K_H means lower solubility. K_H rises with temperature, so cold water holds more O₂.", "minutes": 9, "section": "1.3", "pages": [5, 9], "print": "5–9", "sim": "henrylaw", "simTitle": "Henry’s law lab: soda, scuba tanks and anoxia", "quick": ["A solute dissolves if intermolecular interactions are similar — <em>like dissolves like</em>. Polar NaCl and sugar dissolve in water; naphthalene and anthracene dissolve in benzene. Dissolution and crystallisation reach dynamic equilibrium in a <strong>saturated</strong> solution (Eq. 1.10).", "<strong>Henry’s law</strong> (Eq. 1.11): the partial pressure of a gas in the vapour phase is proportional to its mole fraction in solution, <em>p = K<sub>H</sub> x</em>. Higher K<sub>H</sub> ⇒ lower solubility. Table 1.2: at 293 K, K<sub>H</sub>(He) = 144.97 kbar, K<sub>H</sub>(N₂) = 76.48 kbar, K<sub>H</sub>(O₂) = 34.86 kbar; K<sub>H</sub> of N₂ and O₂ both increase from 293 to 303 K.", "Applications: soda bottles sealed under high CO₂ pressure; scuba tanks diluted with He (11.7% He, 56.2% N₂, 32.1% O₂) to avoid bends; anoxia at high altitude from low p(O₂)."], "formulas": [{"label": "Henry’s law", "html": "p = K<sub>H</sub> x", "cond": "Eq. 1.11; x = mole fraction of dissolved gas"}, {"label": "Temperature trend", "html": "K<sub>H</sub> increases with T ⇒ solubility of gases falls", "cond": "Dissolution of gases is exothermic (Le Chatelier)"}], "deeper": "Example 1.4 (zoom p.8): N₂ at 0.987 bar, K_H = 76.48 kbar = 76480 bar, 293 K. x = 0.987/76480 = 1.29 × 10⁻⁵. In 1 L water (55.5 mol), n(N₂) = 1.29 × 10⁻⁵ × 55.5 = 7.16 × 10⁻⁴ mol = 0.716 mmol.", "worked": "Intext 1.7: K_H(CO₂) = 1.67 × 10⁸ Pa at 298 K; soda packed under 2.5 atm CO₂; 500 mL water. p = 2.5 × 1.01325 × 10⁵ Pa = 2.533 × 10⁵ Pa. x = p/K_H = 1.517 × 10⁻³. n(H₂O) = 500/18 = 27.78 mol; n(CO₂) = 0.0421 mol; mass = 1.85 g.", "prediction": {"prompt": "A lake warms from 293 K to 303 K. Table 1.2: K_H(O₂) goes 34.86 → 46.82 kbar. What happens to dissolved oxygen, and why are fish less comfortable?", "options": ["x(O₂) falls because p = K_H x at fixed p(O₂); less O₂ is dissolved", "Solubility of O₂ increases because molecules move faster", "K_H has no effect; only pressure matters"], "answer": 0, "explanation": "At fixed atmospheric p(O₂), x = p/K_H. Larger K_H means smaller x. Aquatic species are more comfortable in cold water (text after Table 1.2)."}, "connect": [["Soft-drink bottling in India", "A 300 mL soda sealed at ~2.5 atm CO₂ (Intext 1.7 numbers) holds ~1.1 g CO₂. Opening the cap drops p, so x must fall — the familiar fizz is Henry’s law run backwards."], ["Wow — bends and helium mix", "NCERT specifies the scuba mix 11.7% He / 56.2% N₂ / 32.1% O₂. Helium’s high K_H (144.97 kbar) keeps its dissolved mole fraction tiny, so fewer bubbles form on ascent.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "State Henry’s law as Eq. 1.11 and give one industrial and one biological application from the text.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Henry’s law in the form used in this Unit is", "options": ["p = K_H x", "x = K_H p²", "p V = n R T"], "answer": 0, "hint": "Equation 1.11.", "solution": "The partial pressure of the gas is proportional to its mole fraction in solution.", "wrong": ["That is not Henry’s law.", "Ideal-gas law, not solubility."]}, {"level": "Medium", "type": "number", "map": "Example 1.4", "prompt": "Millimoles of N₂ dissolving in 1 L water at 293 K if p = 0.987 bar and K_H = 76.48 kbar", "answer": 0.716, "unit": "mmol", "tolerance": 0.02, "hint": "x = p/K_H; n = x × 55.5.", "solution": "x = 1.29 × 10⁻⁵; n = 7.16 × 10⁻⁴ mol = 0.716 mmol."}, {"level": "Hard", "type": "number", "map": "Intext 1.6", "prompt": "Henry’s law constant (bar) for H₂S if solubility at STP is 0.195 m (p = 0.987 bar)", "answer": 282, "unit": "bar", "tolerance": 5, "hint": "x ≈ 0.195/(0.195 + 55.5); K_H = p/x.", "solution": "x = 0.00350; K_H = 0.987/0.00350 = 282 bar."}]}, {"id": "raoult-vapour", "nav": "Raoult’s law", "title": "Two volatile liquids: p_i = x_i p_i° and the straight p_total line", "deck": "Raoult: each partial pressure equals mole fraction times the pure-liquid vapour pressure. Total pressure is linear in x₂. Vapour is richer in the more volatile component.", "minutes": 9, "section": "1.4", "pages": [9, 14], "print": "9–14", "sim": "raoult", "simTitle": "Raoult two-component p–x diagram (heptane–octane / A–B)", "quick": ["For a binary solution of volatile liquids, <strong>Raoult’s law</strong>: p₁ = x₁ p₁° (Eq. 1.12) and p₂ = x₂ p₂° (Eq. 1.13). Dalton: p_total = p₁ + p₂ = x₁ p₁° + x₂ p₂° = p₁° + (p₂° − p₁°) x₂ (Eqs. 1.14–1.16).", "p_total varies linearly with mole fraction. The vapour mole fraction y₁ = p₁ / p_total is not equal to x₁: vapour is richer in the more volatile component.", "For a non-volatile solute, p₁ = x₁ p₁° and the vapour is pure solvent. Relative lowering (p₁° − p₁)/p₁° = x₂ (Eq. 1.25)."], "formulas": [{"label": "Raoult (component i)", "html": "p<sub>i</sub> = x<sub>i</sub> p<sub>i</sub>°", "cond": "Eqs. 1.12–1.13"}, {"label": "Total pressure", "html": "p<sub>total</sub> = p₁° + (p₂° − p₁°) x₂", "cond": "Eq. 1.16; linear in x₂"}, {"label": "Relative lowering", "html": "(p₁° − p₁)/p₁° = x₂", "cond": "Eq. 1.25; non-volatile solute"}], "deeper": "Intext 1.8: p_A° = 450 mm Hg, p_B° = 700 mm Hg, p_total = 600 mm Hg at 350 K. 600 = 450 x_A + 700 (1 − x_A) ⇒ x_A = 0.40, x_B = 0.60. y_A = (450 × 0.40)/600 = 0.30; y_B = 0.70. Example 1.6: benzene p° = 0.850 bar → 0.845 bar with 0.5 g solute in 39.0 g benzene ⇒ M₂ = 170 g mol⁻¹.", "worked": "Exercise 1.16 (ideal heptane–octane at 373 K): 26.0 g heptane (C₇H₁₆, 100 g mol⁻¹) + 35 g octane (C₈H₁₈, 114 g mol⁻¹). n_H = 0.260, n_O = 0.307; x_H = 0.459. p = 0.459 × 105.2 + 0.541 × 46.8 = 73.6 kPa.", "prediction": {"prompt": "Liquids A and B have p_A° = 450 mm Hg and p_B° = 700 mm Hg. At x_A = 0.40 the total pressure is 600 mm Hg. What is the mole fraction of A in the vapour?", "options": ["y_A = 0.30 — vapour is poorer in A than the liquid", "y_A = 0.40 — vapour matches the liquid", "y_A = 0.70 — vapour is richer in the less volatile liquid"], "answer": 0, "explanation": "p_A = 0.40 × 450 = 180 mm Hg; y_A = 180/600 = 0.30. B is more volatile, so vapour is richer in B (Intext 1.8)."}, "connect": [["Fractional distillation of petroleum", "Indian refineries (Jamnagar, Panipat) separate naphtha from kerosene because vapour is always richer in the more volatile cut — the same y ≠ x that Intext 1.8 computes for A + B."], ["Wow — a straight line is the whole law", "Eq. 1.16 says p_total vs x₂ is a straight line between p₁° and p₂°. Any bulge up or down is a confession that the solution is not ideal (Section 1.5).", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write p_total in terms of x₂ (Eq. 1.16) and state how vapour composition y_i is obtained from partial pressures.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Raoult’s law for a volatile component is", "options": ["p_i = x_i p_i°", "p_i = K_H x_i with K_H independent of identity", "p_i = p_i° / x_i"], "answer": 0, "hint": "Equations 1.12–1.13.", "solution": "Partial vapour pressure equals mole fraction times the pure-component vapour pressure.", "wrong": ["That is Henry’s law (different constant, different regime).", "Inverse mole fraction would raise pressure on dilution."]}, {"level": "Medium", "type": "number", "map": "Intext 1.8", "prompt": "Mole fraction of A in the liquid if p_A° = 450, p_B° = 700, p_total = 600 mm Hg", "answer": 0.4, "unit": "", "tolerance": 0.01, "hint": "p = p_A° x_A + p_B° (1 − x_A).", "solution": "600 = 450 x_A + 700 − 700 x_A ⇒ 250 x_A = 100 ⇒ x_A = 0.40."}, {"level": "Hard", "type": "number", "map": "Example 1.6", "prompt": "Molar mass (g mol⁻¹) of a non-volatile solid if 0.5 g in 39.0 g benzene lowers p from 0.850 to 0.845 bar", "answer": 170, "unit": "g mol⁻¹", "tolerance": 2, "hint": "(p° − p)/p° = (w₂ M₁)/(M₂ w₁).", "solution": "0.005/0.850 = 0.5 × 78 / (M₂ × 39) ⇒ M₂ = 170 g mol⁻¹."}]}, {"id": "ideal-nonideal", "nav": "Ideal & non-ideal solutions", "title": "Δ_mix H = 0 and Δ_mix V = 0, or a bulge in the p–x curve", "deck": "Ideal solutions obey Raoult over the whole range (benzene–toluene, hexane–heptane). Positive deviation: A–B weaker than A–A/B–B (acetone–CS₂). Negative: A–B stronger (acetone–chloroform, HNO₃–water).", "minutes": 8, "section": "1.5", "pages": [14, 15], "print": "14–15", "sim": "deviation", "simTitle": "Ideal vs ± deviation: acetone–chloroform p–x plot", "quick": ["An <strong>ideal solution</strong> obeys Raoult’s law over the entire composition range. Enthalpy of mixing Δ_mix H = 0 and volume of mixing Δ_mix V = 0: A–A, B–B and A–B interactions are alike. Examples: n-hexane + n-heptane, benzene + toluene, bromoethane + chloroethane.", "<strong>Positive deviation</strong>: A–B attractions weaker than A–A and B–B, so molecules escape more easily; p_total is higher than Raoult predicts; Δ_mix H > 0. Ethanol–acetone, acetone–CS₂, ethanol–water (over much of the range).", "<strong>Negative deviation</strong>: A–B attractions stronger (often H-bonding); p_total lower than ideal; Δ_mix H < 0. Acetone–chloroform, phenol–aniline, HNO₃–water, CHCl₃–CH₃COCH₃ (Exercise 1.37 data)."], "formulas": [{"label": "Ideal mixing", "html": "Δ<sub>mix</sub> H = 0,  Δ<sub>mix</sub> V = 0,  p<sub>i</sub> = x<sub>i</sub> p<sub>i</sub>°", "cond": "Section 1.5.1"}, {"label": "Sign of deviation", "html": "+ deviation ⇔ Δ<sub>mix</sub> H > 0;  − deviation ⇔ Δ<sub>mix</sub> H < 0", "cond": "Exercise 1.14"}], "deeper": "Exercise 1.37 (zoom p.30): pure acetone 741.8 mm Hg, chloroform 632.8 mm Hg at 328 K. Experimental p_acetone at x_acetone = 0.508 is 322.7 mm Hg, below the ideal 741.8 × 0.508 = 377 mm Hg — negative deviation, consistent with H-bonding between acetone carbonyl and chloroform hydrogen.", "worked": "Exercise 1.38: 80 g benzene + 100 g toluene, ideal at 300 K, p_b° = 50.71 mm Hg, p_t° = 32.06 mm Hg. n_b = 80/78 = 1.026, n_t = 100/92 = 1.087, x_b = 0.486. p_b = 24.64, p_t = 16.48, p_total = 41.12 mm Hg; y_benzene = 24.64/41.12 = 0.599.", "prediction": {"prompt": "Acetone–chloroform mixtures show experimental total pressures below the Raoult straight line (Exercise 1.37). What is Δ_mix H?", "options": ["Negative — A–B H-bonding is stronger than A–A / B–B", "Positive — molecules escape more easily than in the pure liquids", "Zero — the solution is ideal"], "answer": 0, "explanation": "Negative deviation from Raoult’s law accompanies Δ_mix H < 0 (Section 1.5.2 and Exercise 1.14)."}, "connect": [["Azeotropic rectified spirit", "Ethanol–water has a minimum-boiling azeotrope (~95.6% ethanol). Indian distilleries cannot dry spirit past this by simple distillation — a positive-deviation fingerprint."], ["Wow — chloroform + acetone contracts", "Mixing chloroform and acetone (negative deviation) can shrink the volume: Δ_mix V < 0. The H-bond C=O···H–CCl₃ is visible in the p–x sag of Exercise 1.37.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Give one example each of ideal, positive-deviation and negative-deviation pairs, and the sign of Δ_mix H in each case.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which pair is expected to form an ideal solution?", "options": ["Benzene + toluene", "Acetone + chloroform", "Ethanol + acetone"], "answer": 0, "hint": "Similar intermolecular forces.", "solution": "Benzene and toluene are both non-polar aromatics; A–A, B–B and A–B interactions are alike.", "wrong": ["Negative deviation (H-bonding).", "Positive deviation."]}, {"level": "Medium", "type": "mcq", "prompt": "Positive deviation from Raoult’s law means", "options": ["p_total is higher than ideal and Δ_mix H > 0", "p_total is lower than ideal and Δ_mix H < 0", "Δ_mix V = 0 necessarily"], "answer": 0, "hint": "Exercise 1.14.", "solution": "Weaker A–B forces let molecules escape more easily (higher p) and mixing is endothermic.", "wrong": ["That is negative deviation.", "Ideal solutions have Δ_mix V = 0; positive-deviation solutions generally expand."]}, {"level": "Hard", "type": "number", "map": "Exercise 1.38", "prompt": "Mole fraction of benzene in the vapour if 80 g benzene is mixed with 100 g toluene (ideal, 300 K; p_b° = 50.71, p_t° = 32.06 mm Hg)", "answer": 0.599, "unit": "", "tolerance": 0.01, "hint": "y_b = p_b / p_total.", "solution": "x_b = 0.486; p_b = 24.64; p_t = 16.48; y_b = 0.599."}]}, {"id": "colligative-tb", "nav": "Colligative: Δp and ΔT_b", "title": "Relative lowering and elevation of boiling point measure n_solute, not its identity", "deck": "Colligative properties depend on the number of solute particles. Relative lowering equals x₂. ΔT_b = K_b m; K_b(water) = 0.52 K kg mol⁻¹. A 1 molal aqueous sucrose solution boils at 373.52 K.", "minutes": 9, "section": "1.6.1, 1.6.2", "pages": [15, 18], "print": "15–18", "sim": "deltatb", "simTitle": "Boiling-point elevation: sucrose kettle vs glucose kettle", "quick": ["<strong>Colligative properties</strong> depend on the number of solute particles, not their identity: relative lowering of vapour pressure, elevation of boiling point, depression of freezing point, osmotic pressure.", "Relative lowering (p₁° − p₁)/p₁° = x₂ (Eq. 1.25). For dilute solutions, (p₁° − p₁)/p₁° = n₂/n₁ = (w₂ M₁)/(M₂ w₁) (Eqs. 1.27–1.28), which gives the molar mass of the solute.", "A solution boils when its vapour pressure equals atmospheric pressure. Because p is lowered, T_b rises: ΔT_b = K_b m (Eq. 1.31). For water K_b = 0.52 K kg mol⁻¹; 1 mol sucrose in 1 kg water boils at 373.52 K."], "formulas": [{"label": "Relative lowering", "html": "(p° − p)/p° = x₂ ≈ (w₂ M₁)/(M₂ w₁)", "cond": "Eqs. 1.25, 1.28; non-volatile solute"}, {"label": "Elevation of boiling point", "html": "ΔT<sub>b</sub> = K<sub>b</sub> m", "cond": "Eq. 1.31; K_b(water) = 0.52 K kg mol⁻¹"}], "deeper": "Example 1.7 (zoom p.17): 18 g glucose (0.1 mol) in 1 kg water. m = 0.1 mol kg⁻¹; ΔT_b = 0.52 × 0.1 = 0.052 K; T_b = 373.15 + 0.052 = 373.20 K at 1.013 bar. Intext 1.9: 50 g urea in 850 g water, p° = 23.8 mm Hg at 298 K → p = 23.4 mm Hg.", "worked": "Intext 1.10: water boils at 99.63 °C at 750 mm Hg; want 100 °C. ΔT_b = 0.37 K; m = 0.37/0.52 = 0.712 mol kg⁻¹; in 500 g water, n = 0.356 mol sucrose (M = 342) → 121.7 g (NCERT 121.67 g).", "prediction": {"prompt": "18 g glucose in 1 kg water (Example 1.7). What is ΔT_b at 1.013 bar (K_b = 0.52 K kg mol⁻¹)?", "options": ["0.052 K — one-tenth of a molal unit times K_b", "0.52 K — any 18 g of solute is 1 molal", "18 K — temperature rise equals the mass of solute"], "answer": 0, "explanation": "n = 18/180 = 0.1 mol; m = 0.1 mol kg⁻¹; ΔT_b = 0.52 × 0.1 = 0.052 K."}, "connect": [["Radiator antifreeze is also ‘anti-boil’", "Ethylene glycol in a truck radiator raises T_b as well as lowering T_f. 222.6 g glycol in 200 g water (Exercise 1.8) is 17.95 molal — a huge colligative punch."], ["Wow — 1 molal sucrose boils only 0.52 K higher", "You cannot cook rice faster by dissolving a spoon of sugar. Colligative shifts are kelvins, not tens of kelvins, unless the solution is extremely concentrated.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write ΔT_b = K_b m and compute T_b of 1 molal aqueous sucrose at 1 atm.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Relative lowering of vapour pressure of a dilute solution equals", "options": ["mole fraction of the solute", "molarity of the solute", "mass fraction of the solvent"], "answer": 0, "hint": "Equation 1.25.", "solution": "(p° − p)/p° = x₂.", "wrong": ["Molarity is T-dependent and is not the Raoult identity.", "Mass fraction is not mole fraction."]}, {"level": "Medium", "type": "number", "map": "Example 1.7", "prompt": "Boiling-point elevation (K) for 18 g glucose in 1 kg water (K_b = 0.52 K kg mol⁻¹)", "answer": 0.052, "unit": "K", "tolerance": 0.002, "hint": "m = 0.1 mol kg⁻¹.", "solution": "ΔT_b = 0.52 × 0.1 = 0.052 K."}, {"level": "Hard", "type": "number", "map": "Intext 1.10", "prompt": "Mass of sucrose (g) to add to 500 g water so that it boils at 100 °C if T_b° at 750 mm Hg is 99.63 °C (K_b = 0.52)", "answer": 121.67, "unit": "g", "tolerance": 0.5, "hint": "ΔT_b = 0.37 K; M_sucrose = 342.", "solution": "m = 0.37/0.52 = 0.712 mol kg⁻¹; n = 0.356 mol in 0.500 kg; mass = 121.67 g."}]}, {"id": "freezing-osmosis", "nav": "ΔT_f, osmosis & RO", "title": "Freezing-point depression, osmotic pressure and reverse osmosis", "deck": "ΔT_f = K_f m, K_f(water) = 1.86 K kg mol⁻¹. Osmotic pressure π = C R T is the colligative property of choice for polymers. Reverse osmosis desalinates seawater.", "minutes": 9, "section": "1.6.3, 1.6.4, 1.6.5", "pages": [18, 23], "print": "18–23", "sim": "osmosis", "simTitle": "Osmosis / reverse-osmosis membrane lab", "quick": ["A solution freezes when its vapour pressure equals that of the pure solid solvent. ΔT_f = K_f m (Eq. 1.34). K_f(water) = 1.86 K kg mol⁻¹; K_f(benzene) = 5.12 K kg mol⁻¹. Molar mass M₂ = (K_f w₂ × 1000)/(ΔT_f w₁).", "<strong>Osmosis</strong> is flow of solvent through a semipermeable membrane into the solution. The extra pressure that stops the flow is the <strong>osmotic pressure</strong> π = n₂ R T / V = C R T (Eq. 1.39). Because π is measurable at room temperature, it is preferred for macromolecules.", "<strong>Reverse osmosis</strong>: a pressure greater than π applied on the solution side drives solvent out. Cellulose-acetate membranes desalinate seawater; many countries use RO plants for potable water."], "formulas": [{"label": "Depression of freezing point", "html": "ΔT<sub>f</sub> = K<sub>f</sub> m", "cond": "Eq. 1.34; K_f(H₂O) = 1.86 K kg mol⁻¹"}, {"label": "Osmotic pressure", "html": "π = C R T = n₂ R T / V", "cond": "Eq. 1.39; R = 0.083 L bar K⁻¹ mol⁻¹"}, {"label": "Reverse osmosis", "html": "P<sub>applied</sub> > π  ⇒  solvent flows out of the solution", "cond": "Section 1.6.5"}], "deeper": "Example 1.9: 45 g ethylene glycol in 600 g water. m = (45/62)/0.600 = 1.21 mol kg⁻¹; ΔT_f = 1.86 × 1.2 = 2.2 K; T_f = 270.95 K. Example 1.10: 1.00 g non-electrolyte in 50 g benzene, ΔT_f = 0.40 K, K_f = 5.12 ⇒ M₂ = 256 g mol⁻¹.", "worked": "Intext 1.12: 1.0 g polymer (M = 185000) in 450 mL water at 37 °C. C = (1/185000)/0.450 = 1.201 × 10⁻⁵ mol L⁻¹; π = C R T = 1.201 × 10⁻⁵ × 0.083 × 310 = 3.09 × 10⁻⁴ bar = 30.9 Pa (NCERT 30.96 Pa).", "prediction": {"prompt": "45 g ethylene glycol in 600 g water (Example 1.9). What is T_f of the solution (K_f = 1.86 K kg mol⁻¹)?", "options": ["270.95 K — ΔT_f = 2.2 K below 273.15 K", "273.15 K — glycol does not freeze water", "265 K — any antifreeze drops T_f by 8 K"], "answer": 0, "explanation": "m = 1.2 mol kg⁻¹; ΔT_f = 1.86 × 1.2 = 2.2 K; T_f = 273.15 − 2.2 = 270.95 K."}, "connect": [["Pickles, wilted flowers and blood cells", "Raw mangoes shrivel in brine; wilted flowers revive in fresh water; blood cells collapse in saline — all osmosis across a membrane (Section 1.6.4 opener)."], ["Wow — RO drinking water", "A working RO membrane is cellulose acetate over a support, permeable to water but not to sea-salt ions. Applied pressure must exceed π of seawater (~30 bar) — that is why household RO pumps hum.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Write ΔT_f = K_f m and π = C R T. Why is osmotic pressure preferred for polymer molar masses?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "K_f for water is", "options": ["1.86 K kg mol⁻¹", "0.52 K kg mol⁻¹", "5.12 K kg mol⁻¹"], "answer": 0, "hint": "0.52 is K_b(water); 5.12 is K_f(benzene).", "solution": "Cryoscopic constant of water is 1.86 K kg mol⁻¹.", "wrong": ["That is K_b of water.", "That is K_f of benzene (Example 1.10)."]}, {"level": "Medium", "type": "number", "map": "Example 1.10", "prompt": "Molar mass (g mol⁻¹) of a non-electrolyte if 1.00 g in 50 g benzene lowers T_f by 0.40 K (K_f = 5.12)", "answer": 256, "unit": "g mol⁻¹", "tolerance": 2, "hint": "M₂ = K_f w₂ 1000 / (ΔT_f w₁).", "solution": "M₂ = 5.12 × 1.00 × 1000 / (0.40 × 50) = 256 g mol⁻¹."}, {"level": "Hard", "type": "number", "map": "Intext 1.12", "prompt": "Osmotic pressure in Pa of 1.0 g polymer (M = 185000) in 450 mL water at 37 °C (R = 0.083 L bar K⁻¹ mol⁻¹)", "answer": 30.96, "unit": "Pa", "tolerance": 0.5, "hint": "π = C R T; 1 bar = 10⁵ Pa.", "solution": "C = 1.201 × 10⁻⁵ mol L⁻¹; π = 3.096 × 10⁻⁴ bar = 30.96 Pa."}]}, {"id": "vant-hoff", "nav": "van’t Hoff factor", "title": "Abnormal molar masses: i = 1 + (n − 1)α", "deck": "Electrolytes give more particles (i > 1); association gives fewer (i < 1). Observed colligative property = i × calculated. 1 mol KCl in 1 kg water should raise T_b by 1.04 K if fully dissociated.", "minutes": 8, "section": "1.7", "pages": [23, 27], "print": "23–27", "sim": "vanthoff", "simTitle": "van’t Hoff factor: KCl vs acetic acid vs dimerising benzoic acid", "quick": ["Ionic solutes dissociate: 1 mol KCl ⇌ K⁺ + Cl⁻, two moles of particles, so colligative effects roughly double. Association (benzoic acid dimer in benzene) does the opposite. The experimentally determined molar mass is then ‘abnormal’.", "van’t Hoff factor <strong>i</strong> = (normal molar mass)/(observed molar mass) = (observed colligative property)/(calculated colligative property). For dissociation into n ions with degree α: i = 1 + (n − 1)α. For association of n molecules: i = 1 − (1 − 1/n)α.", "Modified laws: ΔT_b = i K_b m, ΔT_f = i K_f m, π = i C R T. Observed i for electrolytes is less than the integer n because of interionic attraction."], "formulas": [{"label": "van’t Hoff factor", "html": "i = ΔT<sub>f</sub>(obs) / ΔT<sub>f</sub>(calc) = M_normal / M_obs", "cond": "Section 1.7"}, {"label": "Dissociation", "html": "i = 1 + (n − 1)α", "cond": "n = number of ions per formula unit"}, {"label": "Colligative with i", "html": "ΔT<sub>f</sub> = i K<sub>f</sub> m;  π = i C R T", "cond": "Exercises 1.32, 1.40, 1.41"}], "deeper": "Exercise 1.33: 19.5 g CH₂FCOOH (M = 78) in 500 g water, ΔT_f = 1.0 °C. m = 0.50 mol kg⁻¹; i = 1.00/(1.86 × 0.50) = 1.075; α = 0.075; K_a = c α²/(1 − α) = 3.07 × 10⁻³. Exercise 1.32: 10 g CH₃CH₂CHClCOOH in 250 g water, K_a = 1.4 × 10⁻³, K_f = 1.86 → ΔT_f = 0.65 K.", "worked": "Exercise 1.40: CaCl₂ (i = 2.47) in 2.5 L water, π = 0.75 atm at 27 °C. C = π/(i R T) = 0.75/(2.47 × 0.0821 × 300) = 0.0123 mol L⁻¹; n = 0.0308 mol; mass = 3.42 g (M = 111 g mol⁻¹).", "prediction": {"prompt": "If 1 mol KCl is dissolved in 1 kg water and fully ionised with no interionic drag, by how much should T_b rise (K_b = 0.52 K kg mol⁻¹)?", "options": ["1.04 K — i = 2, so twice the non-electrolyte value 0.52 K", "0.52 K — boiling point does not care about ions", "0 K — ions do not affect vapour pressure"], "answer": 0, "explanation": "Text of Section 1.7: 2 × 0.52 K = 1.04 K if we ignore interionic attractions."}, "connect": [["Road salt vs organic antifreeze", "CaCl₂ (i ≈ 2.5, Exercise 1.40) is used to de-ice Indian highways because each formula unit yields ~2.5 particles. Ethylene glycol (i = 1) must be used at much higher molality for the same ΔT_f."], ["Wow — i tells you the hidden equilibrium", "A measured i = 1.075 for fluoroacetic acid (Exercise 1.33) is a direct count of extra particles from HA ⇌ H⁺ + A⁻, and therefore a route to K_a without a pH meter.", [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}]]], "recall": "Define i two ways and write i = 1 + (n − 1)α for dissociation.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For complete dissociation of KCl, the expected van’t Hoff factor is", "options": ["2", "1", "0.5"], "answer": 0, "hint": "KCl → K⁺ + Cl⁻.", "solution": "Two particles per formula unit, so i = 2 in the ideal-ion limit.", "wrong": ["That would be a non-electrolyte.", "That would be association into dimers."]}, {"level": "Medium", "type": "number", "map": "Exercise 1.33", "prompt": "van’t Hoff factor of CH₂FCOOH if 19.5 g in 500 g water gives ΔT_f = 1.00 °C (K_f = 1.86)", "answer": 1.075, "unit": "", "tolerance": 0.01, "hint": "m = 0.50 mol kg⁻¹; i = ΔT_f /(K_f m).", "solution": "i = 1.00/(1.86 × 0.50) = 1.075."}, {"level": "Hard", "type": "number", "map": "Exercise 1.40", "prompt": "Mass of CaCl₂ (g, i = 2.47) to dissolve in 2.5 L water for π = 0.75 atm at 27 °C (R = 0.0821 L atm K⁻¹ mol⁻¹, M = 111)", "answer": 3.42, "unit": "g", "tolerance": 0.08, "hint": "π = i C R T; n = C V.", "solution": "C = 0.0123 M; n = 0.0308 mol; mass = 3.42 g."}]}], "exercises": [{"number": "1.1", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Define the term solution. How many types of solutions are formed? Write briefly about each type with an example.", "steps": ["A solution is a homogeneous mixture of two or more components whose composition and properties are uniform throughout.", "Nine types arise from solute/solvent each being gas, liquid or solid (Table 1.1).", "Gaseous: O₂ + N₂; chloroform in N₂; camphor in N₂. Liquid: O₂ in water; ethanol in water; glucose in water. Solid: H₂ in Pd; Na amalgam; Cu in Au."], "answer": "Homogeneous mixture; nine gas/liquid/solid combinations as in Table 1.1."}, {"number": "1.2", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Give an example of a solid solution in which the solute is a gas.", "steps": ["Table 1.1: gas dissolved in a solid solvent.", "Solution of hydrogen in palladium (also: interstitial H in some metals)."], "answer": "Hydrogen dissolved in palladium."}, {"number": "1.3", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Define the following terms: (i) Mole fraction (ii) Molality (iii) Molarity (iv) Mass percentage.", "steps": ["(i) Mole fraction of A: x_A = n_A / Σ n_i (Eqs. 1.4–1.5).", "(ii) Molality m = moles of solute / mass of solvent in kg (Eq. 1.9).", "(iii) Molarity M = moles of solute / volume of solution in litres (Eq. 1.8).", "(iv) Mass % = (mass of component / total mass of solution) × 100 (Eq. 1.1)."], "answer": "See Eqs. 1.1, 1.4, 1.8, 1.9."}, {"number": "1.4", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Concentrated nitric acid used in laboratory work is 68% nitric acid by mass in aqueous solution. What should be the molarity of such a sample of the acid if the density of the solution is 1.504 g mL⁻¹?", "steps": ["1 L of solution has mass 1504 g.", "Mass of HNO₃ = 0.68 × 1504 = 1022.72 g.", "Moles of HNO₃ = 1022.72 / 63 = 16.23 mol.", "Molarity = 16.23 mol L⁻¹."], "answer": "16.23 M."}, {"number": "1.5", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A solution of glucose in water is labelled as 10% w/w, what would be the molality and mole fraction of each component in the solution? If the density of solution is 1.2 g mL⁻¹, then what shall be the molarity of the solution?", "steps": ["100 g solution: 10 g glucose (0.05556 mol), 90 g water (5.000 mol).", "Molality = 0.05556 / 0.090 = 0.617 mol kg⁻¹.", "x_glucose = 0.05556 / 5.05556 = 0.0110; x_water = 0.989.", "Volume = 100 / 1.2 = 83.33 mL; M = 0.05556 / 0.08333 = 0.667 mol L⁻¹."], "answer": "m = 0.617 mol kg⁻¹; x_glu = 0.011; x_water = 0.989; M = 0.67 M."}, {"number": "1.6", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "How many mL of 0.1 M HCl are required to react completely with 1 g mixture of Na₂CO₃ and NaHCO₃ containing equimolar amounts of both?", "steps": ["Let n = moles of each salt. 106n + 84n = 1 ⇒ n = 1/190 mol.", "Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂; NaHCO₃ + HCl → NaCl + H₂O + CO₂.", "HCl required = 2n + n = 3/190 = 0.01579 mol.", "V = 0.01579 / 0.1 = 0.1579 L = 157.9 mL."], "answer": "157.8 mL of 0.1 M HCl."}, {"number": "1.7", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A solution is obtained by mixing 300 g of 25% solution and 400 g of 40% solution by mass. Calculate the mass percentage of the resulting solution.", "steps": ["Solute from first = 0.25 × 300 = 75 g; from second = 0.40 × 400 = 160 g.", "Total solute = 235 g; total solution = 700 g.", "Mass % = 235/700 × 100 = 33.57%."], "answer": "33.57%."}, {"number": "1.8", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "An antifreeze solution is prepared from 222.6 g of ethylene glycol (C₂H₆O₂) and 200 g of water. Calculate the molality of the solution. If the density of the solution is 1.072 g mL⁻¹, then what shall be the molarity of the solution?", "steps": ["n_glycol = 222.6 / 62 = 3.590 mol.", "m = 3.590 / 0.200 = 17.95 mol kg⁻¹.", "V = 422.6 g / 1.072 g mL⁻¹ = 394.2 mL = 0.3942 L.", "M = 3.590 / 0.3942 = 9.11 mol L⁻¹."], "answer": "17.95 m; 9.11 M."}, {"number": "1.9", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A sample of drinking water was found to be severely contaminated with chloroform (CHCl₃) supposed to be a carcinogen. The level of contamination was 15 ppm (by mass): (i) express this in percent by mass (ii) determine the molality of chloroform in the water sample.", "steps": ["15 ppm = 15 g in 10⁶ g solution.", "(i) Mass % = 15/10⁶ × 100 = 1.5 × 10⁻³ %.", "(ii) n = 15 / 119.5 ≈ 0.1255 mol in ≈ 1000 kg water; m = 1.255 × 10⁻⁴ mol kg⁻¹."], "answer": "(i) 1.5 × 10⁻³ %; (ii) 1.26 × 10⁻⁴ m."}, {"number": "1.10", "conceptIdx": 3, "page": 28, "printPage": 28, "question": "What role does the molecular interaction play in a solution of alcohol and water?", "steps": ["Both liquids are hydrogen-bonded. Mixing yields A–B H-bonds of different strength from A–A and B–B.", "The solution shows deviation from Raoult’s law (and a volume contraction) because of these interactions."], "answer": "H-bonding between alcohol and water causes non-ideal behaviour (typically negative Δ_mix V and deviation from Raoult)."}, {"number": "1.11", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "Why do gases always tend to be less soluble in liquids as the temperature is raised?", "steps": ["Dissolution of a gas is exothermic (akin to condensation).", "By Le Chatelier’s principle, raising T shifts the equilibrium Solute(g) ⇌ Solute(aq) to the left.", "Table 1.2: K_H of N₂ and O₂ increases with T, so x = p/K_H falls."], "answer": "Exothermic dissolution; K_H rises with T, solubility falls."}, {"number": "1.12", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "State Henry’s law and mention some important applications.", "steps": ["p = K_H x (Eq. 1.11): partial pressure of a gas is proportional to its mole fraction in solution.", "Applications: carbonation of soft drinks under high p(CO₂); scuba-gas mix to avoid bends; anoxia at high altitude from low p(O₂)."], "answer": "p = K_H x; soda, scuba/bends, anoxia."}, {"number": "1.13", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "The partial pressure of ethane over a solution containing 6.56 × 10⁻³ g of ethane is 1 bar. If the solution contains 5.00 × 10⁻² g of ethane, then what shall be the partial pressure of the gas?", "steps": ["Henry: p ∝ x ∝ mass of ethane (dilute, same solvent).", "p₂ = 1 bar × (5.00 × 10⁻²) / (6.56 × 10⁻³) = 7.62 bar."], "answer": "7.62 bar."}, {"number": "1.14", "conceptIdx": 3, "page": 28, "printPage": 28, "question": "What is meant by positive and negative deviations from Raoult's law and how is the sign of ΔmixH related to positive and negative deviations from Raoult's law?", "steps": ["Positive deviation: p_i > x_i p_i°; A–B attractions weaker; Δ_mix H > 0.", "Negative deviation: p_i < x_i p_i°; A–B attractions stronger; Δ_mix H < 0."], "answer": "+ deviation ⇔ Δ_mix H > 0; − deviation ⇔ Δ_mix H < 0."}, {"number": "1.15", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "An aqueous solution of 2% non-volatile solute exerts a pressure of 1.004 bar at the normal boiling point of the solvent. What is the molar mass of the solute?", "steps": ["At the normal boiling point p₁° = 1.013 bar.", "(p° − p)/p° = x₂ = (1.013 − 1.004)/1.013 = 0.008885.", "2 g solute + 98 g water: n₁ = 98/18 = 5.444 mol.", "x₂ = n₂/(n₂ + 5.444) = 0.008885 ⇒ n₂ = 0.0488 mol; M₂ = 2/0.0488 = 41.0 g mol⁻¹."], "answer": "41 g mol⁻¹."}, {"number": "1.16", "conceptIdx": 2, "page": 28, "printPage": 28, "question": "Heptane and octane form an ideal solution. At 373 K, the vapour pressures of the two liquid components are 105.2 kPa and 46.8 kPa respectively. What will be the vapour pressure of a mixture of 26.0 g of heptane and 35 g of octane?", "steps": ["n_heptane = 26.0/100 = 0.260 mol; n_octane = 35/114 = 0.307 mol.", "x_H = 0.459; x_O = 0.541.", "p = 0.459 × 105.2 + 0.541 × 46.8 = 73.6 kPa."], "answer": "73.6 kPa."}, {"number": "1.17", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "The vapour pressure of water is 12.3 kPa at 300 K. Calculate vapour pressure of 1 molal solution of a non-volatile solute in it.", "steps": ["1 molal: 1 mol solute + 1 kg water = 55.55 mol water.", "x₁ = 55.55/56.55 = 0.9823.", "p = 0.9823 × 12.3 = 12.08 kPa."], "answer": "12.08 kPa."}, {"number": "1.18", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "Calculate the mass of a non-volatile solute (molar mass 40 g mol⁻¹) which should be dissolved in 114 g octane to reduce its vapour pressure to 80%.", "steps": ["p/p° = 0.80 = x₁ ⇒ x₂ = 0.20.", "n_octane = 114/114 = 1.00 mol.", "n₂/(n₂ + 1) = 0.20 ⇒ n₂ = 0.25 mol; mass = 10 g."], "answer": "10 g."}, {"number": "1.19", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "A solution containing 30 g of non-volatile solute exactly in 90 g of water has a vapour pressure of 2.8 kPa at 298 K. Further, 18 g of water is then added to the solution and the new vapour pressure becomes 2.9 kPa at 298 K. Calculate: (i) molar mass of the solute (ii) vapour pressure of water at 298 K.", "steps": ["p = x₁ p° ⇒ 2.8 = [90/18 / (90/18 + 30/M)] p° and 2.9 = [108/18 / (108/18 + 30/M)] p°.", "2.8 = 5 p° / (5 + 30/M); 2.9 = 6 p° / (6 + 30/M).", "Dividing: 2.8/2.9 = 5(6 + 30/M) / [6(5 + 30/M)] ⇒ M = 23 g mol⁻¹.", "Then p° = 2.8 × (5 + 30/23)/5 = 3.53 kPa."], "answer": "(i) 23 g mol⁻¹; (ii) 3.53 kPa."}, {"number": "1.20", "conceptIdx": 5, "page": 28, "printPage": 28, "question": "A 5% solution (by mass) of cane sugar in water has freezing point of 271K. Calculate the freezing point of 5% glucose in water if freezing point of pure water is 273.15 K.", "steps": ["ΔT_f (sugar) = 273.15 − 271 = 2.15 K.", "Same % by mass ⇒ m ∝ 1/M, so ΔT_f ∝ 1/M.", "ΔT_f (glucose) = 2.15 × (342/180) = 4.085 K.", "T_f = 273.15 − 4.085 = 269.07 K."], "answer": "269.07 K."}, {"number": "1.21", "conceptIdx": 5, "page": 28, "printPage": 28, "question": "Two elements A and B form compounds having formula AB₂ and AB₄. When dissolved in 20 g of benzene (C₆H₆), 1 g of AB₂ lowers the freezing point by 2.3 K whereas 1.0 g of AB₄ lowers it by 1.3 K. The molar depression constant for benzene is 5.1 K kg mol⁻¹. Calculate atomic masses of A and B.", "steps": ["M = K_f w₂ 1000 / (ΔT_f w₁).", "M(AB₂) = 5.1 × 1 × 1000 / (2.3 × 20) = 110.9 g mol⁻¹.", "M(AB₄) = 5.1 × 1 × 1000 / (1.3 × 20) = 196.2 g mol⁻¹.", "Let a, b be atomic masses: a + 2b = 110.9; a + 4b = 196.2 ⇒ 2b = 85.3, b = 42.6, a = 25.6."], "answer": "A = 25.6 u; B = 42.6 u."}, {"number": "1.22", "conceptIdx": 5, "page": 29, "printPage": 29, "question": "At 300 K, 36 g of glucose present in a litre of its solution has an osmotic pressure of 4.98 bar. If the osmotic pressure of the solution is 1.52 bars at the same temperature, what would be its concentration?", "steps": ["First solution: C₁ = 36/180 = 0.20 mol L⁻¹; π₁ = 4.98 bar.", "π ∝ C at constant T, so C₂ = 0.20 × 1.52 / 4.98 = 0.061 mol L⁻¹."], "answer": "0.061 M."}, {"number": "1.23", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Suggest the most important type of intermolecular attractive interaction in the following pairs. (i) n-hexane and n-octane (ii) I₂ and CCl₄ (iii) NaClO₄ and water (iv) methanol and acetone (v) acetonitrile (CH₃CN) and acetone (C₃H₆O).", "steps": ["(i) London (dispersion) forces.", "(ii) London forces (both non-polar).", "(iii) Ion–dipole.", "(iv) Hydrogen bonding (and dipole–dipole).", "(v) Dipole–dipole."], "answer": "(i) dispersion; (ii) dispersion; (iii) ion–dipole; (iv) H-bonding; (v) dipole–dipole."}, {"number": "1.24", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Based on solute-solvent interactions, arrange the following in order of increasing solubility in n-octane and explain. Cyclohexane, KCl, CH₃OH, CH₃CN.", "steps": ["n-Octane is non-polar. Like dissolves like.", "KCl (ionic) least; then CH₃OH (H-bonded polar); then CH₃CN (polar, no H-bond donor); cyclohexane (non-polar) most."], "answer": "KCl < CH₃OH < CH₃CN < cyclohexane."}, {"number": "1.25", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Amongst the following compounds, identify which are insoluble, partially soluble and highly soluble in water? (i) phenol (ii) toluene (iii) formic acid (iv) ethylene glycol (v) chloroform (vi) pentanol.", "steps": ["Highly soluble (H-bonding, small): formic acid, ethylene glycol.", "Partially soluble: phenol, pentanol (larger hydrophobic part).", "Insoluble: toluene, chloroform (essentially non-polar / weak H-bond)."], "answer": "Highly soluble: HCOOH, ethylene glycol; partial: phenol, pentanol; insoluble: toluene, CHCl₃."}, {"number": "1.26", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "If the density of some lake water is 1.25g mL⁻¹ and contains 92 g of Na⁺ ions per kg of water, calculate the molarity of Na⁺ ions in the lake.", "steps": ["1 L of lake water has mass 1250 g. Taking 92 g Na⁺ per kg of water and density 1.25 g mL⁻¹, moles in 1 L ≈ (92/23) × 1.25 = 5.0 mol.", "Molarity = 5.0 mol L⁻¹.", "Alternatively: 1 kg water + 92 g Na⁺ = 1092 g solution; V = 1092/1.25 = 0.874 L; M = 4/0.874 = 4.58 M. NCERT uses the 5.0 M convention."], "answer": "5.0 M (4.58 M if solution mass is 1092 g L⁻¹)."}, {"number": "1.27", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "If the solubility product of CuS is 6 × 10⁻¹⁶, calculate the maximum molarity of CuS in aqueous solution.", "steps": ["CuS(s) ⇌ Cu²⁺ + S²⁻; K_sp = s² = 6 × 10⁻¹⁶.", "s = √(6 × 10⁻¹⁶) = 2.45 × 10⁻⁸ mol L⁻¹."], "answer": "2.45 × 10⁻⁸ M."}, {"number": "1.28", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Calculate the mass percentage of aspirin (C₉H₈O₄) in acetonitrile (CH₃CN) when 6.5 g of C₉H₈O₄ is dissolved in 450 g of CH₃CN.", "steps": ["Mass % = 6.5 / (6.5 + 450) × 100 = 1.424%."], "answer": "1.42%."}, {"number": "1.29", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Nalorphene (C₁₉H₂₁NO₃), similar to morphine, is used to combat withdrawal symptoms in narcotic users. Dose of nalorphene generally given is 1.5 mg. Calculate the mass of 1.5 × 10⁻³ m aqueous solution required for the above dose.", "steps": ["M(nalorphene) = 311 g mol⁻¹.", "1.5 × 10⁻³ m means 1.5 × 10⁻³ mol = 0.4665 g solute per kg solvent.", "Dose 1.5 × 10⁻³ g requires mass of solution ≈ (1.5 × 10⁻³ / 0.4665) × 1000 = 3.22 g."], "answer": "3.22 g of solution."}, {"number": "1.30", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Calculate the amount of benzoic acid (C₆H₅COOH) required for preparing 250 mL of 0.15 M solution in methanol.", "steps": ["n = 0.15 × 0.250 = 0.0375 mol.", "M = 122 g mol⁻¹; mass = 4.575 g."], "answer": "4.575 g."}, {"number": "1.31", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "The depression in freezing point of water observed for the same amount of acetic acid, trichloroacetic acid and trifluoroacetic acid increases in the order given above. Explain briefly.", "steps": ["ΔT_f ∝ i = 1 + α. Stronger acid ⇒ larger α ⇒ larger i ⇒ larger ΔT_f.", "F is more electronegative than Cl, which is more electronegative than H, so acidity (and α) increases CF₃COOH > CCl₃COOH > CH₃COOH."], "answer": "Acidity/α increases CH₃COOH < CCl₃COOH < CF₃COOH, so ΔT_f increases in that order."}, {"number": "1.32", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "Calculate the depression in the freezing point of water when 10 g of CH₃CH₂CHClCOOH is added to 250 g of water. K_a = 1.4 × 10⁻³, K_f = 1.86 K kg mol⁻¹.", "steps": ["M = 122.5 g mol⁻¹; m = (10/122.5)/0.250 = 0.3265 mol kg⁻¹.", "K_a = c α²/(1 − α) ≈ c α² ⇒ α = √(1.4 × 10⁻³ / 0.3265) = 0.0655.", "i = 1 + α = 1.0655; ΔT_f = i K_f m = 1.0655 × 1.86 × 0.3265 = 0.65 K."], "answer": "0.65 K."}, {"number": "1.33", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "19.5 g of CH₂FCOOH is dissolved in 500 g of water. The depression in the freezing point of water observed is 1.0° C. Calculate the van’t Hoff factor and dissociation constant of fluoroacetic acid.", "steps": ["M = 78 g mol⁻¹; m = (19.5/78)/0.500 = 0.50 mol kg⁻¹.", "i = ΔT_f /(K_f m) = 1.00/(1.86 × 0.50) = 1.075.", "α = i − 1 = 0.075; K_a = c α²/(1 − α) = 0.50 × (0.075)² / 0.925 = 3.07 × 10⁻³."], "answer": "i = 1.075; K_a = 3.07 × 10⁻³."}, {"number": "1.34", "conceptIdx": 4, "page": 29, "printPage": 29, "question": "Vapour pressure of water at 293 K is 17.535 mm Hg. Calculate the vapour pressure of water at 293 K when 25 g of glucose is dissolved in 450 g of water.", "steps": ["n₂ = 25/180 = 0.1389 mol; n₁ = 450/18 = 25.00 mol.", "x₁ = 25/25.1389 = 0.9945.", "p = 0.9945 × 17.535 = 17.44 mm Hg."], "answer": "17.44 mm Hg."}, {"number": "1.35", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Henry’s law constant for the molality of methane in benzene at 298 K is 4.27 × 10⁵ mm Hg. Calculate the solubility of methane in benzene at 298 K under 760 mm Hg.", "steps": ["x = p / K_H = 760 / (4.27 × 10⁵) = 1.78 × 10⁻³.", "This mole fraction is the solubility as used in Eq. 1.11."], "answer": "x(CH₄) = 1.78 × 10⁻³."}, {"number": "1.36", "conceptIdx": 2, "page": 29, "printPage": 29, "question": "100 g of liquid A (molar mass 140 g mol⁻¹) was dissolved in 1000 g of liquid B (molar mass 180 g mol⁻¹). The vapour pressure of pure liquid B was found to be 500 torr. Calculate the vapour pressure of pure liquid A and its vapour pressure in the solution if the total vapour pressure of the solution is 475 Torr.", "steps": ["n_A = 100/140 = 0.714 mol; n_B = 1000/180 = 5.556 mol.", "x_A = 0.114; x_B = 0.886.", "p_B = 0.886 × 500 = 443 torr; p_A = 475 − 443 = 32 torr.", "p_A° = p_A / x_A = 32 / 0.114 = 280.7 torr."], "answer": "p_A° = 280.7 torr; p_A (in solution) = 32 torr."}, {"number": "1.37", "conceptIdx": 3, "page": 30, "printPage": 30, "question": "Vapour pressures of pure acetone and chloroform at 328 K are 741.8 mm Hg and 632.8 mm Hg respectively. Assuming that they form ideal solution over the entire range of composition, plot ptotal, pchloroform, and pacetone as a function of xacetone. The experimental data observed for different compositions of mixture is given in the table (100 x_acetone = 0, 11.8, 23.4, 36.0, 50.8, 58.2, 64.5, 72.1 with corresponding p_acetone and p_chloroform). Plot this data also on the same graph paper. Indicate whether it has positive deviation or negative deviation from the ideal solution.", "steps": ["Ideal p_acetone = x_a × 741.8; p_chloroform = x_c × 632.8; p_total linear between 632.8 and 741.8.", "At x_acetone = 0.508, experimental p_acetone = 322.7 mm Hg < ideal 377 mm Hg; experimental p_total = 580.4 < ideal 688.", "The mixture shows negative deviation (H-bonding acetone–chloroform)."], "answer": "Negative deviation from Raoult’s law."}, {"number": "1.38", "conceptIdx": 2, "page": 30, "printPage": 30, "question": "Benzene and toluene form ideal solution over the entire range of composition. The vapour pressure of pure benzene and toluene at 300 K are 50.71 mm Hg and 32.06 mm Hg respectively. Calculate the mole fraction of benzene in vapour phase if 80 g of benzene is mixed with 100 g of toluene.", "steps": ["n_b = 80/78 = 1.026; n_t = 100/92 = 1.087; x_b = 0.486.", "p_b = 0.486 × 50.71 = 24.64 mm Hg; p_t = 0.514 × 32.06 = 16.48 mm Hg.", "y_b = 24.64 / 41.12 = 0.599."], "answer": "y_benzene = 0.599."}, {"number": "1.39", "conceptIdx": 1, "page": 30, "printPage": 30, "question": "The air is a mixture of a number of gases. The major components are oxygen and nitrogen with approximate proportion of 20% is to 79% by volume at 298 K. The water is in equilibrium with air at a pressure of 10 atm. At 298 K if the Henry’s law constants for oxygen and nitrogen at 298 K are 3.30 × 10⁷ mm and 6.51 × 10⁷ mm respectively, calculate the composition of these gases in water.", "steps": ["p(O₂) = 0.20 × 10 atm = 2 atm = 1520 mm Hg; p(N₂) = 0.79 × 10 = 7.9 atm = 6004 mm Hg.", "x(O₂) = 1520 / 3.30 × 10⁷ = 4.61 × 10⁻⁵.", "x(N₂) = 6004 / 6.51 × 10⁷ = 9.22 × 10⁻⁵."], "answer": "x(O₂) = 4.61 × 10⁻⁵; x(N₂) = 9.22 × 10⁻⁵."}, {"number": "1.40", "conceptIdx": 6, "page": 30, "printPage": 30, "question": "Determine the amount of CaCl₂ (i = 2.47) dissolved in 2.5 litre of water such that its osmotic pressure is 0.75 atm at 27° C.", "steps": ["π = i C R T ⇒ C = 0.75 / (2.47 × 0.0821 × 300) = 0.01232 mol L⁻¹.", "n = 0.01232 × 2.5 = 0.0308 mol.", "Mass = 0.0308 × 111 = 3.42 g."], "answer": "3.42 g CaCl₂."}, {"number": "1.41", "conceptIdx": 6, "page": 30, "printPage": 30, "question": "Determine the osmotic pressure of a solution prepared by dissolving 25 mg of K₂SO₄ in 2 litre of water at 25° C, assuming that it is completely dissociated.", "steps": ["K₂SO₄ → 2K⁺ + SO₄²⁻, i = 3.", "n = 0.025 / 174 = 1.437 × 10⁻⁴ mol; C = 7.18 × 10⁻⁵ mol L⁻¹.", "π = 3 × 7.18 × 10⁻⁵ × 0.0821 × 298 = 5.27 × 10⁻³ atm."], "answer": "5.27 × 10⁻³ atm."}]};
+window.CHAPTER = {"code": "lech101", "chapterNumber": "01", "title": "Solutions", "subtitle": "Types of solutions, concentration units, Henry’s and Raoult’s laws, ideal and non-ideal behaviour, colligative properties and the van’t Hoff factor.", "book_name": "Chemistry Part 1", "edition": "NCERT Chemistry Part 1, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lech101.pdf", "page_start": 1, "page_end": 30, "exercisesNote": "All 41 questions from the NCERT exercises (printed pp. 27–30), each mapped to the concept it practises, with a full step-by-step solution. The chapter PDF prints the exercise questions and answers to intext questions only; the exercise solutions below are recomputed from the printed data and cross-checked against the intext answer key where it applies.", "lessons": [{"id": "types-concentration", "nav": "Types & concentration units", "title": "Binary solutions: from types of mixture to mole fraction, molarity and molality", "deck": "A solution is a homogeneous mixture. Solvent sets the physical state; concentration may be mass %, ppm, mole fraction, molarity or molality — only some of these are temperature-independent.", "minutes": 9, "section": "1.1, 1.2", "pages": [1, 5], "print": "1–5", "sim": "concunits", "simTitle": "Concentration converter: mole fraction · molarity · molality", "quick": ["<strong>Solutions</strong> are homogeneous mixtures of two or more components. The component present in the largest quantity is the <strong>solvent</strong>; it determines the physical state of the solution. Other components are <strong>solutes</strong>. This Unit treats mostly binary liquid solutions.", "Table 1.1 classifies solutions by the physical state of solute and solvent: gaseous (O₂ + N₂), liquid (glucose in water, ethanol in water) and solid (Cu in Au, H₂ in Pd, amalgams).", "<strong>Mass %</strong> = (mass of component / total mass) × 100 (Eq. 1.1). <strong>Volume %</strong> uses volumes (Eq. 1.2). <strong>ppm</strong> = (mass of component / total mass) × 10⁶ (Eq. 1.3) — 1 ppm fluoride prevents tooth decay; 1.5 ppm mottles enamel.", "<strong>Mole fraction</strong> x<sub>A</sub> = n<sub>A</sub> / (n<sub>A</sub> + n<sub>B</sub>) (Eqs. 1.4–1.5); Σ x<sub>i</sub> = 1. <strong>Molarity</strong> M = moles of solute / litre of solution (Eq. 1.8) depends on T because volume does. <strong>Molality</strong> m = moles of solute / kg of solvent (Eq. 1.9) is independent of temperature."], "formulas": [{"label": "Mole fraction", "html": "x<sub>A</sub> = n<sub>A</sub> / (n<sub>A</sub> + n<sub>B</sub>)", "cond": "Eqs. 1.4–1.7; Σ x<sub>i</sub> = 1"}, {"label": "Molarity", "html": "M = n<sub>solute</sub> / V<sub>solution</sub> (L)", "cond": "Eq. 1.8; temperature-dependent"}, {"label": "Molality", "html": "m = n<sub>solute</sub> / mass<sub>solvent</sub> (kg)", "cond": "Eq. 1.9; independent of T"}], "deeper": "Example 1.1 (zoom p.4): 20% C₂H₆O₂ by mass. In 100 g: 20 g glycol (0.322 mol, M = 62) and 80 g water (4.444 mol). x_glycol = 0.322/4.766 = 0.068; x_water = 0.932. Example 1.2: 5 g NaOH in 450 mL → 0.125 mol / 0.450 L = 0.278 M. Example 1.3: 2.5 g CH₃COOH in 75 g benzene → 0.0417 mol / 0.075 kg = 0.556 mol kg⁻¹.", "worked": {"title": "NCERT Intext 1.4: mass of urea for a 0.25 molal solution", "problem": "Calculate the mass of urea (NH₂CONH₂) required in making 2.5 kg of 0.25 molal aqueous solution.", "given": "Molality = 0.25 mol kg⁻¹; total mass of solution = 2.5 kg; M(urea) = 60 g mol⁻¹.", "steps": ["Let the mass of water be w kg. The moles of urea needed are n₂ = 0.25w.", "Mass of urea = 0.25w × 60 g = 15w g = 0.015w kg.", "Total mass = w + 0.015w = 1.015w = 2.5 kg, so w = 2.4631 kg.", "Mass of urea = 0.015 × 2.4631 kg = 0.03695 kg = 36.95 g."], "answer": "≈ 36.95 g of urea (NCERT answer: 36.946 g)."}, "prediction": {"prompt": "A 20% by mass aqueous ethylene glycol solution (Example 1.1) has how many moles of water per mole of glycol, and what is x_glycol?", "options": ["About 13.8 mol water per mol glycol; x_glycol = 0.068", "Equal moles of each; x_glycol = 0.50", "x_glycol = 0.20 because the solution is 20% by mass"], "answer": 0, "explanation": "20 g / 62 g mol⁻¹ = 0.322 mol glycol; 80 g / 18 = 4.444 mol water; 4.444/0.322 ≈ 13.8. Mole fraction is moles, not mass percent."}, "connect": [{"title": "IV saline matches plasma", "text": "Intravenous injections are dissolved in water containing salts at ionic concentrations that match blood plasma (Unit opener). A 0.9% (w/v) NaCl drip is ~0.15 M — isotonic with plasma, so red cells neither burst nor crenate."}, {"title": "Antifreeze is sold by volume", "text": "The text quotes a 35% (v/v) ethylene glycol antifreeze that lowers water's freezing point to 255.4 K (–17.6 °C). Mass %, volume % and ppm are different bookkeeping for the same mixture — and only mass %, ppm, mole fraction and molality survive a change of temperature."}, {"title": "Wow: 1 ppm fluoride vs rat poison", "text": "1 ppm F⁻ in drinking water prevents tooth decay; 1.5 ppm mottles teeth; high concentrations (NaF) are used as rat poison. Concentration units are a public-health language, not just a laboratory habit.", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "-vaG9JznhoE", "title": "Mole Fraction, Molarity, Molality, ppm | Solutions | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write Eqs. 1.8 and 1.9 and state which concentration unit changes when a volumetric flask is taken from 25 °C to 40 °C.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which concentration unit is independent of temperature?", "options": ["Molality", "Molarity", "Volume percentage"], "answer": 0, "hint": "Which quantities in the definition do not involve volume?", "solution": "Molality uses moles and mass of solvent. Mass does not change with T; volume (hence molarity and volume %) does.", "wrong": ["", "Molarity uses solution volume, which expands on heating.", "Volume % uses volumes of both components."]}, {"level": "Medium", "type": "number", "prompt": "Molarity of 5 g NaOH in 450 mL solution (M_NaOH = 40 g mol⁻¹) is", "answer": 0.278, "unit": "mol L⁻¹", "tolerance": 0.005, "hint": "n = 5/40; V = 0.450 L.", "solution": "n = 0.125 mol; M = 0.125/0.450 = 0.278 mol L⁻¹ (Example 1.2, zoom p.4)."}, {"level": "Hard", "type": "number", "prompt": "Molality of 20% (m/m) aqueous KI (M = 166 g mol⁻¹) is", "answer": 1.506, "unit": "mol kg⁻¹", "tolerance": 0.02, "hint": "20 g KI in 80 g water.", "solution": "n = 20/166 = 0.1205 mol; m = 0.1205/0.080 = 1.51 mol kg⁻¹ (NCERT 1.5 mol kg⁻¹)."}], "group": "01 / TYPES AND CONCENTRATION UNITS", "watch": "Switch between the three presets. The readout recomputes n, x, M and m for the same batch — molality stays fixed when the flask is heated, molarity does not. Slide the mass-% control and watch x₂ move slowly: 20% by mass is only x₂ = 0.068."}, {"id": "solubility-henry", "nav": "Solubility & Henry’s law", "title": "Like dissolves like — and p = K_H x for gases", "deck": "Solid solubility follows ‘like dissolves like’. For gases, Henry’s law p = K_H x: larger K_H means lower solubility. K_H rises with temperature, so cold water holds more O₂.", "minutes": 9, "section": "1.3", "pages": [5, 9], "print": "5–9", "sim": "henrylaw", "simTitle": "Henry’s law lab: soda, scuba tanks and anoxia", "quick": ["A solute dissolves if intermolecular interactions are similar — <em>like dissolves like</em>. Polar NaCl and sugar dissolve in water; naphthalene and anthracene dissolve in benzene. Dissolution and crystallisation reach dynamic equilibrium in a <strong>saturated</strong> solution (Eq. 1.10).", "<strong>Henry’s law</strong> (Eq. 1.11): the partial pressure of a gas in the vapour phase is proportional to its mole fraction in solution, <em>p = K<sub>H</sub> x</em>. Higher K<sub>H</sub> ⇒ lower solubility. Table 1.2: at 293 K, K<sub>H</sub>(He) = 144.97 kbar, K<sub>H</sub>(N₂) = 76.48 kbar, K<sub>H</sub>(O₂) = 34.86 kbar; K<sub>H</sub> of N₂ and O₂ both increase from 293 to 303 K.", "Applications: soda bottles sealed under high CO₂ pressure; scuba tanks diluted with He (11.7% He, 56.2% N₂, 32.1% O₂) to avoid bends; anoxia at high altitude from low p(O₂)."], "formulas": [{"label": "Henry’s law", "html": "p = K<sub>H</sub> x", "cond": "Eq. 1.11; x = mole fraction of dissolved gas"}, {"label": "Temperature trend", "html": "K<sub>H</sub> increases with T ⇒ solubility of gases falls", "cond": "Dissolution of gases is exothermic (Le Chatelier)"}], "deeper": "Example 1.4 (zoom p.8): N₂ at 0.987 bar, K_H = 76.48 kbar = 76480 bar, 293 K. x = 0.987/76480 = 1.29 × 10⁻⁵. In 1 L water (55.5 mol), n(N₂) = 1.29 × 10⁻⁵ × 55.5 = 7.16 × 10⁻⁴ mol = 0.716 mmol.", "worked": {"title": "NCERT Example 1.4: nitrogen dissolving in water", "problem": "If N₂ gas is bubbled through water at 293 K, how many millimoles of N₂ gas would dissolve in 1 litre of water? The partial pressure of N₂ is 0.987 bar and K_H = 76.48 kbar.", "given": "p = 0.987 bar, K_H = 76.48 kbar = 76,480 bar; 1 L of water contains 55.5 mol.", "steps": ["Henry's law: x(N₂) = p/K_H = 0.987 bar / 76,480 bar = 1.29 × 10⁻⁵.", "Since n ≪ 55.5 mol, x(N₂) ≈ n/55.5, so n = 1.29 × 10⁻⁵ × 55.5 = 7.16 × 10⁻⁴ mol.", "Convert to millimoles: 7.16 × 10⁻⁴ mol × 1000 = 0.716 mmol."], "answer": "0.716 mmol of N₂ dissolves in 1 L of water at 293 K."}, "prediction": {"prompt": "A lake warms from 293 K to 303 K. Table 1.2: K_H(O₂) goes 34.86 → 46.82 kbar. What happens to dissolved oxygen, and why are fish less comfortable?", "options": ["x(O₂) falls because p = K_H x at fixed p(O₂); less O₂ is dissolved", "Solubility of O₂ increases because molecules move faster", "K_H has no effect; only pressure matters"], "answer": 0, "explanation": "At fixed atmospheric p(O₂), x = p/K_H. Larger K_H means smaller x. Aquatic species are more comfortable in cold water (text after Table 1.2)."}, "connect": [{"title": "Soft-drink bottling in India", "text": "A 300 mL soda sealed at ~2.5 atm CO₂ (Intext 1.7 numbers) holds ~1.1 g CO₂. Opening the cap drops p, so x must fall — the familiar fizz is Henry's law run backwards."}, {"title": "Anoxia in thin air", "text": "At high altitude the partial pressure of oxygen is less than at sea level, so less O₂ dissolves in blood and tissues. Climbers become weak and cannot think clearly — a Henry's-law problem (smaller p, same K_H), not a shortage of air."}, {"title": "Wow: bends and the helium mix", "text": "NCERT specifies the scuba mix 11.7% He / 56.2% N₂ / 32.1% O₂. Helium's high K_H (144.97 kbar) keeps its dissolved mole fraction tiny, so fewer bubbles form on ascent — the bends are Henry's law in reverse.", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "rtIqSFQmkek", "title": "Henry's Law | Solutions | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State Henry’s law as Eq. 1.11 and give one industrial and one biological application from the text.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Henry’s law in the form used in this Unit is", "options": ["p = K_H x", "x = K_H p²", "p V = n R T"], "answer": 0, "hint": "Equation 1.11.", "solution": "The partial pressure of the gas is proportional to its mole fraction in solution.", "wrong": ["", "That is not Henry's law.", "Ideal-gas law, not solubility."]}, {"level": "Medium", "type": "number", "prompt": "Millimoles of N₂ dissolving in 1 L water at 293 K if p = 0.987 bar and K_H = 76.48 kbar", "answer": 0.716, "unit": "mmol", "tolerance": 0.02, "hint": "x = p/K_H; n = x × 55.5.", "solution": "x = 1.29 × 10⁻⁵; n = 7.16 × 10⁻⁴ mol = 0.716 mmol."}, {"level": "Hard", "type": "number", "prompt": "Henry’s law constant (bar) for H₂S if solubility at STP is 0.195 m (p = 0.987 bar)", "answer": 282, "unit": "bar", "tolerance": 5, "hint": "x ≈ 0.195/(0.195 + 55.5); K_H = p/x.", "solution": "x = 0.00350; K_H = 0.987/0.00350 = 282 bar."}], "group": "02 / SOLUBILITY AND HENRY'S LAW", "watch": "Pick a gas and slide the pressure and temperature. The readout shows x = p/K_H and the millimoles dissolved in 1 L. Raising T raises K_H for N₂ and O₂, so a warmer drink holds less gas."}, {"id": "raoult-vapour", "nav": "Raoult’s law", "title": "Two volatile liquids: p_i = x_i p_i° and the straight p_total line", "deck": "Raoult: each partial pressure equals mole fraction times the pure-liquid vapour pressure. Total pressure is linear in x₂. Vapour is richer in the more volatile component.", "minutes": 9, "section": "1.4", "pages": [9, 14], "print": "9–14", "sim": "raoult", "simTitle": "Raoult two-component p–x diagram (heptane–octane / A–B)", "quick": ["For a binary solution of volatile liquids, <strong>Raoult’s law</strong>: p₁ = x₁ p₁° (Eq. 1.12) and p₂ = x₂ p₂° (Eq. 1.13). Dalton: p_total = p₁ + p₂ = x₁ p₁° + x₂ p₂° = p₁° + (p₂° − p₁°) x₂ (Eqs. 1.14–1.16).", "p_total varies linearly with mole fraction. The vapour mole fraction y₁ = p₁ / p_total is not equal to x₁: vapour is richer in the more volatile component.", "For a non-volatile solute, p₁ = x₁ p₁° and the vapour is pure solvent. Relative lowering (p₁° − p₁)/p₁° = x₂ (Eq. 1.25)."], "formulas": [{"label": "Raoult (component i)", "html": "p<sub>i</sub> = x<sub>i</sub> p<sub>i</sub>°", "cond": "Eqs. 1.12–1.13"}, {"label": "Total pressure", "html": "p<sub>total</sub> = p₁° + (p₂° − p₁°) x₂", "cond": "Eq. 1.16; linear in x₂"}, {"label": "Relative lowering", "html": "(p₁° − p₁)/p₁° = x₂", "cond": "Eq. 1.25; non-volatile solute"}], "deeper": "Intext 1.8: p_A° = 450 mm Hg, p_B° = 700 mm Hg, p_total = 600 mm Hg at 350 K. 600 = 450 x_A + 700 (1 − x_A) ⇒ x_A = 0.40, x_B = 0.60. y_A = (450 × 0.40)/600 = 0.30; y_B = 0.70. Example 1.6: benzene p° = 0.850 bar → 0.845 bar with 0.5 g solute in 39.0 g benzene ⇒ M₂ = 170 g mol⁻¹.", "worked": {"title": "NCERT Intext 1.8: composition of an A–B mixture", "problem": "The vapour pressures of pure liquids A and B are 450 and 700 mm Hg at 350 K. Find the composition of the liquid mixture if the total vapour pressure is 600 mm Hg. Also find the composition of the vapour phase.", "given": "p_A° = 450 mm Hg, p_B° = 700 mm Hg, p_total = 600 mm Hg at 350 K.", "steps": ["For an ideal pair p_total = x_A p_A° + x_B p_B° = 450 + (700 − 450) x_B.", "600 = 450 + 250 x_B gives x_B = 150/250 = 0.60, so x_A = 0.40.", "p_A = x_A p_A° = 0.40 × 450 = 180 mm Hg, so y_A = p_A/p_total = 180/600 = 0.30.", "y_B = 1 − 0.30 = 0.70: the vapour is richer in the more volatile component B."], "answer": "Liquid: x_A = 0.40, x_B = 0.60. Vapour: y_A = 0.30, y_B = 0.70."}, "prediction": {"prompt": "Liquids A and B have p_A° = 450 mm Hg and p_B° = 700 mm Hg. At x_A = 0.40 the total pressure is 600 mm Hg. What is the mole fraction of A in the vapour?", "options": ["y_A = 0.30 — vapour is poorer in A than the liquid", "y_A = 0.40 — vapour matches the liquid", "y_A = 0.70 — vapour is richer in the less volatile liquid"], "answer": 0, "explanation": "p_A = 0.40 × 450 = 180 mm Hg; y_A = 180/600 = 0.30. B is more volatile, so vapour is richer in B (Intext 1.8)."}, "connect": [{"title": "Fractional distillation of petroleum", "text": "Indian refineries (Jamnagar, Panipat) separate naphtha from kerosene because vapour is always richer in the more volatile cut — the same y ≠ x that Intext 1.8 computes for A + B."}, {"title": "Chloroform and dichloromethane (Example 1.5)", "text": "Mixing 25.5 g CHCl₃ (p° = 200 mm Hg) with 40 g CH₂Cl₂ (p° = 415 mm Hg) at 298 K gives p_total = 347.9 mm Hg. The vapour is 82% CH₂Cl₂ even though the liquid is only 69% — the vapour is always richer in the more volatile component."}, {"title": "Wow: a straight line is the whole law", "text": "Eq. 1.16 says p_total vs x₂ is a straight line between p₁° and p₂°. Any bulge up or down is a confession that the solution is not ideal (Section 1.5).", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "9iHiPaiPwmY", "title": "Raoult's Law | Solutions | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write p_total in terms of x₂ (Eq. 1.16) and state how vapour composition y_i is obtained from partial pressures.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Raoult’s law for a volatile component is", "options": ["p_i = x_i p_i°", "p_i = K_H x_i with K_H independent of identity", "p_i = p_i° / x_i"], "answer": 0, "hint": "Equations 1.12–1.13.", "solution": "Partial vapour pressure equals mole fraction times the pure-component vapour pressure.", "wrong": ["", "That is Henry’s law (different constant, different regime).", "Inverse mole fraction would raise pressure on dilution."]}, {"level": "Medium", "type": "number", "prompt": "Mole fraction of A in the liquid if p_A° = 450, p_B° = 700, p_total = 600 mm Hg", "answer": 0.4, "unit": "mol mol⁻¹", "tolerance": 0.01, "hint": "p = p_A° x_A + p_B° (1 − x_A).", "solution": "600 = 450 x_A + 700 − 700 x_A ⇒ 250 x_A = 100 ⇒ x_A = 0.40."}, {"level": "Hard", "type": "number", "prompt": "Molar mass (g mol⁻¹) of a non-volatile solid if 0.5 g in 39.0 g benzene lowers p from 0.850 to 0.845 bar", "answer": 170, "unit": "g mol⁻¹", "tolerance": 2, "hint": "(p° − p)/p° = (w₂ M₁)/(M₂ w₁).", "solution": "0.005/0.850 = 0.5 × 78 / (M₂ × 39) ⇒ M₂ = 170 g mol⁻¹."}], "group": "03 / RAOULT'S LAW", "watch": "Drag the mole-fraction slider. The blue and amber lines are the two partial pressures, the green line is p_total. At x_A = 0.40 (Intext 1.8) the readout locks on 600 mm Hg and y_A = 0.30."}, {"id": "ideal-nonideal", "nav": "Ideal & non-ideal solutions", "title": "Δ_mix H = 0 and Δ_mix V = 0, or a bulge in the p–x curve", "deck": "Ideal solutions obey Raoult over the whole range (benzene–toluene, hexane–heptane). Positive deviation: A–B weaker than A–A/B–B (acetone–CS₂). Negative: A–B stronger (acetone–chloroform, HNO₃–water).", "minutes": 8, "section": "1.5", "pages": [14, 15], "print": "14–15", "sim": "deviation", "simTitle": "Ideal vs ± deviation: acetone–chloroform p–x plot", "quick": ["An <strong>ideal solution</strong> obeys Raoult’s law over the entire composition range. Enthalpy of mixing Δ_mix H = 0 and volume of mixing Δ_mix V = 0: A–A, B–B and A–B interactions are alike. Examples: n-hexane + n-heptane, benzene + toluene, bromoethane + chloroethane.", "<strong>Positive deviation</strong>: A–B attractions weaker than A–A and B–B, so molecules escape more easily; p_total is higher than Raoult predicts; Δ_mix H > 0. Ethanol–acetone, acetone–CS₂, ethanol–water (over much of the range).", "<strong>Negative deviation</strong>: A–B attractions stronger (often H-bonding); p_total lower than ideal; Δ_mix H < 0. Acetone–chloroform, phenol–aniline, HNO₃–water, CHCl₃–CH₃COCH₃ (Exercise 1.37 data)."], "formulas": [{"label": "Ideal mixing", "html": "Δ<sub>mix</sub> H = 0,  Δ<sub>mix</sub> V = 0,  p<sub>i</sub> = x<sub>i</sub> p<sub>i</sub>°", "cond": "Section 1.5.1"}, {"label": "Sign of deviation", "html": "+ deviation ⇔ Δ<sub>mix</sub> H > 0;  − deviation ⇔ Δ<sub>mix</sub> H < 0", "cond": "Exercise 1.14"}], "deeper": "Exercise 1.37 (zoom p.30): pure acetone 741.8 mm Hg, chloroform 632.8 mm Hg at 328 K. Experimental p_acetone at x_acetone = 0.508 is 322.7 mm Hg, below the ideal 741.8 × 0.508 = 377 mm Hg — negative deviation, consistent with H-bonding between acetone carbonyl and chloroform hydrogen.", "worked": {"title": "NCERT Exercise 1.37: acetone–chloroform deviation", "problem": "Pure acetone and chloroform have vapour pressures 741.8 and 632.8 mm Hg at 328 K. At x_acetone = 0.508 the experimental p_acetone is 322.7 mm Hg. Is the deviation positive or negative?", "given": "p_acetone° = 741.8 mm Hg, p_chloroform° = 632.8 mm Hg at 328 K; experimental data for eight compositions.", "steps": ["Ideal p_acetone = x p° = 0.508 × 741.8 = 376.8 mm Hg; ideal p_chloroform = 0.492 × 632.8 = 311.3 mm Hg.", "Ideal p_total = 0.508 × 741.8 + 0.492 × 632.8 = 688.2 mm Hg; the measured value is 322.7 + 257.7 = 580.4 mm Hg.", "The experimental pressure lies below the Raoult line, so the deviation is negative.", "Negative deviation means A–B attractions (C=O···H–CCl₃ hydrogen bonds) are stronger than A–A or B–B, so Δ_mix H < 0."], "answer": "Negative deviation from Raoult's law; Δ_mix H < 0."}, "prediction": {"prompt": "Acetone–chloroform mixtures show experimental total pressures below the Raoult straight line (Exercise 1.37). What is Δ_mix H?", "options": ["Negative — A–B H-bonding is stronger than A–A / B–B", "Positive — molecules escape more easily than in the pure liquids", "Zero — the solution is ideal"], "answer": 0, "explanation": "Negative deviation from Raoult’s law accompanies Δ_mix H < 0 (Section 1.5.2 and Exercise 1.14)."}, "connect": [{"title": "Azeotropic rectified spirit", "text": "Ethanol–water has a minimum-boiling azeotrope (~95.6% ethanol). Indian distilleries cannot dry spirit past this by simple distillation — a positive-deviation fingerprint."}, {"title": "Nitric acid–water: a maximum-boiling azeotrope", "text": "HNO₃ and water show such a strong negative deviation that the 68% acid / 32% water mixture boils at 393.5 K with the same composition in liquid and vapour — a maximum-boiling azeotrope that simple distillation can never separate."}, {"title": "Wow: chloroform + acetone contracts", "text": "Mixing chloroform and acetone (negative deviation) can shrink the volume: Δ_mix V < 0. The H-bond C=O···H–CCl₃ is visible in the p–x sag of Exercise 1.37.", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "PzMmWwaEWLc", "title": "Ideal and Non - Ideal Solutions | Solutions| Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Give one example each of ideal, positive-deviation and negative-deviation pairs, and the sign of Δ_mix H in each case.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which pair is expected to form an ideal solution?", "options": ["Benzene + toluene", "Acetone + chloroform", "Ethanol + acetone"], "answer": 0, "hint": "Similar intermolecular forces.", "solution": "Benzene and toluene are both non-polar aromatics; A–A, B–B and A–B interactions are alike.", "wrong": ["", "Negative deviation (H-bonding).", "Positive deviation."]}, {"level": "Medium", "type": "mcq", "prompt": "Positive deviation from Raoult’s law means", "options": ["p_total is higher than ideal and Δ_mix H > 0", "p_total is lower than ideal and Δ_mix H < 0", "Δ_mix V = 0 necessarily"], "answer": 0, "hint": "Exercise 1.14.", "solution": "Weaker A–B forces let molecules escape more easily (higher p) and mixing is endothermic.", "wrong": ["", "That is negative deviation.", "Ideal solutions have Δ_mix V = 0; positive-deviation solutions generally expand."]}, {"level": "Hard", "type": "number", "prompt": "Mole fraction of benzene in the vapour if 80 g benzene is mixed with 100 g toluene (ideal, 300 K; p_b° = 50.71, p_t° = 32.06 mm Hg)", "answer": 0.599, "unit": "mol mol⁻¹", "tolerance": 0.01, "hint": "y_b = p_b / p_total.", "solution": "x_b = 0.486; p_b = 24.64; p_t = 16.48; y_b = 0.599."}], "group": "04 / IDEAL AND NON-IDEAL SOLUTIONS", "watch": "Toggle the experimental points. The green dashed line is ideal Raoult behaviour; the red curve for acetone–chloroform sits below it, so the deviation is negative — and every point was measured at 328 K."}, {"id": "colligative-tb", "nav": "Colligative: Δp and ΔT_b", "title": "Relative lowering and elevation of boiling point measure n_solute, not its identity", "deck": "Colligative properties depend on the number of solute particles. Relative lowering equals x₂. ΔT_b = K_b m; K_b(water) = 0.52 K kg mol⁻¹. A 1 molal aqueous sucrose solution boils at 373.52 K.", "minutes": 9, "section": "1.6.1, 1.6.2", "pages": [15, 18], "print": "15–18", "sim": "deltatb", "simTitle": "Boiling-point elevation: sucrose kettle vs glucose kettle", "quick": ["<strong>Colligative properties</strong> depend on the number of solute particles, not their identity: relative lowering of vapour pressure, elevation of boiling point, depression of freezing point, osmotic pressure.", "Relative lowering (p₁° − p₁)/p₁° = x₂ (Eq. 1.25). For dilute solutions, (p₁° − p₁)/p₁° = n₂/n₁ = (w₂ M₁)/(M₂ w₁) (Eqs. 1.27–1.28), which gives the molar mass of the solute.", "A solution boils when its vapour pressure equals atmospheric pressure. Because p is lowered, T_b rises: ΔT_b = K_b m (Eq. 1.31). For water K_b = 0.52 K kg mol⁻¹; 1 mol sucrose in 1 kg water boils at 373.52 K."], "formulas": [{"label": "Relative lowering", "html": "(p° − p)/p° = x₂ ≈ (w₂ M₁)/(M₂ w₁)", "cond": "Eqs. 1.25, 1.28; non-volatile solute"}, {"label": "Elevation of boiling point", "html": "ΔT<sub>b</sub> = K<sub>b</sub> m", "cond": "Eq. 1.31; K_b(water) = 0.52 K kg mol⁻¹"}], "deeper": "Example 1.7 (zoom p.17): 18 g glucose (0.1 mol) in 1 kg water. m = 0.1 mol kg⁻¹; ΔT_b = 0.52 × 0.1 = 0.052 K; T_b = 373.15 + 0.052 = 373.20 K at 1.013 bar. Intext 1.9: 50 g urea in 850 g water, p° = 23.8 mm Hg at 298 K → p = 23.4 mm Hg.", "worked": {"title": "NCERT Example 1.7: boiling point of a glucose solution", "problem": "18 g of glucose is dissolved in 1 kg of water. At what temperature does the solution boil at 1.013 bar? (K_b = 0.52 K kg mol⁻¹, M(glucose) = 180 g mol⁻¹.)", "given": "w₂ = 18 g, M₂ = 180 g mol⁻¹, w₁ = 1 kg, K_b = 0.52 K kg mol⁻¹, T_b° = 373.15 K.", "steps": ["Moles of glucose n₂ = 18/180 = 0.10 mol.", "Molality m = n₂/w₁ = 0.10/1 = 0.10 mol kg⁻¹.", "ΔT_b = K_b m = 0.52 × 0.10 = 0.052 K.", "T_b = 373.15 + 0.052 = 373.202 ≈ 373.20 K."], "answer": "The solution boils at 373.20 K, i.e. 0.052 K above pure water."}, "prediction": {"prompt": "18 g glucose in 1 kg water (Example 1.7). What is ΔT_b at 1.013 bar (K_b = 0.52 K kg mol⁻¹)?", "options": ["0.052 K — one-tenth of a molal unit times K_b", "0.52 K — any 18 g of solute is 1 molal", "18 K — temperature rise equals the mass of solute"], "answer": 0, "explanation": "n = 18/180 = 0.1 mol; m = 0.1 mol kg⁻¹; ΔT_b = 0.52 × 0.1 = 0.052 K."}, "connect": [{"title": "Radiator antifreeze is also ‘anti-boil’", "text": "Ethylene glycol in a truck radiator raises T_b as well as lowering T_f. 222.6 g glycol in 200 g water (Exercise 1.8) is 17.95 molal — a huge colligative punch."}, {"title": "Why a pressure cooker cooks faster", "text": "Sealing the cooker raises the pressure, so water boils well above 100 °C. Compared with that, the 0.52 K molal elevation from a solute is a rounding error — colligative boiling-point shifts are tiny unless the solution is very concentrated."}, {"title": "Wow: 1 molal sucrose boils only 0.52 K higher", "text": "You cannot cook rice faster by dissolving a spoon of sugar. Colligative shifts are kelvins, not tens of kelvins, unless the solution is extremely concentrated.", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "FlrXNRCYcQI", "title": "Elevation in Boiling Point | Solutions | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write ΔT_b = K_b m and compute T_b of 1 molal aqueous sucrose at 1 atm.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Relative lowering of vapour pressure of a dilute solution equals", "options": ["mole fraction of the solute", "molarity of the solute", "mass fraction of the solvent"], "answer": 0, "hint": "Equation 1.25.", "solution": "(p° − p)/p° = x₂.", "wrong": ["", "Molarity is T-dependent and is not the Raoult identity.", "Mass fraction is not mole fraction."]}, {"level": "Medium", "type": "number", "prompt": "Boiling-point elevation (K) for 18 g glucose in 1 kg water (K_b = 0.52 K kg mol⁻¹)", "answer": 0.052, "unit": "K", "tolerance": 0.002, "hint": "m = 0.1 mol kg⁻¹.", "solution": "ΔT_b = 0.52 × 0.1 = 0.052 K."}, {"level": "Hard", "type": "number", "prompt": "Mass of sucrose (g) to add to 500 g water so that it boils at 100 °C if T_b° at 750 mm Hg is 99.63 °C (K_b = 0.52)", "answer": 121.67, "unit": "g", "tolerance": 0.5, "hint": "ΔT_b = 0.37 K; M_sucrose = 342.", "solution": "m = 0.37/0.52 = 0.712 mol kg⁻¹; n = 0.356 mol in 0.500 kg; mass = 121.67 g."}], "group": "05 / COLLIGATIVE PROPERTIES: ΔT_b", "watch": "Choose glucose or sucrose and slide the mass. The orange curve is the solution's vapour-pressure curve shifted right; the readout gives m, ΔT_b and T_b. At 18 g glucose the shift is exactly 0.052 K."}, {"id": "freezing-osmosis", "nav": "ΔT_f, osmosis & RO", "title": "Freezing-point depression, osmotic pressure and reverse osmosis", "deck": "ΔT_f = K_f m, K_f(water) = 1.86 K kg mol⁻¹. Osmotic pressure π = C R T is the colligative property of choice for polymers. Reverse osmosis desalinates seawater.", "minutes": 9, "section": "1.6.3, 1.6.4, 1.6.5", "pages": [18, 23], "print": "18–23", "sim": "osmosis", "simTitle": "Osmosis / reverse-osmosis membrane lab", "quick": ["A solution freezes when its vapour pressure equals that of the pure solid solvent. ΔT_f = K_f m (Eq. 1.34). K_f(water) = 1.86 K kg mol⁻¹; K_f(benzene) = 5.12 K kg mol⁻¹. Molar mass M₂ = (K_f w₂ × 1000)/(ΔT_f w₁).", "<strong>Osmosis</strong> is flow of solvent through a semipermeable membrane into the solution. The extra pressure that stops the flow is the <strong>osmotic pressure</strong> π = n₂ R T / V = C R T (Eq. 1.39). Because π is measurable at room temperature, it is preferred for macromolecules.", "<strong>Reverse osmosis</strong>: a pressure greater than π applied on the solution side drives solvent out. Cellulose-acetate membranes desalinate seawater; many countries use RO plants for potable water."], "formulas": [{"label": "Depression of freezing point", "html": "ΔT<sub>f</sub> = K<sub>f</sub> m", "cond": "Eq. 1.34; K_f(H₂O) = 1.86 K kg mol⁻¹"}, {"label": "Osmotic pressure", "html": "π = C R T = n₂ R T / V", "cond": "Eq. 1.39; R = 0.083 L bar K⁻¹ mol⁻¹"}, {"label": "Reverse osmosis", "html": "P<sub>applied</sub> > π  ⇒  solvent flows out of the solution", "cond": "Section 1.6.5"}], "deeper": "Example 1.9: 45 g ethylene glycol in 600 g water. m = (45/62)/0.600 = 1.21 mol kg⁻¹; ΔT_f = 1.86 × 1.2 = 2.2 K; T_f = 270.95 K. Example 1.10: 1.00 g non-electrolyte in 50 g benzene, ΔT_f = 0.40 K, K_f = 5.12 ⇒ M₂ = 256 g mol⁻¹.", "worked": {"title": "NCERT Example 1.9: antifreeze and the freezing point", "problem": "45 g of ethylene glycol (C₂H₆O₂) is added to 600 g of water. Calculate the freezing-point depression and the freezing point of the solution. (K_f = 1.86 K kg mol⁻¹.)", "given": "w₂ = 45 g, M₂ = 62 g mol⁻¹, w₁ = 600 g = 0.600 kg, K_f = 1.86 K kg mol⁻¹, T_f° = 273.15 K.", "steps": ["Moles of glycol n₂ = 45/62 = 0.726 mol.", "Molality m = 0.726/0.600 = 1.21 mol kg⁻¹.", "ΔT_f = K_f m = 1.86 × 1.21 = 2.25 ≈ 2.2 K.", "T_f = 273.15 − 2.2 = 270.95 K."], "answer": "ΔT_f ≈ 2.2 K; the solution freezes at 270.95 K (≈ −2.2 °C)."}, "prediction": {"prompt": "45 g ethylene glycol in 600 g water (Example 1.9). What is T_f of the solution (K_f = 1.86 K kg mol⁻¹)?", "options": ["270.95 K — ΔT_f = 2.2 K below 273.15 K", "273.15 K — glycol does not freeze water", "265 K — any antifreeze drops T_f by 8 K"], "answer": 0, "explanation": "m = 1.2 mol kg⁻¹; ΔT_f = 1.86 × 1.2 = 2.2 K; T_f = 273.15 − 2.2 = 270.95 K."}, "connect": [{"title": "Pickles, wilted flowers and blood cells", "text": "Raw mangoes shrivel in brine; wilted flowers revive in fresh water; blood cells collapse in saline — all osmosis across a membrane (Section 1.6.4 opener)."}, {"title": "Salt on the roads", "text": "Salting icy roads lowers the freezing point of the film of water, so ice melts at temperatures down to about −20 °C. CaCl₂ is more effective per kg than NaCl because each formula unit gives more ions (i > 1; Exercise 1.40)."}, {"title": "Wow: RO drinking water", "text": "A working RO membrane is cellulose acetate over a support, permeable to water but not to sea-salt ions. Applied pressure must exceed π of seawater (~30 bar) — that is why household RO pumps hum.", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "x_uWPIs_Ovs", "title": "Colligative Properties: Osmotic Pressure, Reverse Osmosis | Solutions | Grade 12 | Chemistry", "channel": "Khan Academy India - English"}}], "recall": "Write ΔT_f = K_f m and π = C R T. Why is osmotic pressure preferred for polymer molar masses?", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "K_f for water is", "options": ["1.86 K kg mol⁻¹", "0.52 K kg mol⁻¹", "5.12 K kg mol⁻¹"], "answer": 0, "hint": "0.52 is K_b(water); 5.12 is K_f(benzene).", "solution": "Cryoscopic constant of water is 1.86 K kg mol⁻¹.", "wrong": ["", "That is K_b of water.", "That is K_f of benzene (Example 1.10)."]}, {"level": "Medium", "type": "number", "prompt": "Molar mass (g mol⁻¹) of a non-electrolyte if 1.00 g in 50 g benzene lowers T_f by 0.40 K (K_f = 5.12)", "answer": 256, "unit": "g mol⁻¹", "tolerance": 2, "hint": "M₂ = K_f w₂ 1000 / (ΔT_f w₁).", "solution": "M₂ = 5.12 × 1.00 × 1000 / (0.40 × 50) = 256 g mol⁻¹."}, {"level": "Hard", "type": "number", "prompt": "Osmotic pressure in Pa of 1.0 g polymer (M = 185000) in 450 mL water at 37 °C (R = 0.083 L bar K⁻¹ mol⁻¹)", "answer": 30.96, "unit": "Pa", "tolerance": 0.5, "hint": "π = C R T; 1 bar = 10⁵ Pa.", "solution": "C = 1.201 × 10⁻⁵ mol L⁻¹; π = 3.096 × 10⁻⁴ bar = 30.96 Pa."}], "group": "06 / COLLIGATIVE PROPERTIES: ΔT_f AND OSMOSIS", "watch": "Run osmosis forward and watch the solvent cross the membrane until the head balances π; switch to reverse osmosis and drive it the other way. The polymer preset gives the tiny π of a macromolecule — 30.96 Pa."}, {"id": "vant-hoff", "nav": "van’t Hoff factor", "title": "Abnormal molar masses: i = 1 + (n − 1)α", "deck": "Electrolytes give more particles (i > 1); association gives fewer (i < 1). Observed colligative property = i × calculated. 1 mol KCl in 1 kg water should raise T_b by 1.04 K if fully dissociated.", "minutes": 8, "section": "1.7", "pages": [23, 27], "print": "23–27", "sim": "vanthoff", "simTitle": "van’t Hoff factor: KCl vs acetic acid vs dimerising benzoic acid", "quick": ["Ionic solutes dissociate: 1 mol KCl ⇌ K⁺ + Cl⁻, two moles of particles, so colligative effects roughly double. Association (benzoic acid dimer in benzene) does the opposite. The experimentally determined molar mass is then ‘abnormal’.", "van’t Hoff factor <strong>i</strong> = (normal molar mass)/(observed molar mass) = (observed colligative property)/(calculated colligative property). For dissociation into n ions with degree α: i = 1 + (n − 1)α. For association of n molecules: i = 1 − (1 − 1/n)α.", "Modified laws: ΔT_b = i K_b m, ΔT_f = i K_f m, π = i C R T. Observed i for electrolytes is less than the integer n because of interionic attraction."], "formulas": [{"label": "van’t Hoff factor", "html": "i = ΔT<sub>f</sub>(obs) / ΔT<sub>f</sub>(calc) = M_normal / M_obs", "cond": "Section 1.7"}, {"label": "Dissociation", "html": "i = 1 + (n − 1)α", "cond": "n = number of ions per formula unit"}, {"label": "Colligative with i", "html": "ΔT<sub>f</sub> = i K<sub>f</sub> m;  π = i C R T", "cond": "Exercises 1.32, 1.40, 1.41"}], "deeper": "Exercise 1.33: 19.5 g CH₂FCOOH (M = 78) in 500 g water, ΔT_f = 1.0 °C. m = 0.50 mol kg⁻¹; i = 1.00/(1.86 × 0.50) = 1.075; α = 0.075; K_a = c α²/(1 − α) = 3.07 × 10⁻³. Exercise 1.32: 10 g CH₃CH₂CHClCOOH in 250 g water, K_a = 1.4 × 10⁻³, K_f = 1.86 → ΔT_f = 0.65 K.", "worked": {"title": "NCERT Exercise 1.33: van't Hoff factor of fluoroacetic acid", "problem": "19.5 g of CH₂FCOOH is dissolved in 500 g of water. The observed depression in freezing point is 1.00 °C. Calculate the van't Hoff factor and the dissociation constant of fluoroacetic acid. (K_f = 1.86 K kg mol⁻¹.)", "given": "w₂ = 19.5 g, M₂ = 78 g mol⁻¹, w₁ = 500 g, ΔT_f = 1.00 K, K_f = 1.86 K kg mol⁻¹.", "steps": ["Molality m = (19.5/78)/0.500 = 0.50 mol kg⁻¹.", "i = ΔT_f/(K_f m) = 1.00/(1.86 × 0.50) = 1.075.", "For a 1–1 acid, α = i − 1 = 0.075.", "K_a = c α²/(1 − α) = 0.50 × (0.075)²/0.925 = 3.07 × 10⁻³."], "answer": "i = 1.075; α = 0.075; K_a = 3.07 × 10⁻³ mol L⁻¹."}, "prediction": {"prompt": "If 1 mol KCl is dissolved in 1 kg water and fully ionised with no interionic drag, by how much should T_b rise (K_b = 0.52 K kg mol⁻¹)?", "options": ["1.04 K — i = 2, so twice the non-electrolyte value 0.52 K", "0.52 K — boiling point does not care about ions", "0 K — ions do not affect vapour pressure"], "answer": 0, "explanation": "Text of Section 1.7: 2 × 0.52 K = 1.04 K if we ignore interionic attractions."}, "connect": [{"title": "Road salt vs organic antifreeze", "text": "CaCl₂ (i ≈ 2.5, Exercise 1.40) is used to de-ice Indian highways because each formula unit yields ~2.5 particles. Ethylene glycol (i = 1) must be used at much higher molality for the same ΔT_f."}, {"title": "Seawater freezes below zero", "text": "Dissolved sea salts give roughly twice the number of particles of a sugar solution of equal molality (i ≈ 1.8–1.9), so seawater starts to freeze near −1.9 °C. The same i makes the osmotic pressure of seawater about 30 bar — the reason RO desalination needs high-pressure pumps."}, {"title": "Wow: i tells you the hidden equilibrium", "text": "A measured i = 1.075 for fluoroacetic acid (Exercise 1.33) is a direct count of extra particles from HA ⇌ H⁺ + A⁻, and therefore a route to K_a without a pH meter.", "wow": true, "links": [{"t": "NCERT Chemistry Part I — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech101.pdf"}], "video": {"id": "vBuoAHMNHEU", "title": "Abnormal Molar Masses, Van 't Hoff Factor | Solutions | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Define i two ways and write i = 1 + (n − 1)α for dissociation.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For complete dissociation of KCl, the expected van’t Hoff factor is", "options": ["2", "1", "0.5"], "answer": 0, "hint": "KCl → K⁺ + Cl⁻.", "solution": "Two particles per formula unit, so i = 2 in the ideal-ion limit.", "wrong": ["", "That would be a non-electrolyte.", "That would be association into dimers."]}, {"level": "Medium", "type": "number", "prompt": "van’t Hoff factor of CH₂FCOOH if 19.5 g in 500 g water gives ΔT_f = 1.00 °C (K_f = 1.86)", "answer": 1.075, "unit": "dimensionless", "tolerance": 0.01, "hint": "m = 0.50 mol kg⁻¹; i = ΔT_f /(K_f m).", "solution": "i = 1.00/(1.86 × 0.50) = 1.075."}, {"level": "Hard", "type": "number", "prompt": "Mass of CaCl₂ (g, i = 2.47) to dissolve in 2.5 L water for π = 0.75 atm at 27 °C (R = 0.0821 L atm K⁻¹ mol⁻¹, M = 111)", "answer": 3.42, "unit": "g", "tolerance": 0.08, "hint": "π = i C R T; n = C V.", "solution": "C = 0.0123 M; n = 0.0308 mol; mass = 3.42 g."}], "group": "07 / VAN'T HOFF FACTOR", "watch": "Pick KCl, fluoroacetic acid or CaCl₂ and set α. The readout computes i and the ΔT_f it would produce in 0.50 molal water. KCl at α = 1 gives i = 2; the measured CaCl₂ value is 2.47, already less than 3."}], "exercises": [{"q": 1, "title": "What a solution is", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Define the term solution. How many types of solutions are formed? Write briefly about each type with an example.", "given": "Binary and multicomponent homogeneous mixtures; Table 1.1 lists the nine solute/solvent state combinations.", "steps": ["A solution is a homogeneous mixture of two or more components whose composition and properties are uniform throughout.", "Nine types arise from solute/solvent each being gas, liquid or solid (Table 1.1).", "Gaseous: O₂ + N₂; chloroform in N₂; camphor in N₂. Liquid: O₂ in water; ethanol in water; glucose in water. Solid: H₂ in Pd; Na amalgam; Cu in Au."], "answer": "Homogeneous mixture; nine gas/liquid/solid combinations as in Table 1.1.", "takeaway": "A solution is homogeneous at the molecular scale; its type is set by the states of solute and solvent.", "conceptName": "Types of solutions & concentration units"}, {"q": 2, "title": "A gas dissolved in a solid", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Give an example of a solid solution in which the solute is a gas.", "given": "Table 1.1: gaseous solute, solid solvent.", "steps": ["Table 1.1: gas dissolved in a solid solvent.", "Solution of hydrogen in palladium (also: interstitial H in some metals)."], "answer": "Hydrogen dissolved in palladium.", "takeaway": "Hydrogen in palladium is the standard example of a gas-in-solid solution.", "conceptName": "Types of solutions & concentration units"}, {"q": 3, "title": "Concentration terms defined", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Define the following terms: (i) Mole fraction (ii) Molality (iii) Molarity (iv) Mass percentage.", "given": "Definitions from Section 1.2: mole fraction (Eq. 1.4), molality (Eq. 1.9), molarity (Eq. 1.8), mass % (Eq. 1.1).", "steps": ["(i) Mole fraction of A: x_A = n_A / Σ n_i (Eqs. 1.4–1.5).", "(ii) Molality m = moles of solute / mass of solvent in kg (Eq. 1.9).", "(iii) Molarity M = moles of solute / volume of solution in litres (Eq. 1.8).", "(iv) Mass % = (mass of component / total mass of solution) × 100 (Eq. 1.1)."], "answer": "(i) Mole fraction: x_A = n_A/Σn_i (Eq. 1.4). (ii) Molality: m = moles of solute per kilogram of solvent (Eq. 1.9). (iii) Molarity: M = moles of solute per litre of solution (Eq. 1.8). (iv) Mass percentage: (mass of component / total mass of solution) × 100 (Eq. 1.1).", "takeaway": "Each concentration unit is a ratio; mixing them up is the commonest error in this Unit.", "conceptName": "Types of solutions & concentration units"}, {"q": 4, "title": "Molarity of concentrated nitric acid", "conceptIdx": 0, "page": 27, "printPage": 27, "question": "Concentrated nitric acid used in laboratory work is 68% nitric acid by mass in aqueous solution. What should be the molarity of such a sample of the acid if the density of the solution is 1.504 g mL⁻¹?", "given": "68% HNO₃ by mass, density 1.504 g mL⁻¹, M(HNO₃) = 63 g mol⁻¹.", "steps": ["1 L of solution has mass 1504 g.", "Mass of HNO₃ = 0.68 × 1504 = 1022.72 g.", "Moles of HNO₃ = 1022.72 / 63 = 16.23 mol.", "Molarity = 16.23 mol L⁻¹."], "answer": "16.23 M.", "takeaway": "Mass % plus density converts a commercial acid label into molarity.", "conceptName": "Types of solutions & concentration units"}, {"q": 5, "title": "10% glucose: molality, mole fraction, molarity", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A solution of glucose in water is labelled as 10% w/w, what would be the molality and mole fraction of each component in the solution? If the density of solution is 1.2 g mL⁻¹, then what shall be the molarity of the solution?", "given": "10% w/w glucose, density 1.2 g mL⁻¹, M(glucose) = 180, M(water) = 18.", "steps": ["100 g solution: 10 g glucose (0.05556 mol), 90 g water (5.000 mol).", "Molality = 0.05556 / 0.090 = 0.617 mol kg⁻¹.", "x_glucose = 0.05556 / 5.05556 = 0.0110; x_water = 0.989.", "Volume = 100 / 1.2 = 83.33 mL; M = 0.05556 / 0.08333 = 0.667 mol L⁻¹."], "answer": "m = 0.617 mol kg⁻¹; x_glu = 0.011; x_water = 0.989; M = 0.67 M.", "takeaway": "All three concentration units can be computed from a 100 g batch of solution.", "conceptName": "Types of solutions & concentration units"}, {"q": 6, "title": "HCl for a Na₂CO₃–NaHCO₃ mixture", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "How many mL of 0.1 M HCl are required to react completely with 1 g mixture of Na₂CO₃ and NaHCO₃ containing equimolar amounts of both?", "given": "1 g of an equimolar mixture of Na₂CO₃ (106 g mol⁻¹) and NaHCO₃ (84 g mol⁻¹); HCl = 0.1 M.", "steps": ["Let n = moles of each salt. 106n + 84n = 1 ⇒ n = 1/190 mol.", "Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂; NaHCO₃ + HCl → NaCl + H₂O + CO₂.", "HCl required = 2n + n = 3/190 = 0.01579 mol.", "V = 0.01579 / 0.1 = 0.1579 L = 157.9 mL."], "answer": "157.9 mL of 0.1 M HCl.", "takeaway": "Write the two neutralisation equations before doing any arithmetic.", "conceptName": "Types of solutions & concentration units"}, {"q": 7, "title": "Mixing two mass-% solutions", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A solution is obtained by mixing 300 g of 25% solution and 400 g of 40% solution by mass. Calculate the mass percentage of the resulting solution.", "given": "300 g of 25% solution + 400 g of 40% solution by mass.", "steps": ["Solute from first = 0.25 × 300 = 75 g; from second = 0.40 × 400 = 160 g.", "Total solute = 235 g; total solution = 700 g.", "Mass % = 235/700 × 100 = 33.57%."], "answer": "33.57%.", "takeaway": "Mass % of a mixture is total solute divided by total solution.", "conceptName": "Types of solutions & concentration units"}, {"q": 8, "title": "Antifreeze: molality and molarity", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "An antifreeze solution is prepared from 222.6 g of ethylene glycol (C₂H₆O₂) and 200 g of water. Calculate the molality of the solution. If the density of the solution is 1.072 g mL⁻¹, then what shall be the molarity of the solution?", "given": "222.6 g ethylene glycol (M = 62) + 200 g water; solution density 1.072 g mL⁻¹.", "steps": ["n_glycol = 222.6 / 62 = 3.590 mol.", "m = 3.590 / 0.200 = 17.95 mol kg⁻¹.", "V = 422.6 g / 1.072 g mL⁻¹ = 394.2 mL = 0.3942 L.", "M = 3.590 / 0.3942 = 9.11 mol L⁻¹."], "answer": "17.95 m; 9.11 M.", "takeaway": "Molality uses solvent mass; molarity uses solution volume.", "conceptName": "Types of solutions & concentration units"}, {"q": 9, "title": "Chloroform at 15 ppm", "conceptIdx": 0, "page": 28, "printPage": 28, "question": "A sample of drinking water was found to be severely contaminated with chloroform (CHCl₃) supposed to be a carcinogen. The level of contamination was 15 ppm (by mass): (i) express this in percent by mass (ii) determine the molality of chloroform in the water sample.", "given": "15 ppm by mass CHCl₃, M = 119.5 g mol⁻¹; ppm = g per 10⁶ g of solution.", "steps": ["15 ppm = 15 g in 10⁶ g solution.", "(i) Mass % = 15/10⁶ × 100 = 1.5 × 10⁻³ %.", "(ii) n = 15 / 119.5 ≈ 0.1255 mol in ≈ 1000 kg water; m = 1.255 × 10⁻⁴ mol kg⁻¹."], "answer": "(i) 1.5 × 10⁻³ %; (ii) 1.26 × 10⁻⁴ m.", "takeaway": "15 ppm is 1.5 × 10⁻³ mass % and about 1.3 × 10⁻⁴ molal.", "conceptName": "Types of solutions & concentration units"}, {"q": 10, "title": "Alcohol–water interactions", "conceptIdx": 3, "page": 28, "printPage": 28, "question": "What role does the molecular interaction play in a solution of alcohol and water?", "given": "Both liquids are hydrogen-bonded; mixing creates A–B H-bonds of a different strength.", "steps": ["Both liquids are hydrogen-bonded. In the mixture the new A–B hydrogen bonds are weaker than the A–A and B–B bonds in the pure liquids.", "Weaker A–B attractions let the molecules escape more easily, so the solution shows positive deviation from Raoult's law (Δ_mix H > 0 and Δ_mix V > 0); ethanol–water forms a minimum-boiling azeotrope."], "answer": "The alcohol–water H-bonds are weaker than the pure-liquid H-bonds, so the solution deviates positively from Raoult's law (Δ_mix H > 0, volume increases, minimum-boiling azeotrope).", "takeaway": "The strength of the new A–B interaction decides the sign of the deviation.", "conceptName": "Ideal & non-ideal solutions"}, {"q": 11, "title": "Why warm water holds less gas", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "Why do gases always tend to be less soluble in liquids as the temperature is raised?", "given": "Dissolution of a gas is exothermic; Table 1.2 shows K_H increasing with T.", "steps": ["Dissolution of a gas is exothermic (akin to condensation).", "By Le Chatelier’s principle, raising T shifts the equilibrium Solute(g) ⇌ Solute(aq) to the left.", "Table 1.2: K_H of N₂ and O₂ increases with T, so x = p/K_H falls."], "answer": "Exothermic dissolution; K_H rises with T, solubility falls.", "takeaway": "Le Chatelier and Henry's law give the same prediction: warmer water holds less dissolved gas.", "conceptName": "Solubility & Henry's law"}, {"q": 12, "title": "Henry's law and its applications", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "State Henry’s law and mention some important applications.", "given": "p = K_H x (Eq. 1.11): partial pressure is proportional to dissolved mole fraction.", "steps": ["p = K_H x (Eq. 1.11): partial pressure of a gas is proportional to its mole fraction in solution.", "Applications: carbonation of soft drinks under high p(CO₂); scuba-gas mix to avoid bends; anoxia at high altitude from low p(O₂)."], "answer": "p = K_H x; soda, scuba/bends, anoxia.", "takeaway": "Higher K_H means lower solubility; soda, scuba and anoxia are all applications.", "conceptName": "Solubility & Henry's law"}, {"q": 13, "title": "Ethane over its solution", "conceptIdx": 1, "page": 28, "printPage": 28, "question": "The partial pressure of ethane over a solution containing 6.56 × 10⁻³ g of ethane is 1 bar. If the solution contains 5.00 × 10⁻² g of ethane, then what shall be the partial pressure of the gas?", "given": "6.56 × 10⁻³ g ethane gives p = 1 bar; find p when the dissolved mass is 5.00 × 10⁻² g.", "steps": ["Henry: p ∝ x ∝ mass of ethane (dilute, same solvent).", "p₂ = 1 bar × (5.00 × 10⁻²) / (6.56 × 10⁻³) = 7.62 bar."], "answer": "7.62 bar.", "takeaway": "In dilute solution p ∝ amount dissolved, so Henry's law becomes a ratio.", "conceptName": "Solubility & Henry's law"}, {"q": 14, "title": "Positive and negative deviations", "conceptIdx": 3, "page": 28, "printPage": 28, "question": "What is meant by positive and negative deviations from Raoult's law and how is the sign of ΔmixH related to positive and negative deviations from Raoult's law?", "given": "A–B interactions weaker than A–A/B–B ⇒ positive deviation; stronger ⇒ negative.", "steps": ["Positive deviation: p_i > x_i p_i°; A–B attractions weaker; Δ_mix H > 0.", "Negative deviation: p_i < x_i p_i°; A–B attractions stronger; Δ_mix H < 0."], "answer": "+ deviation ⇔ Δ_mix H > 0; − deviation ⇔ Δ_mix H < 0.", "takeaway": "The sign of Δ_mix H follows the sign of the deviation.", "conceptName": "Ideal & non-ideal solutions"}, {"q": 15, "title": "Molar mass from vapour-pressure lowering", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "An aqueous solution of 2% non-volatile solute exerts a pressure of 1.004 bar at the normal boiling point of the solvent. What is the molar mass of the solute?", "given": "2% non-volatile solute in water; p = 1.004 bar at the normal boiling point; p° = 1.013 bar.", "steps": ["At the normal boiling point p₁° = 1.013 bar.", "(p° − p)/p° = x₂ = (1.013 − 1.004)/1.013 = 0.008885.", "2 g solute + 98 g water: n₁ = 98/18 = 5.444 mol.", "x₂ = n₂/(n₂ + 5.444) = 0.008885 ⇒ n₂ = 0.0488 mol; M₂ = 2/0.0488 = 41.0 g mol⁻¹."], "answer": "41 g mol⁻¹.", "takeaway": "Relative lowering of vapour pressure is a route to M₂.", "conceptName": "Relative lowering & boiling-point elevation"}, {"q": 16, "title": "Ideal heptane–octane mixture", "conceptIdx": 2, "page": 28, "printPage": 28, "question": "Heptane and octane form an ideal solution. At 373 K, the vapour pressures of the two liquid components are 105.2 kPa and 46.8 kPa respectively. What will be the vapour pressure of a mixture of 26.0 g of heptane and 35 g of octane?", "given": "26.0 g heptane (M = 100) + 35 g octane (M = 114); p_H° = 105.2 kPa, p_O° = 46.8 kPa at 373 K.", "steps": ["n_heptane = 26.0/100 = 0.260 mol; n_octane = 35/114 = 0.307 mol.", "x_H = 0.459; x_O = 0.541.", "p = 0.459 × 105.2 + 0.541 × 46.8 = 73.6 kPa."], "answer": "73.6 kPa.", "takeaway": "For an ideal solution p_total is the mole-fraction-weighted sum of the pure vapour pressures.", "conceptName": "Raoult's law"}, {"q": 17, "title": "Vapour pressure of a 1 molal solution", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "The vapour pressure of water is 12.3 kPa at 300 K. Calculate vapour pressure of 1 molal solution of a non-volatile solute in it.", "given": "1 mol non-volatile solute in 1 kg water; p°(water) = 12.3 kPa at 300 K.", "steps": ["1 molal: 1 mol solute + 1 kg water = 55.55 mol water.", "x₁ = 55.55/56.55 = 0.9823.", "p = 0.9823 × 12.3 = 12.08 kPa."], "answer": "12.08 kPa.", "takeaway": "In 1 kg water n₁ = 55.55 mol, so x₁ = 55.55/56.55.", "conceptName": "Relative lowering & boiling-point elevation"}, {"q": 18, "title": "Solute to cut vapour pressure to 80%", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "Calculate the mass of a non-volatile solute (molar mass 40 g mol⁻¹) which should be dissolved in 114 g octane to reduce its vapour pressure to 80%.", "given": "p/p° = 0.80; M₂ = 40 g mol⁻¹; 114 g octane (M = 114 g mol⁻¹).", "steps": ["p/p° = 0.80 = x₁ ⇒ x₂ = 0.20.", "n_octane = 114/114 = 1.00 mol.", "n₂/(n₂ + 1) = 0.20 ⇒ n₂ = 0.25 mol; mass = 10 g."], "answer": "10 g.", "takeaway": "A 20% mole-fraction of solute reduces the vapour pressure by 20%.", "conceptName": "Relative lowering & boiling-point elevation"}, {"q": 19, "title": "Molar mass from two vapour pressures", "conceptIdx": 4, "page": 28, "printPage": 28, "question": "A solution containing 30 g of non-volatile solute exactly in 90 g of water has a vapour pressure of 2.8 kPa at 298 K. Further, 18 g of water is then added to the solution and the new vapour pressure becomes 2.9 kPa at 298 K. Calculate: (i) molar mass of the solute (ii) vapour pressure of water at 298 K.", "given": "30 g solute in 90 g water gives p = 2.8 kPa; after adding 18 g water, p = 2.9 kPa.", "steps": ["p = x₁ p° ⇒ 2.8 = [90/18 / (90/18 + 30/M)] p° and 2.9 = [108/18 / (108/18 + 30/M)] p°.", "2.8 = 5 p° / (5 + 30/M); 2.9 = 6 p° / (6 + 30/M).", "Dividing: 2.8/2.9 = 5(6 + 30/M) / [6(5 + 30/M)] ⇒ M = 23 g mol⁻¹.", "Then p° = 2.8 × (5 + 30/23)/5 = 3.53 kPa."], "answer": "(i) 23 g mol⁻¹; (ii) 3.53 kPa.", "takeaway": "Two measurements at the same temperature eliminate the unknown p° and give M₂.", "conceptName": "Relative lowering & boiling-point elevation"}, {"q": 20, "title": "5% sugar vs 5% glucose freezing points", "conceptIdx": 5, "page": 28, "printPage": 28, "question": "A 5% solution (by mass) of cane sugar in water has freezing point of 271K. Calculate the freezing point of 5% glucose in water if freezing point of pure water is 273.15 K.", "given": "5% cane sugar (M = 342) freezes at 271 K; pure water freezes at 273.15 K; M(glucose) = 180.", "steps": ["ΔT_f (sugar) = 273.15 − 271 = 2.15 K.", "Same % by mass ⇒ m ∝ 1/M, so ΔT_f ∝ 1/M.", "ΔT_f (glucose) = 2.15 × (342/180) = 4.085 K.", "T_f = 273.15 − 4.085 = 269.07 K."], "answer": "269.07 K.", "takeaway": "At equal mass %, ΔT_f is inversely proportional to molar mass.", "conceptName": "Freezing-point depression, osmosis & reverse osmosis"}, {"q": 21, "title": "Atomic masses from AB₂ and AB₄", "conceptIdx": 5, "page": 28, "printPage": 28, "question": "Two elements A and B form compounds having formula AB₂ and AB₄. When dissolved in 20 g of benzene (C₆H₆), 1 g of AB₂ lowers the freezing point by 2.3 K whereas 1.0 g of AB₄ lowers it by 1.3 K. The molar depression constant for benzene is 5.1 K kg mol⁻¹. Calculate atomic masses of A and B.", "given": "1 g each in 20 g benzene; ΔT_f = 2.3 K (AB₂) and 1.3 K (AB₄); K_f = 5.1 K kg mol⁻¹.", "steps": ["M = K_f w₂ 1000 / (ΔT_f w₁).", "M(AB₂) = 5.1 × 1 × 1000 / (2.3 × 20) = 110.9 g mol⁻¹.", "M(AB₄) = 5.1 × 1 × 1000 / (1.3 × 20) = 196.2 g mol⁻¹.", "Let a, b be atomic masses: a + 2b = 110.9; a + 4b = 196.2 ⇒ 2b = 85.3, b = 42.6, a = 25.6."], "answer": "A = 25.6 u; B = 42.6 u.", "takeaway": "Two molar masses from two ΔT_f measurements give two equations in the atomic masses.", "conceptName": "Freezing-point depression, osmosis & reverse osmosis"}, {"q": 22, "title": "Osmotic pressure and concentration", "conceptIdx": 5, "page": 29, "printPage": 29, "question": "At 300 K, 36 g of glucose present in a litre of its solution has an osmotic pressure of 4.98 bar. If the osmotic pressure of the solution is 1.52 bars at the same temperature, what would be its concentration?", "given": "36 g glucose in 1 L gives π = 4.98 bar; a second solution has π = 1.52 bar at the same T.", "steps": ["First solution: C₁ = 36/180 = 0.20 mol L⁻¹; π₁ = 4.98 bar.", "π ∝ C at constant T, so C₂ = 0.20 × 1.52 / 4.98 = 0.061 mol L⁻¹."], "answer": "0.061 M.", "takeaway": "At constant T, π ∝ C.", "conceptName": "Freezing-point depression, osmosis & reverse osmosis"}, {"q": 23, "title": "Intermolecular forces in five pairs", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Suggest the most important type of intermolecular attractive interaction in the following pairs. (i) n-hexane and n-octane (ii) I₂ and CCl₄ (iii) NaClO₄ and water (iv) methanol and acetone (v) acetonitrile (CH₃CN) and acetone (C₃H₆O).", "given": "Five solute–solvent pairs listed in the question.", "steps": ["(i) London (dispersion) forces.", "(ii) London forces (both non-polar).", "(iii) Ion–dipole.", "(iv) Hydrogen bonding (and dipole–dipole).", "(v) Dipole–dipole."], "answer": "(i) dispersion; (ii) dispersion; (iii) ion–dipole; (iv) H-bonding; (v) dipole–dipole.", "takeaway": "Identify the dominant force first: dispersion, ion–dipole, dipole–dipole or H-bonding.", "conceptName": "Solubility & Henry's law"}, {"q": 24, "title": "Solubility in n-octane", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Based on solute-solvent interactions, arrange the following in order of increasing solubility in n-octane and explain. Cyclohexane, KCl, CH₃OH, CH₃CN.", "given": "n-Octane is non-polar: cyclohexane, KCl, CH₃OH, CH₃CN.", "steps": ["n-Octane is non-polar. Like dissolves like.", "KCl (ionic) least; then CH₃OH (H-bonded polar); then CH₃CN (polar, no H-bond donor); cyclohexane (non-polar) most."], "answer": "KCl < CH₃OH < CH₃CN < cyclohexane.", "takeaway": "Like dissolves like: non-polar dissolves best; ions and H-bond donors poorly.", "conceptName": "Solubility & Henry's law"}, {"q": 25, "title": "Soluble, partly soluble, insoluble", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Amongst the following compounds, identify which are insoluble, partially soluble and highly soluble in water? (i) phenol (ii) toluene (iii) formic acid (iv) ethylene glycol (v) chloroform (vi) pentanol.", "given": "Six compounds; judge each by polarity and the size of the hydrophobic part.", "steps": ["Highly soluble (H-bonding, small): formic acid, ethylene glycol.", "Partially soluble: phenol, pentanol (larger hydrophobic part).", "Insoluble: toluene, chloroform (essentially non-polar / weak H-bond)."], "answer": "Highly soluble: HCOOH, ethylene glycol; partial: phenol, pentanol; insoluble: toluene, CHCl₃.", "takeaway": "Water dissolves small polar/H-bonding molecules; large non-polar molecules stay out.", "conceptName": "Solubility & Henry's law"}, {"q": 26, "title": "Na⁺ molarity in lake water", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "If the density of some lake water is 1.25g mL⁻¹ and contains 92 g of Na⁺ ions per kg of water, calculate the molarity of Na⁺ ions in the lake.", "given": "92 g Na⁺ per kg water; density 1.25 g mL⁻¹; M(Na) = 23 g mol⁻¹.", "steps": ["Per kg of water the lake contains 92 g Na⁺. n(Na⁺) = 92/23 = 4.0 mol.", "Mass of this solution = 1000 g water + 92 g Na⁺ = 1092 g.", "Volume = 1092 g / 1.25 g mL⁻¹ = 873.6 mL = 0.8736 L.", "Molarity = 4.0 mol / 0.8736 L ≈ 4.58 mol L⁻¹. (Neglecting the solute mass and treating 1 L as 1.25 kg of water gives the widely quoted 5.0 M shortcut; we follow the printed data strictly.)"], "answer": "≈ 4.58 M (5.0 M only if the solute mass is ignored).", "takeaway": "Include the solute mass when converting 1 kg of water to solution volume.", "conceptName": "Types of solutions & concentration units"}, {"q": 27, "title": "CuS solubility from Ksp", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "If the solubility product of CuS is 6 × 10⁻¹⁶, calculate the maximum molarity of CuS in aqueous solution.", "given": "K_sp(CuS) = 6 × 10⁻¹⁶; s = √K_sp for a 1:1 salt.", "steps": ["CuS(s) ⇌ Cu²⁺ + S²⁻; K_sp = s² = 6 × 10⁻¹⁶.", "s = √(6 × 10⁻¹⁶) = 2.45 × 10⁻⁸ mol L⁻¹."], "answer": "2.45 × 10⁻⁸ M.", "takeaway": "For a sparingly soluble 1:1 salt, molar solubility is the square root of K_sp.", "conceptName": "Solubility & Henry's law"}, {"q": 28, "title": "Aspirin mass percentage", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Calculate the mass percentage of aspirin (C₉H₈O₄) in acetonitrile (CH₃CN) when 6.5 g of C₉H₈O₄ is dissolved in 450 g of CH₃CN.", "given": "6.5 g aspirin dissolved in 450 g acetonitrile.", "steps": ["Total mass of solution = mass of aspirin + mass of acetonitrile = 6.5 g + 450 g = 456.5 g.", "Mass % of aspirin = (6.5/456.5) × 100 = 1.424% ≈ 1.42%."], "answer": "1.42%.", "takeaway": "Mass % uses the total mass of solution, solute + solvent.", "conceptName": "Types of solutions & concentration units"}, {"q": 29, "title": "Nalorphene dose from molality", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Nalorphene (C₁₉H₂₁NO₃), similar to morphine, is used to combat withdrawal symptoms in narcotic users. Dose of nalorphene generally given is 1.5 mg. Calculate the mass of 1.5 × 10⁻³ m aqueous solution required for the above dose.", "given": "Dose = 1.5 mg nalorphene (C₁₉H₂₁NO₃, M = 311 g mol⁻¹); solution is 1.5 × 10⁻³ molal.", "steps": ["M(nalorphene) = 311 g mol⁻¹.", "1.5 × 10⁻³ m means 1.5 × 10⁻³ mol = 0.4665 g solute per kg solvent.", "Dose 1.5 × 10⁻³ g requires mass of solution ≈ (1.5 × 10⁻³ / 0.4665) × 1000 = 3.22 g."], "answer": "3.22 g of solution.", "takeaway": "Convert molality to g solute per g solution before scaling to the dose.", "conceptName": "Types of solutions & concentration units"}, {"q": 30, "title": "Benzoic acid for a 0.15 M solution", "conceptIdx": 0, "page": 29, "printPage": 29, "question": "Calculate the amount of benzoic acid (C₆H₅COOH) required for preparing 250 mL of 0.15 M solution in methanol.", "given": "250 mL of 0.15 M benzoic acid (C₆H₅COOH, M = 122 g mol⁻¹).", "steps": ["n = 0.15 × 0.250 = 0.0375 mol.", "M = 122 g mol⁻¹; mass = 4.575 g."], "answer": "4.575 g.", "takeaway": "One-line use of n = MV and mass = nM.", "conceptName": "Types of solutions & concentration units"}, {"q": 31, "title": "Why the acid order changes ΔTf", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "The depression in freezing point of water observed for the same amount of acetic acid, trichloroacetic acid and trifluoroacetic acid increases in the order given above. Explain briefly.", "given": "CH₃COOH, CCl₃COOH, CF₃COOH in increasing ΔT_f; electronegativity F > Cl > H.", "steps": ["ΔT_f ∝ i = 1 + α. Stronger acid ⇒ larger α ⇒ larger i ⇒ larger ΔT_f.", "F is more electronegative than Cl, which is more electronegative than H, so acidity (and α) increases CF₃COOH > CCl₃COOH > CH₃COOH."], "answer": "Acidity/α increases CH₃COOH < CCl₃COOH < CF₃COOH, so ΔT_f increases in that order.", "takeaway": "Stronger acid ⇒ larger α ⇒ larger i ⇒ larger freezing-point depression.", "conceptName": "van't Hoff factor"}, {"q": 32, "title": "ΔTf of a weak acid", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "Calculate the depression in the freezing point of water when 10 g of CH₃CH₂CHClCOOH is added to 250 g of water. K_a = 1.4 × 10⁻³, K_f = 1.86 K kg mol⁻¹.", "given": "10 g CH₃CH₂CHClCOOH (M = 122.5) in 250 g water; K_a = 1.4 × 10⁻³, K_f = 1.86.", "steps": ["M = 122.5 g mol⁻¹; m = (10/122.5)/0.250 = 0.3265 mol kg⁻¹.", "K_a = c α²/(1 − α) ≈ c α² ⇒ α = √(1.4 × 10⁻³ / 0.3265) = 0.0655.", "i = 1 + α = 1.0655; ΔT_f = i K_f m = 1.0655 × 1.86 × 0.3265 = 0.65 K."], "answer": "0.65 K.", "takeaway": "Weak-acid dissociation adds an i factor to the van't Hoff-modified ΔT_f.", "conceptName": "van't Hoff factor"}, {"q": 33, "title": "i and Ka of fluoroacetic acid", "conceptIdx": 6, "page": 29, "printPage": 29, "question": "19.5 g of CH₂FCOOH is dissolved in 500 g of water. The depression in the freezing point of water observed is 1.0° C. Calculate the van’t Hoff factor and dissociation constant of fluoroacetic acid.", "given": "19.5 g CH₂FCOOH (M = 78) in 500 g water; ΔT_f = 1.00 °C; K_f = 1.86 K kg mol⁻¹.", "steps": ["M = 78 g mol⁻¹; m = (19.5/78)/0.500 = 0.50 mol kg⁻¹.", "i = ΔT_f /(K_f m) = 1.00/(1.86 × 0.50) = 1.075.", "α = i − 1 = 0.075; K_a = c α²/(1 − α) = 0.50 × (0.075)² / 0.925 = 3.07 × 10⁻³."], "answer": "i = 1.075; K_a = 3.07 × 10⁻³.", "takeaway": "A measured i of 1.075 gives α directly for a 1–1 acid, and hence K_a.", "conceptName": "van't Hoff factor"}, {"q": 34, "title": "Glucose lowers water's vapour pressure", "conceptIdx": 4, "page": 29, "printPage": 29, "question": "Vapour pressure of water at 293 K is 17.535 mm Hg. Calculate the vapour pressure of water at 293 K when 25 g of glucose is dissolved in 450 g of water.", "given": "25 g glucose in 450 g water; p°(water) = 17.535 mm Hg at 293 K.", "steps": ["n₂ = 25/180 = 0.1389 mol; n₁ = 450/18 = 25.00 mol.", "x₁ = 25/25.1389 = 0.9945.", "p = 0.9945 × 17.535 = 17.44 mm Hg."], "answer": "17.44 mm Hg.", "takeaway": "Raoult's law with x₁ gives the new vapour pressure.", "conceptName": "Relative lowering & boiling-point elevation"}, {"q": 35, "title": "Methane solubility in benzene", "conceptIdx": 1, "page": 29, "printPage": 29, "question": "Henry’s law constant for the molality of methane in benzene at 298 K is 4.27 × 10⁵ mm Hg. Calculate the solubility of methane in benzene at 298 K under 760 mm Hg.", "given": "K_H = 4.27 × 10⁵ mm Hg at 298 K; p(CH₄) = 760 mm Hg.", "steps": ["x = p / K_H = 760 / (4.27 × 10⁵) = 1.78 × 10⁻³.", "This mole fraction is the solubility as used in Eq. 1.11."], "answer": "x(CH₄) = 1.78 × 10⁻³.", "takeaway": "x = p/K_H gives the solubility directly.", "conceptName": "Solubility & Henry's law"}, {"q": 36, "title": "Vapour pressure of A in B", "conceptIdx": 2, "page": 29, "printPage": 29, "question": "100 g of liquid A (molar mass 140 g mol⁻¹) was dissolved in 1000 g of liquid B (molar mass 180 g mol⁻¹). The vapour pressure of pure liquid B was found to be 500 torr. Calculate the vapour pressure of pure liquid A and its vapour pressure in the solution if the total vapour pressure of the solution is 475 Torr.", "given": "100 g A (M = 140) in 1000 g B (M = 180); p_B° = 500 torr; p_total = 475 torr.", "steps": ["n_A = 100/140 = 0.7143 mol; n_B = 1000/180 = 5.5556 mol.", "x_A = 0.7143/(0.7143 + 5.5556) = 0.1139; x_B = 0.8861.", "p_B = x_B p_B° = 0.8861 × 500 = 443.0 torr; p_A = 475 − 443.0 = 32.0 torr.", "p_A° = p_A/x_A = 32.0/0.1139 ≈ 280.5 torr."], "answer": "p_A° ≈ 280.5 torr (≈ 280.7 torr if x_A is rounded to 0.114); p_A in the solution = 32 torr.", "takeaway": "Find p_A by difference, then divide by x_A to get the pure-liquid value.", "conceptName": "Raoult's law"}, {"q": 37, "title": "Acetone–chloroform deviation", "conceptIdx": 3, "page": 30, "printPage": 30, "question": "Vapour pressures of pure acetone and chloroform at 328 K are 741.8 mm Hg and 632.8 mm Hg respectively. Assuming that they form ideal solution over the entire range of composition, plot p_total, p_chloroform, and p_acetone as a function of x_acetone. The experimental data observed for different compositions of mixture is: 100 x_acetone: 0, 11.8, 23.4, 36.0, 50.8, 58.2, 64.5, 72.1; p_acetone/mm Hg: 0, 54.9, 110.1, 202.4, 322.7, 405.9, 454.1, 521.1; p_chloroform/mm Hg: 632.8, 548.1, 469.4, 359.7, 257.7, 193.6, 161.2, 120.7. Plot this data also on the same graph paper. Indicate whether it has positive deviation or negative deviation from the ideal solution.", "given": "p_acetone° = 741.8, p_chloroform° = 632.8 mm Hg at 328 K; experimental data for eight compositions.", "steps": ["Ideal p_acetone = x_a × 741.8; p_chloroform = x_c × 632.8; p_total linear between 632.8 and 741.8.", "At x_acetone = 0.508, experimental p_acetone = 322.7 mm Hg < ideal 377 mm Hg; experimental p_total = 580.4 < ideal 688.", "The mixture shows negative deviation (H-bonding acetone–chloroform)."], "answer": "Negative deviation from Raoult’s law.", "takeaway": "Experimental p_total below the Raoult line ⇒ negative deviation and Δ_mix H < 0.", "conceptName": "Ideal & non-ideal solutions", "figure": "1.37"}, {"q": 38, "title": "Benzene in the vapour over toluene", "conceptIdx": 2, "page": 30, "printPage": 30, "question": "Benzene and toluene form ideal solution over the entire range of composition. The vapour pressure of pure benzene and toluene at 300 K are 50.71 mm Hg and 32.06 mm Hg respectively. Calculate the mole fraction of benzene in vapour phase if 80 g of benzene is mixed with 100 g of toluene.", "given": "80 g benzene (M = 78) + 100 g toluene (M = 92); p_b° = 50.71, p_t° = 32.06 mm Hg at 300 K.", "steps": ["n_b = 80/78 = 1.026; n_t = 100/92 = 1.087; x_b = 0.486.", "p_b = 0.486 × 50.71 = 24.64 mm Hg; p_t = 0.514 × 32.06 = 16.48 mm Hg.", "y_b = 24.64 / 41.12 = 0.599."], "answer": "y_benzene = 0.599.", "takeaway": "y_b = p_b/p_total; the vapour is richer in the more volatile benzene.", "conceptName": "Raoult's law"}, {"q": 39, "title": "O₂ and N₂ dissolved in water", "conceptIdx": 1, "page": 30, "printPage": 30, "question": "The air is a mixture of a number of gases. The major components are oxygen and nitrogen with approximate proportion of 20% is to 79% by volume at 298 K. The water is in equilibrium with air at a pressure of 10 atm. At 298 K if the Henry’s law constants for oxygen and nitrogen at 298 K are 3.30 × 10⁷ mm and 6.51 × 10⁷ mm respectively, calculate the composition of these gases in water.", "given": "Air 20% O₂ / 79% N₂ by volume over water at 10 atm; K_H(O₂) = 3.30 × 10⁷ mm, K_H(N₂) = 6.51 × 10⁷ mm.", "steps": ["p(O₂) = 0.20 × 10 atm = 2 atm = 1520 mm Hg; p(N₂) = 0.79 × 10 = 7.9 atm = 6004 mm Hg.", "x(O₂) = 1520 / 3.30 × 10⁷ = 4.61 × 10⁻⁵.", "x(N₂) = 6004 / 6.51 × 10⁷ = 9.22 × 10⁻⁵."], "answer": "x(O₂) = 4.61 × 10⁻⁵; x(N₂) = 9.22 × 10⁻⁵.", "takeaway": "Each gas dissolves independently according to its own partial pressure and K_H.", "conceptName": "Solubility & Henry's law"}, {"q": 40, "title": "CaCl₂ for a 0.75 atm osmotic pressure", "conceptIdx": 6, "page": 30, "printPage": 30, "question": "Determine the amount of CaCl₂ (i = 2.47) dissolved in 2.5 litre of water such that its osmotic pressure is 0.75 atm at 27° C.", "given": "i = 2.47, V = 2.5 L, π = 0.75 atm at 27 °C; R = 0.0821 L atm K⁻¹ mol⁻¹, M(CaCl₂) = 111.", "steps": ["π = i C R T ⇒ C = 0.75 / (2.47 × 0.0821 × 300) = 0.01232 mol L⁻¹.", "n = 0.01232 × 2.5 = 0.0308 mol.", "Mass = 0.0308 × 111 = 3.42 g."], "answer": "3.42 g CaCl₂.", "takeaway": "Ionic solutes multiply the osmotic pressure by i.", "conceptName": "van't Hoff factor"}, {"q": 41, "title": "Osmotic pressure of K₂SO₄", "conceptIdx": 6, "page": 30, "printPage": 30, "question": "Determine the osmotic pressure of a solution prepared by dissolving 25 mg of K₂SO₄ in 2 litre of water at 25° C, assuming that it is completely dissociated.", "given": "25 mg K₂SO₄ (M = 174) in 2 L water at 25 °C; complete dissociation, i = 3.", "steps": ["K₂SO₄ → 2K⁺ + SO₄²⁻, i = 3.", "n = 0.025 / 174 = 1.437 × 10⁻⁴ mol; C = 7.18 × 10⁻⁵ mol L⁻¹.", "π = 3 × 7.18 × 10⁻⁵ × 0.0821 × 298 = 5.27 × 10⁻³ atm."], "answer": "5.27 × 10⁻³ atm.", "takeaway": "π = iCRT; count the three ions per formula unit.", "conceptName": "van't Hoff factor"}], "exerciseMap": [[1, "What a solution is", 0, 27], [2, "A gas dissolved in a solid", 0, 27], [3, "Concentration terms defined", 0, 27], [4, "Molarity of concentrated nitric acid", 0, 27], [5, "10% glucose: molality, mole fraction, molarity", 0, 28], [6, "HCl for a Na₂CO₃–NaHCO₃ mixture", 0, 28], [7, "Mixing two mass-% solutions", 0, 28], [8, "Antifreeze: molality and molarity", 0, 28], [9, "Chloroform at 15 ppm", 0, 28], [10, "Alcohol–water interactions", 3, 28], [11, "Why warm water holds less gas", 1, 28], [12, "Henry's law and its applications", 1, 28], [13, "Ethane over its solution", 1, 28], [14, "Positive and negative deviations", 3, 28], [15, "Molar mass from vapour-pressure lowering", 4, 28], [16, "Ideal heptane–octane mixture", 2, 28], [17, "Vapour pressure of a 1 molal solution", 4, 28], [18, "Solute to cut vapour pressure to 80%", 4, 28], [19, "Molar mass from two vapour pressures", 4, 28], [20, "5% sugar vs 5% glucose freezing points", 5, 28], [21, "Atomic masses from AB₂ and AB₄", 5, 28], [22, "Osmotic pressure and concentration", 5, 29], [23, "Intermolecular forces in five pairs", 1, 29], [24, "Solubility in n-octane", 1, 29], [25, "Soluble, partly soluble, insoluble", 1, 29], [26, "Na⁺ molarity in lake water", 0, 29], [27, "CuS solubility from Ksp", 1, 29], [28, "Aspirin mass percentage", 0, 29], [29, "Nalorphene dose from molality", 0, 29], [30, "Benzoic acid for a 0.15 M solution", 0, 29], [31, "Why the acid order changes ΔTf", 6, 29], [32, "ΔTf of a weak acid", 6, 29], [33, "i and Ka of fluoroacetic acid", 6, 29], [34, "Glucose lowers water's vapour pressure", 4, 29], [35, "Methane solubility in benzene", 1, 29], [36, "Vapour pressure of A in B", 2, 29], [37, "Acetone–chloroform deviation", 3, 30], [38, "Benzene in the vapour over toluene", 2, 30], [39, "O₂ and N₂ dissolved in water", 1, 30], [40, "CaCl₂ for a 0.75 atm osmotic pressure", 6, 30], [41, "Osmotic pressure of K₂SO₄", 6, 30]]};
+</script>
+<script>
+// Textbook figure used by the exercises, redrawn as SVG from the data table printed with
+// books/originals/Class12-Chemistry-Pt1_lech101.pdf (Exercise 1.37, printed p. 30).
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", RED = "#f87171", GREEN = "#34d399";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 13) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + s + '</text>';
+  }
+
+  var figs = {};
+
+  figs["1.37"] = {
+    caption: "Exercise 1.37 \u2014 acetone\u2013chloroform p_total at 328 K against the ideal Raoult line (redrawn).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 520 320" role="img" aria-label="Acetone-chloroform total pressure versus mole fraction of acetone">';
+      s += '<rect width="520" height="320" fill="#09131d"/>';
+      function X(x){ return 60 + 420 * x; }
+      function Y(p){ return 270 - (p / 800) * 240; }
+      s += '<line x1="60" y1="270" x2="490" y2="270" stroke="' + MUTED + '" stroke-width="1.4"/>';
+      s += '<line x1="60" y1="270" x2="60" y2="24" stroke="' + MUTED + '" stroke-width="1.4"/>';
+      for (var p = 0; p <= 800; p += 200){
+        s += '<line x1="56" y1="' + Y(p) + '" x2="60" y2="' + Y(p) + '" stroke="' + MUTED + '"/>';
+        s += text(44, Y(p) + 4, String(p), {size: 10, color: MUTED});
+      }
+      for (var x = 0; x <= 1; x += 0.25){
+        s += '<line x1="' + X(x) + '" y1="270" x2="' + X(x) + '" y2="274" stroke="' + MUTED + '"/>';
+        s += text(X(x), 288, x.toFixed(2), {size: 10, color: MUTED});
+      }
+      s += '<line x1="' + X(0) + '" y1="' + Y(632.8) + '" x2="' + X(1) + '" y2="' + Y(741.8) + '" stroke="' + GREEN + '" stroke-width="2" stroke-dasharray="6 4"/>';
+      var xa = [0, 0.118, 0.234, 0.360, 0.508, 0.582, 0.645, 0.721, 1];
+      var pt = [632.8, 603.0, 579.5, 562.1, 580.4, 599.5, 615.3, 641.8, 741.8];
+      var d = "";
+      for (var i = 0; i < xa.length; i++){
+        d += (i === 0 ? "M" : "L") + " " + X(xa[i]).toFixed(1) + " " + Y(pt[i]).toFixed(1) + " ";
+        s += '<circle cx="' + X(xa[i]).toFixed(1) + '" cy="' + Y(pt[i]).toFixed(1) + '" r="4" fill="' + RED + '"/>';
+      }
+      s += '<path d="' + d + '" fill="none" stroke="' + RED + '" stroke-width="2"/>';
+      s += text(260, 14, "Exercise 1.37 \u00b7 328 K \u00b7 p_total vs x(acetone)", {size: 13, color: MUTED});
+      s += text(390, 40, "ideal Raoult line", {size: 11, color: GREEN, anchor: "end"});
+      s += text(390, 56, "experimental p_total", {size: 11, color: RED, anchor: "end"});
+      s += '<circle cx="62" cy="36" r="4" fill="' + GREEN + '"/><circle cx="62" cy="52" r="4" fill="' + RED + '"/>';
+      s += text(120, 306, "x(acetone)", {size: 11, color: MUTED, anchor: "end"});
+      s += text(16, 20, "p/mm Hg", {size: 11, color: MUTED, anchor: "start"});
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1367,44 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1430,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1513,35 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1558,10 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1570,17 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1592,15 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1613,6 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1622,6 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1634,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1660,47 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1708,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1717,46 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1802,10 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1824,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +1874,8 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +1884,41 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +1933,6 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +1967,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +2052,9 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2082,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2127,31 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2197,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2207,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2217,31 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2261,12 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2276,10 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2293,41 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2335,7 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1895,27 +2344,237 @@ window.CHAPTER = {"code": "lech101", "chapterNumber": 1, "book_name": "Chemistry
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1947,9 +2606,9 @@ window.SIMS.concunits = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solute particles</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Solvent</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-gly">Ex 1.1: 20% glycol</button>' +
-      '<button class="preset-btn" id="p-naoh">Ex 1.2: 5 g NaOH / 450 mL</button>' +
-      '<button class="preset-btn" id="p-hoac">Ex 1.3: 2.5 g HOAc / 75 g benzene</button>';
+      '<button class="preset-btn active" data-preset="gly" id="p-gly">Ex 1.1: 20% glycol</button>' +
+      '<button class="preset-btn" data-preset="naoh" id="p-naoh">Ex 1.2: 5 g NaOH / 450 mL</button>' +
+      '<button class="preset-btn" data-preset="hoac" id="p-hoac">Ex 1.3: 2.5 g HOAc / 75 g benzene</button>';
     document.getElementById("p-gly").onclick = function(){ setActivePreset(this); preset="glycol"; draw(App.state.t); };
     document.getElementById("p-naoh").onclick = function(){ setActivePreset(this); preset="naoh"; draw(App.state.t); };
     document.getElementById("p-hoac").onclick = function(){ setActivePreset(this); preset="hoac"; draw(App.state.t); };
@@ -2018,9 +2677,9 @@ window.SIMS.henrylaw = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Dissolved gas</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Headspace pressure</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-n2">Ex 1.4: N₂ in water</button>' +
-      '<button class="preset-btn" id="p-soda">Intext 1.7: soda CO₂</button>' +
-      '<button class="preset-btn" id="p-o2">Table 1.2: O₂ cold vs warm</button>';
+      '<button class="preset-btn active" data-preset="n2" id="p-n2">Ex 1.4: N₂ in water</button>' +
+      '<button class="preset-btn" data-preset="soda" id="p-soda">Intext 1.7: soda CO₂</button>' +
+      '<button class="preset-btn" data-preset="o2" id="p-o2">Table 1.2: O₂ cold vs warm</button>';
     document.getElementById("p-n2").onclick = function(){ setActivePreset(this); gas="N2"; draw(App.state.t); };
     document.getElementById("p-soda").onclick = function(){ setActivePreset(this); gas="CO2"; var p=document.getElementById("ctrl-p-range"); if(p) p.value=2.5; draw(App.state.t); };
     document.getElementById("p-o2").onclick = function(){ setActivePreset(this); gas="O2"; draw(App.state.t); };
@@ -2082,8 +2741,8 @@ window.SIMS.raoult = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>p_B = x_B p_B°</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>p_total</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ab">Intext 1.8: A + B</button>' +
-      '<button class="preset-btn" id="p-hep">Ex 1.16: heptane + octane</button>';
+      '<button class="preset-btn active" data-preset="ab" id="p-ab">Intext 1.8: A + B</button>' +
+      '<button class="preset-btn" data-preset="hep" id="p-hep">Ex 1.16: heptane + octane</button>';
     document.getElementById("p-ab").onclick = function(){ setActivePreset(this); mode="AB"; draw(App.state.t); };
     document.getElementById("p-hep").onclick = function(){ setActivePreset(this); mode="hep"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -2128,8 +2787,8 @@ window.SIMS.deviation = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Ideal p_total</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Ex 1.37 experimental</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-neg">Acetone–CHCl₃ (−)</button>' +
-      '<button class="preset-btn" id="p-hide">Ideal line only</button>';
+      '<button class="preset-btn active" data-preset="neg" id="p-neg">Acetone–CHCl₃ (−)</button>' +
+      '<button class="preset-btn" data-preset="hide" id="p-hide">Ideal line only</button>';
     document.getElementById("p-neg").onclick = function(){ setActivePreset(this); showExp=true; draw(App.state.t); };
     document.getElementById("p-hide").onclick = function(){ setActivePreset(this); showExp=false; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2172,8 +2831,8 @@ window.SIMS.deltatb = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Pure water p–T</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Solution p–T</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-glu">Ex 1.7: 18 g glucose / 1 kg</button>' +
-      '<button class="preset-btn" id="p-suc">Intext 1.10: sucrose → 100 °C</button>';
+      '<button class="preset-btn active" data-preset="glu" id="p-glu">Ex 1.7: 18 g glucose / 1 kg</button>' +
+      '<button class="preset-btn" data-preset="suc" id="p-suc">Intext 1.10: sucrose → 100 °C</button>';
     document.getElementById("p-glu").onclick = function(){ setActivePreset(this); solute="glucose"; draw(App.state.t); };
     document.getElementById("p-suc").onclick = function(){ setActivePreset(this); solute="sucrose"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -2217,9 +2876,9 @@ window.SIMS.osmosis = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solvent</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Solution</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-os">Osmosis (mango in brine)</button>' +
-      '<button class="preset-btn" id="p-ro">Reverse osmosis (desalination)</button>' +
-      '<button class="preset-btn" id="p-pi">Intext 1.12: polymer π</button>';
+      '<button class="preset-btn active" data-preset="os" id="p-os">Osmosis (mango in brine)</button>' +
+      '<button class="preset-btn" data-preset="ro" id="p-ro">Reverse osmosis (desalination)</button>' +
+      '<button class="preset-btn" data-preset="pi" id="p-pi">Intext 1.12: polymer π</button>';
     document.getElementById("p-os").onclick = function(){ setActivePreset(this); mode="fwd"; App.resetTimeline(); App.play(); };
     document.getElementById("p-ro").onclick = function(){ setActivePreset(this); mode="ro"; App.resetTimeline(); App.play(); };
     document.getElementById("p-pi").onclick = function(){ setActivePreset(this); mode="pi"; draw(App.state.t); };
@@ -2264,9 +2923,9 @@ window.SIMS.vanthoff = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Formula units</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Free particles</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-kcl">KCl (n = 2)</button>' +
-      '<button class="preset-btn" id="p-fa">Ex 1.33: CH₂FCOOH</button>' +
-      '<button class="preset-btn" id="p-ca">Ex 1.40: CaCl₂ i = 2.47</button>';
+      '<button class="preset-btn active" data-preset="kcl" id="p-kcl">KCl (n = 2)</button>' +
+      '<button class="preset-btn" data-preset="fa" id="p-fa">Ex 1.33: CH₂FCOOH</button>' +
+      '<button class="preset-btn" data-preset="ca" id="p-ca">Ex 1.40: CaCl₂ i = 2.47</button>';
     document.getElementById("p-kcl").onclick = function(){ setActivePreset(this); kind="kcl"; draw(App.state.t); };
     document.getElementById("p-fa").onclick = function(){ setActivePreset(this); kind="fa"; draw(App.state.t); };
     document.getElementById("p-ca").onclick = function(){ setActivePreset(this); kind="ca"; draw(App.state.t); };

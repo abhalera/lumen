@@ -150,7 +150,7 @@ window.SIMS.cathoderay = (function(){
     verdict('<b>Thomson Crossed-Field Condition:</b> ' + status + '<br><small>When electric force eE exactly balances magnetic force evB, electrons pass with zero deflection at velocity v = E/B. Measuring deflection with B=0 yields the specific charge e/m.</small>');
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
@@ -305,14 +305,14 @@ window.SIMS.alphascatter = (function(){
     verdict('<b>Rutherford Nuclear Deduction:</b> ' + note);
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
 // 3. SIMULATION 3: Photoelectric Effect & Work Function Lab (photoelectric)
 // -------------------------------------------------------------------------
 window.SIMS.photoelectric = (function(){
-  var wavelength = 350; // nm
+  var wavelength = 300; // nm
   var intensity = 5; // mW/cm²
   var retardingV = 0.0; // Volts
   var targetMetal = "Na"; // Cs, K, Na, Cu
@@ -347,8 +347,8 @@ window.SIMS.photoelectric = (function(){
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group">' +
-        '<label>Light Wavelength (λ): <b id="lam-val" style="color:#eab308;">350 nm</b></label>' +
-        '<input type="range" id="lam-slider" min="150" max="750" value="350" step="5">' +
+        '<label>Light Wavelength (λ): <b id="lam-val" style="color:#eab308;">300 nm</b></label>' +
+        '<input type="range" id="lam-slider" min="150" max="750" value="300" step="5">' +
       '</div>' +
       '<div class="control-group">' +
         '<label>Cathode Metal Target: <b id="metal-val" style="color:#38bdf8;">Sodium (W₀ = 2.36 eV)</b></label>' +
@@ -492,7 +492,7 @@ window.SIMS.photoelectric = (function(){
     verdict('<b>Einstein Photoelectric Condition:</b> ' + currentText + '<br><small>' + expl + '</small>');
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
@@ -652,7 +652,7 @@ window.SIMS.bohrmodel = (function(){
     verdict('<b>Bohr Quantum Transition:</b> Electron de-excites from stationary orbit n=' + nInitial + ' to n=' + nFinal + ', emitting a single photon with energy ΔE = E(' + nInitial + ') − E(' + nFinal + '). Series: <b>' + seriesName + '</b>.');
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
@@ -780,14 +780,14 @@ window.SIMS.uncertainty = (function(){
     verdict('<b>Quantum Dual Behavior:</b> ' + msg);
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
 // 6. SIMULATION 6: 3D Atomic Orbital Visualizer & Nodes Mapper (orbitalviewer)
 // -------------------------------------------------------------------------
 window.SIMS.orbitalviewer = (function(){
-  var currentOrbital = "2p"; // 1s, 2s, 2p, 3s, 3p, 3d
+  var currentOrbital = "1s"; // 1s, 2s, 2p, 3s, 3p, 3d
 
   var orbitalData = {
     "1s": { n: 1, l: 0, ml: 0, radialNodes: 0, angularNodes: 0, totalNodes: 0, shape: "Spherical" },
@@ -819,11 +819,11 @@ window.SIMS.orbitalviewer = (function(){
 
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-group" style="grid-column:span 2;">' +
-        '<label>Select Atomic Orbital: <b id="orb-label" style="color:#38bdf8;">2p Orbital</b></label>' +
+        '<label>Select Atomic Orbital: <b id="orb-label" style="color:#38bdf8;">1s Orbital</b></label>' +
         '<select id="orb-select" style="padding:8px;border-radius:8px;background:#1e293b;color:#fff;border:1px solid #334155;font-size:14px;">' +
-          '<option value="1s">1s (n=1, l=0)</option>' +
+          '<option value="1s" selected>1s (n=1, l=0)</option>' +
           '<option value="2s">2s (n=2, l=0)</option>' +
-          '<option value="2p" selected>2p (n=2, l=1)</option>' +
+          '<option value="2p">2p (n=2, l=1)</option>' +
           '<option value="3s">3s (n=3, l=0)</option>' +
           '<option value="3p">3p (n=3, l=1)</option>' +
           '<option value="3d">3d (n=3, l=2)</option>' +
@@ -866,7 +866,7 @@ window.SIMS.orbitalviewer = (function(){
     var pulse = 1.0 + 0.04 * Math.sin(t * 3);
 
     if(currentOrbital === "1s"){
-      h += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (65 * pulse) + '" fill="url(#grad-blue)" opacity="0.85" filter="drop-shadow(0 0 15px #38bdf8)"/>';
+      h += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (65 * pulse) + '" fill="#38bdf8" opacity="0.85" filter="drop-shadow(0 0 15px #38bdf8)"/>';
     }
     else if(currentOrbital === "2s"){
       // Outer sphere
@@ -912,7 +912,7 @@ window.SIMS.orbitalviewer = (function(){
     svg.innerHTML = h;
 
     readout(
-      cell("Quantum Numbers", "n=" + info.n + ", l=" + info.l + ", m_l=" + info.ml, "#38bdf8") +
+      cell("Quantum Numbers", "n=" + info.n + ", l=" + info.l + ", ml=" + info.ml, "#38bdf8") +
       cell("Radial Nodes (n−l−1)", info.radialNodes, "#fbbf24") +
       cell("Angular Nodes (l)", info.angularNodes, "#f43f5e") +
       cell("Total Nodes (n−1)", info.totalNodes, "#e2e8f0")
@@ -921,7 +921,7 @@ window.SIMS.orbitalviewer = (function(){
     verdict('<b>Orbital Nodal Architecture:</b> ' + info.shape + '. Total nodes = ' + info.totalNodes + ' (Radial = ' + info.radialNodes + ', Angular = ' + info.angularNodes + ').');
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
 // -------------------------------------------------------------------------
@@ -946,8 +946,8 @@ window.SIMS.electronconfig = (function(){
     App.state.maxT = 5;
     var s = document.getElementById("time-scrubber"); if(s) s.max = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Spin Up (m_s = +½)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f43f5e;"></span><span>Spin Down (m_s = −½)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Spin Up (ms = +½)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f43f5e;"></span><span>Spin Down (ms = −½)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Degenerate Subshell Box</span></div>';
 
     document.getElementById("preset-bar").innerHTML =
@@ -1111,25 +1111,67 @@ window.SIMS.electronconfig = (function(){
     verdict('<b>Electronic Architecture:</b> ' + note);
   }
 
-  return { mount: mount, update: draw };
+  return { mount: mount, update: draw, draw: draw };
 })();
 
-// Route timeline tick from App
-App.updateSim = function(t){
-  var s = App.currentConcept && App.currentConcept.sim;
-  if(s && window.SIMS[s] && window.SIMS[s].update){
-    window.SIMS[s].update(t);
-  }
-};
-App.mountSim = function(id){
-  if(window.SIMS[id] && window.SIMS[id].mount){
-    window.SIMS[id].mount();
-  }
-};
 
-// Initial hash route
-window.addEventListener("DOMContentLoaded", function(){
-  if(window.App && window.App.routeFromHash){
-    window.App.routeFromHash();
-  }
+
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  // Zero-arg wrapper: the runtime wipes the play block when mount.length >= 1
+  // on a sim without .draw, so this wrapper must not declare parameters.
+  sim.mount = function(){
+    originalMount.apply(sim, arguments);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
 });
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

@@ -28,8 +28,8 @@ window.SIMS["origin-miller"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Spark discharge</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Amino-acid product</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-red">1953 reducing flask</button>' +
-      '<button class="preset-btn" id="p-oxy">Oxygen-rich (prediction test)</button>';
+      '<button class="preset-btn active" id="p-red" data-preset="p-red">1953 reducing flask</button>' +
+      '<button class="preset-btn" id="p-oxy" data-preset="p-oxy">Oxygen-rich (prediction test)</button>';
     document.getElementById("p-red").onclick = function(){ setActivePreset(this); o2 = false; spark = true; var r = document.getElementById("ctrl-sp-range"); if(r) r.value = 1; draw(App.state.t); };
     document.getElementById("p-oxy").onclick = function(){ setActivePreset(this); o2 = true; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -99,9 +99,9 @@ window.SIMS["theories-evidences"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Homologous = divergent, common ancestry</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Analogous = convergent, same habitat job</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-h">Homology set</button>' +
-      '<button class="preset-btn" id="p-a">Analogy set</button>' +
-      '<button class="preset-btn" id="p-m">Moth melanism 1850s-1920</button>';
+      '<button class="preset-btn active" id="p-h" data-preset="p-h">Homology set</button>' +
+      '<button class="preset-btn" id="p-a" data-preset="p-a">Analogy set</button>' +
+      '<button class="preset-btn" id="p-m" data-preset="p-m">Moth melanism 1850s-1920</button>';
     document.getElementById("p-h").onclick = function(){ setActivePreset(this); item = 0; draw(App.state.t); };
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); item = 1; draw(App.state.t); };
     document.getElementById("p-m").onclick = function(){ setActivePreset(this); item = -1; draw(App.state.t); };
@@ -109,7 +109,7 @@ window.SIMS["theories-evidences"] = (function(){
       '<div class="control-item"><div class="control-label"><span>Specimen</span><span class="val" id="ctrl-i">1 / 6</span></div>' +
       '<input type="range" id="ctrl-i-range" min="0" max="5" step="1" value="0"></div>' +
       '<div class="control-item"><div class="control-label"><span>Your call</span><span class="val">?</span></div>' +
-      '<div><button class="preset-btn" id="b-hom">Homologous</button> <button class="preset-btn" id="b-ana">Analogous</button></div></div>';
+      '<div><button class="preset-btn" id="b-hom" data-preset="b-hom">Homologous</button> <button class="preset-btn" id="b-ana" data-preset="b-ana">Analogous</button></div></div>';
     document.getElementById("ctrl-i-range").oninput = function(){ item = numEl("ctrl-i-range", 0); draw(App.state.t); };
     document.getElementById("b-hom").onclick = function(){ judge("H"); };
     document.getElementById("b-ana").onclick = function(){ judge("A"); };
@@ -175,10 +175,10 @@ window.SIMS["adaptive-radiation"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Insectivorous (probing)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Vegetarian (crushing)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-s">Seed-eating ancestor</button>' +
-      '<button class="preset-btn active" id="p-i">Insectivorous</button>' +
-      '<button class="preset-btn" id="p-v">Vegetarian</button>' +
-      '<button class="preset-btn" id="p-w">Wolf mirror</button>';
+      '<button class="preset-btn" id="p-s" data-preset="p-s">Seed-eating ancestor</button>' +
+      '<button class="preset-btn active" id="p-i" data-preset="p-i">Insectivorous</button>' +
+      '<button class="preset-btn" id="p-v" data-preset="p-v">Vegetarian</button>' +
+      '<button class="preset-btn" id="p-w" data-preset="p-w">Wolf mirror</button>';
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); beak = 0; var r = document.getElementById("ctrl-b-range"); if(r) r.value = 0; draw(App.state.t); };
     document.getElementById("p-i").onclick = function(){ setActivePreset(this); beak = 1; var r = document.getElementById("ctrl-b-range"); if(r) r.value = 1; draw(App.state.t); };
     document.getElementById("p-v").onclick = function(){ setActivePreset(this); beak = 2; var r = document.getElementById("ctrl-b-range"); if(r) r.value = 2; draw(App.state.t); };
@@ -252,10 +252,10 @@ window.SIMS["lamarck-darwin-mechanism"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span><span>Before selection</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>After selection</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-st">Stabilising (mean)</button>' +
-      '<button class="preset-btn active" id="p-di">Directional (off-mean)</button>' +
-      '<button class="preset-btn" id="p-du">Disruptive (both ends)</button>' +
-      '<button class="preset-btn" id="p-la">Lamarck giraffe (rejected)</button>';
+      '<button class="preset-btn" id="p-st" data-preset="p-st">Stabilising (mean)</button>' +
+      '<button class="preset-btn active" id="p-di" data-preset="p-di">Directional (off-mean)</button>' +
+      '<button class="preset-btn" id="p-du" data-preset="p-du">Disruptive (both ends)</button>' +
+      '<button class="preset-btn" id="p-la" data-preset="p-la">Lamarck giraffe (rejected)</button>';
     document.getElementById("p-st").onclick = function(){ setActivePreset(this); mode = "stab"; draw(App.state.t); };
     document.getElementById("p-di").onclick = function(){ setActivePreset(this); mode = "dir"; draw(App.state.t); };
     document.getElementById("p-du").onclick = function(){ setActivePreset(this); mode = "dis"; draw(App.state.t); };
@@ -325,8 +325,8 @@ window.SIMS["hardy-weinberg"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Aa = 2pq</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>aa = q2</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-eq">Equilibrium (q2=0.16)</button>' +
-      '<button class="preset-btn" id="p-ds">Disturbed: selection + drift</button>';
+      '<button class="preset-btn active" id="p-eq" data-preset="p-eq">Equilibrium (q2=0.16)</button>' +
+      '<button class="preset-btn" id="p-ds" data-preset="p-ds">Disturbed: selection + drift</button>';
     document.getElementById("p-eq").onclick = function(){ setActivePreset(this); var r = document.getElementById("ctrl-p-range"); if(r) r.value = 0.6; App.state.maxT = 6; var sc = document.getElementById("time-scrubber"); if(sc) sc.max = 6; draw(App.state.t); };
     document.getElementById("p-ds").onclick = function(){ setActivePreset(this); draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -384,8 +384,8 @@ window.SIMS["timeline-human"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Vertebrate spine</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Hominid brain staircase</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-v">Vertebrate spine</button>' +
-      '<button class="preset-btn active" id="p-h">Hominid brains 650-1400cc</button>';
+      '<button class="preset-btn" id="p-v" data-preset="p-v">Vertebrate spine</button>' +
+      '<button class="preset-btn active" id="p-h" data-preset="p-h">Hominid brains 650-1400cc</button>';
     document.getElementById("p-v").onclick = function(){ setActivePreset(this); App.state.t = 1; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 1; draw(1); };
     document.getElementById("p-h").onclick = function(){ setActivePreset(this); App.state.t = 6; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 6; draw(6); };
     document.getElementById("lab-controls").innerHTML =

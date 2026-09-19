@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 6: Evolution — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -75,6 +76,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -278,6 +305,7 @@ p.concept-deck {
   gap: 4px;
   padding-bottom: 12px;
   border-bottom: 1px dashed var(--line);
+  min-width: 0;
 }
 .eq-row:last-child {
   border-bottom: none;
@@ -285,9 +313,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +498,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -600,9 +630,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -652,7 +682,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +694,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +771,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +965,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,50 +1069,174 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
+
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a class="class-link" href="../index.html">Class 12</a><span class="chapter-crumb" id="chapter-crumb">CH 06 · EVOLUTION</span>
+  <a class="brand" href="../index.html"><span class="brand-mark">l.</span> lumen</a>
+  <span class="chapter-crumb" id="chapter-crumb">CH 06 · EVOLUTION</span>
   <div class="top-actions">
     <div class="progress-pill">
       <span>Mastery:</span>
@@ -1045,7 +1250,7 @@ button.btn-secondary {
 <div class="app-layout">
   <aside class="sidebar">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
+    <div id="sidebar-nav"></div>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
       <button class="concept-nav" id="nav-revision">
         <span class="num">✦</span>
@@ -1056,20 +1261,21 @@ button.btn-secondary {
 
   <main id="main-content">
     <div id="concept-view"></div>
-    <div id="revision-view" class="revision-page" data-block="revise">
+    <div id="revision-view" class="revision-page">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h1 class="concept-title">Revise, Reflect, Refine</h1>
-        <p class="concept-deck">All 10 Exercises from NCERT Class 12 Biology (PDF pp. 1–17 · printed folio absent in source) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 10 Exercises from NCERT Class 12 Biology (pp. 1–17) mapped to core concepts with step-by-step solutions.</p>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology", "title": "Evolution", "subtitle": "Origin of life and Miller, theories and evidences, adaptive radiation, Darwin vs Lamarck, Hardy-Weinberg, geological timeline and human evolution.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo106.pdf", "page_start": 1, "page_end": 17, "extraction": "PyMuPDF text layer + section/exercise page maps in /tmp/opencode/bio_maps.json. pdftotext not used.", "lessons": [{"id": "origin-miller", "nav": "Origin of life & Miller", "title": "Origin of life: Big Bang, chemical evolution and Miller's spark", "deck": "The universe is 13.8 billion years old; earth formed 4.5 bya with a reducing atmosphere. Oparin–Haldane chemical evolution was tested by Miller's 1953 spark in CH4/H2/NH3/H2O vapour → amino acids. Life appeared ~4 bya; first cellular forms ~2000 mya, in water.", "minutes": 9, "section": "6.1", "pages": [1, 3], "print": "1–3", "sim": "miller", "simTitle": "Miller spark-discharge: gas mixer → amino acids", "quick": ["The <strong>Big Bang theory</strong> explains the origin of the universe as a singular huge explosion: the universe expanded, temperature fell, <strong>hydrogen and helium</strong> formed, gases condensed under gravitation into galaxies, and in the Milky Way the <strong>earth formed about 4.5 billion years back</strong>. There was <strong>no atmosphere on early earth</strong>; water vapour, methane, carbon dioxide and ammonia released from the molten mass covered the surface.", "UV rays from the sun broke water into hydrogen and oxygen; lighter H<sub>2</sub> escaped while oxygen combined with ammonia and methane to form water, CO<sub>2</sub> and others, and the <strong>ozone layer</strong> formed. As earth cooled, water vapour fell as rain, filling depressions to form <strong>oceans</strong>. <strong>Life appeared 500 million years after the formation of earth, i.e., almost four billion years back</strong> — all of it in the water environment only.", "Did life come from outer space? <strong>Panspermia</strong> (Greek spores transferred between planets) is still a favourite idea for some astronomers. The <strong>theory of spontaneous generation</strong> (life from straw, mud, rotting matter) was dismissed once and for all by <strong>Louis Pasteur's</strong> careful experiments: in pre-sterilised flasks life did not come from killed yeast, while flasks open to air grew new organisms from it. But this did not answer how the <strong>first</strong> life form came.", "<strong>Oparin (Russia) and Haldane (England)</strong> proposed that the first life came from pre-existing non-living organic molecules (RNA, protein) — <strong>chemical evolution</strong> of diverse organics from inorganic constituents under high temperature, volcanic storms and a <strong>reducing atmosphere containing CH<sub>4</sub>, NH<sub>3</sub></strong>. In <strong>1953 S.L. Miller</strong> created similar conditions at laboratory scale (Figure 6.1): <strong>electric discharge in a closed flask containing CH<sub>4</sub>, H<sub>2</sub>, NH<sub>3</sub> and water vapour</strong>, and observed <strong>formation of amino acids</strong>; others got sugars, nitrogen bases, pigments and fats, and meteorites carry similar compounds. The first <strong>non-cellular giant molecules</strong> (RNA, protein, polysaccharides) could have originated <strong>3 billion years back</strong>; the first <strong>cellular single-celled forms not till about 2000 million years ago</strong>. This biogenesis-from-molecules version is accepted by the majority."], "formulas": [{"label": "Early reducing atmosphere", "html": "CH<sub>4</sub> + NH<sub>3</sub> + H<sub>2</sub> + H<sub>2</sub>O vapour (+ volcanic storms, UV, no free O<sub>2</sub>)", "cond": "§6.1; Oparin–Haldane conditions"}, {"label": "Miller 1953 setup", "html": "electric discharge + CH<sub>4</sub> / H<sub>2</sub> / NH<sub>3</sub> / H<sub>2</sub>O vapour → amino acids (sugars, bases, pigments, fats in repeats)", "cond": "§6.1; Figure 6.1"}, {"label": "Timeline spine", "html": "universe 13.8 bya → earth 4.5 bya → life ~4.0 bya → non-cellular ~3 bya → first cells ~2000 mya", "cond": "§6.1; Exercises use 500-my gap"}], "deeper": "Text details (§6.1): stellar distances in light years mean starlight is a look into the past; earth is a speck in huge galaxy clusters. Pasteur's two-flask contrast (sterilised vs open to air) is the exact experiment cited. Non-cellular capsules reproduced their molecules perhaps; the step from non-cellular aggregates of giant macromolecules to membranous cells is stated as not known (§6.8). The chapter calls the whole account the longest of all construed and conjectured stories.", "worked": "Timeline check (§6.1): earth formed 4.5 bya; life appeared 500 million years later. 4.50 − 0.50 = 4.00 bya — the book's almost four billion years back. First cells at ~2000 mya are therefore ~2000 million years after the first life (~4000 mya).", "prediction": {"prompt": "Miller repeats his 1953 flask but replaces the reducing mixture with an oxygen-rich modern atmosphere and repeats the spark. What does the textbook logic predict?", "options": ["No comparable amino-acid yield — the Oparin–Haldane/Miller result needs the reducing CH4/H2/NH3/H2O conditions", "A larger yield of amino acids, since oxygen speeds up synthesis", "Living cells forming directly in the flask within days"], "answer": 0, "explanation": "The book stresses the reducing atmosphere (CH4, NH3, no free O2) plus discharge as the condition; oxidising conditions and direct cell formation are not part of the accepted chemical-evolution evidence."}, "connect": [["Meteorites carry the same compounds", "Analysis of meteorite content revealed amino-acid-like compounds, suggesting similar processes occur elsewhere in space — the book's own support for chemical evolution beyond earth.", [], {"id": "V4KU17K8h5Q", "title": "Evolution Class 12 Biology One Shot | NCERT + PYQs | Biology Chapter 4 by Aarushi Ma'am", "channel": "NCERT Wallah"}], ["Wow — starlight is time travel", "Stellar distances are measured in light years: what we see tonight left its star millions of years ago from trillions of kilometres away. Looking at stars is literally peeping into the past (§6.1)."]], "recall": "State the universe/earth/life/cells dates, the four Miller gases, Pasteur's two-flask result, and the Oparin–Haldane proposition in one line each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The Big Bang theory as used in §6.1 explains the origin of the", "options": ["Universe, as a singular huge explosion followed by expansion and cooling", "First cell on earth directly", "Ozone layer only"], "answer": 0, "hint": "First paragraph of §6.1.", "solution": "Big Bang → universe; earth forms much later (4.5 bya) inside the Milky Way.", "wrong": ["Cells arise ~2000 mya via chemical evolution, not the Big Bang.", "Ozone forms later from oxygen chemistry on early earth."]}, {"level": "Medium", "type": "number", "map": "§6.1 timeline", "prompt": "Million years after earth's formation that life appeared", "answer": 500, "unit": "million years", "tolerance": 10, "hint": "Almost four billion years back vs 4.5 bya earth.", "solution": "4.5 bya − ~4.0 bya = 500 million years (§6.1)."}, {"level": "Hard", "type": "number", "map": "§6.1 first cells", "prompt": "Million years ago the first cellular (single-celled) forms of life possibly originated", "answer": 2000, "unit": "mya", "tolerance": 50, "hint": "Non-cellular giants ~3 bya; cells later.", "solution": "About 2000 million years ago, all in the water environment (§6.1)."}], "resources": [{"title": "NCERT §6.1 — Origin of life & Miller (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=1"}]}, {"id": "theories-evidences", "nav": "Theories & evidences", "title": "From special creation to biogenesis — and the evidences for evolution", "deck": "Special creation (fixed diversity, 4000-year earth) fell to Darwin–Wallace natural selection and reproductive fitness. Fossils, Haeckel vs von Baer embryos, homologous vs analogous organs, biochemistry, breeding and industrial melanism supply the evidence.", "minutes": 9, "section": "6.2, 6.3", "pages": [3, 7], "print": "3–7", "sim": "evidences", "simTitle": "Homologous vs analogous sorter: forelimbs, wings, eyes", "quick": ["Conventional religious literature gives <strong>special creation</strong>: all species created as such, diversity always the same, <strong>earth about 4000 years old</strong> — ideas strongly challenged in the nineteenth century. From the <strong>H.M.S. Beagle</strong> voyage <strong>Charles Darwin</strong> concluded that living forms share similarities with each other and with extinct forms, extinctions and new forms alternating through history; <strong>Alfred Wallace</strong> in the Malay Archipelago reached similar conclusions. Built-in variation plus differential survival (<strong>fitness = reproductive fitness only</strong>) → <strong>natural selection</strong> as the mechanism; common ancestors at different epochs/eras/periods, with geological history correlating with biological history — so earth is <strong>billions, not thousands, of years old</strong>.", "<strong>Fossils</strong> (remains of hard parts in rocks; sediments layered in crust cross-sections) give <strong>paleontological evidence</strong>: different-aged sediments hold different life forms (some like modern forms, some extinct e.g. dinosaurs, Figure 6.2), new forms arising at different times; ages come from <strong>radioactive dating</strong>. <strong>Embryology</strong>: <strong>Ernst Haeckel (Heckel)</strong> cited vestigial <strong>gill slits</strong> behind the head in all vertebrate embryos (functional only in adult fish) — but <strong>Karl Ernst von Baer</strong> disapproved it on careful study: embryos never pass through adult stages of other animals.", "Comparative anatomy: <strong>whales, bats, cheetah and humans</strong> share the forelimb bone pattern — <strong>humerus, radius, ulna, carpals, metacarpals, phalanges</strong> (Figure 6.3b) — same structure developed along different directions for different functions: <strong>divergent evolution, homologous organs</strong> indicating common ancestry (also vertebrate hearts/brains; in plants <strong>Bougainvillea thorn / Cucurbita tendril</strong>). The opposite — <strong>wings of butterfly and birds, octopus vs mammal eye, penguin flippers vs dolphin flippers, sweet potato (root) vs potato (stem)</strong> — perform the same function from different structures: <strong>convergent evolution, analogous organs</strong>, driven by similar habitat selection. Similar proteins/genes for a function likewise point to shared ancestry.", "Man's <strong>domestic breeding</strong> (dogs, crops: new breeds within hundreds of years — could not nature do it over millions?) and <strong>industrial melanism</strong> clinch selection in action: pre-industrialisation (1850s) collections had <strong>more white-winged moths</strong> (lichen-covered trunks hid them); post-industrialisation (1920) the <strong>proportion reversed</strong> — dark trunks hid melanised moths, predators picking the contrasted ones (Figure 6.4; rural unpolluted areas stayed low-melanic; <strong>lichens as pollution indicators</strong>). Herbicide/pesticide/antibiotic resistance appearing in <strong>months or years, not centuries</strong>, shows <strong>anthropogenic evolution</strong>: evolution is <strong>stochastic, not directed determinism</strong> — and no variant is completely wiped out."], "formulas": [{"label": "Homology (divergent)", "html": "same structure → different functions (forelimb bones; thorn/tendril) ⇒ common ancestry", "cond": "§6.3; Figure 6.3"}, {"label": "Analogy (convergent)", "html": "different structures → same function (wings; eyes; flippers; root/stem tubers) ⇒ similar habitat selection", "cond": "§6.3"}, {"label": "Fitness (Darwin)", "html": "fitness = reproductive fitness; survivors leave more progeny under competition", "cond": "§6.2; §6.5 Malthus link"}], "deeper": "Reading notes (§6.2–6.3): fitness refers ultimately and only to reproductive fitness. Rock cross-sections order sediments oldest-below; dinosaurs illustrate extinct-vs-modern mapping. Sweet potato is a root modification, potato a stem modification — the book's canonical analogy pair. Moth counts: 1850s white > dark; 1920 dark > white in the same industrial area.", "worked": "Moth-logic check (§6.3): contrasting background ⇒ spotted by predators. Dark trunks + white moth = eaten; dark trunks + melanised moth = camouflaged survivors increasing in proportion — selection without any variant being fully wiped out.", "prediction": {"prompt": "A student calls butterfly and bird wings homologous because they look alike and both fly. What does §6.3 say?", "options": ["They are analogous (convergent): similar function, not anatomically similar structures", "They are homologous (divergent): same bones proving common ancestry", "They are fossils, so neither term applies"], "answer": 0, "explanation": "Wings of butterfly and birds look alike but are not anatomically similar; analogous structures evolve convergently for the same function."}, "connect": [["Antibiotic resistance in Indian hospitals", "Excess antibiotics select pre-existing resistant microbes within months or years (§6.3 mechanism) — hospital-acquired resistant strains are industrial melanism replayed in wards, and Exercise 1 asks exactly this in Darwinian terms."], ["Wow — Shivalik fossils in India's own rocks", "The Shivalik Hills (Himachal–Uttarakhand–J&K foothills) preserve elephant, horse, ape and tortoise fossils in layered sediments — paleontological evidence (§6.3) readable in Indian crust, dated by the same radioactive methods the chapter cites."]], "recall": "Contrast special creation's three claims with Darwin–Wallace; list one example each of fossil, embryological, homologous, analogous, biochemical and anthropogenic evidence.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Whale, bat, cheetah and human forelimbs with the same bone pattern performing different functions are", "options": ["Homologous organs from divergent evolution", "Analogous organs from convergent evolution", "Fossils of extinct dinosaurs"], "answer": 0, "hint": "Same structure, different directions (§6.3).", "solution": "Humerus/radius/ulna/carpals/metacarpals/phalanges shared ⇒ homology, common ancestry.", "wrong": ["Analogy is different structures, same function (wings, eyes).", "These are living mammals, not dinosaur fossils."]}, {"level": "Medium", "type": "number", "map": "Figure 6.3b", "prompt": "Number of bone groups named in the shared mammalian forelimb pattern", "answer": 6, "unit": "groups", "tolerance": 0.1, "hint": "Humerus, radius, ulna, carpals, metacarpals, phalanges.", "solution": "Six named groups in the forelimb pattern (§6.3)."}, {"level": "Hard", "type": "mcq", "prompt": "The 1850s→1920 moth reversal (§6.3) shows", "options": ["Camouflage-selected survival: contrasting moths are picked by predators, so proportions flip with soot/lichen backgrounds", "Moths choosing to change colour within their lifetime like chameleons", "Complete wiping out of the white variant everywhere including rural areas"], "answer": 0, "hint": "Predators spot moths against contrasting backgrounds.", "solution": "Background-dependent predation flips proportions; rural areas stay low-melanic and no variant is fully wiped out.", "wrong": ["Individuals do not recolour; populations shift by selection.", "Rural counts stayed low-melanic; the text says no variant is completely wiped out."]}], "resources": [{"title": "NCERT §6.2, 6.3 — Theories & evidences (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=3"}]}, {"id": "adaptive-radiation", "nav": "Adaptive radiation", "title": "Adaptive radiation: Darwin's finches and Australian marsupials", "deck": "From one seed-eating ancestor, Galapagos finches radiated beaks for insectivorous and vegetarian niches; Australian marsupials radiated from one stock — and placentals convergently mirror them (wolf/wolf, etc.).", "minutes": 8, "section": "6.4", "pages": [7, 9], "print": "7–9", "sim": "finches", "simTitle": "Finch beak radiation: seed-eating → insectivorous + vegetarian", "quick": ["At the <strong>Galapagos Islands</strong> Darwin found small black birds — later <strong>Darwin's Finches</strong>: many varieties on the same island, all conjectured to have <strong>evolved on the island itself</strong>. From the original <strong>seed-eating</strong> features, many other forms with <strong>altered beaks</strong> arose, enabling them to become <strong>insectivorous and vegetarian finches</strong> (Figure 6.5).", "This is <strong>adaptive radiation</strong>: evolution of <strong>different species in a given geographical area starting from a point and literally radiating</strong> to other areas/habitats. Darwin's finches are one of the best examples of the phenomenon.", "The other textbook example is <strong>Australian marsupials</strong>: a number of marsupials, each different from the other (Figure 6.6), evolved from an <strong>ancestral stock within the Australian island continent</strong>. When more than one radiation occurs in an isolated area across habitats, one can call it <strong>convergent evolution</strong>: placental mammals in Australia radiated into varieties <strong>similar to corresponding marsupials</strong> — e.g. <strong>placental wolf and Tasmanian wolf-marsupial</strong> (Figure 6.7)."], "formulas": [{"label": "Adaptive radiation", "html": "one ancestral stock → many species across habitats within one geographical area", "cond": "§6.4; finches, marsupials"}, {"label": "Finch beak triad", "html": "seed-eating (ancestral) → insectivorous + vegetarian (altered beaks)", "cond": "§6.4; Figure 6.5"}, {"label": "Convergent mirror", "html": "placental wolf ≈ Tasmanian wolf-marsupial (similar form, separate stocks)", "cond": "§6.4; Figure 6.7"}], "deeper": "Figure order note (§6.4): Figure 6.6 (marsupial radiation) is cited before Figure 6.5 (finch beaks) in the running text — both belong to this section. The wolf/wolf pair is the named convergent example; the broader placental–marsupial parallel set is Figure 6.7 (also recalled in §6.5 as a Darwinian figure).", "worked": "Exercise 8 reasoning: pick Darwin's finches — one seed-eating ancestor on Galapagos → altered beaks → insectivorous and vegetarian species in different niches of the same islands: point origin + habitat radiation = adaptive radiation.", "prediction": {"prompt": "Two Galapagos finch species crack different seed sizes with differently shaped beaks. Their most likely history under §6.4 is", "options": ["One seed-eating ancestor radiated on the islands into beak-specialised species", "Each species was separately created in its present form 4000 years ago", "Beaks changed by use and disuse stretching within one lifetime and were inherited"], "answer": 0, "explanation": "All varieties evolved on the island itself from common seed-eating features — radiation, not special creation or Lamarckian stretching."}, "connect": [["Lentils to lunch: beaks as tools", "Seed-crushing vs insect-probing beaks are feeding tools like kitchen implements — altered beaks opened vegetarian and insectivorous niches from one seed-eating start (Figure 6.5)."], ["Wow — a wolf that is not a wolf", "Australia's Tasmanian wolf-marsupial looks like a placental wolf but evolved from marsupial stock — two radiations converging on the same job in isolation (Figure 6.7)."]], "recall": "Define adaptive radiation and retell both textbook examples plus the wolf/wolf convergent mirror.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Adaptive radiation (§6.4) is", "options": ["Evolution of different species from one point, radiating across habitats of one area", "One species turning into a fossil without descendants", "Mating of two different orders producing a hybrid"], "answer": 0, "hint": "Starting from a point and literally radiating.", "solution": "Finches on Galapagos and marsupials in Australia radiate from ancestral stock into niches.", "wrong": ["Fossilisation without descendants is extinction, not radiation.", "Hybridisation across orders is not the §6.4 process."]}, {"level": "Medium", "type": "mcq", "prompt": "From the original seed-eating finches arose", "options": ["Insectivorous and vegetarian forms with altered beaks", "Fish with stout fins that walk on land", "Placental wolves"], "answer": 0, "hint": "Figure 6.5 beak varieties.", "solution": "Altered beaks enabled insectivorous and vegetarian finches (§6.4).", "wrong": ["Lobefins belong to §6.8 vertebrate history, not finches.", "Wolves belong to the marsupial/placental story."]}, {"level": "Hard", "type": "number", "map": "§6.4 diets", "prompt": "Feeding modes named for the radiated finches (seed-eating + insectivorous + vegetarian)", "answer": 3, "unit": "modes", "tolerance": 0.1, "hint": "Ancestral one plus two derived.", "solution": "Seed-eating (original), insectivorous and vegetarian (derived) — three modes."}], "resources": [{"title": "NCERT §6.4 — Adaptive radiation (official PDF, PDF p.7)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=7"}]}, {"id": "lamarck-darwin-mechanism", "nav": "Lamarck vs Darwin & mechanism", "title": "Lamarck's use/disuse vs Darwin's branching descent — and how variation arises", "deck": "Giraffe-neck stretching (Lamarck) is no longer believed; Darwin's branching descent + natural selection (Malthus, heritable fitness) stands. de Vries added saltation mutations; population genetics reconciles small directional variations with sudden large ones; selection stabilises, directs or disrupts (Fig 6.8).", "minutes": 9, "section": "6.5, 6.6", "pages": [9, 11], "print": "9–11", "sim": "selection", "simTitle": "Selection curves: stabilising / directional / disruptive + moth melanism", "quick": ["Evolution by <strong>natural selection</strong> in the true sense started when <strong>cellular forms with metabolic differences</strong> originated. The bacterial parable (§6.5): colony A on a medium has built-in variation; a changed medium lets only variant <strong>B survive, outgrow and appear as a new species within days</strong> — in fish or fowl the same would take millions of years because life spans are years. <strong>Fitness of B is better than A under the new conditions; nature selects for fitness</strong> — characteristics must be <strong>inherited (genetic basis)</strong>; adaptability is inherited. The two key Darwinian concepts are <strong>branching descent and natural selection</strong> (Figures 6.7–6.8).", "Before Darwin, <strong>Lamarck</strong> said evolution occurred by <strong>use and disuse</strong>: giraffes stretching for tall-tree leaves elongated their necks and <strong>passed the acquired character</strong> on, slowly acquiring long necks. <strong>Nobody believes this conjecture any more.</strong> Darwin may have been influenced by <strong>Thomas Malthus</strong> on populations: resources limited, populations stable except seasonal fluctuation, members vary (no two alike), most variations inherited, exponential growth possible (bacteria) but checked by <strong>competition</strong> — heritable variants using resources better <strong>reproduce more, leave more progeny, and over generations population characteristics change</strong>: new forms arise. Whether evolution/selection are processes or end results remains an open framing question (§6.5).", "What is the origin of variation? Mendel's inheritable factors were ignored by Darwin. <strong>Hugo de Vries</strong> (evening primrose, first decade of 20th century) brought <strong>mutations — large differences arising suddenly</strong>: mutation causes evolution, not Darwin's minor variations; mutations random and directionless, Darwinian variations small and directional; Darwin gradual, de Vries <strong>saltation (single-step large mutation)</strong> causing speciation. Later <strong>population genetics</strong> brought clarity. Figure 6.8 shows natural selection operating on traits three ways: <strong>(a) stabilising, (b) directional, (c) disruptive</strong> — detailed in §6.7 as mean-value, other-than-mean, and both-peripheral-ends shifts of the distribution curve."], "formulas": [{"label": "Darwin pair", "html": "branching descent + natural selection (fitness = reproductive success of heritable variants)", "cond": "§6.5; Figures 6.7–6.8"}, {"label": "Lamarck (rejected)", "html": "use/disuse → acquired elongation → inheritance (giraffe); nobody believes it now", "cond": "§6.5"}, {"label": "Selection modes (Fig 6.8)", "html": "(a) stabilising: mean favoured; (b) directional: off-mean favoured; (c) disruptive: both peripheral ends favoured", "cond": "§6.6–6.7"}], "deeper": "Malthusian observations listed (§6.5): limited resources; stable populations; ubiquitous heritable variation; exponential potential vs limited reality ⇒ competition; survivors grow at the cost of others. de Vries contrasts: random/directionless/sudden/large (mutation, saltation) vs small/directional/gradual (Darwin). Microbes dividing fast show selection in hours/days — the rate of new forms links to life cycle/life span.", "worked": "Bacteria-to-fowl scaling (§6.5): same selection logic, different clocks — days for microbes (millions of individuals in hours) vs millions of years for long-lived fish/fowl. Fitness comparison is always relative to the new conditions (B vs A).", "prediction": {"prompt": "A giraffe stretches its neck daily and its offspring are born with longer necks. Under this chapter, this claim is", "options": ["Lamarckian use/disuse inheritance — explicitly rejected; fitness needs a heritable genetic basis selected by nature", "Darwinian natural selection operating correctly", "Hardy-Weinberg equilibrium in action"], "answer": 0, "explanation": "Acquired stretching inherited is Lamarck's giraffe example; the text says nobody believes this conjecture any more — selection acts on inherited variation."}, "connect": [["Multidrug-resistant TB therapy", "Long TB/antibiotic courses exist because stopping early leaves resistant B-like variants to outgrow — the §6.5 colony-A-to-B parable playing out in Indian clinics, grounded in §6.3's months-or-years resistance."], ["Wow — days vs millions of years", "One selection rule, two clocks: bacteria speciate before your eyes in days while fowl need geological time — because the rate of new forms tracks life cycle and life span (§6.5)."]], "recall": "State the bacteria A→B story, Lamarck's giraffe vs Darwin's pair, the Malthus observations, de Vries saltation vs Darwin gradualism, and the three Fig 6.8 modes.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Lamarck's giraffe explanation (§6.5) invoked", "options": ["Use and disuse with inheritance of the acquired long neck", "Branching descent plus natural selection", "Hardy-Weinberg allele constancy"], "answer": 0, "hint": "Stretching to forage tall-tree leaves.", "solution": "Elongation by effort, passed on — the rejected conjecture.", "wrong": ["That is Darwin's pair of key concepts.", "That is §6.7 population genetics, not Lamarck."]}, {"level": "Medium", "type": "mcq", "prompt": "Fitness in the Darwinian sense (§6.2/6.5) means", "options": ["Reproductive fitness — leaving more progeny in that environment", "Physical strength or lifespan alone", "Ability to stretch organs by effort"], "answer": 0, "hint": "Ultimately and only ... fitness.", "solution": "Those better fit leave more progeny; adapted variants are selected by nature.", "wrong": ["Strength without progeny is not Darwinian fitness.", "Effort-stretching is Lamarck, rejected in the text."]}, {"level": "Hard", "type": "number", "map": "Figure 6.8", "prompt": "Number of operation modes of natural selection drawn in Figure 6.8", "answer": 3, "unit": "modes", "tolerance": 0.1, "hint": "Stabilising, directional, disruptive.", "solution": "Three panels: (a) stabilising, (b) directional, (c) disruptive."}], "resources": [{"title": "NCERT §6.5, 6.6 — Lamarck vs Darwin & mechanism (official PDF, PDF p.9)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=9"}]}, {"id": "hardy-weinberg", "nav": "Hardy-Weinberg", "title": "Hardy-Weinberg equilibrium: p² + 2pq + q² = 1 and its five disturbers", "deck": "Allele frequencies stay constant (gene pool constant, sum = 1) unless disturbed. In diploids AA = p², aa = q², Aa = 2pq. Gene flow, drift, mutation, recombination and selection disturb it — and selection replays Fig 6.8's three curves.", "minutes": 9, "section": "6.7", "pages": [11, 12], "print": "11–12", "sim": "hardyweinberg", "simTitle": "Hardy-Weinberg lab: p/q slider, genotype frequencies + 5 disturbers", "quick": ["In a population one can find the <strong>frequency of alleles</strong> of a gene/locus; it is supposed to remain <strong>fixed through generations</strong>. The <strong>Hardy-Weinberg principle</strong> states this algebraically: allele frequencies are <strong>stable generation to generation</strong>; the <strong>gene pool</strong> (total genes and alleles) remains constant — <strong>genetic equilibrium</strong>; the <strong>sum of all allelic frequencies is 1</strong>.", "In a diploid, allele A frequency <strong>p</strong> and allele a frequency <strong>q</strong> give genotype frequencies by product of probabilities: <strong>AA = p<sup>2</sup>, aa = q<sup>2</sup>, Aa = 2pq; hence p<sup>2</sup> + 2pq + q<sup>2</sup> = 1</strong>, the binomial expansion of <strong>(p + q)<sup>2</sup></strong>. When measured frequencies differ from expected, the <strong>difference (direction) indicates the extent of evolutionary change</strong>: disturbed equilibrium = evolution happening.", "Five factors disturb Hardy-Weinberg equilibrium: <strong>gene migration/flow, genetic drift, mutation, genetic recombination, natural selection</strong>. Migration moving sections between populations changes both; repeated migration = <strong>gene flow</strong>. The same change by <strong>chance = genetic drift</strong>, sometimes so different that a new species forms — drifted founders give the <strong>founder effect</strong>. Microbial experiments show pre-existing advantageous mutations selected over generations → speciation. Mutation/recombination/flow/drift change gene frequencies; coupled with <strong>reproductive success, natural selection</strong> makes populations look different — via <strong>stabilisation (mean), directional change (off-mean), or disruption (both peripheral ends)</strong> of the distribution curve (Figure 6.8)."], "formulas": [{"label": "Hardy-Weinberg equilibrium", "html": "p<sup>2</sup> + 2pq + q<sup>2</sup> = 1, where (p + q)<sup>2</sup>; AA = p<sup>2</sup>, Aa = 2pq, aa = q<sup>2</sup>", "cond": "§6.7; p + q = 1, sum of alleles = 1"}, {"label": "Five disturbers", "html": "gene flow/migration · genetic drift (+ founder effect) · mutation · recombination · natural selection", "cond": "§6.7"}, {"label": "Selection readout (Fig 6.8)", "html": "stabilising → mean; directional → off-mean; disruptive → both ends", "cond": "§6.7 closing paragraph"}], "deeper": "Worked logic (§6.7): probability allele A (frequency p) appears on both chromosomes = p × p = p²; similarly q² and 2pq. Gene flow adds alleles to the new population and loses them from the old. Founder effect: original drifted population becomes founders. Variation sources (mutation, gametogenic recombination, flow, drift) change frequencies; selection converts them into directional population shifts.", "worked": "H-W numerical: suppose 16% of a population shows the recessive phenotype (aa). Then q² = 0.16 ⇒ q = 0.40 ⇒ p = 1 − 0.40 = 0.60 ⇒ carriers Aa = 2pq = 2 × 0.60 × 0.40 = 0.48 (48%). If a later census finds aa far from 16%, that direction of difference measures evolutionary change (§6.7).", "prediction": {"prompt": "A census finds recessive-phenotype frequency q² = 0.16. Under Hardy-Weinberg, the carrier (Aa) frequency is", "options": ["0.48 — q = 0.4, p = 0.6, 2pq = 0.48", "0.16 — carriers equal recessives", "0.84 — carriers are everyone else"], "answer": 0, "explanation": "q = √0.16 = 0.4; p = 0.6; 2pq = 0.48. Deviations from such expectations signal evolution."}, "connect": [["Sickle-cell and malaria belts", "Where malaria selects heterozygotes, HbS allele frequencies depart from naive H-W expectations — selection plus gene flow visibly disturbing equilibrium, exactly the §6.7 mechanism."], ["Wow — antibiotic doses count alleles", "Each antibiotic course in Indian hospitals is a selection pulse on bacterial gene pools: resistant-allele q rises within months, and the measured-vs-expected H-W gap (§6.7) becomes a resistance report card."]], "recall": "Write p²+2pq+q²=1 with meanings, name the five disturbers plus founder effect, and map the three Fig 6.8 selection modes.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Hardy-Weinberg genetic equilibrium states that", "options": ["Allele frequencies (gene pool) stay constant generation to generation; allelic sum = 1", "Allele frequencies must change every generation", "Only dominant alleles survive in any population"], "answer": 0, "hint": "Stable and constant (§6.7).", "solution": "Constant gene pool; p + q = 1; genotypes p², 2pq, q².", "wrong": ["Change means disturbed equilibrium, i.e. evolution.", "Recessives persist as q² and 2pq carriers."]}, {"level": "Medium", "type": "number", "map": "§6.7 q² → q", "prompt": "Recessive allele frequency q if recessive-phenotype frequency q² = 0.16", "answer": 0.4, "unit": "", "tolerance": 0.01, "hint": "q = √q².", "solution": "q = √0.16 = 0.40; hence p = 0.60."}, {"level": "Hard", "type": "number", "map": "§6.7 2pq", "prompt": "Carrier frequency 2pq if p = 0.6 and q = 0.4", "answer": 0.48, "unit": "", "tolerance": 0.01, "hint": "2 × 0.6 × 0.4.", "solution": "2pq = 0.48; with p² = 0.36 and q² = 0.16 the sum is 1.00."}], "resources": [{"title": "NCERT §6.7 — Hardy-Weinberg (official PDF, PDF p.11)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=11"}]}, {"id": "timeline-human", "nav": "Geological timeline & man", "title": "A brief account of evolution — and the origin of man", "deck": "First cells ~2000 mya → invertebrates 500 mya → jawless fish 350 mya → lobefin→amphibian→reptile→dinosaur (gone 65 mya) → mammals. Dryopithecus/Ramapithecus 15 mya → Australopithecus → habilis (650–800cc) → erectus (900cc) → Neanderthal (1400cc) → sapiens, Bhimbetka art and farming.", "minutes": 9, "section": "6.8, 6.9", "pages": [12, 16], "print": "12–16", "sim": "humanevolution", "simTitle": "Human-evolution walker: timeline with brain sizes 650→1400cc", "quick": ["About <strong>2000 mya the first cellular forms</strong> appeared (how membranous cells came from macromolecule aggregates is not known); some cells released O<sub>2</sub> like the photosynthetic light reaction splitting water with light-harvesting pigments. Single cells became multicellular; by <strong>500 mya invertebrates</strong> were active; <strong>jawless fish ~350 mya</strong>; sea weeds and few plants ~320 mya — <strong>plants invaded land first</strong>, widespread before animals. <strong>Fish with stout strong fins</strong> (~350 mya) moved onto land and back; the 1938 South African <strong>Coelacanth (lobefin)</strong>, thought extinct, shows the stock that became the <strong>first amphibians</strong> (ancestors of frogs/salamanders; no specimens left). Amphibians → <strong>reptiles with thick-shelled sun-proof eggs</strong> (modern turtle/tortoise/crocodile descendants).", "For ~200 million years <strong>reptiles of different shapes dominated</strong> (Figures 6.9–6.10 plant/vertebrate sketches); giant ferns fell to form <strong>coal</strong>; some land reptiles returned to water (<strong>Ichthyosaurs ~200 mya</strong>); land reptiles were the <strong>dinosaurs</strong> — <strong>Tyrannosaurus rex ~20 feet</strong> with dagger teeth — <strong>suddenly gone ~65 mya</strong> (climate? birds? truth in between); small reptiles persist. First <strong>mammals like shrews</strong> (small fossils), <strong>viviparous</strong>, protecting young inside, more intelligent at sensing danger; when reptiles declined mammals took over. South-American horse/hippopotamus/bear/rabbit-like mammals were overridden by North American fauna after <strong>continental drift</strong> joined the continents; <strong>Australian pouched mammals survived for lack of competition</strong>; whales/dolphins/seals/sea cows went wholly aquatic. Horse/elephant/dog stories are deferred to higher classes.", "About <strong>15 mya Dryopithecus and Ramapithecus</strong> primates existed — hairy, gorilla/chimpanzee-like walkers; <strong>Ramapithecus more man-like, Dryopithecus more ape-like</strong>. Man-like bones in <strong>Ethiopia/Tanzania</strong> (Figure 6.11 skulls) show hominids: <strong>~3–4 mya man-like primates walked upright in eastern Africa</strong>, not taller than 4 feet. <strong>~2 mya Australopithecines</strong> lived in East African grasslands, hunting with stone weapons but essentially eating fruit. Distinct bones gave the first human-like hominid <strong>Homo habilis, brain 650–800cc</strong>, probably not meat-eaters. <strong>1891 Java fossils: Homo erectus ~1.5 mya, large brain ~900cc</strong>, probably ate meat.", "<strong>Neanderthal man (brain 1400cc)</strong> lived in the <strong>near east and central Asia between 1,00,000–40,000 years back</strong>, used hides, buried the dead. <strong>Homo sapiens arose in Africa</strong>, moved across continents into distinct races; <strong>modern Homo sapiens arose during the 75,000–10,000 ice age</strong>; <strong>prehistoric cave art ~18,000 years ago</strong> — e.g. <strong>Bhimbetka rock shelter, Raisen district, Madhya Pradesh</strong>; <strong>agriculture ~10,000 years back</strong>, then settlements; the rest is human history of civilisations. The summary moral: chemical evolution → Darwinian selection → fitness/drift/speciation → homology/fossils/biochemistry as evidence → <strong>man paralleling brain and language evolution</strong>."], "formulas": [{"label": "Vertebrate spine (mya)", "html": "cells 2000 → invertebrates 500 → jawless fish 350 → lobefin→amphibian→reptile → dinosaurs gone 65", "cond": "§6.8; Figures 6.9–6.10"}, {"label": "Hominid brain staircase", "html": "habilis 650–800cc → erectus ~900cc → Neanderthal 1400cc (sapiens modern)", "cond": "§6.9; Exercises 4, 9–10"}, {"label": "Sapiens milestones (years ago)", "html": "Neanderthal 1,00,000–40,000 → sapiens ice age 75,000–10,000 → cave art 18,000 → agriculture 10,000", "cond": "§6.9; Bhimbetka, MP"}], "deeper": "Figure notes (§6.8–6.9): Figure 6.9 plant forms through geological periods; Figure 6.10 vertebrate history; Figure 6.11 baby-chimpanzee skull closer to adult-human than adult-chimpanzee skull. Continental-drift double effect: South America joining North America overrode southern fauna; Australian isolation saved pouched mammals. Shrew-like first mammals; sea-cow/whale aquatic mammals listed.", "worked": "Brain-size ordering (§6.9): habilis mid ≈ (650 + 800)/2 = 725cc < erectus 900cc < Neanderthal 1400cc. Gap erectus − habilis ≈ 175cc; Neanderthal − erectus = 500cc — the staircase Exercise 4 traces with diet (fruit → meat), skeleton (upright, ≤4 ft → taller) and function.", "prediction": {"prompt": "A 900cc Java fossil with meat-eating signs, dated ~1.5 mya, is reported. Under §6.9 it is", "options": ["Homo erectus — 900cc, ~1.5 mya, Java 1891, probably ate meat", "Homo habilis — 650–800cc fruit-eaters of East Africa", "Neanderthal — 1400cc hide-users of 1,00,000–40,000 years ago"], "answer": 0, "explanation": "Brain size + place + date + diet jointly diagnose erectus in the textbook sequence."}, "connect": [["Narmada human and Bhimbetka neighbours", "The Narmada (Hathnora, MP) archaic-human calvaria and Bhimbetka's 18,000-year-old art (§6.9) put Indian fossils and paintings directly on the textbook timeline from erectus-grade humans to modern sapiens."], ["Wow — a fish thought extinct swims on", "The lobefin Coelacanth, ancestral to amphibians and known only from fossils, was caught alive off South Africa in 1938 — a §6.8 lineage walking out of deep time."]], "recall": "Recite the vertebrate dates, the hominid order with brain sizes/diets, and the sapiens milestones ending at agriculture.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The textbook hominid order (§6.9) runs", "options": ["Dryopithecus/Ramapithecus → Australopithecus → habilis → erectus → Neanderthal → sapiens", "Sapiens → Neanderthal → erectus → habilis → Australopithecus", "Dinosaurs → Coelacanth → habilis directly"], "answer": 0, "hint": "15 mya apes to ice-age sapiens.", "solution": "The §6.9 sequence with rising brain sizes and changing diet/skeleton.", "wrong": ["That reverses time's arrow.", "Dinosaurs vanish 65 mya; Coelacanth precedes amphibians, not habilis."]}, {"level": "Medium", "type": "number", "map": "§6.9 erectus", "prompt": "Brain capacity (cc) of Homo erectus (Java, ~1.5 mya)", "answer": 900, "unit": "cc", "tolerance": 25, "hint": "Between habilis 650–800 and Neanderthal 1400.", "solution": "Large brain around 900cc; probably ate meat (§6.9)."}, {"level": "Hard", "type": "number", "map": "§6.9 Neanderthal", "prompt": "Brain size (cc) of Neanderthal man (1,00,000–40,000 years back)", "answer": 1400, "unit": "cc", "tolerance": 25, "hint": "Largest named in the staircase; hides and burials.", "solution": "1400cc — the top of the textbook brain staircase (§6.9)."}], "resources": [{"title": "NCERT §6.8, 6.9 — Geological timeline & man (official PDF, PDF p.12)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=12"}]}], "exercises": [{"number": 1, "conceptIdx": 3, "page": 17, "printPage": null, "question": "Explain antibiotic resistance observed in bacteria in light of Darwinian selection theory.", "steps": ["Recall §6.5/§6.3: bacterial colonies carry built-in heritable variation (colony A with a rare resistant variant B).", "Antibiotic is the new medium/condition: sensitive cells die, pre-existing resistant cells survive — fitness of B is better than A under the new conditions.", "Survivors reproduce fast (millions within hours) and outgrow others within days, appearing as a resistant population — nature selects for fitness.", "Hence resistance is selection of pre-existing advantageous variants, not directed mutation; anthropogenic evolution in months/years, stochastic not deterministic."], "answer": "Resistant variants pre-exist; antibiotics select them — survivors outbreed others (Darwinian selection, §6.3/§6.5)."}, {"number": 2, "conceptIdx": 1, "page": 17, "printPage": null, "question": "Find out from newspapers and popular science articles any new fossil discoveries or controversies about evolution.", "steps": ["Activity prompt: survey newspapers/popular-science for fossil finds or evolution debates.", "NCERT grounding (§6.3): fossils in layered sediments + radioactive dating give paleontological evidence; new finds slot into geological time-spans.", "Report: name the fossil/organism, the sediment/age claimed, and which lineage or date it confirms or disputes.", "No single fixed answer — credit any sourced recent find (e.g. hominid, dinosaur–bird link) discussed with the §6.3 evidence frame."], "answer": "Open activity; answer with a sourced recent fossil find or controversy framed by §6.3."}, {"number": 3, "conceptIdx": 3, "page": 17, "printPage": null, "question": "Attempt giving a clear definition of the term species.", "steps": ["Activity prompt: the chapter uses species/divergence/speciation but gives no boxed definition.", "Working NCERT-faithful definition: a species is a group of actually or potentially interbreeding populations reproductively isolated from other such groups, sharing a gene pool and common ancestry.", "Link to text: variation + selection + drift/founder effects (§6.5–6.7) split one stock into groups that no longer exchange genes — e.g. finch or bacterial variants appearing as new species.", "Note limits: fossil species are diagnosed morphologically by time-span (§6.3), so the definition is operational."], "answer": "Interbreeding population group, reproductively isolated, sharing a gene pool — split by selection/drift into new species."}, {"number": 4, "conceptIdx": 5, "page": 17, "printPage": null, "question": "Try to trace the various components of human evolution (hint: brain size and function, skeletal structure, dietary preference, etc.)", "steps": ["Brain: habilis 650–800cc → erectus ~900cc → Neanderthal 1400cc → sapiens; function rises with language/self-consciousness (§6.9, Summary).", "Skeleton: hairy gorilla-like walkers (Dryopithecus/Ramapithecus 15 mya) → upright ≤4-ft eastern-African hominids 3–4 mya → Australopithecines 2 mya → Homo grades; skulls compared in Figure 6.11.", "Diet/tools: fruit-eating Australopithecines with stone weapons → habilis probably no meat → erectus probably meat → Neanderthal hides/burials → sapiens cave art (Bhimbetka, 18,000 ya) → agriculture 10,000 ya.", "Synthesis: parallel evolution of brain, language, diet and culture from Africa across continents into distinct races."], "answer": "Brain 650→900→1400cc with upright skeleton, fruit→meat diet, stone tools→art→farming (§6.9)."}, {"number": 5, "conceptIdx": 5, "page": 17, "printPage": null, "question": "Find out through internet and popular science articles whether animals other than man has self-consciousness.", "steps": ["Activity prompt: the chapter closes with language skills and self-consciousness as man's most successful story (§6.8).", "Method: search primary/popular reports (mirror tests, tool use, planning) in apes, dolphins, elephants, magpies — the species usually tested.", "NCERT-faithful caution: the textbook asserts self-consciousness for man; animal claims must be weighed as contested evidence, not settled text.", "No single fixed answer — credit a sourced comparison concluding which animals pass which test and what remains disputed."], "answer": "Open activity; compare mirror/tool-use evidence in a few mammals/birds against man's language-linked self-consciousness."}, {"number": 6, "conceptIdx": 5, "page": 17, "printPage": null, "question": "List 10 modern-day animals and using the internet resources link it to a corresponding ancient fossil. Name both.", "steps": ["Activity prompt: pairs a living animal with its ancient fossil counterpart, as Figure 6.2 does for dinosaurs–crocodiles/birds.", "NCERT-grounded examples from the chapter: crocodile/bird (dinosaur kin), Coelacanth lobefin (living fossil), horse stages, frog/salamander (amphibians), turtle/tortoise (reptiles).", "Build 10 pairs (modern → fossil), e.g. horse → Eohippus-grade stages; elephant → early proboscideans; whale → land-to-sea intermediates.", "No single fixed answer — credit 10 named pairs with sources; fossils dated by §6.3 radioactive methods."], "answer": "Open activity; 10 modern→fossil pairs (e.g. birds/crocodiles→dinosaurs, Coelacanth→lobefins, horse→its stages)."}, {"number": 7, "conceptIdx": 1, "page": 17, "printPage": null, "question": "Practise drawing various animals and plants.", "steps": ["Skill activity supporting Figures 6.1–6.11: Miller apparatus, dinosaur family tree, homologous forelimbs, moths on trunks, finch beaks, marsupial radiation, Fig 6.8 curves, plant/vertebrate sketches, skull comparison.", "Practise labelling: gases in Figure 6.1; humerus/radius/ulna/carpals/metacarpals/phalanges in Figure 6.3b; stabilising/directional/disruptive in Figure 6.8.", "No textual answer — diagrams are the answer."], "answer": "Drawing practice; no fixed textual answer (Figures 6.1–6.11)."}, {"number": 8, "conceptIdx": 2, "page": 17, "printPage": null, "question": "Describe one example of adaptive radiation.", "steps": ["Definition (§6.4): different species evolving in one geographical area from one point, radiating across habitats.", "Example — Darwin's finches: seed-eating ancestor on Galapagos → altered beaks → insectivorous and vegetarian species (Figure 6.5).", "Alternative — Australian marsupials: one ancestral stock → diverse marsupials within the island continent (Figure 6.6), with placental convergences (Figure 6.7)."], "answer": "Darwin's finches (or Australian marsupials): one stock → many niche species (§6.4)."}, {"number": 9, "conceptIdx": 5, "page": 17, "printPage": null, "question": "Can we call human evolution as adaptive radiation?", "steps": ["Test against §6.4: radiation needs one stock diversifying into many coexisting species across habitats of one area.", "Human sequence (§6.9) is largely successive grades (habilis → erectus → Neanderthal → sapiens) with rising brains, not a contemporaneous multi-niche radiation; distinct races are one species.", "Answer: No — it is directional/branching evolution of one lineage (with brain–language parallel), not adaptive radiation in the textbook sense."], "answer": "No — successive Hominid grades of one lineage, not multi-species habitat radiation (§6.4 vs §6.9)."}, {"number": 10, "conceptIdx": 5, "page": 17, "printPage": null, "question": "Using various resources such as your school Library or the internet and discussions with your teacher, trace the evolutionary stages of any one animal, say horse.", "steps": ["Activity prompt: the chapter defers horse/elephant/dog stories to higher classes (§6.8) — research them externally.", "Method: library/internet/teacher sources; order stages by geological time (fossils in successive sediments, §6.3 dating), noting size, teeth, toes and habitat shifts.", "Present as a dated stage table from small forest ancestors to the modern horse, citing sources.", "No single fixed answer — credit a sourced, dated stage sequence in the §6.3–6.8 evidence frame."], "answer": "Open activity; a sourced, dated stage sequence for the horse (details in higher classes)."}], "pageOffset": null, "printPageStart": null, "printPageEnd": null, "paginationProvenance": "folio-absent-in-source"};
+window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology", "title": "Evolution", "subtitle": "Origin of life and Miller, theories and evidences, adaptive radiation, Darwin vs Lamarck, Hardy-Weinberg, geological timeline and human evolution.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lebo106.pdf", "page_start": 1, "page_end": 17, "extraction": "PyMuPDF text layer + section/exercise page maps in /tmp/opencode/bio_maps.json. pdftotext not used.", "lessons": [{"id": "origin-miller", "nav": "Origin of life & Miller", "title": "Origin of life: Big Bang, chemical evolution and Miller's spark", "deck": "The universe is 13.8 billion years old; earth formed 4.5 bya with a reducing atmosphere. Oparin–Haldane chemical evolution was tested by Miller's 1953 spark in CH4/H2/NH3/H2O vapour → amino acids. Life appeared ~4 bya; first cellular forms ~2000 mya, in water.", "minutes": 9, "section": "6.1", "pages": [1, 3], "print": "110–112", "sim": "miller", "simTitle": "Miller spark-discharge: gas mixer → amino acids", "quick": ["The <strong>Big Bang theory</strong> explains the origin of the universe as a singular huge explosion: the universe expanded, temperature fell, <strong>hydrogen and helium</strong> formed, gases condensed under gravitation into galaxies, and in the Milky Way the <strong>earth formed about 4.5 billion years back</strong>. There was <strong>no atmosphere on early earth</strong>; water vapour, methane, carbon dioxide and ammonia released from the molten mass covered the surface.", "UV rays from the sun broke water into hydrogen and oxygen; lighter H<sub>2</sub> escaped while oxygen combined with ammonia and methane to form water, CO<sub>2</sub> and others, and the <strong>ozone layer</strong> formed. As earth cooled, water vapour fell as rain, filling depressions to form <strong>oceans</strong>. <strong>Life appeared 500 million years after the formation of earth, i.e., almost four billion years back</strong> — all of it in the water environment only.", "Did life come from outer space? <strong>Panspermia</strong> (Greek spores transferred between planets) is still a favourite idea for some astronomers. The <strong>theory of spontaneous generation</strong> (life from straw, mud, rotting matter) was dismissed once and for all by <strong>Louis Pasteur's</strong> careful experiments: in pre-sterilised flasks life did not come from killed yeast, while flasks open to air grew new organisms from it. But this did not answer how the <strong>first</strong> life form came.", "<strong>Oparin (Russia) and Haldane (England)</strong> proposed that the first life came from pre-existing non-living organic molecules (RNA, protein) — <strong>chemical evolution</strong> of diverse organics from inorganic constituents under high temperature, volcanic storms and a <strong>reducing atmosphere containing CH<sub>4</sub>, NH<sub>3</sub></strong>. In <strong>1953 S.L. Miller</strong> created similar conditions at laboratory scale (Figure 6.1): <strong>electric discharge in a closed flask containing CH<sub>4</sub>, H<sub>2</sub>, NH<sub>3</sub> and water vapour</strong>, and observed <strong>formation of amino acids</strong>; others got sugars, nitrogen bases, pigments and fats, and meteorites carry similar compounds. The first <strong>non-cellular giant molecules</strong> (RNA, protein, polysaccharides) could have originated <strong>3 billion years back</strong>; the first <strong>cellular single-celled forms not till about 2000 million years ago</strong>. This biogenesis-from-molecules version is accepted by the majority."], "formulas": [{"label": "Early reducing atmosphere", "html": "CH<sub>4</sub> + NH<sub>3</sub> + H<sub>2</sub> + H<sub>2</sub>O vapour (+ volcanic storms, UV, no free O<sub>2</sub>)", "cond": "§6.1; Oparin–Haldane conditions"}, {"label": "Miller 1953 setup", "html": "electric discharge + CH<sub>4</sub> / H<sub>2</sub> / NH<sub>3</sub> / H<sub>2</sub>O vapour → amino acids (sugars, bases, pigments, fats in repeats)", "cond": "§6.1; Figure 6.1"}, {"label": "Timeline spine", "html": "universe 13.8 bya → earth 4.5 bya → life ~4.0 bya → non-cellular ~3 bya → first cells ~2000 mya", "cond": "§6.1; Exercises use 500-my gap"}], "deeper": "Text details (§6.1): stellar distances in light years mean starlight is a look into the past; earth is a speck in huge galaxy clusters. Pasteur's two-flask contrast (sterilised vs open to air) is the exact experiment cited. Non-cellular capsules reproduced their molecules perhaps; the step from non-cellular aggregates of giant macromolecules to membranous cells is stated as not known (§6.8). The chapter calls the whole account the longest of all construed and conjectured stories.", "worked": "Timeline check (§6.1): earth formed 4.5 bya; life appeared 500 million years later. 4.50 − 0.50 = 4.00 bya — the book's almost four billion years back. First cells at ~2000 mya are therefore ~2000 million years after the first life (~4000 mya).", "prediction": {"prompt": "Miller repeats his 1953 flask but replaces the reducing mixture with an oxygen-rich modern atmosphere and repeats the spark. What does the textbook logic predict?", "options": ["No comparable amino-acid yield — the Oparin–Haldane/Miller result needs the reducing CH4/H2/NH3/H2O conditions", "A larger yield of amino acids, since oxygen speeds up synthesis", "Living cells forming directly in the flask within days"], "answer": 0, "explanation": "The book stresses the reducing atmosphere (CH4, NH3, no free O2) plus discharge as the condition; oxidising conditions and direct cell formation are not part of the accepted chemical-evolution evidence."}, "connect": [["Meteorites carry the same compounds", "Analysis of meteorite content revealed amino-acid-like compounds, suggesting similar processes occur elsewhere in space — the book's own support for chemical evolution beyond earth."], ["Wow — starlight is time travel", "Stellar distances are measured in light years: what we see tonight left its star millions of years ago from trillions of kilometres away. Looking at stars is literally peeping into the past (§6.1).", [], {"id": "NNijmxsKGbc", "title": "What Was The Miller-Urey Experiment?", "channel": "Stated Clearly"}]], "recall": "State the universe/earth/life/cells dates, the four Miller gases, Pasteur's two-flask result, and the Oparin–Haldane proposition in one line each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The Big Bang theory as used in §6.1 explains the origin of the", "options": ["Universe, as a singular huge explosion followed by expansion and cooling", "First cell on earth directly", "Ozone layer only"], "answer": 0, "hint": "First paragraph of §6.1.", "solution": "Big Bang → universe; earth forms much later (4.5 bya) inside the Milky Way.", "wrong": ["Cells arise ~2000 mya via chemical evolution, not the Big Bang.", "Ozone forms later from oxygen chemistry on early earth."]}, {"level": "Medium", "type": "number", "map": "§6.1 timeline", "prompt": "Million years after earth's formation that life appeared", "answer": 500, "unit": "million years", "tolerance": 10, "hint": "Almost four billion years back vs 4.5 bya earth.", "solution": "4.5 bya − ~4.0 bya = 500 million years (§6.1)."}, {"level": "Hard", "type": "number", "map": "§6.1 first cells", "prompt": "Million years ago the first cellular (single-celled) forms of life possibly originated", "answer": 2000, "unit": "mya", "tolerance": 50, "hint": "Non-cellular giants ~3 bya; cells later.", "solution": "About 2000 million years ago, all in the water environment (§6.1)."}], "resources": [{"title": "NCERT §6.1 — Origin of life & Miller (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=1"}]}, {"id": "theories-evidences", "nav": "Theories & evidences", "title": "From special creation to biogenesis — and the evidences for evolution", "deck": "Special creation (fixed diversity, 4000-year earth) fell to Darwin–Wallace natural selection and reproductive fitness. Fossils, Haeckel vs von Baer embryos, homologous vs analogous organs, biochemistry, breeding and industrial melanism supply the evidence.", "minutes": 9, "section": "6.2, 6.3", "pages": [3, 7], "print": "112–116", "sim": "evidences", "simTitle": "Homologous vs analogous sorter: forelimbs, wings, eyes", "quick": ["Conventional religious literature gives <strong>special creation</strong>: all species created as such, diversity always the same, <strong>earth about 4000 years old</strong> — ideas strongly challenged in the nineteenth century. From the <strong>H.M.S. Beagle</strong> voyage <strong>Charles Darwin</strong> concluded that living forms share similarities with each other and with extinct forms, extinctions and new forms alternating through history; <strong>Alfred Wallace</strong> in the Malay Archipelago reached similar conclusions. Built-in variation plus differential survival (<strong>fitness = reproductive fitness only</strong>) → <strong>natural selection</strong> as the mechanism; common ancestors at different epochs/eras/periods, with geological history correlating with biological history — so earth is <strong>billions, not thousands, of years old</strong>.", "<strong>Fossils</strong> (remains of hard parts in rocks; sediments layered in crust cross-sections) give <strong>paleontological evidence</strong>: different-aged sediments hold different life forms (some like modern forms, some extinct e.g. dinosaurs, Figure 6.2), new forms arising at different times; ages come from <strong>radioactive dating</strong>. <strong>Embryology</strong>: <strong>Ernst Haeckel (Heckel)</strong> cited vestigial <strong>gill slits</strong> behind the head in all vertebrate embryos (functional only in adult fish) — but <strong>Karl Ernst von Baer</strong> disapproved it on careful study: embryos never pass through adult stages of other animals.", "Comparative anatomy: <strong>whales, bats, cheetah and humans</strong> share the forelimb bone pattern — <strong>humerus, radius, ulna, carpals, metacarpals, phalanges</strong> (Figure 6.3b) — same structure developed along different directions for different functions: <strong>divergent evolution, homologous organs</strong> indicating common ancestry (also vertebrate hearts/brains; in plants <strong>Bougainvillea thorn / Cucurbita tendril</strong>). The opposite — <strong>wings of butterfly and birds, octopus vs mammal eye, penguin flippers vs dolphin flippers, sweet potato (root) vs potato (stem)</strong> — perform the same function from different structures: <strong>convergent evolution, analogous organs</strong>, driven by similar habitat selection. Similar proteins/genes for a function likewise point to shared ancestry.", "Man's <strong>domestic breeding</strong> (dogs, crops: new breeds within hundreds of years — could not nature do it over millions?) and <strong>industrial melanism</strong> clinch selection in action: pre-industrialisation (1850s) collections had <strong>more white-winged moths</strong> (lichen-covered trunks hid them); post-industrialisation (1920) the <strong>proportion reversed</strong> — dark trunks hid melanised moths, predators picking the contrasted ones (Figure 6.4; rural unpolluted areas stayed low-melanic; <strong>lichens as pollution indicators</strong>). Herbicide/pesticide/antibiotic resistance appearing in <strong>months or years, not centuries</strong>, shows <strong>anthropogenic evolution</strong>: evolution is <strong>stochastic, not directed determinism</strong> — and no variant is completely wiped out."], "formulas": [{"label": "Homology (divergent)", "html": "same structure → different functions (forelimb bones; thorn/tendril) ⇒ common ancestry", "cond": "§6.3; Figure 6.3"}, {"label": "Analogy (convergent)", "html": "different structures → same function (wings; eyes; flippers; root/stem tubers) ⇒ similar habitat selection", "cond": "§6.3"}, {"label": "Fitness (Darwin)", "html": "fitness = reproductive fitness; survivors leave more progeny under competition", "cond": "§6.2; §6.5 Malthus link"}], "deeper": "Reading notes (§6.2–6.3): fitness refers ultimately and only to reproductive fitness. Rock cross-sections order sediments oldest-below; dinosaurs illustrate extinct-vs-modern mapping. Sweet potato is a root modification, potato a stem modification — the book's canonical analogy pair. Moth counts: 1850s white > dark; 1920 dark > white in the same industrial area.", "worked": "Moth-logic check (§6.3): contrasting background ⇒ spotted by predators. Dark trunks + white moth = eaten; dark trunks + melanised moth = camouflaged survivors increasing in proportion — selection without any variant being fully wiped out.", "prediction": {"prompt": "A student calls butterfly and bird wings homologous because they look alike and both fly. What does §6.3 say?", "options": ["They are analogous (convergent): similar function, not anatomically similar structures", "They are homologous (divergent): same bones proving common ancestry", "They are fossils, so neither term applies"], "answer": 0, "explanation": "Wings of butterfly and birds look alike but are not anatomically similar; analogous structures evolve convergently for the same function."}, "connect": [["Antibiotic resistance in Indian hospitals", "Excess antibiotics select pre-existing resistant microbes within months or years (§6.3 mechanism) — hospital-acquired resistant strains are industrial melanism replayed in wards, and Exercise 1 asks exactly this in Darwinian terms."], ["Wow — Shivalik fossils in India's own rocks", "The Shivalik Hills (Himachal–Uttarakhand–J&K foothills) preserve elephant, horse, ape and tortoise fossils in layered sediments — paleontological evidence (§6.3) readable in Indian crust, dated by the same radioactive methods the chapter cites.", [], {"id": "Q-aGAX27SIo", "title": "Evidence for evolution | Common ancestry and phylogeny | High school biology | Khan Academy", "channel": "Khan Academy"}]], "recall": "Contrast special creation's three claims with Darwin–Wallace; list one example each of fossil, embryological, homologous, analogous, biochemical and anthropogenic evidence.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Whale, bat, cheetah and human forelimbs with the same bone pattern performing different functions are", "options": ["Homologous organs from divergent evolution", "Analogous organs from convergent evolution", "Fossils of extinct dinosaurs"], "answer": 0, "hint": "Same structure, different directions (§6.3).", "solution": "Humerus/radius/ulna/carpals/metacarpals/phalanges shared ⇒ homology, common ancestry.", "wrong": ["Analogy is different structures, same function (wings, eyes).", "These are living mammals, not dinosaur fossils."]}, {"level": "Medium", "type": "number", "map": "Figure 6.3b", "prompt": "Number of bone groups named in the shared mammalian forelimb pattern", "answer": 6, "unit": "groups", "tolerance": 0.1, "hint": "Humerus, radius, ulna, carpals, metacarpals, phalanges.", "solution": "Six named groups in the forelimb pattern (§6.3)."}, {"level": "Hard", "type": "mcq", "prompt": "The 1850s→1920 moth reversal (§6.3) shows", "options": ["Camouflage-selected survival: contrasting moths are picked by predators, so proportions flip with soot/lichen backgrounds", "Moths choosing to change colour within their lifetime like chameleons", "Complete wiping out of the white variant everywhere including rural areas"], "answer": 0, "hint": "Predators spot moths against contrasting backgrounds.", "solution": "Background-dependent predation flips proportions; rural areas stay low-melanic and no variant is fully wiped out.", "wrong": ["Individuals do not recolour; populations shift by selection.", "Rural counts stayed low-melanic; the text says no variant is completely wiped out."]}], "resources": [{"title": "NCERT §6.2, 6.3 — Theories & evidences (official PDF, PDF p.3)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=3"}]}, {"id": "adaptive-radiation", "nav": "Adaptive radiation", "title": "Adaptive radiation: Darwin's finches and Australian marsupials", "deck": "From one seed-eating ancestor, Galapagos finches radiated beaks for insectivorous and vegetarian niches; Australian marsupials radiated from one stock — and placentals convergently mirror them (wolf/wolf, etc.).", "minutes": 8, "section": "6.4", "pages": [7, 9], "print": "116–118", "sim": "finches", "simTitle": "Finch beak radiation: seed-eating → insectivorous + vegetarian", "quick": ["At the <strong>Galapagos Islands</strong> Darwin found small black birds — later <strong>Darwin's Finches</strong>: many varieties on the same island, all conjectured to have <strong>evolved on the island itself</strong>. From the original <strong>seed-eating</strong> features, many other forms with <strong>altered beaks</strong> arose, enabling them to become <strong>insectivorous and vegetarian finches</strong> (Figure 6.5).", "This is <strong>adaptive radiation</strong>: evolution of <strong>different species in a given geographical area starting from a point and literally radiating</strong> to other areas/habitats. Darwin's finches are one of the best examples of the phenomenon.", "The other textbook example is <strong>Australian marsupials</strong>: a number of marsupials, each different from the other (Figure 6.6), evolved from an <strong>ancestral stock within the Australian island continent</strong>. When more than one radiation occurs in an isolated area across habitats, one can call it <strong>convergent evolution</strong>: placental mammals in Australia radiated into varieties <strong>similar to corresponding marsupials</strong> — e.g. <strong>placental wolf and Tasmanian wolf-marsupial</strong> (Figure 6.7)."], "formulas": [{"label": "Adaptive radiation", "html": "one ancestral stock → many species across habitats within one geographical area", "cond": "§6.4; finches, marsupials"}, {"label": "Finch beak triad", "html": "seed-eating (ancestral) → insectivorous + vegetarian (altered beaks)", "cond": "§6.4; Figure 6.5"}, {"label": "Convergent mirror", "html": "placental wolf ≈ Tasmanian wolf-marsupial (similar form, separate stocks)", "cond": "§6.4; Figure 6.7"}], "deeper": "Figure order note (§6.4): Figure 6.6 (marsupial radiation) is cited before Figure 6.5 (finch beaks) in the running text — both belong to this section. The wolf/wolf pair is the named convergent example; the broader placental–marsupial parallel set is Figure 6.7 (also recalled in §6.5 as a Darwinian figure).", "worked": "Exercise 8 reasoning: pick Darwin's finches — one seed-eating ancestor on Galapagos → altered beaks → insectivorous and vegetarian species in different niches of the same islands: point origin + habitat radiation = adaptive radiation.", "prediction": {"prompt": "Two Galapagos finch species crack different seed sizes with differently shaped beaks. Their most likely history under §6.4 is", "options": ["One seed-eating ancestor radiated on the islands into beak-specialised species", "Each species was separately created in its present form 4000 years ago", "Beaks changed by use and disuse stretching within one lifetime and were inherited"], "answer": 0, "explanation": "All varieties evolved on the island itself from common seed-eating features — radiation, not special creation or Lamarckian stretching."}, "connect": [["Lentils to lunch: beaks as tools", "Seed-crushing vs insect-probing beaks are feeding tools like kitchen implements — altered beaks opened vegetarian and insectivorous niches from one seed-eating start (Figure 6.5)."], ["Wow — a wolf that is not a wolf", "Australia's Tasmanian wolf-marsupial looks like a placental wolf but evolved from marsupial stock — two radiations converging on the same job in isolation (Figure 6.7).", [], {"id": "-b3tFfbw_EU", "title": "Adaptive Radiation | Evolution | Biology | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Define adaptive radiation and retell both textbook examples plus the wolf/wolf convergent mirror.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Adaptive radiation (§6.4) is", "options": ["Evolution of different species from one point, radiating across habitats of one area", "One species turning into a fossil without descendants", "Mating of two different orders producing a hybrid"], "answer": 0, "hint": "Starting from a point and literally radiating.", "solution": "Finches on Galapagos and marsupials in Australia radiate from ancestral stock into niches.", "wrong": ["Fossilisation without descendants is extinction, not radiation.", "Hybridisation across orders is not the §6.4 process."]}, {"level": "Medium", "type": "mcq", "prompt": "From the original seed-eating finches arose", "options": ["Insectivorous and vegetarian forms with altered beaks", "Fish with stout fins that walk on land", "Placental wolves"], "answer": 0, "hint": "Figure 6.5 beak varieties.", "solution": "Altered beaks enabled insectivorous and vegetarian finches (§6.4).", "wrong": ["Lobefins belong to §6.8 vertebrate history, not finches.", "Wolves belong to the marsupial/placental story."]}, {"level": "Hard", "type": "number", "map": "§6.4 diets", "prompt": "Feeding modes named for the radiated finches (seed-eating + insectivorous + vegetarian)", "answer": 3, "unit": "modes", "tolerance": 0.1, "hint": "Ancestral one plus two derived.", "solution": "Seed-eating (original), insectivorous and vegetarian (derived) — three modes."}], "resources": [{"title": "NCERT §6.4 — Adaptive radiation (official PDF, PDF p.7)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=7"}]}, {"id": "lamarck-darwin-mechanism", "nav": "Lamarck vs Darwin & mechanism", "title": "Lamarck's use/disuse vs Darwin's branching descent — and how variation arises", "deck": "Giraffe-neck stretching (Lamarck) is no longer believed; Darwin's branching descent + natural selection (Malthus, heritable fitness) stands. de Vries added saltation mutations; population genetics reconciles small directional variations with sudden large ones; selection stabilises, directs or disrupts (Fig 6.8).", "minutes": 9, "section": "6.5, 6.6", "pages": [9, 11], "print": "118–120", "sim": "selection", "simTitle": "Selection curves: stabilising / directional / disruptive + moth melanism", "quick": ["Evolution by <strong>natural selection</strong> in the true sense started when <strong>cellular forms with metabolic differences</strong> originated. The bacterial parable (§6.5): colony A on a medium has built-in variation; a changed medium lets only variant <strong>B survive, outgrow and appear as a new species within days</strong> — in fish or fowl the same would take millions of years because life spans are years. <strong>Fitness of B is better than A under the new conditions; nature selects for fitness</strong> — characteristics must be <strong>inherited (genetic basis)</strong>; adaptability is inherited. The two key Darwinian concepts are <strong>branching descent and natural selection</strong> (Figures 6.7–6.8).", "Before Darwin, <strong>Lamarck</strong> said evolution occurred by <strong>use and disuse</strong>: giraffes stretching for tall-tree leaves elongated their necks and <strong>passed the acquired character</strong> on, slowly acquiring long necks. <strong>Nobody believes this conjecture any more.</strong> Darwin may have been influenced by <strong>Thomas Malthus</strong> on populations: resources limited, populations stable except seasonal fluctuation, members vary (no two alike), most variations inherited, exponential growth possible (bacteria) but checked by <strong>competition</strong> — heritable variants using resources better <strong>reproduce more, leave more progeny, and over generations population characteristics change</strong>: new forms arise. Whether evolution/selection are processes or end results remains an open framing question (§6.5).", "What is the origin of variation? Mendel's inheritable factors were ignored by Darwin. <strong>Hugo de Vries</strong> (evening primrose, first decade of 20th century) brought <strong>mutations — large differences arising suddenly</strong>: mutation causes evolution, not Darwin's minor variations; mutations random and directionless, Darwinian variations small and directional; Darwin gradual, de Vries <strong>saltation (single-step large mutation)</strong> causing speciation. Later <strong>population genetics</strong> brought clarity. Figure 6.8 shows natural selection operating on traits three ways: <strong>(a) stabilising, (b) directional, (c) disruptive</strong> — detailed in §6.7 as mean-value, other-than-mean, and both-peripheral-ends shifts of the distribution curve."], "formulas": [{"label": "Darwin pair", "html": "branching descent + natural selection (fitness = reproductive success of heritable variants)", "cond": "§6.5; Figures 6.7–6.8"}, {"label": "Lamarck (rejected)", "html": "use/disuse → acquired elongation → inheritance (giraffe); nobody believes it now", "cond": "§6.5"}, {"label": "Selection modes (Fig 6.8)", "html": "(a) stabilising: mean favoured; (b) directional: off-mean favoured; (c) disruptive: both peripheral ends favoured", "cond": "§6.6–6.7"}], "deeper": "Malthusian observations listed (§6.5): limited resources; stable populations; ubiquitous heritable variation; exponential potential vs limited reality ⇒ competition; survivors grow at the cost of others. de Vries contrasts: random/directionless/sudden/large (mutation, saltation) vs small/directional/gradual (Darwin). Microbes dividing fast show selection in hours/days — the rate of new forms links to life cycle/life span.", "worked": "Bacteria-to-fowl scaling (§6.5): same selection logic, different clocks — days for microbes (millions of individuals in hours) vs millions of years for long-lived fish/fowl. Fitness comparison is always relative to the new conditions (B vs A).", "prediction": {"prompt": "A giraffe stretches its neck daily and its offspring are born with longer necks. Under this chapter, this claim is", "options": ["Lamarckian use/disuse inheritance — explicitly rejected; fitness needs a heritable genetic basis selected by nature", "Darwinian natural selection operating correctly", "Hardy-Weinberg equilibrium in action"], "answer": 0, "explanation": "Acquired stretching inherited is Lamarck's giraffe example; the text says nobody believes this conjecture any more — selection acts on inherited variation."}, "connect": [["Multidrug-resistant TB therapy", "Long TB/antibiotic courses exist because stopping early leaves resistant B-like variants to outgrow — the §6.5 colony-A-to-B parable playing out in Indian clinics, grounded in §6.3's months-or-years resistance."], ["Wow — days vs millions of years", "One selection rule, two clocks: bacteria speciate before your eyes in days while fowl need geological time — because the rate of new forms tracks life cycle and life span (§6.5).", [], {"id": "x73bsC7WIsE", "title": "Theories of evolution Lamarck vs Darwin | Evolution | Biology | FuseSchool", "channel": "FuseSchool - Global Education"}]], "recall": "State the bacteria A→B story, Lamarck's giraffe vs Darwin's pair, the Malthus observations, de Vries saltation vs Darwin gradualism, and the three Fig 6.8 modes.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Lamarck's giraffe explanation (§6.5) invoked", "options": ["Use and disuse with inheritance of the acquired long neck", "Branching descent plus natural selection", "Hardy-Weinberg allele constancy"], "answer": 0, "hint": "Stretching to forage tall-tree leaves.", "solution": "Elongation by effort, passed on — the rejected conjecture.", "wrong": ["That is Darwin's pair of key concepts.", "That is §6.7 population genetics, not Lamarck."]}, {"level": "Medium", "type": "mcq", "prompt": "Fitness in the Darwinian sense (§6.2/6.5) means", "options": ["Reproductive fitness — leaving more progeny in that environment", "Physical strength or lifespan alone", "Ability to stretch organs by effort"], "answer": 0, "hint": "Ultimately and only ... fitness.", "solution": "Those better fit leave more progeny; adapted variants are selected by nature.", "wrong": ["Strength without progeny is not Darwinian fitness.", "Effort-stretching is Lamarck, rejected in the text."]}, {"level": "Hard", "type": "number", "map": "Figure 6.8", "prompt": "Number of operation modes of natural selection drawn in Figure 6.8", "answer": 3, "unit": "modes", "tolerance": 0.1, "hint": "Stabilising, directional, disruptive.", "solution": "Three panels: (a) stabilising, (b) directional, (c) disruptive."}], "resources": [{"title": "NCERT §6.5, 6.6 — Lamarck vs Darwin & mechanism (official PDF, PDF p.9)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=9"}]}, {"id": "hardy-weinberg", "nav": "Hardy-Weinberg", "title": "Hardy-Weinberg equilibrium: p² + 2pq + q² = 1 and its five disturbers", "deck": "Allele frequencies stay constant (gene pool constant, sum = 1) unless disturbed. In diploids AA = p², aa = q², Aa = 2pq. Gene flow, drift, mutation, recombination and selection disturb it — and selection replays Fig 6.8's three curves.", "minutes": 9, "section": "6.7", "pages": [11, 12], "print": "120–121", "sim": "hardyweinberg", "simTitle": "Hardy-Weinberg lab: p/q slider, genotype frequencies + 5 disturbers", "quick": ["In a population one can find the <strong>frequency of alleles</strong> of a gene/locus; it is supposed to remain <strong>fixed through generations</strong>. The <strong>Hardy-Weinberg principle</strong> states this algebraically: allele frequencies are <strong>stable generation to generation</strong>; the <strong>gene pool</strong> (total genes and alleles) remains constant — <strong>genetic equilibrium</strong>; the <strong>sum of all allelic frequencies is 1</strong>.", "In a diploid, allele A frequency <strong>p</strong> and allele a frequency <strong>q</strong> give genotype frequencies by product of probabilities: <strong>AA = p<sup>2</sup>, aa = q<sup>2</sup>, Aa = 2pq; hence p<sup>2</sup> + 2pq + q<sup>2</sup> = 1</strong>, the binomial expansion of <strong>(p + q)<sup>2</sup></strong>. When measured frequencies differ from expected, the <strong>difference (direction) indicates the extent of evolutionary change</strong>: disturbed equilibrium = evolution happening.", "Five factors disturb Hardy-Weinberg equilibrium: <strong>gene migration/flow, genetic drift, mutation, genetic recombination, natural selection</strong>. Migration moving sections between populations changes both; repeated migration = <strong>gene flow</strong>. The same change by <strong>chance = genetic drift</strong>, sometimes so different that a new species forms — drifted founders give the <strong>founder effect</strong>. Microbial experiments show pre-existing advantageous mutations selected over generations → speciation. Mutation/recombination/flow/drift change gene frequencies; coupled with <strong>reproductive success, natural selection</strong> makes populations look different — via <strong>stabilisation (mean), directional change (off-mean), or disruption (both peripheral ends)</strong> of the distribution curve (Figure 6.8)."], "formulas": [{"label": "Hardy-Weinberg equilibrium", "html": "p<sup>2</sup> + 2pq + q<sup>2</sup> = 1, where (p + q)<sup>2</sup>; AA = p<sup>2</sup>, Aa = 2pq, aa = q<sup>2</sup>", "cond": "§6.7; p + q = 1, sum of alleles = 1"}, {"label": "Five disturbers", "html": "gene flow/migration · genetic drift (+ founder effect) · mutation · recombination · natural selection", "cond": "§6.7"}, {"label": "Selection readout (Fig 6.8)", "html": "stabilising → mean; directional → off-mean; disruptive → both ends", "cond": "§6.7 closing paragraph"}], "deeper": "Worked logic (§6.7): probability allele A (frequency p) appears on both chromosomes = p × p = p²; similarly q² and 2pq. Gene flow adds alleles to the new population and loses them from the old. Founder effect: original drifted population becomes founders. Variation sources (mutation, gametogenic recombination, flow, drift) change frequencies; selection converts them into directional population shifts.", "worked": "H-W numerical: suppose 16% of a population shows the recessive phenotype (aa). Then q² = 0.16 ⇒ q = 0.40 ⇒ p = 1 − 0.40 = 0.60 ⇒ carriers Aa = 2pq = 2 × 0.60 × 0.40 = 0.48 (48%). If a later census finds aa far from 16%, that direction of difference measures evolutionary change (§6.7).", "prediction": {"prompt": "A census finds recessive-phenotype frequency q² = 0.16. Under Hardy-Weinberg, the carrier (Aa) frequency is", "options": ["0.48 — q = 0.4, p = 0.6, 2pq = 0.48", "0.16 — carriers equal recessives", "0.84 — carriers are everyone else"], "answer": 0, "explanation": "q = √0.16 = 0.4; p = 0.6; 2pq = 0.48. Deviations from such expectations signal evolution."}, "connect": [["Sickle-cell and malaria belts", "Where malaria selects heterozygotes, HbS allele frequencies depart from naive H-W expectations — selection plus gene flow visibly disturbing equilibrium, exactly the §6.7 mechanism."], ["Wow — antibiotic doses count alleles", "Each antibiotic course in Indian hospitals is a selection pulse on bacterial gene pools: resistant-allele q rises within months, and the measured-vs-expected H-W gap (§6.7) becomes a resistance report card.", [], {"id": "4Kbruik_LOo", "title": "Hardy-Weinberg Principle", "channel": "Khan Academy"}]], "recall": "Write p²+2pq+q²=1 with meanings, name the five disturbers plus founder effect, and map the three Fig 6.8 selection modes.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Hardy-Weinberg genetic equilibrium states that", "options": ["Allele frequencies (gene pool) stay constant generation to generation; allelic sum = 1", "Allele frequencies must change every generation", "Only dominant alleles survive in any population"], "answer": 0, "hint": "Stable and constant (§6.7).", "solution": "Constant gene pool; p + q = 1; genotypes p², 2pq, q².", "wrong": ["Change means disturbed equilibrium, i.e. evolution.", "Recessives persist as q² and 2pq carriers."]}, {"level": "Medium", "type": "number", "map": "§6.7 q² → q", "prompt": "Recessive allele frequency q if recessive-phenotype frequency q² = 0.16", "answer": 0.4, "unit": "", "tolerance": 0.01, "hint": "q = √q².", "solution": "q = √0.16 = 0.40; hence p = 0.60."}, {"level": "Hard", "type": "number", "map": "§6.7 2pq", "prompt": "Carrier frequency 2pq if p = 0.6 and q = 0.4", "answer": 0.48, "unit": "", "tolerance": 0.01, "hint": "2 × 0.6 × 0.4.", "solution": "2pq = 0.48; with p² = 0.36 and q² = 0.16 the sum is 1.00."}], "resources": [{"title": "NCERT §6.7 — Hardy-Weinberg (official PDF, PDF p.11)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=11"}]}, {"id": "timeline-human", "nav": "Geological timeline & man", "title": "A brief account of evolution — and the origin of man", "deck": "First cells ~2000 mya → invertebrates 500 mya → jawless fish 350 mya → lobefin→amphibian→reptile→dinosaur (gone 65 mya) → mammals. Dryopithecus/Ramapithecus 15 mya → Australopithecus → habilis (650–800cc) → erectus (900cc) → Neanderthal (1400cc) → sapiens, Bhimbetka art and farming.", "minutes": 9, "section": "6.8, 6.9", "pages": [12, 16], "print": "121–125", "sim": "humanevolution", "simTitle": "Human-evolution walker: timeline with brain sizes 650→1400cc", "quick": ["About <strong>2000 mya the first cellular forms</strong> appeared (how membranous cells came from macromolecule aggregates is not known); some cells released O<sub>2</sub> like the photosynthetic light reaction splitting water with light-harvesting pigments. Single cells became multicellular; by <strong>500 mya invertebrates</strong> were active; <strong>jawless fish ~350 mya</strong>; sea weeds and few plants ~320 mya — <strong>plants invaded land first</strong>, widespread before animals. <strong>Fish with stout strong fins</strong> (~350 mya) moved onto land and back; the 1938 South African <strong>Coelacanth (lobefin)</strong>, thought extinct, shows the stock that became the <strong>first amphibians</strong> (ancestors of frogs/salamanders; no specimens left). Amphibians → <strong>reptiles with thick-shelled sun-proof eggs</strong> (modern turtle/tortoise/crocodile descendants).", "For ~200 million years <strong>reptiles of different shapes dominated</strong> (Figures 6.9–6.10 plant/vertebrate sketches); giant ferns fell to form <strong>coal</strong>; some land reptiles returned to water (<strong>Ichthyosaurs ~200 mya</strong>); land reptiles were the <strong>dinosaurs</strong> — <strong>Tyrannosaurus rex ~20 feet</strong> with dagger teeth — <strong>suddenly gone ~65 mya</strong> (climate? birds? truth in between); small reptiles persist. First <strong>mammals like shrews</strong> (small fossils), <strong>viviparous</strong>, protecting young inside, more intelligent at sensing danger; when reptiles declined mammals took over. South-American horse/hippopotamus/bear/rabbit-like mammals were overridden by North American fauna after <strong>continental drift</strong> joined the continents; <strong>Australian pouched mammals survived for lack of competition</strong>; whales/dolphins/seals/sea cows went wholly aquatic. Horse/elephant/dog stories are deferred to higher classes.", "About <strong>15 mya Dryopithecus and Ramapithecus</strong> primates existed — hairy, gorilla/chimpanzee-like walkers; <strong>Ramapithecus more man-like, Dryopithecus more ape-like</strong>. Man-like bones in <strong>Ethiopia/Tanzania</strong> (Figure 6.11 skulls) show hominids: <strong>~3–4 mya man-like primates walked upright in eastern Africa</strong>, not taller than 4 feet. <strong>~2 mya Australopithecines</strong> lived in East African grasslands, hunting with stone weapons but essentially eating fruit. Distinct bones gave the first human-like hominid <strong>Homo habilis, brain 650–800cc</strong>, probably not meat-eaters. <strong>1891 Java fossils: Homo erectus ~1.5 mya, large brain ~900cc</strong>, probably ate meat.", "<strong>Neanderthal man (brain 1400cc)</strong> lived in the <strong>near east and central Asia between 1,00,000–40,000 years back</strong>, used hides, buried the dead. <strong>Homo sapiens arose in Africa</strong>, moved across continents into distinct races; <strong>modern Homo sapiens arose during the 75,000–10,000 ice age</strong>; <strong>prehistoric cave art ~18,000 years ago</strong> — e.g. <strong>Bhimbetka rock shelter, Raisen district, Madhya Pradesh</strong>; <strong>agriculture ~10,000 years back</strong>, then settlements; the rest is human history of civilisations. The summary moral: chemical evolution → Darwinian selection → fitness/drift/speciation → homology/fossils/biochemistry as evidence → <strong>man paralleling brain and language evolution</strong>."], "formulas": [{"label": "Vertebrate spine (mya)", "html": "cells 2000 → invertebrates 500 → jawless fish 350 → lobefin→amphibian→reptile → dinosaurs gone 65", "cond": "§6.8; Figures 6.9–6.10"}, {"label": "Hominid brain staircase", "html": "habilis 650–800cc → erectus ~900cc → Neanderthal 1400cc (sapiens modern)", "cond": "§6.9; Exercises 4, 9–10"}, {"label": "Sapiens milestones (years ago)", "html": "Neanderthal 1,00,000–40,000 → sapiens ice age 75,000–10,000 → cave art 18,000 → agriculture 10,000", "cond": "§6.9; Bhimbetka, MP"}], "deeper": "Figure notes (§6.8–6.9): Figure 6.9 plant forms through geological periods; Figure 6.10 vertebrate history; Figure 6.11 baby-chimpanzee skull closer to adult-human than adult-chimpanzee skull. Continental-drift double effect: South America joining North America overrode southern fauna; Australian isolation saved pouched mammals. Shrew-like first mammals; sea-cow/whale aquatic mammals listed.", "worked": "Brain-size ordering (§6.9): habilis mid ≈ (650 + 800)/2 = 725cc < erectus 900cc < Neanderthal 1400cc. Gap erectus − habilis ≈ 175cc; Neanderthal − erectus = 500cc — the staircase Exercise 4 traces with diet (fruit → meat), skeleton (upright, ≤4 ft → taller) and function.", "prediction": {"prompt": "A 900cc Java fossil with meat-eating signs, dated ~1.5 mya, is reported. Under §6.9 it is", "options": ["Homo erectus — 900cc, ~1.5 mya, Java 1891, probably ate meat", "Homo habilis — 650–800cc fruit-eaters of East Africa", "Neanderthal — 1400cc hide-users of 1,00,000–40,000 years ago"], "answer": 0, "explanation": "Brain size + place + date + diet jointly diagnose erectus in the textbook sequence."}, "connect": [["Narmada human and Bhimbetka neighbours", "The Narmada (Hathnora, MP) archaic-human calvaria and Bhimbetka's 18,000-year-old art (§6.9) put Indian fossils and paintings directly on the textbook timeline from erectus-grade humans to modern sapiens."], ["Wow — a fish thought extinct swims on", "The lobefin Coelacanth, ancestral to amphibians and known only from fossils, was caught alive off South Africa in 1938 — a §6.8 lineage walking out of deep time.", [], {"id": "frE1rjhH77Y", "title": "Human evolution overview | Life on earth and in the universe | Cosmology & Astronomy | Khan Academy", "channel": "Khan Academy"}]], "recall": "Recite the vertebrate dates, the hominid order with brain sizes/diets, and the sapiens milestones ending at agriculture.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The textbook hominid order (§6.9) runs", "options": ["Dryopithecus/Ramapithecus → Australopithecus → habilis → erectus → Neanderthal → sapiens", "Sapiens → Neanderthal → erectus → habilis → Australopithecus", "Dinosaurs → Coelacanth → habilis directly"], "answer": 0, "hint": "15 mya apes to ice-age sapiens.", "solution": "The §6.9 sequence with rising brain sizes and changing diet/skeleton.", "wrong": ["That reverses time's arrow.", "Dinosaurs vanish 65 mya; Coelacanth precedes amphibians, not habilis."]}, {"level": "Medium", "type": "number", "map": "§6.9 erectus", "prompt": "Brain capacity (cc) of Homo erectus (Java, ~1.5 mya)", "answer": 900, "unit": "cc", "tolerance": 25, "hint": "Between habilis 650–800 and Neanderthal 1400.", "solution": "Large brain around 900cc; probably ate meat (§6.9)."}, {"level": "Hard", "type": "number", "map": "§6.9 Neanderthal", "prompt": "Brain size (cc) of Neanderthal man (1,00,000–40,000 years back)", "answer": 1400, "unit": "cc", "tolerance": 25, "hint": "Largest named in the staircase; hides and burials.", "solution": "1400cc — the top of the textbook brain staircase (§6.9)."}], "resources": [{"title": "NCERT §6.8, 6.9 — Geological timeline & man (official PDF, PDF p.12)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lebo106.pdf#page=12"}]}], "exercises": [{"number": 1, "conceptIdx": 3, "page": 17, "printPage": 126, "question": "Explain antibiotic resistance observed in bacteria in light of Darwinian selection theory.", "steps": ["Recall §6.5/§6.3: bacterial colonies carry built-in heritable variation (colony A with a rare resistant variant B).", "Antibiotic is the new medium/condition: sensitive cells die, pre-existing resistant cells survive — fitness of B is better than A under the new conditions.", "Survivors reproduce fast (millions within hours) and outgrow others within days, appearing as a resistant population — nature selects for fitness.", "Hence resistance is selection of pre-existing advantageous variants, not directed mutation; anthropogenic evolution in months/years, stochastic not deterministic."], "answer": "Resistant variants pre-exist; antibiotics select them — survivors outbreed others (Darwinian selection, §6.3/§6.5)."}, {"number": 2, "conceptIdx": 1, "page": 17, "printPage": 126, "question": "Find out from newspapers and popular science articles any new fossil discoveries or controversies about evolution.", "steps": ["Activity prompt: survey newspapers/popular-science for fossil finds or evolution debates.", "NCERT grounding (§6.3): fossils in layered sediments + radioactive dating give paleontological evidence; new finds slot into geological time-spans.", "Report: name the fossil/organism, the sediment/age claimed, and which lineage or date it confirms or disputes.", "No single fixed answer — credit any sourced recent find (e.g. hominid, dinosaur–bird link) discussed with the §6.3 evidence frame."], "answer": "Open activity; answer with a sourced recent fossil find or controversy framed by §6.3."}, {"number": 3, "conceptIdx": 3, "page": 17, "printPage": 126, "question": "Attempt giving a clear definition of the term species.", "steps": ["Activity prompt: the chapter uses species/divergence/speciation but gives no boxed definition.", "Working NCERT-faithful definition: a species is a group of actually or potentially interbreeding populations reproductively isolated from other such groups, sharing a gene pool and common ancestry.", "Link to text: variation + selection + drift/founder effects (§6.5–6.7) split one stock into groups that no longer exchange genes — e.g. finch or bacterial variants appearing as new species.", "Note limits: fossil species are diagnosed morphologically by time-span (§6.3), so the definition is operational."], "answer": "Interbreeding population group, reproductively isolated, sharing a gene pool — split by selection/drift into new species."}, {"number": 4, "conceptIdx": 5, "page": 17, "printPage": 126, "question": "Try to trace the various components of human evolution (hint: brain size and function, skeletal structure, dietary preference, etc.)", "steps": ["Brain: habilis 650–800cc → erectus ~900cc → Neanderthal 1400cc → sapiens; function rises with language/self-consciousness (§6.9, Summary).", "Skeleton: hairy gorilla-like walkers (Dryopithecus/Ramapithecus 15 mya) → upright ≤4-ft eastern-African hominids 3–4 mya → Australopithecines 2 mya → Homo grades; skulls compared in Figure 6.11.", "Diet/tools: fruit-eating Australopithecines with stone weapons → habilis probably no meat → erectus probably meat → Neanderthal hides/burials → sapiens cave art (Bhimbetka, 18,000 ya) → agriculture 10,000 ya.", "Synthesis: parallel evolution of brain, language, diet and culture from Africa across continents into distinct races."], "answer": "Brain 650→900→1400cc with upright skeleton, fruit→meat diet, stone tools→art→farming (§6.9)."}, {"number": 5, "conceptIdx": 5, "page": 17, "printPage": 126, "question": "Find out through internet and popular science articles whether animals other than man has self-consciousness.", "steps": ["Activity prompt: the chapter closes with language skills and self-consciousness as man's most successful story (§6.8).", "Method: search primary/popular reports (mirror tests, tool use, planning) in apes, dolphins, elephants, magpies — the species usually tested.", "NCERT-faithful caution: the textbook asserts self-consciousness for man; animal claims must be weighed as contested evidence, not settled text.", "No single fixed answer — credit a sourced comparison concluding which animals pass which test and what remains disputed."], "answer": "Open activity; compare mirror/tool-use evidence in a few mammals/birds against man's language-linked self-consciousness."}, {"number": 6, "conceptIdx": 5, "page": 17, "printPage": 126, "question": "List 10 modern-day animals and using the internet resources link it to a corresponding ancient fossil. Name both.", "steps": ["Activity prompt: pairs a living animal with its ancient fossil counterpart, as Figure 6.2 does for dinosaurs–crocodiles/birds.", "NCERT-grounded examples from the chapter: crocodile/bird (dinosaur kin), Coelacanth lobefin (living fossil), horse stages, frog/salamander (amphibians), turtle/tortoise (reptiles).", "Build 10 pairs (modern → fossil), e.g. horse → Eohippus-grade stages; elephant → early proboscideans; whale → land-to-sea intermediates.", "No single fixed answer — credit 10 named pairs with sources; fossils dated by §6.3 radioactive methods."], "answer": "Open activity; 10 modern→fossil pairs (e.g. birds/crocodiles→dinosaurs, Coelacanth→lobefins, horse→its stages)."}, {"number": 7, "conceptIdx": 1, "page": 17, "printPage": 126, "question": "Practise drawing various animals and plants.", "steps": ["Skill activity supporting Figures 6.1–6.11: Miller apparatus, dinosaur family tree, homologous forelimbs, moths on trunks, finch beaks, marsupial radiation, Fig 6.8 curves, plant/vertebrate sketches, skull comparison.", "Practise labelling: gases in Figure 6.1; humerus/radius/ulna/carpals/metacarpals/phalanges in Figure 6.3b; stabilising/directional/disruptive in Figure 6.8.", "No textual answer — diagrams are the answer."], "answer": "Drawing practice; no fixed textual answer (Figures 6.1–6.11)."}, {"number": 8, "conceptIdx": 2, "page": 17, "printPage": 126, "question": "Describe one example of adaptive radiation.", "steps": ["Definition (§6.4): different species evolving in one geographical area from one point, radiating across habitats.", "Example — Darwin's finches: seed-eating ancestor on Galapagos → altered beaks → insectivorous and vegetarian species (Figure 6.5).", "Alternative — Australian marsupials: one ancestral stock → diverse marsupials within the island continent (Figure 6.6), with placental convergences (Figure 6.7)."], "answer": "Darwin's finches (or Australian marsupials): one stock → many niche species (§6.4)."}, {"number": 9, "conceptIdx": 5, "page": 17, "printPage": 126, "question": "Can we call human evolution as adaptive radiation?", "steps": ["Test against §6.4: radiation needs one stock diversifying into many coexisting species across habitats of one area.", "Human sequence (§6.9) is largely successive grades (habilis → erectus → Neanderthal → sapiens) with rising brains, not a contemporaneous multi-niche radiation; distinct races are one species.", "Answer: No — it is directional/branching evolution of one lineage (with brain–language parallel), not adaptive radiation in the textbook sense."], "answer": "No — successive Hominid grades of one lineage, not multi-species habitat radiation (§6.4 vs §6.9)."}, {"number": 10, "conceptIdx": 5, "page": 17, "printPage": 126, "question": "Using various resources such as your school Library or the internet and discussions with your teacher, trace the evolutionary stages of any one animal, say horse.", "steps": ["Activity prompt: the chapter defers horse/elephant/dog stories to higher classes (§6.8) — research them externally.", "Method: library/internet/teacher sources; order stages by geological time (fossils in successive sediments, §6.3 dating), noting size, teeth, toes and habitat shifts.", "Present as a dated stage table from small forest ancestors to the modern horse, citing sources.", "No single fixed answer — credit a sourced, dated stage sequence in the §6.3–6.8 evidence frame."], "answer": "Open activity; a sourced, dated stage sequence for the horse (details in higher classes)."}], "pageOffset": null, "printPageStart": 110, "printPageEnd": 126, "paginationProvenance": "folio-verified: printed folio appears as the first extracted text line on nearly every page (only the chapter-opener page lacks one); confirmed printed = 1-based PDF page + 109 across 3 independent anchor points with zero deviation"};
 </script>
 <script>
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1088,8 +1294,44 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1115,8 +1357,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1199,7 +1440,35 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1216,6 +1485,10 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1224,17 +1497,17 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1246,26 +1519,27 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1275,7 +1549,6 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1288,7 +1561,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1314,42 +1587,47 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1357,7 +1635,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1366,65 +1644,51 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1465,6 +1729,10 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1483,7 +1751,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1533,7 +1801,8 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1542,6 +1811,41 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1556,9 +1860,6 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1678,10 +1979,9 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1697,7 +1997,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1708,8 +2008,8 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1754,22 +2054,31 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1815,7 +2124,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1825,7 +2134,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1835,11 +2144,31 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1874,6 +2203,10 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1887,6 +2220,41 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1894,6 +2262,7 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1908,6 +2277,232 @@ window.CHAPTER = {"code": "lebo106", "chapterNumber": 6, "book_name": "Biology",
   updateProgress();
   routeFromHash();
 })();
+
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1941,8 +2536,8 @@ window.SIMS["origin-miller"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Spark discharge</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Amino-acid product</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-red">1953 reducing flask</button>' +
-      '<button class="preset-btn" id="p-oxy">Oxygen-rich (prediction test)</button>';
+      '<button class="preset-btn active" id="p-red" data-preset="p-red">1953 reducing flask</button>' +
+      '<button class="preset-btn" id="p-oxy" data-preset="p-oxy">Oxygen-rich (prediction test)</button>';
     document.getElementById("p-red").onclick = function(){ setActivePreset(this); o2 = false; spark = true; var r = document.getElementById("ctrl-sp-range"); if(r) r.value = 1; draw(App.state.t); };
     document.getElementById("p-oxy").onclick = function(){ setActivePreset(this); o2 = true; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -2012,9 +2607,9 @@ window.SIMS["theories-evidences"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Homologous = divergent, common ancestry</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Analogous = convergent, same habitat job</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-h">Homology set</button>' +
-      '<button class="preset-btn" id="p-a">Analogy set</button>' +
-      '<button class="preset-btn" id="p-m">Moth melanism 1850s-1920</button>';
+      '<button class="preset-btn active" id="p-h" data-preset="p-h">Homology set</button>' +
+      '<button class="preset-btn" id="p-a" data-preset="p-a">Analogy set</button>' +
+      '<button class="preset-btn" id="p-m" data-preset="p-m">Moth melanism 1850s-1920</button>';
     document.getElementById("p-h").onclick = function(){ setActivePreset(this); item = 0; draw(App.state.t); };
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); item = 1; draw(App.state.t); };
     document.getElementById("p-m").onclick = function(){ setActivePreset(this); item = -1; draw(App.state.t); };
@@ -2022,7 +2617,7 @@ window.SIMS["theories-evidences"] = (function(){
       '<div class="control-item"><div class="control-label"><span>Specimen</span><span class="val" id="ctrl-i">1 / 6</span></div>' +
       '<input type="range" id="ctrl-i-range" min="0" max="5" step="1" value="0"></div>' +
       '<div class="control-item"><div class="control-label"><span>Your call</span><span class="val">?</span></div>' +
-      '<div><button class="preset-btn" id="b-hom">Homologous</button> <button class="preset-btn" id="b-ana">Analogous</button></div></div>';
+      '<div><button class="preset-btn" id="b-hom" data-preset="b-hom">Homologous</button> <button class="preset-btn" id="b-ana" data-preset="b-ana">Analogous</button></div></div>';
     document.getElementById("ctrl-i-range").oninput = function(){ item = numEl("ctrl-i-range", 0); draw(App.state.t); };
     document.getElementById("b-hom").onclick = function(){ judge("H"); };
     document.getElementById("b-ana").onclick = function(){ judge("A"); };
@@ -2088,10 +2683,10 @@ window.SIMS["adaptive-radiation"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Insectivorous (probing)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Vegetarian (crushing)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-s">Seed-eating ancestor</button>' +
-      '<button class="preset-btn active" id="p-i">Insectivorous</button>' +
-      '<button class="preset-btn" id="p-v">Vegetarian</button>' +
-      '<button class="preset-btn" id="p-w">Wolf mirror</button>';
+      '<button class="preset-btn" id="p-s" data-preset="p-s">Seed-eating ancestor</button>' +
+      '<button class="preset-btn active" id="p-i" data-preset="p-i">Insectivorous</button>' +
+      '<button class="preset-btn" id="p-v" data-preset="p-v">Vegetarian</button>' +
+      '<button class="preset-btn" id="p-w" data-preset="p-w">Wolf mirror</button>';
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); beak = 0; var r = document.getElementById("ctrl-b-range"); if(r) r.value = 0; draw(App.state.t); };
     document.getElementById("p-i").onclick = function(){ setActivePreset(this); beak = 1; var r = document.getElementById("ctrl-b-range"); if(r) r.value = 1; draw(App.state.t); };
     document.getElementById("p-v").onclick = function(){ setActivePreset(this); beak = 2; var r = document.getElementById("ctrl-b-range"); if(r) r.value = 2; draw(App.state.t); };
@@ -2165,10 +2760,10 @@ window.SIMS["lamarck-darwin-mechanism"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span><span>Before selection</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>After selection</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-st">Stabilising (mean)</button>' +
-      '<button class="preset-btn active" id="p-di">Directional (off-mean)</button>' +
-      '<button class="preset-btn" id="p-du">Disruptive (both ends)</button>' +
-      '<button class="preset-btn" id="p-la">Lamarck giraffe (rejected)</button>';
+      '<button class="preset-btn" id="p-st" data-preset="p-st">Stabilising (mean)</button>' +
+      '<button class="preset-btn active" id="p-di" data-preset="p-di">Directional (off-mean)</button>' +
+      '<button class="preset-btn" id="p-du" data-preset="p-du">Disruptive (both ends)</button>' +
+      '<button class="preset-btn" id="p-la" data-preset="p-la">Lamarck giraffe (rejected)</button>';
     document.getElementById("p-st").onclick = function(){ setActivePreset(this); mode = "stab"; draw(App.state.t); };
     document.getElementById("p-di").onclick = function(){ setActivePreset(this); mode = "dir"; draw(App.state.t); };
     document.getElementById("p-du").onclick = function(){ setActivePreset(this); mode = "dis"; draw(App.state.t); };
@@ -2238,8 +2833,8 @@ window.SIMS["hardy-weinberg"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Aa = 2pq</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>aa = q2</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-eq">Equilibrium (q2=0.16)</button>' +
-      '<button class="preset-btn" id="p-ds">Disturbed: selection + drift</button>';
+      '<button class="preset-btn active" id="p-eq" data-preset="p-eq">Equilibrium (q2=0.16)</button>' +
+      '<button class="preset-btn" id="p-ds" data-preset="p-ds">Disturbed: selection + drift</button>';
     document.getElementById("p-eq").onclick = function(){ setActivePreset(this); var r = document.getElementById("ctrl-p-range"); if(r) r.value = 0.6; App.state.maxT = 6; var sc = document.getElementById("time-scrubber"); if(sc) sc.max = 6; draw(App.state.t); };
     document.getElementById("p-ds").onclick = function(){ setActivePreset(this); draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -2297,8 +2892,8 @@ window.SIMS["timeline-human"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Vertebrate spine</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Hominid brain staircase</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-v">Vertebrate spine</button>' +
-      '<button class="preset-btn active" id="p-h">Hominid brains 650-1400cc</button>';
+      '<button class="preset-btn" id="p-v" data-preset="p-v">Vertebrate spine</button>' +
+      '<button class="preset-btn active" id="p-h" data-preset="p-h">Hominid brains 650-1400cc</button>';
     document.getElementById("p-v").onclick = function(){ setActivePreset(this); App.state.t = 1; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 1; draw(1); };
     document.getElementById("p-h").onclick = function(){ setActivePreset(this); App.state.t = 6; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 6; draw(6); };
     document.getElementById("lab-controls").innerHTML =

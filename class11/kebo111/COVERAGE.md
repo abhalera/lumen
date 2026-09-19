@@ -1,46 +1,37 @@
-# Curriculum & Verification Coverage: kebo111 (Photosynthesis in Higher Plants)
+# kebo111 Coverage — Photosynthesis in Higher Plants (Ch. 11, print pp. 131–152)
 
-## 1. General Overview
-- **Chapter Code:** kebo111
-- **Title:** Photosynthesis in Higher Plants
-- **NCERT Class:** 11 (Reprint 2026-27, pp. 133–152)
-- **Unit:** 4 (Plant Physiology)
-- **Pedagogical Structure:** Lumen 5-Block Learning Framework (Learn -> Predict First -> Play -> Connect -> Practice -> Revise)
+## Lessons (7)
+| # | Lesson | Sections | Sims |
+|---|---|---|---|
+| 1 | What We Know: Starch, Light and CO2 | 11.1 | knowlab |
+| 2 | Early Experiments: Priestley to van Niel | 11.2 | historylab |
+| 3 | Where It Happens and the Four Pigments | 11.3–11.4 | pigmentlab |
+| 4 | Light Reaction, Z Scheme and Chemiosmosis | 11.5–11.6 | lightlab |
+| 5 | ATP Use and the Calvin Cycle | 11.7 | calvinlab |
+| 6 | The C4 Pathway and Photorespiration | 11.8–11.9 | c4lab |
+| 7 | Factors Affecting Photosynthesis and Summary | 11.10, Summary | factorlab |
 
-## 2. Core Concepts (7 Concepts Total)
-1. **Historical Experiments & Chloroplast Ultrastructure:** Priestley, Ingenhousz, Sachs, Engelmann, van Niel; grana thylakoid vs stroma compartments.
-2. **Photosynthetic Pigments & Action Spectra:** Chlorophyll a (reaction center), Chl b, xanthophylls, carotenoids; paper chromatography, absorption vs action spectra.
-3. **Light Reactions & The Z-Scheme:** PS II (P680), PS I (P700), water photolysis (OEC with Mn2+, Cl-, Ca2+), non-cyclic Z-scheme vs cyclic photophosphorylation in stroma lamellae.
-4. **Chemiosmotic Mechanism & ATP Synthesis:** Mitchell proton gradient, thylakoid lumen acidification, CF0-CF1 ATP synthase rotational catalysis.
-5. **The Calvin Cycle (C3 Pathway):** Melvin Calvin 14C tracer, RuBP, RuBisCO carboxylation, 3-PGA reduction, regeneration; 18 ATP and 12 NADPH per glucose stoichiometry.
-6. **The C4 Pathway (Hatch-Slack) & Photorespiration:** Kranz anatomy, PEPcase, spatial CO2 pumping, RuBisCO oxygenation suppression, C2 photorespiration waste.
-7. **Factors Affecting Photosynthesis & Blackman's Law:** Blackman's law of limiting factors, light saturation at 10% full sun, CO2 limits, C3 greenhouse enrichment, temperature optima, water stress.
+## Exercises (9, all solved)
+| **11.1** | C3 or C4 externally? | 100% Fully solved (No, with method) |
+| **11.2** | Internal structure for C3/C4 | 100% Fully solved (leaf section, Kranz) |
+| **11.3** | Few Calvin cells, high yield | 100% Fully solved three reasons |
+| **11.4** | RuBisCO carboxylates more in C4 | 100% Fully solved (competition + pump) |
+| **11.5** | No chlorophyll a? | 100% Fully solved (No + accessory roles) |
+| **11.6** | Dark leaf turns yellow | 100% Reasoned from pigment facts (flagged) |
+| **11.7** | Shady vs sunny leaves | 100% Reasoned from factor facts (flagged) |
+| **11.8** | Figure 11.10 light curve (a–c) | 100% Fully solved with redrawn SVG curve |
+| **11.9** | Three comparisons (a–c) | 100% Fully solved all three parts |
 
-## 3. Interactive Simulations (7 Custom Native Simulations)
-1. `earlyexpsim`: Priestley bell jar & Engelmann action spectrum prism alga lab.
-2. `pigmentspectrasim`: Paper chromatography separation & absorption vs action spectra lab.
-3. `zschemetransportsim`: Z-scheme photolysis & non-cyclic vs cyclic electron transport simulator.
-4. `chemiosmosissim`: Thylakoid membrane proton gradient & CF0-CF1 ATP synthase motor.
-5. `calvincyclesim`: Melvin Calvin 3-stage cycle & 18 ATP / 12 NADPH glucose stoichiometry engine.
-6. `c4kranzpathwaysim`: Mesophyll vs bundle sheath Kranz anatomy & PEPcase CO2 concentrator lab.
-7. `blackmanlimitinglab`: Blackman's multi-factor limiting curve & C3 vs C4 CO2 saturation lab.
+## Print-fidelity notes
+- Print spellings kept verbatim: focusses, photosyntesis, characterstic, accepter/acceptor, C02, RuBisCo, C14 alongside 14C, PEP Case, Rubisco, µlL-1.
+- Print inconsistencies flagged in-lesson: Summary ‘NAD forming NADH’ vs body NADP+/NADPH; Summary ‘F0/ATPase’ vs body CF0/ATP synthase; groundtruth Q8 stem truncated (full PDF text used).
+- No beyond-chapter insertions: no Calvin enzymes beyond RuBisCO/NADP reductase, no C4 subtypes (NADP-ME etc.), no CAM detail, no photolysis mechanics beyond print.
 
-## 4. End-of-Chapter Exercises (100% Solved: 9 of 9 Exercises)
-- Exercise 11.1: External identification of C3 vs C4 plants.
-- Exercise 11.2: Internal Kranz anatomy identification of C3 vs C4.
-- Exercise 11.3: Higher productivity of C4 plants despite few Calvin cycle cells.
-- Exercise 11.4: RuBisCO carboxylation dominance in C4 bundle sheath cells.
-- Exercise 11.5: Hypothetical plant lacking Chlorophyll a and role of accessory pigments.
-- Exercise 11.6: Yellowing of dark-kept leaves (etiolation) and carotenoid stability.
-- Exercise 11.7: Shade leaves vs sun leaves coloration and chloroplast adaptation.
-- Exercise 11.8: Figure 11.10 light curve interpretation (Points A, B, C, D).
-- Exercise 11.9: Multi-part comprehensive comparisons:
-  - (a) C3 vs C4 pathways
-  - (b) Cyclic vs non-cyclic photophosphorylation
-  - (c) Leaf anatomy in C3 vs C4 plants
-
-## 5. Verification Metrics
-- Total Concepts: 7
-- Total Practice Quizzes: 21 (3 per concept across tiers 1, 2, 3)
-- Total Exercises Solved: 9 (100% NCERT coverage)
-- Code Quality: Zero CDN dependencies, offline responsive SVG, standalone HTML < 2 MB.
+## Verification Criteria
+- [x] Strict offline bundle (< 2.0 MB target).
+- [x] Zero external CDN fonts, stylesheets, or scripts.
+- [x] Zero eager iframes in static markup.
+- [x] 7 custom native interactive simulations.
+- [x] 21 multi-tier practice quizzes with instant feedback.
+- [x] 100% solved rationalized NCERT exercises (all 9 exercises).
+- [x] Validated by Node test harness (`tests/verify.cjs`).

@@ -1,944 +1,378 @@
-
-// =========================================================================
-// IEMH101: ORIENTING YOURSELF — THE USE OF COORDINATES
-// Interactive Geometric Manipulatives & Laboratory Engines
-// =========================================================================
-
-window.SIM_STATE = {
-  currentConcept: 'c1',
-  isPlaying: false,
-  timer: null,
-  scrubberVal: 0,
-  speed: 1,
-  // Concept-specific states
-  c1: { x: 3, y: 4, targetName: 'Granary (3, 4)' },
-  c2: { doorX: 10, doorW: 1.5, bathY: 1.5, bathH: 2.5, tableX: 8, tableY: 7 },
-  c3: { px: 3, py: -5, showReflection: true },
-  c4: { mode: 'h', x1: -3, x2: -7, y: 4, y1: 1, y2: 7, x: 2 },
-  c5: { ax: 3, ay: 4, bx: 7, by: 1, reflectY: false },
-  c6: { mode: 'collision', c1x: 100, c1y: 150, r1: 80, c2x: 250, c2y: 230, r2: 100, m_ax: -3, m_ay: -4, m_bx: 6, m_by: 8 }
-};
-
-window.SIM_ENGINES = {
-
-  // -----------------------------------------------------------------------
-  // LAB 1: HARAPPAN URBAN GRID NAVIGATOR (pp. 1–3)
-  // -----------------------------------------------------------------------
-  c1: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🏛️ Ancient Harappan Street Grid Navigator (10m Intervals)</div>
-            <div style="font-size:13px;color:#94a3b8;">Central Citadel Origin O(0, 0)</div>
-          </div>
-          <div id="c1-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">East–West Position (x-axis): <b id="c1-x-val" style="color:#38bdf8;">+3 blocks</b></label>
-              <input type="range" id="c1-slider-x" min="-8" max="8" value="3" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">North–South Position (y-axis): <b id="c1-y-val" style="color:#38bdf8;">+4 blocks</b></label>
-              <input type="range" id="c1-slider-y" min="-8" max="8" value="4" step="1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c1-slider-x').addEventListener('input', function(e) {
-        window.SIM_STATE.c1.x = parseInt(e.target.value);
-        window.SIM_STATE.c1.targetName = 'Custom Address (' + window.SIM_STATE.c1.x + ', ' + window.SIM_STATE.c1.y + ')';
-        self.render();
-      });
-      document.getElementById('c1-slider-y').addEventListener('input', function(e) {
-        window.SIM_STATE.c1.y = parseInt(e.target.value);
-        window.SIM_STATE.c1.targetName = 'Custom Address (' + window.SIM_STATE.c1.x + ', ' + window.SIM_STATE.c1.y + ')';
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c1;
-      var W = 720, H = 340;
-      var cx = W / 2, cy = H / 2;
-      var scale = 20; // 20 px per block
-
-      document.getElementById('c1-x-val').textContent = (state.x >= 0 ? '+' : '') + state.x + ' blocks (' + (state.x * 10) + ' m ' + (state.x >= 0 ? 'East' : 'West') + ')';
-      document.getElementById('c1-y-val').textContent = (state.y >= 0 ? '+' : '') + state.y + ' blocks (' + (state.y * 10) + ' m ' + (state.y >= 0 ? 'North' : 'South') + ')';
-
-      var px = cx + state.x * scale;
-      var py = cy - state.y * scale;
-
-      var distBlocks = Math.sqrt(state.x * state.x + state.y * state.y);
-      var distMetres = distBlocks * 10;
-      var manhattanBlocks = Math.abs(state.x) + Math.abs(state.y);
-
-      var landmarks = [
-        { name: "Citadel O(0, 0)", x: 0, y: 0, color: "#f59e0b" },
-        { name: "Granary (3, 4)", x: 3, y: 4, color: "#10b981" },
-        { name: "Bead Factory (-4, 3)", x: -4, y: 3, color: "#a855f7" },
-        { name: "Dockyard (-6, -8)", x: -6, y: -8, color: "#06b6d4" },
-        { name: "Market (5, -3)", x: 5, y: -3, color: "#ec4899" }
-      ];
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-      
-      // Background Grid
-      for(var i = -16; i <= 16; i++) {
-        var gx = cx + i * scale;
-        var gy = cy + i * scale;
-        if(gx >= 0 && gx <= W) {
-          svg += '<line x1="' + gx + '" y1="0" x2="' + gx + '" y2="' + H + '" stroke="#334155" stroke-width="' + (i===0?2:0.75) + '" stroke-dasharray="' + (i===0?'none':'2,2') + '"/>';
-        }
-        if(gy >= 0 && gy <= H) {
-          svg += '<line x1="0" y1="' + gy + '" x2="' + W + '" y2="' + gy + '" stroke="#334155" stroke-width="' + (i===0?2:0.75) + '" stroke-dasharray="' + (i===0?'none':'2,2') + '"/>';
-        }
-      }
-
-      // Axes labels
-      svg += '<text x="' + (W - 40) + '" y="' + (cy - 8) + '" fill="#94a3b8" font-size="12" font-weight="700">East (+x)</text>';
-      svg += '<text x="12" y="' + (cy - 8) + '" fill="#94a3b8" font-size="12" font-weight="700">West (-x)</text>';
-      svg += '<text x="' + (cx + 10) + '" y="20" fill="#94a3b8" font-size="12" font-weight="700">North (+y)</text>';
-      svg += '<text x="' + (cx + 10) + '" y="' + (H - 12) + '" fill="#94a3b8" font-size="12" font-weight="700">South (-y)</text>';
-
-      // Landmarks
-      landmarks.forEach(function(l) {
-        var lx = cx + l.x * scale;
-        var ly = cy - l.y * scale;
-        if(lx >= 10 && lx <= W-10 && ly >= 10 && ly <= H-10) {
-          svg += '<circle cx="' + lx + '" cy="' + ly + '" r="5" fill="' + l.color + '" opacity="0.6"/>';
-          svg += '<text x="' + (lx + 8) + '" y="' + (ly + 4) + '" fill="' + l.color + '" font-size="11" font-weight="600">' + l.name + '</text>';
-        }
-      });
-
-      // Path from Origin to Cart
-      // Along street grid (Manhattan)
-      svg += '<path d="M ' + cx + ' ' + cy + ' L ' + px + ' ' + cy + ' L ' + px + ' ' + py + '" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="4,4"/>';
-
-      // Direct displacement line (Euclidean)
-      svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + px + '" y2="' + py + '" stroke="#38bdf8" stroke-width="2.5"/>';
-
-      // Cart location
-      svg += '<circle cx="' + px + '" cy="' + py + '" r="8" fill="#38bdf8" stroke="#ffffff" stroke-width="2"/>';
-      svg += '<text x="' + (px + 12) + '" y="' + (py - 8) + '" fill="#38bdf8" font-size="13" font-weight="700">Cart (' + state.x + ', ' + state.y + ')</text>';
-
-      // Origin badge
-      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="6" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>';
-
-      svg += '</svg>';
-      document.getElementById('c1-svg-box').innerHTML = svg;
-
-      // Update readout
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Current Address:</b> <span style="color:#38bdf8;">(${state.x}, ${state.y})</span></div>
-            <div><b>Grid Street Distance:</b> <span style="color:#f59e0b;">${manhattanBlocks} blocks (${manhattanBlocks * 10} m)</span></div>
-            <div><b>Straight-Line Distance:</b> <span style="color:#10b981;">${distBlocks.toFixed(2)} blocks (${distMetres.toFixed(1)} m)</span></div>
-            <div><b>Displacement Formula:</b> √(x² + y²) = √(${state.x * state.x} + ${state.y * state.y})</div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Urban Grid Verification:</strong> Moving to coordinate address (${state.x}, ${state.y}) requires navigating <b>${manhattanBlocks} blocks</b> along the orthogonal street corridors. 
-          By the Baudhāyana–Pythagoras theorem, the crow-flies Euclidean displacement is <b>${distMetres.toFixed(1)} metres</b> (ratio of street path to direct flight: ${(manhattanBlocks * 10 / (distMetres || 1)).toFixed(2)}x).
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c1.x = 0; window.SIM_STATE.c1.y = 0; }
-      else if(idx === 1) { window.SIM_STATE.c1.x = 3; window.SIM_STATE.c1.y = 4; }
-      else if(idx === 2) { window.SIM_STATE.c1.x = -6; window.SIM_STATE.c1.y = -8; }
-      document.getElementById('c1-slider-x').value = window.SIM_STATE.c1.x;
-      document.getElementById('c1-slider-y').value = window.SIM_STATE.c1.y;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 2: REIAAN'S ROOM FLOORPLANNER & 1D AXES (pp. 3–5)
-  // -----------------------------------------------------------------------
-  c2: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📐 Reiaan's Room Floorplan Workbench & 1D Axis Snapper</div>
-            <div style="font-size:13px;color:#94a3b8;">Origin Corner O(0, 0)</div>
-          </div>
-          <div id="c2-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Main Door D₁R₁ on Wall (x-axis): <b id="c2-door-val" style="color:#38bdf8;">1.5 m wide</b></label>
-              <input type="range" id="c2-slider-door" min="1.0" max="2.5" value="1.5" step="0.1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Bathroom Door B₁B₂ on Wall (y-axis): <b id="c2-bath-val" style="color:#38bdf8;">2.5 m wide</b></label>
-              <input type="range" id="c2-slider-bath" min="1.0" max="3.5" value="2.5" step="0.1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c2-slider-door').addEventListener('input', function(e) {
-        window.SIM_STATE.c2.doorW = parseFloat(e.target.value);
-        self.render();
-      });
-      document.getElementById('c2-slider-bath').addEventListener('input', function(e) {
-        window.SIM_STATE.c2.bathH = parseFloat(e.target.value);
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c2;
-      var W = 720, H = 340;
-      var ox = 80, oy = 280;
-      var scale = 40; // 40px per metre
-
-      document.getElementById('c2-door-val').textContent = state.doorW.toFixed(1) + ' m (ends at R₁(' + (10 + state.doorW).toFixed(1) + ', 0))';
-      document.getElementById('c2-bath-val').textContent = state.bathH.toFixed(1) + ' m (ends at B₂(0, ' + (1.5 + state.bathH).toFixed(1) + '))';
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Wall lines
-      svg += '<rect x="' + ox + '" y="' + (oy - 6 * scale) + '" width="' + (14 * scale) + '" height="' + (6 * scale) + '" fill="#1e293b" stroke="#475569" stroke-width="3"/>';
-
-      // Coordinate axes
-      svg += '<line x1="' + (ox - 30) + '" y1="' + oy + '" x2="' + (W - 30) + '" y2="' + oy + '" stroke="#60a5fa" stroke-width="2.5"/>';
-      svg += '<line x1="' + ox + '" y1="' + (H - 20) + '" x2="' + ox + '" y2="20" stroke="#60a5fa" stroke-width="2.5"/>';
-
-      // Ticks along axes
-      for(var m = 0; m <= 14; m++) {
-        var tx = ox + m * scale;
-        svg += '<line x1="' + tx + '" y1="' + (oy - 4) + '" x2="' + tx + '" y2="' + (oy + 4) + '" stroke="#94a3b8" stroke-width="1.5"/>';
-        if(m % 2 === 0) svg += '<text x="' + tx + '" y="' + (oy + 18) + '" fill="#94a3b8" font-size="11" text-anchor="middle">' + m + '</text>';
-      }
-      for(var n = 0; n <= 6; n++) {
-        var ty = oy - n * scale;
-        svg += '<line x1="' + (ox - 4) + '" y1="' + ty + '" x2="' + (ox + 4) + '" y2="' + ty + '" stroke="#94a3b8" stroke-width="1.5"/>';
-        if(n > 0) svg += '<text x="' + (ox - 12) + '" y="' + (ty + 4) + '" fill="#94a3b8" font-size="11" text-anchor="end">' + n + '</text>';
-      }
-
-      // Origin
-      svg += '<circle cx="' + ox + '" cy="' + oy + '" r="6" fill="#f59e0b"/>';
-      svg += '<text x="' + (ox - 15) + '" y="' + (oy + 18) + '" fill="#f59e0b" font-weight="700" font-size="12">O(0, 0)</text>';
-
-      // Main door along x-axis
-      var d1x = ox + 10 * scale;
-      var r1x = ox + (10 + state.doorW) * scale;
-      svg += '<line x1="' + d1x + '" y1="' + oy + '" x2="' + r1x + '" y2="' + oy + '" stroke="#10b981" stroke-width="6"/>';
-      svg += '<text x="' + ((d1x + r1x)/2) + '" y="' + (oy - 10) + '" fill="#10b981" font-weight="700" font-size="11" text-anchor="middle">Door D₁R₁ (' + state.doorW.toFixed(1) + ' m)</text>';
-      svg += '<circle cx="' + d1x + '" cy="' + oy + '" r="4" fill="#ffffff"/>';
-      svg += '<text x="' + d1x + '" y="' + (oy - 22) + '" fill="#ffffff" font-size="10" text-anchor="middle">D₁(10, 0)</text>';
-      svg += '<circle cx="' + r1x + '" cy="' + oy + '" r="4" fill="#ffffff"/>';
-      svg += '<text x="' + r1x + '" y="' + (oy - 22) + '" fill="#ffffff" font-size="10" text-anchor="middle">R₁(' + (10 + state.doorW).toFixed(1) + ', 0)</text>';
-
-      // Bathroom door along y-axis
-      var b1y = oy - 1.5 * scale;
-      var b2y = oy - (1.5 + state.bathH) * scale;
-      svg += '<line x1="' + ox + '" y1="' + b1y + '" x2="' + ox + '" y2="' + b2y + '" stroke="#a855f7" stroke-width="6"/>';
-      svg += '<text x="' + (ox + 10) + '" y="' + ((b1y + b2y)/2) + '" fill="#a855f7" font-weight="700" font-size="11" dominant-baseline="middle">Bath Door B₁B₂ (' + state.bathH.toFixed(1) + ' m)</text>';
-      svg += '<circle cx="' + ox + '" cy="' + b1y + '" r="4" fill="#ffffff"/>';
-      svg += '<text x="' + (ox - 30) + '" y="' + b1y + '" fill="#ffffff" font-size="10" dominant-baseline="middle">B₁(0, 1.5)</text>';
-      svg += '<circle cx="' + ox + '" cy="' + b2y + '" r="4" fill="#ffffff"/>';
-      svg += '<text x="' + (ox - 30) + '" y="' + b2y + '" fill="#ffffff" font-size="10" dominant-baseline="middle">B₂(0, ' + (1.5 + state.bathH).toFixed(1) + ')</text>';
-
-      // Study table in room (at (8,9) scaled down or table corners)
-      var tbx = ox + 4 * scale, tby = oy - 4 * scale, tbw = 3 * scale, tbh = 2 * scale;
-      svg += '<rect x="' + tbx + '" y="' + tby + '" width="' + tbw + '" height="' + tbh + '" fill="#334155" stroke="#f59e0b" stroke-width="2" rx="4"/>';
-      svg += '<text x="' + (tbx + tbw/2) + '" y="' + (tby + tbh/2 + 4) + '" fill="#f59e0b" font-weight="700" font-size="11" text-anchor="middle">Study Table (3m × 2m)</text>';
-
-      svg += '</svg>';
-      document.getElementById('c2-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Main Door Endpoints:</b> <span style="color:#10b981;">D₁(10, 0), R₁(${(10 + state.doorW).toFixed(1)}, 0)</span></div>
-            <div><b>Main Door Width:</b> <span style="color:#38bdf8;">|x₂ - x₁| = ${state.doorW.toFixed(1)} m</span></div>
-            <div><b>Bath Door Endpoints:</b> <span style="color:#a855f7;">B₁(0, 1.5), B₂(0, ${(1.5 + state.bathH).toFixed(1)})</span></div>
-            <div><b>Bath Door Width:</b> <span style="color:#38bdf8;">|y₂ - y₁| = ${state.bathH.toFixed(1)} m</span></div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>1D Axis Property Confirmed:</strong> Every point along the bottom wall has <b>y = 0</b> (horizontal x-axis), while every point along the left wall has <b>x = 0</b> (vertical y-axis). 
-          Widths along walls are pure 1D absolute differences: |Δx| and |Δy|.
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c2.doorW = 1.5; window.SIM_STATE.c2.bathH = 2.5; }
-      else if(idx === 1) { window.SIM_STATE.c2.doorW = 2.0; window.SIM_STATE.c2.bathH = 1.8; }
-      else if(idx === 2) { window.SIM_STATE.c2.doorW = 1.2; window.SIM_STATE.c2.bathH = 3.0; }
-      document.getElementById('c2-slider-door').value = window.SIM_STATE.c2.doorW;
-      document.getElementById('c2-slider-bath').value = window.SIM_STATE.c2.bathH;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 3: 4-QUADRANT DYNAMIC DARTBOARD (pp. 6–8)
-  // -----------------------------------------------------------------------
-  c3: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🎯 4-Quadrant Point Explorer & Sign Signature Dartboard</div>
-            <div style="font-size:13px;color:#94a3b8;">Non-Commutative Ordered Pair (x, y) vs (y, x)</div>
-          </div>
-          <div id="c3-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Abscissa x (distance from y-axis): <b id="c3-x-val" style="color:#38bdf8;">+3</b></label>
-              <input type="range" id="c3-slider-x" min="-7" max="7" value="3" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Ordinate y (distance from x-axis): <b id="c3-y-val" style="color:#38bdf8;">-5</b></label>
-              <input type="range" id="c3-slider-y" min="-7" max="7" value="-5" step="1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c3-slider-x').addEventListener('input', function(e) {
-        window.SIM_STATE.c3.px = parseInt(e.target.value);
-        self.render();
-      });
-      document.getElementById('c3-slider-y').addEventListener('input', function(e) {
-        window.SIM_STATE.c3.py = parseInt(e.target.value);
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c3;
-      var W = 720, H = 340;
-      var cx = W / 2, cy = H / 2;
-      var scale = 22; // 22px per unit
-
-      var x = state.px, y = state.py;
-      document.getElementById('c3-x-val').textContent = (x >= 0 ? '+' : '') + x;
-      document.getElementById('c3-y-val').textContent = (y >= 0 ? '+' : '') + y;
-
-      var px = cx + x * scale;
-      var py = cy - y * scale;
-
-      // Swap coordinates for Q(y, x)
-      var qx = cx + y * scale;
-      var qy = cy - x * scale;
-
-      // Determine quadrant
-      var quadStr = "";
-      var quadColor = "#38bdf8";
-      if(x > 0 && y > 0) { quadStr = "Quadrant I (+, +)"; quadColor = "#10b981"; }
-      else if(x < 0 && y > 0) { quadStr = "Quadrant II (-, +)"; quadColor = "#f59e0b"; }
-      else if(x < 0 && y < 0) { quadStr = "Quadrant III (-, -)"; quadColor = "#ef4444"; }
-      else if(x > 0 && y < 0) { quadStr = "Quadrant IV (+, -)"; quadColor = "#a855f7"; }
-      else if(x === 0 && y === 0) { quadStr = "Origin O(0, 0)"; quadColor = "#ffffff"; }
-      else if(y === 0) { quadStr = "On Horizontal x-axis"; quadColor = "#60a5fa"; }
-      else if(x === 0) { quadStr = "On Vertical y-axis"; quadColor = "#60a5fa"; }
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Quadrant tint boxes
-      svg += '<rect x="' + cx + '" y="0" width="' + cx + '" height="' + cy + '" fill="#10b981" opacity="0.04"/>';
-      svg += '<rect x="0" y="0" width="' + cx + '" height="' + cy + '" fill="#f59e0b" opacity="0.04"/>';
-      svg += '<rect x="0" y="' + cy + '" width="' + cx + '" height="' + cy + '" fill="#ef4444" opacity="0.04"/>';
-      svg += '<rect x="' + cx + '" y="' + cy + '" width="' + cx + '" height="' + cy + '" fill="#a855f7" opacity="0.04"/>';
-
-      // Grid lines
-      for(var i = -15; i <= 15; i++) {
-        var gx = cx + i * scale;
-        var gy = cy + i * scale;
-        if(gx >= 0 && gx <= W) {
-          svg += '<line x1="' + gx + '" y1="0" x2="' + gx + '" y2="' + H + '" stroke="#334155" stroke-width="' + (i===0?2.5:0.5) + '"/>';
-        }
-        if(gy >= 0 && gy <= H) {
-          svg += '<line x1="0" y1="' + gy + '" x2="' + W + '" y2="' + gy + '" stroke="#334155" stroke-width="' + (i===0?2.5:0.5) + '"/>';
-        }
-      }
-
-      // Quadrant labels
-      svg += '<text x="' + (cx + 20) + '" y="30" fill="#10b981" font-size="14" font-weight="700">QUADRANT I (+, +)</text>';
-      svg += '<text x="20" y="30" fill="#f59e0b" font-size="14" font-weight="700">QUADRANT II (-, +)</text>';
-      svg += '<text x="20" y="' + (H - 20) + '" fill="#ef4444" font-size="14" font-weight="700">QUADRANT III (-, -)</text>';
-      svg += '<text x="' + (cx + 20) + '" y="' + (H - 20) + '" fill="#a855f7" font-size="14" font-weight="700">QUADRANT IV (+, -)</text>';
-
-      // Dashed projection lines for P(x, y)
-      svg += '<line x1="' + px + '" y1="' + cy + '" x2="' + px + '" y2="' + py + '" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4"/>';
-      svg += '<line x1="' + cx + '" y1="' + py + '" x2="' + px + '" y2="' + py + '" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4,4"/>';
-
-      // Swapped Point Q(y, x)
-      if(state.showReflection && (x !== y)) {
-        svg += '<line x1="' + qx + '" y1="' + cy + '" x2="' + qx + '" y2="' + qy + '" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="3,3"/>';
-        svg += '<line x1="' + cx + '" y1="' + qy + '" x2="' + qx + '" y2="' + qy + '" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="3,3"/>';
-        svg += '<circle cx="' + qx + '" cy="' + qy + '" r="6" fill="#f43f5e" stroke="#ffffff" stroke-width="1.5"/>';
-        svg += '<text x="' + (qx + 10) + '" y="' + (qy - 6) + '" fill="#f43f5e" font-size="12" font-weight="700">Q(y, x) = (' + y + ', ' + x + ')</text>';
-      }
-
-      // Point P(x, y)
-      svg += '<circle cx="' + px + '" cy="' + py + '" r="8" fill="' + quadColor + '" stroke="#ffffff" stroke-width="2.5"/>';
-      svg += '<text x="' + (px + 12) + '" y="' + (py - 10) + '" fill="' + quadColor + '" font-size="14" font-weight="800">P(' + x + ', ' + y + ')</text>';
-
-      svg += '</svg>';
-      document.getElementById('c3-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Active Point P:</b> <span style="color:${quadColor};">(${x}, ${y})</span></div>
-            <div><b>Region / Quadrant:</b> <span style="color:${quadColor};">${quadStr}</span></div>
-            <div><b>Abscissa (from y-axis):</b> ${x}</div>
-            <div><b>Ordinate (from x-axis):</b> ${y}</div>
-            <div><b>Swapped Pair Q(y, x):</b> <span style="color:#f43f5e;">(${y}, ${x})</span></div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Ordered Pair Inspection:</strong> Point P(${x}, ${y}) lies in <b>${quadStr}</b>. 
-          Notice that swapping the numbers produces Q(${y}, ${x})${x === y ? ' which coincides with P because x = y' : ' which lands in a completely different location'}.
-          Coordinates are strictly <em>ordered pairs</em>!
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c3.px = 3; window.SIM_STATE.c3.py = -5; }
-      else if(idx === 1) { window.SIM_STATE.c3.px = -5; window.SIM_STATE.c3.py = 3; }
-      else if(idx === 2) { window.SIM_STATE.c3.px = -7; window.SIM_STATE.c3.py = -4; }
-      document.getElementById('c3-slider-x').value = window.SIM_STATE.c3.px;
-      document.getElementById('c3-slider-y').value = window.SIM_STATE.c3.py;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 4: 1D AXIS DISTANCE & ABSOLUTE VALUE BRACKET (pp. 8–9)
-  // -----------------------------------------------------------------------
-  c4: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📏 1D Axis Distance & Absolute Value Bracket Lab</div>
-            <div style="font-size:13px;color:#94a3b8;">Symmetric Distance: |a - b| = |b - a| ≥ 0</div>
-          </div>
-          <div id="c4-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Point A Coordinate (x₁): <b id="c4-x1-val" style="color:#38bdf8;">-3</b></label>
-              <input type="range" id="c4-slider-x1" min="-10" max="10" value="-3" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Point B Coordinate (x₂): <b id="c4-x2-val" style="color:#38bdf8;">-7</b></label>
-              <input type="range" id="c4-slider-x2" min="-10" max="10" value="-7" step="1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c4-slider-x1').addEventListener('input', function(e) {
-        window.SIM_STATE.c4.x1 = parseInt(e.target.value);
-        self.render();
-      });
-      document.getElementById('c4-slider-x2').addEventListener('input', function(e) {
-        window.SIM_STATE.c4.x2 = parseInt(e.target.value);
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c4;
-      var W = 720, H = 340;
-      var cx = W / 2, cy = 170;
-      var scale = 28; // 28px per unit
-
-      var x1 = state.x1, x2 = state.x2;
-      document.getElementById('c4-x1-val').textContent = x1;
-      document.getElementById('c4-x2-val').textContent = x2;
-
-      var p1x = cx + x1 * scale;
-      var p2x = cx + x2 * scale;
-      var dist = Math.abs(x2 - x1);
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Axis line
-      svg += '<line x1="40" y1="' + cy + '" x2="' + (W - 40) + '" y2="' + cy + '" stroke="#60a5fa" stroke-width="3"/>';
-
-      // Axis Ticks
-      for(var i = -11; i <= 11; i++) {
-        var tx = cx + i * scale;
-        if(tx >= 40 && tx <= W - 40) {
-          svg += '<line x1="' + tx + '" y1="' + (cy - 6) + '" x2="' + tx + '" y2="' + (cy + 6) + '" stroke="#94a3b8" stroke-width="' + (i===0?2.5:1) + '"/>';
-          svg += '<text x="' + tx + '" y="' + (cy + 22) + '" fill="#94a3b8" font-size="11" text-anchor="middle">' + i + '</text>';
-        }
-      }
-
-      // Origin tick
-      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="5" fill="#f59e0b"/>';
-      svg += '<text x="' + cx + '" y="' + (cy + 38) + '" fill="#f59e0b" font-weight="700" font-size="11" text-anchor="middle">Origin 0</text>';
-
-      // Segment highlight bracket
-      var minX = Math.min(p1x, p2x), maxX = Math.max(p1x, p2x);
-      svg += '<line x1="' + minX + '" y1="' + (cy - 30) + '" x2="' + maxX + '" y2="' + (cy - 30) + '" stroke="#10b981" stroke-width="4"/>';
-      svg += '<line x1="' + minX + '" y1="' + (cy - 40) + '" x2="' + minX + '" y2="' + (cy - 20) + '" stroke="#10b981" stroke-width="3"/>';
-      svg += '<line x1="' + maxX + '" y1="' + (cy - 40) + '" x2="' + maxX + '" y2="' + (cy - 20) + '" stroke="#10b981" stroke-width="3"/>';
-      svg += '<text x="' + ((minX + maxX)/2) + '" y="' + (cy - 48) + '" fill="#10b981" font-size="16" font-weight="800" text-anchor="middle">Distance = |' + x2 + ' - (' + x1 + ')| = ' + dist + ' units</text>';
-
-      // Point A
-      svg += '<circle cx="' + p1x + '" cy="' + cy + '" r="9" fill="#38bdf8" stroke="#ffffff" stroke-width="2.5"/>';
-      svg += '<text x="' + p1x + '" y="' + (cy - 12) + '" fill="#38bdf8" font-size="14" font-weight="800" text-anchor="middle">A(' + x1 + ')</text>';
-
-      // Point B
-      svg += '<circle cx="' + p2x + '" cy="' + cy + '" r="9" fill="#ec4899" stroke="#ffffff" stroke-width="2.5"/>';
-      svg += '<text x="' + p2x + '" y="' + (cy - 12) + '" fill="#ec4899" font-size="14" font-weight="800" text-anchor="middle">B(' + x2 + ')</text>';
-
-      svg += '</svg>';
-      document.getElementById('c4-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Point A (x₁):</b> ${x1}</div>
-            <div><b>Point B (x₂):</b> ${x2}</div>
-            <div><b>Forward Difference:</b> x₂ - x₁ = ${x2 - x1}</div>
-            <div><b>Reverse Difference:</b> x₁ - x₂ = ${x1 - x2}</div>
-            <div><b>Absolute Distance:</b> <span style="color:#10b981;font-weight:700;">|x₂ - x₁| = ${dist} units</span></div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>1D Distance Invariance:</strong> Distance is always non-negative: <b>|${x2} - (${x1})| = |${x1} - (${x2})| = ${dist} units</b>.
-          ${(x1 < 0 && x2 < 0) ? 'Both coordinates are negative, demonstrating how subtracting a negative number adds positive distance: ' + Math.max(x1,x2) + ' - (' + Math.min(x1,x2) + ') = ' + dist + '.' : 'Geometric length ignores vector direction.'}
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c4.x1 = -3; window.SIM_STATE.c4.x2 = -7; }
-      else if(idx === 1) { window.SIM_STATE.c4.x1 = 8; window.SIM_STATE.c4.x2 = 11; }
-      else if(idx === 2) { window.SIM_STATE.c4.x1 = -5; window.SIM_STATE.c4.x2 = 5; }
-      document.getElementById('c4-slider-x1').value = window.SIM_STATE.c4.x1;
-      document.getElementById('c4-slider-x2').value = window.SIM_STATE.c4.x2;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 5: BAUDHĀYANA-PYTHAGORAS 2D DISTANCE BENCH (pp. 9–11)
-  // -----------------------------------------------------------------------
-  c5: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📐 Baudhāyana–Pythagoras 2D Distance Formula Bench</div>
-            <div style="font-size:13px;color:#94a3b8;">d = √[(x₂ - x₁)² + (y₂ - y₁)²]</div>
-          </div>
-          <div id="c5-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Point A (x₁, y₁): <b id="c5-a-val" style="color:#38bdf8;">(3, 4)</b></label>
-              <div style="display:flex;gap:6px;">
-                <input type="range" id="c5-slider-ax" min="-8" max="8" value="3" step="1" style="width:50%;">
-                <input type="range" id="c5-slider-ay" min="-8" max="8" value="4" step="1" style="width:50%;">
-              </div>
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Point B (x₂, y₂): <b id="c5-b-val" style="color:#ec4899;">(7, 1)</b></label>
-              <div style="display:flex;gap:6px;">
-                <input type="range" id="c5-slider-bx" min="-8" max="8" value="7" step="1" style="width:50%;">
-                <input type="range" id="c5-slider-by" min="-8" max="8" value="1" step="1" style="width:50%;">
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c5-slider-ax').addEventListener('input', function(e) {
-        window.SIM_STATE.c5.ax = parseInt(e.target.value); self.render();
-      });
-      document.getElementById('c5-slider-ay').addEventListener('input', function(e) {
-        window.SIM_STATE.c5.ay = parseInt(e.target.value); self.render();
-      });
-      document.getElementById('c5-slider-bx').addEventListener('input', function(e) {
-        window.SIM_STATE.c5.bx = parseInt(e.target.value); self.render();
-      });
-      document.getElementById('c5-slider-by').addEventListener('input', function(e) {
-        window.SIM_STATE.c5.by = parseInt(e.target.value); self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c5;
-      var W = 720, H = 340;
-      var cx = W / 2, cy = H / 2;
-      var scale = 20; // 20px per unit
-
-      var ax = state.ax, ay = state.ay;
-      var bx = state.bx, by = state.by;
-      var cx_vert = bx, cy_vert = ay; // right-angle corner vertex C(x2, y1)
-
-      document.getElementById('c5-a-val').textContent = '(' + ax + ', ' + ay + ')';
-      document.getElementById('c5-b-val').textContent = '(' + bx + ', ' + by + ')';
-
-      var pax = cx + ax * scale, pay = cy - ay * scale;
-      var pbx = cx + bx * scale, pby = cy - by * scale;
-      var pcx = cx + cx_vert * scale, pcy = cy - cy_vert * scale;
-
-      var dx = Math.abs(bx - ax);
-      var dy = Math.abs(by - ay);
-      var dist = Math.sqrt(dx * dx + dy * dy);
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Axes
-      svg += '<line x1="0" y1="' + cy + '" x2="' + W + '" y2="' + cy + '" stroke="#334155" stroke-width="2"/>';
-      svg += '<line x1="' + cx + '" y1="0" x2="' + cx + '" y2="' + H + '" stroke="#334155" stroke-width="2"/>';
-
-      // Right-angled triangle fill
-      svg += '<polygon points="' + pax + ',' + pay + ' ' + pcx + ',' + pcy + ' ' + pbx + ',' + pby + '" fill="#38bdf8" opacity="0.12"/>';
-
-      // Legs
-      svg += '<line x1="' + pax + '" y1="' + pay + '" x2="' + pcx + '" y2="' + pcy + '" stroke="#f59e0b" stroke-width="3" stroke-dasharray="3,3"/>';
-      svg += '<line x1="' + pcx + '" y1="' + pcy + '" x2="' + pbx + '" y2="' + pby + '" stroke="#a855f7" stroke-width="3" stroke-dasharray="3,3"/>';
-
-      // Hypotenuse AB
-      svg += '<line x1="' + pax + '" y1="' + pay + '" x2="' + pbx + '" y2="' + pby + '" stroke="#10b981" stroke-width="4"/>';
-
-      // Labels on legs
-      svg += '<text x="' + ((pax + pcx)/2) + '" y="' + (pay - 8) + '" fill="#f59e0b" font-size="12" font-weight="700" text-anchor="middle">Δx = |' + bx + ' - ' + ax + '| = ' + dx + '</text>';
-      svg += '<text x="' + (pcx + 10) + '" y="' + ((pcy + pby)/2) + '" fill="#a855f7" font-size="12" font-weight="700" dominant-baseline="middle">Δy = |' + by + ' - ' + ay + '| = ' + dy + '</text>';
-
-      // Hypotenuse label
-      svg += '<text x="' + ((pax + pbx)/2 - 10) + '" y="' + ((pay + pby)/2 - 10) + '" fill="#10b981" font-size="15" font-weight="800">d = ' + dist.toFixed(2) + '</text>';
-
-      // Right angle box at C
-      var rsize = 12;
-      var sgnX = (pax < pcx) ? -1 : 1;
-      var sgnY = (pby < pcy) ? -1 : 1;
-      svg += '<path d="M ' + (pcx + sgnX * rsize) + ' ' + pcy + ' L ' + (pcx + sgnX * rsize) + ' ' + (pcy + sgnY * rsize) + ' L ' + pcx + ' ' + (pcy + sgnY * rsize) + '" fill="none" stroke="#94a3b8" stroke-width="1.5"/>';
-
-      // Point vertices
-      svg += '<circle cx="' + pax + '" cy="' + pay + '" r="7" fill="#38bdf8" stroke="#fff" stroke-width="2"/>';
-      svg += '<text x="' + (pax - 12) + '" y="' + (pay - 10) + '" fill="#38bdf8" font-weight="700" font-size="13">A(' + ax + ', ' + ay + ')</text>';
-
-      svg += '<circle cx="' + pbx + '" cy="' + pby + '" r="7" fill="#ec4899" stroke="#fff" stroke-width="2"/>';
-      svg += '<text x="' + (pbx + 10) + '" y="' + (pby + 16) + '" fill="#ec4899" font-weight="700" font-size="13">B(' + bx + ', ' + by + ')</text>';
-
-      svg += '<circle cx="' + pcx + '" cy="' + pcy + '" r="5" fill="#94a3b8"/>';
-      svg += '<text x="' + (pcx + 8) + '" y="' + (pcy - 8) + '" fill="#94a3b8" font-size="11">C(' + cx_vert + ', ' + cy_vert + ')</text>';
-
-      svg += '</svg>';
-      document.getElementById('c5-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Horizontal Leg Δx:</b> |${bx} - (${ax})| = ${dx}</div>
-            <div><b>Vertical Leg Δy:</b> |${by} - (${ay})| = ${dy}</div>
-            <div><b>Sum of Squares:</b> ${dx}² + ${dy}² = ${dx * dx + dy * dy}</div>
-            <div><b>Euclidean Distance d:</b> <span style="color:#10b981;font-weight:700;">√${dx * dx + dy * dy} ≈ ${dist.toFixed(3)} units</span></div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Baudhāyana–Pythagoras Derivation:</strong> In right-angled triangle ACB, 
-          Hypotenuse² = Base² + Altitude² => d² = (${dx})² + (${dy})² = ${dx * dx} + ${dy * dy} = <b>${dx * dx + dy * dy}</b>. 
-          Therefore, <b>d = √${dx * dx + dy * dy} ≈ ${dist.toFixed(2)} units</b>.
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c5.ax = 3; window.SIM_STATE.c5.ay = 4; window.SIM_STATE.c5.bx = 7; window.SIM_STATE.c5.by = 1; }
-      else if(idx === 1) { window.SIM_STATE.c5.ax = 0; window.SIM_STATE.c5.ay = 0; window.SIM_STATE.c5.bx = 5; window.SIM_STATE.c5.by = -12; }
-      else if(idx === 2) { window.SIM_STATE.c5.ax = 2; window.SIM_STATE.c5.ay = -3; window.SIM_STATE.c5.bx = -4; window.SIM_STATE.c5.by = 5; }
-      document.getElementById('c5-slider-ax').value = window.SIM_STATE.c5.ax;
-      document.getElementById('c5-slider-ay').value = window.SIM_STATE.c5.ay;
-      document.getElementById('c5-slider-bx').value = window.SIM_STATE.c5.bx;
-      document.getElementById('c5-slider-by').value = window.SIM_STATE.c5.by;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 6: COLLISION DETECTION, MIDPOINTS & CIRCLES STUDIO (pp. 12–15)
-  // -----------------------------------------------------------------------
-  c6: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🎮 Screen Graphics Collision & Midpoint Engine (Ex 15)</div>
-            <div style="font-size:13px;color:#94a3b8;">800×600 Screen Boundary & Hitbox Lab</div>
-          </div>
-          <div id="c6-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Icon A Center X: <b id="c6-c1x-val" style="color:#38bdf8;">100 px</b></label>
-              <input type="range" id="c6-slider-c1x" min="80" max="720" value="100" step="10" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Icon B Center X: <b id="c6-c2x-val" style="color:#ec4899;">250 px</b></label>
-              <input type="range" id="c6-slider-c2x" min="100" max="700" value="250" step="10" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c6-slider-c1x').addEventListener('input', function(e) {
-        window.SIM_STATE.c6.c1x = parseInt(e.target.value); self.render();
-      });
-      document.getElementById('c6-slider-c2x').addEventListener('input', function(e) {
-        window.SIM_STATE.c6.c2x = parseInt(e.target.value); self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c6;
-      var W = 720, H = 340;
-      // Screen is 800 x 600, scale down to fit 720 x 340
-      var sc = 0.5; // 800 * 0.5 = 400, 600 * 0.5 = 300
-      var ox = (W - 800 * sc) / 2; // 160
-      var oy = H - (H - 600 * sc) / 2; // 320
-
-      var ax = state.c1x, ay = state.c1y, r1 = state.r1;
-      var bx = state.c2x, by = state.c2y, r2 = state.r2;
-
-      document.getElementById('c6-c1x-val').textContent = ax + ' px';
-      document.getElementById('c6-c2x-val').textContent = bx + ' px';
-
-      // Distance between centers
-      var d = Math.sqrt((bx - ax)*(bx - ax) + (by - ay)*(by - ay));
-      var isColliding = d <= (r1 + r2);
-
-      // Midpoint between centers
-      var mx = (ax + bx) / 2;
-      var my = (ay + by) / 2;
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Screen border (800 x 600)
-      var sw = 800 * sc, sh = 600 * sc;
-      var sx = ox, sy = oy - sh;
-      svg += '<rect x="' + sx + '" y="' + sy + '" width="' + sw + '" height="' + sh + '" fill="#090d16" stroke="#475569" stroke-width="2.5" rx="6"/>';
-      svg += '<text x="' + (sx + 8) + '" y="' + (sy + 18) + '" fill="#94a3b8" font-size="11">Computer Screen (800 × 600 px)</text>';
-      svg += '<text x="' + (sx + 8) + '" y="' + (oy - 8) + '" fill="#f59e0b" font-size="11">Origin O(0, 0)</text>';
-
-      // Screen coords to SVG coords
-      var toSvgX = function(x) { return sx + x * sc; };
-      var toSvgY = function(y) { return oy - y * sc; };
-
-      var pax = toSvgX(ax), pay = toSvgY(ay);
-      var pbx = toSvgX(bx), pby = toSvgY(by);
-      var pmx = toSvgX(mx), pmy = toSvgY(my);
-
-      // Circle A
-      svg += '<circle cx="' + pax + '" cy="' + pay + '" r="' + (r1 * sc) + '" fill="' + (isColliding ? 'rgba(239,68,68,0.25)' : 'rgba(56,189,248,0.2)') + '" stroke="' + (isColliding ? '#ef4444' : '#38bdf8') + '" stroke-width="2"/>';
-      svg += '<circle cx="' + pax + '" cy="' + pay + '" r="4" fill="#38bdf8"/>';
-      svg += '<text x="' + pax + '" y="' + (pay - r1*sc - 6) + '" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">Icon A(100, 150) r=80</text>';
-
-      // Circle B
-      svg += '<circle cx="' + pbx + '" cy="' + pby + '" r="' + (r2 * sc) + '" fill="' + (isColliding ? 'rgba(239,68,68,0.25)' : 'rgba(236,72,153,0.2)') + '" stroke="' + (isColliding ? '#ef4444' : '#ec4899') + '" stroke-width="2"/>';
-      svg += '<circle cx="' + pbx + '" cy="' + pby + '" r="4" fill="#ec4899"/>';
-      svg += '<text x="' + pbx + '" y="' + (pby - r2*sc - 6) + '" fill="#ec4899" font-size="11" font-weight="700" text-anchor="middle">Icon B(' + bx + ', ' + by + ') r=100</text>';
-
-      // Segment joining centers
-      svg += '<line x1="' + pax + '" y1="' + pay + '" x2="' + pbx + '" y2="' + pby + '" stroke="' + (isColliding ? '#ef4444' : '#10b981') + '" stroke-width="2.5" stroke-dasharray="3,3"/>';
-
-      // Midpoint M
-      svg += '<circle cx="' + pmx + '" cy="' + pmy + '" r="5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>';
-      svg += '<text x="' + pmx + '" y="' + (pmy + 16) + '" fill="#f59e0b" font-size="11" font-weight="700" text-anchor="middle">Midpoint M(' + mx + ', ' + my + ')</text>';
-
-      // Collision Banner
-      var bannerColor = isColliding ? "#ef4444" : "#10b981";
-      var bannerText = isColliding ? "💥 COLLISION DETECTED! (d ≤ r₁ + r₂)" : "✅ CLEAR! NO OVERLAP (d > r₁ + r₂)";
-      svg += '<rect x="' + (W/2 - 170) + '" y="12" width="340" height="28" fill="' + bannerColor + '" rx="14"/>';
-      svg += '<text x="' + (W/2) + '" y="31" fill="#ffffff" font-size="13" font-weight="800" text-anchor="middle">' + bannerText + '</text>';
-
-      svg += '</svg>';
-      document.getElementById('c6-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Center Distance d:</b> <span style="color:${bannerColor};font-weight:700;">${d.toFixed(1)} px</span></div>
-            <div><b>Sum of Radii (r₁ + r₂):</b> 80 + 100 = 180 px</div>
-            <div><b>Segment Midpoint M:</b> (${mx.toFixed(1)}, ${my.toFixed(1)})</div>
-            <div><b>Intersection Status:</b> <span style="color:${bannerColor};">${isColliding ? 'YES (Intersecting)' : 'NO (Clear)'}</span></div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Graphics Collision Verdict:</strong> For centers A(${ax}, ${ay}) and B(${bx}, ${by}), 
-          the center-to-center distance is <b>d = ${d.toFixed(1)} px</b>. 
-          Comparing with r₁ + r₂ = 180 px: ${isColliding ? 'Since d = ' + d.toFixed(1) + ' ≤ 180, the icons overlap and collide!' : 'Since d = ' + d.toFixed(1) + ' > 180, the icons do not collide.'}
-          Both circular sprites lie strictly within the 800×600 screen boundary.
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c6.c1x = 100; window.SIM_STATE.c6.c2x = 250; }
-      else if(idx === 1) { window.SIM_STATE.c6.c1x = 100; window.SIM_STATE.c6.c2x = 350; }
-      else if(idx === 2) { window.SIM_STATE.c6.c1x = 150; window.SIM_STATE.c6.c2x = 220; }
-      document.getElementById('c6-slider-c1x').value = window.SIM_STATE.c6.c1x;
-      document.getElementById('c6-slider-c2x').value = window.SIM_STATE.c6.c2x;
-      this.render();
-    }
+// iemh101 labs: Orienting Yourself — The Use of Coordinates. 1 unit = 1 ft in Reiaan’s house.
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function nM1(v){ var L = window.LAB, a = Math.abs(v); if(Math.abs(a - Math.round(a)) < 1e-9) return L.num(v, 0); if(Math.abs(a * 10 - Math.round(a * 10)) < 1e-9) return L.num(v, 1); return L.num(v, 2); }
+function ptM1(x, y){ return "(" + nM1(x) + ", " + nM1(y) + ")"; }
+function clampM1(x, a, b){ return Math.max(a, Math.min(b, x)); }
+function d2M1(a, b){ return Math.round(((b[0] - a[0]) * (b[0] - a[0]) + (b[1] - a[1]) * (b[1] - a[1])) * 1000) / 1000; }
+function rootM1(n){ var L = window.LAB, r = Math.sqrt(n); return Math.abs(r - Math.round(r)) < 1e-9 ? String(Math.round(r)) : "√" + n + " ≈ " + L.num(r, 2); }
+// Coordinate plane centred in a 720-wide lab. v = {xmin, xmax, ymin, ymax, s (px per unit), top, every}
+function planeM1(L, v){
+  var C = L.C, ox = Math.round((720 - (v.xmax - v.xmin) * v.s) / 2), oy = v.top || 20, ev = v.every || 1, m = "";
+  var X = function(x){ return ox + (x - v.xmin) * v.s; }, Y = function(y){ return oy + (v.ymax - y) * v.s; };
+  for(var x = v.xmin; x <= v.xmax; x++) m += L.line(X(x), Y(v.ymin), X(x), Y(v.ymax), C.grid, 1);
+  for(var y = v.ymin; y <= v.ymax; y++) m += L.line(X(v.xmin), Y(y), X(v.xmax), Y(y), C.grid, 1);
+  var ax = clampM1(0, v.ymin, v.ymax), ay = clampM1(0, v.xmin, v.xmax);
+  if(v.ymin <= 0 && v.ymax >= 0) m += L.line(X(v.xmin), Y(0), X(v.xmax), Y(0), C.faint, 2) + L.text(X(v.xmax) + 12, Y(0) + 4, "x", {size: 12, color: C.muted});
+  if(v.xmin <= 0 && v.xmax >= 0) m += L.line(X(0), Y(v.ymin), X(0), Y(v.ymax), C.faint, 2) + L.text(X(0), Y(v.ymax) - 6, "y", {size: 12, color: C.muted});
+  for(var i = Math.ceil(v.xmin / ev) * ev; i <= v.xmax; i += ev) if(i !== 0) m += L.text(X(i), Y(ax) + 14, nM1(i), {size: 9, color: C.muted});
+  for(var j = Math.ceil(v.ymin / ev) * ev; j <= v.ymax; j += ev) if(j !== 0) m += L.text(X(ay) - 5, Y(j) + 3, nM1(j), {size: 9, color: C.muted, anchor: "end"});
+  return {svg: m, X: X, Y: Y, h: Math.round(oy + (v.ymax - v.ymin) * v.s + 30)};
+}
+function dotM1(L, P, p, color, label, dx, dy){ var x = P.X(p[0]), y = P.Y(p[1]); return L.circle(x, y, 4.5, color) + (label ? L.text(x + (dx === undefined ? 8 : dx), y + (dy === undefined ? -8 : dy), label, {size: 11, color: color, anchor: "start", weight: 700}) : ""); }
+function polyM1(P, pts, stroke, fill, w, dash){ return '<polygon points="' + pts.map(function(p){ return P.X(p[0]) + "," + P.Y(p[1]); }).join(" ") + '" fill="' + (fill || "none") + '" stroke="' + stroke + '" stroke-width="' + (w || 2) + '"' + (dash ? ' stroke-dasharray="6 5"' : '') + '/>'; }
+function segM1(L, P, a, b, color, w, dash){ return L.line(P.X(a[0]), P.Y(a[1]), P.X(b[0]), P.Y(b[1]), color, w || 2, dash); }
+
+// Lab 1 — Grid city: addresses and walking along streets (§1.1)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "shop"};
+  var V = {xmin: -5, xmax: 5, ymin: -4, ymax: 4, s: 30, top: 24};
+  var trips = {shop: [[-1, 2], [3, 2]], route: [[-2, 3], [4, 3], [4, -1]]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.05, speed: 1});
+    L.legend(id === "one" ? [[C.path, "crossings a 4-block walk from the centre"]] : [[C.path, "walk along the streets"], [C.disp, "straight line"]]);
+    L.watch({shop: "Worked example: the warehouse is 1 block West and 2 blocks North of the centre; the shop is 3 East and 2 North. Streets are 10 m apart.", route: "Quiz: from crossing (−2, 3) to crossing (4, −1). The walker must follow the streets; the dashed line is the straight-line gap.", one: "Prediction: which crossings are ‘4 blocks from the centre’? Each lights up as it is found."}[id]);
+    L.controls(""); L.restart(true);
   }
-};
-
-// Global control bindings
-window.initSimControls = function() {
-  var pBtn = document.getElementById('sim-btn-play');
-  var rBtn = document.getElementById('sim-btn-reset');
-  var sBtn = document.getElementById('sim-btn-step');
-
-  if(pBtn) {
-    pBtn.onclick = function() {
-      window.SIM_STATE.isPlaying = !window.SIM_STATE.isPlaying;
-      pBtn.textContent = window.SIM_STATE.isPlaying ? '⏸ Pause' : '▶ Play';
-      if(window.SIM_STATE.isPlaying) {
-        window.SIM_STATE.timer = setInterval(function() {
-          var cid = window.SIM_STATE.currentConcept;
-          if(cid === 'c1') {
-            window.SIM_STATE.c1.x = (window.SIM_STATE.c1.x + 1) > 8 ? -8 : window.SIM_STATE.c1.x + 1;
-            var sl = document.getElementById('c1-slider-x');
-            if(sl) sl.value = window.SIM_STATE.c1.x;
-            window.SIM_ENGINES.c1.render();
-          } else if(cid === 'c3') {
-            window.SIM_STATE.c3.px = (window.SIM_STATE.c3.px + 1) > 7 ? -7 : window.SIM_STATE.c3.px + 1;
-            var sl3 = document.getElementById('c3-slider-x');
-            if(sl3) sl3.value = window.SIM_STATE.c3.px;
-            window.SIM_ENGINES.c3.render();
-          } else if(cid === 'c4') {
-            window.SIM_STATE.c4.x2 = (window.SIM_STATE.c4.x2 + 1) > 10 ? -10 : window.SIM_STATE.c4.x2 + 1;
-            var sl4 = document.getElementById('c4-slider-x2');
-            if(sl4) sl4.value = window.SIM_STATE.c4.x2;
-            window.SIM_ENGINES.c4.render();
-          } else if(cid === 'c5') {
-            window.SIM_STATE.c5.bx = (window.SIM_STATE.c5.bx + 1) > 8 ? -8 : window.SIM_STATE.c5.bx + 1;
-            var sl5 = document.getElementById('c5-slider-bx');
-            if(sl5) sl5.value = window.SIM_STATE.c5.bx;
-            window.SIM_ENGINES.c5.render();
-          } else if(cid === 'c6') {
-            window.SIM_STATE.c6.c2x = (window.SIM_STATE.c6.c2x + 10) > 600 ? 150 : window.SIM_STATE.c6.c2x + 10;
-            var sl6 = document.getElementById('c6-slider-c2x');
-            if(sl6) sl6.value = window.SIM_STATE.c6.c2x;
-            window.SIM_ENGINES.c6.render();
-          }
-        }, 1000 / window.SIM_STATE.speed);
-      } else {
-        clearInterval(window.SIM_STATE.timer);
-      }
-    };
+  function legLen(a, b){ return Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]); }
+  function walked(p, d){
+    var out = [p[0]];
+    for(var i = 1; i < p.length; i++){
+      var s = legLen(p[i - 1], p[i]);
+      if(d >= s){ out.push(p[i]); d -= s; }
+      else { var f = s ? d / s : 0; out.push([p[i - 1][0] + f * (p[i][0] - p[i - 1][0]), p[i - 1][1] + f * (p[i][1] - p[i - 1][1])]); break; }
+    }
+    return out;
   }
-
-  if(rBtn) {
-    rBtn.onclick = function() {
-      clearInterval(window.SIM_STATE.timer);
-      window.SIM_STATE.isPlaying = false;
-      if(pBtn) pBtn.textContent = '▶ Play';
-      var cid = window.SIM_STATE.currentConcept;
-      if(window.SIM_ENGINES[cid] && window.SIM_ENGINES[cid].setPreset) {
-        window.SIM_ENGINES[cid].setPreset(0);
-      }
-    };
+  function draw(t){
+    var P = planeM1(L, V), m = P.svg, msg;
+    m += L.text(P.X(0) + 6, P.Y(0) + 14, "centre", {size: 10, color: C.muted, anchor: "start"}) + L.text(P.X(5) + 26, P.Y(4) + 4, "N ↑", {size: 11, color: C.muted});
+    if(st.preset === "one"){
+      var pts = [];
+      for(var x = -4; x <= 4; x++) for(var y = -4; y <= 4; y++) if(Math.abs(x) + Math.abs(y) === 4) pts.push([x, y]);
+      pts.sort(function(a, b){ return Math.atan2(a[1], a[0]) - Math.atan2(b[1], b[0]); });
+      var k = Math.floor(clampM1(t / 4, 0, 1) * pts.length + 1e-9);
+      pts.slice(0, k).forEach(function(p){ m += dotM1(L, P, p, C.path); });
+      m += dotM1(L, P, [0, 0], C.text);
+      L.svg(m, "Grid city: crossings four blocks from the centre", P.h);
+      L.readout([["Crossings found", String(k), C.path], ["Walk from the centre", "4 blocks = 40 m"]]);
+      msg = t < 4 ? "Searching the grid…" : "<b>16 crossings</b> are a 4-block walk from the centre, so one number cannot fix the bakery. Two numbers can: (3, 1) means 3 blocks East and 1 block North.";
+    } else {
+      var path = trips[st.preset], a = path[0], b = path[path.length - 1], len = 0;
+      for(var i = 1; i < path.length; i++) len += legLen(path[i - 1], path[i]);
+      var done = clampM1(t / 4, 0, 1) * len, w = walked(path, done);
+      m += segM1(L, P, a, b, C.disp, 2, "6 5");
+      for(var j = 1; j < path.length; j++) m += segM1(L, P, path[j - 1], path[j], C.faint, 5);
+      for(var q = 1; q < w.length; q++) m += segM1(L, P, w[q - 1], w[q], C.path, 5);
+      var shop = st.preset === "shop";
+      m += dotM1(L, P, a, C.vel, (shop ? "warehouse " : "start ") + ptM1(a[0], a[1])) + dotM1(L, P, b, C.ok, (shop ? "shop " : "end ") + ptM1(b[0], b[1]), 8, 20);
+      var pos = w[w.length - 1];
+      m += L.circle(P.X(pos[0]), P.Y(pos[1]), 7, C.path);
+      L.svg(m, "Walking in a grid city", P.h);
+      L.readout([["Blocks East–West", String(Math.abs(b[0] - a[0]))], ["Blocks North–South", String(Math.abs(b[1] - a[1]))], ["Walked so far", L.num(done * 10, 0) + " m", C.path], ["Straight line", L.num(Math.sqrt(d2M1(a, b)) * 10, 1) + " m", C.disp]]);
+      msg = t < 4 ? "Walking…" : shop ? "Warehouse (−1, 2) and shop (3, 2) share y = 2, so the walk is |3 − (−1)| = 4 blocks = <b>40 m</b>." : "Along the streets: 6 + 4 = 10 blocks = <b>100 m</b>. A straight line would be only about 72.1 m, but no street goes that way.";
+    }
+    L.verdict(msg);
   }
+  function mount(){ L.presets([["shop", "Worked example: warehouse to shop"], ["route", "Quiz: (−2, 3) to (4, −1)"], ["one", "Prediction: one number is not enough"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.grid = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-  if(sBtn) {
-    sBtn.onclick = function() {
-      var cid = window.SIM_STATE.currentConcept;
-      if(cid === 'c1') {
-        window.SIM_STATE.c1.x = (window.SIM_STATE.c1.x + 1) > 8 ? -8 : window.SIM_STATE.c1.x + 1;
-        var sl = document.getElementById('c1-slider-x'); if(sl) sl.value = window.SIM_STATE.c1.x;
-        window.SIM_ENGINES.c1.render();
-      } else if(cid === 'c5') {
-        window.SIM_STATE.c5.bx = (window.SIM_STATE.c5.bx + 1) > 8 ? -8 : window.SIM_STATE.c5.bx + 1;
-        var sl5 = document.getElementById('c5-slider-bx'); if(sl5) sl5.value = window.SIM_STATE.c5.bx;
-        window.SIM_ENGINES.c5.render();
-      } else if(cid === 'c6') {
-        window.SIM_STATE.c6.c2x = (window.SIM_STATE.c6.c2x + 20) > 600 ? 150 : window.SIM_STATE.c6.c2x + 20;
-        var sl6 = document.getElementById('c6-slider-c2x'); if(sl6) sl6.value = window.SIM_STATE.c6.c2x;
-        window.SIM_ENGINES.c6.render();
-      }
-    };
+// Lab 2 — Axes: points on the axes (Fig. 1.2) and the doors of Reiaan’s room (Exercise Set 1.1)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "fig12"};
+  var V = {xmin: -4, xmax: 13, ymin: -5, ymax: 11, s: 19, top: 20, every: 2};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.05, speed: 1});
+    L.legend(id === "fig12" ? [[C.vel, "points on the x-axis"], [C.acc, "points on the y-axis"]] : [[C.path, "door"], [C.faint, "walls of the room"]]);
+    L.watch({fig12: "Fig. 1.2: B, E, H and G appear one by one. Notice which coordinate is zero on each axis.", door: "Exercise Set 1.1: the room door D₁R₁ lies on the x-axis from the +8 mark to R₁ (11.5, 0). 1 unit = 1 ft.", bath: "Exercise Set 1.1 (iv): the bathroom door B₁B₂ lies on the y-axis from (0, 1.5) to (0, 4)."}[id]);
+    L.controls(""); L.restart(true);
   }
-
-  // Presets
-  var p0 = document.getElementById('sim-preset-0');
-  var p1 = document.getElementById('sim-preset-1');
-  var p2 = document.getElementById('sim-preset-2');
-  if(p0) p0.onclick = function() { var cid = window.SIM_STATE.currentConcept; if(window.SIM_ENGINES[cid]) window.SIM_ENGINES[cid].setPreset(0); };
-  if(p1) p1.onclick = function() { var cid = window.SIM_STATE.currentConcept; if(window.SIM_ENGINES[cid]) window.SIM_ENGINES[cid].setPreset(1); };
-  if(p2) p2.onclick = function() { var cid = window.SIM_STATE.currentConcept; if(window.SIM_ENGINES[cid]) window.SIM_ENGINES[cid].setPreset(2); };
-};
-
-// Mount active lab
-window.mountSimulation = function(conceptId, container) {
-  window.SIM_STATE.currentConcept = conceptId;
-  clearInterval(window.SIM_STATE.timer);
-  window.SIM_STATE.isPlaying = false;
-  var engine = window.SIM_ENGINES[conceptId];
-  if (engine && engine.init) {
-    engine.init(container);
-    window.initSimControls();
+  function room(P){ return polyM1(P, [[0, 0], [12, 0], [12, 10], [0, 10]], C.faint, "rgba(148,163,184,0.08)", 3) + dotM1(L, P, [0, 10], C.muted, "C (0, 10)", 6, -6) + dotM1(L, P, [12, 10], C.muted, "B (12, 10)", -70, -8) + dotM1(L, P, [12, 0], C.muted, "A (12, 0)", 6, -8); }
+  function draw(t){
+    var P = planeM1(L, V), m = P.svg, msg;
+    if(st.preset === "fig12"){
+      var pts = [["B", 4.5, 0, C.vel], ["E", -2.9, 0, C.vel], ["H", 0, 4, C.acc], ["G", 0, -4.5, C.acc]];
+      pts.forEach(function(p, i){
+        var f = clampM1(t - i, 0, 1);
+        if(f <= 0) return;
+        m += segM1(L, P, [0, 0], [p[1] * f, p[2] * f], p[3], 3) + dotM1(L, P, [p[1] * f, p[2] * f], p[3], f >= 1 ? p[0] + " " + ptM1(p[1], p[2]) : "", 8, p[2] < 0 ? 14 : -8);
+      });
+      m += dotM1(L, P, [0, 0], C.text, "O (0, 0)", 6, 16);
+      L.svg(m, "Points on the axes", P.h);
+      L.readout(pts.map(function(p, i){ return [p[0], t >= i + 1 ? ptM1(p[1], p[2]) : "…", p[3]]; }).concat([["EB", t >= 2 ? L.num(4.5 + 2.9, 1) + " units" : "…"]]));
+      msg = t < 4 ? "Plotting…" : "B and E lie on the x-axis, so y = 0; H and G lie on the y-axis, so x = 0. EB = |4.5 − (−2.9)| = <b>7.4 units</b>.";
+    } else if(st.preset === "door"){
+      var f = clampM1(t / 3, 0, 1);
+      m += room(P) + segM1(L, P, [8, 0], [8 + 3.5 * f, 0], C.path, 6) + dotM1(L, P, [8, 0], C.path, "D₁ (8, 0)", -30, 20) + (f >= 1 ? dotM1(L, P, [11.5, 0], C.path, "R₁ (11.5, 0)", -20, 36) : "") + dotM1(L, P, [0, 0], C.text, "O", -14, 16);
+      L.svg(m, "Room door on the x-axis", P.h);
+      L.readout([["D₁", "(8, 0)", C.path], ["R₁", "(11.5, 0)", C.path], ["Door width", nM1(3.5 * f) + " ft", C.path], ["In metres", L.num(3.5 * f * 0.3048, 2) + " m"]]);
+      msg = t < 3 ? "Measuring along the x-axis…" : "D₁R₁ = |11.5 − 8| = <b>3.5 ft</b> (about 1.07 m): comfortable, and wider than the roughly 0.9 m a wheelchair needs. The door is 8 ft from the y-axis and lies on the x-axis.";
+    } else {
+      var g = clampM1(t / 3, 0, 1);
+      m += room(P) + segM1(L, P, [8, 0], [11.5, 0], C.faint, 6) + segM1(L, P, [0, 1.5], [0, 1.5 + 2.5 * g], C.path, 6) + dotM1(L, P, [0, 1.5], C.path, "B₁ (0, 1.5)", 8, 4) + (g >= 1 ? dotM1(L, P, [0, 4], C.path, "B₂ (0, 4)", 8, 4) : "") + dotM1(L, P, [0, 0], C.text, "O", -14, 16);
+      L.svg(m, "Bathroom door on the y-axis", P.h);
+      L.readout([["B₁", "(0, 1.5)", C.path], ["B₂", "(0, 4)", C.path], ["Bathroom door", nM1(2.5 * g) + " ft", C.path], ["Room door", "3.5 ft"]]);
+      msg = t < 3 ? "Measuring along the y-axis…" : "B₁B₂ = |4 − 1.5| = <b>2.5 ft</b>, so the bathroom door is 1 ft narrower than the room door (3.5 ft).";
+    }
+    L.verdict(msg);
   }
-};
+  function mount(){ L.presets([["fig12", "Fig. 1.2: points on the axes"], ["door", "Set 1.1: room door D₁R₁"], ["bath", "Set 1.1: bathroom door B₁B₂"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.axes = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 3 — Quadrants and ordered pairs (Fig. 1.4, Think and Reflect)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "S", x: 2, y: 6};
+  var V = {xmin: -8, xmax: 8, ymin: -8, ymax: 8, s: 17, top: 22, every: 2};
+  var P0 = {S: [3, -5], Q: [-5, 3], diag: [4, 4], axis: [0, -3]};
+  function quad(x, y){ return x === 0 || y === 0 ? "on an axis" : x > 0 && y > 0 ? "Quadrant I" : x < 0 && y > 0 ? "Quadrant II" : x < 0 ? "Quadrant III" : "Quadrant IV"; }
+  function signs(x, y){ var s = function(v){ return v > 0 ? "+" : v < 0 ? "−" : "0"; }; return "(" + s(x) + ", " + s(y) + ")"; }
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 1});
+    L.legend([[C.vel, "move along x"], [C.acc, "move along y"], [C.path, "P (x, y)"], [C.disp, "swapped point (y, x)"]]);
+    L.watch({S: "Fig. 1.4: S (3, −5). Move 3 along the x-axis, then 5 down.", Q: "Fig. 1.4: Q (−5, 3), the same two numbers as S in the other order.", diag: "Think and Reflect 3: when does (y, x) land on (x, y)?", axis: "Think and Reflect 1: a point on the y-axis.", explore: "Move the sliders to place P anywhere; the readout names its quadrant."}[id]);
+    if(id === "explore"){
+      L.controls(L.slider("m1qx", "x", -8, 8, 1, st.x, nM1(st.x)) + L.slider("m1qy", "y", -8, 8, 1, st.y, nM1(st.y)));
+      L.onInput("m1qx", function(v){ st.x = v; L.setVal("m1qx", nM1(v)); App.resetTimeline(); App.play(); });
+      L.onInput("m1qy", function(v){ st.y = v; L.setVal("m1qy", nM1(v)); App.resetTimeline(); App.play(); });
+    } else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var P = planeM1(L, V), m = P.svg, p = st.preset === "explore" ? [st.x, st.y] : P0[st.preset], x = p[0], y = p[1], msg;
+    [["I", 5, 7], ["II", -5, 7], ["III", -5, -7], ["IV", 5, -7]].forEach(function(q){ m += L.text(P.X(q[1]), P.Y(q[2]), "Quadrant " + q[0], {size: 11, color: C.muted}); });
+    var fx = clampM1(t, 0, 1), fy = clampM1(t - 1, 0, 1), g = clampM1(t - 2, 0, 1);
+    m += segM1(L, P, [0, 0], [x * fx, 0], C.vel, 3);
+    if(fx >= 1) m += segM1(L, P, [x, 0], [x, y * fy], C.acc, 3);
+    if(fy >= 1) m += segM1(L, P, [0, y], [x, y], C.faint, 1.5, "5 4") + dotM1(L, P, [x, y], C.path, "P " + ptM1(x, y));
+    if(g > 0 && x !== y) m += '<g opacity="' + L.num(g, 2) + '">' + dotM1(L, P, [y, x], C.disp, "(y, x) = " + ptM1(y, x), 8, 16) + '</g>';
+    m += dotM1(L, P, [0, 0], C.text, "O", -14, 16);
+    L.svg(m, "Quadrants and ordered pairs", P.h);
+    L.readout([["x-coordinate", fx >= 1 ? nM1(x) : "…", C.vel], ["y-coordinate", fy >= 1 ? nM1(y) : "…", C.acc], ["Signs", fy >= 1 ? signs(x, y) : "…"], ["Where", fy >= 1 ? quad(x, y) : "…", C.path]]);
+    if(t < 3) msg = "Locating the point…";
+    else if(x === 0 || y === 0) msg = ptM1(x, y) + " lies on " + (x === 0 && y === 0 ? "both axes (it is the origin)" : x === 0 ? "the y-axis" : "the x-axis") + ", so it is in <b>no quadrant</b>. Swapping gives " + ptM1(y, x) + (x === y ? ", the same point." : ", which lies on the other axis.");
+    else if(x === y) msg = ptM1(x, y) + " is in <b>" + quad(x, y) + "</b>. Swapping gives the same point: (x, y) = (y, x) only when x = y.";
+    else msg = ptM1(x, y) + " is in <b>" + quad(x, y) + "</b> " + signs(x, y) + ". Swapping gives " + ptM1(y, x) + " in " + quad(y, x) + ": a different point, since x ≠ y.";
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["S", "Fig. 1.4: S (3, −5)"], ["Q", "Fig. 1.4: Q (−5, 3)"], ["diag", "Think and Reflect: (4, 4)"], ["axis", "Think and Reflect: (0, −3)"], ["explore", "Explore: place P"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.quadrants = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 4 — Room planner (Exercise Set 1.2, Fig. 1.5)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "table", w: 2.5};
+  var VIEWS = {
+    table: {xmin: -1, xmax: 13, ymin: -1, ymax: 11, s: 24, top: 18, every: 1},
+    door: {xmin: -1, xmax: 8, ymin: -1, ymax: 6, s: 40, top: 18, every: 1},
+    bath: {xmin: -7, xmax: 1, ymin: -1, ymax: 10, s: 26, top: 18, every: 1},
+    dining: {xmin: -7, xmax: 13, ymin: -16, ymax: 11, s: 11, top: 16, every: 3}
+  };
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 1});
+    L.legend({table: [[C.path, "study table"], [C.faint, "bed, wardrobe and walls"]], door: [[C.path, "bathroom door and its sweep"], [C.danger, "wardrobe"]], bath: [[C.vel, "bathroom"], [C.path, "showering area SHWR"]], dining: [[C.vel, "dining room"], [C.path, "dining table"]]}[id]);
+    L.watch({table: "Set 1.2 Q1: three feet of the study table are at (8, 9), (11, 9) and (11, 7). Where must the fourth foot go?", door: "Set 1.2 Q2: the bathroom door is hinged at B₁ (0, 1.5) and swings into the bedroom. Change the width of the door to see when it hits the wardrobe.", bath: "Set 1.2 Q3: the bathroom and its showering area, read from the grid of Fig. 1.5.", dining: "Set 1.2 Q4: the dining room runs 18 ft from P to A and 15 ft below the x-axis; the 5 ft × 3 ft table goes in the centre."}[id]);
+    if(id === "door"){
+      L.controls(L.slider("m1dw", "Door width (ft)", 1.5, 4, 0.5, st.w, nM1(st.w) + " ft"));
+      L.onInput("m1dw", function(v){ st.w = v; L.setVal("m1dw", nM1(v) + " ft"); App.resetTimeline(); App.play(); });
+    } else L.controls("");
+    L.restart(true);
+  }
+  function rectPts(x1, y1, x2, y2){ return [[x1, y1], [x2, y1], [x2, y2], [x1, y2]]; }
+  function furniture(P){
+    return polyM1(P, rectPts(0, 0, 12, 10), C.faint, "none", 3) + polyM1(P, rectPts(3, 0, 7, 2), C.faint, "rgba(161,98,7,0.25)", 2) + polyM1(P, rectPts(0.5, 5, 6.5, 8), C.faint, "rgba(56,189,248,0.10)", 2) + L.text(P.X(5), P.Y(1) + 4, "wardrobe", {size: 10, color: C.muted}) + L.text(P.X(3.5), P.Y(6.5) + 4, "bed", {size: 10, color: C.muted});
+  }
+  function draw(t){
+    var id = st.preset, P = planeM1(L, VIEWS[id]), m = P.svg, msg, f = clampM1(t / 3, 0, 1);
+    if(id === "table"){
+      m += furniture(P) + L.circle(P.X(11.4), P.Y(9.5), 6, "#15803d");
+      [[8, 9], [11, 9], [11, 7]].forEach(function(p){ m += dotM1(L, P, p, C.path, ptM1(p[0], p[1]), 6, p[1] === 9 ? -8 : 16); });
+      if(f > 0.5) m += polyM1(P, [[8, 9], [11, 9], [11, 7], [8, 7]], C.path, "rgba(245,158,11,0.18)", 2) + dotM1(L, P, [8, 7], C.ok, "4th foot (8, 7)", -100, 18);
+      L.svg(m, "Placing the study table", P.h);
+      L.readout([["Fourth foot", f > 0.5 ? "(8, 7)" : "…", C.ok], ["Length (along x)", "|11 − 8| = 3 ft"], ["Width (along y)", "|9 − 7| = 2 ft"], ["Height", "not on a floor plan"]]);
+      msg = t < 3 ? "Completing the rectangle…" : "The fourth foot is at <b>(8, 7)</b>. The table is 3 ft × 2 ft and fits between the bed and the right wall, clear of both doors.";
+    } else if(id === "door"){
+      var w = st.w, arc = [], k;
+      for(k = 0; k <= 24; k++){ var a = (Math.PI / 2) * (1 - f * k / 24); arc.push([w * Math.cos(a), 1.5 + w * Math.sin(a)]); }
+      var e = arc[arc.length - 1];
+      m += polyM1(P, rectPts(3, 0, 7, 2), C.danger, "rgba(239,68,68,0.15)", 2) + L.text(P.X(5), P.Y(1) + 4, "wardrobe", {size: 11, color: C.danger});
+      m += L.line(P.X(0), P.Y(0), P.X(0), P.Y(6), C.faint, 4) + L.line(P.X(0), P.Y(0), P.X(8), P.Y(0), C.faint, 4);
+      m += '<path d="M ' + P.X(0) + ' ' + P.Y(1.5) + arc.map(function(p){ return ' L ' + P.X(p[0]) + ' ' + P.Y(p[1]); }).join("") + ' Z" fill="rgba(245,158,11,0.15)" stroke="none"/>';
+      m += '<path d="' + arc.map(function(p, i){ return (i ? ' L ' : 'M ') + P.X(p[0]) + ' ' + P.Y(p[1]); }).join("") + '" fill="none" stroke="' + C.path + '" stroke-width="1.5" stroke-dasharray="5 4"/>';
+      m += segM1(L, P, [0, 1.5], e, C.path, 6) + dotM1(L, P, [0, 1.5], C.text, "hinge B₁ (0, 1.5)", 8, 18);
+      var gap = 3 - w;
+      L.svg(m, "Swinging bathroom door", P.h);
+      L.readout([["Door width", nM1(w) + " ft", C.path], ["Hinge to wardrobe", "3 ft"], ["Clearance", L.num(gap, 1) + " ft", gap > 0 ? C.ok : C.danger], ["Angle opened", L.num(90 * f, 0) + "°"]]);
+      msg = t < 3 ? "Opening the door…" : Math.abs(gap) < 1e-9 ? "A 3 ft door just <b>touches</b> the wardrobe when fully open. Any wider and it hits." : gap > 0 ? "The door’s edge stays within " + nM1(w) + " ft of B₁, but the wardrobe is 3 ft away, so the door <b>clears by " + L.num(gap, 1) + " ft</b>. A door wider than 3 ft would hit it." : "A " + nM1(w) + " ft door reaches past x = 3 and <b>hits the wardrobe</b>. Hinge it at B₂, open it into the bathroom, use a sliding door or move the wardrobe.";
+    } else if(id === "bath"){
+      var S = [-6, 6], H = [-3, 6], W = [-2, 9], R = [-6, 9];
+      m += polyM1(P, [[0, 0], [0, 9], [-6, 9], [-6, 0]], C.vel, "rgba(56,189,248,0.10)", 3);
+      if(f > 0.3) m += polyM1(P, [S, H, W, R], C.path, "rgba(245,158,11,0.22)", 3) + dotM1(L, P, S, C.path, "S (−6, 6)", 8, 16) + dotM1(L, P, H, C.path, "H (−3, 6)", 6, 16) + dotM1(L, P, W, C.path, "W (−2, 9)", 6, -8);
+      m += dotM1(L, P, [0, 0], C.text, "O (0, 0)", 6, 16) + dotM1(L, P, [0, 9], C.text, "F (0, 9)", 6, -6) + dotM1(L, P, R, C.text, "R (−6, 9)", -8, -10) + dotM1(L, P, [-6, 0], C.text, "P (−6, 0)", -8, 16);
+      L.svg(m, "Reiaan’s bathroom", P.h);
+      L.readout([["Bathroom", "6 ft × 9 ft", C.vel], ["SH (on y = 6)", "3 ft", C.path], ["RW (on y = 9)", "4 ft", C.path], ["Shower area", f >= 1 ? "½ × (3 + 4) × 3 = 10.5 sq ft" : "…"]]);
+      msg = t < 3 ? "Reading the corners…" : "Corners O (0, 0), F (0, 9), R (−6, 9), P (−6, 0). SH and RW are both horizontal, and RS is vertical, so SHWR is a <b>right trapezium</b>.";
+    } else {
+      m += polyM1(P, rectPts(-6, 0, 12, 10), C.faint, "none", 2) + L.text(P.X(3), P.Y(5), "bathroom and bedroom", {size: 10, color: C.muted});
+      if(f > 0) m += polyM1(P, [[-6, 0], [12, 0], [12, -15 * f], [-6, -15 * f]], C.vel, "rgba(56,189,248,0.10)", 3);
+      m += dotM1(L, P, [-6, 0], C.text, "P (−6, 0)", -8, -8) + dotM1(L, P, [12, 0], C.text, "A (12, 0)", -8, -8);
+      if(f >= 1) m += dotM1(L, P, [12, -15], C.vel, "(12, −15)", -62, 18) + dotM1(L, P, [-6, -15], C.vel, "(−6, −15)", 6, 18) + segM1(L, P, [-6, 0], [12, -15], C.faint, 1.5, "5 4") + polyM1(P, rectPts(0.5, -6, 5.5, -9), C.path, "rgba(245,158,11,0.3)", 2) + dotM1(L, P, [3, -7.5], C.ok, "centre (3, −7.5)", 10, 4);
+      L.svg(m, "Dining room and its table", P.h);
+      L.readout([["Length PA", "|12 − (−6)| = 18 ft", C.vel], ["Width", "15 ft", C.vel], ["Centre", f >= 1 ? "(3, −7.5)" : "…", C.ok], ["Table feet", f >= 1 ? "(0.5, −6), (5.5, −6), (5.5, −9), (0.5, −9)" : "…", C.path]]);
+      msg = t < 3 ? "Building the dining room below the x-axis…" : "Corners (−6, 0), (12, 0), (12, −15), (−6, −15). Centre <b>(3, −7.5)</b>; the table’s feet are at (0.5, −6), (5.5, −6), (5.5, −9) and (0.5, −9).";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["table", "Set 1.2 Q1: study table"], ["door", "Set 1.2 Q2: door and wardrobe"], ["bath", "Set 1.2 Q3: the bathroom"], ["dining", "Set 1.2 Q4: dining room"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.room = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 5 — Distance formula (Figs. 1.6–1.8)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "AD", a: [1, 2], b: [4, 6]};
+  var V = {xmin: -6, xmax: 11, ymin: -6, ymax: 8, s: 20, top: 20, every: 2};
+  var SEG = {AD: [[3, 4], [7, 1], "A", "D"], DM: [[7, 1], [9, 6], "D", "M"], MA: [[9, 6], [3, 4], "M", "A"]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 1});
+    L.legend([[C.acc, "shift along y"], [C.vel, "shift along x"], [C.path, "distance (hypotenuse)"]]);
+    L.watch({AD: "Figs. 1.6–1.7: from A (3, 4) to D (7, 1). First the shift along y (AC), then along x (CD), then the hypotenuse AD.", DM: "Fig. 1.6: side DM of triangle ADM.", MA: "Fig. 1.6: side MA. The shifts are negative here, but squaring removes the signs.", explore: "Move the two points; the right triangle and the distance update."}[id]);
+    if(id === "explore"){
+      var s = function(k, lab, v){ return L.slider(k, lab, -6, 10, 1, v, nM1(v)); };
+      L.controls(s("m1x1", "x₁", st.a[0]) + s("m1y1", "y₁", st.a[1]) + s("m1x2", "x₂", st.b[0]) + s("m1y2", "y₂", st.b[1]));
+      [["m1x1", "a", 0], ["m1y1", "a", 1], ["m1x2", "b", 0], ["m1y2", "b", 1]].forEach(function(c){ L.onInput(c[0], function(v){ st[c[1]][c[2]] = v; L.setVal(c[0], nM1(v)); App.resetTimeline(); App.play(); }); });
+    } else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var P = planeM1(L, V), m = P.svg, seg = st.preset === "explore" ? [st.a, st.b, "P", "Q"] : SEG[st.preset], A = seg[0], B = seg[1], K = [A[0], B[1]], msg;
+    if(st.preset !== "explore") m += polyM1(P, [[3, 4], [7, 1], [9, 6]], C.faint, "rgba(148,163,184,0.10)", 1.5);
+    var f1 = clampM1(t, 0, 1), f2 = clampM1(t - 1, 0, 1), f3 = clampM1(t - 2, 0, 1);
+    m += segM1(L, P, A, [A[0], A[1] + (K[1] - A[1]) * f1], C.acc, 4);
+    if(f1 >= 1) m += segM1(L, P, K, [K[0] + (B[0] - K[0]) * f2, K[1]], C.vel, 4);
+    if(f2 >= 1) m += segM1(L, P, A, [A[0] + (B[0] - A[0]) * f3, A[1] + (B[1] - A[1]) * f3], C.path, 4);
+    m += dotM1(L, P, A, C.text, seg[2] + " " + ptM1(A[0], A[1])) + dotM1(L, P, B, C.text, seg[3] + " " + ptM1(B[0], B[1]), 8, 18);
+    L.svg(m, "Distance between two points", P.h);
+    var dx = B[0] - A[0], dy = B[1] - A[1], n = dx * dx + dy * dy, name = seg[2] + seg[3];
+    L.readout([["Shift along x", f2 >= 1 ? nM1(dx) : "…", C.vel], ["Shift along y", f1 >= 1 ? nM1(dy) : "…", C.acc], ["(Δx)² + (Δy)²", f2 >= 1 ? String(n) : "…"], [name, t >= 3 ? rootM1(n) + " units" : "…", C.path]]);
+    msg = t < 3 ? "Building the right triangle…" : name + " = √(" + nM1(Math.abs(dx)) + "² + " + nM1(Math.abs(dy)) + "²) = <b>" + rootM1(n) + " units</b>.";
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["AD", "Fig. 1.7: AD"], ["DM", "Fig. 1.6: DM"], ["MA", "Fig. 1.6: MA"], ["explore", "Explore: any two points"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.distance = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 6 — Reflection preserves lengths (Fig. 1.9)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "yaxis"};
+  var V = {xmin: -10, xmax: 10, ymin: -7, ymax: 7, s: 18, top: 20, every: 2};
+  var T = [["A", 3, 4], ["D", 7, 1], ["M", 9, 6]];
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.04, speed: 1});
+    L.legend([[C.vel, "original"], [C.path, "image"], [C.danger, "mirror line"]]);
+    L.watch({yaxis: "Fig. 1.9: triangle ADM is reflected in the y-axis. Each vertex moves straight across the mirror to the same distance on the other side.", xaxis: "Think and Reflect 2: the same triangle reflected in the x-axis instead.", point: "Prediction: the point (5, −2) reflected in the y-axis."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function img(p){ return st.preset === "xaxis" ? [p[0], -p[1]] : [-p[0], p[1]]; }
+  function sides(p){ return [d2M1(p[0], p[1]), d2M1(p[1], p[2]), d2M1(p[2], p[0])]; }
+  function draw(t){
+    var P = planeM1(L, V), m = P.svg, f = clampM1(t / 2, 0, 1), msg;
+    m += st.preset === "xaxis" ? L.line(P.X(-10), P.Y(0), P.X(10), P.Y(0), C.danger, 2.5) : L.line(P.X(0), P.Y(-7), P.X(0), P.Y(7), C.danger, 2.5);
+    if(st.preset === "point"){
+      var cur = [5 - 10 * f, -2];
+      m += segM1(L, P, [5, -2], cur, C.path, 2, "5 4") + dotM1(L, P, [5, -2], C.vel, "(5, −2)", 8, 18) + dotM1(L, P, cur, C.path, f >= 1 ? "image (−5, −2)" : "", -104, 18);
+      L.svg(m, "Reflecting a point", P.h);
+      L.readout([["Point", "(5, −2)", C.vel], ["Image", f >= 1 ? "(−5, −2)" : "…", C.path], ["Distance to the y-axis", "5 units each"], ["Point to image", f >= 1 ? "10 units" : "…"]]);
+      msg = t < 2 ? "Reflecting…" : "(5, −2) → <b>(−5, −2)</b>: only the sign of x changes, and both points are 5 units from the y-axis.";
+    } else {
+      var orig = T.map(function(v){ return [v[1], v[2]]; }), im = orig.map(img);
+      var mov = orig.map(function(p, i){ return [p[0] + (im[i][0] - p[0]) * f, p[1] + (im[i][1] - p[1]) * f]; });
+      m += polyM1(P, orig, C.vel, "rgba(56,189,248,0.12)", 2.5) + polyM1(P, mov, C.path, f >= 1 ? "rgba(245,158,11,0.18)" : "none", 2.5, f < 1);
+      T.forEach(function(v, i){ m += dotM1(L, P, orig[i], C.vel, v[0], 6, -6); if(f >= 1) m += dotM1(L, P, im[i], C.path, v[0] + "′ " + ptM1(im[i][0], im[i][1]), st.preset === "xaxis" ? 6 : -88, st.preset === "xaxis" ? 18 : -6); });
+      L.svg(m, "Reflecting triangle ADM", P.h);
+      var so = sides(orig), si = sides(im), done = f >= 1;
+      L.readout([["AD → A′D′", rootM1(so[0]) + " → " + (done ? rootM1(si[0]) : "…")], ["DM → D′M′", rootM1(so[1]) + " → " + (done ? rootM1(si[1]) : "…")], ["MA → M′A′", rootM1(so[2]) + " → " + (done ? rootM1(si[2]) : "…")], ["Images", done ? im.map(function(p){ return ptM1(p[0], p[1]); }).join(", ") : "…", C.path]]);
+      msg = t < 2 ? "Reflecting in the " + (st.preset === "xaxis" ? "x" : "y") + "-axis…" : "Images " + im.map(function(p, i){ return T[i][0] + "′ " + ptM1(p[0], p[1]); }).join(", ") + ". The sides are still 5, √29 and √40 units: <b>lengths are preserved</b>, though the triangle is flipped.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["yaxis", "Fig. 1.9: reflect in the y-axis"], ["xaxis", "Reflect in the x-axis"], ["point", "Prediction: (5, −2)"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.reflect = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 7 — Coordinate tools: midpoints, collinearity, circles, icons, a square (End-of-Chapter Exercises)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "midpoint"};
+  var V = {xmin: -10, xmax: 10, ymin: -13, ymax: 10, s: 12.5, top: 16, every: 2};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 2, step: 0.04, speed: 1});
+    L.legend(id === "icons" ? [[C.vel, "icon A (radius 80)"], [C.acc, "icon B (radius 100)"], [C.path, "distance between centres"]] : [[C.path, "measured distances"], [C.ok, "result"]]);
+    L.watch({midpoint: "Worked example: the midpoint of S (−2, 5) and T (6, −1), checked with the distance formula.", collinear: "End-of-Chapter Q6: M (−3, −4), A (0, 0), G (6, 8).", nearly: "End-of-Chapter Q7: R (−5, −1), B (−2, −5), C (4, −12) look collinear. Do they pass the distance test?", circle: "End-of-Chapter Q12: circle K centred at O through A, B and C; then D and E.", icons: "End-of-Chapter Q15: two circular icons on an 800 × 600 pixel screen (drawn at 2 : 5 scale).", square: "End-of-Chapter Q16: is ABCD a square?"}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function lab(p){ return p[2] + " " + ptM1(p[0], p[1]); }
+  function draw(t){
+    var f = clampM1(t / 2, 0, 1), m, msg;
+    if(st.preset === "icons"){
+      var k = 0.4, SX = function(x){ return 200 + x * k; }, SY = function(y){ return 270 - y * k; };
+      m = L.rect(SX(0), SY(600), 800 * k, 600 * k, "rgba(148,163,184,0.06)", ' stroke="' + C.faint + '" stroke-width="2"') + L.text(SX(400), SY(600) - 6, "screen 800 × 600 px", {size: 11, color: C.muted}) + L.text(SX(0) - 4, SY(0) + 14, "(0, 0)", {size: 10, color: C.muted, anchor: "end"});
+      m += L.circle(SX(100), SY(150), 80 * k, "rgba(56,189,248,0.18)", ' stroke="' + C.vel + '" stroke-width="2"') + L.circle(SX(250), SY(230), 100 * k, "rgba(244,114,182,0.18)", ' stroke="' + C.acc + '" stroke-width="2"');
+      m += L.line(SX(100), SY(150), SX(100 + 150 * f), SY(150 + 80 * f), C.path, 3) + L.circle(SX(100), SY(150), 3, C.vel) + L.circle(SX(250), SY(230), 3, C.acc) + L.text(SX(100) - 6, SY(150) + 16, "A (100, 150)", {size: 10, color: C.vel, anchor: "end"}) + L.text(SX(250) + 8, SY(230) - 8, "B (250, 230)", {size: 10, color: C.acc, anchor: "start"});
+      L.svg(m, "Two circular icons on a screen", 300);
+      L.readout([["Icon A spans", "x 20–180, y 70–230", C.vel], ["Icon B spans", "x 150–350, y 130–330", C.acc], ["AB", f >= 1 ? "√(150² + 80²) = 170 px" : "…", C.path], ["Sum of radii", "180 px"]]);
+      msg = t < 2 ? "Measuring…" : "Both icons stay inside the screen. AB = 170 px, less than 80 + 100 = 180 px, so the circles <b>intersect</b>.";
+      L.verdict(msg); return;
+    }
+    var P = planeM1(L, V);
+    m = P.svg;
+    if(st.preset === "midpoint"){
+      var S = [-2, 5, "S"], T2 = [6, -1, "T"], M = [2, 2, "M"];
+      m += segM1(L, P, S, T2, C.faint, 2) + dotM1(L, P, S, C.text, lab(S)) + dotM1(L, P, T2, C.text, lab(T2), 8, 18);
+      if(f > 0.4) m += dotM1(L, P, M, C.ok, lab(M), 10, 4);
+      L.svg(m, "Midpoint of ST", P.h);
+      L.readout([["x of M", "(−2 + 6) ÷ 2 = 2"], ["y of M", "(5 + (−1)) ÷ 2 = 2"], ["MS", f >= 1 ? "5 units" : "…", C.path], ["MT", f >= 1 ? "5 units" : "…", C.path]]);
+      msg = t < 2 ? "Averaging the coordinates…" : "M = <b>(2, 2)</b>, and MS = MT = 5 units: M is exactly halfway along ST (ST = 10 units).";
+    } else if(st.preset === "collinear" || st.preset === "nearly"){
+      var pts = st.preset === "collinear" ? [[-3, -4, "M"], [0, 0, "A"], [6, 8, "G"]] : [[-5, -1, "R"], [-2, -5, "B"], [4, -12, "C"]];
+      var a = pts[0], b = pts[1], c = pts[2], ab = Math.sqrt(d2M1(a, b)), bc = Math.sqrt(d2M1(b, c)), ac = Math.sqrt(d2M1(a, c));
+      m += segM1(L, P, a, [a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f], C.faint, 1.5, "5 4") + segM1(L, P, a, b, C.path, 3) + segM1(L, P, b, c, C.path, 3);
+      pts.forEach(function(p, i){ m += dotM1(L, P, p, C.text, lab(p), 8, i === 2 ? 18 : -8); });
+      L.svg(m, "Collinearity test", P.h);
+      var nm = [a[2] + b[2], b[2] + c[2], a[2] + c[2]];
+      L.readout([[nm[0], L.num(ab, 3), C.path], [nm[1], L.num(bc, 3), C.path], [nm[0] + " + " + nm[1], f >= 1 ? L.num(ab + bc, 3) : "…"], [nm[2], f >= 1 ? L.num(ac, 3) : "…", C.ok]]);
+      msg = t < 2 ? "Measuring the three distances…" : st.preset === "collinear" ? "MA + AG = 5 + 10 = 15 = MG, so the points are <b>collinear</b>." : "RB + BC ≈ 14.220 but RC ≈ 14.213. The sum is not equal, so the points are <b>not collinear</b>, though they very nearly are.";
+    } else if(st.preset === "circle"){
+      m += L.circle(P.X(0), P.Y(0), Math.sqrt(65) * V.s, "rgba(52,211,153,0.08)", ' stroke="' + C.ok + '" stroke-width="2"');
+      [[1, -8, "A"], [-4, 7, "B"], [-7, -4, "C"]].forEach(function(p){ m += segM1(L, P, [0, 0], [p[0] * f, p[1] * f], C.path, 1.5) + dotM1(L, P, p, C.ok, lab(p), 6, p[1] < 0 ? 16 : -6); });
+      if(f >= 1) m += dotM1(L, P, [-5, 6, "D"], C.vel, "D (−5, 6)", -60, 18) + dotM1(L, P, [0, 9, "E"], C.danger, "E (0, 9)", 8, -2);
+      m += dotM1(L, P, [0, 0], C.text, "O", -12, 16);
+      L.svg(m, "Circle K centred at the origin", P.h);
+      L.readout([["OA = OB = OC", "√65 ≈ 8.06", C.ok], ["OD", f >= 1 ? "√61 ≈ 7.81, inside" : "…", C.vel], ["OE", f >= 1 ? "9, outside" : "…", C.danger]]);
+      msg = t < 2 ? "Measuring from O…" : "A, B and C are all √65 ≈ 8.06 units from O, so they lie on circle K. D is <b>inside</b> (√61 is less than √65) and E is <b>outside</b> (9 is more than √65).";
+    } else {
+      var Q = [[2, 1, "A"], [-1, 2, "B"], [-2, -1, "C"], [1, -2, "D"]];
+      m += polyM1(P, Q, C.path, "rgba(245,158,11," + L.num(0.25 * f, 2) + ")", 3);
+      if(f >= 1) m += segM1(L, P, Q[0], Q[2], C.faint, 1.5, "5 4") + segM1(L, P, Q[1], Q[3], C.faint, 1.5, "5 4");
+      Q.forEach(function(p){ m += dotM1(L, P, p, C.text, lab(p), p[0] > 0 ? 8 : -66, p[1] > 0 ? -8 : 18); });
+      L.svg(m, "Is ABCD a square?", P.h);
+      L.readout([["AB = BC = CD = DA", "√10 ≈ 3.16", C.path], ["AC = BD", f >= 1 ? "√20 ≈ 4.47" : "…"], ["Area", f >= 1 ? "(√10)² = 10 square units" : "…", C.ok]]);
+      msg = t < 2 ? "Measuring sides and diagonals…" : "All four sides are √10 and both diagonals are √20, so ABCD is a <b>square</b>; its area is 10 square units.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["midpoint", "Worked example: midpoint"], ["collinear", "Q6: M, A, G"], ["nearly", "Q7: R, B, C"], ["circle", "Q12: circle K"], ["icons", "Q15: screen icons"], ["square", "Q16: square ABCD"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.apply = {mount: mount, draw: draw, select: select, state: st};
+})();

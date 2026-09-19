@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 6: Permutations and Combinations — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -109,16 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +312,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +497,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +629,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +681,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +770,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +964,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,14 +1067,168 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
 
 </style>
 </head>
@@ -1063,9 +1275,11 @@ button.btn-secondary {
 <footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathematics", "title": "Permutations and Combinations", "subtitle": "From a suitcase lock to nPr, repeated letters, nCr, and IPL-style committees. Order matters for permutations; combinations forget order.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh106.pdf", "page_start": 100, "page_end": 125, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "suitcase-lock", "nav": "Suitcase lock", "title": "A 4-wheel lock, a forgotten PIN, and why listing fails", "deck": "The chapter opens with a suitcase lock: 4 wheels, digits 0–9, first digit known to be 7, no repetition. How many 3-digit tails remain? Listing is tedious; counting is the point.", "minutes": 8, "section": "6.1", "pages": [1, 1], "print": "100", "sim": "suitcase", "simTitle": "Suitcase lock: 7 _ _ _ with no repetition", "quick": ["<strong>§6.1 Introduction.</strong> A suitcase number lock has 4 wheels, each labelled 0–9. The lock opens on one 4-digit sequence with <em>no repetition</em>. You remember only that the first digit is 7. The remaining three wheels are filled from the 9 leftover digits. Listing 9×8×7 sequences by hand is tedious — this chapter’s counting techniques replace the list.", "The same idea counts arrangements and selections of objects without writing them down. The first tool is the <strong>fundamental principle of counting</strong> (multiplication principle) in §6.2."], "formulas": [{"label": "Suitcase (intro)", "html": "9 × 8 × 7 = 504 sequences after a fixed first digit 7, no repetition", "cond": "4 wheels, digits 0–9"}, {"label": "With repetition allowed", "html": "10³ = 1000 tails if digits may repeat", "cond": "not the intro’s rule"}], "deeper": "Indian UPI PINs are typically 4 digits (0000–9999) with repetition allowed, so 10⁴ = 10,000. The suitcase model forbids repetition, which is 10P4 = 5040 total codes, or 9P3 = 504 once the first wheel is known.", "worked": "First digit fixed as 7. Remaining digits: 9 choices for wheel 2, then 8, then 7. Product 504. If repetition were allowed the count would be 9×9×9 only if 7 cannot repeat, or 10×10×10 if 7 may reappear — the intro forbids repetition.", "prediction": {"prompt": "UPI PIN has 4 digits, repetition allowed, 0–9. How many PINs? The suitcase intro forbids repetition and fixes the first digit as 7. How many remaining 3-digit tails?", "options": ["10,000 PINs; 504 tails", "504 PINs; 10,000 tails", "4,000 PINs; 729 tails"], "answer": 0, "explanation": "Repetition allowed: 10⁴=10000. Suitcase no-repeat after 7: 9×8×7=504."}, "connect": [["UPI PIN vs suitcase lock", "A BHIM/GPay UPI PIN is 4 digits with repetition allowed (10⁴ = 10,000). The NCERT suitcase forbids repetition and knows the first wheel, so 9P3 = 504. Same wheels, different rule, wildly different counts."], ["Wow — Aadhaar last four", "The last four digits of Aadhaar are 0000–9999 with repetition, 10,000 possibilities — the UPI-PIN count. Security comes from the preceding eight digits plus biometrics, not from forbidding repeats.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "State the suitcase-lock count 9×8×7 and contrast it with 10⁴ UPI PINs.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The suitcase lock in §6.1 has how many wheels?", "options": ["4", "3", "10"], "answer": 0, "hint": "First paragraph.", "solution": "Four wheels, digits 0–9.", "wrong": ["", "That is the forgotten tail.", "Digits per wheel."]}, {"level": "Medium", "type": "number", "prompt": "With first digit 7 and no repetition, number of remaining 3-digit sequences is", "answer": 504, "unit": "", "tolerance": 0.05, "hint": "9×8×7", "solution": "9P3 = 504.", "map": "§6.1"}, {"level": "Hard", "type": "mcq", "prompt": "If repetition WERE allowed and the first digit is still 7, the number of 4-digit codes is", "options": ["7 followed by any 3 digits: 10³ = 1000", "504", "9³ = 729"], "answer": 0, "hint": "Each of the last three wheels has 10 options, including 7.", "solution": "Repetition allowed ⇒ 1×10×10×10 = 1000.", "wrong": ["", "That is the no-repeat tail.", "That forbids reusing 7 and the used digits, incorrectly."]}]}, {"id": "fpc", "nav": "Multiplication principle", "title": "Pants × shirts × tiffin: the fundamental principle of counting", "deck": "If event A occurs in m ways and then B in n ways, the succession occurs in m×n ways. Mohan: 3×2=6 outfits. Sabnam: 2×3×2=12 bag–tiffin–bottle triples. ROSE with no repeat: 4!=24.", "minutes": 10, "section": "6.2", "pages": [1, 5], "print": "100–104", "sim": "pants-shirts", "simTitle": "Fig 6.1–6.2: Mohan 3×2 and Sabnam 2×3×2", "quick": ["<strong>Fundamental principle of counting.</strong> If an event can occur in m different ways, following which another event can occur in n different ways, then the total number of occurrences in the given order is m×n. For three events: m×n×p.", "<strong>Example 1.</strong> 4-letter words from ROSE, no repetition: 4×3×2×1=24. With repetition: 4⁴=256. <strong>Example 2.</strong> 4 flags, a 2-flag signal one below the other: 4×3=12. <strong>Example 3.</strong> 2-digit even numbers from 1,2,3,4,5 with repetition: fill units first (2 or 4), then tens (5 digits) ⇒ 2×5=10. <strong>Example 4.</strong> At least 2 flags from 5: 5P2+5P3+5P4+5P5=20+60+120+120=320."], "formulas": [{"label": "FPC", "html": "m ways then n ways ⇒ m × n", "cond": "order of events is a chosen succession"}, {"label": "ROSE no repeat / repeat", "html": "4! = 24 ;  4⁴ = 256", "cond": "Example 1 + note"}, {"label": "Example 4 flags", "html": "5×4 + 5×4×3 + 5×4×3×2 + 5! = 320", "cond": "at least 2 flags on a staff"}], "deeper": "Always decide whether repetition is allowed, and whether order matters, before multiplying. Example 3 fills the restricted place (units, for evenness) first — a pattern that returns in every PIN, number-plate, and IPL-jersey problem.", "worked": "Example 4: 2-flag 5×4=20; 3-flag 5×4×3=60; 4-flag 120; 5-flag 120; sum 320.", "prediction": {"prompt": "How many 3-digit numbers from 1,2,3,4,5 (a) with repetition (b) without?", "options": ["125 and 60", "60 and 125", "15 and 10"], "answer": 0, "explanation": "Ex 6.1 Q1: 5³=125; 5×4×3=60."}, "connect": [["Vehicle registration last four", "A typical last-four block is 0001–9999 with repetition, 9999 possibilities (0000 often unused). If a state forbade repeated digits the count would crash to 10P4 − (leading-zero cases)."], ["Wow — JEE session slots", "If a candidate may pick 1 of 2 papers, 1 of 3 cities, and 1 of 2 sessions, FPC gives 2×3×2=12 slots — Sabnam’s 2×3×2 tiffin count in exam-admin clothing.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "State the FPC in one sentence and compute ROSE with and without repetition.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Mohan has 3 pants and 2 shirts. Number of pairs?", "answer": 6, "unit": "", "tolerance": 0.05, "hint": "3×2", "solution": "Fig 6.1: 6 outfits."}, {"level": "Medium", "type": "number", "prompt": "Example 4: signals with at least 2 of 5 distinct flags?", "answer": 320, "unit": "", "tolerance": 0.05, "hint": "20+60+120+120", "solution": "5P2+…+5P5=320.", "map": "Example 4"}, {"level": "Hard", "type": "mcq", "prompt": "2-digit even numbers from 1,2,3,4,5 with repetition equal 10 because", "options": ["units has 2 choices (2,4), then tens has 5", "both places have 5 choices", "only 2 and 4 may be used anywhere"], "answer": 0, "hint": "Example 3 fills units first.", "solution": "Restricted place first: 2×5=10.", "wrong": ["", "That would count all 2-digit numbers, 25.", "Tens may be odd."]}]}, {"id": "factorial-npr", "nav": "nPr and n!", "title": "Permutations of distinct objects: nPr = n! / (n−r)!", "deck": "A permutation is an arrangement in a definite order. nPr = n(n−1)…(n−r+1) = n!/(n−r)!. 0! = 1. 5!=120, 7!=5040. NUMBER taken 3 at a time: 6P3=120.", "minutes": 12, "section": "6.3.1–6.3.3", "pages": [5, 9], "print": "104–108", "sim": "npr-calc", "simTitle": "nPr lab: fill r slots from n distinct objects", "quick": ["<strong>Definition 1.</strong> A permutation is an arrangement in a definite order of a number of objects taken some or all at a time. <strong>Theorem 1.</strong> The number of permutations of n different objects taken r at a time, 0&lt;r≤n, no repetition, is n(n−1)…(n−r+1), denoted <sup>n</sup>P<sub>r</sub>.", "<strong>Factorial.</strong> n! = 1×2×…×n, and 0! = 1. Then <sup>n</sup>P<sub>r</sub> = n!/(n−r)! for 0≤r≤n, and <sup>n</sup>P<sub>n</sub>=n!. Example 5: 5!=120, 7!=5040, 7!−5!=4920. Example 6: 7!/5!=42; 12!/(10!2!)=66. Example 7: 5!/(2!3!)=10. Example 8: 1/8! + 1/9! = x/10! ⇒ x=100."], "formulas": [{"label": "Theorem 1", "html": "<sup>n</sup>P<sub>r</sub> = n(n−1)…(n−r+1) = n! / (n−r)!", "cond": "0 ≤ r ≤ n, distinct objects, no repetition"}, {"label": "Factorial", "html": "n! = n(n−1)!,  0! = 1", "cond": "§6.3.2"}, {"label": "Theorem 2 (repetition)", "html": "<sup>n</sup>P<sub>r</sub> with repetition = n<sup>r</sup>", "cond": "each of r places has n choices"}], "deeper": "Arranging nothing is one way: nP0=1=n!/n!. The factorial rewrite is only a compression of the falling product. Chairman and vice-chairman from 12: 12P2=132.", "worked": "Example 8: 1/8! + 1/9! = x/10! ⇒ 1 + 1/9 = x/(10×9) after cancelling 8! ⇒ 10/9 = x/90 ⇒ x=100.", "prediction": {"prompt": "12P2 (chairman and vice-chairman from 12, one person one post) equals", "options": ["132", "66", "24"], "answer": 0, "explanation": "12×11=132 = 12!/10!."}, "connect": [["Class monitor + vice-monitor", "From a class of 40, 40P2=1560 ordered pairs. If the two posts were indistinguishable we would have used 40C2=780 — that is Chapter 6.4."], ["Wow — IPL toss captains", "Picking a captain and a vice-captain from an XI is 11P2=110. The jersey numbers are a permutation; the squad of 11 is a combination.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "5! equals", "answer": 120, "unit": "", "tolerance": 0.05, "hint": "1×2×3×4×5", "solution": "Example 5(i).", "map": "Example 5"}, {"level": "Medium", "type": "number", "prompt": "Example 8: 1/8! + 1/9! = x/10! ⇒ x =", "answer": 100, "unit": "", "tolerance": 0.05, "hint": "cancel 8!, 1+1/9=x/90", "solution": "x=100.", "map": "Example 8"}, {"level": "Hard", "type": "mcq", "prompt": "0! is defined as 1 because", "options": ["there is one way to arrange nothing", "the empty product is undefined so we skip it", "nP0 would otherwise be zero"], "answer": 0, "hint": "§6.3.3 around (1).", "solution": "nP0=1=n!/(n−0)! forces 0!=1.", "wrong": ["", "It is defined, as the empty product.", "nP0 is 1, not 0."]}]}, {"id": "repeated-letters", "nav": "Letters not all distinct", "title": "ROOT, ALLAHABAD, INSTITUTE: divide by p!", "deck": "Theorem 3: n objects with p alike → n!/p!. Theorem 4: p1 of one kind, p2 of another, … → n!/(p1! p2! … pk!). ALLAHABAD: 9!/(4! 2!)=7560. INDEPENDENCE: 12!/(3! 4! 2!)=1,663,200.", "minutes": 11, "section": "6.3.4", "pages": [9, 14], "print": "108–113", "sim": "root-word", "simTitle": "ROOT: 4!/2! = 12 distinct rearrangements", "quick": ["Temporarily treat the two O’s of ROOT as different: 4! arrangements. Each genuine word is counted 2! times, so the distinct permutations are 4!/2!=12. INSTITUTE: 9 letters, I×2, T×3 → 9!/(2! 3!).", "<strong>Theorem 3.</strong> n objects, p of one kind, rest distinct: n!/p!. <strong>Theorem 4.</strong> p1 of kind 1, …, pk of kind k: n!/(p1! … pk!). Example 9 ALLAHABAD (4 A’s, 2 L’s): 9!/(4! 2!)=7560. Example 15: 4 red + 3 yellow + 2 green discs: 9!/(4! 3! 2!)=1260. Example 16 INDEPENDENCE: 12!/(3! 4! 2!)=1,663,200."], "formulas": [{"label": "Theorem 3", "html": "n objects, p alike, rest distinct: n! / p!", "cond": "ROOT: 4!/2! = 12"}, {"label": "Theorem 4", "html": "n! / (p1! p2! … pk!)", "cond": "ALLAHABAD 9!/(4!2!)=7560"}], "deeper": "The same division appears in Bose–Einstein counting and in dealing indistinguishable coins. Never divide by the factorial of a letter that occurs once.", "worked": "Example 16(i): words starting with P: fix P, 11 letters with N×3, E×4, D×2 → 11!/(3!4!2!)=138600. (ii) vowels (4 E + I) glued: 8!/(3!2!) × 5!/4! = 16800. (iii) never together: 1663200−16800=1646400. (iv) I…P: 10!/(3!2!4!)=12600.", "prediction": {"prompt": "Arrangements of ALLAHABAD (4 A, 2 L, rest distinct)?", "options": ["7560", "9!", "362880"], "answer": 0, "explanation": "Example 9: 9!/(4!2!)=7560."}, "connect": [["Number plates with repeated digits", "MH 01 AA 1122 has repeated letters and digits. Counting distinct plates from a restricted alphabet is Theorem 4, not nPr."], ["Wow — ‘MISSISSIPPI’ in every board exam", "11 letters, I×4 S×4 P×2: 11!/(4!4!2!)=34650. Ex 6.3 Q10 then subtracts the cases with four I’s glued.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "State Theorems 3 and 4 and compute ALLAHABAD and ROOT.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Distinct rearrangements of ROOT?", "answer": 12, "unit": "", "tolerance": 0.05, "hint": "4!/2!", "solution": "Theorem 3.", "map": "§6.3.4"}, {"level": "Medium", "type": "number", "prompt": "ALLAHABAD arrangements?", "answer": 7560, "unit": "", "tolerance": 0.05, "hint": "9!/(4!2!)", "solution": "Example 9.", "map": "Example 9"}, {"level": "Hard", "type": "number", "prompt": "4 red + 3 yellow + 2 green discs in a row (indistinguishable within colour)?", "answer": 1260, "unit": "", "tolerance": 0.05, "hint": "9!/(4!3!2!)", "solution": "Example 15.", "map": "Example 15"}]}, {"id": "restricted-perm", "nav": "Vowels together", "title": "Glue the vowels, subtract the rest: DAUGHTER and gaps for boys", "deck": "DAUGHTER, vowels together: treat AUE as one object → 6!×3!=4320. Vowels never together: 8!−4320=36000. 5 girls + 3 boys, no two boys together: 5!×6P3=14400.", "minutes": 11, "section": "6.3 Examples 10–14, 24", "pages": [11, 23], "print": "110–122", "sim": "vowels-together", "simTitle": "Glue AUE in DAUGHTER: 6! × 3!", "quick": ["<strong>Example 10.</strong> 4-digit numbers from 1–9, no repeat: 9P4=3024. <strong>Example 11.</strong> 3-digit numbers from 0–5, no repeat: 6P3 − 5P2=120−20=100 (subtract leading zero).", "<strong>Example 14 DAUGHTER.</strong> (i) vowels A,U,E together: (AUE) as one + 5 letters = 6 objects: 6!×3!=4320. (ii) vowels never together: 8!−4320=36000. <strong>Example 24.</strong> 5 girls first (5!), 6 gaps, 3 boys in gaps 6P3: 5!×6P3=14400."], "formulas": [{"label": "Together", "html": "glue k objects into 1, then multiply by k!", "cond": "DAUGHTER vowels: 6! × 3!"}, {"label": "Never together", "html": "total − together", "cond": "8! − 6!×3! = 36000"}, {"label": "No two together", "html": "seat the others, permute into gaps", "cond": "5! × ⁶P₃ = 14400"}], "deeper": "‘Never together’ is total minus all-together. ‘No two together’ is the stricter gap method — all-together is only one of the many clustered cases.", "worked": "Example 12: nP5 = 42 nP3, n>4 ⇒ (n−3)(n−4)=42 ⇒ n²−7n−30=0 ⇒ n=10. Example 13: 5·⁴Pr = 6·⁵P(r−1) ⇒ (6−r)(5−r)=6 ⇒ r=8 or 3.", "prediction": {"prompt": "DAUGHTER arrangements with all vowels together?", "options": ["4320", "40320", "36000"], "answer": 0, "explanation": "6!×3!=720×6=4320. 8! is unrestricted; 36000 is never-together."}, "connect": [["Rajdhani berth groups", "A family of 3 insisting on consecutive berths is the glue method: treat the 3 as one block, permute the block internally."], ["Wow — gap method in cinema seats", "5 friends already seated with empty seats on both ends: 6 gaps for 3 more so that no two newcomers are adjacent — Example 24’s 6P3.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "9P4 (4-digit numbers from 1–9, no repeat)?", "answer": 3024, "unit": "", "tolerance": 0.05, "hint": "9×8×7×6", "solution": "Example 10.", "map": "Example 10"}, {"level": "Medium", "type": "number", "prompt": "3-digit numbers from 0,1,2,3,4,5 no repeat?", "answer": 100, "unit": "", "tolerance": 0.05, "hint": "6P3−5P2", "solution": "Example 11: 120−20=100.", "map": "Example 11"}, {"level": "Hard", "type": "number", "prompt": "5 girls and 3 boys in a row, no two boys together?", "answer": 14400, "unit": "", "tolerance": 0.05, "hint": "5! × 6P3", "solution": "Example 24.", "map": "Example 24"}]}, {"id": "combinations", "nav": "nCr, handshakes", "title": "Order does not matter: nCr = n! / (r! (n−r)!)", "deck": "XY and YX are one team. nCr = nPr / r!. 4C2=6, 52C4=270725. nCa=nCb ⇒ a=b or a+b=n. Pascal: nCr + nC(r−1) = (n+1)Cr.", "minutes": 12, "section": "6.4", "pages": [15, 20], "print": "114–119", "sim": "ncr-lab", "simTitle": "Handshake / team lab: nC2 vs nP2", "quick": ["A team of 2 from tennis players X,Y,Z is {XY, YZ, ZX} — three combinations, because order is irrelevant. Twelve people shaking hands: 12C2. Seven points on a circle, chords: 7C2.", "<strong>Theorem 5.</strong> nPr = nCr × r!, so nCr = n! / (r! (n−r)!) for 0≤r≤n. nC0=nCn=1, and nCr = nC(n−r). <strong>Theorem 6 (Pascal).</strong> nCr + nC(r−1) = (n+1)Cr. Example 17: nC9=nC8 ⇒ n=17, then nC17=1. Example 18: committee of 3 from 2 men+3 women: 5C3=10; with 1 man 2 women: 2C1×3C2=6. Example 19: 52C4=270725 cards; same suit 4×13C4=2860; different suits 13⁴=28561; face 12C4=495; 2 red 2 black (26C2)²=105625; same colour 2×26C4=29900."], "formulas": [{"label": "Theorem 5", "html": "<sup>n</sup>C<sub>r</sub> = n! / (r! (n−r)!) = <sup>n</sup>P<sub>r</sub> / r!", "cond": "0 ≤ r ≤ n"}, {"label": "Pascal identity", "html": "<sup>n</sup>C<sub>r</sub> + <sup>n</sup>C<sub>r−1</sub> = <sup>n+1</sup>C<sub>r</sub>", "cond": "Theorem 6"}, {"label": "nCa = nCb", "html": "a = b  or  a + b = n", "cond": "Example 17"}], "deeper": "Selecting r is rejecting n−r, hence nCr=nC(n−r). Pascal’s identity is the ‘include x / exclude x’ split that builds the next row of Pascal’s triangle in Chapter 7.", "worked": "Example 19(i): 4×13C4=4×715=2860. (iv) 26C2=325, 325²=105625. (v) 26C4=14950, times 2 = 29900.", "prediction": {"prompt": "A cricket XI from 17 with exactly 4 of 5 bowlers. Number of teams?", "options": ["5C4 × 12C7 = 3960", "17C11", "5C4 × 12C11"], "answer": 0, "explanation": "Ex 6.4 Q7: 5×792=3960. Must pick 4 bowlers and 7 non-bowlers."}, "connect": [["IPL playing XI from a squad of 15", "15C11=1365 unordered XIs. Naming a captain after that is ×11, a permutation step on a combination."], ["Wow — Sushruta’s 6 tastes", "The historical note: 63 combinations from 6 tastes (2⁶−1, all non-empty subsets). Jain Vikalpa and Bhāskara’s Aṅka Pāśa sit on the same nCr formula.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes).", "quizzes": [{"level": "Easy", "type": "number", "prompt": "4C2 equals", "answer": 6, "unit": "", "tolerance": 0.05, "hint": "4!/(2!2!)", "solution": "AB,AC,AD,BC,BD,CD."}, {"level": "Medium", "type": "number", "prompt": "52C4 (4 cards from a pack)?", "answer": 270725, "unit": "", "tolerance": 0.05, "hint": "52×51×50×49 / 24", "solution": "Example 19.", "map": "Example 19"}, {"level": "Hard", "type": "mcq", "prompt": "nC9 = nC8 implies nC17 equals", "options": ["1", "17", "9"], "answer": 0, "hint": "Example 17: n=17, 17C17=1.", "solution": "nCa=nCb ⇒ n=a+b=17.", "wrong": ["", "n, not nC17.", "r, not the combination."]}]}, {"id": "mixed-counting", "nav": "Committees & dictionaries", "title": "At least one girl, dictionary rank, and IPL-style constraints", "deck": "Example 21: 4 girls+7 boys, team of 5 with at least one of each = 441. AGAIN dictionary: 50th word is NAAIG. Example 20 INVOLUTE: 4C3×4C2×5!=2880.", "minutes": 12, "section": "Misc. Examples 20–23", "pages": [20, 23], "print": "119–122", "sim": "ipl-squad", "simTitle": "IPL XI lab: 11 from 15 with exactly 4 bowlers", "quick": ["<strong>Example 20 INVOLUTE</strong> (4 vowels, 4 consonants): 3 vowels + 2 consonants then arrange: 4C3×4C2×5!=2880. <strong>Example 21.</strong> 4 girls + 7 boys, team of 5. (i) no girl: 7C5=21. (ii) at least one boy and one girl: 7C1·4C4 + 7C2·4C3 + 7C3·4C2 + 7C4·4C1 = 7+84+210+140=441. (iii) at least 3 girls: 4C3·7C2 + 4C4·7C1=84+7=91.", "<strong>Example 22 AGAIN</strong> (2 A’s): 5!/2!=60 words. Dictionary: 24 start with A, 12 with G, 12 with I, total 48; 49th NAAGI, 50th NAAIG. <strong>Example 23.</strong> Digits 1,2,0,2,4,2,4 forming numbers &gt; 1,000,000: 7!/(3!2!) − 6!/(3!2!)=420−60=360."], "formulas": [{"label": "Select then arrange", "html": "<sup>n</sup>C<sub>r</sub> × r! = <sup>n</sup>P<sub>r</sub>", "cond": "Example 20: 24×120=2880"}, {"label": "At least one of each", "html": "sum over admissible (boys, girls) pairs", "cond": "Example 21(ii)=441"}, {"label": "Dictionary rank", "html": "count all words before the target prefix", "cond": "AGAIN 50th = NAAIG"}], "deeper": "‘At least’ is a partition into disjoint cases. Complements (total − forbidden) are faster when the forbidden set is small, as in Example 23’s leading-zero subtraction.", "worked": "Example 21(ii) complement check: total 11C5=462, minus no-girl 21 minus no-boy 4C5=0, wait 4C5 is 0 so 462−21=441. Yes.", "prediction": {"prompt": "AGAIN words as in a dictionary: the 50th word is", "options": ["NAAIG", "NAAGI", "AGAIN"], "answer": 0, "explanation": "Example 22: 24+12+12=48 words before N…; 49th NAAGI, 50th NAAIG."}, "connect": [["NEET paper: 8 questions, at least 3 from each of two sections", "Misc. Q7: Part I has 5, Part II has 7, choose 8 with ≥3 from each: 5C3·7C5 + 5C4·7C4 + 5C5·7C3 = 210+175+35=420."], ["Wow — IPL ‘at most 4 overseas’", "A 15-man squad with 6 overseas: number of XIs with at most 4 overseas is 6C0·9C11 (0) + 6C1·9C10 + … + 6C4·9C7. Same partition as Example 21.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "INVOLUTE words with 3 vowels and 2 consonants?", "answer": 2880, "unit": "", "tolerance": 0.05, "hint": "4C3×4C2×5!", "solution": "Example 20.", "map": "Example 20"}, {"level": "Medium", "type": "number", "prompt": "Teams of 5 from 4 girls+7 boys with at least one of each?", "answer": 441, "unit": "", "tolerance": 0.05, "hint": "462−21", "solution": "Example 21(ii).", "map": "Example 21"}, {"level": "Hard", "type": "mcq", "prompt": "Numbers &gt; 1000000 from digits 1,2,0,2,4,2,4?", "options": ["360", "420", "60"], "answer": 0, "hint": "Example 23: 420 total 7-digit strings minus 60 leading zeros.", "solution": "7!/(3!2!)=420; leading 0: 60; difference 360.", "wrong": ["", "That includes leading zeros.", "Those are only the leading-zero cases."]}]}, {"id": "exam-patterns", "nav": "Exam patterns", "title": "EQUATION, MISSISSIPPI, and a 5-course programme", "deck": "EQUATION: 8!=40320. MONDAY 4 letters: 6P4=360. MISSISSIPPI four I’s not together: 34650−840=33810. 9 courses, 2 compulsory, choose 3 more: 7C3=35.", "minutes": 10, "section": "Ex 6.3–6.4", "pages": [15, 20], "print": "114–119", "sim": "course-pick", "simTitle": "5-course programme: 2 compulsory + 7C3", "quick": ["Exercise 6.3 packs the standard board patterns: 3-digit / 4-digit with or without 0, even numbers, chairman-vice, nPr equations, EQUATION 8!, MONDAY with a vowel first 2×5!=240, MISSISSIPPI I’s not together, PERMUTATIONS with P and S separated by 4 letters.", "Exercise 6.4 is pure nCr: nC8=nC2 ⇒ n=10, nC2=45; 2nC3:nC3=12:1 ⇒ n=5; 21 points, 21C2=210 chords; 3 boys 3 girls from 5 and 4: 5C3×4C3=40; 9 balls 3 of each colour: 6C3×5C3×5C3=2000; 5 cards exactly one ace: 4C1×48C4=778320; cricket 5C4×12C7=3960; bag 5C2×6C3=200; 7C3=35 programmes."], "formulas": [{"label": "Complement for a letter-block", "html": "total − (glue the identical letters)", "cond": "MISSISSIPPI: 34650 − 8!/(4!2!)"}, {"label": "Compulsory courses", "html": "choose the rest from what remains", "cond": "7C3=35"}], "deeper": "When a question says ‘exactly one ace’, freeze that category with nC1 and choose the rest from the complementary pile. When it says ‘2 specific courses are compulsory’, they are already in the combination; only the free slots remain.", "worked": "Ex 6.3 Q10: MISSISSIPPI 11!/(4!4!2!)=34650. Four I’s glued → 8 letters with S×4 P×2: 8!/(4!2!)=840. Difference 33810.", "prediction": {"prompt": "A student must pick 5 courses from 9, with 2 specific courses compulsory. Number of programmes?", "options": ["35", "126", "9C5"], "answer": 0, "explanation": "Ex 6.4 Q9: the 2 are fixed, choose 3 from 7 → 7C3=35. 9C5=126 would ignore the constraint."}, "connect": [["CBSE subject combinations", "A student must take English and a language, then 3 from 7 electives: 7C3=35 — Ex 6.4 Q9 verbatim."], ["Wow — Mahāvīra (c. 850) wrote nCr", "The historical note credits Mahāvīra with the general formulae for nPr and nCr, centuries before Bernoulli’s Ars Conjectandi (1713).", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh106.pdf"}]]], "recall": "Compute 7C3=35 and MISSISSIPPI-without-four-I’s-together=33810.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "EQUATION, all letters, each once?", "answer": 40320, "unit": "", "tolerance": 0.05, "hint": "8!", "solution": "Ex 6.3 Q8."}, {"level": "Medium", "type": "number", "prompt": "7C3 (3 free courses from 7)?", "answer": 35, "unit": "", "tolerance": 0.05, "hint": "7×6×5/6", "solution": "Ex 6.4 Q9.", "map": "Ex 6.4 Q9"}, {"level": "Hard", "type": "number", "prompt": "MISSISSIPPI permutations with four I’s not together?", "answer": 33810, "unit": "", "tolerance": 0.05, "hint": "34650−840", "solution": "Ex 6.3 Q10.", "map": "Ex 6.3 Q10"}]}], "exercises": [{"number": "6.1.1", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 3-digit numbers can be formed from the digits 1,2,3,4,5 assuming (i) repetition is allowed (ii) repetition is not allowed?", "steps": ["(i) 5×5×5=125.", "(ii) 5×4×3=60."], "answer": " (i) 125; (ii) 60", "section": "Ex 6.1"}, {"number": "6.1.2", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 3-digit even numbers can be formed from 1,2,3,4,5,6 if the digits can be repeated?", "steps": ["Units place: 2,4,6 → 3 choices (even).", "Hundreds and tens: 6 each (repetition allowed).", "3×6×6=108."], "answer": "108", "section": "Ex 6.1"}, {"number": "6.1.3", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 4-letter codes from the first 10 letters of the English alphabet, no letter repeated?", "steps": ["10P4=10×9×8×7=5040."], "answer": "5040", "section": "Ex 6.1"}, {"number": "6.1.4", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 5-digit telephone numbers using 0–9, each starting with 67, no digit more than once?", "steps": ["First two digits fixed as 6,7. Remaining 3 positions from the leftover 8 digits: 8P3=8×7×6=336."], "answer": "336", "section": "Ex 6.1"}, {"number": "6.1.5", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "A coin is tossed 3 times and the outcomes are recorded. How many possible outcomes?", "steps": ["2³=8 (HHH,HHT,…,TTT)."], "answer": "8", "section": "Ex 6.1"}, {"number": "6.1.6", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "Given 5 flags of different colours, how many different signals if each signal requires 2 flags, one below the other?", "steps": ["5×4=20=5P2."], "answer": "20", "section": "Ex 6.1"}, {"number": "6.2.1", "conceptIdx": 2, "page": 7, "printPage": 106, "question": "Evaluate (i) 8! (ii) 4! − 3!.", "steps": ["8!=40320.", "4!=24, 3!=6, difference 18."], "answer": "(i) 40320; (ii) 18", "section": "Ex 6.2"}, {"number": "6.2.2", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "Is 3! + 4! = 7! ?", "steps": ["3!+4!=6+24=30. 7!=5040. 30≠5040."], "answer": "No", "section": "Ex 6.2"}, {"number": "6.2.3", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "Compute 8! / (6! × 2!).", "steps": ["8×7/(2×1)=28."], "answer": "28", "section": "Ex 6.2"}, {"number": "6.2.4", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "If 1/6! + 1/7! = x/8!, find x.", "steps": ["1 + 1/7 = x/(8×7) after cancelling 6!.", "8/7 = x/56 ⇒ x=64."], "answer": "x = 64", "section": "Ex 6.2"}, {"number": "6.2.5", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "Evaluate n! / (n−r)! when (i) n=6, r=2 (ii) n=9, r=5.", "steps": ["(i) 6×5=30.", "(ii) 9×8×7×6×5=15120."], "answer": "(i) 30; (ii) 15120", "section": "Ex 6.2"}, {"number": "6.3.1", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "How many 3-digit numbers can be formed using digits 1 to 9 if no digit is repeated?", "steps": ["9P3=9×8×7=504."], "answer": "504", "section": "Ex 6.3"}, {"number": "6.3.2", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "How many 4-digit numbers are there with no digit repeated?", "steps": ["First digit 9 choices (1–9). Then 9,8,7 for the rest (0 now available).", "9×9×8×7=4536.", "Equivalently 10P4 − 9P3=5040−504=4536."], "answer": "4536", "section": "Ex 6.3"}, {"number": "6.3.3", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "How many 3-digit even numbers using 1,2,3,4,6,7 if no digit is repeated?", "steps": ["Units: 2,4,6 → 3 choices. Remaining two places: 5×4.", "3×5×4=60."], "answer": "60", "section": "Ex 6.3"}, {"number": "6.3.4", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "Find the number of 4-digit numbers from 1,2,3,4,5 with no digit repeated. How many of these will be even?", "steps": ["5P4=5×4×3×2=120.", "Even: units 2 or 4 (2 ways) then 4×3×2=24, total 48."], "answer": "120 numbers; 48 even", "section": "Ex 6.3"}, {"number": "6.3.5", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "From a committee of 8 persons, in how many ways can we choose a chairman and a vice chairman (one person cannot hold both)?", "steps": ["8P2=8×7=56."], "answer": "56", "section": "Ex 6.3"}, {"number": "6.3.6", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "Find n if (n−1)P3 : nP4 = 1 : 9.", "steps": ["[(n−1)(n−2)(n−3)] / [n(n−1)(n−2)(n−3)] = 1/9 ⇒ 1/n=1/9 ⇒ n=9", "(n>3 so the cancelled factors are nonzero)."], "answer": "n = 9", "section": "Ex 6.3"}, {"number": "6.3.7", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "Find r if (i) ⁵Pr = 2 · ⁶P(r−1) (ii) ⁵Pr = ⁶P(r−1).", "steps": ["(i) (7−r)(6−r)=12 ⇒ r²−13r+30=0 ⇒ r=3 (r=10 invalid).", "(ii) (7−r)(6−r)=6 ⇒ r²−13r+36=0 ⇒ r=4 (r=9 invalid)."], "answer": "(i) r=3; (ii) r=4", "section": "Ex 6.3"}, {"number": "6.3.8", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "How many words, with or without meaning, can be formed using all the letters of EQUATION, each letter exactly once?", "steps": ["8 distinct letters: 8!=40320."], "answer": "40320", "section": "Ex 6.3"}, {"number": "6.3.9", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "Words from MONDAY, no letter repeated: (i) 4 letters at a time (ii) all letters (iii) all letters, first letter a vowel.", "steps": ["(i) 6P4=360.", "(ii) 6!=720.", "(iii) first O or A: 2×5!=240."], "answer": "(i) 360; (ii) 720; (iii) 240", "section": "Ex 6.3"}, {"number": "6.3.10", "conceptIdx": 3, "page": 15, "printPage": 114, "question": "In how many of the distinct permutations of MISSISSIPPI do the four I’s not come together?", "steps": ["Total 11!/(4!4!2!)=34650.", "Four I’s glued: 8!/(4!2!)=840.", "Difference 33810."], "answer": "33810", "section": "Ex 6.3"}, {"number": "6.3.11", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "Letters of PERMUTATIONS arranged so that (i) words start with P and end with S (ii) vowels are all together (iii) there are always 4 letters between P and S.", "steps": ["12 letters, T×2.", "(i) Fix P…S: 10!/2!=1814400.", "(ii) 5 vowels glued: 8 objects with T×2: (8!/2!)×5!=2419200.", "(iii) 7 start positions × 2 orders for P,S = 14; remaining 10!/2!: 14×1814400=25401600."], "answer": "(i) 1814400; (ii) 2419200; (iii) 25401600", "section": "Ex 6.3"}, {"number": "6.4.1", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "If nC8 = nC2, find nC2.", "steps": ["nC8=nC2 ⇒ n=8+2=10.", "10C2=45."], "answer": "45", "section": "Ex 6.4"}, {"number": "6.4.2", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "Determine n if (i) 2nC3 : nC3 = 12:1 (ii) 2nC3 : nC3 = 11:1.", "steps": ["Ratio = 4(2n−1)/(n−2).", "(i) 4(2n−1)/(n−2)=12 ⇒ 2n−1=3n−6 ⇒ n=5.", "(ii) =11 ⇒ 8n−4=11n−22 ⇒ n=6."], "answer": "(i) n=5; (ii) n=6", "section": "Ex 6.4"}, {"number": "6.4.3", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "How many chords can be drawn through 21 points on a circle?", "steps": ["21C2=210 (assume no three diameters forced; just pairwise joins)."], "answer": "210", "section": "Ex 6.4"}, {"number": "6.4.4", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "In how many ways can a team of 3 boys and 3 girls be selected from 5 boys and 4 girls?", "steps": ["5C3×4C3=10×4=40."], "answer": "40", "section": "Ex 6.4"}, {"number": "6.4.5", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "Number of ways of selecting 9 balls from 6 red, 5 white, 5 blue if each selection has 3 of each colour?", "steps": ["6C3×5C3×5C3=20×10×10=2000."], "answer": "2000", "section": "Ex 6.4"}, {"number": "6.4.6", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "Number of 5-card combinations from 52 with exactly one ace?", "steps": ["4C1×48C4=4×194580=778320."], "answer": "778320", "section": "Ex 6.4"}, {"number": "6.4.7", "conceptIdx": 6, "page": 20, "printPage": 119, "question": "Cricket XI from 17 players of whom only 5 can bowl; each XI must include exactly 4 bowlers.", "steps": ["5C4×12C7=5×792=3960."], "answer": "3960", "section": "Ex 6.4"}, {"number": "6.4.8", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "A bag contains 5 black and 6 red balls. Number of ways to select 2 black and 3 red?", "steps": ["5C2×6C3=10×20=200."], "answer": "200", "section": "Ex 6.4"}, {"number": "6.4.9", "conceptIdx": 7, "page": 20, "printPage": 119, "question": "A student chooses a programme of 5 courses from 9, and 2 specific courses are compulsory.", "steps": ["2 fixed, choose 3 from remaining 7: 7C3=35."], "answer": "35", "section": "Ex 6.4"}, {"number": "M.1", "conceptIdx": 6, "page": 23, "printPage": 122, "question": "How many words of 2 vowels and 3 consonants from DAUGHTER?", "steps": ["Vowels A,U,E (3); consonants D,G,H,T,R (5).", "3C2×5C3×5!=3×10×120=3600."], "answer": "3600", "section": "Misc."}, {"number": "M.2", "conceptIdx": 4, "page": 23, "printPage": 122, "question": "Words from EQUATION so that vowels and consonants occur together?", "steps": ["5 vowels as one block, 3 consonants as one block: 2!×5!×3!=2×120×6=1440."], "answer": "1440", "section": "Misc."}, {"number": "M.3", "conceptIdx": 6, "page": 23, "printPage": 122, "question": "Committee of 7 from 9 boys and 4 girls: (i) exactly 3 girls (ii) at least 3 girls (iii) at most 3 girls.", "steps": ["(i) 4C3×9C4=4×126=504.", "(ii) 504 + 4C4×9C3=504+84=588.", "(iii) 13C7 − 4C4×9C3=1716−84=1632 (equivalently 0+1+2+3 girls)."], "answer": "(i) 504; (ii) 588; (iii) 1632", "section": "Misc."}, {"number": "M.4", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "Different permutations of EXAMINATION listed as in a dictionary. How many words before the first word starting with E?", "steps": ["11 letters, A×2 I×2 N×2. Words before E start with A.", "Remaining 10 letters A×1 I×2 N×2: 10!/(2!2!)=907200."], "answer": "907200", "section": "Misc."}, {"number": "M.5", "conceptIdx": 4, "page": 24, "printPage": 123, "question": "How many 6-digit numbers from 0,1,3,5,7,9 are divisible by 10 with no digit repeated?", "steps": ["Must end in 0. First digit: 5 choices (1,3,5,7,9); remaining 4 positions: 4!.", "5×24=120."], "answer": "120", "section": "Misc."}, {"number": "M.6", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "English alphabet: 5 vowels, 21 consonants. Words with 2 different vowels and 2 different consonants?", "steps": ["5C2×21C2×4!=10×210×24=50400."], "answer": "50400", "section": "Misc."}, {"number": "M.7", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "12 questions, Part I (5) and Part II (7). Attempt 8, at least 3 from each part.", "steps": ["(3,5): 5C3×7C5=10×21=210.", "(4,4): 5C4×7C4=5×35=175.", "(5,3): 5C5×7C3=35.", "Total 420."], "answer": "420", "section": "Misc."}, {"number": "M.8", "conceptIdx": 5, "page": 24, "printPage": 123, "question": "5-card combinations from 52 with exactly one king.", "steps": ["4C1×48C4=4×194580=778320."], "answer": "778320", "section": "Misc."}, {"number": "M.9", "conceptIdx": 4, "page": 24, "printPage": 123, "question": "Seat 5 men and 4 women in a row so that the women occupy the even places.", "steps": ["Even places 2,4,6,8: 4! for women. Odd places 1,3,5,7,9: 5! for men.", "4!×5!=2880."], "answer": "2880", "section": "Misc."}, {"number": "M.10", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "From 25 students, 10 for an excursion. 3 students all join or none join. Number of ways?", "steps": ["All 3: 22C7=170544. None: 22C10=646646.", "Sum 817190."], "answer": "817190", "section": "Misc."}, {"number": "M.11", "conceptIdx": 3, "page": 24, "printPage": 123, "question": "Letters of ASSASSINATION so that all the S’s are together?", "steps": ["13 letters, S×4 A×3 I×2 N×2. Glue 4 S as one: 10 letters with A×3 I×2 N×2.", "10!/(3!2!2!)=151200."], "answer": "151200", "section": "Misc."}]};
+window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathematics", "title": "Permutations and Combinations", "subtitle": "From a suitcase lock to nPr, repeated letters, nCr, and IPL-style committees. Order matters for permutations; combinations forget order.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh106.pdf", "page_start": 100, "page_end": 125, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "suitcase-lock", "nav": "Suitcase lock", "title": "A 4-wheel lock, a forgotten PIN, and why listing fails", "deck": "The chapter opens with a suitcase lock: 4 wheels, digits 0–9, first digit known to be 7, no repetition. How many 3-digit tails remain? Listing is tedious; counting is the point.", "minutes": 8, "section": "6.1", "pages": [1, 1], "print": "100", "sim": "suitcase", "simTitle": "Suitcase lock: 7 _ _ _ with no repetition", "quick": ["<strong>§6.1 Introduction.</strong> A suitcase number lock has 4 wheels, each labelled 0–9. The lock opens on one 4-digit sequence with <em>no repetition</em>. You remember only that the first digit is 7. The remaining three wheels are filled from the 9 leftover digits. Listing 9×8×7 sequences by hand is tedious — this chapter’s counting techniques replace the list.", "The same idea counts arrangements and selections of objects without writing them down. The first tool is the <strong>fundamental principle of counting</strong> (multiplication principle) in §6.2.", "Indian UPI PINs are typically 4 digits (0000–9999) with repetition allowed, so 10⁴ = 10,000. The suitcase model forbids repetition, which is 10P4 = 5040 total codes, or 9P3 = 504 once the first wheel is known."], "formulas": [{"label": "Suitcase (intro)", "html": "9 × 8 × 7 = 504 sequences after a fixed first digit 7, no repetition", "cond": "4 wheels, digits 0–9"}, {"label": "With repetition allowed", "html": "10³ = 1000 tails if digits may repeat", "cond": "not the intro’s rule"}], "deeper": "Indian UPI PINs are typically 4 digits (0000–9999) with repetition allowed, so 10⁴ = 10,000. The suitcase model forbids repetition, which is 10P4 = 5040 total codes, or 9P3 = 504 once the first wheel is known.", "worked": {"title": "Worked source example · PDF p.5", "problem": "How many 3-digit numbers can be formed from the digits 1,2,3,4,5 assuming (i) repetition is allowed (ii) repetition is not allowed?", "given": "How many 3-digit numbers can be formed from the digits 1,2,3,4,5 assuming (i) repetition is allowed (ii) repetition is not allowed?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) 5×5×5=125.", "(ii) 5×4×3=60.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": " (i) 125; (ii) 60"}, "prediction": {"prompt": "UPI PIN has 4 digits, repetition allowed, 0–9. How many PINs? The suitcase intro forbids repetition and fixes the first digit as 7. How many remaining 3-digit tails?", "options": ["10,000 PINs; 504 tails", "504 PINs; 10,000 tails", "4,000 PINs; 729 tails"], "answer": 0, "explanation": "Repetition allowed: 10⁴=10000. Suitcase no-repeat after 7: 9×8×7=504."}, "connect": [["UPI PIN vs suitcase lock", "A BHIM/GPay UPI PIN is 4 digits with repetition allowed (10⁴ = 10,000). The NCERT suitcase forbids repetition and knows the first wheel, so 9P3 = 504. Same wheels, different rule, wildly different counts."], ["Wow — Aadhaar last four", "The last four digits of Aadhaar are 0000–9999 with repetition, 10,000 possibilities — the UPI-PIN count. Security comes from the preceding eight digits plus biometrics, not from forbidding repeats.", null, {"id": "sXsDXEIG4cc", "title": "The number lock of a suitcase has 4 wheels, each labelled with ten digits I.e. from 0 to 9 | NCERT", "channel": "Hi-Q Learning"}]], "recall": "State the suitcase-lock count 9×8×7 and contrast it with 10⁴ UPI PINs.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The suitcase lock in §6.1 has how many wheels?", "options": ["4", "3", "10"], "answer": 0, "hint": "First paragraph.", "solution": "Four wheels, digits 0–9.", "wrong": ["", "That is the forgotten tail.", "Digits per wheel."]}, {"level": "Medium", "type": "number", "prompt": "With first digit 7 and no repetition, number of remaining 3-digit sequences is", "answer": 504, "unit": "", "tolerance": 0.05, "hint": "9×8×7", "solution": "9P3 = 504.", "map": "§6.1"}, {"level": "Hard", "type": "mcq", "prompt": "If repetition WERE allowed and the first digit is still 7, the number of 4-digit codes is", "options": ["7 followed by any 3 digits: 10³ = 1000", "504", "9³ = 729"], "answer": 0, "hint": "Each of the last three wheels has 10 options, including 7.", "solution": "Repetition allowed ⇒ 1×10×10×10 = 1000.", "wrong": ["", "That is the no-repeat tail.", "That forbids reusing 7 and the used digits, incorrectly."]}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "fpc", "nav": "Multiplication principle", "title": "Pants × shirts × tiffin: the fundamental principle of counting", "deck": "If event A occurs in m ways and then B in n ways, the succession occurs in m×n ways. Mohan: 3×2=6 outfits. Sabnam: 2×3×2=12 bag–tiffin–bottle triples. ROSE with no repeat: 4!=24.", "minutes": 10, "section": "6.2", "pages": [1, 5], "print": "100–104", "sim": "pants-shirts", "simTitle": "Fig 6.1–6.2: Mohan 3×2 and Sabnam 2×3×2", "quick": ["<strong>Fundamental principle of counting.</strong> If an event can occur in m different ways, following which another event can occur in n different ways, then the total number of occurrences in the given order is m×n. For three events: m×n×p.", "<strong>Example 1.</strong> 4-letter words from ROSE, no repetition: 4×3×2×1=24. With repetition: 4⁴=256. <strong>Example 2.</strong> 4 flags, a 2-flag signal one below the other: 4×3=12. <strong>Example 3.</strong> 2-digit even numbers from 1,2,3,4,5 with repetition: fill units first (2 or 4), then tens (5 digits) ⇒ 2×5=10. <strong>Example 4.</strong> At least 2 flags from 5: 5P2+5P3+5P4+5P5=20+60+120+120=320.", "Always decide whether repetition is allowed, and whether order matters, before multiplying. Example 3 fills the restricted place (units, for evenness) first — a pattern that returns in every PIN, number-plate, and IPL-jersey problem."], "formulas": [{"label": "FPC", "html": "m ways then n ways ⇒ m × n", "cond": "order of events is a chosen succession"}, {"label": "ROSE no repeat / repeat", "html": "4! = 24 ;  4⁴ = 256", "cond": "Example 1 + note"}, {"label": "Example 4 flags", "html": "5×4 + 5×4×3 + 5×4×3×2 + 5! = 320", "cond": "at least 2 flags on a staff"}], "deeper": "Always decide whether repetition is allowed, and whether order matters, before multiplying. Example 3 fills the restricted place (units, for evenness) first — a pattern that returns in every PIN, number-plate, and IPL-jersey problem.", "worked": {"title": "Worked source example · PDF p.5", "problem": "How many 3-digit even numbers can be formed from 1,2,3,4,5,6 if the digits can be repeated?", "given": "How many 3-digit even numbers can be formed from 1,2,3,4,5,6 if the digits can be repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Units place: 2,4,6 → 3 choices (even).", "Hundreds and tens: 6 each (repetition allowed).", "3×6×6=108."], "answer": "108"}, "prediction": {"prompt": "How many 3-digit numbers from 1,2,3,4,5 (a) with repetition (b) without?", "options": ["125 and 60", "60 and 125", "15 and 10"], "answer": 0, "explanation": "Ex 6.1 Q1: 5³=125; 5×4×3=60."}, "connect": [["Vehicle registration last four", "A typical last-four block is 0001–9999 with repetition, 9999 possibilities (0000 often unused). If a state forbade repeated digits the count would crash to 10P4 − (leading-zero cases)."], ["Wow — JEE session slots", "If a candidate may pick 1 of 2 papers, 1 of 3 cities, and 1 of 2 sessions, FPC gives 2×3×2=12 slots — Sabnam’s 2×3×2 tiffin count in exam-admin clothing.", null, {"id": "HDLBCv4yyIs", "title": "Fundamental principle of counting | Permutations and Combinations | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State the FPC in one sentence and compute ROSE with and without repetition.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Mohan has 3 pants and 2 shirts. Number of pairs?", "answer": 6, "unit": "", "tolerance": 0.05, "hint": "3×2", "solution": "Fig 6.1: 6 outfits."}, {"level": "Medium", "type": "number", "prompt": "Example 4: signals with at least 2 of 5 distinct flags?", "answer": 320, "unit": "", "tolerance": 0.05, "hint": "20+60+120+120", "solution": "5P2+…+5P5=320.", "map": "Example 4"}, {"level": "Hard", "type": "mcq", "prompt": "2-digit even numbers from 1,2,3,4,5 with repetition equal 10 because", "options": ["units has 2 choices (2,4), then tens has 5", "both places have 5 choices", "only 2 and 4 may be used anywhere"], "answer": 0, "hint": "Example 3 fills units first.", "solution": "Restricted place first: 2×5=10.", "wrong": ["", "That would count all 2-digit numbers, 25.", "Tens may be odd."]}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "factorial-npr", "nav": "nPr and n!", "title": "Permutations of distinct objects: nPr = n! / (n−r)!", "deck": "A permutation is an arrangement in a definite order. nPr = n(n−1)…(n−r+1) = n!/(n−r)!. 0! = 1. 5!=120, 7!=5040. NUMBER taken 3 at a time: 6P3=120.", "minutes": 12, "section": "6.3.1–6.3.3", "pages": [5, 9], "print": "104–108", "sim": "npr-calc", "simTitle": "nPr lab: fill r slots from n distinct objects", "quick": ["<strong>Definition 1.</strong> A permutation is an arrangement in a definite order of a number of objects taken some or all at a time. <strong>Theorem 1.</strong> The number of permutations of n different objects taken r at a time, 0&lt;r≤n, no repetition, is n(n−1)…(n−r+1), denoted <sup>n</sup>P<sub>r</sub>.", "<strong>Factorial.</strong> n! = 1×2×…×n, and 0! = 1. Then <sup>n</sup>P<sub>r</sub> = n!/(n−r)! for 0≤r≤n, and <sup>n</sup>P<sub>n</sub>=n!. Example 5: 5!=120, 7!=5040, 7!−5!=4920. Example 6: 7!/5!=42; 12!/(10!2!)=66. Example 7: 5!/(2!3!)=10. Example 8: 1/8! + 1/9! = x/10! ⇒ x=100.", "Arranging nothing is one way: nP0=1=n!/n!. The factorial rewrite is only a compression of the falling product. Chairman and vice-chairman from 12: 12P2=132."], "formulas": [{"label": "Theorem 1", "html": "<sup>n</sup>P<sub>r</sub> = n(n−1)…(n−r+1) = n! / (n−r)!", "cond": "0 ≤ r ≤ n, distinct objects, no repetition"}, {"label": "Factorial", "html": "n! = n(n−1)!,  0! = 1", "cond": "§6.3.2"}, {"label": "Theorem 2 (repetition)", "html": "<sup>n</sup>P<sub>r</sub> with repetition = n<sup>r</sup>", "cond": "each of r places has n choices"}], "deeper": "Arranging nothing is one way: nP0=1=n!/n!. The factorial rewrite is only a compression of the falling product. Chairman and vice-chairman from 12: 12P2=132.", "worked": {"title": "Worked source example · PDF p.5", "problem": "How many 4-letter codes from the first 10 letters of the English alphabet, no letter repeated?", "given": "How many 4-letter codes from the first 10 letters of the English alphabet, no letter repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "10P4=10×9×8×7=5040.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "5040"}, "prediction": {"prompt": "12P2 (chairman and vice-chairman from 12, one person one post) equals", "options": ["132", "66", "24"], "answer": 0, "explanation": "12×11=132 = 12!/10!."}, "connect": [["Class monitor + vice-monitor", "From a class of 40, 40P2=1560 ordered pairs. If the two posts were indistinguishable we would have used 40C2=780 — that is Chapter 6.4."], ["Wow — IPL toss captains", "Picking a captain and a vice-captain from an XI is 11P2=110. The jersey numbers are a permutation; the squad of 11 is a combination.", null, {"id": "FDR3AdVop0Q", "title": "Factorial | Permutation and Combination | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "5! equals", "answer": 120, "unit": "", "tolerance": 0.05, "hint": "1×2×3×4×5", "solution": "Example 5(i).", "map": "Example 5"}, {"level": "Medium", "type": "number", "prompt": "Example 8: 1/8! + 1/9! = x/10! ⇒ x =", "answer": 100, "unit": "", "tolerance": 0.05, "hint": "cancel 8!, 1+1/9=x/90", "solution": "x=100.", "map": "Example 8"}, {"level": "Hard", "type": "mcq", "prompt": "0! is defined as 1 because", "options": ["there is one way to arrange nothing", "the empty product is undefined so we skip it", "nP0 would otherwise be zero"], "answer": 0, "hint": "§6.3.3 around (1).", "solution": "nP0=1=n!/(n−0)! forces 0!=1.", "wrong": ["", "It is defined, as the empty product.", "nP0 is 1, not 0."]}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "repeated-letters", "nav": "Letters not all distinct", "title": "ROOT, ALLAHABAD, INSTITUTE: divide by p!", "deck": "Theorem 3: n objects with p alike → n!/p!. Theorem 4: p1 of one kind, p2 of another, … → n!/(p1! p2! … pk!). ALLAHABAD: 9!/(4! 2!)=7560. INDEPENDENCE: 12!/(3! 4! 2!)=1,663,200.", "minutes": 11, "section": "6.3.4", "pages": [9, 14], "print": "108–113", "sim": "root-word", "simTitle": "ROOT: 4!/2! = 12 distinct rearrangements", "quick": ["Temporarily treat the two O’s of ROOT as different: 4! arrangements. Each genuine word is counted 2! times, so the distinct permutations are 4!/2!=12. INSTITUTE: 9 letters, I×2, T×3 → 9!/(2! 3!).", "<strong>Theorem 3.</strong> n objects, p of one kind, rest distinct: n!/p!. <strong>Theorem 4.</strong> p1 of kind 1, …, pk of kind k: n!/(p1! … pk!). Example 9 ALLAHABAD (4 A’s, 2 L’s): 9!/(4! 2!)=7560. Example 15: 4 red + 3 yellow + 2 green discs: 9!/(4! 3! 2!)=1260. Example 16 INDEPENDENCE: 12!/(3! 4! 2!)=1,663,200.", "The same division appears in Bose–Einstein counting and in dealing indistinguishable coins. Never divide by the factorial of a letter that occurs once."], "formulas": [{"label": "Theorem 3", "html": "n objects, p alike, rest distinct: n! / p!", "cond": "ROOT: 4!/2! = 12"}, {"label": "Theorem 4", "html": "n! / (p1! p2! … pk!)", "cond": "ALLAHABAD 9!/(4!2!)=7560"}], "deeper": "The same division appears in Bose–Einstein counting and in dealing indistinguishable coins. Never divide by the factorial of a letter that occurs once.", "worked": {"title": "Worked source example · PDF p.5", "problem": "How many 5-digit telephone numbers using 0–9, each starting with 67, no digit more than once?", "given": "How many 5-digit telephone numbers using 0–9, each starting with 67, no digit more than once?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "First two digits fixed as 6,7. Remaining 3 positions from the leftover 8 digits: 8P3=8×7×6=336.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "336"}, "prediction": {"prompt": "Arrangements of ALLAHABAD (4 A, 2 L, rest distinct)?", "options": ["7560", "9!", "362880"], "answer": 0, "explanation": "Example 9: 9!/(4!2!)=7560."}, "connect": [["Number plates with repeated digits", "MH 01 AA 1122 has repeated letters and digits. Counting distinct plates from a restricted alphabet is Theorem 4, not nPr."], ["Wow — ‘MISSISSIPPI’ in every board exam", "11 letters, I×4 S×4 P×2: 11!/(4!4!2!)=34650. Ex 6.3 Q10 then subtracts the cases with four I’s glued.", null, {"id": "O6SxjnjeNRc", "title": "Repeated letters | Permutations and Combinations | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State Theorems 3 and 4 and compute ALLAHABAD and ROOT.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Distinct rearrangements of ROOT?", "answer": 12, "unit": "", "tolerance": 0.05, "hint": "4!/2!", "solution": "Theorem 3.", "map": "§6.3.4"}, {"level": "Medium", "type": "number", "prompt": "ALLAHABAD arrangements?", "answer": 7560, "unit": "", "tolerance": 0.05, "hint": "9!/(4!2!)", "solution": "Example 9.", "map": "Example 9"}, {"level": "Hard", "type": "number", "prompt": "4 red + 3 yellow + 2 green discs in a row (indistinguishable within colour)?", "answer": 1260, "unit": "", "tolerance": 0.05, "hint": "9!/(4!3!2!)", "solution": "Example 15.", "map": "Example 15"}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "restricted-perm", "nav": "Vowels together", "title": "Glue the vowels, subtract the rest: DAUGHTER and gaps for boys", "deck": "DAUGHTER, vowels together: treat AUE as one object → 6!×3!=4320. Vowels never together: 8!−4320=36000. 5 girls + 3 boys, no two boys together: 5!×6P3=14400.", "minutes": 11, "section": "6.3 Examples 10–14, 24", "pages": [11, 23], "print": "110–122", "sim": "vowels-together", "simTitle": "Glue AUE in DAUGHTER: 6! × 3!", "quick": ["<strong>Example 10.</strong> 4-digit numbers from 1–9, no repeat: 9P4=3024. <strong>Example 11.</strong> 3-digit numbers from 0–5, no repeat: 6P3 − 5P2=120−20=100 (subtract leading zero).", "<strong>Example 14 DAUGHTER.</strong> (i) vowels A,U,E together: (AUE) as one + 5 letters = 6 objects: 6!×3!=4320. (ii) vowels never together: 8!−4320=36000. <strong>Example 24.</strong> 5 girls first (5!), 6 gaps, 3 boys in gaps 6P3: 5!×6P3=14400.", "‘Never together’ is total minus all-together. ‘No two together’ is the stricter gap method — all-together is only one of the many clustered cases."], "formulas": [{"label": "Together", "html": "glue k objects into 1, then multiply by k!", "cond": "DAUGHTER vowels: 6! × 3!"}, {"label": "Never together", "html": "total − together", "cond": "8! − 6!×3! = 36000"}, {"label": "No two together", "html": "seat the others, permute into gaps", "cond": "5! × ⁶P₃ = 14400"}], "deeper": "‘Never together’ is total minus all-together. ‘No two together’ is the stricter gap method — all-together is only one of the many clustered cases.", "worked": {"title": "Worked source example · PDF p.5", "problem": "A coin is tossed 3 times and the outcomes are recorded. How many possible outcomes?", "given": "A coin is tossed 3 times and the outcomes are recorded. How many possible outcomes?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2³=8 (HHH,HHT,…,TTT).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "8"}, "prediction": {"prompt": "DAUGHTER arrangements with all vowels together?", "options": ["4320", "40320", "36000"], "answer": 0, "explanation": "6!×3!=720×6=4320. 8! is unrestricted; 36000 is never-together."}, "connect": [["Rajdhani berth groups", "A family of 3 insisting on consecutive berths is the glue method: treat the 3 as one block, permute the block internally."], ["Wow — gap method in cinema seats", "5 friends already seated with empty seats on both ends: 6 gaps for 3 more so that no two newcomers are adjacent — Example 24’s 6P3.", null, {"id": "FnNUk2oRD9g", "title": "Bundling | Permutations and Combinations | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "9P4 (4-digit numbers from 1–9, no repeat)?", "answer": 3024, "unit": "", "tolerance": 0.05, "hint": "9×8×7×6", "solution": "Example 10.", "map": "Example 10"}, {"level": "Medium", "type": "number", "prompt": "3-digit numbers from 0,1,2,3,4,5 no repeat?", "answer": 100, "unit": "", "tolerance": 0.05, "hint": "6P3−5P2", "solution": "Example 11: 120−20=100.", "map": "Example 11"}, {"level": "Hard", "type": "number", "prompt": "5 girls and 3 boys in a row, no two boys together?", "answer": 14400, "unit": "", "tolerance": 0.05, "hint": "5! × 6P3", "solution": "Example 24.", "map": "Example 24"}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "combinations", "nav": "nCr, handshakes", "title": "Order does not matter: nCr = n! / (r! (n−r)!)", "deck": "XY and YX are one team. nCr = nPr / r!. 4C2=6, 52C4=270725. nCa=nCb ⇒ a=b or a+b=n. Pascal: nCr + nC(r−1) = (n+1)Cr.", "minutes": 12, "section": "6.4", "pages": [15, 20], "print": "114–119", "sim": "ncr-lab", "simTitle": "Handshake / team lab: nC2 vs nP2", "quick": ["A team of 2 from tennis players X,Y,Z is {XY, YZ, ZX} — three combinations, because order is irrelevant. Twelve people shaking hands: 12C2. Seven points on a circle, chords: 7C2.", "<strong>Theorem 5.</strong> nPr = nCr × r!, so nCr = n! / (r! (n−r)!) for 0≤r≤n. nC0=nCn=1, and nCr = nC(n−r). <strong>Theorem 6 (Pascal).</strong> nCr + nC(r−1) = (n+1)Cr. Example 17: nC9=nC8 ⇒ n=17, then nC17=1. Example 18: committee of 3 from 2 men+3 women: 5C3=10; with 1 man 2 women: 2C1×3C2=6. Example 19: 52C4=270725 cards; same suit 4×13C4=2860; different suits 13⁴=28561; face 12C4=495; 2 red 2 black (26C2)²=105625; same colour 2×26C4=29900.", "Selecting r is rejecting n−r, hence nCr=nC(n−r). Pascal’s identity is the ‘include x / exclude x’ split that builds the next row of Pascal’s triangle in Chapter 7."], "formulas": [{"label": "Theorem 5", "html": "<sup>n</sup>C<sub>r</sub> = n! / (r! (n−r)!) = <sup>n</sup>P<sub>r</sub> / r!", "cond": "0 ≤ r ≤ n"}, {"label": "Pascal identity", "html": "<sup>n</sup>C<sub>r</sub> + <sup>n</sup>C<sub>r−1</sub> = <sup>n+1</sup>C<sub>r</sub>", "cond": "Theorem 6"}, {"label": "nCa = nCb", "html": "a = b  or  a + b = n", "cond": "Example 17"}], "deeper": "Selecting r is rejecting n−r, hence nCr=nC(n−r). Pascal’s identity is the ‘include x / exclude x’ split that builds the next row of Pascal’s triangle in Chapter 7.", "worked": {"title": "Worked source example · PDF p.5", "problem": "Given 5 flags of different colours, how many different signals if each signal requires 2 flags, one below the other?", "given": "Given 5 flags of different colours, how many different signals if each signal requires 2 flags, one below the other?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5×4=20=5P2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "20"}, "prediction": {"prompt": "A cricket XI from 17 with exactly 4 of 5 bowlers. Number of teams?", "options": ["5C4 × 12C7 = 3960", "17C11", "5C4 × 12C11"], "answer": 0, "explanation": "Ex 6.4 Q7: 5×792=3960. Must pick 4 bowlers and 7 non-bowlers."}, "connect": [["IPL playing XI from a squad of 15", "15C11=1365 unordered XIs. Naming a captain after that is ×11, a permutation step on a combination."], ["Wow — Sushruta’s 6 tastes", "The historical note: 63 combinations from 6 tastes (2⁶−1, all non-empty subsets). Jain Vikalpa and Bhāskara’s Aṅka Pāśa sit on the same nCr formula.", null, {"id": "Zryrco_IrsA", "title": "Intro to Combinations | Permutations and Combinations | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes).", "quizzes": [{"level": "Easy", "type": "number", "prompt": "4C2 equals", "answer": 6, "unit": "", "tolerance": 0.05, "hint": "4!/(2!2!)", "solution": "AB,AC,AD,BC,BD,CD."}, {"level": "Medium", "type": "number", "prompt": "52C4 (4 cards from a pack)?", "answer": 270725, "unit": "", "tolerance": 0.05, "hint": "52×51×50×49 / 24", "solution": "Example 19.", "map": "Example 19"}, {"level": "Hard", "type": "mcq", "prompt": "nC9 = nC8 implies nC17 equals", "options": ["1", "17", "9"], "answer": 0, "hint": "Example 17: n=17, 17C17=1.", "solution": "nCa=nCb ⇒ n=a+b=17.", "wrong": ["", "n, not nC17.", "r, not the combination."]}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "mixed-counting", "nav": "Committees & dictionaries", "title": "At least one girl, dictionary rank, and IPL-style constraints", "deck": "Example 21: 4 girls+7 boys, team of 5 with at least one of each = 441. AGAIN dictionary: 50th word is NAAIG. Example 20 INVOLUTE: 4C3×4C2×5!=2880.", "minutes": 12, "section": "Misc. Examples 20–23", "pages": [20, 23], "print": "119–122", "sim": "ipl-squad", "simTitle": "IPL XI lab: 11 from 15 with exactly 4 bowlers", "quick": ["<strong>Example 20 INVOLUTE</strong> (4 vowels, 4 consonants): 3 vowels + 2 consonants then arrange: 4C3×4C2×5!=2880. <strong>Example 21.</strong> 4 girls + 7 boys, team of 5. (i) no girl: 7C5=21. (ii) at least one boy and one girl: 7C1·4C4 + 7C2·4C3 + 7C3·4C2 + 7C4·4C1 = 7+84+210+140=441. (iii) at least 3 girls: 4C3·7C2 + 4C4·7C1=84+7=91.", "<strong>Example 22 AGAIN</strong> (2 A’s): 5!/2!=60 words. Dictionary: 24 start with A, 12 with G, 12 with I, total 48; 49th NAAGI, 50th NAAIG. <strong>Example 23.</strong> Digits 1,2,0,2,4,2,4 forming numbers &gt; 1,000,000: 7!/(3!2!) − 6!/(3!2!)=420−60=360.", "‘At least’ is a partition into disjoint cases. Complements (total − forbidden) are faster when the forbidden set is small, as in Example 23’s leading-zero subtraction."], "formulas": [{"label": "Select then arrange", "html": "<sup>n</sup>C<sub>r</sub> × r! = <sup>n</sup>P<sub>r</sub>", "cond": "Example 20: 24×120=2880"}, {"label": "At least one of each", "html": "sum over admissible (boys, girls) pairs", "cond": "Example 21(ii)=441"}, {"label": "Dictionary rank", "html": "count all words before the target prefix", "cond": "AGAIN 50th = NAAIG"}], "deeper": "‘At least’ is a partition into disjoint cases. Complements (total − forbidden) are faster when the forbidden set is small, as in Example 23’s leading-zero subtraction.", "worked": {"title": "Worked source example · PDF p.7", "problem": "Evaluate (i) 8! (ii) 4! − 3!.", "given": "Evaluate (i) 8! (ii) 4! − 3!.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "8!=40320.", "4!=24, 3!=6, difference 18.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) 40320; (ii) 18"}, "prediction": {"prompt": "AGAIN words as in a dictionary: the 50th word is", "options": ["NAAIG", "NAAGI", "AGAIN"], "answer": 0, "explanation": "Example 22: 24+12+12=48 words before N…; 49th NAAGI, 50th NAAIG."}, "connect": [["NEET paper: 8 questions, at least 3 from each of two sections", "Misc. Q7: Part I has 5, Part II has 7, choose 8 with ≥3 from each: 5C3·7C5 + 5C4·7C4 + 5C5·7C3 = 210+175+35=420."], ["Wow — IPL ‘at most 4 overseas’", "A 15-man squad with 6 overseas: number of XIs with at most 4 overseas is 6C0·9C11 (0) + 6C1·9C10 + … + 6C4·9C7. Same partition as Example 21.", null, {"id": "3sJi9ywv4cc", "title": "Putting it all together | Permutations and Combinations | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "INVOLUTE words with 3 vowels and 2 consonants?", "answer": 2880, "unit": "", "tolerance": 0.05, "hint": "4C3×4C2×5!", "solution": "Example 20.", "map": "Example 20"}, {"level": "Medium", "type": "number", "prompt": "Teams of 5 from 4 girls+7 boys with at least one of each?", "answer": 441, "unit": "", "tolerance": 0.05, "hint": "462−21", "solution": "Example 21(ii).", "map": "Example 21"}, {"level": "Hard", "type": "mcq", "prompt": "Numbers &gt; 1000000 from digits 1,2,0,2,4,2,4?", "options": ["360", "420", "60"], "answer": 0, "hint": "Example 23: 420 total 7-digit strings minus 60 leading zeros.", "solution": "7!/(3!2!)=420; leading 0: 60; difference 360.", "wrong": ["", "That includes leading zeros.", "Those are only the leading-zero cases."]}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "exam-patterns", "nav": "Exam patterns", "title": "EQUATION, MISSISSIPPI, and a 5-course programme", "deck": "EQUATION: 8!=40320. MONDAY 4 letters: 6P4=360. MISSISSIPPI four I’s not together: 34650−840=33810. 9 courses, 2 compulsory, choose 3 more: 7C3=35.", "minutes": 10, "section": "Ex 6.3–6.4", "pages": [15, 20], "print": "114–119", "sim": "course-pick", "simTitle": "5-course programme: 2 compulsory + 7C3", "quick": ["Exercise 6.3 packs the standard board patterns: 3-digit / 4-digit with or without 0, even numbers, chairman-vice, nPr equations, EQUATION 8!, MONDAY with a vowel first 2×5!=240, MISSISSIPPI I’s not together, PERMUTATIONS with P and S separated by 4 letters.", "Exercise 6.4 is pure nCr: nC8=nC2 ⇒ n=10, nC2=45; 2nC3:nC3=12:1 ⇒ n=5; 21 points, 21C2=210 chords; 3 boys 3 girls from 5 and 4: 5C3×4C3=40; 9 balls 3 of each colour: 6C3×5C3×5C3=2000; 5 cards exactly one ace: 4C1×48C4=778320; cricket 5C4×12C7=3960; bag 5C2×6C3=200; 7C3=35 programmes.", "When a question says ‘exactly one ace’, freeze that category with nC1 and choose the rest from the complementary pile. When it says ‘2 specific courses are compulsory’, they are already in the combination; only the free slots remain."], "formulas": [{"label": "Complement for a letter-block", "html": "total − (glue the identical letters)", "cond": "MISSISSIPPI: 34650 − 8!/(4!2!)"}, {"label": "Compulsory courses", "html": "choose the rest from what remains", "cond": "7C3=35"}], "deeper": "When a question says ‘exactly one ace’, freeze that category with nC1 and choose the rest from the complementary pile. When it says ‘2 specific courses are compulsory’, they are already in the combination; only the free slots remain.", "worked": {"title": "Worked source example · PDF p.8", "problem": "Is 3! + 4! = 7! ?", "given": "Is 3! + 4! = 7! ?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3!+4!=6+24=30. 7!=5040. 30≠5040.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "No"}, "prediction": {"prompt": "A student must pick 5 courses from 9, with 2 specific courses compulsory. Number of programmes?", "options": ["35", "126", "9C5"], "answer": 0, "explanation": "Ex 6.4 Q9: the 2 are fixed, choose 3 from 7 → 7C3=35. 9C5=126 would ignore the constraint."}, "connect": [["CBSE subject combinations", "A student must take English and a language, then 3 from 7 electives: 7C3=35 — Ex 6.4 Q9 verbatim."], ["Wow — Mahāvīra (c. 850) wrote nCr", "The historical note credits Mahāvīra with the general formulae for nPr and nCr, centuries before Bernoulli’s Ars Conjectandi (1713).", null, {"id": "3ASMyXNbNZM", "title": "Class 11 Permutations and Combination  Ch6 | Ex 6.3 Q10 | MISSISSIPPI | CBSE NCERT Math | #ViralMath", "channel": "MATHS MANSION"}]], "recall": "Compute 7C3=35 and MISSISSIPPI-without-four-I’s-together=33810.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "EQUATION, all letters, each once?", "answer": 40320, "unit": "", "tolerance": 0.05, "hint": "8!", "solution": "Ex 6.3 Q8."}, {"level": "Medium", "type": "number", "prompt": "7C3 (3 free courses from 7)?", "answer": 35, "unit": "", "tolerance": 0.05, "hint": "7×6×5/6", "solution": "Ex 6.4 Q9.", "map": "Ex 6.4 Q9"}, {"level": "Hard", "type": "number", "prompt": "MISSISSIPPI permutations with four I’s not together?", "answer": 33810, "unit": "", "tolerance": 0.05, "hint": "34650−840", "solution": "Ex 6.3 Q10.", "map": "Ex 6.3 Q10"}], "group": "Permutations and Combinations", "watch": "Change the scenario and verify the displayed result against the definition."}], "exercises": [{"number": "6.1.1", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 3-digit numbers can be formed from the digits 1,2,3,4,5 assuming (i) repetition is allowed (ii) repetition is not allowed?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) 5×5×5=125.", "(ii) 5×4×3=60.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": " (i) 125; (ii) 60", "section": "Ex 6.1", "q": 1, "title": "Exercise Q1", "given": "How many 3-digit numbers can be formed from the digits 1,2,3,4,5 assuming (i) repetition is allowed (ii) repetition is not allowed?", "conceptName": "Multiplication principle", "takeaway": "State the FPC in one sentence and compute ROSE with and without repetition."}, {"number": "6.1.2", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 3-digit even numbers can be formed from 1,2,3,4,5,6 if the digits can be repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Units place: 2,4,6 → 3 choices (even).", "Hundreds and tens: 6 each (repetition allowed).", "3×6×6=108.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "108", "section": "Ex 6.1", "q": 2, "title": "Exercise Q2", "given": "How many 3-digit even numbers can be formed from 1,2,3,4,5,6 if the digits can be repeated?", "conceptName": "Multiplication principle", "takeaway": "State the FPC in one sentence and compute ROSE with and without repetition."}, {"number": "6.1.3", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 4-letter codes from the first 10 letters of the English alphabet, no letter repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "10P4=10×9×8×7=5040.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "5040", "section": "Ex 6.1", "q": 3, "title": "Exercise Q3", "given": "How many 4-letter codes from the first 10 letters of the English alphabet, no letter repeated?", "conceptName": "Multiplication principle", "takeaway": "State the FPC in one sentence and compute ROSE with and without repetition."}, {"number": "6.1.4", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "How many 5-digit telephone numbers using 0–9, each starting with 67, no digit more than once?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "First two digits fixed as 6,7. Remaining 3 positions from the leftover 8 digits: 8P3=8×7×6=336.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "336", "section": "Ex 6.1", "q": 4, "title": "Exercise Q4", "given": "How many 5-digit telephone numbers using 0–9, each starting with 67, no digit more than once?", "conceptName": "Multiplication principle", "takeaway": "State the FPC in one sentence and compute ROSE with and without repetition."}, {"number": "6.1.5", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "A coin is tossed 3 times and the outcomes are recorded. How many possible outcomes?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2³=8 (HHH,HHT,…,TTT).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "8", "section": "Ex 6.1", "q": 5, "title": "Exercise Q5", "given": "A coin is tossed 3 times and the outcomes are recorded. How many possible outcomes?", "conceptName": "Multiplication principle", "takeaway": "State the FPC in one sentence and compute ROSE with and without repetition."}, {"number": "6.1.6", "conceptIdx": 1, "page": 5, "printPage": 104, "question": "Given 5 flags of different colours, how many different signals if each signal requires 2 flags, one below the other?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5×4=20=5P2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "20", "section": "Ex 6.1", "q": 6, "title": "Exercise Q6", "given": "Given 5 flags of different colours, how many different signals if each signal requires 2 flags, one below the other?", "conceptName": "Multiplication principle", "takeaway": "State the FPC in one sentence and compute ROSE with and without repetition."}, {"number": "6.2.1", "conceptIdx": 2, "page": 7, "printPage": 106, "question": "Evaluate (i) 8! (ii) 4! − 3!.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "8!=40320.", "4!=24, 3!=6, difference 18.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) 40320; (ii) 18", "section": "Ex 6.2", "q": 7, "title": "Exercise Q1", "given": "Evaluate (i) 8! (ii) 4! − 3!.", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.2.2", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "Is 3! + 4! = 7! ?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3!+4!=6+24=30. 7!=5040. 30≠5040.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "No", "section": "Ex 6.2", "q": 8, "title": "Exercise Q2", "given": "Is 3! + 4! = 7! ?", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.2.3", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "Compute 8! / (6! × 2!).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "8×7/(2×1)=28.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "28", "section": "Ex 6.2", "q": 9, "title": "Exercise Q3", "given": "Compute 8! / (6! × 2!).", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.2.4", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "If 1/6! + 1/7! = x/8!, find x.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "1 + 1/7 = x/(8×7) after cancelling 6!.", "8/7 = x/56 ⇒ x=64.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x = 64", "section": "Ex 6.2", "q": 10, "title": "Exercise Q4", "given": "If 1/6! + 1/7! = x/8!, find x.", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.2.5", "conceptIdx": 2, "page": 8, "printPage": 107, "question": "Evaluate n! / (n−r)! when (i) n=6, r=2 (ii) n=9, r=5.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) 6×5=30.", "(ii) 9×8×7×6×5=15120.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) 30; (ii) 15120", "section": "Ex 6.2", "q": 11, "title": "Exercise Q5", "given": "Evaluate n! / (n−r)! when (i) n=6, r=2 (ii) n=9, r=5.", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.3.1", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "How many 3-digit numbers can be formed using digits 1 to 9 if no digit is repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "9P3=9×8×7=504.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "504", "section": "Ex 6.3", "q": 12, "title": "Exercise Q1", "given": "How many 3-digit numbers can be formed using digits 1 to 9 if no digit is repeated?", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.3.2", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "How many 4-digit numbers are there with no digit repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "First digit 9 choices (1–9). Then 9,8,7 for the rest (0 now available).", "9×9×8×7=4536.", "Equivalently 10P4 − 9P3=5040−504=4536.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "4536", "section": "Ex 6.3", "q": 13, "title": "Exercise Q2", "given": "How many 4-digit numbers are there with no digit repeated?", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "6.3.3", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "How many 3-digit even numbers using 1,2,3,4,6,7 if no digit is repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Units: 2,4,6 → 3 choices. Remaining two places: 5×4.", "3×5×4=60.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "60", "section": "Ex 6.3", "q": 14, "title": "Exercise Q3", "given": "How many 3-digit even numbers using 1,2,3,4,6,7 if no digit is repeated?", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "6.3.4", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "Find the number of 4-digit numbers from 1,2,3,4,5 with no digit repeated. How many of these will be even?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5P4=5×4×3×2=120.", "Even: units 2 or 4 (2 ways) then 4×3×2=24, total 48.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "120 numbers; 48 even", "section": "Ex 6.3", "q": 15, "title": "Exercise Q4", "given": "Find the number of 4-digit numbers from 1,2,3,4,5 with no digit repeated. How many of these will be even?", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "6.3.5", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "From a committee of 8 persons, in how many ways can we choose a chairman and a vice chairman (one person cannot hold both)?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "8P2=8×7=56.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "56", "section": "Ex 6.3", "q": 16, "title": "Exercise Q5", "given": "From a committee of 8 persons, in how many ways can we choose a chairman and a vice chairman (one person cannot hold both)?", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.3.6", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "Find n if (n−1)P3 : nP4 = 1 : 9.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "[(n−1)(n−2)(n−3)] / [n(n−1)(n−2)(n−3)] = 1/9 ⇒ 1/n=1/9 ⇒ n=9", "(n>3 so the cancelled factors are nonzero).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "n = 9", "section": "Ex 6.3", "q": 17, "title": "Exercise Q6", "given": "Find n if (n−1)P3 : nP4 = 1 : 9.", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.3.7", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "Find r if (i) ⁵Pr = 2 · ⁶P(r−1) (ii) ⁵Pr = ⁶P(r−1).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) (7−r)(6−r)=12 ⇒ r²−13r+30=0 ⇒ r=3 (r=10 invalid).", "(ii) (7−r)(6−r)=6 ⇒ r²−13r+36=0 ⇒ r=4 (r=9 invalid).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) r=3; (ii) r=4", "section": "Ex 6.3", "q": 18, "title": "Exercise Q7", "given": "Find r if (i) ⁵Pr = 2 · ⁶P(r−1) (ii) ⁵Pr = ⁶P(r−1).", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "6.3.8", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "How many words, with or without meaning, can be formed using all the letters of EQUATION, each letter exactly once?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "8 distinct letters: 8!=40320.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "40320", "section": "Ex 6.3", "q": 19, "title": "Exercise Q8", "given": "How many words, with or without meaning, can be formed using all the letters of EQUATION, each letter exactly once?", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.3.9", "conceptIdx": 2, "page": 15, "printPage": 114, "question": "Words from MONDAY, no letter repeated: (i) 4 letters at a time (ii) all letters (iii) all letters, first letter a vowel.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) 6P4=360.", "(ii) 6!=720.", "(iii) first O or A: 2×5!=240.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) 360; (ii) 720; (iii) 240", "section": "Ex 6.3", "q": 20, "title": "Exercise Q9", "given": "Words from MONDAY, no letter repeated: (i) 4 letters at a time (ii) all letters (iii) all letters, first letter a vowel.", "conceptName": "nPr and n!", "takeaway": "Write nPr = n!/(n−r)! and evaluate 6P3 and 4P4."}, {"number": "6.3.10", "conceptIdx": 3, "page": 15, "printPage": 114, "question": "In how many of the distinct permutations of MISSISSIPPI do the four I’s not come together?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Total 11!/(4!4!2!)=34650.", "Four I’s glued: 8!/(4!2!)=840.", "Difference 33810.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "33810", "section": "Ex 6.3", "q": 21, "title": "Exercise Q10", "given": "In how many of the distinct permutations of MISSISSIPPI do the four I’s not come together?", "conceptName": "Letters not all distinct", "takeaway": "State Theorems 3 and 4 and compute ALLAHABAD and ROOT."}, {"number": "6.3.11", "conceptIdx": 4, "page": 15, "printPage": 114, "question": "Letters of PERMUTATIONS arranged so that (i) words start with P and end with S (ii) vowels are all together (iii) there are always 4 letters between P and S.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "12 letters, T×2.", "(i) Fix P…S: 10!/2!=1814400.", "(ii) 5 vowels glued: 8 objects with T×2: (8!/2!)×5!=2419200.", "(iii) 7 start positions × 2 orders for P,S = 14; remaining 10!/2!: 14×1814400=25401600.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) 1814400; (ii) 2419200; (iii) 25401600", "section": "Ex 6.3", "q": 22, "title": "Exercise Q11", "given": "Letters of PERMUTATIONS arranged so that (i) words start with P and end with S (ii) vowels are all together (iii) there are always 4 letters between P and S.", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "6.4.1", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "If nC8 = nC2, find nC2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "nC8=nC2 ⇒ n=8+2=10.", "10C2=45.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "45", "section": "Ex 6.4", "q": 23, "title": "Exercise Q1", "given": "If nC8 = nC2, find nC2.", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.2", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "Determine n if (i) 2nC3 : nC3 = 12:1 (ii) 2nC3 : nC3 = 11:1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Ratio = 4(2n−1)/(n−2).", "(i) 4(2n−1)/(n−2)=12 ⇒ 2n−1=3n−6 ⇒ n=5.", "(ii) =11 ⇒ 8n−4=11n−22 ⇒ n=6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) n=5; (ii) n=6", "section": "Ex 6.4", "q": 24, "title": "Exercise Q2", "given": "Determine n if (i) 2nC3 : nC3 = 12:1 (ii) 2nC3 : nC3 = 11:1.", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.3", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "How many chords can be drawn through 21 points on a circle?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "21C2=210 (assume no three diameters forced; just pairwise joins).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "210", "section": "Ex 6.4", "q": 25, "title": "Exercise Q3", "given": "How many chords can be drawn through 21 points on a circle?", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.4", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "In how many ways can a team of 3 boys and 3 girls be selected from 5 boys and 4 girls?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5C3×4C3=10×4=40.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "40", "section": "Ex 6.4", "q": 26, "title": "Exercise Q4", "given": "In how many ways can a team of 3 boys and 3 girls be selected from 5 boys and 4 girls?", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.5", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "Number of ways of selecting 9 balls from 6 red, 5 white, 5 blue if each selection has 3 of each colour?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "6C3×5C3×5C3=20×10×10=2000.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "2000", "section": "Ex 6.4", "q": 27, "title": "Exercise Q5", "given": "Number of ways of selecting 9 balls from 6 red, 5 white, 5 blue if each selection has 3 of each colour?", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.6", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "Number of 5-card combinations from 52 with exactly one ace?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4C1×48C4=4×194580=778320.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "778320", "section": "Ex 6.4", "q": 28, "title": "Exercise Q6", "given": "Number of 5-card combinations from 52 with exactly one ace?", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.7", "conceptIdx": 6, "page": 20, "printPage": 119, "question": "Cricket XI from 17 players of whom only 5 can bowl; each XI must include exactly 4 bowlers.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5C4×12C7=5×792=3960.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3960", "section": "Ex 6.4", "q": 29, "title": "Exercise Q7", "given": "Cricket XI from 17 players of whom only 5 can bowl; each XI must include exactly 4 bowlers.", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "6.4.8", "conceptIdx": 5, "page": 20, "printPage": 119, "question": "A bag contains 5 black and 6 red balls. Number of ways to select 2 black and 3 red?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5C2×6C3=10×20=200.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "200", "section": "Ex 6.4", "q": 30, "title": "Exercise Q8", "given": "A bag contains 5 black and 6 red balls. Number of ways to select 2 black and 3 red?", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "6.4.9", "conceptIdx": 7, "page": 20, "printPage": 119, "question": "A student chooses a programme of 5 courses from 9, and 2 specific courses are compulsory.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2 fixed, choose 3 from remaining 7: 7C3=35.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "35", "section": "Ex 6.4", "q": 31, "title": "Exercise Q9", "given": "A student chooses a programme of 5 courses from 9, and 2 specific courses are compulsory.", "conceptName": "Exam patterns", "takeaway": "Compute 7C3=35 and MISSISSIPPI-without-four-I’s-together=33810."}, {"number": "M.1", "conceptIdx": 6, "page": 23, "printPage": 122, "question": "How many words of 2 vowels and 3 consonants from DAUGHTER?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Vowels A,U,E (3); consonants D,G,H,T,R (5).", "3C2×5C3×5!=3×10×120=3600.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3600", "section": "Misc.", "q": 32, "title": "Exercise Q1", "given": "How many words of 2 vowels and 3 consonants from DAUGHTER?", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "M.2", "conceptIdx": 4, "page": 23, "printPage": 122, "question": "Words from EQUATION so that vowels and consonants occur together?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5 vowels as one block, 3 consonants as one block: 2!×5!×3!=2×120×6=1440.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "1440", "section": "Misc.", "q": 33, "title": "Exercise Q2", "given": "Words from EQUATION so that vowels and consonants occur together?", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "M.3", "conceptIdx": 6, "page": 23, "printPage": 122, "question": "Committee of 7 from 9 boys and 4 girls: (i) exactly 3 girls (ii) at least 3 girls (iii) at most 3 girls.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) 4C3×9C4=4×126=504.", "(ii) 504 + 4C4×9C3=504+84=588.", "(iii) 13C7 − 4C4×9C3=1716−84=1632 (equivalently 0+1+2+3 girls).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) 504; (ii) 588; (iii) 1632", "section": "Misc.", "q": 34, "title": "Exercise Q3", "given": "Committee of 7 from 9 boys and 4 girls: (i) exactly 3 girls (ii) at least 3 girls (iii) at most 3 girls.", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "M.4", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "Different permutations of EXAMINATION listed as in a dictionary. How many words before the first word starting with E?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "11 letters, A×2 I×2 N×2. Words before E start with A.", "Remaining 10 letters A×1 I×2 N×2: 10!/(2!2!)=907200.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "907200", "section": "Misc.", "q": 35, "title": "Exercise Q4", "given": "Different permutations of EXAMINATION listed as in a dictionary. How many words before the first word starting with E?", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "M.5", "conceptIdx": 4, "page": 24, "printPage": 123, "question": "How many 6-digit numbers from 0,1,3,5,7,9 are divisible by 10 with no digit repeated?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Must end in 0. First digit: 5 choices (1,3,5,7,9); remaining 4 positions: 4!.", "5×24=120.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "120", "section": "Misc.", "q": 36, "title": "Exercise Q5", "given": "How many 6-digit numbers from 0,1,3,5,7,9 are divisible by 10 with no digit repeated?", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "M.6", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "English alphabet: 5 vowels, 21 consonants. Words with 2 different vowels and 2 different consonants?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5C2×21C2×4!=10×210×24=50400.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "50400", "section": "Misc.", "q": 37, "title": "Exercise Q6", "given": "English alphabet: 5 vowels, 21 consonants. Words with 2 different vowels and 2 different consonants?", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "M.7", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "12 questions, Part I (5) and Part II (7). Attempt 8, at least 3 from each part.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(3,5): 5C3×7C5=10×21=210.", "(4,4): 5C4×7C4=5×35=175.", "(5,3): 5C5×7C3=35.", "Total 420.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "420", "section": "Misc.", "q": 38, "title": "Exercise Q7", "given": "12 questions, Part I (5) and Part II (7). Attempt 8, at least 3 from each part.", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "M.8", "conceptIdx": 5, "page": 24, "printPage": 123, "question": "5-card combinations from 52 with exactly one king.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "4C1×48C4=4×194580=778320.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "778320", "section": "Misc.", "q": 39, "title": "Exercise Q8", "given": "5-card combinations from 52 with exactly one king.", "conceptName": "nCr, handshakes", "takeaway": "Write nCr and Pascal’s identity. Compute 52C4 and 12C2 (handshakes)."}, {"number": "M.9", "conceptIdx": 4, "page": 24, "printPage": 123, "question": "Seat 5 men and 4 women in a row so that the women occupy the even places.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Even places 2,4,6,8: 4! for women. Odd places 1,3,5,7,9: 5! for men.", "4!×5!=2880.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "2880", "section": "Misc.", "q": 40, "title": "Exercise Q9", "given": "Seat 5 men and 4 women in a row so that the women occupy the even places.", "conceptName": "Vowels together", "takeaway": "Compute DAUGHTER vowels-together and never-together, and 5!×6P3."}, {"number": "M.10", "conceptIdx": 6, "page": 24, "printPage": 123, "question": "From 25 students, 10 for an excursion. 3 students all join or none join. Number of ways?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "All 3: 22C7=170544. None: 22C10=646646.", "Sum 817190.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "817190", "section": "Misc.", "q": 41, "title": "Exercise Q10", "given": "From 25 students, 10 for an excursion. 3 students all join or none join. Number of ways?", "conceptName": "Committees & dictionaries", "takeaway": "State 441 for Example 21(ii), NAAIG as the 50th AGAIN word, and 360 for Example 23."}, {"number": "M.11", "conceptIdx": 3, "page": 24, "printPage": 123, "question": "Letters of ASSASSINATION so that all the S’s are together?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "13 letters, S×4 A×3 I×2 N×2. Glue 4 S as one: 10 letters with A×3 I×2 N×2.", "10!/(3!2!2!)=151200.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "151200", "section": "Misc.", "q": 42, "title": "Exercise Q11", "given": "Letters of ASSASSINATION so that all the S’s are together?", "conceptName": "Letters not all distinct", "takeaway": "State Theorems 3 and 4 and compute ALLAHABAD and ROOT."}], "exerciseMap": [[1, "Exercise Q1", 1, 5], [2, "Exercise Q2", 1, 5], [3, "Exercise Q3", 1, 5], [4, "Exercise Q4", 1, 5], [5, "Exercise Q5", 1, 5], [6, "Exercise Q6", 1, 5], [7, "Exercise Q1", 2, 7], [8, "Exercise Q2", 2, 8], [9, "Exercise Q3", 2, 8], [10, "Exercise Q4", 2, 8], [11, "Exercise Q5", 2, 8], [12, "Exercise Q1", 2, 15], [13, "Exercise Q2", 4, 15], [14, "Exercise Q3", 4, 15], [15, "Exercise Q4", 4, 15], [16, "Exercise Q5", 2, 15], [17, "Exercise Q6", 2, 15], [18, "Exercise Q7", 4, 15], [19, "Exercise Q8", 2, 15], [20, "Exercise Q9", 2, 15], [21, "Exercise Q10", 3, 15], [22, "Exercise Q11", 4, 15], [23, "Exercise Q1", 5, 20], [24, "Exercise Q2", 5, 20], [25, "Exercise Q3", 5, 20], [26, "Exercise Q4", 5, 20], [27, "Exercise Q5", 5, 20], [28, "Exercise Q6", 5, 20], [29, "Exercise Q7", 6, 20], [30, "Exercise Q8", 5, 20], [31, "Exercise Q9", 7, 20], [32, "Exercise Q1", 6, 23], [33, "Exercise Q2", 4, 23], [34, "Exercise Q3", 6, 23], [35, "Exercise Q4", 6, 24], [36, "Exercise Q5", 4, 24], [37, "Exercise Q6", 6, 24], [38, "Exercise Q7", 6, 24], [39, "Exercise Q8", 5, 24], [40, "Exercise Q9", 4, 24], [41, "Exercise Q10", 6, 24], [42, "Exercise Q11", 3, 24]], "exercisesNote": "All 42 source questions are included with exact source page mapping and expanded worked guidance. PDF pages 1–26 correspond to printed pages 100–124."};
 </script>
 <script>
+// Shared Class 11 Maths runtime, adapted from verified lemh101.
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1084,8 +1298,44 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1361,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1444,35 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1489,10 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,16 +1501,17 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1241,10 +1523,15 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1278,7 +1565,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1304,42 +1591,47 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1347,7 +1639,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1356,48 +1648,46 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1443,6 +1733,10 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1461,7 +1755,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1511,7 +1805,8 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1520,6 +1815,41 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1534,9 +1864,6 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1571,7 +1898,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1656,9 +1983,9 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1686,7 +2013,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1731,20 +2058,31 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + (ex.q || qNum) + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2128,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2138,7 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2148,31 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1834,16 +2192,12 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1853,6 +2207,10 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1866,6 +2224,41 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1873,27 +2266,13 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
   };
   if (typeof globalThis !== "undefined") {
     globalThis.App = window.App;
-  }
-
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
   }
 
   // Initialize
@@ -1903,8 +2282,233 @@ window.CHAPTER = {"code": "kemh106", "chapterNumber": 6, "book_name": "Mathemati
   routeFromHash();
 })();
 
+
 </script>
 <script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
+
+
 var App = window.App;
 window.SIMS = {};
 
@@ -1932,8 +2536,8 @@ window.SIMS.suitcase = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Fixed 7</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Free wheels</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-norep">Suitcase: no repetition</button>' +
-      '<button class="preset-btn" id="p-upi">UPI PIN: repetition allowed</button>';
+      '<button class="preset-btn active" data-preset="p-norep" id="p-norep">Suitcase: no repetition</button>' +
+      '<button class="preset-btn" data-preset="p-upi" id="p-upi">UPI PIN: repetition allowed</button>';
     document.getElementById("p-norep").onclick = function(){ setActivePreset(this); repeat=false; App.resetTimeline(); App.play(); };
     document.getElementById("p-upi").onclick = function(){ setActivePreset(this); repeat=true; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -1970,9 +2574,9 @@ window.SIMS["pants-shirts"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Choice 1</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Choice 2</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m">Mohan 3×2 = 6</button>' +
-      '<button class="preset-btn" id="p-s">Sabnam 2×3×2 = 12</button>' +
-      '<button class="preset-btn" id="p-r">ROSE 4! = 24</button>';
+      '<button class="preset-btn active" data-preset="p-m" id="p-m">Mohan 3×2 = 6</button>' +
+      '<button class="preset-btn" data-preset="p-s" id="p-s">Sabnam 2×3×2 = 12</button>' +
+      '<button class="preset-btn" data-preset="p-r" id="p-r">ROSE 4! = 24</button>';
     document.getElementById("p-m").onclick = function(){ setActivePreset(this); mode="mohan"; App.resetTimeline(); App.play(); };
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); mode="sabnam"; App.resetTimeline(); App.play(); };
     document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode="rose"; App.resetTimeline(); App.play(); };
@@ -2022,9 +2626,9 @@ window.SIMS["npr-calc"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>n slots of objects</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-num">NUMBER 6P3=120</button>' +
-      '<button class="preset-btn" id="p-ch">12P2 chairman=132</button>' +
-      '<button class="preset-btn" id="p-rep">Theorem 2: n^r</button>';
+      '<button class="preset-btn active" data-preset="p-num" id="p-num">NUMBER 6P3=120</button>' +
+      '<button class="preset-btn" data-preset="p-ch" id="p-ch">12P2 chairman=132</button>' +
+      '<button class="preset-btn" data-preset="p-rep" id="p-rep">Theorem 2: n^r</button>';
     document.getElementById("p-num").onclick = function(){ setActivePreset(this); n=6;r=3; App.resetTimeline(); };
     document.getElementById("p-ch").onclick = function(){ setActivePreset(this); n=12;r=2; App.resetTimeline(); };
     document.getElementById("p-rep").onclick = function(){ setActivePreset(this); n=4;r=4; App.resetTimeline(); };
@@ -2064,9 +2668,9 @@ window.SIMS["root-word"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Distinct permutations</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-root">ROOT 4!/2! = 12</button>' +
-      '<button class="preset-btn" id="p-all">ALLAHABAD 7560</button>' +
-      '<button class="preset-btn" id="p-ind">INDEPENDENCE 1663200</button>';
+      '<button class="preset-btn active" data-preset="p-root" id="p-root">ROOT 4!/2! = 12</button>' +
+      '<button class="preset-btn" data-preset="p-all" id="p-all">ALLAHABAD 7560</button>' +
+      '<button class="preset-btn" data-preset="p-ind" id="p-ind">INDEPENDENCE 1663200</button>';
     document.getElementById("p-root").onclick = function(){ setActivePreset(this); word="ROOT"; App.resetTimeline(); };
     document.getElementById("p-all").onclick = function(){ setActivePreset(this); word="ALLAHABAD"; App.resetTimeline(); };
     document.getElementById("p-ind").onclick = function(){ setActivePreset(this); word="INDEPENDENCE"; App.resetTimeline(); };
@@ -2099,9 +2703,9 @@ window.SIMS["vowels-together"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Glued vowels AUE</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-tog">DAUGHTER vowels together</button>' +
-      '<button class="preset-btn" id="p-nev">Never together</button>' +
-      '<button class="preset-btn" id="p-gap">5 girls + 3 boys, gaps</button>';
+      '<button class="preset-btn active" data-preset="p-tog" id="p-tog">DAUGHTER vowels together</button>' +
+      '<button class="preset-btn" data-preset="p-nev" id="p-nev">Never together</button>' +
+      '<button class="preset-btn" data-preset="p-gap" id="p-gap">5 girls + 3 boys, gaps</button>';
     document.getElementById("p-tog").onclick = function(){ setActivePreset(this); mode="together"; App.resetTimeline(); };
     document.getElementById("p-nev").onclick = function(){ setActivePreset(this); mode="never"; App.resetTimeline(); };
     document.getElementById("p-gap").onclick = function(){ setActivePreset(this); mode="gap"; App.resetTimeline(); };
@@ -2150,9 +2754,9 @@ window.SIMS["ncr-lab"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>combination nCr</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>permutation nPr</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-hs">12 handshakes 12C2</button>' +
-      '<button class="preset-btn" id="p-ch">7 chords 7C2</button>' +
-      '<button class="preset-btn" id="p-card">52C4 cards</button>';
+      '<button class="preset-btn active" data-preset="p-hs" id="p-hs">12 handshakes 12C2</button>' +
+      '<button class="preset-btn" data-preset="p-ch" id="p-ch">7 chords 7C2</button>' +
+      '<button class="preset-btn" data-preset="p-card" id="p-card">52C4 cards</button>';
     document.getElementById("p-hs").onclick = function(){ setActivePreset(this); n=12;r=2; App.resetTimeline(); };
     document.getElementById("p-ch").onclick = function(){ setActivePreset(this); n=7;r=2; App.resetTimeline(); };
     document.getElementById("p-card").onclick = function(){ setActivePreset(this); n=52;r=4; App.resetTimeline(); };
@@ -2193,8 +2797,8 @@ window.SIMS["ipl-squad"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Bowlers (5 available)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Others (12)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-4">Ex 6.4 Q7: exactly 4 bowlers</button>' +
-      '<button class="preset-btn" id="p-21">Ex 21: 4G+7B team of 5</button>';
+      '<button class="preset-btn active" data-preset="p-4" id="p-4">Ex 6.4 Q7: exactly 4 bowlers</button>' +
+      '<button class="preset-btn" data-preset="p-21" id="p-21">Ex 21: 4G+7B team of 5</button>';
     document.getElementById("p-4").onclick = function(){ setActivePreset(this); mode="bowl"; App.resetTimeline(); };
     document.getElementById("p-21").onclick = function(){ setActivePreset(this); mode="team"; App.resetTimeline(); };
     document.getElementById("lab-controls").innerHTML =
@@ -2240,8 +2844,8 @@ window.SIMS["course-pick"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Compulsory (2)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Free choice from 7</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c">5 courses, 2 compulsory</button>' +
-      '<button class="preset-btn" id="p-n">NEET 8 Qs, ≥3 from each part</button>';
+      '<button class="preset-btn active" data-preset="p-c" id="p-c">5 courses, 2 compulsory</button>' +
+      '<button class="preset-btn" data-preset="p-n" id="p-n">NEET 8 Qs, ≥3 from each part</button>';
     var mode="c";
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); mode="c"; draw(); };
     document.getElementById("p-n").onclick = function(){ setActivePreset(this); mode="n"; draw(); };

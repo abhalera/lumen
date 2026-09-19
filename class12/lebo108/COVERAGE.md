@@ -1,6 +1,8 @@
 # COVERAGE — lebo108 Microbes in Human Welfare
 
-**Source:** `books/originals/Class12-Biology_lebo108.pdf` (12 pdf pages, printed folio absent in source, Reprint 2026-27).
+**Source:** `books/originals/Class12-Biology_lebo108.pdf` (12 pdf pages, printed folio = pdf page + 148 (verified, see correction note below), Reprint 2026-27).
+
+**Correction (2026-09-19):** an earlier pass wrongly recorded this chapter as folio-absent. Verified directly against the PDF: the printed folio appears as the first extracted text line on almost every page (only the chapter-opener page lacks one). Confirmed printed = 1-based PDF page + 148 across 3 independent anchor points with zero deviation. `printPage` on every exercise and `print` on every lesson now hold the real printed folio.
 **SHA-256:** `e96d234eab38ed70616c77101aedeaf4efa7d92ea8aececeb046d383061f63b7` (in `/tmp/opencode/bio_maps.json`, key `lebo108`).
 **Extraction:** PyMuPDF text layer (`/tmp/opencode/bio_text/lebo108.txt`) + section/exercise page maps in `/tmp/opencode/bio_maps.json`. **pdftotext was not used.** No PNG zooms (prose-quantitative chapter).
 **NCERT:** https://ncert.nic.in/textbook/pdf/lebo108.pdf

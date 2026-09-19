@@ -21,9 +21,9 @@ window.SIMS.periodic = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Repeating trace</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-h">Ex 13.1 heart 1.25 Hz</button>' +
-      '<button class="preset-btn" id="p-c">Earth spin: periodic, not oscillatory</button>' +
-      '<button class="preset-btn" id="p-s">Park swing: oscillatory</button>';
+      '<button class="preset-btn active" data-preset="p-h" id="p-h">Ex 13.1 heart 1.25 Hz</button>' +
+      '<button class="preset-btn" data-preset="p-c" id="p-c">Earth spin: periodic, not oscillatory</button>' +
+      '<button class="preset-btn" data-preset="p-s" id="p-s">Park swing: oscillatory</button>';
     document.getElementById("p-h").onclick = function(){ setActivePreset(this); mode="heart"; App.resetTimeline(); App.play(); };
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); mode="circ"; App.resetTimeline(); App.play(); };
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); mode="swing"; App.resetTimeline(); App.play(); };
@@ -73,9 +73,9 @@ window.SIMS.shmcos = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>x = A cos(ωt + φ)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="s0">φ = 0, ω = 2</button>' +
-      '<button class="preset-btn" id="s1">φ = π/2 (starts at 0)</button>' +
-      '<button class="preset-btn" id="s2">faster ω = 4 (T halves)</button>';
+      '<button class="preset-btn active" data-preset="s0" id="s0">φ = 0, ω = 2</button>' +
+      '<button class="preset-btn" data-preset="s1" id="s1">φ = π/2 (starts at 0)</button>' +
+      '<button class="preset-btn" data-preset="s2" id="s2">faster ω = 4 (T halves)</button>';
     document.getElementById("s0").onclick = function(){ setActivePreset(this); w=2; phi=0; App.resetTimeline(); App.play(); };
     document.getElementById("s1").onclick = function(){ setActivePreset(this); w=2; phi=Math.PI/2; App.resetTimeline(); App.play(); };
     document.getElementById("s2").onclick = function(){ setActivePreset(this); w=4; phi=0; App.resetTimeline(); App.play(); };
@@ -110,7 +110,7 @@ window.SIMS.ucmproj = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Reference particle P</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Projection P′ (SHM)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="u1">Fig 13.10 anticlockwise</button>';
+      '<button class="preset-btn active" data-preset="u1" id="u1">Fig 13.10 anticlockwise</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -150,7 +150,7 @@ window.SIMS.shmva = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>a</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="v1">Fig 13.13 φ = 0</button>';
+      '<button class="preset-btn active" data-preset="v1" id="v1">Fig 13.13 φ = 0</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -187,8 +187,8 @@ window.SIMS.massspring = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Mass</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Spring</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="ms1">Ex 13.9 k=1200, m=3, A=2 cm</button>' +
-      '<button class="preset-btn" id="ms2">Example 13.6 two springs keff=2k</button>';
+      '<button class="preset-btn active" data-preset="ms1" id="ms1">Ex 13.9 k=1200, m=3, A=2 cm</button>' +
+      '<button class="preset-btn" data-preset="ms2" id="ms2">Example 13.6 two springs keff=2k</button>';
     document.getElementById("ms1").onclick = function(){ setActivePreset(this); two=false; k=1200; m=3; A=0.02; App.resetTimeline(); App.play(); };
     document.getElementById("ms2").onclick = function(){ setActivePreset(this); two=true; k=1200; m=3; A=0.02; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -237,7 +237,7 @@ window.SIMS.shmenergy = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>U</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>E</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e1">Example 13.7 · E = 0.25 J</button>';
+      '<button class="preset-btn active" data-preset="e1" id="e1">Example 13.7 · E = 0.25 J</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -271,9 +271,9 @@ window.SIMS.pendulum = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Bob</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pe1">Seconds pendulum Earth, small θ</button>' +
-      '<button class="preset-btn" id="pe2">Same L on Moon g=1.7</button>' +
-      '<button class="preset-btn" id="pe3">Large angle (not SHM)</button>';
+      '<button class="preset-btn active" data-preset="pe1" id="pe1">Seconds pendulum Earth, small θ</button>' +
+      '<button class="preset-btn" data-preset="pe2" id="pe2">Same L on Moon g=1.7</button>' +
+      '<button class="preset-btn" data-preset="pe3" id="pe3">Large angle (not SHM)</button>';
     document.getElementById("pe1").onclick = function(){ setActivePreset(this); g=9.8; L=1; small=true; App.resetTimeline(); App.play(); };
     document.getElementById("pe2").onclick = function(){ setActivePreset(this); g=1.7; L=1; small=true; App.resetTimeline(); App.play(); };
     document.getElementById("pe3").onclick = function(){ setActivePreset(this); g=9.8; L=1; small=false; App.resetTimeline(); App.play(); };

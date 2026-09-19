@@ -28,3 +28,11 @@ All 36 items mapped with verbatim stems and independently computed answers.
 ## Edition note
 
 This 19-page reprint has sections **2.1–2.4** only (Cartesian products, relations, functions including graphs and algebra). There is **no** one-one/onto, **no** composition of functions, **no** invertible functions, and **no** binary operations section. Not invented.
+
+## 2026-09-19 independent standard audit
+
+Corrected the lesson source exponent to 2/3 and Example21 numerator to x²+3x+5; fully enumerated all16 subsets in Ex2.1 Q8; expanded solutions and added referenced diagrams; repaired discontinuous graph paths, signum endpoints, sample-grid label and domain displays.
+
+All source pages were read via PyMuPDF dict spans; stacked expressions and diagrams were checked in rendered page images. Browser QA: 127 checks, 0 failures, 0 console errors (1280, 390, 768px). Required video research is pending; fixture/mathematics assertions currently pass up to the mandatory video assertion, so **this chapter is not yet complete**. Shared-runtime migration across all14 chapters: 113 lesson/revision routes, no page errors.
+
+Video gate complete: agy-imported delivered 6 oEmbed-verified videos; all are wired to the lesson Wow cards and checked by the chapter verifier. Final verification: 626 assertions PASS; browser QA 127 checks, 0 failures, 0 console errors.

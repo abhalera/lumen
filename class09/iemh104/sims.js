@@ -1,743 +1,346 @@
-
-// =========================================================================
-// IEMH104: EXPLORING ALGEBRAIC IDENTITIES
-// Interactive Algebraic Manipulatives & Laboratory Engines
-// =========================================================================
-
-window.SIM_STATE = {
-  currentConcept: 'c1',
-  isPlaying: false,
-  timer: null,
-  scrubberVal: 0,
-  speed: 1,
-  // Concept-specific states
-  c1: { a: 120, b: 50, mode: 'sum' },
-  c2: { A: 9, B: 24, C: 16, x: 2, y: 1 },
-  c3: { a: 150, b: 60, shift: 1 },
-  c4: { a: 5, b: 3, preset: 'saira' },
-  c5: { x: 80, y: 40, explode: 0 },
-  c6: { preset: 'quad_frac', nVal: 5 }
-};
-
-window.SIM_ENGINES = {
-
-  // -----------------------------------------------------------------------
-  // LAB 1: GEOMETRIC AREA DISSECTION OF (a+b)² AND (a-b)² (pp. 68–72)
-  // -----------------------------------------------------------------------
-  c1: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📐 2D Geometric Area Dissection Workbench</div>
-            <div style="font-size:13px;color:#94a3b8;">(a + b)² = a² + 2ab + b² • (a - b)² = a² - 2ab + b²</div>
-          </div>
-          <div id="c1-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c1-btn-sum" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">(a + b)² Sum Dissection</button>
-            <button class="lab-btn" id="c1-btn-diff" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">(a - b)² Difference Model</button>
-            <button class="lab-btn" id="c1-btn-105" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Preset: 105² = (100+5)²</button>
-            <button class="lab-btn" id="c1-btn-64" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Preset: 64² = (60+4)²</button>
-          </div>
-
-          <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Dimension a: <b id="c1-a-val" style="color:#38bdf8;">120</b></label>
-              <input type="range" id="c1-slider-a" min="60" max="150" value="120" step="5" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Dimension b: <b id="c1-b-val" style="color:#f59e0b;">50</b></label>
-              <input type="range" id="c1-slider-b" min="20" max="80" value="50" step="5" style="width:100%;">
-            </div>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c1;
-      var aSlider = document.getElementById('c1-slider-a');
-      var bSlider = document.getElementById('c1-slider-b');
-
-      function setMode(m) {
-        s.mode = m;
-        document.getElementById('c1-btn-sum').style.background = (m === 'sum') ? '#0284c7' : '#334155';
-        document.getElementById('c1-btn-diff').style.background = (m === 'diff') ? '#0284c7' : '#334155';
-        window.SIM_ENGINES.c1.update();
-      }
-
-      document.getElementById('c1-btn-sum').onclick = function() { setMode('sum'); };
-      document.getElementById('c1-btn-diff').onclick = function() { setMode('diff'); };
-
-      document.getElementById('c1-btn-105').onclick = function() {
-        s.mode = 'sum';
-        s.a = 130; s.b = 30;
-        aSlider.value = 130; bSlider.value = 30;
-        document.getElementById('c1-a-val').innerText = '100';
-        document.getElementById('c1-b-val').innerText = '5';
-        setMode('sum');
-      };
-
-      document.getElementById('c1-btn-64').onclick = function() {
-        s.mode = 'sum';
-        s.a = 120; s.b = 40;
-        aSlider.value = 120; bSlider.value = 40;
-        document.getElementById('c1-a-val').innerText = '60';
-        document.getElementById('c1-b-val').innerText = '4';
-        setMode('sum');
-      };
-
-      aSlider.oninput = function() {
-        s.a = parseInt(aSlider.value);
-        document.getElementById('c1-a-val').innerText = s.a;
-        window.SIM_ENGINES.c1.update();
-      };
-      bSlider.oninput = function() {
-        s.b = parseInt(bSlider.value);
-        document.getElementById('c1-b-val').innerText = s.b;
-        window.SIM_ENGINES.c1.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c1;
-      var box = document.getElementById('c1-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 250;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var a = s.a;
-      var b = s.b;
-      var scale = 190 / (a + b);
-      var aPx = a * scale;
-      var bPx = b * scale;
-
-      var startX = 60;
-      var startY = 30;
-
-      if (s.mode === 'sum') {
-        // (a + b)^2
-        svg += `
-          <text x="${w/2}" y="20" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">Geometric Dissection of (a + b)² into 4 Regions</text>
-          
-          <!-- Region 1: a² square -->
-          <rect x="${startX}" y="${startY}" width="${aPx}" height="${aPx}" fill="#0284c7" fill-opacity="0.75" stroke="#38bdf8" stroke-width="2"/>
-          <text x="${startX + aPx/2}" y="${startY + aPx/2 + 5}" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">a²</text>
-
-          <!-- Region 2: top-right ab rectangle -->
-          <rect x="${startX + aPx}" y="${startY}" width="${bPx}" height="${aPx}" fill="#0d9488" fill-opacity="0.75" stroke="#2dd4bf" stroke-width="2"/>
-          <text x="${startX + aPx + bPx/2}" y="${startY + aPx/2 + 5}" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">ab</text>
-
-          <!-- Region 3: bottom-left ab rectangle -->
-          <rect x="${startX}" y="${startY + aPx}" width="${aPx}" height="${bPx}" fill="#0d9488" fill-opacity="0.75" stroke="#2dd4bf" stroke-width="2"/>
-          <text x="${startX + aPx/2}" y="${startY + aPx + bPx/2 + 5}" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">ab</text>
-
-          <!-- Region 4: b² square -->
-          <rect x="${startX + aPx}" y="${startY + aPx}" width="${bPx}" height="${bPx}" fill="#eab308" fill-opacity="0.75" stroke="#fde047" stroke-width="2"/>
-          <text x="${startX + aPx + bPx/2}" y="${startY + aPx + bPx/2 + 5}" fill="#000000" font-size="12" font-weight="bold" text-anchor="middle">b²</text>
-
-          <!-- Dimension labels -->
-          <text x="${startX + aPx/2}" y="${startY + aPx + bPx + 16}" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">a</text>
-          <text x="${startX + aPx + bPx/2}" y="${startY + aPx + bPx + 16}" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">b</text>
-        `;
-
-        var infoX = startX + aPx + bPx + 40;
-        svg += `
-          <g transform="translate(${infoX}, ${startY})">
-            <rect x="0" y="0" width="${w - infoX - 30}" height="190" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-            <text x="15" y="30" fill="#38bdf8" font-size="14" font-weight="bold">Area Partition:</text>
-            <text x="15" y="60" fill="#38bdf8" font-size="12">• a² = ${a}² = ${a*a}</text>
-            <text x="15" y="85" fill="#2dd4bf" font-size="12">• 2ab = 2(${a})(${b}) = ${2*a*b}</text>
-            <text x="15" y="110" fill="#fde047" font-size="12">• b² = ${b}² = ${b*b}</text>
-            <line x1="15" y1="125" x2="${w - infoX - 45}" y2="125" stroke="#475569"/>
-            <text x="15" y="150" fill="#ffffff" font-size="14" font-weight="bold">Total = ${(a+b)*(a+b)}</text>
-            <text x="15" y="172" fill="#10b981" font-size="12">≡ (${a} + ${b})²</text>
-          </g>
-        `;
-
-        readout.innerHTML = `a = ${a} | b = ${b} | a² = ${a*a} | 2ab = ${2*a*b} | b² = ${b*b} | SUM: ${(a+b)*(a+b)} = (${a+b})²`;
-        verdict.innerHTML = `<strong>Universal Identity:</strong> $(a + b)^2 = a^2 + 2ab + b^2$ is proven by partition: a square of side $(a+b)$ always splits into two squares and two matching rectangles.`;
-      }
-      else {
-        // (a - b)^2
-        svg += `
-          <text x="${w/2}" y="20" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">Geometric Deduction of (a - b)² = a² - 2ab + b²</text>
-          
-          <!-- Base a² square -->
-          <rect x="${startX}" y="${startY}" width="${aPx}" height="${aPx}" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
-          
-          <!-- (a-b)² sub square -->
-          <rect x="${startX}" y="${startY}" width="${aPx - bPx}" height="${aPx - bPx}" fill="#10b981" fill-opacity="0.8" stroke="#34d399" stroke-width="2"/>
-          <text x="${startX + (aPx - bPx)/2}" y="${startY + (aPx - bPx)/2 + 5}" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">(a - b)²</text>
-
-          <!-- Subtracted strips -->
-          <rect x="${startX + aPx - bPx}" y="${startY}" width="${bPx}" height="${aPx}" fill="#ef4444" fill-opacity="0.4" stroke="#f87171" stroke-width="1.5"/>
-          <rect x="${startX}" y="${startY + aPx - bPx}" width="${aPx}" height="${bPx}" fill="#ef4444" fill-opacity="0.4" stroke="#f87171" stroke-width="1.5"/>
-
-          <!-- Overlapping b² corner -->
-          <rect x="${startX + aPx - bPx}" y="${startY + aPx - bPx}" width="${bPx}" height="${bPx}" fill="#a855f7" fill-opacity="0.75" stroke="#c084fc" stroke-width="2"/>
-          <text x="${startX + aPx - bPx/2}" y="${startY + aPx - bPx/2 + 5}" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">+b²</text>
-        `;
-
-        var infoX = startX + aPx + 30;
-        svg += `
-          <g transform="translate(${infoX}, ${startY})">
-            <rect x="0" y="0" width="${w - infoX - 30}" height="190" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-            <text x="15" y="25" fill="#38bdf8" font-size="13" font-weight="bold">Overlapping Subtraction:</text>
-            <text x="15" y="50" fill="#38bdf8" font-size="11">1. Full square: a² = ${a*a}</text>
-            <text x="15" y="75" fill="#f87171" font-size="11">2. Subtract 2 strips: -2ab = -${2*a*b}</text>
-            <text x="15" y="100" fill="#c084fc" font-size="11">3. Corner b² double-subtracted: +b² = +${b*b}</text>
-            <line x1="15" y1="115" x2="${w - infoX - 45}" y2="115" stroke="#475569"/>
-            <text x="15" y="140" fill="#ffffff" font-size="13" font-weight="bold">Net: ${(a-b)*(a-b)}</text>
-            <text x="15" y="165" fill="#10b981" font-size="12">≡ (${a} - ${b})²</text>
-          </g>
-        `;
-
-        readout.innerHTML = `a = ${a} | b = ${b} | a² = ${a*a} | -2ab = -${2*a*b} | +b² = +${b*b} | RESULT: ${(a-b)*(a-b)} = (${a-b})²`;
-        verdict.innerHTML = `<strong>Inclusion-Exclusion Principle:</strong> In $(a - b)^2$, subtracting two strips of area $ab$ removes the corner $b^2$ twice. Adding back $b^2$ perfectly restores the balance!`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 2: TRINOMIAL MATCHER & PERFECT SQUARE INSPECTOR (pp. 73–75)
-  // -----------------------------------------------------------------------
-  c2: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🔍 Perfect Square Trinomial Inspector</div>
-            <div style="font-size:13px;color:#94a3b8;">Condition: Middle Term B = 2√(A·C) ⟹ Ax² + Bxy + Cy² = (√A x + √C y)²</div>
-          </div>
-          <div id="c2-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c2-p1" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">9x² + 24xy + 16y² (Ex 4.2)</button>
-            <button class="lab-btn" id="c2-p2" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">4s² + 20st + 25t²</button>
-            <button class="lab-btn" id="c2-p3" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">49x² + 28xy + 4y²</button>
-            <button class="lab-btn" id="c2-p4" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">36x² + 12x + 1</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c2;
-      function setTrinomial(A, B, C, name) {
-        s.A = A; s.B = B; s.C = C;
-        ['p1', 'p2', 'p3', 'p4'].forEach(function(k) {
-          var b = document.getElementById('c2-' + k);
-          if (b) b.style.background = (k === name) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c2.update();
-      }
-
-      document.getElementById('c2-p1').onclick = function() { setTrinomial(9, 24, 16, 'p1'); };
-      document.getElementById('c2-p2').onclick = function() { setTrinomial(4, 20, 25, 'p2'); };
-      document.getElementById('c2-p3').onclick = function() { setTrinomial(49, 28, 4, 'p3'); };
-      document.getElementById('c2-p4').onclick = function() { setTrinomial(36, 12, 1, 'p4'); };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c2;
-      var box = document.getElementById('c2-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 220;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var A = s.A, B = s.B, C = s.C;
-      var sqrtA = Math.sqrt(A);
-      var sqrtC = Math.sqrt(C);
-      var reqB = 2 * sqrtA * sqrtC;
-      var isPerfect = (Math.abs(B - reqB) < 1e-6);
-
-      svg += `
-        <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Expression: ${A}x² + ${B}xy + ${C}y²</text>
-        
-        <g transform="translate(${w/2 - 180}, 60)">
-          <rect x="0" y="0" width="360" height="120" rx="8" fill="#0f172a" stroke="${isPerfect ? '#10b981' : '#ef4444'}" stroke-width="2"/>
-          <text x="180" y="30" fill="#38bdf8" font-size="12" text-anchor="middle">Step 1: Check First Term ⟹ √(${A}x²) = ${sqrtA.toFixed(1)}x</text>
-          <text x="180" y="55" fill="#f59e0b" font-size="12" text-anchor="middle">Step 2: Check Last Term ⟹ √(${C}y²) = ${sqrtC.toFixed(1)}y</text>
-          <text x="180" y="80" fill="#e2e8f0" font-size="13" font-weight="bold" text-anchor="middle">Step 3: Test 2AB = 2(${sqrtA.toFixed(1)})(${sqrtC.toFixed(1)}) = ${reqB.toFixed(1)}xy</text>
-          <text x="180" y="105" fill="${isPerfect ? '#10b981' : '#ef4444'}" font-size="14" font-weight="bold" text-anchor="middle">
-            ${isPerfect ? `✓ Factored: (${sqrtA.toFixed(0)}x + ${sqrtC.toFixed(0)}y)²` : `✗ Not a perfect square`}
-          </text>
-        </g>
-      `;
-
-      readout.innerHTML = `TRINOMIAL: ${A}x² + ${B}xy + ${C}y² | √A = ${sqrtA} | √C = ${sqrtC} | 2√(AC) = ${reqB} | MATCH: ${isPerfect}`;
-      verdict.innerHTML = isPerfect
-        ? `<strong>Perfect Square Verified:</strong> The middle term $${B}xy$ matches $2(${sqrtA}x)(${sqrtC}y)$ exactly! Hence $${A}x^2 + ${B}xy + ${C}y^2 = (${sqrtA}x + ${sqrtC}y)^2$.`
-        : `<strong>Not a perfect square:</strong> The middle term must equal ${reqB}xy.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 3: ŚRĪDHARĀCĀRYA'S DIFFERENCE OF SQUARES (pp. 75–80)
-  // -----------------------------------------------------------------------
-  c3: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">✂ Śrīdharācārya's Difference of Squares (c. 750 CE)</div>
-            <div style="font-size:13px;color:#94a3b8;">a² - b² = (a + b)(a - b) • Geometric Cut-and-Paste Rearrangement</div>
-          </div>
-          <div id="c3-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c3-btn-square" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">1. L-Shape (a² - b²)</button>
-            <button class="lab-btn" id="c3-btn-rect" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">2. Rearrange to (a+b)×(a-b)</button>
-            <button class="lab-btn" id="c3-btn-mental" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">104 × 96 = 100² - 16</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c3;
-      document.getElementById('c3-btn-square').onclick = function() {
-        s.shift = 0;
-        document.getElementById('c3-btn-square').style.background = '#0284c7';
-        document.getElementById('c3-btn-rect').style.background = '#334155';
-        window.SIM_ENGINES.c3.update();
-      };
-      document.getElementById('c3-btn-rect').onclick = function() {
-        s.shift = 1;
-        document.getElementById('c3-btn-rect').style.background = '#0284c7';
-        document.getElementById('c3-btn-square').style.background = '#334155';
-        window.SIM_ENGINES.c3.update();
-      };
-      document.getElementById('c3-btn-mental').onclick = function() {
-        s.a = 100; s.b = 4; s.shift = 1;
-        document.getElementById('c3-btn-rect').style.background = '#0284c7';
-        document.getElementById('c3-btn-square').style.background = '#334155';
-        window.SIM_ENGINES.c3.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c3;
-      var box = document.getElementById('c3-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 230;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var a = 140;
-      var b = 50;
-      var aMinusB = a - b;
-
-      if (s.shift === 0) {
-        // L-Shape state
-        svg += `
-          <text x="${w/2}" y="25" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Step 1: Square of side a with corner b² removed (Area = a² - b²)</text>
-          <g transform="translate(${w/2 - 140}, 45)">
-            <!-- Main rectangle (a - b) x a -->
-            <rect x="0" y="0" width="${aMinusB}" height="${a}" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
-            <text x="${aMinusB/2}" y="${a/2}" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">(a - b) × a</text>
-            
-            <!-- Side strip (a - b) x b -->
-            <rect x="${aMinusB}" y="${b}" width="${b}" height="${aMinusB}" fill="#0d9488" stroke="#2dd4bf" stroke-width="2"/>
-            <text x="${aMinusB + b/2}" y="${b + aMinusB/2}" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">b × (a-b)</text>
-
-            <!-- Cutout b² -->
-            <rect x="${aMinusB}" y="0" width="${b}" height="${b}" fill="#334155" stroke="#64748b" stroke-width="2" stroke-dasharray="4,4"/>
-            <text x="${aMinusB + b/2}" y="${b/2 + 4}" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">-b²</text>
-          </g>
-        `;
-      } else {
-        // Rearranged rectangle
-        svg += `
-          <text x="${w/2}" y="25" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Step 2: Śrīdharācārya Rearrangement ⟹ Rectangle of (a + b) × (a - b)</text>
-          <g transform="translate(${w/2 - (a + b)/2}, 60)">
-            <!-- First piece: (a - b) x a -->
-            <rect x="0" y="0" width="${a}" height="${aMinusB}" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
-            <text x="${a/2}" y="${aMinusB/2 + 5}" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">Length a</text>
-
-            <!-- Second piece: rotated (a - b) x b placed next to it -->
-            <rect x="${a}" y="0" width="${b}" height="${aMinusB}" fill="#0d9488" stroke="#2dd4bf" stroke-width="2"/>
-            <text x="${a + b/2}" y="${aMinusB/2 + 5}" fill="#ffffff" font-size="13" font-weight="bold" text-anchor="middle">+ b</text>
-
-            <!-- Dimensions -->
-            <text x="${(a+b)/2}" y="${aMinusB + 22}" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Total Length = (a + b)</text>
-            <text x="-25" y="${aMinusB/2 + 5}" fill="#2dd4bf" font-size="12" font-weight="bold" text-anchor="middle">(a - b)</text>
-          </g>
-        `;
-      }
-
-      readout.innerHTML = `a = ${s.a} | b = ${s.b} | a² = ${s.a*s.a} | b² = ${s.b*s.b} | a² - b² = ${s.a*s.a - s.b*s.b} | (a+b)(a-b) = ${(s.a+s.b)*(s.a-s.b)}`;
-      verdict.innerHTML = `<strong>Śrīdharācārya (750 CE):</strong> The L-shaped region left after removing $b^2$ from $a^2$ rearranges without distortion into a single rectangle of dimensions $(a + b)$ by $(a - b)$, proving $a^2 - b^2 = (a + b)(a - b)$.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 4: ALGEBRA TILES GRID & SAIRA'S RECTANGLE (pp. 80–84)
-  // -----------------------------------------------------------------------
-  c4: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🧱 Virtual Algebra Tiles Factorisation Board</div>
-            <div style="font-size:13px;color:#94a3b8;">x² square • x rectangular strips • 1 unit squares ⟹ (x + a)(x + b)</div>
-          </div>
-          <div id="c4-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c4-p1" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Saira's Rectangle: x² + 8x + 15</button>
-            <button class="lab-btn" id="c4-p2" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">x² + 7x + 12 = (x+3)(x+4)</button>
-            <button class="lab-btn" id="c4-p3" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">x² + 5x + 6 = (x+2)(x+3)</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c4;
-      function setTiles(a, b, pName) {
-        s.a = a; s.b = b; s.preset = pName;
-        ['p1', 'p2', 'p3'].forEach(function(k) {
-          var btn = document.getElementById('c4-' + k);
-          if (btn) btn.style.background = (k === pName) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c4.update();
-      }
-
-      document.getElementById('c4-p1').onclick = function() { setTiles(5, 3, 'p1'); };
-      document.getElementById('c4-p2').onclick = function() { setTiles(4, 3, 'p2'); };
-      document.getElementById('c4-p3').onclick = function() { setTiles(3, 2, 'p3'); };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c4;
-      var box = document.getElementById('c4-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 230;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      var a = s.a, b = s.b;
-      var xSize = 85;
-      var unitSize = 14;
-
-      var startX = w/2 - (xSize + a * unitSize) / 2;
-      var startY = 35;
-
-      svg += `
-        <text x="${w/2}" y="22" fill="#f8fafc" font-size="13" font-weight="bold" text-anchor="middle">Algebra Tiles: x² + ${a+b}x + ${a*b} ≡ (x + ${a})(x + ${b})</text>
-        
-        <!-- Large x² Tile -->
-        <rect x="${startX}" y="${startY}" width="${xSize}" height="${xSize}" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
-        <text x="${startX + xSize/2}" y="${startY + xSize/2 + 5}" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">x²</text>
-
-        <!-- Top x-strips (a strips) -->
-        <g transform="translate(${startX + xSize}, ${startY})">
-      `;
-
-      for (var i = 0; i < a; i++) {
-        svg += `
-          <rect x="${i * unitSize}" y="0" width="${unitSize}" height="${xSize}" fill="#0d9488" stroke="#2dd4bf" stroke-width="1"/>
-        `;
-      }
-      svg += `
-        </g>
-        <text x="${startX + xSize + (a*unitSize)/2}" y="${startY - 6}" fill="#2dd4bf" font-size="11" font-weight="bold" text-anchor="middle">${a}x strips</text>
-
-        <!-- Bottom x-strips (b strips) -->
-        <g transform="translate(${startX}, ${startY + xSize})">
-      `;
-      for (var j = 0; j < b; j++) {
-        svg += `
-          <rect x="0" y="${j * unitSize}" width="${xSize}" height="${unitSize}" fill="#0d9488" stroke="#2dd4bf" stroke-width="1"/>
-        `;
-      }
-      svg += `
-        </g>
-        <text x="${startX - 25}" y="${startY + xSize + (b*unitSize)/2 + 4}" fill="#2dd4bf" font-size="11" font-weight="bold" text-anchor="middle">${b}x</text>
-
-        <!-- Corner unit squares: a x b -->
-        <g transform="translate(${startX + xSize}, ${startY + xSize})">
-      `;
-      for (var r = 0; r < b; r++) {
-        for (var c = 0; c < a; c++) {
-          svg += `<rect x="${c * unitSize}" y="${r * unitSize}" width="${unitSize}" height="${unitSize}" fill="#eab308" stroke="#ca8a04" stroke-width="0.8"/>`;
-        }
-      }
-      svg += `</g>`;
-
-      svg += `
-        <text x="${w/2}" y="${startY + xSize + b*unitSize + 22}" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">Total Dimensions: Length = (x + ${a}), Breadth = (x + ${b})</text>
-      `;
-
-      readout.innerHTML = `TILES: 1 of x² | ${a+b} of x strips | ${a*b} unit squares | AREA: x² + ${a+b}x + ${a*b} | FACTORS: (x + ${a})(x + ${b})`;
-      verdict.innerHTML = `<strong>Saira's Geometric Puzzle Solved:</strong> Factorising a quadratic trinomial is geometrically equivalent to arranging algebra tiles into a continuous, complete rectangle without gaps or overlaps.`;
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 5: 3D ISOMETRIC CUBIC DISSECTION ((x+y)³) (pp. 84–87)
-  // -----------------------------------------------------------------------
-  c5: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🧊 3D Binomial Cube Dissection Workbench</div>
-            <div style="font-size:13px;color:#94a3b8;">(x + y)³ = x³ + 3x²y + 3xy² + y³ • 8 Solid Geometric Sub-Prisms</div>
-          </div>
-          <div id="c5-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c5-btn-solid" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Solid (x + y)³</button>
-            <button class="lab-btn" id="c5-btn-explode" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Explode 8 Blocks</button>
-            <button class="lab-btn" id="c5-btn-cond" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">x+y+z=0 ⟹ x³+y³+z³=3xyz</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c5;
-      document.getElementById('c5-btn-solid').onclick = function() {
-        s.explode = 0;
-        document.getElementById('c5-btn-solid').style.background = '#0284c7';
-        document.getElementById('c5-btn-explode').style.background = '#334155';
-        window.SIM_ENGINES.c5.update();
-      };
-      document.getElementById('c5-btn-explode').onclick = function() {
-        s.explode = 1;
-        document.getElementById('c5-btn-explode').style.background = '#0284c7';
-        document.getElementById('c5-btn-solid').style.background = '#334155';
-        window.SIM_ENGINES.c5.update();
-      };
-      document.getElementById('c5-btn-cond').onclick = function() {
-        s.explode = 2;
-        window.SIM_ENGINES.c5.update();
-      };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c5;
-      var box = document.getElementById('c5-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 230;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      if (s.explode === 2) {
-        // Condition x+y+z = 0
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Symmetric Theorem: If x + y + z = 0, then x³ + y³ + z³ = 3xyz</text>
-          <g transform="translate(${w/2 - 180}, 60)">
-            <rect x="0" y="0" width="360" height="130" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
-            <text x="180" y="30" fill="#38bdf8" font-size="13" text-anchor="middle">Identity: x³+y³+z³-3xyz = (x+y+z)(x²+y²+z²-xy-yz-zx)</text>
-            <text x="180" y="60" fill="#fbbf24" font-size="13" text-anchor="middle">Substitute (x + y + z) = 0 ⟹ RHS = 0</text>
-            <text x="180" y="90" fill="#ffffff" font-size="16" font-weight="bold" text-anchor="middle">x³ + y³ + z³ = 3xyz</text>
-            <text x="180" y="115" fill="#94a3b8" font-size="11" text-anchor="middle">Example: 28³ + (-15)³ + (-13)³ = 3(28)(-15)(-13) = 16,380</text>
-          </g>
-        `;
-        readout.innerHTML = `COROLLARY: (x+y+z)=0 ⟹ x³+y³+z³ = 3xyz | NUMERICAL DEMO: 28³ + (-15)³ + (-13)³ = 16,380`;
-        verdict.innerHTML = `<strong>Effortless Cubic Sums:</strong> When the sum of three terms is zero, you never need to compute large cubes; simply compute $3xyz$ directly!`;
-      } else {
-        // Isometric Cube Dissection
-        var cx = w / 2 - 80;
-        var cy = 150;
-        var exp = s.explode ? 25 : 0;
-
-        svg += `
-          <text x="${w/2}" y="25" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">${s.explode ? 'Exploded View: 8 Solid Components' : 'Solid Isometric Cube (x + y)³'}</text>
-          
-          <!-- Isometric Box Layout -->
-          <!-- x³ Base Cube -->
-          <g transform="translate(${cx - exp}, ${cy})">
-            <polygon points="0,0 50,-25 100,0 50,25" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
-            <polygon points="0,0 50,25 50,75 0,50" fill="#0369a1" stroke="#38bdf8" stroke-width="1.5"/>
-            <polygon points="50,25 100,0 100,50 50,75" fill="#075985" stroke="#38bdf8" stroke-width="1.5"/>
-            <text x="50" y="45" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">x³</text>
-          </g>
-        `;
-
-        var infoX = w / 2 + 50;
-        svg += `
-          <g transform="translate(${infoX}, 50)">
-            <rect x="0" y="0" width="${w - infoX - 30}" height="150" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-            <text x="15" y="25" fill="#38bdf8" font-size="13" font-weight="bold">8 Solid Sub-Prisms:</text>
-            <text x="15" y="50" fill="#38bdf8" font-size="11">• 1 cube of x³ (large core)</text>
-            <text x="15" y="75" fill="#2dd4bf" font-size="11">• 3 slabs of x²y (flat plates)</text>
-            <text x="15" y="100" fill="#fbbf24" font-size="11">• 3 columns of xy² (tall prisms)</text>
-            <text x="15" y="125" fill="#f43f5e" font-size="11">• 1 cube of y³ (corner block)</text>
-          </g>
-        `;
-
-        readout.innerHTML = `VOLUME: (x + y)³ | DECOMPOSITION: 1·x³ + 3·x²y + 3·xy² + 1·y³ = 8 solid pieces`;
-        verdict.innerHTML = `<strong>Isometric 3D Dissection:</strong> Just as $(x+y)^2$ splits into 4 2D areas, $(x+y)^3$ decomposes into exactly $2^3 = 8$ solid 3D volumes!`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 6: RATIONAL EXPRESSION SIMPLIFIER & DIVISIBILITY (pp. 87–91)
-  // -----------------------------------------------------------------------
-  c6: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">⚡ Rational Expression Canceller &amp; Divisibility Inspector</div>
-            <div style="font-size:13px;color:#94a3b8;">Cancelling Common Binomial Factors • n³ - n Consecutive Integers Divisibility</div>
-          </div>
-          <div id="c6-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
-            <button class="lab-btn" id="c6-btn-q1" style="background:#0284c7;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">(4x² + 4x + 1) / (4x² - 1)</button>
-            <button class="lab-btn" id="c6-btn-q2" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">(p⁴ - 16) / (p² - 4)</button>
-            <button class="lab-btn" id="c6-btn-div6" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;">n³ - n Divisible by 6 Proof</button>
-          </div>
-
-          <div style="margin-top:12px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #38bdf8;font-family:monospace;font-size:12px;" id="lab-readout"></div>
-          <div style="margin-top:8px;background:#0f172a;border-radius:8px;padding:10px;border-left:4px solid #10b981;font-size:13px;color:#e2e8f0;" id="lab-verdict"></div>
-        </div>
-      `;
-
-      var s = window.SIM_STATE.c6;
-      function setFrac(p) {
-        s.preset = p;
-        ['q1', 'q2', 'div6'].forEach(function(k) {
-          var btn = document.getElementById('c6-btn-' + k);
-          if (btn) btn.style.background = (k === p) ? '#0284c7' : '#334155';
-        });
-        window.SIM_ENGINES.c6.update();
-      }
-
-      document.getElementById('c6-btn-q1').onclick = function() { setFrac('q1'); };
-      document.getElementById('c6-btn-q2').onclick = function() { setFrac('q2'); };
-      document.getElementById('c6-btn-div6').onclick = function() { setFrac('div6'); };
-
-      this.update();
-    },
-
-    update: function() {
-      var s = window.SIM_STATE.c6;
-      var box = document.getElementById('c6-svg-box');
-      if (!box) return;
-
-      var w = box.clientWidth || 560;
-      var h = 230;
-      var svg = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">`;
-
-      var readout = document.getElementById('lab-readout');
-      var verdict = document.getElementById('lab-verdict');
-
-      if (s.preset === 'q1') {
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Simplification: (4x² + 4x + 1) / (4x² - 1)</text>
-          <g transform="translate(${w/2 - 180}, 55)">
-            <rect x="0" y="0" width="360" height="130" rx="8" fill="#0f172a" stroke="#0284c7" stroke-width="2"/>
-            <text x="180" y="30" fill="#38bdf8" font-size="13" text-anchor="middle">Numerator: 4x² + 4x + 1 = (2x + 1)(2x + 1)</text>
-            <text x="180" y="55" fill="#f59e0b" font-size="13" text-anchor="middle">Denominator: 4x² - 1 = (2x + 1)(2x - 1)</text>
-            <line x1="30" y1="70" x2="330" y2="70" stroke="#475569"/>
-            <text x="180" y="95" fill="#ef4444" font-size="12" text-anchor="middle">Cancel Common Factor (2x + 1)</text>
-            <text x="180" y="118" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">= (2x + 1) / (2x - 1)</text>
-          </g>
-        `;
-        readout.innerHTML = `FRACTION: (4x²+4x+1)/(4x²-1) | COMMON FACTOR: (2x+1) | REDUCED: (2x+1)/(2x-1) (x ≠ ±1/2)`;
-        verdict.innerHTML = `<strong>Factor Cancellation:</strong> Factoring polynomials using perfect squares and difference of squares enables complete algebraic reduction to lowest terms.`;
-      }
-      else if (s.preset === 'q2') {
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Simplification: (p⁴ - 16) / (p² - 4)</text>
-          <g transform="translate(${w/2 - 180}, 55)">
-            <rect x="0" y="0" width="360" height="130" rx="8" fill="#0f172a" stroke="#0284c7" stroke-width="2"/>
-            <text x="180" y="30" fill="#38bdf8" font-size="13" text-anchor="middle">Numerator: (p²)² - 4² = (p² - 4)(p² + 4)</text>
-            <text x="180" y="55" fill="#f59e0b" font-size="13" text-anchor="middle">Denominator: (p² - 4)</text>
-            <line x1="30" y1="70" x2="330" y2="70" stroke="#475569"/>
-            <text x="180" y="95" fill="#ef4444" font-size="12" text-anchor="middle">Cancel Non-Zero Factor (p² - 4)</text>
-            <text x="180" y="118" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">= p² + 4</text>
-          </g>
-        `;
-        readout.innerHTML = `FRACTION: (p⁴-16)/(p²-4) | FACTOR: (p²-4) | REDUCED: p² + 4 (p ≠ ±2)`;
-        verdict.innerHTML = `<strong>Nested Difference of Squares:</strong> $p^4 - 16 = (p^2 - 4)(p^2 + 4)$. Cancelling the common factor leaves a clean quadratic $p^2 + 4$.`;
-      }
-      else {
-        // n³ - n Divisibility
-        var n = 5;
-        svg += `
-          <text x="${w/2}" y="30" fill="#f8fafc" font-size="14" font-weight="bold" text-anchor="middle">Proof: n³ - n is Always Divisible by 6 for Any Natural Number n</text>
-          <g transform="translate(${w/2 - 180}, 55)">
-            <rect x="0" y="0" width="360" height="130" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
-            <text x="180" y="30" fill="#38bdf8" font-size="13" text-anchor="middle">Factor: n³ - n = n(n² - 1) = (n - 1) · n · (n + 1)</text>
-            <text x="180" y="55" fill="#fbbf24" font-size="12" text-anchor="middle">3 Consecutive Integers: At least one is even (divisible by 2)</text>
-            <text x="180" y="80" fill="#2dd4bf" font-size="12" text-anchor="middle">Exactly one is a multiple of 3</text>
-            <text x="180" y="110" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">⟹ Divisible by 2 × 3 = 6! (e.g. 4 × 5 × 6 = 120)</text>
-          </g>
-        `;
-        readout.innerHTML = `EXPRESSION: n³ - n = (n-1)n(n+1) | SAMPLE n=5: 4 × 5 × 6 = 120 | 120 ÷ 6 = 20 | DIVISIBLE: YES`;
-        verdict.innerHTML = `<strong>Number Theoretic Truth:</strong> The product of three consecutive integers always contains both 2 and 3 as factors. Since $\\gcd(2, 3) = 1$, $n^3 - n$ is unconditionally divisible by 6!`;
-      }
-
-      svg += `</svg>`;
-      box.innerHTML = svg;
-    },
-    render: function() { this.update(); }
+// iemh104 labs: Exploring Algebraic Identities.
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function nM4(v, d){ var L = window.LAB; if(d !== undefined) return L.num(v, d); var a = Math.abs(v); if(Math.abs(a - Math.round(a)) < 1e-9) return L.num(v, 0); if(Math.abs(a * 10 - Math.round(a * 10)) < 1e-9) return L.num(v, 1); return L.num(v, 2); }
+function clampM4(x, a, b){ return Math.max(a, Math.min(b, x)); }
+function sliderSetM4(L, st, defs){
+  L.controls(defs.map(function(d){ return L.slider(d[0], d[1], d[2], d[3], d[4], st[d[5]], nM4(st[d[5]])); }).join(""));
+  defs.forEach(function(d){ L.onInput(d[0], function(v){ st[d[5]] = v; L.setVal(d[0], nM4(v)); App.resetTimeline(); App.play(); }); });
+}
+function termM4(c, v, first){ if(c === 0) return ""; var s = Math.abs(c) === 1 && v ? "" : String(Math.abs(c)); return (first ? (c < 0 ? "−" : "") : (c < 0 ? " − " : " + ")) + s + v; }
+function polyM4(a2, a1, a0){ var s = termM4(a2, "x²", true); s += termM4(a1, "x", !s); s += termM4(a0, "", !s); return s || "0"; }
+function linM4(p, a){ return "(" + (p === 1 ? "" : p) + "x" + (a < 0 ? " − " + (-a) : " + " + a) + ")"; }
+function linesM4(L, lines, n, x, y0, dy, size, hi){ var m = ""; lines.slice(0, n).forEach(function(s, i){ m += L.text(x, y0 + i * dy, s, {size: size || 18, color: i === n - 1 ? (hi || L.C.path) : L.C.text, anchor: "start", mono: true, weight: i === n - 1 ? 700 : 400}); }); return m; }
+
+// Lab 1 — Consecutive squares and (a + b)² (§4.1–4.2)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "consec", n: 6, a: 3, b: 2};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.04, speed: 1});
+    L.legend({consec: [[C.vel, "(n − 1)²"], [C.path, "(n + 1)²"], [C.danger, "2n² taken away"]], area: [[C.vel, "a²"], [C.path, "ab (two of them)"], [C.ok, "b²"]], neg: [[C.path, "(a + b)²"], [C.ok, "a² + 2ab + b²"]], quick: [[C.vel, "40²"], [C.path, "40 × 3 (two of them)"], [C.ok, "3²"]]}[id]);
+    L.watch({consec: "Example 1: add the smallest and largest of three consecutive squares, then subtract twice the middle one. Change the middle number.", area: "Fig. 4.2: a square of side a + b is made of a², b² and two rectangles ab. Change a and b.", neg: "Example 2 and the rational check: does the identity still work when a and b are not lengths?", quick: "Example 4: 43² = (40 + 3)² from four pieces."}[id]);
+    if(id === "consec") sliderSetM4(L, st, [["m4n", "middle number n", 2, 30, 1, "n"]]);
+    else if(id === "area") sliderSetM4(L, st, [["m4a", "a", 1, 6, 0.5, "a"], ["m4b", "b", 0.5, 4, 0.5, "b"]]);
+    else L.controls("");
+    L.restart(true);
   }
-};
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(id === "consec"){
+      var n = st.n, s1 = (n - 1) * (n - 1), s3 = (n + 1) * (n + 1), mid2 = 2 * n * n, sc = 460 / (s1 + s3), f1 = clampM4(t, 0, 1), f2 = clampM4(t - 1, 0, 1);
+      m += L.rect(160, 50, s1 * sc * f1, 36, C.vel) + L.rect(160 + s1 * sc, 50, s3 * sc * clampM4(t - 0.5, 0, 1), 36, C.path) + L.text(150, 74, "(n − 1)² + (n + 1)²", {size: 13, color: C.text, anchor: "end"});
+      m += L.rect(160, 110, mid2 * sc * f2, 36, C.danger) + L.text(150, 134, "2n²", {size: 13, color: C.text, anchor: "end"});
+      if(t >= 2) m += L.rect(160 + mid2 * sc, 50, 2 * sc, 36, "rgba(52,211,153,0.6)") + L.text(160 + mid2 * sc + sc, 40, "2 left over", {size: 12, color: C.ok, weight: 700});
+      L.svg(m, "Three consecutive squares", 170);
+      L.readout([["Squares", s1 + ", " + (n * n) + ", " + s3], ["Sum of outer two", String(s1 + s3), C.path], ["Twice the middle", String(mid2), C.danger], ["Difference", t >= 2 ? "2" : "…", C.ok]]);
+      msg = t < 3 ? "Adding and subtracting…" : s1 + " + " + s3 + " − " + mid2 + " = <b>2</b>. In general (n − 1)² + (n + 1)² − 2n² = 2.";
+    } else if(id === "area"){
+      var a = st.a, b = st.b, u = Math.min(40, 250 / (a + b)), x0 = 70, y0 = 20;
+      m += L.rect(x0, y0, a * u, a * u, C.vel, ' opacity="0.8"') + L.text(x0 + a * u / 2, y0 + a * u / 2 + 5, "a²", {size: 15, color: "#fff", weight: 700});
+      if(t >= 1) m += L.rect(x0 + a * u, y0, b * u, a * u, C.path, ' opacity="0.8"') + L.rect(x0, y0 + a * u, a * u, b * u, C.path, ' opacity="0.8"') + L.text(x0 + a * u + b * u / 2, y0 + a * u / 2 + 5, "ab", {size: 13, color: "#111", weight: 700}) + L.text(x0 + a * u / 2, y0 + a * u + b * u / 2 + 5, "ab", {size: 13, color: "#111", weight: 700});
+      if(t >= 2) m += L.rect(x0 + a * u, y0 + a * u, b * u, b * u, C.ok, ' opacity="0.85"') + L.text(x0 + a * u + b * u / 2, y0 + a * u + b * u / 2 + 5, "b²", {size: 12, color: "#111", weight: 700});
+      m += L.rect(x0, y0, (a + b) * u, (a + b) * u, "none", ' stroke="' + C.text + '" stroke-width="2"') + L.text(x0 + a * u / 2, y0 + (a + b) * u + 18, "a = " + nM4(a), {size: 12, color: C.muted}) + L.text(x0 + a * u + b * u / 2, y0 + (a + b) * u + 18, "b = " + nM4(b), {size: 12, color: C.muted});
+      var A2 = a * a, AB2 = 2 * a * b, B2 = b * b, S = (a + b) * (a + b);
+      L.svg(m, "Area model of (a + b)²", 300);
+      L.readout([["a²", nM4(A2), C.vel], ["2ab", nM4(AB2), C.path], ["b²", nM4(B2), C.ok], ["(a + b)²", nM4(S)]]);
+      msg = t < 3 ? "Filling the square…" : "(" + nM4(a) + " + " + nM4(b) + ")² = " + nM4(A2) + " + " + nM4(AB2) + " + " + nM4(B2) + " = <b>" + nM4(S) + "</b>.";
+    } else if(id === "neg"){
+      var rows = [["a = −2, b = −3", "(a + b)² = (−5)² = 25", "a² + 2ab + b² = 4 + 12 + 9 = 25"], ["a = −2/3, b = 3/4", "(a + b)² = (1/12)² = 1/144", "4/9 − 1 + 9/16 = 1/144"]];
+      rows.forEach(function(r, i){ if(t >= i * 1.3){ m += L.text(40, 50 + i * 100, r[0], {size: 16, color: C.muted, anchor: "start", weight: 700}) + L.text(60, 80 + i * 100, r[1], {size: 16, color: C.path, anchor: "start", mono: true}) + L.text(60, 106 + i * 100, r[2], {size: 16, color: C.ok, anchor: "start", mono: true}); } });
+      L.svg(m, "Checking the identity with negative and rational numbers", 240);
+      L.readout([["Integers", t >= 1 ? "25 = 25" : "…", C.ok], ["Rationals", t >= 2.3 ? "1/144 = 1/144" : "…", C.ok]]);
+      msg = t < 3 ? "Substituting…" : "Both sides give 25 for a = −2, b = −3, and 1/144 for a = −2/3, b = 3/4; the distributive law shows it always works.";
+    } else {
+      var us = 6, xq = 80, yq = 20, big = 40 * us, sm = 3 * us;
+      m += L.rect(xq, yq, big, big, C.vel, ' opacity="0.75"') + L.text(xq + big / 2, yq + big / 2, "40² = 1600", {size: 15, color: "#fff", weight: 700});
+      if(t >= 1) m += L.rect(xq + big, yq, sm, big, C.path) + L.rect(xq, yq + big, big, sm, C.path) + L.text(xq + big + sm + 8, yq + big / 2, "40 × 3 = 120", {size: 13, color: C.path, anchor: "start", weight: 700}) + L.text(xq + big / 2, yq + big + sm + 18, "40 × 3 = 120", {size: 13, color: C.path, weight: 700});
+      if(t >= 2) m += L.rect(xq + big, yq + big, sm, sm, C.ok) + L.text(xq + big + sm + 8, yq + big + sm, "3² = 9", {size: 13, color: C.ok, anchor: "start", weight: 700});
+      L.svg(m, "43 squared in pieces", 300);
+      L.readout([["40²", "1600", C.vel], ["2 × 40 × 3", t >= 1 ? "240" : "…", C.path], ["3²", t >= 2 ? "9" : "…", C.ok]]);
+      msg = t < 3 ? "Adding the pieces…" : "43² = (40 + 3)² = 1600 + 240 + 9 = <b>1849</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["consec", "Example 1: consecutive squares"], ["area", "Fig. 4.2: area model"], ["neg", "Example 2: other numbers"], ["quick", "Example 4: 43²"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.square = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 2 — Perfect squares and (a − b)² (§4.3)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "ex5", a: 6, b: 2};
+  var P = {
+    ex5: ["x² + 4x + 4", "x² = (x)² and 4 = (2)²", "2 × x × 2 = 4x ✓", "= (x + 2)²"],
+    ex6: ["36x² + 12x + 1", "36x² = (6x)² and 1 = (1)²", "2 × 6x × 1 = 12x ✓", "= (6x + 1)²"],
+    ex7: ["50p² + 60pq + 18q²", "= 2(25p² + 30pq + 9q²)", "25p² = (5p)², 9q² = (3q)², 2 × 5p × 3q = 30pq ✓", "= 2(5p + 3q)²"],
+    worked: ["4x² − 12xy + 9y²", "4x² = (2x)² and 9y² = (3y)²", "2 × 2x × 3y = 12xy, with a minus sign ✓", "= (2x − 3y)²"]
+  };
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend(id === "fig43" ? [[C.vel, "(a − b)²"], [C.path, "rectangle ab"], [C.danger, "rectangle b(a − b)"]] : [[C.text, "step"], [C.path, "factorised form"]]);
+    L.watch({ex5: "Example 5: is x² + 4x + 4 a perfect square?", ex6: "Example 6: 36x² + 12x + 1.", ex7: "Example 7: take out the common factor 2 first.", worked: "Worked example: a perfect square with a minus sign.", fig43: "Fig. 4.3: remove the rectangles ab and b(a − b) from a² to leave (a − b)². Change a and b.", sq29: "Example 8: 29² = (30 − 1)²."}[id]);
+    if(id === "fig43") sliderSetM4(L, st, [["m4pa", "a", 3, 8, 0.5, "a"], ["m4pb", "b", 0.5, 2.5, 0.5, "b"]]);
+    else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(P[id]){
+      var n = Math.min(4, Math.floor(t + 1e-9) + 1);
+      m += linesM4(L, P[id], n, 60, 60, 52, 20);
+      L.svg(m, "Spotting a perfect square", 260);
+      L.readout([["Expression", P[id][0]], ["Square terms", n >= 2 ? P[id][1].replace(/^= /, "") : "…"], ["Result", n >= 4 ? P[id][3].replace(/^= /, "") : "…", C.path]]);
+      msg = t < 4 ? "Checking the pattern…" : P[id][0] + " = <b>" + P[id][3].replace(/^= /, "") + "</b>.";
+    } else if(id === "fig43"){
+      var a = st.a, b = st.b, u = Math.min(36, 260 / a), x0 = 90, y0 = 20, s = (a - b) * u;
+      m += L.rect(x0, y0, a * u, a * u, "none", ' stroke="' + C.text + '" stroke-width="2"') + L.rect(x0, y0, s, s, C.vel, ' opacity="0.8"') + L.text(x0 + s / 2, y0 + s / 2 + 5, "(a − b)²", {size: 14, color: "#fff", weight: 700});
+      if(t >= 1) m += L.rect(x0 + s, y0, b * u, a * u, C.path, ' opacity="0.8"') + L.text(x0 + s + b * u / 2, y0 + a * u / 2, "ab", {size: 13, color: "#111", weight: 700});
+      if(t >= 2) m += L.rect(x0, y0 + s, s, b * u, C.danger, ' opacity="0.8"') + L.text(x0 + s / 2, y0 + s + b * u / 2 + 5, "b(a − b)", {size: 12, color: "#111", weight: 700});
+      var val = a * a - a * b - b * (a - b);
+      L.svg(m, "Fig. 4.3 area model", 300);
+      L.readout([["a²", nM4(a * a)], ["ab", nM4(a * b), C.path], ["b(a − b)", nM4(b * (a - b)), C.danger], ["(a − b)²", nM4((a - b) * (a - b)), C.vel]]);
+      msg = t < 3 ? "Removing the rectangles…" : nM4(a * a) + " − " + nM4(a * b) + " − " + nM4(b * (a - b)) + " = <b>" + nM4(val) + "</b> = (" + nM4(a) + " − " + nM4(b) + ")².";
+    } else {
+      m += linesM4(L, ["29² = (30 − 1)²", "= 30² − 2 × 30 × 1 + 1²", "= 900 − 60 + 1", "= 841"], Math.min(4, Math.floor(t + 1e-9) + 1), 90, 60, 52, 22);
+      L.svg(m, "29 squared", 260);
+      L.readout([["a", "30"], ["b", "1"], ["Result", t >= 3 ? "841" : "…", C.path]]);
+      msg = t < 4 ? "Using (a − b)²…" : "29² = 900 − 60 + 1 = <b>841</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["ex5", "Example 5"], ["ex6", "Example 6"], ["ex7", "Example 7"], ["worked", "4x² − 12xy + 9y²"], ["fig43", "Fig. 4.3: (a − b)²"], ["sq29", "Example 8: 29²"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.perfect = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 3 — (a + b + c)² and Śhrīdharāchārya’s identity (§4.4)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "fig44"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend(id === "fig44" ? [[C.vel, "squares a², b², c²"], [C.path, "rectangles ab, bc, ca"]] : id === "shridhara" ? [[C.vel, "the part that stays"], [C.path, "the strip that moves"], [C.ok, "b²"]] : [[C.path, "result"]]);
+    L.watch({fig44: "Fig. 4.4 with a = 3, b = 2, c = 1: nine pieces fill the square of side 6.", ex9: "Example 9: 119² = (100 + 10 + 9)².", shridhara: "Fig. 4.5: cut a strip of width 5 from a 55 × 55 square and move it to make a 60 × 50 rectangle, with a 5 × 5 square left over.", ends5: "Think and Reflect: squares of 35, 65, 85 and 105."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(id === "fig44"){
+      var s = [3, 2, 1], u = 42, x0 = 60, y0 = 18, cols = [C.vel, C.path, C.ok], names = ["a", "b", "c"], k = 0, off = [0, 3, 5];
+      for(var i = 0; i < 3; i++) for(var j = 0; j < 3; j++){
+        var show = t >= (i === j ? 0 : 1.5) + k * 0.12; k++;
+        if(!show) continue;
+        var sq = i === j, lab = sq ? names[i] + "²" : (names[Math.min(i, j)] + names[Math.max(i, j)]).replace("ac", "ca");
+        m += L.rect(x0 + off[j] * u, y0 + off[i] * u, s[j] * u, s[i] * u, sq ? cols[i] : "rgba(245,158,11,0.45)", ' stroke="#0f172a" stroke-width="1.5"') + L.text(x0 + (off[j] + s[j] / 2) * u, y0 + (off[i] + s[i] / 2) * u + 5, lab + " = " + (s[i] * s[j]), {size: 11, color: "#111", weight: 700});
+      }
+      L.svg(m, "Fig. 4.4 square of side a + b + c", 290);
+      L.readout([["a² + b² + c²", "9 + 4 + 1 = 14", C.vel], ["2ab + 2bc + 2ca", t >= 3 ? "12 + 4 + 6 = 22" : "…", C.path], ["(a + b + c)²", t >= 3 ? "36" : "…"]]);
+      msg = t < 4 ? "Filling the square…" : "(3 + 2 + 1)² = 14 + 22 = <b>36</b>, the area of the square of side 6.";
+    } else if(id === "ex9"){
+      m += linesM4(L, ["119² = (100 + 10 + 9)²", "= 100² + 10² + 9²", "  + 2(100)(10) + 2(100)(9) + 2(10)(9)", "= 10000 + 100 + 81 + 2000 + 1800 + 180", "= 14161"], Math.min(5, Math.floor(t * 1.25 + 1e-9) + 1), 40, 44, 46, 18);
+      L.svg(m, "119 squared", 260);
+      L.readout([["a, b, c", "100, 10, 9"], ["Result", t >= 3.2 ? "14161" : "…", C.path]]);
+      msg = t < 4 ? "Expanding…" : "119² = 10000 + 100 + 81 + 2000 + 1800 + 180 = <b>14161</b>.";
+    } else if(id === "shridhara"){
+      var u2 = 4, x1 = 80, y1 = 30, f = clampM4((t - 1) / 2, 0, 1);
+      m += L.rect(x1, y1, 50 * u2, 55 * u2, C.vel, ' opacity="0.7"') + L.rect(x1 + 50 * u2 + 40 * f, y1 + 50 * u2 * 0 + 0, 5 * u2, 50 * u2, C.path, ' opacity="0.85"');
+      m += L.rect(x1 + 50 * u2, y1 + 50 * u2, 5 * u2, 5 * u2, t < 1 ? C.vel : C.ok, ' opacity="0.85"');
+      if(f > 0) m += L.rect(x1 + (50 * u2 + 40) * (1 - f) + (0) * f, y1 + 55 * u2 + 10 * f, 0, 0, "none");
+      m += L.text(x1 + 25 * u2, y1 - 8, "50", {size: 12, color: C.muted}) + L.text(x1 - 10, y1 + 27 * u2, "55", {size: 12, color: C.muted, anchor: "end"});
+      if(t >= 3) m += L.text(420, 90, "55 × 55 = 50 × 55 + 5 × 55", {size: 14, color: C.text, anchor: "start"}) + L.text(420, 120, "= 60 × 50 + 5 × 5", {size: 14, color: C.text, anchor: "start"}) + L.text(420, 150, "= 3000 + 25", {size: 14, color: C.path, anchor: "start", weight: 700});
+      L.svg(m, "Śhrīdharāchārya’s rearrangement", 290);
+      L.readout([["(a + b)(a − b)", "60 × 50 = 3000", C.vel], ["b²", "5² = 25", C.ok], ["a²", t >= 3 ? "3025" : "…", C.path]]);
+      msg = t < 4 ? "Rearranging…" : "55² = 60 × 50 + 5² = 3000 + 25 = <b>3025</b>.";
+    } else {
+      var rows = [[35, 40, 30], [65, 70, 60], [85, 90, 80], [105, 110, 100]];
+      rows.forEach(function(r, i){ if(t >= i * 0.9) m += L.text(80, 60 + i * 50, r[0] + "² = " + r[1] + " × " + r[2] + " + 25 = " + (r[0] * r[0]), {size: 20, color: i === 3 ? C.path : C.text, anchor: "start", mono: true}); });
+      L.svg(m, "Squares of numbers ending in 5", 260);
+      L.readout([["Rule", "n5² = n(n + 1) followed by 25"], ["Last result", t >= 2.7 ? "11025" : "…", C.path]]);
+      msg = t < 4 ? "Squaring…" : "35² = 1225, 65² = 4225, 85² = 7225 and 105² = 110 × 100 + 25 = <b>11025</b>: n(n + 1) followed by 25.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["fig44", "Fig. 4.4: (a + b + c)²"], ["ex9", "Example 9: 119²"], ["shridhara", "Fig. 4.5: 55²"], ["ends5", "Numbers ending in 5"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.abc = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 4 — Algebra tiles (§4.5, Figs. 4.7–4.8)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "x3x4"};
+  var P = {x3x4: [1, 3, 1, 4], x2x3: [1, 2, 1, 3], x5x6: [1, 5, 1, 6], twox: [2, 3, 3, 1]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.04, speed: 1});
+    L.legend([[C.vel, "x² tile"], [C.path, "x-tile"], [C.ok, "unit tile"]]);
+    L.watch({x3x4: "Fig. 4.7: the rectangle with sides x + 3 and x + 4.", x2x3: "Think and Reflect: the product of x + 2 and x + 3.", x5x6: "Think and Reflect: lay out x² + 11x + 30 so that its factors show.", twox: "Fig. 4.8: the rectangle with sides 2x + 3 and 3x + 1."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var c = P[st.preset], p = c[0], a = c[1], q = c[2], b = c[3], X = 64, U = 16, x0 = 90, y0 = 36, m = "";
+    var cols = [], rows = [], i, j;
+    for(i = 0; i < p; i++) cols.push(X); for(i = 0; i < a; i++) cols.push(U);
+    for(j = 0; j < q; j++) rows.push(X); for(j = 0; j < b; j++) rows.push(U);
+    var yy = y0;
+    rows.forEach(function(h, rj){
+      var xx = x0;
+      cols.forEach(function(w, ci){
+        var type = (w === X ? 1 : 0) + (h === X ? 1 : 0), show = t >= [2.1, 1.2, 0.3][2 - type];
+        if(show) m += L.rect(xx, yy, w, h, [C.ok, C.path, C.vel][type], ' opacity="0.85" stroke="#0f172a" stroke-width="1.2"');
+        xx += w;
+      });
+      yy += h;
+    });
+    var W = p * X + a * U, H = q * X + b * U;
+    m += L.text(x0 + W / 2, y0 - 10, linM4(p, a).slice(1, -1), {size: 14, color: C.text, weight: 700}) + L.text(x0 - 10, y0 + H / 2, linM4(q, b).slice(1, -1), {size: 14, color: C.text, anchor: "end", weight: 700});
+    var x2 = p * q, x1 = p * b + q * a, x0c = a * b, prod = polyM4(x2, x1, x0c);
+    m += L.text(x0 + W + 40, y0 + 30, x2 + " x² tile" + (x2 > 1 ? "s" : ""), {size: 15, color: C.vel, anchor: "start", weight: 700}) + L.text(x0 + W + 40, y0 + 60, x1 + " x-tiles", {size: 15, color: C.path, anchor: "start", weight: 700}) + L.text(x0 + W + 40, y0 + 90, x0c + " unit tiles", {size: 15, color: C.ok, anchor: "start", weight: 700});
+    L.svg(m, "Algebra tiles", Math.max(260, H + 70));
+    L.readout([["Sides", linM4(p, a) + " and " + linM4(q, b)], ["x² tiles", String(x2), C.vel], ["x-tiles", p * b + " + " + q * a + " = " + x1, C.path], ["Unit tiles", a + " × " + b + " = " + x0c, C.ok]]);
+    var msg = st.preset === "x5x6" ? prod + " = <b>(x + 5)(x + 6)</b>: 11 x-tiles split into 5 and 6, and 30 unit tiles in a 5 by 6 block." : linM4(p, a) + linM4(q, b) + " = <b>" + prod + "</b>.";
+    L.verdict(t < 3 ? "Placing tiles…" : msg);
+  }
+  function mount(){ L.presets([["x3x4", "Fig. 4.7: (x + 3)(x + 4)"], ["x2x3", "(x + 2)(x + 3)"], ["x5x6", "x² + 11x + 30"], ["twox", "Fig. 4.8: (2x + 3)(3x + 1)"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.tiles = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 5 — Splitting the middle term (§4.6, Exercise Set 4.4)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "ex10"};
+  var P = {ex10: [1, 7, 12], ex11: [1, 11, 30], ex12: [1, -5, 6], neg: [1, -1, -42], lead: [6, 7, 2]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.04, speed: 1});
+    L.legend([[C.muted, "factor pair tried"], [C.ok, "pair with the right sum"]]);
+    L.watch({ex10: "Example 10: x² + 7x + 12 needs a + b = 7 and ab = 12.", ex11: "Example 11: x² + 11x + 30.", ex12: "Example 12: x² − 5x + 6, with a negative middle term.", neg: "Exercise Set 4.4 Q3 (iii): r² − r − 42, with a negative constant (written in x here).", lead: "Exercise Set 4.4 Q1 (iv): 6x² + 7x + 2; the pair must multiply to 6 × 2 = 12."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function pairs(prod, sum){
+    var out = [], n = Math.abs(prod);
+    for(var d = 1; d * d <= n; d++){
+      if(n % d) continue;
+      var e = n / d;
+      if(prod > 0){ out.push(sum >= 0 ? [d, e] : [-d, -e]); }
+      else { out.push([d, -e]); out.push([-d, e]); }
+    }
+    return out;
+  }
+  function draw(t){
+    var c = P[st.preset], k = c[0], p = c[1], q = c[2], list = pairs(k * q, p), shown = Math.min(list.length, Math.floor(t / 2.4 * list.length + 1e-9) + 1), m = "", hit = null;
+    m += L.text(40, 36, polyM4(k, p, q) + ":  need two numbers with product " + (k * q) + " and sum " + p, {size: 16, color: C.text, anchor: "start", weight: 700});
+    list.slice(0, shown).forEach(function(pr, i){ var ok = pr[0] + pr[1] === p; if(ok && !hit) hit = pr; m += L.text(60, 72 + i * 28, pr[0] + " × " + pr[1] + " = " + (k * q) + ",   sum " + (pr[0] + pr[1]) + (ok ? "  ✓" : ""), {size: 16, color: ok ? C.ok : C.muted, anchor: "start", mono: true, weight: ok ? 700 : 400}); });
+    var res = "", steps = [];
+    if(hit){
+      if(k === 1){ var s = hit.slice().sort(function(u, v){ return (u < 0) - (v < 0); }); res = linM4(1, s[0]) + linM4(1, s[1]); }
+      else { steps = ["6x² + 3x + 4x + 2", "= 3x(2x + 1) + 2(2x + 1)"]; res = "(3x + 2)(2x + 1)"; }
+    }
+    steps.forEach(function(s2, i){ if(t >= 3) m += L.text(420, 100 + i * 32, s2, {size: 16, color: C.text, anchor: "start", mono: true}); });
+    if(t >= 3 && hit) m += L.text(420, 100 + steps.length * 32, "= " + res, {size: 18, color: C.path, anchor: "start", mono: true, weight: 700});
+    L.svg(m, "Splitting the middle term", 320);
+    L.readout([["Product needed", String(k * q)], ["Sum needed", String(p)], ["Pair found", hit && t >= 3 ? hit.join(" and ") : "…", C.ok]]);
+    L.verdict(t < 3 || !hit ? "Trying factor pairs…" : polyM4(k, p, q) + " = <b>" + res + "</b>.");
+  }
+  function mount(){ L.presets([["ex10", "Example 10"], ["ex11", "Example 11"], ["ex12", "Example 12"], ["neg", "Negative constant"], ["lead", "6x² + 7x + 2"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.split = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 6 — Cubes: (a + b)³ and friends (§4.7)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "fig410"};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend(id === "fig410" ? [[C.vel, "a³"], [C.path, "a²b (three)"], ["#a78bfa", "ab² (three)"], [C.ok, "b³"]] : [[C.path, "result"]]);
+    L.watch({fig410: "Figs. 4.9–4.10 with a = 3, b = 2: the cube of edge 5 comes apart into 8 pieces.", cubed11: "Worked example: 11³ = (10 + 1)³.", diffcubes: "Check x³ − y³ = (x − y)(x² + xy + y²) and x³ + y³ = (x + y)(x² − xy + y²) with x = 5, y = 2.", ex15: "Example 15: x + y + z = 10, xyz = 25 and x² + y² + z² = 38."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function iso(ox, oy, s){ return function(x, y, z){ return [ox + (x - z) * 0.866 * s, oy - y * s + (x + z) * 0.5 * s]; }; }
+  function box(P, x, y, z, w, h, d, col){
+    var pt = function(a){ return a[0].toFixed(1) + "," + a[1].toFixed(1); };
+    var top = [P(x, y + h, z), P(x + w, y + h, z), P(x + w, y + h, z + d), P(x, y + h, z + d)];
+    var right = [P(x + w, y, z), P(x + w, y + h, z), P(x + w, y + h, z + d), P(x + w, y, z + d)];
+    var front = [P(x, y, z + d), P(x + w, y, z + d), P(x + w, y + h, z + d), P(x, y + h, z + d)];
+    return [[top, 1], [right, 0.75], [front, 0.55]].map(function(f){ return '<polygon points="' + f[0].map(pt).join(" ") + '" fill="' + col + '" fill-opacity="' + f[1] + '" stroke="#0f172a" stroke-width="1.2"/>'; }).join("");
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(id === "fig410"){
+      var a = 3, b = 2, g = 1.1 * clampM4(t / 2, 0, 1), P = iso(250, 200, 26), pieces = [];
+      [0, 1].forEach(function(i){ [0, 1].forEach(function(j){ [0, 1].forEach(function(k){ var dims = [i ? b : a, j ? b : a, k ? b : a], na = 3 - i - j - k; pieces.push({x: i ? a + g : 0, y: j ? a + g : 0, z: k ? a + g : 0, d: dims, col: na === 3 ? C.vel : na === 2 ? C.path : na === 1 ? "#a78bfa" : C.ok, s: i + j + k}); }); }); });
+      pieces.sort(function(p1, p2){ return (p1.x + p1.y + p1.z) - (p2.x + p2.y + p2.z); });
+      pieces.forEach(function(pc){ m += box(P, pc.x, pc.y, pc.z, pc.d[0], pc.d[1], pc.d[2], pc.col); });
+      L.svg(m, "A cube of edge a + b split into eight pieces", 300);
+      L.readout([["a³", "27", C.vel], ["3a²b", "3 × 18 = 54", C.path], ["3ab²", "3 × 12 = 36", "#a78bfa"], ["b³", "8", C.ok]]);
+      msg = t < 4 ? "Separating the pieces…" : "(3 + 2)³ = 27 + 54 + 36 + 8 = <b>125</b> = 5³.";
+    } else if(id === "cubed11"){
+      m += linesM4(L, ["11³ = (10 + 1)³", "= 10³ + 3(10²)(1) + 3(10)(1²) + 1³", "= 1000 + 300 + 30 + 1", "= 1331"], Math.min(4, Math.floor(t + 1e-9) + 1), 60, 60, 52, 20);
+      L.svg(m, "11 cubed", 260);
+      L.readout([["a, b", "10, 1"], ["Result", t >= 3 ? "1331" : "…", C.path]]);
+      msg = t < 4 ? "Expanding…" : "11³ = 1000 + 300 + 30 + 1 = <b>1331</b>.";
+    } else if(id === "diffcubes"){
+      m += linesM4(L, ["x = 5, y = 2", "x³ − y³ = 125 − 8 = 117", "(x − y)(x² + xy + y²) = 3 × 39 = 117", "x³ + y³ = 125 + 8 = 133", "(x + y)(x² − xy + y²) = 7 × 19 = 133"], Math.min(5, Math.floor(t * 1.25 + 1e-9) + 1), 50, 50, 46, 18);
+      L.svg(m, "Checking the cube identities", 270);
+      L.readout([["x³ − y³", "117", C.path], ["x³ + y³", t >= 2.4 ? "133" : "…", C.path]]);
+      msg = t < 4 ? "Substituting…" : "x³ − y³ = 117 = 3 × 39 and x³ + y³ = 133 = 7 × 19: both identities check out.";
+    } else {
+      m += linesM4(L, ["(x + y + z)² = x² + y² + z² + 2(xy + yz + zx)", "100 = 38 + 2(xy + yz + zx), so xy + yz + zx = 31", "x³ + y³ + z³ − 3xyz = (x + y + z)(x² + y² + z² − xy − yz − zx)", "x³ + y³ + z³ − 75 = 10 × (38 − 31) = 70", "x³ + y³ + z³ = 145"], Math.min(5, Math.floor(t * 1.25 + 1e-9) + 1), 24, 50, 46, 15);
+      L.svg(m, "Example 15", 270);
+      L.readout([["x + y + z", "10"], ["xy + yz + zx", t >= 0.8 ? "31" : "…"], ["x³ + y³ + z³", t >= 3.2 ? "145" : "…", C.path]]);
+      msg = t < 4 ? "Working step by step…" : "x³ + y³ + z³ = 75 + 70 = <b>145</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["fig410", "Fig. 4.10: splitting a cube"], ["cubed11", "11³"], ["diffcubes", "x³ − y³ and x³ + y³"], ["ex15", "Example 15"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.cube = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 7 — Rational expressions and applications (§4.8, Examples 16–18)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "ex16"};
+  var P = {
+    ex16: {lines: ["(x² − 7x + 12) / (5x² + 5x − 100)", "= (x − 3)(x − 4) / [5(x − 4)(x + 5)]", "cancel (x − 4), which is not 0", "= (x − 3)/[5(x + 5)]"], res: "(x − 3)/[5(x + 5)]", check: "at x = 1: 6/(−90) = −1/15 and −2/30 = −1/15"},
+    worked: {lines: ["(x² − 9) / (x² + 5x + 6)", "= (x + 3)(x − 3) / [(x + 2)(x + 3)]", "cancel (x + 3), which is not 0", "= (x − 3)/(x + 2)"], res: "(x − 3)/(x + 2)", check: "at x = 1: −8/12 = −2/3 and −2/3"}
+  };
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend(id === "saira" ? [[C.vel, "x² tile"], [C.path, "x-strip"], [C.ok, "unit square"]] : [[C.text, "step"], [C.path, "result"]]);
+    L.watch({ex16: "Example 16: factorise the top and the bottom, then cancel.", worked: "Worked example: (x² − 9)/(x² + 5x + 6).", saira: "Example 17: one x² square, 8 strips and 15 unit squares make a rectangle (drawn with x = 3).", pool: "Example 18: the breadth is 4 m less than the length and the area is 96 m²."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg, id = st.preset;
+    if(P[id]){
+      var c = P[id], n = Math.min(4, Math.floor(t + 1e-9) + 1);
+      m += linesM4(L, c.lines, n, 50, 60, 52, 19);
+      L.svg(m, "Simplifying a rational expression", 260);
+      L.readout([["Result", n >= 4 ? c.res : "…", C.path], ["Numerical check", t >= 4 ? c.check : "…", C.ok]]);
+      msg = t < 4 ? "Factorising…" : "The expression simplifies to <b>" + c.res + "</b>; check " + c.check + ".";
+    } else if(id === "saira"){
+      var u = 20, x = 3, x0 = 90, y0 = 30, f = t / 3;
+      var colsW = [x * u, u, u, u, u, u], rowsH = [x * u, u, u, u];
+      var yy = y0, cnt = 0;
+      rowsH.forEach(function(h, rj){ var xx = x0; colsW.forEach(function(w, ci){ var type = (ci === 0 ? 1 : 0) + (rj === 0 ? 1 : 0); cnt++; if(f * 24 >= cnt) m += L.rect(xx, yy, w, h, [C.ok, C.path, C.vel][type], ' opacity="0.85" stroke="#0f172a" stroke-width="1"'); xx += w; }); yy += h; });
+      m += L.text(x0 + (x + 5) * u / 2, y0 - 8, "x + 5", {size: 14, color: C.text, weight: 700}) + L.text(x0 - 10, y0 + (x + 3) * u / 2, "x + 3", {size: 14, color: C.text, anchor: "end", weight: 700});
+      L.svg(m, "Saira’s rectangle", 220);
+      L.readout([["Pieces", "1 x², 8 strips, 15 units"], ["Area", "x² + 8x + 15"], ["Sides", t >= 3 ? "(x + 5) and (x + 3)" : "…", C.path]]);
+      msg = t < 3 ? "Arranging the pieces…" : "x² + 8x + 15 = (x + 3)(x + 5): the rectangle is <b>(x + 5) by (x + 3)</b>.";
+    } else {
+      var rows = [9, 10, 11, 12, 13, 14], k = Math.min(6, Math.floor(t / 3 * 6 + 1e-9) + 1);
+      m += L.text(60, 34, "length x", {size: 13, color: C.muted, anchor: "start"}) + L.text(200, 34, "breadth x − 4", {size: 13, color: C.muted, anchor: "start"}) + L.text(360, 34, "area", {size: 13, color: C.muted, anchor: "start"});
+      rows.slice(0, k).forEach(function(v, i){ var ar = v * (v - 4), hit = ar === 96; m += L.text(60, 66 + i * 32, v + " m", {size: 16, color: hit ? C.ok : C.text, anchor: "start", mono: true}) + L.text(200, 66 + i * 32, (v - 4) + " m", {size: 16, color: hit ? C.ok : C.text, anchor: "start", mono: true}) + L.text(360, 66 + i * 32, ar + " m²" + (hit ? "  ✓" : ""), {size: 16, color: hit ? C.ok : C.text, anchor: "start", mono: true, weight: hit ? 700 : 400}); });
+      if(t >= 3) m += L.text(470, 120, "x² − 4x − 96 = 0", {size: 15, color: C.text, anchor: "start", mono: true}) + L.text(470, 150, "(x − 12)(x + 8) = 0", {size: 15, color: C.text, anchor: "start", mono: true}) + L.text(470, 180, "x = 12 (not −8)", {size: 15, color: C.path, anchor: "start", mono: true, weight: 700});
+      L.svg(m, "The rectangular pool", 270);
+      L.readout([["Equation", "x(x − 4) = 96"], ["Factors", t >= 3 ? "(x − 12)(x + 8)" : "…"], ["Pool", t >= 3 ? "12 m by 8 m" : "…", C.path]]);
+      msg = t < 4 ? "Solving…" : "x² − 4x − 96 = (x − 12)(x + 8) = 0 gives x = 12 (a length cannot be −8): the pool is <b>12 m by 8 m</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["ex16", "Example 16"], ["worked", "(x² − 9)/(x² + 5x + 6)"], ["saira", "Example 17: Saira’s rectangle"], ["pool", "Example 18: the pool"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.rational = {mount: mount, draw: draw, select: select, state: st};
+})();

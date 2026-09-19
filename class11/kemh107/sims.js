@@ -24,9 +24,9 @@ window.SIMS["pascal-triangle"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>ⁿCᵣ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Pingala / Pascal</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p5">Row 5 · (2x+3y)⁵</button>' +
-      '<button class="preset-btn" id="p7">Row 7</button>' +
-      '<button class="preset-btn" id="p4">Row 4</button>';
+      '<button class="preset-btn active" data-preset="p5" id="p5">Row 5 · (2x+3y)⁵</button>' +
+      '<button class="preset-btn" data-preset="p7" id="p7">Row 7</button>' +
+      '<button class="preset-btn" data-preset="p4" id="p4">Row 4</button>';
     document.getElementById("p5").onclick = function(){ setActivePreset(this); N=5; draw(); };
     document.getElementById("p7").onclick = function(){ setActivePreset(this); N=7; draw(); };
     document.getElementById("p4").onclick = function(){ setActivePreset(this); N=4; draw(); };
@@ -68,7 +68,7 @@ window.SIMS["expand-terms"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>T<sub>k+1</sub> = ⁶Cₖ x⁶⁻ᵏ 2ᵏ</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      [0,1,2,3,4,5,6].map(function(i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="pk'+i+'">T'+(i+1)+'</button>'; }).join("");
+      [0,1,2,3,4,5,6].map(function(i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="pk'+i+'" id="pk'+i+'">T'+(i+1)+'</button>'; }).join("");
     [0,1,2,3,4,5,6].forEach(function(i){
       document.getElementById("pk"+i).onclick = function(){ setActivePreset(this); k=i; draw(); };
     });
@@ -102,9 +102,9 @@ window.SIMS["one-plus-x"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Σ ⁿCₖ xᵏ</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p1">x = 1 → 2ⁿ</button>' +
-      '<button class="preset-btn" id="pm">x = −1 → 0</button>' +
-      '<button class="preset-btn" id="pxy">(x−2y)⁵</button>';
+      '<button class="preset-btn active" data-preset="p1" id="p1">x = 1 → 2ⁿ</button>' +
+      '<button class="preset-btn" data-preset="pm" id="pm">x = −1 → 0</button>' +
+      '<button class="preset-btn" data-preset="pxy" id="pxy">(x−2y)⁵</button>';
     var mode="one";
     document.getElementById("p1").onclick = function(){ setActivePreset(this); mode="one"; x=1; draw(); };
     document.getElementById("pm").onclick = function(){ setActivePreset(this); mode="alt"; x=-1; draw(); };
@@ -151,7 +151,7 @@ window.SIMS["x2-plus-3x"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>T<sub>r+1</sub></span></div>';
     document.getElementById("preset-bar").innerHTML =
-      [0,1,2,3,4].map(function(i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="tr'+i+'">T'+(i+1)+'</button>'; }).join("");
+      [0,1,2,3,4].map(function(i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="tr'+i+'" id="tr'+i+'">T'+(i+1)+'</button>'; }).join("");
     [0,1,2,3,4].forEach(function(i){
       document.getElementById("tr"+i).onclick = function(){ setActivePreset(this); r=i; draw(); };
     });
@@ -183,9 +183,9 @@ window.SIMS["ninety-eight"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>(100−2)⁵ terms</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p98">(98)⁵</button>' +
-      '<button class="preset-btn" id="p101">(101)⁴</button>' +
-      '<button class="preset-btn" id="p101m">(1.01)¹⁰⁰⁰⁰⁰⁰ vs 10000</button>';
+      '<button class="preset-btn active" data-preset="p98" id="p98">(98)⁵</button>' +
+      '<button class="preset-btn" data-preset="p101" id="p101">(101)⁴</button>' +
+      '<button class="preset-btn" data-preset="p101m" id="p101m">(1.01)¹⁰⁰⁰⁰⁰⁰ vs 10000</button>';
     var mode="98";
     document.getElementById("p98").onclick = function(){ setActivePreset(this); mode="98"; draw(); };
     document.getElementById("p101").onclick = function(){ setActivePreset(this); mode="101"; draw(); };
@@ -234,8 +234,8 @@ window.SIMS["remainder-25"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>remainder 1</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p6">6ⁿ − 5n mod 25</button>' +
-      '<button class="preset-btn" id="p4n">Σ 3ʳ ⁿCᵣ = 4ⁿ</button>';
+      '<button class="preset-btn active" data-preset="p6" id="p6">6ⁿ − 5n mod 25</button>' +
+      '<button class="preset-btn" data-preset="p4n" id="p4n">Σ 3ʳ ⁿCᵣ = 4ⁿ</button>';
     var mode="mod";
     document.getElementById("p6").onclick = function(){ setActivePreset(this); mode="mod"; draw(); };
     document.getElementById("p4n").onclick = function(){ setActivePreset(this); mode="four"; draw(); };

@@ -41,3 +41,7 @@ TOC of this reprint: **13.1–13.8 The simple pendulum**, then Summary / Points 
 - **Forced oscillations and resonance** — no section.
 
 Labs are mass-spring and pendulum only. No driven/damped oscillator was added.
+
+## Standard audit (keph206)
+
+Audited all 19 source PDF pages (printed 259–277), froze 18 exercise fixtures, normalized lesson worked examples and verified video metadata. `tests/verify.cjs` PASS 47 checks. Browser QA PASS 71 checks, 0 failures, 0 console errors.

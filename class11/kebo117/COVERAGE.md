@@ -1,44 +1,41 @@
-# Curriculum & Pedagogical Coverage: kebo117 (Locomotion and Movement)
+# kebo117 Coverage — Locomotion and Movement (Ch. 17, print pp. 217–229)
 
-**NCERT Class 11 Biology (2026–27 Reprint), Chapter 17, pp. 217–229**
+## Lessons (7)
+| # | Lesson | Sections | Sims |
+| 1 | Movement, Locomotion and Types of Movement | Introduction | movelab |
+| 2 | Muscle: Properties and Three Types | 17.2 | musclelab |
+| 3 | Skeletal Muscle Fibre and the Sarcomere | 17.2 | sarcolab |
+| 4 | Contractile Proteins and Sliding Filament Theory | 17.2.1–17.2.2 | contractlab |
+| 5 | Skeletal System and the Axial Skeleton | 17.3 | axialab |
+| 6 | Appendicular Skeleton: Limbs and Girdles | 17.3 | appendlab |
+| 7 | Joints and Disorders of the Muscular and Skeletal System | 17.4–17.5 + Summary | jointlab |
 
----
+## Exercises (10, all solved)
+| **17.1** | Sarcomere diagram | 100% Fully solved (inline labelled SVG: Z/I/A/H/M regions) |
+| **17.2** | Sliding filament theory | 100% Fully solved (thin slides over thick) |
+| **17.3** | Steps in muscle contraction | 100% Fully solved (signal to relaxation chain) |
+| **17.4** | True or false (a)–(e) | 100% Fully solved all five verdicts with corrections |
+| **17.5** | Differences (a)–(c) | 100% Fully solved (actin/myosin, red/white, girdles) |
+| **17.6** | Match the columns | 100% Fully solved (a)-(iv), (b)-(ii), (c)-(i), (d)-(iii) |
+| **17.7** | Cell movements in humans | 100% Fully solved (amoeboid, ciliary, muscular) |
+| **17.8** | Skeletal versus cardiac muscle | 100% Fully solved (striated twins split by control) |
+| **17.9** | Joint types (a)–(f) | 100% Fully solved with scope flags on (c) and (d) |
+| **17.10** | Fill in the blanks (a)–(f) | 100% Fully solved all six gaps with chapter lines |
 
-## 1. Chapter Structure & Pedagogical Concept Breakdown
+## Print-fidelity notes
+- Print spellings kept verbatim: Paramoecium, cytopharynx, Hydra, effected by pseudopodia, microfilaments, ciliated epithelium, trachea, ova, mesodermal, 40-50 per cent, excitability/contractility/extensibility/elasticity, striated muscles, voluntary muscles, smooth muscles (nonstriated muscle), involuntary muscles, transportation of food, gametes, branching pattern, fascicles, fascia, sarcolemma, sarcoplasm, syncitium, sarcoplasmic reticulum, store house of calcium ions, parallelly arranged, myofilaments or myofibrils, Isotropic, Anisotropic, rod-like structures, Meromyosins, heavy/light meromyosin (HMM/LMM), i.e.; , cross arm, active ATPase enzyme, sliding filament theory, motor unit, neuromuscular junction or motor-end plate, Acetyl choline, Ca++, cross bridge, ADP and P1, sarcoplasmic cisternae, lactic acid, glycogen, fatigue, myoglobin, Red/White fibres, aerobic muscles, calcium/chondroitin salts, 206 bones, axial/appendicular, hyoid, buccal cavity, Malleus/Incus/Stapes, Ear Ossicles, occipital condyles, dicondylic skull, neural canal, atlas, bicephalic, true ribs, hyaline cartilage, vertebrochondral (false) ribs, floating ribs, rib cage, fore/hind limb, longest bone, patella, knee cap, collar bone, spine, acromion, glenoid cavity, shoulder joint, coxal bones, ilium/ischium/pubis, acetabulum, pubic symphysis, fibrous cartilage, fulcrum, movability, sutures, arragement, Auto immune, wild contractions, estrogen, uric acid crystals, per cent, fibres, Figures 17.1–17.10.
+- Print grammar quirks kept: “cilia helps”, “The contractile property of muscles are”, “the light bands contain actin and is called”, “the head and short arm projects”, “The ‘Z’ line attached to these actins are”, “patella cover the knee”, “The movability at these joints vary”, “thereby remove the masking”, “Decreased levels of estrogen is”, “The number of cervical vertebrae are seven”, “Number of mitochondria are also few”.
+- Figures cited in print: Figure 17.1 (muscle bundles/fibres), Figure 17.2 (sarcomere), Figure 17.3 (actin/myosin), Figure 17.4 (cross bridge stages), Figure 17.5 (sliding filament), Figure 17.6 (skull), Figure 17.7 (vertebral column), Figure 17.8 (rib cage), Figure 17.9 (pectoral girdle + upper arm), Figure 17.10 (pelvic girdle + lower limb).
+- Q3’s groundtruth stem includes the page’s running header (“LOCOMOTION AND MOVEMENT”) — kept verbatim per the groundtruth contract.
+- Scope flags: Q9(c) hinge (print exemplifies hinge only with the knee joint) and Q9(d) ball and socket (print exemplifies it only with humerus–pectoral girdle) carry explicit beyond-print markers, named in the exercises note.
+- Art policy: only Q1’s stem cites a diagram/figure, so only Q1 carries inline <svg> art; no other exercise carries art.
+- No beyond-chapter insertions: no titin/nebulin, no troponin subunits, no power stroke, no T-tubules, no Ca2+ notation, no syncytium spelling, no tendon/ligament, no synovial fluid, no twitch types, no Haversian/osteon terms, no hip-joint naming.
 
-| Concept Index | Concept ID | Title | Interactive Simulation ID | Quizzes |
-|---|---|---|---|:---:|
-| **01** | `types-of-movement-muscle-types` | Types of Movement & Muscle Histological Classification | `muscletypessim` | 3 |
-| **02** | `sarcomere-ultrastructure-proteins` | Sarcomere Ultrastructure & Contractile Protein Architecture | `sarcomerestructsim` | 3 |
-| **03** | `sliding-filament-theory-mechanics` | The Sliding Filament Theory & Neuromuscular Cross-Bridge Cycle | `slidingfilamentsim` | 3 |
-| **04** | `muscle-energy-metabolism-fiber-types` | Muscle Energetics, Rigor Mortis & Red vs White Fibres | `redwhitefibersim` | 3 |
-| **05** | `axial-skeleton-cranium-ribcage` | Human Axial Skeleton: Cranium, Vertebrae & Rib Cage | `axialskeletonsim` | 3 |
-| **06** | `appendicular-skeleton-limbs-girdles` | Appendicular Skeleton: Limbs, Pectoral & Pelvic Girdles | `appendicularskeletonsim` | 3 |
-| **07** | `joints-biomechanics-pathology` | Articular Biomechanics & Musculoskeletal Disorders | `jointsanddisorderssim` | 3 |
-
-**Total Multi-Tier Practice Quizzes:** 21 (7 Foundation, 7 Application, 7 NEET-Challenger).
-
----
-
-## 2. Complete NCERT End-of-Chapter Exercises Mapping (100% Solved)
-
-| Exercise No. | Topic / Question Summary | Solution Mapping & Pedagogical Scope |
-|---|---|---|
-| **Ex 17.1** | Sarcomere diagram with all regions | Z-line, I-band, A-band, H-zone, M-line detailed molecular blueprint |
-| **Ex 17.2** | Sliding filament theory definition | Huxley & Huxley (1954) principles of non-shortening sliding myofilaments |
-| **Ex 17.3** | Steps in muscle contraction | Detailed 6-step excitation-contraction coupling from ACh to SERCA relaxation |
-| **Ex 17.4** | True/False with corrections (a-e) | Actin in thin filaments, H-zone composition, 206 bones, 12 rib pairs, ventral sternum |
-| **Ex 17.5** | Comprehensive comparative tables (a-c) | Actin vs Myosin; Red vs White muscle fibers; Pectoral vs Pelvic girdle |
-| **Ex 17.6** | Column matching (Smooth muscle, Tropomyosin, etc.) | Smooth muscle -> Involuntary; Tropomyosin -> Thin filament; Red muscle -> Myoglobin; Skull -> Sutures |
-| **Ex 17.7** | Different types of cell movements in human body | Amoeboid (microfilaments), Ciliary (microtubules), Muscular (actomyosin), Flagellar (sperm) |
-| **Ex 17.8** | Distinguish skeletal muscle from cardiac muscle | Fiber shape, striations, branching, intercalated discs, nuclei position, voluntary vs auto-rhythmic |
-| **Ex 17.9** | Name the type of joint (a-f) | Atlas/Axis (Pivot), Thumb (Saddle), Phalanges (Hinge), Hip (Ball & Socket), Cranium (Sutures), Pubic (Symphysis) |
-| **Ex 17.10** | Fill in the blanks (a-f) | 7 cervical vertebrae, 14 phalanges, tropomyosin & troponin, sarcoplasmic reticulum, 11th & 12th floating ribs, 8 cranial bones |
-
----
-
-## 3. Strict Budget & Quality Verification
-
-- **Extraction Fidelity:** Strictly PyMuPDF span dictionary blocks and 2x PNG rendering; 0% pdftotext.
-- **Offline Budget:** Single offline HTML with embedded SVG simulation engine, zero CDN dependencies, zero eager iframes, strictly under 2.0 MB budget.
-- **Pedagogical Integrity:** Fully aligned with NCERT Class 11 Biology 2026-27 reprint.
+## Verification Criteria
+- [x] Strict offline bundle (< 2.0 MB target).
+- [x] Zero external CDN fonts, stylesheets, or scripts.
+- [x] Zero eager iframes in static markup.
+- [x] 7 custom native interactive simulations.
+- [x] 21 multi-tier practice quizzes with instant feedback.
+- [x] 100% solved NCERT exercises (all 10 exercises).
+- [x] Validated by Node test harness (`tests/verify.cjs`).

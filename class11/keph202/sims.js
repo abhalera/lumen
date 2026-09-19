@@ -232,7 +232,11 @@ window.SIMS.stokes = (function(){
     svg.innerHTML = m;
     readout(cell("v_t", vt.toFixed(3)+" m/s", "#34d399") + cell("v(t)", v.toFixed(3)+" m/s") + cell("a", amm.toFixed(1)+" mm"));
     if(mode==="cu") verdict("<b>Example 9.9:</b> a = 2.0 mm, v_t = 6.5 cm s⁻¹ → η_oil = 0.99 Pa s. Drag + buoyancy = weight at terminal speed.");
-    else verdict("<b>Rain:</b> v_t ∝ a². A drizzle drop hangs; a cloudburst drop stings. Buoyancy of air is the −σ term in Eq. (9.18) — this reprint has no separate Archimedes section.");
+    else {
+      var Re = sig*vt*2*a/eta;
+      var flag = Re > 10 ? " Re ≈ " + Re.toExponential(1) + " ≫ 1, so Stokes overestimates here — a real " + amm.toFixed(1) + " mm drop falls only ~6 m/s (it flattens and sheds vortices)." : " Re ≈ " + Re.toFixed(1) + ": Stokes applies.";
+      verdict("<b>Rain:</b> v_t ∝ a². A drizzle drop hangs; a cloudburst drop stings. Buoyancy of air is the −σ term in Eq. (9.18)." + flag);
+    }
   }
   return { mount: mount, draw: draw };
 })();
@@ -290,3 +294,62 @@ window.SIMS.capillary = (function(){
   }
   return { mount: mount, draw: draw };
 })();
+
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || sim.mount._qaWrapped) return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    var result = originalMount(lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id;
+    });
+    return result;
+  };
+  sim.mount._qaWrapped = true;
+});
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

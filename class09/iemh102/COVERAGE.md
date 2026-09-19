@@ -1,59 +1,30 @@
-# Curriculum & Pedagogical Coverage: Class 9 Mathematics Chapter 2
-## Introduction to Linear Polynomials (`iemh102`)
-**Textbook**: NCERT *Ganita Manjari*, Grade 9 Part I (2024–26 NCF Reprint)  
-**Syllabus Range**: pp. 16–40  
-**Architectural Standard**: Golden Reference (5-Block Pedagogical Pipeline)
+# COVERAGE — iemh102 Introduction to Linear Polynomials
 
----
+**Source:** `books/originals/Class09-Maths_iemh102.pdf` (NCERT *Ganita Manjari*, Grade 9, Part I), 25 PDF pages. Printed page = PDF page + 15.
+**Build:** `python3 scripts/build_chapter.py iemh102`.
+**Checks:**
+- `node output/Class09/iemh102/tests/verify.cjs`
+- `browser_qa.cjs output/Class09/iemh102`
 
-### 1. Concept-to-Curriculum Mapping
+| # | Concept | PDF pp. | NCERT items | Lab |
+|---|---|---|---|---|
+| 1 | Expressions and polynomials | 1–4 | 2.1, Examples 1–3, Figs. 2.1–2.2, Think and Reflect, degree and names of polynomials, Exercise Set 2.1 | `terms`: Raju’s boxes, garden cost, wire rectangle, degrees |
+| 2 | Linear polynomials and equations | 4–6 | 2.2, Examples 4–6, linear patterns, Fig. 2.3 input–output machine, Think and Reflect, Exercise Set 2.2 | `linear`: square perimeters, chess club, Example 6, machine 2x + 3, area machine |
+| 3 | Linear patterns | 6–9 | 2.3, Fig. 2.4 tiles, Examples 7–8, Think and Reflect, Exercise Set 2.3 | `patterns`: tiles, Bela’s pocket money, auto fare |
+| 4 | Linear growth and decay | 9–11 | 2.4, Examples 9–10, Think and Reflect, Exercise Set 2.4 | `growth`: journey cost, water tank, plant, phone |
+| 5 | Finding y = ax + b | 11–12 | 2.5, Example 11, Think and Reflect, Exercise Set 2.5 | `relation`: data plan, modules, gym, temperature |
+| 6 | Graphs and slope | 12–18 | 2.6, Fig. 2.5, Examples 12–15, Figs. 2.6–2.11 | `slope`: Fig. 2.5, Examples 12–13, Figs. 2.9 and 2.11, explore a |
+| 7 | y-intercept and parallel lines | 18–21 | Think and Reflect, Example 16, Figs. 2.12–2.14, conclusions (i)–(iii), Exercise Set 2.6, Chapter summary | `intercept`: 3x + 1 and −3x + 1, Example 16, Fig. 2.14, explore a and b |
 
-| Concept ID | Chapter Section & Scope | Core Mathematical Topics | Interactive Manipulative Engine | Quizzes |
-| :--- | :--- | :--- | :--- | :---: |
-| **`c1`** | **2.1 & 2.2 Algebraic Basics (pp. 16–20)** | Variables, constants, terms, coefficients; univariate polynomials; degree definition; classification into constant (0), linear (1), quadratic (2), and cubic (3). | **Polynomial Degree & Term Dissector Workbench**: Real-time expression builder, term cards, degree classifier. | 3 |
-| **`c2`** | **2.2 Function Evaluation (pp. 20–23)** | Input-output polynomial machine; evaluating p(x) at given values; zero of a linear polynomial (root x = -b/a); word problem modeling. | **Input-Output Evaluation Machine**: Hopper-to-tray function simulator with automated zero root locator. | 3 |
-| **`c3`** | **2.3 Linear Patterns (pp. 24–27)** | Constant first differences; rate of change Δy/Δx; formulation of sequence rules S(n) = start + rate · n; bank savings growth. | **Linear Sequence & Savings Stepper**: Monthly balance accumulator, step differences, linear extrapolation. | 3 |
-| **`c4`** | **2.5 Two-Variable Relations (pp. 28–30)** | Dependent and independent variables; slope-intercept formulation y = ax + b from data; linear growth (a > 0) vs decay (a < 0). | **Linear Growth (+a) vs Linear Decay (-a) Studio**: Dual split-screen plant growth vs leaking water tank simulator. | 3 |
-| **`c5`** | **2.6 Visualising Linear Equations (pp. 31–36)** | Straight-line graphs; geometric meaning of slope a (steepness/tilt) and y-intercept b; x-intercept (-b/a, 0); origin lines (b = 0). | **Dynamic Straight-Line Slope & Intercept Bench**: Full Cartesian line graph, slope triangle, live intercept markers. | 3 |
-| **`c6`** | **2.6 Parallel Families & Applications (pp. 37–40)** | Parallel lines criterion (a₁ = a₂); growing matchstick patterns M(n) = 5n + 1; physics work formula W = Fd; invariant families f(x) = ax + a. | **Hexagon Matchstick & Parallel Lines Studio**: Growing hexagon lattice stage animator and parallel line slider. | 3 |
+**Exercises:** 39 items.
+- Exercise Set 2.1 has 5 questions, Set 2.2 has 7, Set 2.3 has 5, Set 2.4 has 4, and Set 2.5 has 3.
+- Exercise Set 2.6 is one item with five parts and five graphs.
+- The End-of-Chapter Exercises Q1–Q14 are one item each.
 
-**Totals**: 6 Concepts | 6 SVG/Canvas Manipulatives | 18 Practice Quizzes (3 tiers per concept)
+The book has no answer key. Every answer is worked out here and recomputed in `tests/verify.cjs`. The graphs in the solutions (Set 2.6, End-of-Chapter Q7, Q9, Q10 and Q13) are drawn to scale by `gen_ex.py`. End-of-Chapter Q12 shows the redrawn hexagon pattern.
 
----
-
-### 2. Complete NCERT Exercise Mapping (24 Entries, Covering all 25 Textbook Questions)
-
-| Exercise Code | Question Scope & Mathematical Context | Textbook Page | Related Concept | Guidance Included |
-| :--- | :--- | :---: | :---: | :---: |
-| **Set 2.1 Q1** | Finding degrees of 2x²-5x+3, y³+2y-1, -9, 4z-3 | p. 19 | `c1` | Complete |
-| **Set 2.1 Q2** | Writing polynomials of degrees 1, 2, and 3 | p. 19 | `c1` | Complete |
-| **Set 2.1 Q3** | Coefficients of x² and x³ in x⁴-3x³+6x²-2x+7 | p. 19 | `c1` | Complete |
-| **Set 2.2 Q1** | Value of 5x - 3 at x = 0, -1, 2 | p. 22 | `c2` | Complete |
-| **Set 2.2 Q2** | Value of 7s² - 4s + 6 at s = 0, -3, 4 | p. 22 | `c2` | Complete |
-| **Set 2.2 Q3** | Salil and mother's age word problem (present & 5 yrs later) | p. 22 | `c2` | Complete |
-| **Set 2.3 Q1** | Savings bank account ₹500 base + ₹150 monthly pocket money | p. 26 | `c3` | Complete |
-| **Set 2.4 Q1** | Plant height 1.75 ft + 0.5 ft/month; table, 7 months, linear growth | p. 28 | `c3` | Complete |
-| **Set 2.5 Q1** | Digital learning platform fee model: ₹400 for 10, ₹500 for 14 modules | p. 30 | `c4` | Complete |
-| **Set 2.6 Q1** | Graphs of 5 sets of lines; role of slope 'a' and y-intercept 'b' | p. 35 | `c5` | Complete |
-| **Exercise 1** | Degree 3 polynomial with x² coefficient -7 | p. 36 | `c1` | Complete |
-| **Exercise 2** | Values of 5x²-3x+7 at x=1, and 4t³-t²+6 at t=a | p. 36 | `c2` | Complete |
-| **Exercise 3** | Number equation: (5/2)x + 2/3 = -7/12 | p. 37 | `c2` | Complete |
-| **Exercise 4** | Positive number 5 times another; add 21 => twice other | p. 37 | `c2` | Complete |
-| **Exercise 5** | Saving ₹250/month from ₹800 after 6 months & 2 years | p. 37 | `c3` | Complete |
-| **Exercise 6** | Two-digit number with digits differing by 3; sum with reversed = 143 | p. 37 | `c3` | Complete |
-| **Exercise 7** | Slopes, y-intercepts, and parallel check for 4 linear equations | p. 37 | `c5` | Complete |
-| **Exercise 8** | Temperature Kelvin to Fahrenheit: y = (9/5)(x - 273) + 32 (313 K & 158 °F) | p. 37 | `c4` | Complete |
-| **Exercise 9** | Work done W = Fd = 3d; linear graph, work at d = 2 | p. 37 | `c6` | Complete |
-| **Exercise 10** | Linear polynomial p(x) through (1, 5) and (3, 11); formula & axis cuts | p. 38 | `c6` | Complete |
-| **Exercise 11** | Two polynomials p(x) and q(x) with p(0)=5, (p-q)(3)=0, p+q=6x+4 | p. 38 | `c6` | Complete |
-| **Exercise 12** | Matchstick hexagon pattern M(n) = 5n + 1 (table, 15th stage, test for 200) | p. 38 | `c6` | Complete |
-| **Exercise 13** | Parallel polynomials p(x) through (2, 3), (6, 11) and q(x) through (4, -1) | p. 39 | `c6` | Complete |
-| **Exercise 14** | Common property of family f(x) = ax + a (fixed concurrence at (-1, 0)) | p. 39 | `c6` | Complete |
-
----
-
-### 3. Verification & Offline Budget Status
-
-- **Architecture**: Single-file standalone HTML (`output/Class09/iemh102/index.html`)
-- **Offline Budget**: Strictly < 2.0 MB (compiled size ~205 KB), zero CDN dependencies.
-- **Test Suite**: `output/Class09/iemh102/tests/verify.cjs` (100% PASS).
+**Notes:**
+- **Exercise Set 2.6 (v)** is printed as y = −2x − 3, y = −2x, y = 2x + 3. It is solved as printed: the first two lines are parallel, and y = 2x + 3 is the mirror image of y = −2x − 3 in the x-axis.
+- **Example 8.** The fare rule 15n − 5 holds only for n ≥ 2 km; the lesson states this.
+- **Answers that vary by design.** Set 2.1 Q2 and End-of-Chapter Q1 have many correct answers. One valid answer is given, and the solution says that others are possible.
+- **Videos.** Real, oEmbed-verified videos are requested from agy-imported. They go on the WOW cards when they arrive.

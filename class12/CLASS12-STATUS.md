@@ -1,8 +1,8 @@
 # Class 12 interactive-textbook status
 
-**Last updated:** 2026-09-09  
+**Last updated:** 2026-09-11  
 **Current chapter:** Class 12 Physics (14/14), Chemistry (10/10), Mathematics (13/13), Biology (13/13)  
-**Current state:** Physics, Chemistry, Mathematics and Biology implementation complete; review next
+**Current state:** Physics, Chemistry and Mathematics rebuilt on the uniform Lumen pattern (tests + browser QA green); Biology implementation complete; subject review next
 
 ## Working rule
 
@@ -15,50 +15,51 @@ Class 12 source extraction and page inspection use PyMuPDF (`pymupdf`) 1.28.2 th
 | Class 12 source inventory | complete | 50 PDFs found, page-counted, and SHA-256 hashed |
 | Physics source maps | complete | All 14 Physics books mapped to 337 PDF pages and 173 exercise entries |
 | Chapter-specific interactions | complete | 14 simulations covering electrostatics, circuits, magnetism, waves, nuclei, and semiconductors |
-| Interactive implementation | complete for Physics, Chemistry, Mathematics, Biology | All 50 chapters have Learn/Play/Connect/Practice/Revise pages |
-| Class 12 review | pending | Review after the first slice is runnable |
+| Interactive implementation | complete for Physics, Chemistry, Mathematics, Biology | All 50 chapters have Learn/Play/Connect/Practice/Revise pages; Physics, Chemistry and Mathematics rebuilt on the uniform Lumen pattern with WOW videos, exercise figures and per-chapter tests |
+| Physics, Chemistry & Maths regression suites | complete | `tests/verify-class12-physics.cjs` (14/14), `verify-class12-chemistry.cjs` (10/10) and `verify-class12-maths.cjs` (13/13) 100% PASS; browser QA (`scripts/chapter_tools/browser_qa.cjs`) 1,647 checks, 0 failures / 0 console errors on all 13 maths chapters (plus every physics/chemistry chapter) |
+| Class 12 review | in progress | Physics and Chemistry spot-checked by claude-textbooks (2026-09-11); Mathematics tests + browser QA green; subject review next |
 
 ## Queue
 
 | Code | Subject | Volume | Title | PDF pages | State |
 |---|---|---|---|---:|---|
-| `leph101` | Physics | Part 1 | Electric Charges and Fields | 44 | complete; review next |
-| `leph102` | Physics | Part 1 | Electrostatic Potential and Capacitance | 36 | complete; review next |
-| `leph103` | Physics | Part 1 | Current Electricity | 26 | complete; review next |
-| `leph104` | Physics | Part 1 | Moving Charges and Magnetism | 29 | complete; review next |
-| `leph105` | Physics | Part 1 | Magnetism and Matter | 18 | complete; review next |
-| `leph106` | Physics | Part 1 | Electromagnetic Induction | 23 | complete; review next |
-| `leph107` | Physics | Part 1 | Alternating Current | 24 | complete; review next |
-| `leph108` | Physics | Part 1 | Electromagnetic Waves | 14 | complete; review next |
-| `leph201` | Physics | Part 2 | Ray Optics and Optical Instruments | 34 | complete; review next |
-| `leph202` | Physics | Part 2 | Wave Optics | 19 | complete; review next |
-| `leph203` | Physics | Part 2 | Dual Nature of Radiation and Matter | 16 | complete; review next |
-| `leph204` | Physics | Part 2 | Atoms | 16 | complete; review next |
-| `leph205` | Physics | Part 2 | Nuclei | 17 | complete; review next |
-| `leph206` | Physics | Part 2 | Semiconductor Electronics: Materials, Devices and Simple Circuits | 21 | complete; review next |
-| `lech101` | Chemistry | Part 1 | Solutions | 30 | queued |
-| `lech102` | Chemistry | Part 1 | Electrochemistry | 30 | queued |
-| `lech103` | Chemistry | Part 1 | Chemical Kinetics | 28 | queued |
-| `lech104` | Chemistry | Part 1 | d- and f-Block Elements | 29 | queued |
-| `lech105` | Chemistry | Part 1 | Coordination Compounds | 23 | queued |
-| `lech201` | Chemistry | Part 2 | Haloalkanes and Haloarenes | 34 | queued |
-| `lech202` | Chemistry | Part 2 | Alcohols, Phenols and Ethers | 34 | queued |
-| `lech203` | Chemistry | Part 2 | Aldehydes, Ketones and Carboxylic Acids | 32 | queued |
-| `lech204` | Chemistry | Part 2 | Amines | 22 | queued |
-| `lech205` | Chemistry | Part 2 | Biomolecules | 22 | queued |
-| `lemh101` | Mathematics | Part 1 | Relations and Functions | 17 | complete; review next |
-| `lemh102` | Mathematics | Part 1 | Inverse Trigonometric Functions | 16 | complete; review next |
-| `lemh103` | Mathematics | Part 1 | Matrices | 42 | complete; review next |
-| `lemh104` | Mathematics | Part 1 | Determinants | 28 | complete; review next |
-| `lemh105` | Mathematics | Part 1 | Continuity and Differentiability | 43 | complete; review next |
-| `lemh106` | Mathematics | Part 1 | Application of Derivatives | 40 | complete; review next |
-| `lemh201` | Mathematics | Part 2 | Integrals | 67 | complete; review next |
-| `lemh202` | Mathematics | Part 2 | Application of Integrals | 8 | complete; review next |
-| `lemh203` | Mathematics | Part 2 | Differential Equations | 38 | complete; review next |
-| `lemh204` | Mathematics | Part 2 | Vector Algebra | 39 | complete; review next |
-| `lemh205` | Mathematics | Part 2 | Three Dimensional Geometry | 17 | complete; review next |
-| `lemh206` | Mathematics | Part 2 | Linear Programming | 12 | complete; review next |
-| `lemh207` | Mathematics | Part 2 | Probability | 33 | complete; review next |
+| `leph101` | Physics | Part 1 | Electric Charges and Fields | 44 | complete; uniform build + tests |
+| `leph102` | Physics | Part 1 | Electrostatic Potential and Capacitance | 36 | complete; uniform build + tests |
+| `leph103` | Physics | Part 1 | Current Electricity | 26 | complete; uniform build + tests |
+| `leph104` | Physics | Part 1 | Moving Charges and Magnetism | 29 | complete; uniform build + tests |
+| `leph105` | Physics | Part 1 | Magnetism and Matter | 18 | complete; uniform build + tests |
+| `leph106` | Physics | Part 1 | Electromagnetic Induction | 23 | complete; uniform build + tests |
+| `leph107` | Physics | Part 1 | Alternating Current | 24 | complete; uniform build + tests |
+| `leph108` | Physics | Part 1 | Electromagnetic Waves | 14 | complete; uniform build + tests |
+| `leph201` | Physics | Part 2 | Ray Optics and Optical Instruments | 34 | complete; uniform build + tests |
+| `leph202` | Physics | Part 2 | Wave Optics | 19 | complete; uniform build + tests |
+| `leph203` | Physics | Part 2 | Dual Nature of Radiation and Matter | 16 | complete; uniform build + tests |
+| `leph204` | Physics | Part 2 | Atoms | 16 | complete; uniform build + tests |
+| `leph205` | Physics | Part 2 | Nuclei | 17 | complete; uniform build + tests |
+| `leph206` | Physics | Part 2 | Semiconductor Electronics: Materials, Devices and Simple Circuits | 21 | complete; uniform build + tests |
+| `lech101` | Chemistry | Part 1 | Solutions | 30 | complete; uniform build + tests |
+| `lech102` | Chemistry | Part 1 | Electrochemistry | 30 | complete; uniform build + tests |
+| `lech103` | Chemistry | Part 1 | Chemical Kinetics | 28 | complete; uniform build + tests |
+| `lech104` | Chemistry | Part 1 | d- and f-Block Elements | 29 | complete; uniform build + tests |
+| `lech105` | Chemistry | Part 1 | Coordination Compounds | 23 | complete; uniform build + tests |
+| `lech201` | Chemistry | Part 2 | Haloalkanes and Haloarenes | 34 | complete; uniform build + tests |
+| `lech202` | Chemistry | Part 2 | Alcohols, Phenols and Ethers | 34 | complete; uniform build + tests |
+| `lech203` | Chemistry | Part 2 | Aldehydes, Ketones and Carboxylic Acids | 32 | complete; uniform build + tests |
+| `lech204` | Chemistry | Part 2 | Amines | 22 | complete; uniform build + tests |
+| `lech205` | Chemistry | Part 2 | Biomolecules | 22 | complete; uniform build + tests |
+| `lemh101` | Mathematics | Part 1 | Relations and Functions | 17 | complete; uniform build + tests |
+| `lemh102` | Mathematics | Part 1 | Inverse Trigonometric Functions | 16 | complete; uniform build + tests |
+| `lemh103` | Mathematics | Part 1 | Matrices | 42 | complete; uniform build + tests |
+| `lemh104` | Mathematics | Part 1 | Determinants | 28 | complete; uniform build + tests |
+| `lemh105` | Mathematics | Part 1 | Continuity and Differentiability | 43 | complete; uniform build + tests |
+| `lemh106` | Mathematics | Part 1 | Application of Derivatives | 40 | complete; uniform build + tests |
+| `lemh201` | Mathematics | Part 2 | Integrals | 67 | complete; uniform build + tests |
+| `lemh202` | Mathematics | Part 2 | Application of Integrals | 8 | complete; uniform build + tests |
+| `lemh203` | Mathematics | Part 2 | Differential Equations | 38 | complete; uniform build + tests |
+| `lemh204` | Mathematics | Part 2 | Vector Algebra | 39 | complete; uniform build + tests |
+| `lemh205` | Mathematics | Part 2 | Three Dimensional Geometry | 17 | complete; uniform build + tests |
+| `lemh206` | Mathematics | Part 2 | Linear Programming | 12 | complete; uniform build + tests |
+| `lemh207` | Mathematics | Part 2 | Probability | 33 | complete; uniform build + tests |
 | `lebo101` | Biology | Single volume | Sexual Reproduction in Flowering Plants | 25 | complete; review next |
 | `lebo102` | Biology | Single volume | Human Reproduction | 15 | complete; review next |
 | `lebo103` | Biology | Single volume | Reproductive Health | 10 | complete; review next |
@@ -75,11 +76,11 @@ Class 12 source extraction and page inspection use PyMuPDF (`pymupdf`) 1.28.2 th
 
 ## Next exact action
 
-Review the 50 Class 12 chapters against the source pages, then collect classroom feedback and refine the simulations. All four subjects are implemented; review is next.
+Subject review: check the 50 Class 12 chapters against the source pages, starting with the newly uniform Physics, Chemistry and Mathematics tracks, then collect classroom feedback and refine the simulations.
 
 ## Mathematics track
 
-All 13 Mathematics chapters are implemented with PyMuPDF source maps, chapter-specific simulations, and mapped NCERT exercise entries. See MATHS-STATUS.md and MATHS-SOURCE-MANIFEST.md.
+All 13 Mathematics chapters (lemh101-106, lemh201-207) are rebuilt on the uniform Lumen pattern: 60 per-lesson labs, 742 normalized exercises, 180 quizzes, 37 redrawn figures, 60 oEmbed-verified wow videos, per-chapter `tests/verify.cjs` + `expect.json`, and a 13/13 course runner (`tests/verify-class12-maths.cjs`). Browser QA: 1,647 checks, 0 failures, 0 console errors. See MATHS-STATUS.md and MATHS-SOURCE-MANIFEST.md.
 
 ## Biology track
 

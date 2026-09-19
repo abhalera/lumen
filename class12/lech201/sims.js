@@ -22,12 +22,12 @@ window.SIMS.classifycx = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sp³ C–X</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>sp² C–X</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="k-a1">1° alkyl</button>' +
-      '<button class="preset-btn" id="k-a3">3° alkyl</button>' +
-      '<button class="preset-btn" id="k-al">Allylic</button>' +
-      '<button class="preset-btn" id="k-bz">Benzylic</button>' +
-      '<button class="preset-btn" id="k-v">Vinylic</button>' +
-      '<button class="preset-btn" id="k-ar">Aryl</button>';
+      '<button class="preset-btn active" data-preset="alkyl1" id="k-a1">1° alkyl</button>' +
+      '<button class="preset-btn" data-preset="alkyl3" id="k-a3">3° alkyl</button>' +
+      '<button class="preset-btn" data-preset="allyl" id="k-al">Allylic</button>' +
+      '<button class="preset-btn" data-preset="benzyl" id="k-bz">Benzylic</button>' +
+      '<button class="preset-btn" data-preset="vinyl" id="k-v">Vinylic</button>' +
+      '<button class="preset-btn" data-preset="aryl" id="k-ar">Aryl</button>';
     [["k-a1","alkyl1"],["k-a3","alkyl3"],["k-al","allyl"],["k-bz","benzyl"],["k-v","vinyl"],["k-ar","aryl"]].forEach(function(p){
       document.getElementById(p[0]).onclick = function(){ setActivePreset(this); kind=p[1]; App.resetTimeline(); };
     });
@@ -82,7 +82,7 @@ window.SIMS.iupac8 = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>2° C–Br</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>3° C–Br</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      isomers.map(function(it,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="iso'+i+'">'+(i+1)+'</button>'; }).join("");
+      isomers.map(function(it,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="iso'+(i+1)+'" id="iso'+i+'">'+(i+1)+'</button>'; }).join("");
     isomers.forEach(function(_,i){
       document.getElementById("iso"+i).onclick = function(){ setActivePreset(this); idx=i; draw(0); };
     });
@@ -116,11 +116,11 @@ window.SIMS.cxprep = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Preferred (pure RX)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Halogen exchange</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-so">SOCl₂ from ROH</button>' +
-      '<button class="preset-btn" id="p-hx">HX from ROH</button>' +
-      '<button class="preset-btn" id="p-fink">Finkelstein (RCl→RI)</button>' +
-      '<button class="preset-btn" id="p-sw">Swarts (RCl→RF)</button>' +
-      '<button class="preset-btn" id="p-sand">Sandmeyer ArN₂⁺</button>';
+      '<button class="preset-btn active" data-preset="socl2" id="p-so">SOCl₂ from ROH</button>' +
+      '<button class="preset-btn" data-preset="hx" id="p-hx">HX from ROH</button>' +
+      '<button class="preset-btn" data-preset="finkelstein" id="p-fink">Finkelstein (RCl→RI)</button>' +
+      '<button class="preset-btn" data-preset="swarts" id="p-sw">Swarts (RCl→RF)</button>' +
+      '<button class="preset-btn" data-preset="sandmeyer" id="p-sand">Sandmeyer ArN₂⁺</button>';
     document.getElementById("p-so").onclick = function(){ setActivePreset(this); mode="socl2"; App.resetTimeline(); };
     document.getElementById("p-hx").onclick = function(){ setActivePreset(this); mode="hx"; App.resetTimeline(); };
     document.getElementById("p-fink").onclick = function(){ setActivePreset(this); mode="fink"; App.resetTimeline(); };
@@ -159,10 +159,10 @@ window.SIMS.halobp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Boiling point</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Density / packing</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="s-m">Same alkyl, vary X (Fig 6.1)</button>' +
-      '<button class="preset-btn" id="s-b">Branching (isomeric C₄H₉Br)</button>' +
-      '<button class="preset-btn" id="s-p">p- vs o-/m-C₆H₄Cl₂ (m.p.)</button>' +
-      '<button class="preset-btn" id="s-d">Density Table 6.3</button>';
+      '<button class="preset-btn active" data-preset="varyx" id="s-m">Same alkyl, vary X (Fig 6.1)</button>' +
+      '<button class="preset-btn" data-preset="branching" id="s-b">Branching (isomeric C₄H₉Br)</button>' +
+      '<button class="preset-btn" data-preset="para" id="s-p">p- vs o-/m-C₆H₄Cl₂ (m.p.)</button>' +
+      '<button class="preset-btn" data-preset="density" id="s-d">Density Table 6.3</button>';
     document.getElementById("s-m").onclick = function(){ setActivePreset(this); set="mass"; draw(0); };
     document.getElementById("s-b").onclick = function(){ setActivePreset(this); set="branch"; draw(0); };
     document.getElementById("s-p").onclick = function(){ setActivePreset(this); set="para"; draw(0); };
@@ -226,11 +226,11 @@ window.SIMS.sn1sn2 = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Leaving X⁻</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Carbon under attack</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="m-sn2">SN2 inversion (CH₃Cl + OH⁻)</button>' +
-      '<button class="preset-btn" id="m-ster">SN2 steric order</button>' +
-      '<button class="preset-btn" id="m-sn1">SN1 two-step (t-BuBr)</button>' +
-      '<button class="preset-btn" id="m-lg">Leaving group I vs Cl</button>' +
-      '<button class="preset-btn" id="m-allyl">Allylic/benzylic SN1</button>';
+      '<button class="preset-btn active" data-preset="sn2" id="m-sn2">SN2 inversion (CH₃Cl + OH⁻)</button>' +
+      '<button class="preset-btn" data-preset="steric" id="m-ster">SN2 steric order</button>' +
+      '<button class="preset-btn" data-preset="sn1" id="m-sn1">SN1 two-step (t-BuBr)</button>' +
+      '<button class="preset-btn" data-preset="leaving" id="m-lg">Leaving group I vs Cl</button>' +
+      '<button class="preset-btn" data-preset="allylic" id="m-allyl">Allylic/benzylic SN1</button>';
     document.getElementById("m-sn2").onclick = function(){ setActivePreset(this); mode="sn2"; App.resetTimeline(); App.play(); };
     document.getElementById("m-ster").onclick = function(){ setActivePreset(this); mode="ster"; App.resetTimeline(); };
     document.getElementById("m-sn1").onclick = function(){ setActivePreset(this); mode="sn1"; App.resetTimeline(); App.play(); };
@@ -331,10 +331,10 @@ window.SIMS.stereoelim = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chiral / inversion</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Elimination / metal</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="t-ch">Chirality (butan-2-ol)</button>' +
-      '<button class="preset-btn" id="t-rac">SN1 racemisation vs SN2 inversion</button>' +
-      '<button class="preset-btn" id="t-say">Saytzeff elimination</button>' +
-      '<button class="preset-btn" id="t-gr">Grignard / Wurtz</button>';
+      '<button class="preset-btn active" data-preset="chirality" id="t-ch">Chirality (butan-2-ol)</button>' +
+      '<button class="preset-btn" data-preset="racemisation" id="t-rac">SN1 racemisation vs SN2 inversion</button>' +
+      '<button class="preset-btn" data-preset="saytzeff" id="t-say">Saytzeff elimination</button>' +
+      '<button class="preset-btn" data-preset="grignard" id="t-gr">Grignard / Wurtz</button>';
     document.getElementById("t-ch").onclick = function(){ setActivePreset(this); mode="chiral"; draw(0); };
     document.getElementById("t-rac").onclick = function(){ setActivePreset(this); mode="rac"; draw(0); };
     document.getElementById("t-say").onclick = function(){ setActivePreset(this); mode="say"; draw(0); };
@@ -393,10 +393,10 @@ window.SIMS.haloarene = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Haloarene C–X</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Activated o/p-NO₂</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-w">Why Ar–X resists SN</button>' +
-      '<button class="preset-btn" id="h-no2">o/p-NO₂ activation (SNAr)</button>' +
-      '<button class="preset-btn" id="h-e">EAS: o,p-directing but deactivating</button>' +
-      '<button class="preset-btn" id="h-poly">Polyhalogen: CHCl₃, CCl₄, Freon, DDT</button>';
+      '<button class="preset-btn active" data-preset="why" id="h-w">Why Ar–X resists SN</button>' +
+      '<button class="preset-btn" data-preset="no2" id="h-no2">o/p-NO₂ activation (SNAr)</button>' +
+      '<button class="preset-btn" data-preset="eas" id="h-e">EAS: o,p-directing but deactivating</button>' +
+      '<button class="preset-btn" data-preset="poly" id="h-poly">Polyhalogen: CHCl₃, CCl₄, Freon, DDT</button>';
     document.getElementById("h-w").onclick = function(){ setActivePreset(this); mode="why"; draw(0); };
     document.getElementById("h-no2").onclick = function(){ setActivePreset(this); mode="no2"; App.resetTimeline(); App.play(); };
     document.getElementById("h-e").onclick = function(){ setActivePreset(this); mode="eas"; draw(0); };

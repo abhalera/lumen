@@ -31,10 +31,10 @@ window.SIMS.eventsubset = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sample point in E</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#1e293b;"></span><span>sample point not in E</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-1">Exactly one head  E={HT,TH}</button>' +
-      '<button class="preset-btn" id="p-2">Exactly two tails  A={TT}</button>' +
-      '<button class="preset-btn" id="p-3">At least one tail  B</button>' +
-      '<button class="preset-btn" id="p-4">Impossible: more than two tails</button>';
+      '<button class="preset-btn active" data-preset="p-1" id="p-1">Exactly one head  E={HT,TH}</button>' +
+      '<button class="preset-btn" data-preset="p-2" id="p-2">Exactly two tails  A={TT}</button>' +
+      '<button class="preset-btn" data-preset="p-3" id="p-3">At least one tail  B</button>' +
+      '<button class="preset-btn" data-preset="p-4" id="p-4">Impossible: more than two tails</button>';
     document.getElementById("p-1").onclick = function(){ setActivePreset(this); which="oneH"; draw(); };
     document.getElementById("p-2").onclick = function(){ setActivePreset(this); which="twoT"; draw(); };
     document.getElementById("p-3").onclick = function(){ setActivePreset(this); which="atLeastT"; draw(); };
@@ -70,10 +70,10 @@ window.SIMS.types = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>simple (one sample point)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>compound (more than one)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-s">Simple: {TT}</button>' +
-      '<button class="preset-btn" id="p-c">Compound: at least one head</button>' +
-      '<button class="preset-btn" id="p-sure">Sure: at most two tails</button>' +
-      '<button class="preset-btn" id="p-imp">Impossible: more than two tails</button>';
+      '<button class="preset-btn active" data-preset="p-s" id="p-s">Simple: {TT}</button>' +
+      '<button class="preset-btn" data-preset="p-c" id="p-c">Compound: at least one head</button>' +
+      '<button class="preset-btn" data-preset="p-sure" id="p-sure">Sure: at most two tails</button>' +
+      '<button class="preset-btn" data-preset="p-imp" id="p-imp">Impossible: more than two tails</button>';
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); mode="simple"; draw(); };
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); mode="comp"; draw(); };
     document.getElementById("p-sure").onclick = function(){ setActivePreset(this); mode="sure"; draw(); };
@@ -115,9 +115,9 @@ window.SIMS.exclusive = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>A ∩ B</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-cd">Example 2: C and D (exclusive)</button>' +
-      '<button class="preset-btn" id="p-ab">A and B (not exclusive)</button>' +
-      '<button class="preset-btn" id="p-ex3">Example 3: A,B,C exclusive and exhaustive</button>';
+      '<button class="preset-btn active" data-preset="p-cd" id="p-cd">Example 2: C and D (exclusive)</button>' +
+      '<button class="preset-btn" data-preset="p-ab" id="p-ab">A and B (not exclusive)</button>' +
+      '<button class="preset-btn" data-preset="p-ex3" id="p-ex3">Example 3: A,B,C exclusive and exhaustive</button>';
     document.getElementById("p-cd").onclick = function(){ setActivePreset(this); pair="CD"; draw(); };
     document.getElementById("p-ab").onclick = function(){ setActivePreset(this); pair="AB"; draw(); };
     document.getElementById("p-ex3").onclick = function(){ setActivePreset(this); pair="EX3"; draw(); };
@@ -171,10 +171,10 @@ window.SIMS.axioms = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>valid assignment</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>violates an axiom</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-f">Fair coin P(H)=P(T)=1/2</button>' +
-      '<button class="preset-btn" id="p-b">Biased P(H)=1/4, P(T)=3/4</button>' +
-      '<button class="preset-btn" id="p-bad">Ex 14.2 Q1 (c): sums to 2.8</button>' +
-      '<button class="preset-btn" id="p-neg">Q1 (d): a negative probability</button>';
+      '<button class="preset-btn active" data-preset="p-f" id="p-f">Fair coin P(H)=P(T)=1/2</button>' +
+      '<button class="preset-btn" data-preset="p-b" id="p-b">Biased P(H)=1/4, P(T)=3/4</button>' +
+      '<button class="preset-btn" data-preset="p-bad" id="p-bad">Ex 14.2 Q1 (c): sums to 2.8</button>' +
+      '<button class="preset-btn" data-preset="p-neg" id="p-neg">Q1 (d): a negative probability</button>';
     document.getElementById("p-f").onclick = function(){ setActivePreset(this); asg="fair"; draw(); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); asg="bias"; draw(); };
     document.getElementById("p-bad").onclick = function(){ setActivePreset(this); asg="sum"; draw(); };
@@ -217,9 +217,9 @@ window.SIMS.equally = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>favourable</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#1e293b;"></span><span>not favourable</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-d">Die: P(prime)</button>' +
-      '<button class="preset-btn" id="p-c">Example 5: a diamond from 52</button>' +
-      '<button class="preset-btn" id="p-bag">Example 6: 9 discs, 4 red</button>';
+      '<button class="preset-btn active" data-preset="p-d" id="p-d">Die: P(prime)</button>' +
+      '<button class="preset-btn" data-preset="p-c" id="p-c">Example 5: a diamond from 52</button>' +
+      '<button class="preset-btn" data-preset="p-bag" id="p-bag">Example 6: 9 discs, 4 red</button>';
     document.getElementById("p-d").onclick = function(){ setActivePreset(this); exp="die"; draw(); };
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); exp="card"; draw(); };
     document.getElementById("p-bag").onclick = function(){ setActivePreset(this); exp="bag"; draw(); };
@@ -271,9 +271,9 @@ window.SIMS.addition = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>A ∩ B</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>B − A</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-fig">Fig. 14.1 addition rule</button>' +
-      '<button class="preset-btn" id="p-me">Mutually exclusive: intersection 0</button>' +
-      '<button class="preset-btn" id="p-ex7">Example 7: Anil and Ashima</button>';
+      '<button class="preset-btn active" data-preset="p-fig" id="p-fig">Fig. 14.1 addition rule</button>' +
+      '<button class="preset-btn" data-preset="p-me" id="p-me">Mutually exclusive: intersection 0</button>' +
+      '<button class="preset-btn" data-preset="p-ex7" id="p-ex7">Example 7: Anil and Ashima</button>';
     var mode = "fig";
     document.getElementById("p-fig").onclick = function(){ setActivePreset(this); mode="fig"; sync(); draw(); };
     document.getElementById("p-me").onclick = function(){ setActivePreset(this); mode="me"; document.getElementById("ctrl-i-range").value = 0; draw(); };
@@ -341,8 +341,8 @@ window.SIMS.complement = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>A′ = S − A</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ten">10 cards, A = {2,4,6,8}</button>' +
-      '<button class="preset-btn" id="p-ace">Example 5(ii): not an ace</button>';
+      '<button class="preset-btn active" data-preset="p-ten" id="p-ten">10 cards, A = {2,4,6,8}</button>' +
+      '<button class="preset-btn" data-preset="p-ace" id="p-ace">Example 5(ii): not an ace</button>';
     document.getElementById("p-ten").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("p-ace").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -380,9 +380,9 @@ window.SIMS.cards = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>favourable committees / hands</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ex8">Example 8: 2 men + 2 women, committee of 2</button>' +
-      '<button class="preset-btn" id="p-misc1">Misc 1: 5 marbles from 60</button>' +
-      '<button class="preset-btn" id="p-misc2">Misc 2: 3 diamonds and 1 spade</button>';
+      '<button class="preset-btn active" data-preset="p-ex8" id="p-ex8">Example 8: 2 men + 2 women, committee of 2</button>' +
+      '<button class="preset-btn" data-preset="p-misc1" id="p-misc1">Misc 1: 5 marbles from 60</button>' +
+      '<button class="preset-btn" data-preset="p-misc2" id="p-misc2">Misc 2: 3 diamonds and 1 spade</button>';
     document.getElementById("p-ex8").onclick = function(){ setActivePreset(this); scene="ex8"; draw(); };
     document.getElementById("p-misc1").onclick = function(){ setActivePreset(this); scene="m1"; draw(); };
     document.getElementById("p-misc2").onclick = function(){ setActivePreset(this); scene="m2"; draw(); };

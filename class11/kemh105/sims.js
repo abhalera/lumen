@@ -48,8 +48,8 @@ window.SIMS["rice-market"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Spend 30x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Budget ₹200</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ravi">Ravi: 30x &lt; 200</button>' +
-      '<button class="preset-btn" id="p-upi">UPI: 1999x ≤ 100000</button>';
+      '<button class="preset-btn active" data-preset="p-ravi" id="p-ravi">Ravi: 30x &lt; 200</button>' +
+      '<button class="preset-btn" data-preset="p-upi" id="p-upi">UPI: 1999x ≤ 100000</button>';
     document.getElementById("p-ravi").onclick = function(){ setActivePreset(this); mode="ravi"; App.resetTimeline(); App.play(); };
     document.getElementById("p-upi").onclick = function(){ setActivePreset(this); mode="upi"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -107,7 +107,7 @@ window.SIMS["ineq-types"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Linear</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Quadratic / other</span></div>';
     document.getElementById("preset-bar").innerHTML = items.map(function(it,i){
-      return '<button class="preset-btn'+(i===0?' active':'')+'" id="p-t'+i+'">'+it.t+'</button>';
+      return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="p-t'+i+'" id="p-t'+i+'">'+it.t+'</button>';
     }).join("");
     items.forEach(function(_,i){
       document.getElementById("p-t"+i).onclick = function(){ setActivePreset(this); idx=i; App.resetTimeline(); };
@@ -140,9 +140,9 @@ window.SIMS["reverse-rule"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>3 and 2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>after × k</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-neg">k = −1 (reverse)</button>' +
-      '<button class="preset-btn" id="p-neg2">k = −2 (NCERT 16 &gt; 14)</button>' +
-      '<button class="preset-btn" id="p-pos">k = +2 (no reverse)</button>';
+      '<button class="preset-btn active" data-preset="p-neg" id="p-neg">k = −1 (reverse)</button>' +
+      '<button class="preset-btn" data-preset="p-neg2" id="p-neg2">k = −2 (NCERT 16 &gt; 14)</button>' +
+      '<button class="preset-btn" data-preset="p-pos" id="p-pos">k = +2 (no reverse)</button>';
     document.getElementById("p-neg").onclick = function(){ setActivePreset(this); k=-1; App.resetTimeline(); };
     document.getElementById("p-neg2").onclick = function(){ setActivePreset(this); k=-2; App.resetTimeline(); };
     document.getElementById("p-pos").onclick = function(){ setActivePreset(this); k=2; App.resetTimeline(); };
@@ -189,9 +189,9 @@ window.SIMS["algebra-lab"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solution ray</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Test x</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-e2">Ex 2: x &lt; 2</button>' +
-      '<button class="preset-btn" id="p-e3">Ex 3: x &gt; −2</button>' +
-      '<button class="preset-btn" id="p-e4">Ex 4: x ≥ 8</button>';
+      '<button class="preset-btn active" data-preset="p-e2" id="p-e2">Ex 2: x &lt; 2</button>' +
+      '<button class="preset-btn" data-preset="p-e3" id="p-e3">Ex 3: x &gt; −2</button>' +
+      '<button class="preset-btn" data-preset="p-e4" id="p-e4">Ex 4: x ≥ 8</button>';
     document.getElementById("p-e2").onclick = function(){ setActivePreset(this); which="e2"; App.resetTimeline(); };
     document.getElementById("p-e3").onclick = function(){ setActivePreset(this); which="e3"; App.resetTimeline(); };
     document.getElementById("p-e4").onclick = function(){ setActivePreset(this); which="e4"; App.resetTimeline(); };
@@ -232,9 +232,9 @@ window.SIMS["numberline-graph"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Open circle (strict)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Dark circle (slack)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-51">Fig 5.1 · x &lt; 3</button>' +
-      '<button class="preset-btn" id="p-52">Fig 5.2 · x ≥ 1</button>' +
-      '<button class="preset-btn" id="p-53">Fig 5.3 · 2 ≤ x &lt; 6</button>';
+      '<button class="preset-btn active" data-preset="p-51" id="p-51">Fig 5.1 · x &lt; 3</button>' +
+      '<button class="preset-btn" data-preset="p-52" id="p-52">Fig 5.2 · x ≥ 1</button>' +
+      '<button class="preset-btn" data-preset="p-53" id="p-53">Fig 5.3 · 2 ≤ x &lt; 6</button>';
     document.getElementById("p-51").onclick = function(){ setActivePreset(this); fig="51"; App.resetTimeline(); };
     document.getElementById("p-52").onclick = function(){ setActivePreset(this); fig="52"; App.resetTimeline(); };
     document.getElementById("p-53").onclick = function(){ setActivePreset(this); fig="53"; App.resetTimeline(); };
@@ -283,9 +283,9 @@ window.SIMS["marks-upi"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Average</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Target</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-e7">Ex 7: 62, 48, avg ≥ 60</button>' +
-      '<button class="preset-btn" id="p-sun">Sunita Grade A ≥ 90</button>' +
-      '<button class="preset-btn" id="p-odd">Ex 8 consecutive odds</button>';
+      '<button class="preset-btn active" data-preset="p-e7" id="p-e7">Ex 7: 62, 48, avg ≥ 60</button>' +
+      '<button class="preset-btn" data-preset="p-sun" id="p-sun">Sunita Grade A ≥ 90</button>' +
+      '<button class="preset-btn" data-preset="p-odd" id="p-odd">Ex 8 consecutive odds</button>';
     document.getElementById("p-e7").onclick = function(){ setActivePreset(this); mode="ex7"; App.resetTimeline(); };
     document.getElementById("p-sun").onclick = function(){ setActivePreset(this); mode="sun"; App.resetTimeline(); };
     document.getElementById("p-odd").onclick = function(){ setActivePreset(this); mode="odd"; App.resetTimeline(); };
@@ -344,9 +344,9 @@ window.SIMS["double-ineq"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Feasible overlap</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-e9">Ex 9: −1 ≤ x &lt; 2</button>' +
-      '<button class="preset-btn" id="p-e10">Ex 10: −11/3 ≤ x ≤ 5</button>' +
-      '<button class="preset-btn" id="p-e11">Ex 11: 2 ≤ x &lt; 6</button>';
+      '<button class="preset-btn active" data-preset="p-e9" id="p-e9">Ex 9: −1 ≤ x &lt; 2</button>' +
+      '<button class="preset-btn" data-preset="p-e10" id="p-e10">Ex 10: −11/3 ≤ x ≤ 5</button>' +
+      '<button class="preset-btn" data-preset="p-e11" id="p-e11">Ex 11: 2 ≤ x &lt; 6</button>';
     document.getElementById("p-e9").onclick = function(){ setActivePreset(this); which="e9"; App.resetTimeline(); };
     document.getElementById("p-e10").onclick = function(){ setActivePreset(this); which="e10"; App.resetTimeline(); };
     document.getElementById("p-e11").onclick = function(){ setActivePreset(this); which="e11"; App.resetTimeline(); };
@@ -393,9 +393,9 @@ window.SIMS["mixture-temp"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Resulting %</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Allowed band</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ac">Ex 13 · 12% + 30%</button>' +
-      '<button class="preset-btn" id="p-cf">Ex 12 · 30&lt;C&lt;35 → F</button>' +
-      '<button class="preset-btn" id="p-iq">Misc 14 · IQ band</button>';
+      '<button class="preset-btn active" data-preset="p-ac" id="p-ac">Ex 13 · 12% + 30%</button>' +
+      '<button class="preset-btn" data-preset="p-cf" id="p-cf">Ex 12 · 30&lt;C&lt;35 → F</button>' +
+      '<button class="preset-btn" data-preset="p-iq" id="p-iq">Misc 14 · IQ band</button>';
     document.getElementById("p-ac").onclick = function(){ setActivePreset(this); mode="acid"; App.resetTimeline(); };
     document.getElementById("p-cf").onclick = function(){ setActivePreset(this); mode="cf"; App.resetTimeline(); };
     document.getElementById("p-iq").onclick = function(){ setActivePreset(this); mode="iq"; App.resetTimeline(); };

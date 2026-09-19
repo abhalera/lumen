@@ -1,22 +1,33 @@
-# jemh105 Arithmetic Progressions pilot — coverage (verified against locked extraction)
+# COVERAGE — jemh105 Arithmetic Progressions
 
-Source: `books/originals/Class10-Maths_jemh105.pdf`, 24 pdf pages, printed pp. 49–72, Reprint 2026–27. Extraction: `scripts/extract_maths.py`; PNG zooms at `/tmp/opencode/jemh105_zooms/` + clips.
+**Source:** `books/originals/Class10-Maths_jemh105.pdf`. NCERT *Mathematics*, Grade 10, Chapter 5 (reprint 2026–27), 24 PDF pages, printed pp. 49–72 (printed = PDF + 48).
+**NCERT:** https://ncert.nic.in/textbook/pdf/jemh105.pdf
 
-| NCERT block | PDF pp. | Concept | Status |
-|---|---|---|---|
-| 5.1 six lists: salary/ladder/box are AP; ×5/4 savings, squares, rabbits are not | 1–3 | spot-ap | implemented |
-| 5.2 AP definition, general form a, a+d, … (zoom p.4); finite vs infinite; a+d needed | 3–5 | general-form | implemented |
-| Ex 1–2 AP tests (4, 10, 16, 22 → d=6) | 6 | spot-ap | implemented |
-| Ex 5.1 Q1–Q5 | 7–8 | spot-ap, general-form | located in exerciseMap |
-| 5.3 nth term derivation; Reena year-5 ₹10000, year-25 ₹20000 (zoom) | 8–9 | nth-term | implemented |
-| Ex 3–10: a10=47, 35th term −81, 8th term 0, Ex5 (3,1), Ex6 301 rejected, Ex7 30 numbers, Ex8 −32, Ex9 ₹2400, Ex10 10 rows | 10–13 | nth-term, which-term | implemented |
-| Ex 5.2 Q1–Q20 (incl. Q2 −77 zoom-verified PDF p.14) | 13–15 | nth-term, which-term | located; −77, boxes in quizzes |
-| 5.4 Gauss 5050 + Sn derivation (zoom); Shakila ₹12600 (zoom) | 15–17 | sum-formula | implemented |
-| Ex 11 −979; Ex 12 d=10, a20=200; Ex 13 n=4-or-13; Ex 14 500500; Ex 15 S24=672; Ex 16 a=550, d=25, a10=775, S7=4375 (zoom p.20) | 17–20 | sum-formula, sum-cases | implemented |
-| Ex 5.3 Q1–Q20 (prizes, penalty ₹27750, trees 234, spiral 143 cm, logs 16 rows/top 5, race 370 m) | 20–22 | sum-cases, apply-ap | located + recomputed |
-| Ex 5.4 optional Q1–Q5 | 23 | apply-ap | located |
-| 5.5 Summary + AM note | 24 | all | implemented in revision |
+**Build:** `python3 scripts/build_chapter.py jemh105` → 117.4 KB
+**Checks:** verify.cjs PASS 255; browser_qa 106 checks, 0 failures, 0 console errors.
 
-Videos (all oEmbed-verified 2026-09-08): _cooC3yG_p0, 8eSUbi_aYL4, 4488Wh-69Pg, RwPQ9gucgks, Dd81F6-Ar_0, Uy_L8tnihDM, Nu-lW-Ifyec (Khan Academy / Numberphile).
+Old `pilot/` is a different shape. Numbers were salvageable and recomputed. Videos requested from agy-imported.
 
-Gaps (honest): logs Q19 corrected in-lesson (NCERT figure implies 20 rows but arithmetic forces 16 rows/top-5; flagged honestly); full written solutions of all 50 Ex items are mapped, not solved in-page. Browser matrix/teacher review pending.
+## Concepts (7)
+
+spot-ap, general-form, nth-term, which-term, sum-formula, sum-cases, apply-ap.
+
+## Exercises
+
+All of 5.1, 5.2, 5.3 and optional 5.4, grouped to 13 items covering every numbered question.
+
+## Recomputed / PDF facts
+
+- Reena year 5 ₹10,000; year 25 ₹20,000
+- a₁₀ of 2,7,12,… = 47; −81 is 35th of 21,18,15,…; 301 is not a term of 5,11,17,…
+- 30th of 10,7,4,… = **−77** (not 77)
+- Gauss 1…100 = 5050; Shakila S₂₁ = ₹12,600; 1…1000 = 500500
+- Example 13: n = 4 or 13; S₂₂ = −979; a₂₀ = 200
+- Penalty ₹27,750; trees 234; spiral 143 cm; potato race 370 m
+- Logs: n=16 rows, 5 on top (n=25 last term −4, rejected)
+- House x=35; first negative of 121,117,… is n=32
+
+## Honest gaps
+
+- Logs Q19: S₁₆=S₂₅=200 algebraically; n=25 is physically impossible. The figure must not overrule the last-term test.
+- Optional 5.4 Q2 (product 8) has two sign cases for d; noted, not fully expanded in the grouped answer.

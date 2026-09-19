@@ -26,9 +26,9 @@ window.SIMS.concunits = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solute particles</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Solvent</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-gly">Ex 1.1: 20% glycol</button>' +
-      '<button class="preset-btn" id="p-naoh">Ex 1.2: 5 g NaOH / 450 mL</button>' +
-      '<button class="preset-btn" id="p-hoac">Ex 1.3: 2.5 g HOAc / 75 g benzene</button>';
+      '<button class="preset-btn active" data-preset="gly" id="p-gly">Ex 1.1: 20% glycol</button>' +
+      '<button class="preset-btn" data-preset="naoh" id="p-naoh">Ex 1.2: 5 g NaOH / 450 mL</button>' +
+      '<button class="preset-btn" data-preset="hoac" id="p-hoac">Ex 1.3: 2.5 g HOAc / 75 g benzene</button>';
     document.getElementById("p-gly").onclick = function(){ setActivePreset(this); preset="glycol"; draw(App.state.t); };
     document.getElementById("p-naoh").onclick = function(){ setActivePreset(this); preset="naoh"; draw(App.state.t); };
     document.getElementById("p-hoac").onclick = function(){ setActivePreset(this); preset="hoac"; draw(App.state.t); };
@@ -97,9 +97,9 @@ window.SIMS.henrylaw = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Dissolved gas</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Headspace pressure</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-n2">Ex 1.4: N₂ in water</button>' +
-      '<button class="preset-btn" id="p-soda">Intext 1.7: soda CO₂</button>' +
-      '<button class="preset-btn" id="p-o2">Table 1.2: O₂ cold vs warm</button>';
+      '<button class="preset-btn active" data-preset="n2" id="p-n2">Ex 1.4: N₂ in water</button>' +
+      '<button class="preset-btn" data-preset="soda" id="p-soda">Intext 1.7: soda CO₂</button>' +
+      '<button class="preset-btn" data-preset="o2" id="p-o2">Table 1.2: O₂ cold vs warm</button>';
     document.getElementById("p-n2").onclick = function(){ setActivePreset(this); gas="N2"; draw(App.state.t); };
     document.getElementById("p-soda").onclick = function(){ setActivePreset(this); gas="CO2"; var p=document.getElementById("ctrl-p-range"); if(p) p.value=2.5; draw(App.state.t); };
     document.getElementById("p-o2").onclick = function(){ setActivePreset(this); gas="O2"; draw(App.state.t); };
@@ -161,8 +161,8 @@ window.SIMS.raoult = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>p_B = x_B p_B°</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>p_total</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ab">Intext 1.8: A + B</button>' +
-      '<button class="preset-btn" id="p-hep">Ex 1.16: heptane + octane</button>';
+      '<button class="preset-btn active" data-preset="ab" id="p-ab">Intext 1.8: A + B</button>' +
+      '<button class="preset-btn" data-preset="hep" id="p-hep">Ex 1.16: heptane + octane</button>';
     document.getElementById("p-ab").onclick = function(){ setActivePreset(this); mode="AB"; draw(App.state.t); };
     document.getElementById("p-hep").onclick = function(){ setActivePreset(this); mode="hep"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -207,8 +207,8 @@ window.SIMS.deviation = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Ideal p_total</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Ex 1.37 experimental</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-neg">Acetone–CHCl₃ (−)</button>' +
-      '<button class="preset-btn" id="p-hide">Ideal line only</button>';
+      '<button class="preset-btn active" data-preset="neg" id="p-neg">Acetone–CHCl₃ (−)</button>' +
+      '<button class="preset-btn" data-preset="hide" id="p-hide">Ideal line only</button>';
     document.getElementById("p-neg").onclick = function(){ setActivePreset(this); showExp=true; draw(App.state.t); };
     document.getElementById("p-hide").onclick = function(){ setActivePreset(this); showExp=false; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -251,8 +251,8 @@ window.SIMS.deltatb = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Pure water p–T</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Solution p–T</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-glu">Ex 1.7: 18 g glucose / 1 kg</button>' +
-      '<button class="preset-btn" id="p-suc">Intext 1.10: sucrose → 100 °C</button>';
+      '<button class="preset-btn active" data-preset="glu" id="p-glu">Ex 1.7: 18 g glucose / 1 kg</button>' +
+      '<button class="preset-btn" data-preset="suc" id="p-suc">Intext 1.10: sucrose → 100 °C</button>';
     document.getElementById("p-glu").onclick = function(){ setActivePreset(this); solute="glucose"; draw(App.state.t); };
     document.getElementById("p-suc").onclick = function(){ setActivePreset(this); solute="sucrose"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -296,9 +296,9 @@ window.SIMS.osmosis = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Solvent</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Solution</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-os">Osmosis (mango in brine)</button>' +
-      '<button class="preset-btn" id="p-ro">Reverse osmosis (desalination)</button>' +
-      '<button class="preset-btn" id="p-pi">Intext 1.12: polymer π</button>';
+      '<button class="preset-btn active" data-preset="os" id="p-os">Osmosis (mango in brine)</button>' +
+      '<button class="preset-btn" data-preset="ro" id="p-ro">Reverse osmosis (desalination)</button>' +
+      '<button class="preset-btn" data-preset="pi" id="p-pi">Intext 1.12: polymer π</button>';
     document.getElementById("p-os").onclick = function(){ setActivePreset(this); mode="fwd"; App.resetTimeline(); App.play(); };
     document.getElementById("p-ro").onclick = function(){ setActivePreset(this); mode="ro"; App.resetTimeline(); App.play(); };
     document.getElementById("p-pi").onclick = function(){ setActivePreset(this); mode="pi"; draw(App.state.t); };
@@ -343,9 +343,9 @@ window.SIMS.vanthoff = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Formula units</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Free particles</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-kcl">KCl (n = 2)</button>' +
-      '<button class="preset-btn" id="p-fa">Ex 1.33: CH₂FCOOH</button>' +
-      '<button class="preset-btn" id="p-ca">Ex 1.40: CaCl₂ i = 2.47</button>';
+      '<button class="preset-btn active" data-preset="kcl" id="p-kcl">KCl (n = 2)</button>' +
+      '<button class="preset-btn" data-preset="fa" id="p-fa">Ex 1.33: CH₂FCOOH</button>' +
+      '<button class="preset-btn" data-preset="ca" id="p-ca">Ex 1.40: CaCl₂ i = 2.47</button>';
     document.getElementById("p-kcl").onclick = function(){ setActivePreset(this); kind="kcl"; draw(App.state.t); };
     document.getElementById("p-fa").onclick = function(){ setActivePreset(this); kind="fa"; draw(App.state.t); };
     document.getElementById("p-ca").onclick = function(){ setActivePreset(this); kind="ca"; draw(App.state.t); };

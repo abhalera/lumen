@@ -1,6 +1,8 @@
 # COVERAGE — lebo107 Human Health and Disease
 
-**Source:** `books/originals/Class12-Biology_lebo107.pdf` (22 pdf pages, printed folio absent in source, Reprint 2026-27).
+**Source:** `books/originals/Class12-Biology_lebo107.pdf` (22 pdf pages, printed folio = pdf page + 126 (verified, see correction note below), Reprint 2026-27).
+
+**Correction (2026-09-19):** an earlier pass wrongly recorded this chapter as folio-absent. Verified directly against the PDF: the printed folio appears as the first extracted text line on almost every page. Confirmed printed = 1-based PDF page + 126 across 3 independent anchor points with zero deviation. `printPage` on every exercise and `print` on every lesson now hold the real printed folio.
 **SHA-256:** `afb1c7c2f7699e0572e09e9ee3279f4e61100ba0b117b3f34b9d1ac10bdeae75` (in `/tmp/opencode/bio_maps.json`, key `lebo107`).
 **Extraction:** PyMuPDF text layer (`/tmp/opencode/bio_text/lebo107.txt`) + section/exercise page maps in `/tmp/opencode/bio_maps.json`. **pdftotext was not used.**
 **NCERT:** https://ncert.nic.in/textbook/pdf/lebo107.pdf
@@ -49,7 +51,7 @@ Honest notes: the `bio_maps.json` section map for lebo107 lists most sections (�
 
 ## End-of-Chapter Exercises 1–17
 
-All **17** exercises from this reprint mapped with verbatim stems and NCERT-faithful stepwise solutions in `chapter.json` (all on pdf p. 22; printed folio absent in source).
+All **17** exercises from this reprint mapped with verbatim stems and NCERT-faithful stepwise solutions in `chapter.json` (all on pdf p. 22; printed folio = pdf page + 126 (verified, see correction note below)).
 
 ## Pedagogical Simulations (sims.js — separate script)
 

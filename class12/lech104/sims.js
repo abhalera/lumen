@@ -36,10 +36,10 @@ window.SIMS.dfill = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>4s electron</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Zn excluded by IUPAC</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-sc">Sc 3d¹4s²</button>' +
-      '<button class="preset-btn active" id="p-cr">Cr 3d⁵4s¹</button>' +
-      '<button class="preset-btn" id="p-cu">Cu 3d¹⁰4s¹</button>' +
-      '<button class="preset-btn" id="p-zn">Zn 3d¹⁰4s²</button>';
+      '<button class="preset-btn" id="p-sc" data-preset="sc">Sc 3d¹4s²</button>' +
+      '<button class="preset-btn active" id="p-cr" data-preset="cr">Cr 3d⁵4s¹</button>' +
+      '<button class="preset-btn" id="p-cu" data-preset="cu">Cu 3d¹⁰4s¹</button>' +
+      '<button class="preset-btn" id="p-zn" data-preset="zn">Zn 3d¹⁰4s²</button>';
     document.getElementById("p-sc").onclick = function(){ setActivePreset(this); idx=0; draw(0); };
     document.getElementById("p-cr").onclick = function(){ setActivePreset(this); idx=3; draw(0); };
     document.getElementById("p-cu").onclick = function(){ setActivePreset(this); idx=8; draw(0); };
@@ -110,9 +110,9 @@ window.SIMS.physprop = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Table 4.2 value</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Zr 160 / Hf 159 pm</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-dah">Δ<sub>a</sub>H° (kJ mol⁻¹)</button>' +
-      '<button class="preset-btn" id="p-rad">Metallic radius / pm</button>' +
-      '<button class="preset-btn" id="p-den">Density / g cm⁻³</button>';
+      '<button class="preset-btn active" id="p-dah" data-preset="dah">Δ<sub>a</sub>H° (kJ mol⁻¹)</button>' +
+      '<button class="preset-btn" id="p-rad" data-preset="rad">Metallic radius / pm</button>' +
+      '<button class="preset-btn" id="p-den" data-preset="den">Density / g cm⁻³</button>';
     document.getElementById("p-dah").onclick = function(){ setActivePreset(this); mode="dah"; draw(0); };
     document.getElementById("p-rad").onclick = function(){ setActivePreset(this); mode="rad"; draw(0); };
     document.getElementById("p-den").onclick = function(){ setActivePreset(this); mode="den"; draw(0); };
@@ -173,7 +173,7 @@ window.SIMS.oxmap = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Most common (bold in Table 4.3)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Also known</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      SY.map(function(s,i){ return '<button class="preset-btn'+(i===4?' active':'')+'" id="pox'+i+'">'+s+'</button>'; }).join("");
+      SY.map(function(s,i){ return '<button class="preset-btn'+(i===4?' active':'')+'" id="pox'+i+'" data-preset="'+SY[i].toLowerCase()+'">'+s+'</button>'; }).join("");
     SY.forEach(function(s,i){
       document.getElementById("pox"+i).onclick = function(){ setActivePreset(this); sel=i; draw(0); };
     });
@@ -213,9 +213,9 @@ window.SIMS.ezero = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>E° / V (Table 4.2)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Positive / oxidising</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m2">E°(M²⁺/M)</button>' +
-      '<button class="preset-btn" id="p-m3">E°(M³⁺/M²⁺)</button>' +
-      '<button class="preset-btn" id="p-cu">Why Cu is +0.34 V</button>';
+      '<button class="preset-btn active" id="p-m2" data-preset="m2">E°(M²⁺/M)</button>' +
+      '<button class="preset-btn" id="p-m3" data-preset="m3">E°(M³⁺/M²⁺)</button>' +
+      '<button class="preset-btn" id="p-cu" data-preset="cu">Why Cu is +0.34 V</button>';
     document.getElementById("p-m2").onclick = function(){ setActivePreset(this); couple="m2"; draw(0); };
     document.getElementById("p-m3").onclick = function(){ setActivePreset(this); couple="m3"; draw(0); };
     document.getElementById("p-cu").onclick = function(){ setActivePreset(this); couple="cu"; draw(0); };
@@ -270,11 +270,11 @@ window.SIMS.spinonly = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Unpaired e⁻</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>μ = √n(n+2) BM</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-ti">Ti³⁺ n=1</button>' +
-      '<button class="preset-btn" id="p-cr">Cr²⁺ n=4</button>' +
-      '<button class="preset-btn active" id="p-mn">Mn²⁺ n=5 (Ex 4.8)</button>' +
-      '<button class="preset-btn" id="p-co">Co²⁺ n=3 (Intext 4.8)</button>' +
-      '<button class="preset-btn" id="p-zn">Zn²⁺ n=0</button>';
+      '<button class="preset-btn" id="p-ti" data-preset="ti">Ti³⁺ n=1</button>' +
+      '<button class="preset-btn" id="p-cr" data-preset="cr">Cr²⁺ n=4</button>' +
+      '<button class="preset-btn active" id="p-mn" data-preset="mn">Mn²⁺ n=5 (Ex 4.8)</button>' +
+      '<button class="preset-btn" id="p-co" data-preset="co">Co²⁺ n=3 (Intext 4.8)</button>' +
+      '<button class="preset-btn" id="p-zn" data-preset="zn">Zn²⁺ n=0</button>';
     document.getElementById("p-ti").onclick = function(){ setActivePreset(this); n=1; draw(0); };
     document.getElementById("p-cr").onclick = function(){ setActivePreset(this); n=4; draw(0); };
     document.getElementById("p-mn").onclick = function(){ setActivePreset(this); n=5; draw(0); };
@@ -322,9 +322,9 @@ window.SIMS.oxoanion = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f97316;"></span><span>Cr(VI) orange / yellow</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#a855f7;"></span><span>Mn(VII) purple</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-cr">K₂Cr₂O₇  E°=1.33 V</button>' +
-      '<button class="preset-btn" id="p-mn">KMnO₄  pH ladder</button>' +
-      '<button class="preset-btn" id="p-ph">Chromate ⇌ dichromate</button>';
+      '<button class="preset-btn active" id="p-cr" data-preset="cr">K₂Cr₂O₇  E°=1.33 V</button>' +
+      '<button class="preset-btn" id="p-mn" data-preset="mn">KMnO₄  pH ladder</button>' +
+      '<button class="preset-btn" id="p-ph" data-preset="ph">Chromate ⇌ dichromate</button>';
     document.getElementById("p-cr").onclick = function(){ setActivePreset(this); mode="cr"; draw(0); };
     document.getElementById("p-mn").onclick = function(){ setActivePreset(this); mode="mn"; draw(0); };
     document.getElementById("p-ph").onclick = function(){ setActivePreset(this); mode="ph"; draw(0); };
@@ -390,9 +390,9 @@ window.SIMS.lnradii = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Not tabulated (Lu)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Eu/Yb metallic outliers</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ion">Ln³⁺ radii / pm</button>' +
-      '<button class="preset-btn" id="p-met">Metallic radii / pm</button>' +
-      '<button class="preset-btn" id="p-zrhf">Zr 160 · Hf 159 consequence</button>';
+      '<button class="preset-btn active" id="p-ion" data-preset="ion">Ln³⁺ radii / pm</button>' +
+      '<button class="preset-btn" id="p-met" data-preset="met">Metallic radii / pm</button>' +
+      '<button class="preset-btn" id="p-zrhf" data-preset="zrhf">Zr 160 · Hf 159 consequence</button>';
     document.getElementById("p-ion").onclick = function(){ setActivePreset(this); mode="ion"; draw(0); };
     document.getElementById("p-met").onclick = function(){ setActivePreset(this); mode="met"; draw(0); };
     document.getElementById("p-zrhf").onclick = function(){ setActivePreset(this); mode="zrhf"; draw(0); };
@@ -458,8 +458,8 @@ window.SIMS.actinoid = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>+4 to +6</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>+7 (Np, Pu)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-tab">Table 4.11 OS map</button>' +
-      '<button class="preset-btn" id="p-lr">Lr Z=103</button>';
+      '<button class="preset-btn active" id="p-tab" data-preset="tab">Table 4.11 OS map</button>' +
+      '<button class="preset-btn" id="p-lr" data-preset="lr">Lr Z=103</button>';
     document.getElementById("p-tab").onclick = function(){ setActivePreset(this); draw(0); };
     document.getElementById("p-lr").onclick = function(){ setActivePreset(this); draw(1); };
     document.getElementById("lab-controls").innerHTML = "";

@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 08 · ALDEHYDES, KETONES AND CARBOXYLIC ACIDS</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,153 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 20 Exercises from NCERT Class 12 Chemistry (pp. 227–258) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 20 Exercises from NCERT Class 12 Chemistry Part 2 (pp. 227–258) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry", "title": "Aldehydes, Ketones and Carboxylic Acids", "subtitle": "Carbonyl nomenclature, nucleophilic addition (Fig. 8.2), aldol vs Cannizzaro, and carboxylic-acid acidity and reactions of this reprint.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech203.pdf", "page_start": 227, "page_end": 258, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "carbonyl-nom", "nav": "Carbonyl nomenclature", "title": "How does Table 8.1 name aldehydes and ketones?", "deck": "Alkanal / alkanone. CHO is C-1. Common names vs IUPAC. Planar polar C=O (sp²) is the functional heart of the unit.", "minutes": 10, "section": "8.1", "pages": [1, 5], "print": "227–231", "sim": "carbnom", "simTitle": "Table 8.1 names and polar C=O", "quick": ["Aldehydes have –CHO; ketones have C=O flanked by two carbons. IUPAC: alkanal (CHO is C-1) and alkanone (lowest locant to C=O). Aromatic aldehydes: benzenecarbaldehyde or the retained benzaldehyde. Table 8.1 (zoom p.04): formaldehyde = methanal; acetaldehyde = ethanal; acrolein = prop-2-enal; mesityl oxide = 4-methylpent-3-en-2-one; phthalaldehyde = benzene-1,2-dicarbaldehyde.", "The carbonyl carbon is sp², trigonal planar, C<sup>δ+</sup>=O<sup>δ−</sup>. That electrophilic carbon is why the characteristic reaction is nucleophilic addition, not electrophilic addition as in alkenes.", "Intext 8.1 structures (answers p.31): 2-hydroxypropanal, 3-oxobutanal flavour, cyclopentanecarbaldehyde with OH, etc. — always give the carbonyl the lowest locant allowed by the suffix."], "formulas": [{"label": "Alkanal / alkanone", "html": "RCHO (C-1 = CHO) &nbsp;|&nbsp; RCOR′ (lowest C=O locant)", "cond": "Table 8.1"}, {"label": "Carbonyl geometry", "html": "sp², planar, C<sup>δ+</sup>=O<sup>δ−</sup>", "cond": "drives nucleophilic addition"}], "deeper": "When both aldehyde and ketone are present, aldehyde takes the suffix and the ketone becomes oxo. Dialdehydes are alkanedials; the reprint names benzene-1,4-dicarbaldehyde for terephthalaldehyde.", "worked": {"title": "Table 8.1 spot-check", "problem": "IUPAC of isobutyraldehyde, valeraldehyde, methyl n-propyl ketone, α-methylcyclohexanone.", "steps": ["2-methylpropanal; pentanal; pentan-2-one; 2-methylcyclohexanone."], "answer": "As in Table 8.1."}, "prediction": {"prompt": "IUPAC name of (CH₃)₂C=CHCOCH₃ (mesityl oxide) in Table 8.1 is", "options": ["4-methylpent-3-en-2-one", "2-methylpent-2-en-4-one", "4-methylpentan-2-one"], "answer": 0, "explanation": "Table 8.1: mesityl oxide = 4-methylpent-3-en-2-one. Enone numbering gives C=O the lower locant (2), then the double bond (3)."}, "connect": [["Formalin in the biology lab", "40% aqueous methanal (formalin) preserves specimens — the smallest aldehyde, still the most reactive toward nucleophiles."], ["Wow — acrolein is prop-2-enal", "The common name hides a simple unsaturated aldehyde: CH₂=CHCHO, used as a lachrymator and as an acrolein test for glycerol.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "Give IUPAC names of HCHO, CH₃CHO, PhCHO, CH₃COCH₃ and mesityl oxide from Table 8.1.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "IUPAC name of CH₃CHO is", "options": ["acetaldehyde", "ethanal", "methanal"], "answer": 1, "hint": "Table 8.1.", "solution": "Common acetaldehyde; IUPAC ethanal."}, {"level": "Medium", "type": "mcq", "prompt": "The carbonyl carbon is", "options": ["sp³ tetrahedral", "sp² planar with Cδ⁺", "sp linear"], "answer": 1, "hint": "§8.1.2.", "solution": "Planar sp²; oxygen pulls electrons."}, {"level": "Hard", "type": "mcq", "prompt": "Benzene-1,2-dicarbaldehyde is the IUPAC name of", "options": ["terephthalaldehyde", "phthalaldehyde", "isophthalaldehyde"], "answer": 1, "hint": "Table 8.1.", "solution": "o-dialdehyde = phthalaldehyde = benzene-1,2-dicarbaldehyde."}]}, {"id": "prep-aldket", "nav": "Preparation of aldehydes & ketones", "title": "How do we stop oxidation at the aldehyde?", "deck": "PCC / Rosenmund / Stephen / Étard / Gattermann–Koch. Friedel–Crafts acylation. Ozonolysis. Dialkylcadmium.", "minutes": 12, "section": "8.2", "pages": [5, 9], "print": "231–235", "sim": "prepald", "simTitle": "Aldehyde and ketone routes", "quick": ["1° alcohols → aldehydes with PCC or catalytic dehydrogenation (Cu, 573 K); strong Cr(VI)/Mn(VII) go on to acids. 2° alcohols → ketones. Rosenmund: RCOCl + H₂/Pd–BaSO₄ → RCHO. Stephen: RCN + SnCl₂/HCl then H₃O⁺ → RCHO.", "Aromatic aldehydes: Étard (PhCH₃ + CrO₂Cl₂), CrO₃/Ac₂O, Gattermann–Koch (CO/HCl/AlCl₃/CuCl). Ketones: Friedel–Crafts acylation of arenes; RCOCl + R′₂Cd; hydration of alkynes (Hg²⁺); ozonolysis of alkenes.", "Example 8.1 (p.08) maps reagents onto products — always ask whether the carbon of the carbonyl was already at that oxidation level or must be created."], "formulas": [{"label": "Rosenmund", "html": "RCOCl + H₂ / Pd–BaSO₄ → RCHO", "cond": "poisoned catalyst stops at aldehyde"}, {"label": "Étard", "html": "ArCH₃ + CrO₂Cl₂ → ArCHO", "cond": "side-chain stopped at aldehyde"}, {"label": "Friedel–Crafts acyl", "html": "ArH + RCOCl / AlCl₃ → ArCOR", "cond": "best aromatic ketone route"}], "deeper": "BaSO₄ poisons Pd so H₂ does not reduce the aldehyde further. Gattermann–Koch is formylation of benzene (no F–C formyl chloride exists as a reagent bottle). Ozonolysis of an unsymmetrical alkene gives two different carbonyls — Ex 8.17(xi) is the reverse puzzle.", "worked": {"title": "Controlled vs strong oxidation", "problem": "Convert propan-1-ol to propanal, and separately to propanoic acid.", "steps": ["Propanal: PCC, or Cu/573 K.", "Propanoic acid: alk. KMnO₄ or acidified K₂Cr₂O₇, heat."], "answer": "PCC vs strong [O]."}, "prediction": {"prompt": "Rosenmund reduction of benzoyl chloride yields", "options": ["benzyl alcohol", "benzaldehyde", "benzoic acid"], "answer": 1, "explanation": "Pd–BaSO₄ hydrogenates RCOCl to RCHO and stops. Further reduction would need a different catalyst/conditions."}, "connect": [["Friedel–Crafts in the dye industry", "Aromatic ketones from F–C acylation are intermediates for dyes and pharmaceuticals — acetophenone is the prototype."], ["Wow — there is no formyl chloride bottle", "Gattermann–Koch generates the formyl electrophile in situ from CO and HCl with AlCl₃/CuCl.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "List four ways to make an aldehyde that do not over-oxidise, and the best route to ArCOR.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "PCC oxidises a 1° alcohol to", "options": ["carboxylic acid", "aldehyde", "alkene"], "answer": 1, "hint": "Controlled oxidation.", "solution": "Stops at RCHO."}, {"level": "Medium", "type": "mcq", "prompt": "Stephen reduction starts from", "options": ["acid chloride", "nitrile", "alkene"], "answer": 1, "hint": "RCN + SnCl₂/HCl.", "solution": "Then hydrolysis of the imine salt to RCHO."}, {"level": "Hard", "type": "mcq", "prompt": "Gattermann–Koch formylation uses", "options": ["CHCl₃/NaOH", "CO + HCl + AlCl₃/CuCl", "CrO₂Cl₂"], "answer": 1, "hint": "§8.2 aromatic aldehydes.", "solution": "Étard is CrO₂Cl₂; Reimer–Tiemann is CHCl₃/NaOH on phenol."}]}, {"id": "phys-carb", "nav": "Physical properties of C=O", "title": "Why is ethanal’s boiling point between ether and ethanol?", "deck": "Polar C=O raises b.p. above hydrocarbons/ethers but below H-bonding alcohols. Lower members water-soluble. Intext 8.3 order.", "minutes": 8, "section": "8.3", "pages": [9, 10], "print": "235–236", "sim": "physcarb", "simTitle": "Boiling-point ladder (Intext 8.3)", "quick": ["Aldehydes and ketones are polar, so they boil higher than hydrocarbons and ethers of similar mass, but they cannot donate hydrogen bonds, so they boil below alcohols. Intext 8.3 (answers p.32): CH₃CH₂CH₃ < CH₃OCH₃ < CH₃CHO < CH₃CH₂OH.", "Lower members are water-soluble (carbonyl oxygen accepts H-bonds from water). Higher members have a large hydrophobic chain and are not. They dissolve in common organic solvents.", "Carboxylic acids dimerise through two H-bonds and boil even higher — that story waits until §8.8."], "formulas": [{"label": "Intext 8.3 order", "html": "CH₃CH₂CH₃ &lt; CH₃OCH₃ &lt; CH₃CHO &lt; CH₃CH₂OH", "cond": "answers p.32"}, {"label": "Solubility", "html": "lower members mix with water; higher do not", "cond": "H-bond acceptor vs hydrophobic chain"}], "deeper": "Among isomeric carbonyls, branching slightly lowers b.p. Ketones often boil a little higher than isomeric aldehydes because of the extra alkyl polarisability.", "worked": {"title": "Intext 8.3", "problem": "Increasing b.p.: CH₃CHO, CH₃CH₂OH, CH₃OCH₃, CH₃CH₂CH₃.", "steps": ["Alkane (van der Waals) < ether (weak dipole) < aldehyde (stronger dipole) < alcohol (H-bonds)."], "answer": "propane < methoxymethane < ethanal < ethanol."}, "prediction": {"prompt": "Which boils highest: propane, methoxymethane, ethanal, ethanol?", "options": ["ethanal, because C=O is the most polar", "ethanol, because of intermolecular H-bonds", "propane, because it is smallest"], "answer": 1, "explanation": "Intext 8.3: H-bonding wins. Carbonyl polarity is in the middle of the ladder."}, "connect": [["Acetone as a nail-paint solvent", "Propanone mixes with water and with organics — a polar carbonyl with a short chain, exactly §8.3."], ["Wow — the same formula C₂H₆O three ways", "Ethanol, methoxymethane, and (if you count the hydrate) the carbonyl family sit on one physical-properties ladder.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "Recite the Intext 8.3 boiling-point order and the reason for each step.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Aldehydes boil lower than isomeric alcohols because", "options": ["they are ionic", "they cannot donate H-bonds", "they are always gases"], "answer": 1, "hint": "§8.3.", "solution": "Polar, but no O–H."}, {"level": "Medium", "type": "mcq", "prompt": "Intext 8.3 lowest boiling compound is", "options": ["CH₃CHO", "CH₃CH₂OH", "CH₃CH₂CH₃"], "answer": 2, "hint": "Answers p.32.", "solution": "Propane — only van der Waals."}, {"level": "Hard", "type": "mcq", "prompt": "Higher aldehydes are insoluble in water because", "options": ["C=O becomes non-polar", "the hydrophobic alkyl chain dominates", "they polymerise"], "answer": 1, "hint": "§8.3.", "solution": "The carbonyl can still accept H-bonds, but the chain wins."}]}, {"id": "nucadd", "nav": "Nucleophilic addition", "title": "Attack perpendicular to the plane — sp² becomes sp³", "deck": "Fig. 8.2 mechanism. Reactivity HCHO > RCHO > R₂CO. HCN, NaHSO₃, alcohols (acetal/ketal), NH₂Z, Grignard. Ex 8.3 benzaldehyde vs propanal.", "minutes": 16, "section": "8.4 nuc. add.", "pages": [10, 13], "print": "236–239", "sim": "nucadd", "simTitle": "Nucleophilic addition stepper (Fig. 8.2)", "quick": ["Fig. 8.2 (zoom p.10): the nucleophile attacks the planar carbonyl carbon from a direction approximately perpendicular to the sp² plane. Carbon rehybridises sp² → sp³; a tetrahedral alkoxide intermediate forms (slow step), then is protonated (fast). Net addition of Nu⁻ and H⁺ across C=O.", "Aldehydes are more reactive than ketones: steric (one vs two large groups) and electronic (two alkyl +I groups reduce C<sup>δ+</sup>). Ex 8.3: benzaldehyde is less reactive than propanal — aryl resonance lowers electrophilicity. Ex 8.12(i): acetaldehyde > acetone > methyl tert-butyl ketone > di-tert-butyl ketone toward HCN.", "Examples: HCN (base-catalysed) → cyanohydrin; NaHSO₃ → water-soluble adduct (purification); alcohols / dry HCl → hemiacetal then acetal (ketones give ethylene ketals with glycol); H₂N–Z → C=N–Z (oxime, hydrazone, 2,4-DNP, semicarbazone, Schiff base — Table 8.2); Grignard → alcohols (Unit 7)."], "formulas": [{"label": "Fig. 8.2", "html": "Nu<sup>−</sup> ⊥ plane of C=O → tetrahedral alkoxide → protonate", "cond": "sp² → sp³"}, {"label": "Reactivity", "html": "HCHO &gt; RCHO &gt; RCOR (steric + electronic)", "cond": "aryl CHO less than alkyl CHO"}, {"label": "Cyanohydrin", "html": "C=O + HCN (CN<sup>−</sup> cat.) → R₂C(OH)CN", "cond": "base needed; hindered ketones fail (Ex 8.18)"}, {"label": "2,4-DNP", "html": "C=O + 2,4-(NO₂)₂C₆H₃NHNH₂ → orange/yellow ppt", "cond": "qualitative test"}], "deeper": "Dry HCl protonates the carbonyl oxygen, increasing electrophilicity for acetal/ketal formation. Acetals hydrolyse in aqueous acid — protecting groups. Semicarbazide has two NH₂ groups; only the one not next to C=O is nucleophilic, because the other is resonance-deactivated (Ex 8.18). 2,4-DNP derivatives are used both as a test and as crystalline characterisation.", "worked": {"title": "Example 8.3 (zoom p.10)", "problem": "Is benzaldehyde more or less reactive than propanal in nucleophilic addition?", "steps": ["Draw the resonance form that places negative charge on carbonyl oxygen of PhCHO.", "That donation reduces Cδ⁺ relative to propanal, which has no such aryl resonance."], "answer": "Benzaldehyde is less reactive than propanal."}, "prediction": {"prompt": "In Fig. 8.2, as the nucleophile bonds, the carbonyl carbon’s hybridisation", "options": ["stays sp² (electrophilic addition like alkenes)", "changes sp² → sp³ (tetrahedral alkoxide)", "changes sp² → sp"], "answer": 1, "explanation": "The reprint: hybridisation of carbon changes from sp² to sp³ and a tetrahedral alkoxide intermediate is produced."}, "connect": [["2,4-DNP in the practical exam", "An orange-yellow precipitate is still the Class 12 qualitative test for a carbonyl — Table 8.2 on a filter paper."], ["Wow — acetals as protecting groups", "Convert RCHO to an acetal, do chemistry elsewhere, then aqueous acid gives the aldehyde back — the mechanism of §8.4 as a synthetic tactic.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "Draw Fig. 8.2, state the reactivity order, and write equations for cyanohydrin, acetal and 2,4-DNP.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Nucleophilic addition to C=O begins with", "options": ["electrophile attacking oxygen", "nucleophile attacking carbon perpendicular to the plane", "free-radical on oxygen"], "answer": 1, "hint": "Fig. 8.2.", "solution": "Opposite of electrophilic addition to alkenes."}, {"level": "Medium", "type": "mcq", "prompt": "Toward HCN, the most reactive is", "options": ["di-tert-butyl ketone", "acetone", "acetaldehyde"], "answer": 2, "hint": "Ex 8.12(i).", "solution": "Least hindered, most electrophilic carbonyl."}, {"level": "Hard", "type": "mcq", "prompt": "Benzaldehyde is less reactive than propanal because", "options": ["it has no α-H", "aryl resonance reduces Cδ⁺ of the carbonyl", "it is more sterically hindered than any ketone"], "answer": 1, "hint": "Ex 8.3.", "solution": "Resonance, not the Cannizzaro story (that is about α-H)."}]}, {"id": "aldol-oxred", "nav": "Aldol, Cannizzaro, redox", "title": "α-Hydrogen decides aldol vs Cannizzaro — silver mirrors decide aldehyde vs ketone", "deck": "Aldol (needs α-H). Cannizzaro (no α-H, conc. alkali). Tollens, Fehling, iodoform. Clemmensen, Wolff–Kishner. Uses of methanal, ethanal, propanone, benzaldehyde.", "minutes": 14, "section": "8.4–8.5", "pages": [13, 18], "print": "239–244", "sim": "aldolox", "simTitle": "Aldol, Cannizzaro and redox tests", "quick": ["α-Hydrogens of carbonyls are acidic. With dilute base, enolate adds to another C=O → β-hydroxy aldehyde/ketone (aldol/ketol); heat dehydrates to the α,β-unsaturated carbonyl. No α-H (HCHO, PhCHO, Me₃CCHO) + conc. NaOH → Cannizzaro disproportionation (alcohol + carboxylate).", "Oxidation: aldehydes reduce Tollens’ reagent ([Ag(NH₃)₂]⁺ → silver mirror) and aliphatic aldehydes reduce Fehling’s (Cu₂O red). Ketones do not. Iodoform: CH₃CO– or CH₃CH(OH)– → yellow CHI₃. Reduction: NaBH₄/LiAlH₄/H₂ → alcohols; Clemmensen (Zn–Hg/HCl) or Wolff–Kishner (NH₂NH₂/KOH) → CH₂.", "Uses: methanal (bakelite, formalin), ethanal (ethanoic acid, polymers), propanone (solvent), benzaldehyde (almond, cinnamaldehyde via aldol)."], "formulas": [{"label": "Aldol", "html": "2 CH₃CHO (dil. NaOH) → CH₃CH(OH)CH₂CHO → CH₃CH=CHCHO", "cond": "needs α-H"}, {"label": "Cannizzaro", "html": "2 PhCHO (conc. NaOH) → PhCH₂OH + PhCOO⁻", "cond": "no α-H"}, {"label": "Tollens", "html": "RCHO + 2 [Ag(NH₃)₂]⁺ + 3 OH⁻ → RCOO⁻ + 2 Ag↓ + 4 NH₃ + 2 H₂O", "cond": "silver mirror"}, {"label": "Clemmensen", "html": "C=O  (Zn–Hg / conc. HCl)  → CH₂", "cond": "acidic; Wolff–Kishner is basic"}], "deeper": "Ex 8.7: methanal, benzaldehyde, 2,2-dimethylbutanal → Cannizzaro; 2-methylpentanal, cyclohexanone, 1-phenylpropanone, phenylacetaldehyde → aldol; benzophenone and butan-1-ol neither. Ex 8.8: ethanal → butane-1,3-diol (reduce the aldol) or but-2-enal (dehydrate) or but-2-enoic acid (oxidise the enal). Crossed aldol is messy unless one partner has no α-H (often HCHO or PhCHO).", "worked": {"title": "Ex 8.10 identification", "problem": "C₉H₁₀O forms 2,4-DNP, reduces Tollens, undergoes Cannizzaro, vigorous oxidation → phthalic acid.", "steps": ["2,4-DNP: carbonyl. Tollens: aldehyde. Cannizzaro: no α-H → aromatic aldehyde.", "Phthalic acid: two side chains ortho on benzene, both oxidisable.", "C₉H₁₀O = 2-ethylbenzaldehyde."], "answer": "2-Ethylbenzaldehyde."}, "prediction": {"prompt": "Which reagent distinguishes ethanal from propanone in one test tube?", "options": ["2,4-DNP (both give ppt)", "Tollens’ reagent (only ethanal gives a silver mirror)", "Br₂/CCl₄"], "answer": 1, "explanation": "Both are carbonyls (2,4-DNP +). Only the aldehyde reduces Tollens. Iodoform would be positive for both (methyl carbonyl)."}, "connect": [["Silver mirror in the school lab", "Tollens’ test is still the cleanest aldehyde demonstration — a film of Ag on glass from [Ag(NH₃)₂]⁺."], ["Wow — bakelite from methanal", "Phenol + methanal (Unit 7 + Unit 8) built the first synthetic plastic. Two NCERT chapters, one polymer.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "State the α-H rule for aldol vs Cannizzaro, write Tollens and Clemmensen, and identify C₉H₁₀O of Ex 8.10.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Cannizzaro reaction requires", "options": ["at least one α-H and dil. NaOH", "no α-H and conc. NaOH", "Zn–Hg / HCl"], "answer": 1, "hint": "§8.4.", "solution": "Disproportionation of aldehydes lacking α-H."}, {"level": "Medium", "type": "mcq", "prompt": "Fehling’s solution is reduced by", "options": ["acetophenone", "benzaldehyde", "propanal"], "answer": 2, "hint": "Aliphatic aldehydes.", "solution": "Benzaldehyde: Tollens yes, Fehling no. Ketones no."}, {"level": "Hard", "type": "mcq", "prompt": "Clemmensen vs Wolff–Kishner is chosen according to", "options": ["colour of the product", "whether the rest of the molecule is acid-sensitive or base-sensitive", "molecular mass"], "answer": 1, "hint": "Zn–Hg/HCl is acidic; NH₂NH₂/KOH is basic.", "solution": "Protect acid-labile groups with WK, base-labile with Clemmensen."}]}, {"id": "acid-nom-prep", "nav": "Carboxylic acids: names & preparation", "title": "From nitriles, Grignard/CO₂ and side-chain oxidation", "deck": "Table 8.3. –COOH is C-1. Four textbook preparations. Hexanedioic acid → nylon-6,6.", "minutes": 12, "section": "8.6–8.7", "pages": [18, 22], "print": "244–248", "sim": "acidnom", "simTitle": "Acid names and four routes to –COOH", "quick": ["Carboxylic acids: –COOH. IUPAC alkanedioic / benzenecarboxylic. Table 8.3: formic = methanoic; acetic = ethanoic; adipic = hexanedioic (nylon-6,6). The carboxyl carbon is C-1.", "Preparation: (i) oxidation of 1° alcohols, aldehydes, alkenes; (ii) hydrolysis of nitriles; (iii) RMgX + CO₂ then H₃O⁺; (iv) side-chain oxidation of alkylbenzenes with benzylic H (any length → ArCOOH). Example 8.5 maps these onto products.", "Aromatic acids by hydrolysis of –CCl₃ (benzotrichloride) or by carbonation of ArMgX. Ex 8.14 is a benzene-based map using only C₁ organic reagents."], "formulas": [{"label": "Nitrile hydrolysis", "html": "RCN + 2 H₂O (H⁺ or OH⁻ then H⁺) → RCOOH + NH₄⁺", "cond": "adds one carbon if RCN came from RX + KCN"}, {"label": "Grignard carbonation", "html": "RMgX + CO₂ then H₃O⁺ → RCOOH", "cond": "also +1 carbon"}, {"label": "Side-chain ox", "html": "Ar–CH₂R  (KMnO₄)  → ArCOOH", "cond": "needs benzylic H"}], "deeper": "Ex 8.11: C₈H₁₆O₂ hydrolyses to acid B and alcohol C; C oxidises to B; C dehydrates to but-1-ene. Therefore C is butan-1-ol, B is butanoic acid, A is butyl butanoate.", "worked": {"title": "Ex 8.11 ester puzzle", "problem": "Identify A (C₈H₁₆O₂).", "steps": ["C dehydrates to but-1-ene → C is butan-1-ol (1°).", "C oxidises to B → B is butanoic acid.", "A is the ester of B with C: CH₃CH₂CH₂COOCH₂CH₂CH₂CH₃."], "answer": "Butyl butanoate."}, "prediction": {"prompt": "Toluene with hot alkaline KMnO₄, then acid, yields", "options": ["benzaldehyde (Étard conditions)", "benzoic acid", "benzyl alcohol"], "answer": 1, "explanation": "Any alkylbenzene with at least one benzylic H is oxidised to ArCOOH. Étard/CrO₂Cl₂ is the stop-at-aldehyde reagent, not KMnO₄."}, "connect": [["Nylon-6,6 from adipic acid", "Hexanedioic acid + hexane-1,6-diamine — a Class 12 polymer that starts in this chapter’s Table 8.3."], ["Wow — one extra carbon from CO₂", "A Grignard plus the carbon of carbon dioxide is how the chain grows by one — the same CO₂ you exhaled.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "Write the four preparations of RCOOH and identify butyl butanoate as in Ex 8.11.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "IUPAC name of acetic acid is", "options": ["methanoic acid", "ethanoic acid", "propanoic acid"], "answer": 1, "hint": "Table 8.3.", "solution": "HCOOH is methanoic."}, {"level": "Medium", "type": "mcq", "prompt": "RMgX + CO₂ then H₃O⁺ yields", "options": ["a 1° alcohol", "a carboxylic acid with one extra carbon", "a ketone"], "answer": 1, "hint": "§8.7.", "solution": "Carbon of CO₂ becomes the carboxyl carbon."}, {"level": "Hard", "type": "mcq", "prompt": "C₈H₁₆O₂ of Ex 8.11 is", "options": ["octanoic acid", "butyl butanoate", "ethyl hexanoate"], "answer": 1, "hint": "Alcohol C is butan-1-ol (dehydrates to but-1-ene) and oxidises to the acid B.", "solution": "Symmetrical ester C₃H₇COOC₄H₉."}]}, {"id": "acid-strength", "nav": "Acidity of carboxylic acids", "title": "Two equivalent oxygens beat five phenoxide cartoons", "deck": "pKa: HCl −7, TFA 0.23, benzoic 4.19, acetic 4.76, phenol 10, ethanol ~16. EWG strengthen, EDG weaken. Ex 8.20 vs phenol.", "minutes": 12, "section": "8.8–8.9.1", "pages": [23, 25], "print": "249–251", "sim": "acidstrength", "simTitle": "pKa ladder and carboxylate vs phenoxide", "quick": ["pKa = −log Ka; smaller pKa = stronger acid. Reprint values: HCl −7.0; trifluoroacetic 0.23 (strongest carboxylic); benzoic 4.19; acetic 4.76. Phenol ~10; ethanol ~16. Carboxylic acids are weaker than mineral acids but stronger than alcohols and most phenols.", "Why stronger than phenol (Ex 8.20): carboxylate has two equivalent resonance forms with charge on oxygen; phenoxide has more structures but they dump charge onto carbon. Quality of delocalisation beats the count.", "EWG (F, Cl, CN, NO₂, CF₃) stabilise the anion and increase acidity; closer is stronger (Ex 8.8, 8.12). EDG (alkyl, OMe) weaken. 4-nitrobenzoic 3.41; benzoic 4.19; 4-methoxybenzoic 4.46 (zoom p.25). Order of EWG: Ph < I < Br < Cl < F < CN < NO₂ < CF₃."], "formulas": [{"label": "pKa definition", "html": "pK<sub>a</sub> = −log K<sub>a</sub>", "cond": "smaller pKa = stronger acid"}, {"label": "Reprint pKa set", "html": "HCl −7; CF₃COOH 0.23; PhCOOH 4.19; CH₃COOH 4.76; PhOH 10; EtOH ~16", "cond": "§8.9.1"}, {"label": "Ex 8.12(ii) acids", "html": "α-bromo &gt; β-bromo &gt; unsubstituted; branching weakens", "cond": "inductive + proximity"}], "deeper": "Direct attachment of phenyl or vinyl to COOH increases acidity vs the saturated analogue because of the more electronegative sp² carbon, even though resonance might have suggested otherwise. Aromatic acids: EWG on the ring increase acidity, EDG decrease it. No Friedel–Crafts on ArCOOH (COOH deactivating and AlCl₃ complexes it).", "worked": {"title": "Ex 8.12(ii)", "problem": "Increasing acid strength: CH₃CH₂CH(Br)COOH, CH₃CH(Br)CH₂COOH, (CH₃)₂CHCOOH, CH₃CH₂CH₂COOH.", "steps": ["α-Br strongest (closest EWG); then β-Br; then unsubstituted butanoic; branched (CH₃)₂CHCOOH weakest (+I of two methyls)."], "answer": "(CH₃)₂CHCOOH < CH₃CH₂CH₂COOH < CH₃CH(Br)CH₂COOH < CH₃CH₂CH(Br)COOH."}, "prediction": {"prompt": "Carboxylic acids are stronger than phenols even though phenoxide has more resonance structures. The reprint’s reason is", "options": ["phenols cannot lose H⁺", "carboxylate charge sits on two equivalent oxygens; phenoxide dumps charge onto carbon", "carboxylic acids have higher molecular mass"], "answer": 1, "explanation": "Ex 8.20 / §8.9.1: equivalent oxygen-centred forms vs non-equivalent carbon-centred forms."}, "connect": [["Vinegar is 4–6% acetic acid", "pKa 4.76 means a weak acid — sour, not a mineral-acid burn — exactly why it is a food acid."], ["Wow — TFA pKa 0.23", "Three fluorines turn acetic acid into something that sits next to mineral acids. Inductive effect, quantified.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "Quote the reprint pKa set and explain Ex 8.20 in one sentence.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "pKa of acetic acid in this reprint is", "options": ["0.23", "4.19", "4.76"], "answer": 2, "hint": "§8.9.1.", "solution": "TFA 0.23; benzoic 4.19; acetic 4.76."}, {"level": "Medium", "type": "mcq", "prompt": "Among FCH₂COOH, ClCH₂COOH, BrCH₂COOH, the strongest is", "options": ["bromoacetic", "chloroacetic", "fluoroacetic"], "answer": 2, "hint": "F is the most electronegative EWG.", "solution": "Order F > Cl > Br > I for α-haloacetic acids."}, {"level": "Hard", "type": "mcq", "prompt": "4-Nitrobenzoic vs 4-methoxybenzoic vs benzoic (pKa 3.41, 4.46, 4.19): strongest is", "options": ["4-methoxybenzoic", "benzoic", "4-nitrobenzoic"], "answer": 2, "hint": "Zoom p.25.", "solution": "NO₂ EWG lowers pKa; OMe EDG raises it."}]}, {"id": "acid-rxn", "nav": "Reactions & uses of acids", "title": "Esterify, α-halogenate, decarboxylate — then put the acid to work", "deck": "Fischer esterification (remove water). SOCl₂ → RCOCl. HVZ. LiAlH₄ / B₂H₆ vs NaBH₄. Soda-lime decarboxylation. Uses §8.10.", "minutes": 12, "section": "8.9–8.10", "pages": [25, 28], "print": "251–254", "sim": "acidrxn", "simTitle": "Esterification, HVZ, decarboxylation, uses", "quick": ["C–OH cleavage: Fischer esterification RCOOH + R′OH ⇌ RCOOR′ + H₂O (H₂SO₄). Mechanism: protonate C=O, alcohol adds, lose water (zoom p.26). Ex 8.18: remove water or ester as formed (Le Chatelier). PCl₅/PCl₃/SOCl₂ → RCOCl (SOCl₂ preferred, gases). NH₃ then heat → amide. Anhydrides from heating with P₂O₅/H₂SO₄.", "–COOH group: LiAlH₄ or better B₂H₆ → 1° alcohol (NaBH₄ does not reduce COOH). Soda lime (NaOH:CaO = 3:1) decarboxylation → RH. Kolbe electrolysis → R–R. HVZ: α-H + X₂ / red P → α-halo acid. Aromatic acids: EAS meta, no F–C.", "Uses: methanoic (rubber, textile, dyeing, leather, electroplating); ethanoic (solvent, vinegar); hexanedioic (nylon-6,6); benzoate esters (perfumery); sodium benzoate (preservative); fatty acids (soaps)."], "formulas": [{"label": "Fischer", "html": "RCOOH + R′OH ⇌ RCOOR′ + H₂O (H⁺)", "cond": "remove H₂O or ester"}, {"label": "HVZ", "html": "RCH₂COOH + X₂ / red P → RCHXCOOH", "cond": "needs α-H"}, {"label": "Soda lime", "html": "RCOONa + NaOH/CaO, heat → RH + Na₂CO₃", "cond": "lose CO₂"}, {"label": "Hydride", "html": "LiAlH₄ or B₂H₆ → RCH₂OH; NaBH₄ no reaction", "cond": "B₂H₆ more chemoselective"}], "deeper": "Ex 8.16: acetylation, Cannizzaro, cross aldol, decarboxylation — named reactions spanning both halves of the chapter. Ex 8.19: C₅H₁₀O ketone, 69.77% C, 11.63% H, MM 86, no Tollens, NaHSO₃ +, iodoform +, vigorous ox → ethanoic + propanoic → pentan-2-one.", "worked": {"title": "Ex 8.19 elemental analysis", "problem": "69.77% C, 11.63% H, rest O, MM 86; ketone tests; iodoform; ox → AcOH + EtCOOH.", "steps": ["%O = 18.60. Moles in 100 g: C 5.81, H 11.63, O 1.16 → C₅H₁₀O. MM 86 checks.", "No Tollens, NaHSO₃ + → ketone. Iodoform → methyl ketone. Ox to C2 + C3 acids → pentan-2-one."], "answer": "Pentan-2-one (CH₃COCH₂CH₂CH₃)."}, "prediction": {"prompt": "NaBH₄ does not reduce carboxylic acids, but LiAlH₄ does. HVZ needs which extra reagent besides Cl₂ or Br₂?", "options": ["AlCl₃", "red phosphorus", "Pd–BaSO₄"], "answer": 1, "explanation": "Hell–Volhard–Zelinsky: halogen + red P. AlCl₃ is Friedel–Crafts (blocked for acids). Pd–BaSO₄ is Rosenmund."}, "connect": [["Sodium benzoate in Indian pickles and soft drinks", "A food preservative from benzoic acid — §8.10 in the kitchen."], ["Wow — soaps from fatty acids", "Higher fatty acids, NaOH, and you have soap. The carboxyl group of this unit is the head of every soap micelle.", [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}]]], "recall": "Write Fischer (with the Le Chatelier note), HVZ, soda-lime decarboxylation, and the Ex 8.19 structure.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "HVZ halogenation requires", "options": ["an α-hydrogen and red phosphorus", "AlCl₃", "no α-H"], "answer": 0, "hint": "§8.9.4.", "solution": "RCH₂COOH + X₂/red P."}, {"level": "Medium", "type": "mcq", "prompt": "NaBH₄ and carboxylic acids:", "options": ["both LiAlH₄ and NaBH₄ reduce COOH to 1° alcohol", "NaBH₄ does not reduce COOH; LiAlH₄ (or B₂H₆) does", "neither reduces COOH"], "answer": 1, "hint": "§8.9.3.", "solution": "NaBH₄ is too mild for carboxyl."}, {"level": "Hard", "type": "mcq", "prompt": "The compound of Ex 8.19 is", "options": ["pentan-3-one", "pentan-2-one", "pentanal"], "answer": 1, "hint": "Iodoform + not Tollens + ox to AcOH and EtCOOH.", "solution": "Pentan-3-one would not give iodoform; pentanal would reduce Tollens."}]}], "exercises": [{"number": "8.1", "section": "Exercises", "conceptIdx": 3, "page": 29, "printPage": 255, "question": "What is meant by the following terms? Give an example of the reaction in each case.\n(i) Cyanohydrin (ii) Acetal (iii) Semicarbazone (iv) Aldol (v) Hemiacetal (vi) Oxime (vii) Ketal (viii) Imine (ix) 2,4-DNP-derivative (x) Schiff’s base\n(Reprint prints two items as (vii); imine is the missing (viii).)", "steps": ["(i) R₂C(OH)CN from C=O + HCN, e.g. CH₃CHO → CH₃CH(OH)CN.", "(ii) RCH(OR′)₂ from aldehyde + 2 R′OH / HCl. (iii) C=NNHCONH₂ from C=O + semicarbazide.", "(iv) β-hydroxy carbonyl from aldol, e.g. 3-hydroxybutanal. (v) RCH(OH)OR′ (one OR, one OH).", "(vi) C=NOH from C=O + NH₂OH. (vii) ketal R₂C(OR′)₂ or ethylene ketal.", "(viii) C=NR from C=O + RNH₂. (ix) 2,4-dinitrophenylhydrazone (orange/yellow).", "(x) Schiff base: imine from RCHO + ArNH₂, e.g. PhCH=NPh."], "answer": "Definitions and one example each as in steps; acetal vs hemiacetal distinguished by two OR vs one OR + OH."}, {"number": "8.2", "section": "Exercises", "conceptIdx": 0, "page": 29, "printPage": 255, "question": "Name the following compounds according to IUPAC system of nomenclature:\n(i) CH₃CH(CH₃)CH₂CH₂CHO\n(ii) CH₃CH₂COCH(C₂H₅)CH₂CH₂Cl\n(iii) CH₃CH=CHCHO\n(iv) CH₃COCH₂COCH₃\n(v) CH₃CH(CH₃)CH₂C(CH₃)₂COCH₃\n(vi) (CH₃)₃CCH₂COOH\n(vii) OHCC₆H₄CHO-p", "steps": ["(i) 4-methylpentanal. (ii) 6-chloro-4-ethylhexan-3-one.", "(iii) but-2-enal. (iv) pentane-2,4-dione.", "(v) 3,3,5-trimethylhexan-2-one. (vi) 3,3-dimethylbutanoic acid.", "(vii) benzene-1,4-dicarbaldehyde."], "answer": "(i) 4-methylpentanal; (ii) 6-chloro-4-ethylhexan-3-one; (iii) but-2-enal; (iv) pentane-2,4-dione; (v) 3,3,5-trimethylhexan-2-one; (vi) 3,3-dimethylbutanoic acid; (vii) benzene-1,4-dicarbaldehyde."}, {"number": "8.3", "section": "Exercises", "conceptIdx": 0, "page": 29, "printPage": 255, "question": "Draw the structures of the following compounds.\n(i) 3-Methylbutanal (ii) p-Nitropropiophenone (iii) p-Methylbenzaldehyde (iv) 4-Methylpent-3-en-2-one (v) 4-Chloropentan-2-one (vi) 3-Bromo-4-phenylpentanoic acid (vii) p,p′-Dihydroxybenzophenone (viii) Hex-2-en-4-ynoic acid", "steps": ["Translate each name: (i) (CH₃)₂CHCH₂CHO. (ii) p-O₂NC₆H₄COCH₂CH₃.", "(iii) p-CH₃C₆H₄CHO. (iv) mesityl oxide (CH₃)₂C=CHCOCH₃.", "(v) CH₃COCH₂CHClCH₃. (vi) CH₃CH(Ph)CHBrCH₂COOH.", "(vii) (p-HOC₆H₄)₂C=O. (viii) CH₃C≡CCH=CHCOOH."], "answer": "Structures as named; (iv) is Table 8.1 mesityl oxide."}, {"number": "8.4", "section": "Exercises", "conceptIdx": 0, "page": 29, "printPage": 255, "question": "Write the IUPAC names of the following ketones and aldehydes. Wherever possible, give also common names.\n(i) CH₃CO(CH₂)₄CH₃ (ii) CH₃CH₂CHBrCH₂CH(CH₃)CHO (iii) CH₃(CH₂)₅CHO (iv) Ph–CH=CH–CHO (v) cyclopentanecarbaldehyde (structure on p.29) (vi) PhCOPh", "steps": ["(i) heptan-2-one (methyl pentyl ketone).", "(ii) 4-bromo-2-methylhexanal.", "(iii) heptanal (enanthic aldehyde / n-heptanal).", "(iv) 3-phenylprop-2-enal (cinnamaldehyde).", "(v) cyclopentanecarbaldehyde. (vi) diphenylmethanone (benzophenone)."], "answer": "(i) heptan-2-one; (ii) 4-bromo-2-methylhexanal; (iii) heptanal; (iv) 3-phenylprop-2-enal; (v) cyclopentanecarbaldehyde; (vi) diphenylmethanone."}, {"number": "8.5", "section": "Exercises", "conceptIdx": 3, "page": 29, "printPage": 255, "question": "Draw structures of the following derivatives.\n(i) The 2,4-dinitrophenylhydrazone of benzaldehyde\n(ii) Cyclopropanone oxime\n(iii) Acetaldehydedimethylacetal\n(iv) The semicarbazone of cyclobutanone\n(v) The ethylene ketal of hexan-3-one\n(vi) The methyl hemiacetal of formaldehyde", "steps": ["Replace C=O by C=N–Z or by C(OR)₂ as named.", "(i) PhCH=NNHC₆H₃(NO₂)₂-2,4. (ii) cyclopropanone C=NOH.", "(iii) CH₃CH(OCH₃)₂. (iv) cyclobutanone C=NNHCONH₂.", "(v) 1,3-dioxolane on C-3 of hexane. (vi) HOCH₂OCH₃."], "answer": "Structures as named; hemiacetal of HCHO is HOCH₂OCH₃."}, {"number": "8.6", "section": "Exercises", "conceptIdx": 3, "page": 30, "printPage": 256, "question": "Predict the products formed when cyclohexanecarbaldehyde reacts with following reagents.\n(i) PhMgBr and then H₃O⁺\n(ii) Tollens’ reagent\n(iii) Semicarbazide and weak acid\n(iv) Excess ethanol and acid\n(v) Zinc amalgam and dilute hydrochloric acid", "steps": ["(i) secondary alcohol PhCH(OH)C₆H₁₁. (ii) cyclohexanecarboxylic acid (silver mirror).", "(iii) semicarbazone. (iv) diethyl acetal.", "(v) Clemmensen: methylcyclohexane (CHO → CH₃)."], "answer": "(i) cyclohexyl(phenyl)methanol; (ii) cyclohexanecarboxylic acid; (iii) semicarbazone; (iv) acetal; (v) methylcyclohexane."}, {"number": "8.7", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "Which of the following compounds would undergo aldol condensation, which the Cannizzaro reaction and which neither? Write the structures of the expected products of aldol condensation and Cannizzaro reaction.\n(i) Methanal (ii) 2-Methylpentanal (iii) Benzaldehyde (iv) Benzophenone (v) Cyclohexanone (vi) 1-Phenylpropanone (vii) Phenylacetaldehyde (viii) Butan-1-ol (ix) 2,2-Dimethylbutanal", "steps": ["Aldol (has α-H): (ii)(v)(vi)(vii). Cannizzaro (aldehyde, no α-H): (i)(iii)(ix). Neither: (iv) ketone no α-H usefully, and (viii) alcohol.", "Aldol products: the β-hydroxy carbonyls / enals as usual. Cannizzaro: HCOO⁻ + CH₃OH from methanal; PhCH₂OH + PhCOO⁻; 2,2-dimethylbutanol + 2,2-dimethylbutanoate."], "answer": "Aldol: (ii)(v)(vi)(vii). Cannizzaro: (i)(iii)(ix). Neither: (iv)(viii)."}, {"number": "8.8", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "How will you convert ethanal into the following compounds?\n(i) Butane-1,3-diol (ii) But-2-enal (iii) But-2-enoic acid", "steps": ["Dil. NaOH: 2 CH₃CHO → 3-hydroxybutanal (aldol).", "(i) reduce the aldol (NaBH₄) → butane-1,3-diol.", "(ii) heat the aldol → but-2-enal.", "(iii) oxidise but-2-enal (Tollens / mild) → but-2-enoic acid."], "answer": "Aldol of ethanal, then reduce / dehydrate / oxidise the enal."}, {"number": "8.9", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "Write structural formulas and names of four possible aldol condensation products from propanal and butanal. In each case, indicate which aldehyde acts as nucleophile and which as electrophile.", "steps": ["Self: 2 propanal → 2-methylpent-2-enal (after dehydration naming) / 3-hydroxy-2-methylpentanal.", "Self: 2 butanal → 2-ethylhex-2-enal / 3-hydroxy-2-ethylhexanal.", "Cross: propanal enolate + butanal; butanal enolate + propanal — two mixed aldols.", "Name each β-hydroxy aldehyde and state Nu (enolate) vs electrophile (carbonyl)."], "answer": "Four aldols: two self (propanal, butanal) and two crossed; Nu = the enolate partner."}, {"number": "8.10", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "An organic compound with the molecular formula C₉H₁₀O forms 2,4-DNP derivative, reduces Tollens’ reagent and undergoes Cannizzaro reaction. On vigorous oxidation, it gives 1,2-benzenedicarboxylic acid. Identify the compound.", "steps": ["2,4-DNP: carbonyl. Tollens: aldehyde. Cannizzaro: no α-H → ArCHO.", "Phthalic acid: ortho side-chain on benzene that oxidises to COOH.", "C₉H₁₀O = 2-ethylbenzaldehyde (ethyl is the oxidisable ortho side chain)."], "answer": "2-Ethylbenzaldehyde."}, {"number": "8.11", "section": "Exercises", "conceptIdx": 5, "page": 30, "printPage": 256, "question": "An organic compound (A) (molecular formula C₈H₁₆O₂) was hydrolysed with dilute sulphuric acid to give a carboxylic acid (B) and an alcohol (C). Oxidation of (C) with chromic acid produced (B). (C) on dehydration gives but-1-ene. Write equations for the reactions involved.", "steps": ["C → but-1-ene ⇒ C is butan-1-ol (1°).", "C oxidises to B ⇒ B is butanoic acid.", "A is the ester of B with C: CH₃CH₂CH₂COOCH₂CH₂CH₂CH₃ (butyl butanoate).", "Write hydrolysis, oxidation, dehydration equations."], "answer": "A = butyl butanoate; B = butanoic acid; C = butan-1-ol."}, {"number": "8.12", "section": "Exercises", "conceptIdx": 3, "page": 30, "printPage": 256, "question": "Arrange the following compounds in increasing order of their property as indicated:\n(i) Acetaldehyde, Acetone, Di-tert-butyl ketone, Methyl tert-butyl ketone (reactivity towards HCN)\n(ii) CH₃CH₂CH(Br)COOH, CH₃CH(Br)CH₂COOH, (CH₃)₂CHCOOH, CH₃CH₂CH₂COOH (acid strength)\n(iii) Benzoic acid, 4-Nitrobenzoic acid, 3,4-Dinitrobenzoic acid, 4-Methoxybenzoic acid (acid strength)", "steps": ["(i) steric + electronic: t-Bu₂CO < t-BuCOMe < Me₂CO < MeCHO.", "(ii) +I and distance of Br: (CH₃)₂CHCOOH < CH₃CH₂CH₂COOH < CH₃CH(Br)CH₂COOH < CH₃CH₂CH(Br)COOH.", "(iii) EWG lower pKa: 4-MeO-C₆H₄COOH < PhCOOH < 4-O₂N-C₆H₄COOH < 3,4-(O₂N)₂C₆H₃COOH."], "answer": "(i) di-tert-butyl ketone < methyl tert-butyl ketone < acetone < acetaldehyde; (ii) (CH₃)₂CHCOOH < butanoic < β-bromo < α-bromo; (iii) 4-methoxybenzoic < benzoic < 4-nitrobenzoic < 3,4-dinitrobenzoic."}, {"number": "8.13", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "Give simple chemical tests to distinguish between the following pairs of compounds.\n(i) Propanal and Propanone (ii) Acetophenone and Benzophenone (iii) Phenol and Benzoic acid (iv) Benzoic acid and Ethyl benzoate (v) Pentan-2-one and Pentan-3-one (vi) Benzaldehyde and Acetophenone (vii) Ethanal and Propanal", "steps": ["(i) Tollens / Fehling: only propanal. (ii) iodoform: only acetophenone.", "(iii) NaHCO₃: only benzoic acid evolves CO₂; FeCl₃: only phenol violet.", "(iv) NaHCO₃: only the acid. (v) iodoform: only pentan-2-one.", "(vi) Tollens: only benzaldehyde. (vii) iodoform: only ethanal."], "answer": "Tollens/Fehling for aldehydes; iodoform for CH₃CO– / CH₃CH(OH)–; NaHCO₃ for carboxylic acids; FeCl₃ for phenol."}, {"number": "8.14", "section": "Exercises", "conceptIdx": 5, "page": 30, "printPage": 256, "question": "How will you prepare the following compounds from benzene? You may use any inorganic reagent and any organic reagent having not more than one carbon atom.\n(i) Methyl benzoate (ii) m-Nitrobenzoic acid (iii) p-Nitrobenzoic acid (iv) Phenylacetic acid (v) p-Nitrobenzaldehyde.", "steps": ["(i) F–C CH₃Cl → toluene; KMnO₄ → PhCOOH; MeOH/H⁺ → PhCOOMe.", "(ii) F–C acyl or toluene → PhCOOH then nitration (meta).", "(iii) nitration of benzene then F–C CH₃Cl (o/p) then side-chain ox of p-nitrotoluene — or toluene → p-nitrotoluene → p-nitrobenzoic.", "(iv) PhH → PhCH₃ → PhCH₂Cl (Cl₂/hν) → PhCH₂CN → PhCH₂COOH.", "(v) p-nitrotoluene + CrO₂Cl₂ (Étard) → p-nitrobenzaldehyde."], "answer": "Standard C₁-only sequences from benzene as in steps."}, {"number": "8.15", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "How will you bring about the following conversions in not more than two steps?\n(i) Propanone to Propene (ii) Benzoic acid to Benzaldehyde (iii) Ethanol to 3-Hydroxybutanal (iv) Benzene to m-Nitroacetophenone (v) Benzaldehyde to Benzophenone (vi) Bromobenzene to 1-Phenylethanol (vii) Benzaldehyde to 3-Phenylpropan-1-ol (viii) Benzaldehyde to α-Hydroxyphenylacetic acid (ix) Benzoic acid to m-Nitrobenzyl alcohol", "steps": ["(i) NaBH₄ → propan-2-ol; dehydrate → propene. Or Clemmensen then cracking? Two steps: reduce then dehydrate.", "(ii) SOCl₂ → PhCOCl; Rosenmund → PhCHO. (iii) oxidise EtOH → CH₃CHO; dil. NaOH aldol.", "(iv) F–C acetyl → PhCOCH₃; nitrate (meta). (v) PhCHO → PhCOOH (ox) then? Better: PhCHO + PhMgBr → Ph₂CHOH; oxidise → Ph₂CO.", "(vi) PhBr → PhMgBr; CH₃CHO then H₃O⁺. (vii) aldol with CH₃CHO then reduce (or Claisen–Schmidt with acetone? 3-phenylpropan-1-ol is PhCH=CHCHO reduce fully: crossed aldol PhCHO + CH₃CHO → cinnamaldehyde; H₂/Ni → PhCH₂CH₂CH₂OH.", "(viii) PhCHO + HCN → cyanohydrin; hydrolyse → PhCH(OH)COOH.", "(ix) nitrate (meta) → m-O₂NC₆H₄COOH; B₂H₆ / LiAlH₄ → m-O₂NC₆H₄CH₂OH."], "answer": "Two-step sequences as listed; (viii) cyanohydrin hydrolysis; (ii) Rosenmund."}, {"number": "8.16", "section": "Exercises", "conceptIdx": 4, "page": 30, "printPage": 256, "question": "Describe the following:\n(i) Acetylation (ii) Cannizzaro reaction (iii) Cross aldol condensation (iv) Decarboxylation", "steps": ["(i) Introduction of CH₃CO– (acid chloride/anhydride + pyridine or acid catalyst), e.g. aspirin.", "(ii) 2 RCHO (no α-H) + conc. NaOH → RCH₂OH + RCOO⁻.", "(iii) aldol between two different carbonyls; one partner often has no α-H (PhCHO, HCHO) to limit products.", "(iv) RCOONa + soda lime, heat → RH + Na₂CO₃ (also Kolbe electrolysis)."], "answer": "Named-reaction summaries as in steps."}, {"number": "8.17", "section": "Exercises", "conceptIdx": 1, "page": 31, "printPage": 257, "question": "Complete each synthesis by giving missing starting material, reagent or products (structures on zoom p.31).\n(i) PhCH₂CH₃ + KMnO₄/KOH heat → PhCOOH\n(ii) phthalic acid + SOCl₂ heat → phthalic anhydride\n(iii) PhCHO + H₂NCONHNH₂ → benzaldehyde semicarbazone\n(iv) benzene → benzophenone (F–C PhCOCl/AlCl₃)\n(v) 4-oxocyclohexanecarbaldehyde + Tollens → 4-oxocyclohexanecarboxylic acid (ketone untouched)\n(vi) o-OHC–C₆H₄COOH + NaCN/HCl → cyanohydrin of the aldehyde\n(vii) PhCHO + CH₃CH₂CHO, dil. NaOH, Δ → mixed enals (crossed aldol)\n(viii) CH₃COCH₂CO₂Et + (i) NaBH₄ (ii) H⁺ → the ketone is reduced (ester less so with NaBH₄)\n(ix) cyclohexanol + CrO₃ → cyclohexanone\n(x) methylenecyclohexane → cyclohexanecarbaldehyde (hydroboration–oxidation of the =CH₂? or ozonolysis would give cyclohexanone — hydroboration of methylenecyclohexane gives cyclohexylmethanol; formyl via ozonolysis of a vinyl ether? Reprint (x): =CH₂ to CHO is hydroboration–CO / ozonolysis of a 1,1-disubstituted? Standard: hydroformylation or (i) BH₃ (ii) PCC of the 1° alcohol. Many keys use ozonolysis of an enol ether. Common answer: hydroboration–oxidation then PCC: methylenecyclohexane → cyclohexylmethanol → cyclohexanecarbaldehyde.\n(xi) ozonolysis of 1,1'-bi(cyclohexylidene) or cyclohexene dimer analogue → two cyclohexanone.", "steps": ["Read each arrow on zoom p.31; apply Unit 8 reagents (KMnO₄ side-chain ox, SOCl₂ anhydride, semicarbazide, F–C, Tollens chemoselective for CHO vs ketone, cyanohydrin, crossed aldol, NaBH₄, CrO₃, ozonolysis).", "(x) methylenecyclohexane → cyclohexylmethanol (BH₃/H₂O₂) → PCC → cyclohexanecarbaldehyde.", "(xi) a symmetrical tetrasubstituted alkene that ozonolyses to two cyclohexanone."], "answer": "Products/reagents as on zoom p.31; (i) benzoic acid; (ii) phthalic anhydride; (iii) semicarbazone; (iv) PhCOPh; (v) acid, ketone intact; (ix) cyclohexanone; (x) cyclohexanecarbaldehyde; (xi) cyclohexanone (two equivalents)."}, {"number": "8.18", "section": "Exercises", "conceptIdx": 3, "page": 31, "printPage": 257, "question": "Give plausible explanation for each of the following:\n(i) Cyclohexanone forms cyanohydrin in good yield but 2,2,6-trimethylcyclohexanone does not.\n(ii) There are two –NH₂ groups in semicarbazide. However, only one is involved in the formation of semicarbazones.\n(iii) During the preparation of esters from a carboxylic acid and an alcohol in the presence of an acid catalyst, the water or the ester should be removed as soon as it is formed.", "steps": ["(i) Two methyls flanking C=O sterically block Nu (CN⁻) approach — same lesson as Ex 8.12(i).", "(ii) The NH₂ attached to C=O is resonance-conjugated (amide-like) and not nucleophilic; the terminal NH₂ attacks.", "(iii) Fischer esterification is an equilibrium; removing H₂O or ester shifts it to products (Le Chatelier / Ex 8.18)."], "answer": "Steric hindrance; resonance-deactivated amide NH₂; remove water to drive Fischer."}, {"number": "8.19", "section": "Exercises", "conceptIdx": 4, "page": 31, "printPage": 257, "question": "An organic compound contains 69.77% carbon, 11.63% hydrogen and rest oxygen. The molecular mass of the compound is 86. It does not reduce Tollens’ reagent but forms an addition compound with sodium hydrogensulphite and give positive iodoform test. On vigorous oxidation it gives ethanoic and propanoic acid. Write the possible structure of the compound.", "steps": ["%O = 18.60. 100 g: C 5.81 mol, H 11.63, O 1.16 → C₅H₁₀O. MM 86 checks (60+10+16).", "No Tollens, NaHSO₃ + → ketone (not aldehyde). Iodoform → methyl ketone. Ox to AcOH + EtCOOH → pentan-2-one (not pentan-3-one)."], "answer": "Pentan-2-one, CH₃COCH₂CH₂CH₃. Check: 5×12/86 = 69.77% C."}, {"number": "8.20", "section": "Exercises", "conceptIdx": 6, "page": 31, "printPage": 257, "question": "Although phenoxide ion has more number of resonating structures than carboxylate ion, carboxylic acid is a stronger acid than phenol. Why?", "steps": ["Carboxylate: two equivalent structures, negative charge on electronegative oxygen atoms — highly stabilised.", "Phenoxide: more structures, but they place charge on less electronegative carbon; they are non-equivalent and less important.", "Greater stabilisation of the conjugate base → carboxylic acid is stronger (pKa ~5 vs 10)."], "answer": "Equivalent O-centred carboxylate resonance outweighs the extra C-centred phenoxide forms (Ex 8.20)."}]};
+window.CHAPTER = {"code": "lech203", "chapterNumber": "08", "book_name": "Chemistry Part 2", "title": "Aldehydes, Ketones and Carboxylic Acids", "subtitle": "NCERT Class 12 Chemistry Part 2, Chapter 8", "edition": "NCERT Chemistry Part 2, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lech203.pdf", "page_start": 227, "page_end": 258, "lessons": [{"id": "carbonyl-nom", "nav": "Carbonyl nomenclature", "title": "How does Table 8.1 name aldehydes and ketones?", "deck": "Alkanal / alkanone. CHO is C-1. Common names vs IUPAC. Planar polar C=O (sp²) is the functional heart of the unit.", "minutes": 10, "section": "8.1", "pages": [1, 5], "print": "227–231", "sim": "carbnom", "simTitle": "Table 8.1 names and polar C=O", "quick": ["Aldehydes have –CHO; ketones have C=O flanked by two carbons. IUPAC: alkanal (CHO is C-1) and alkanone (lowest locant to C=O). Aromatic aldehydes: benzenecarbaldehyde or the retained benzaldehyde. Table 8.1 (zoom p.04): formaldehyde = methanal; acetaldehyde = ethanal; acrolein = prop-2-enal; mesityl oxide = 4-methylpent-3-en-2-one; phthalaldehyde = benzene-1,2-dicarbaldehyde.", "The carbonyl carbon is sp², trigonal planar, C<sup>δ+</sup>=O<sup>δ−</sup>. That electrophilic carbon is why the characteristic reaction is nucleophilic addition, not electrophilic addition as in alkenes.", "Intext 8.1 structures (answers p.31): 2-hydroxypropanal, 3-oxobutanal flavour, cyclopentanecarbaldehyde with OH, etc. — always give the carbonyl the lowest locant allowed by the suffix."], "formulas": [{"label": "Alkanal / alkanone", "html": "RCHO (C-1 = CHO) &nbsp;|&nbsp; RCOR′ (lowest C=O locant)", "cond": "Table 8.1"}, {"label": "Carbonyl geometry", "html": "sp², planar, C<sup>δ+</sup>=O<sup>δ−</sup>", "cond": "drives nucleophilic addition"}], "deeper": "When both aldehyde and ketone are present, aldehyde takes the suffix and the ketone becomes oxo. Dialdehydes are alkanedials; the reprint names benzene-1,4-dicarbaldehyde for terephthalaldehyde.", "worked": {"title": "Table 8.1 spot-check", "problem": "Give the IUPAC names of isobutyraldehyde, valeraldehyde, methyl n-propyl ketone and α-methylcyclohexanone.", "given": "Table 8.1 common names for the aldehydes and ketones.", "steps": ["Isobutyraldehyde: four-carbon chain with CHO at C-1 and methyl at C-2 → 2-methylpropanal.", "Valeraldehyde: five-carbon straight chain with CHO at C-1 → pentanal.", "Methyl n-propyl ketone: CH₃COCH₂CH₂CH₃ → pentan-2-one (C=O gets locant 2).", "α-Methylcyclohexanone: cyclohexanone with a methyl at C-2 → 2-methylcyclohexanone."], "answer": "2-Methylpropanal; pentanal; pentan-2-one; 2-methylcyclohexanone."}, "prediction": {"prompt": "IUPAC name of (CH₃)₂C=CHCOCH₃ (mesityl oxide) in Table 8.1 is", "options": ["4-methylpent-3-en-2-one", "2-methylpent-2-en-4-one", "4-methylpentan-2-one"], "answer": 0, "explanation": "Table 8.1: mesityl oxide = 4-methylpent-3-en-2-one. Enone numbering gives C=O the lower locant (2), then the double bond (3)."}, "connect": [{"title": "Formalin in the biology lab", "text": "40% aqueous methanal (formalin) preserves specimens — the smallest aldehyde, still the most reactive toward nucleophiles."}, {"title": "Cinnamaldehyde: cinnamon's flavour", "text": "PhCH=CHCHO is made by a crossed aldol of benzaldehyde with ethanal, and gives cinnamon its smell and taste."}, {"title": "Wow: benzaldehyde smells of bitter almonds", "text": "Benzenecarbaldehyde (PhCHO) is the simplest aromatic aldehyde — the bitter-almond note behind flavours and perfumery, and the classic Cannizzaro substrate because it has no α-H.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "JMsqu236bZo", "title": "Nomenclature of aldehydes and ketones | Aldehydes and ketones | Organic chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Give IUPAC names of HCHO, CH₃CHO, PhCHO, CH₃COCH₃ and mesityl oxide from Table 8.1.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many α-hydrogen atoms does ethanal (CH₃CHO) have?", "answer": 3, "tolerance": 0.01, "unit": "H atoms", "hint": "α-H atoms sit on the carbon next to the carbonyl carbon.", "solution": "The CH₃ carbon adjacent to –CHO carries three hydrogens."}, {"level": "Medium", "type": "mcq", "prompt": "The carbonyl carbon is", "options": ["sp³ tetrahedral", "sp² planar with Cδ⁺", "sp linear"], "answer": 1, "hint": "§8.1.", "solution": "Planar sp²; oxygen pulls electron density away from carbon.", "wrong": ["The carbonyl carbon is sp², not sp³.", "", "Only sp carbon is linear."]}, {"level": "Hard", "type": "mcq", "prompt": "Benzene-1,2-dicarbaldehyde is the IUPAC name of", "options": ["terephthalaldehyde", "phthalaldehyde", "isophthalaldehyde"], "answer": 1, "hint": "Table 8.1.", "solution": "The ortho dialdehyde is phthalaldehyde; para is terephthalaldehyde.", "wrong": ["Terephthalaldehyde is the para (1,4) isomer.", "", "Isophthalaldehyde is the meta (1,3) isomer."]}], "group": "01 / NAMES & GEOMETRY", "watch": "Click through Table 8.1. The readout shows the common and IUPAC names; the verdict explains why the planar Cδ⁺=O group reacts with nucleophiles."}, {"id": "prep-aldket", "nav": "Preparation of aldehydes & ketones", "title": "How do we stop oxidation at the aldehyde?", "deck": "PCC / Rosenmund / Stephen / Étard / Gattermann–Koch. Friedel–Crafts acylation. Ozonolysis. Dialkylcadmium.", "minutes": 12, "section": "8.2", "pages": [5, 9], "print": "231–235", "sim": "prepald", "simTitle": "Aldehyde and ketone routes", "quick": ["1° alcohols → aldehydes with PCC or catalytic dehydrogenation (Cu, 573 K); strong Cr(VI)/Mn(VII) go on to acids. 2° alcohols → ketones. Rosenmund: RCOCl + H₂/Pd–BaSO₄ → RCHO. Stephen: RCN + SnCl₂/HCl then H₃O⁺ → RCHO.", "Aromatic aldehydes: Étard (PhCH₃ + CrO₂Cl₂), CrO₃/Ac₂O, Gattermann–Koch (CO/HCl/AlCl₃/CuCl). Ketones: Friedel–Crafts acylation of arenes; RCOCl + R′₂Cd; hydration of alkynes (Hg²⁺); ozonolysis of alkenes.", "Example 8.1 (p.08) maps reagents onto products — always ask whether the carbon of the carbonyl was already at that oxidation level or must be created."], "formulas": [{"label": "Rosenmund", "html": "RCOCl + H₂ / Pd–BaSO₄ → RCHO", "cond": "poisoned catalyst stops at aldehyde"}, {"label": "Étard", "html": "ArCH₃ + CrO₂Cl₂ → ArCHO", "cond": "side-chain stopped at aldehyde"}, {"label": "Friedel–Crafts acyl", "html": "ArH + RCOCl / AlCl₃ → ArCOR", "cond": "best aromatic ketone route"}], "deeper": "BaSO₄ poisons Pd so H₂ does not reduce the aldehyde further. Gattermann–Koch is formylation of benzene (no F–C formyl chloride exists as a reagent bottle). Ozonolysis of an unsymmetrical alkene gives two different carbonyls — Ex 8.17(xi) is the reverse puzzle.", "worked": {"title": "Controlled vs strong oxidation", "problem": "Convert propan-1-ol to propanal and separately to propanoic acid.", "given": "One substrate, two oxidation levels.", "steps": ["Propanal: use PCC, or pass the alcohol vapour over copper at 573 K (dehydrogenation) — both stop at the aldehyde.", "Propanoic acid: use a strong oxidant — alkaline KMnO₄ or acidified K₂Cr₂O₇ with heat.", "The difference is the reagent, not the substrate; strong oxidants take the aldehyde on to the acid."], "answer": "PCC (or Cu/573 K) for propanal; alkaline KMnO₄ for propanoic acid."}, "prediction": {"prompt": "Rosenmund reduction of benzoyl chloride yields", "options": ["benzyl alcohol", "benzaldehyde", "benzoic acid"], "answer": 1, "explanation": "Pd–BaSO₄ hydrogenates RCOCl to RCHO and stops. Further reduction would need a different catalyst/conditions."}, "connect": [{"title": "Friedel–Crafts in the dye industry", "text": "Aromatic ketones from F–C acylation are intermediates for dyes and pharmaceuticals; acetophenone is the prototype."}, {"title": "Rosenmund's poisoned catalyst", "text": "Pd on BaSO₄ is deliberately poisoned so hydrogenation of RCOCl stops at RCHO instead of running on to the alcohol."}, {"title": "Wow: there is no formyl chloride bottle", "text": "Gattermann–Koch generates the formyl electrophile in situ from CO and HCl with AlCl₃/CuCl — the only practical way to put –CHO directly on benzene.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "Lushsh1Z8bY", "title": "Preparation of aldehydes | Aldehydes, ketones & carb.acids | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "List four ways to make an aldehyde that do not over-oxidise, and the best route to ArCOR.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Using C = 12, H = 1 and O = 16, calculate the molar mass of ethanal, C₂H₄O.", "answer": 44, "tolerance": 0.01, "unit": "g/mol", "hint": "Count 2 C, 4 H and 1 O.", "solution": "2 × 12 + 4 × 1 + 16 = 44 g/mol."}, {"level": "Medium", "type": "mcq", "prompt": "Stephen reduction starts from", "options": ["acid chloride", "nitrile", "alkene"], "answer": 1, "hint": "RCN + SnCl₂/HCl.", "solution": "Hydrolysis of the imine salt gives RCHO.", "wrong": ["Acid chloride is the Rosenmund substrate.", "", "Alkenes are not reduced to aldehydes by Stephen's method."]}, {"level": "Hard", "type": "mcq", "prompt": "Gattermann–Koch formylation uses", "options": ["CHCl₃/NaOH", "CO + HCl + AlCl₃/CuCl", "CrO₂Cl₂"], "answer": 1, "hint": "§8.2 aromatic aldehydes.", "solution": "The formyl electrophile is generated in situ from CO and HCl.", "wrong": ["CHCl₃/NaOH is Reimer–Tiemann on phenol.", "", "CrO₂Cl₂ is the Étard reagent."]}], "group": "02 / ROUTES TO C=O", "watch": "Pick a route and read the reagents above the arrow. Rosenmund and Étard stop at the aldehyde; strong oxidation is the trap to avoid."}, {"id": "phys-carb", "nav": "Physical properties of C=O", "title": "Why is ethanal’s boiling point between ether and ethanol?", "deck": "Polar C=O raises b.p. above hydrocarbons/ethers but below H-bonding alcohols. Lower members water-soluble. Intext 8.3 order.", "minutes": 8, "section": "8.3", "pages": [9, 10], "print": "235–236", "sim": "physcarb", "simTitle": "Boiling-point ladder (Intext 8.3)", "quick": ["Aldehydes and ketones are polar, so they boil higher than hydrocarbons and ethers of similar mass, but they cannot donate hydrogen bonds, so they boil below alcohols. Intext 8.3 (answers p.32): CH₃CH₂CH₃ < CH₃OCH₃ < CH₃CHO < CH₃CH₂OH.", "Lower members are water-soluble (carbonyl oxygen accepts H-bonds from water). Higher members have a large hydrophobic chain and are not. They dissolve in common organic solvents.", "Carboxylic acids dimerise through two H-bonds and boil even higher — that story waits until §8.8."], "formulas": [{"label": "Intext 8.3 order", "html": "CH₃CH₂CH₃ &lt; CH₃OCH₃ &lt; CH₃CHO &lt; CH₃CH₂OH", "cond": "answers p.32"}, {"label": "Solubility", "html": "lower members mix with water; higher do not", "cond": "H-bond acceptor vs hydrophobic chain"}], "deeper": "Among isomeric carbonyls, branching slightly lowers b.p. Ketones often boil a little higher than isomeric aldehydes because of the extra alkyl polarisability.", "worked": {"title": "Intext 8.3 and Example 8.2", "problem": "Order CH₃CHO, CH₃CH₂OH, CH₃OCH₃ and CH₃CH₂CH₃ by increasing boiling point.", "given": "The four compounds are isomers or have molecular masses in the range 44–46.", "steps": ["CH₃CH₂CH₃ has only van der Waals forces — lowest boiling point.", "CH₃OCH₃ is weakly polar (dipole–dipole) — next.", "CH₃CHO is more polar (stronger dipole–dipole) — third.", "CH₃CH₂OH forms intermolecular hydrogen bonds — highest. So CH₃CH₂CH₃ < CH₃OCH₃ < CH₃CHO < CH₃CH₂OH."], "answer": "propane < methoxymethane < ethanal < ethanol (Intext 8.3 answer, p. 256)."}, "prediction": {"prompt": "Which boils highest: propane, methoxymethane, ethanal, ethanol?", "options": ["ethanal, because C=O is the most polar", "ethanol, because of intermolecular H-bonds", "propane, because it is smallest"], "answer": 1, "explanation": "Intext 8.3: H-bonding wins. Carbonyl polarity is in the middle of the ladder."}, "connect": [{"title": "Acetone as a nail-paint solvent", "text": "Propanone mixes with water and with organics — a polar carbonyl with a short chain, exactly the §8.3 solubility story."}, {"title": "The §8.3 boiling-point ladder", "text": "p. 235 ranks n-butane 273 K < methoxyethane 281 K < propanal 322 K < acetone 329 K < propan-1-ol 370 K for molecular masses 58–60."}, {"title": "Wow: higher carbonyls smell of fruits and flowers", "text": "The lower aldehydes are sharp and pungent, but as the chain grows the odour becomes fragrant — which is why natural aldehydes and ketones are used in perfumes and flavourings.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "4lbVBMLZ1jQ", "title": "Physical properties of aldehydes and ketones | Organic chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Recite the Intext 8.3 boiling-point order and the reason for each step.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Propan-1-ol boils at 370 K and propanal at 322 K. By how many kelvin does the alcohol boil above the aldehyde?", "answer": 48, "tolerance": 0.05, "unit": "K", "hint": "Use the molecular-mass 58 pair from §8.3, p. 235.", "solution": "370 K − 322 K = 48 K; only the alcohol donates O–H···O hydrogen bonds."}, {"level": "Medium", "type": "mcq", "prompt": "Intext 8.3 lowest boiling compound is", "options": ["CH₃CHO", "CH₃CH₂OH", "CH₃CH₂CH₃"], "answer": 2, "hint": "Answers p.32.", "solution": "Propane has only weak van der Waals forces.", "wrong": ["Ethanal is polar (dipole–dipole) and boils above the alkane.", "Ethanol is the highest (H-bonds).", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Higher aldehydes are insoluble in water because", "options": ["C=O becomes non-polar", "the hydrophobic alkyl chain dominates", "they polymerise"], "answer": 1, "hint": "§8.3.", "solution": "The carbonyl can still accept H-bonds, but the long alkyl chain wins.", "wrong": ["C=O stays polar at every chain length.", "", "Aldehyde polymerisation is not the reason for insolubility."]}], "group": "03 / POLARITY & BOILING POINTS", "watch": "Compare the bars for propane, methoxymethane, ethanal and ethanol. The verdict explains the polarity / hydrogen-bond ordering of Intext 8.3."}, {"id": "nucadd", "nav": "Nucleophilic addition", "title": "Attack perpendicular to the plane — sp² becomes sp³", "deck": "Fig. 8.2 mechanism. Reactivity HCHO > RCHO > R₂CO. HCN, NaHSO₃, alcohols (acetal/ketal), NH₂Z, Grignard. Ex 8.3 benzaldehyde vs propanal.", "minutes": 16, "section": "8.4 nuc. add.", "pages": [10, 13], "print": "236–239", "sim": "nucadd", "simTitle": "Nucleophilic addition stepper (Fig. 8.2)", "quick": ["Fig. 8.2 (zoom p.10): the nucleophile attacks the planar carbonyl carbon from a direction approximately perpendicular to the sp² plane. Carbon rehybridises sp² → sp³; a tetrahedral alkoxide intermediate forms (slow step), then is protonated (fast). Net addition of Nu⁻ and H⁺ across C=O.", "Aldehydes are more reactive than ketones: steric (one vs two large groups) and electronic (two alkyl +I groups reduce C<sup>δ+</sup>). Ex 8.3: benzaldehyde is less reactive than propanal — aryl resonance lowers electrophilicity. Ex 8.12(i): acetaldehyde > acetone > methyl tert-butyl ketone > di-tert-butyl ketone toward HCN.", "Examples: HCN (base-catalysed) → cyanohydrin; NaHSO₃ → water-soluble adduct (purification); alcohols / dry HCl → hemiacetal then acetal (ketones give ethylene ketals with glycol); H₂N–Z → C=N–Z (oxime, hydrazone, 2,4-DNP, semicarbazone, Schiff base — Table 8.2); Grignard → alcohols (Unit 7)."], "formulas": [{"label": "Fig. 8.2", "html": "Nu<sup>−</sup> ⊥ plane of C=O → tetrahedral alkoxide → protonate", "cond": "sp² → sp³"}, {"label": "Reactivity", "html": "HCHO &gt; RCHO &gt; RCOR (steric + electronic)", "cond": "aryl CHO less than alkyl CHO"}, {"label": "Cyanohydrin", "html": "C=O + HCN (CN<sup>−</sup> cat.) → R₂C(OH)CN", "cond": "base needed; hindered ketones fail (Ex 8.18)"}, {"label": "2,4-DNP", "html": "C=O + H₂N–NH–C₆H₃(NO₂)₂ → orange/yellow ppt", "cond": "qualitative test"}], "deeper": "Dry HCl protonates the carbonyl oxygen, increasing electrophilicity for acetal/ketal formation. Acetals hydrolyse in aqueous acid — protecting groups. Semicarbazide has two NH₂ groups; only the one not next to C=O is nucleophilic, because the other is resonance-deactivated (Ex 8.18). 2,4-DNP derivatives are used both as a test and as crystalline characterisation.", "worked": {"title": "Example 8.3 (zoom p.10)", "problem": "Is benzaldehyde more or less reactive than propanal in nucleophilic addition? Explain.", "given": "Compare PhCHO with CH₃CH₂CHO.", "steps": ["Draw the resonance form of benzaldehyde that places negative charge on the carbonyl oxygen using the ring π system.", "That resonance donation reduces the positive charge on the carbonyl carbon (Cδ⁺), making it less electrophilic.", "Propanal has no such aryl resonance, so its carbonyl carbon is more electrophilic — benzaldehyde is less reactive."], "answer": "Benzaldehyde is less reactive than propanal because aryl resonance lowers Cδ⁺."}, "prediction": {"prompt": "In Fig. 8.2, as the nucleophile bonds, the carbonyl carbon’s hybridisation", "options": ["stays sp² (electrophilic addition like alkenes)", "changes sp² → sp³ (tetrahedral alkoxide)", "changes sp² → sp"], "answer": 1, "explanation": "The reprint: hybridisation of carbon changes from sp² to sp³ and a tetrahedral alkoxide intermediate is produced."}, "connect": [{"title": "2,4-DNP in the practical exam", "text": "An orange-yellow precipitate is still the Class 12 qualitative test for a carbonyl — Table 8.2 chemistry on a filter paper."}, {"title": "Acetals as protecting groups", "text": "Convert RCHO to an acetal, do chemistry elsewhere, then aqueous acid gives the aldehyde back — §8.4 used as a synthetic tactic."}, {"title": "Wow: cyanohydrins build carbon chains", "text": "Adding HCN across C=O creates a new C–C bond and a carbon with both –OH and –CN; hydrolysis turns the cyanohydrin into an α-hydroxy acid such as mandelic acid.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "6yFzZu_SxHI", "title": "Mechanism of nucleophilic addition reactions | Aldehydes and Ketones | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Draw Fig. 8.2, state the reactivity order, and write equations for cyanohydrin, acetal and 2,4-DNP.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many moles of HCN add to 1 mol of ethanal when the cyanohydrin forms?", "answer": 1, "tolerance": 0.01, "unit": "mol", "hint": "C=O + HCN → cyanohydrin.", "solution": "One HCN adds across each carbonyl group: CH₃CHO + HCN → CH₃CH(OH)CN."}, {"level": "Medium", "type": "mcq", "prompt": "Toward HCN, the most reactive is", "options": ["di-tert-butyl ketone", "acetone", "acetaldehyde"], "answer": 2, "hint": "Ex 8.12(i).", "solution": "Least hindered, most electrophilic carbonyl.", "wrong": ["Two bulky tert-butyl groups block the nucleophile.", "Two methyls hinder and donate electron density.", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Benzaldehyde is less reactive than propanal because", "options": ["it has no α-H", "aryl resonance reduces Cδ⁺ of the carbonyl", "it is more sterically hindered than any ketone"], "answer": 1, "hint": "Example 8.3.", "solution": "Resonance donation from the ring lowers the electrophilicity of the carbonyl carbon.", "wrong": ["Absence of α-H matters for aldol/Cannizzaro, not for this comparison.", "", "Benzaldehyde has only one ring substituent; sterics are not the reason."]}], "group": "04 / NUCLEOPHILIC ADDITION", "watch": "Start Fig. 8.2 and watch the nucleophile approach perpendicular to the plane. The buttons compare reactivity, HCN, acetals and NH₂Z derivatives."}, {"id": "aldol-oxred", "nav": "Aldol, Cannizzaro, redox", "title": "α-Hydrogen decides aldol vs Cannizzaro — silver mirrors decide aldehyde vs ketone", "deck": "Aldol (needs α-H). Cannizzaro (no α-H, conc. alkali). Tollens, Fehling, iodoform. Clemmensen, Wolff–Kishner. Uses of methanal, ethanal, propanone, benzaldehyde.", "minutes": 14, "section": "8.4–8.5", "pages": [13, 18], "print": "239–244", "sim": "aldolox", "simTitle": "Aldol, Cannizzaro and redox tests", "quick": ["α-Hydrogens of carbonyls are acidic. With dilute base, enolate adds to another C=O → β-hydroxy aldehyde/ketone (aldol/ketol); heat dehydrates to the α,β-unsaturated carbonyl. No α-H (HCHO, PhCHO, Me₃CCHO) + conc. NaOH → Cannizzaro disproportionation (alcohol + carboxylate).", "Oxidation: aldehydes reduce Tollens’ reagent ([Ag(NH₃)₂]⁺ → silver mirror) and aliphatic aldehydes reduce Fehling’s (Cu₂O red). Ketones do not. Iodoform: CH₃CO– or CH₃CH(OH)– → yellow CHI₃. Reduction: NaBH₄/LiAlH₄/H₂ → alcohols; Clemmensen (Zn–Hg/HCl) or Wolff–Kishner (NH₂NH₂/KOH) → CH₂.", "Uses: methanal (bakelite, formalin), ethanal (ethanoic acid, polymers), propanone (solvent), benzaldehyde (almond, cinnamaldehyde via aldol)."], "formulas": [{"label": "Aldol", "html": "2 CH₃CHO (dil. NaOH) → CH₃CH(OH)CH₂CHO → CH₃CH=CHCHO", "cond": "needs α-H"}, {"label": "Cannizzaro", "html": "2 PhCHO (conc. NaOH) → PhCH₂OH + PhCOO⁻", "cond": "no α-H"}, {"label": "Tollens", "html": "RCHO + 2 [Ag(NH₃)₂]⁺ + 3 OH⁻ → RCOO⁻ + 2 Ag↓ + 4 NH₃ + 2 H₂O", "cond": "silver mirror"}, {"label": "Clemmensen", "html": "C=O  (Zn–Hg / conc. HCl)  → CH₂", "cond": "acidic; Wolff–Kishner is basic"}], "deeper": "Ex 8.7: methanal, benzaldehyde, 2,2-dimethylbutanal → Cannizzaro; 2-methylpentanal, cyclohexanone, 1-phenylpropanone, phenylacetaldehyde → aldol; benzophenone and butan-1-ol neither. Ex 8.8: ethanal → butane-1,3-diol (reduce the aldol) or but-2-enal (dehydrate) or but-2-enoic acid (oxidise the enal). Crossed aldol is messy unless one partner has no α-H (often HCHO or PhCHO).", "worked": {"title": "Ex 8.10 identification", "problem": "C₉H₁₀O forms 2,4-DNP, reduces Tollens, undergoes Cannizzaro and gives phthalic acid on vigorous oxidation.", "given": "C₉H₁₀O; the four test results.", "steps": ["2,4-DNP positive → carbonyl; Tollens positive → aldehyde; Cannizzaro positive → no α-H, so an aromatic aldehyde.", "Oxidation gives phthalic acid (1,2-benzenedicarboxylic acid), so a second oxidisable side chain is ortho to the aldehyde.", "C₉H₁₀O = C₆H₄(CHO)(C₂H₅), i.e. 2-ethylbenzaldehyde."], "answer": "2-Ethylbenzaldehyde (official key, p. 305)."}, "prediction": {"prompt": "Which reagent distinguishes ethanal from propanone in one test tube?", "options": ["2,4-DNP (both give ppt)", "Tollens’ reagent (only ethanal gives a silver mirror)", "Br₂/CCl₄"], "answer": 1, "explanation": "Both are carbonyls (2,4-DNP +). Only the aldehyde reduces Tollens. Iodoform would be positive for both (methyl carbonyl)."}, "connect": [{"title": "Silver mirror in the school lab", "text": "Tollens' test is still the cleanest aldehyde demonstration — a film of Ag on glass from [Ag(NH₃)₂]⁺."}, {"title": "Bakelite from methanal", "text": "Phenol + methanal (Unit 7 + Unit 8) built the first synthetic plastic: two NCERT chapters, one polymer."}, {"title": "Wow: your cells run the aldol reaction backwards", "text": "The enzyme aldolase in glycolysis cleaves fructose-1,6-bisphosphate by a retro-aldol into two three-carbon fragments — the same C–C bond chemistry you do with dilute NaOH.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "XXi_8jLxN2U", "title": "Aldol reactions | Aldehydes, ketones & carboxylic acids | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State the α-H rule for aldol vs Cannizzaro, write Tollens and Clemmensen, and identify C₉H₁₀O of Ex 8.10.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "In 2 HCHO + NaOH → CH₃OH + HCOONa, how many moles of NaOH are consumed per mole of methanal?", "answer": 0.5, "tolerance": 0.01, "unit": "mol", "hint": "Balance the Cannizzaro equation.", "solution": "One NaOH per two HCHO molecules, i.e. 0.5 mol per mol."}, {"level": "Medium", "type": "mcq", "prompt": "Fehling’s solution is reduced by", "options": ["acetophenone", "benzaldehyde", "propanal"], "answer": 2, "hint": "Aliphatic aldehydes only.", "solution": "Benzaldehyde gives Tollens but not Fehling; ketones give neither.", "wrong": ["Acetophenone is a ketone.", "Benzaldehyde reduces Tollens but not Fehling's solution.", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Clemmensen vs Wolff–Kishner is chosen according to", "options": ["colour of the product", "whether the rest of the molecule is acid-sensitive or base-sensitive", "molecular mass"], "answer": 1, "hint": "Zn–Hg/HCl is acidic; NH₂NH₂/KOH is basic.", "solution": "Protect acid-labile groups with Wolff–Kishner and base-labile groups with Clemmensen.", "wrong": ["Colour is irrelevant.", "", "Molecular mass does not decide the method."]}], "group": "05 / α-HYDROGEN DECIDES", "watch": "Choose aldol, Cannizzaro, Tollens/Fehling or Clemmensen–Wolff–Kishner. The verdict states the α-H rule and each reagent's redox role."}, {"id": "acid-nom-prep", "nav": "Carboxylic acids: names & preparation", "title": "From nitriles, Grignard/CO₂ and side-chain oxidation", "deck": "Table 8.3. –COOH is C-1. Four textbook preparations. Hexanedioic acid → nylon-6,6.", "minutes": 12, "section": "8.6–8.7", "pages": [18, 22], "print": "244–248", "sim": "acidnom", "simTitle": "Acid names and four routes to –COOH", "quick": ["Carboxylic acids: –COOH. IUPAC alkanedioic / benzenecarboxylic. Table 8.3: formic = methanoic; acetic = ethanoic; adipic = hexanedioic (nylon-6,6). The carboxyl carbon is C-1.", "Preparation: (i) oxidation of 1° alcohols, aldehydes, alkenes; (ii) hydrolysis of nitriles; (iii) RMgX + CO₂ then H₃O⁺; (iv) side-chain oxidation of alkylbenzenes with benzylic H (any length → ArCOOH). Example 8.5 maps these onto products.", "Aromatic acids by hydrolysis of –CCl₃ (benzotrichloride) or by carbonation of ArMgX. Ex 8.14 is a benzene-based map using only C₁ organic reagents."], "formulas": [{"label": "Nitrile hydrolysis", "html": "RCN + 2 H₂O (H⁺ or OH⁻ then H⁺) → RCOOH + NH₄⁺", "cond": "adds one carbon if RCN came from RX + KCN"}, {"label": "Grignard carbonation", "html": "RMgX + CO₂ then H₃O⁺ → RCOOH", "cond": "also +1 carbon"}, {"label": "Side-chain ox", "html": "Ar–CH₂R  (KMnO₄)  → ArCOOH", "cond": "needs benzylic H"}], "deeper": "Ex 8.11: C₈H₁₆O₂ hydrolyses to acid B and alcohol C; C oxidises to B; C dehydrates to but-1-ene. Therefore C is butan-1-ol, B is butanoic acid, A is butyl butanoate.", "worked": {"title": "Ex 8.11 ester puzzle", "problem": "Identify A (C₈H₁₆O₂), B and C from the hydrolysis, oxidation and dehydration data.", "given": "A hydrolyses to B + C; C oxidises to B; C dehydrates to but-1-ene.", "steps": ["C dehydrates to but-1-ene, so C is the primary alcohol butan-1-ol, CH₃CH₂CH₂CH₂OH.", "C oxidises with chromic acid to butanoic acid, CH₃CH₂CH₂COOH — this is B.", "A is the ester of B and C: butyl butanoate, CH₃CH₂CH₂COOCH₂CH₂CH₂CH₃."], "answer": "A = butyl butanoate; B = butanoic acid; C = butan-1-ol."}, "prediction": {"prompt": "Toluene with hot alkaline KMnO₄, then acid, yields", "options": ["benzaldehyde (Étard conditions)", "benzoic acid", "benzyl alcohol"], "answer": 1, "explanation": "Any alkylbenzene with at least one benzylic H is oxidised to ArCOOH. Étard/CrO₂Cl₂ is the stop-at-aldehyde reagent, not KMnO₄."}, "connect": [{"title": "Nylon-6,6 from adipic acid", "text": "Hexanedioic acid + hexane-1,6-diamine — a Class 12 polymer that starts in Table 8.3 of this chapter."}, {"title": "One extra carbon from CO₂", "text": "A Grignard reagent plus the carbon of carbon dioxide grows the chain by one; the same CO₂ you exhale becomes the carboxyl carbon."}, {"title": "Wow: formic acid is named after ants", "text": "Methanoic acid's common name comes from Latin formica (ant): it is the acid ants inject when they bite. Industrially it is the simplest acid in this chapter.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "xgDuzj51tAc", "title": "Carboxylic acid nomenclature and properties | Organic chemistry | Khan Academy", "channel": "Khan Academy Organic Chemistry"}}], "recall": "Write the four preparations of RCOOH and identify butyl butanoate as in Ex 8.11.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "How many carbon atoms are present in adipic acid (hexanedioic acid)?", "answer": 6, "tolerance": 0.01, "unit": "C atoms", "hint": "The name 'hexanedioic' gives the chain length.", "solution": "Hexanedioic acid, HOOC(CH₂)₄COOH, has six carbons; it is the nylon-6,6 feedstock."}, {"level": "Medium", "type": "mcq", "prompt": "RMgX + CO₂ then H₃O⁺ yields", "options": ["a 1° alcohol", "a carboxylic acid with one extra carbon", "a ketone"], "answer": 1, "hint": "§8.7.", "solution": "The carbon of CO₂ becomes the carboxyl carbon.", "wrong": ["Grignard + HCHO gives the 1° alcohol.", "", "Carbon dioxide adds to give an acid, not a ketone."]}, {"level": "Hard", "type": "mcq", "prompt": "C₈H₁₆O₂ of Ex 8.11 is", "options": ["octanoic acid", "butyl butanoate", "ethyl hexanoate"], "answer": 1, "hint": "Alcohol C is butan-1-ol (dehydrates to but-1-ene) and oxidises to the acid B.", "solution": "The symmetrical ester is CH₃CH₂CH₂COOCH₂CH₂CH₂CH₃.", "wrong": ["An acid would not hydrolyse to an acid + alcohol.", "", "Ethyl hexanoate would hydrolyse to ethanol + hexanoic acid; ethanol does not give but-1-ene."]}], "group": "06 / THE CARBOXYL GROUP", "watch": "Click each name or Preparation. The Table 8.3 names appear with the four routes to –COOH; the verdict points out the +1-carbon reactions."}, {"id": "acid-strength", "nav": "Acidity of carboxylic acids", "title": "Two equivalent oxygens beat five phenoxide cartoons", "deck": "pKa: HCl −7, TFA 0.23, benzoic 4.19, acetic 4.76, phenol 10, ethanol ~16. EWG strengthen, EDG weaken. Ex 8.20 vs phenol.", "minutes": 12, "section": "8.8–8.9.1", "pages": [23, 25], "print": "249–251", "sim": "acidstrength", "simTitle": "pKa ladder and carboxylate vs phenoxide", "quick": ["pKa = −log Ka; smaller pKa = stronger acid. Reprint values: HCl −7.0; trifluoroacetic 0.23 (strongest carboxylic); benzoic 4.19; acetic 4.76. Phenol ~10; ethanol ~16. Carboxylic acids are weaker than mineral acids but stronger than alcohols and most phenols.", "Why stronger than phenol (Ex 8.20): carboxylate has two equivalent resonance forms with charge on oxygen; phenoxide has more structures but they dump charge onto carbon. Quality of delocalisation beats the count.", "EWG (F, Cl, CN, NO₂, CF₃) stabilise the anion and increase acidity; closer is stronger (Ex 8.8, 8.12). EDG (alkyl, OMe) weaken. 4-nitrobenzoic 3.41; benzoic 4.19; 4-methoxybenzoic 4.46 (zoom p.25). Order of EWG: Ph < I < Br < Cl < F < CN < NO₂ < CF₃."], "formulas": [{"label": "pKa definition", "html": "pK<sub>a</sub> = −log K<sub>a</sub>", "cond": "smaller pKa = stronger acid"}, {"label": "Reprint pKa set", "html": "HCl −7; CF₃COOH 0.23; PhCOOH 4.19; CH₃COOH 4.76; PhOH 10; EtOH ~16", "cond": "§8.9.1"}, {"label": "Ex 8.12(ii) acids", "html": "α-bromo &gt; β-bromo &gt; unsubstituted; branching weakens", "cond": "inductive + proximity"}], "deeper": "Direct attachment of phenyl or vinyl to COOH increases acidity vs the saturated analogue because of the more electronegative sp² carbon, even though resonance might have suggested otherwise. Aromatic acids: EWG on the ring increase acidity, EDG decrease it. No Friedel–Crafts on ArCOOH (COOH deactivating and AlCl₃ complexes it).", "worked": {"title": "Ex 8.12(ii) acid strength", "problem": "Arrange CH₃CH₂CH(Br)COOH, CH₃CH(Br)CH₂COOH, (CH₃)₂CHCOOH and CH₃CH₂CH₂COOH in increasing acid strength.", "given": "Inductive effects of Br and of alkyl branching.", "steps": ["Br withdraws inductively and is most effective when closest to –COOH, so the α-bromo acid is strongest.", "The β-bromo acid is next; the unsubstituted butanoic acid follows.", "(CH₃)₂CHCOOH is weakest: two electron-releasing methyl groups destabilise the carboxylate, and branching reduces the −I effect."], "answer": "(CH₃)₂CHCOOH < CH₃CH₂CH₂COOH < CH₃CH(Br)CH₂COOH < CH₃CH₂CH(Br)COOH."}, "prediction": {"prompt": "Carboxylic acids are stronger than phenols even though phenoxide has more resonance structures. The reprint’s reason is", "options": ["phenols cannot lose H⁺", "carboxylate charge sits on two equivalent oxygens; phenoxide dumps charge onto carbon", "carboxylic acids have higher molecular mass"], "answer": 1, "explanation": "Ex 8.20 / §8.9.1: equivalent oxygen-centred forms vs non-equivalent carbon-centred forms."}, "connect": [{"title": "Vinegar is 4–6% acetic acid", "text": "pKa 4.76 means a weak acid — sour, not a mineral-acid burn — which is exactly why it is a food acid."}, {"title": "The EWG ranking of §8.9.1", "text": "The reprint ranks substituent effects on acidity as Ph < I < Br < Cl < F < CN < NO₂ < CF₃ — the measure of how well each group stabilises the carboxylate."}, {"title": "Wow: TFA pKa 0.23", "text": "Three fluorines turn acetic acid into something that sits beside the mineral acids: pKa 0.23 for CF₃COOH against 4.76 for CH₃COOH. Inductive effect, quantified.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "g1pnGZnBAIE", "title": "Introduction to acidic strength of carboxylic acids | Aldehydes, ketones  | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Quote the reprint pKa set and explain Ex 8.20 in one sentence.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Calculate pKa(acetic acid) − pKa(benzoic acid) using 4.76 and 4.19.", "answer": 0.57, "tolerance": 0.01, "unit": "pKa units", "hint": "Subtract the smaller value.", "solution": "4.76 − 4.19 = 0.57, so acetic acid is the weaker of the two."}, {"level": "Medium", "type": "mcq", "prompt": "Among FCH₂COOH, ClCH₂COOH, BrCH₂COOH, the strongest is", "options": ["bromoacetic", "chloroacetic", "fluoroacetic"], "answer": 2, "hint": "F is the most electronegative EWG.", "solution": "For α-halo acids the order is F > Cl > Br > I.", "wrong": ["Br is the least electronegative of the three.", "Cl is less electronegative than F.", ""]}, {"level": "Hard", "type": "mcq", "prompt": "4-Nitrobenzoic vs 4-methoxybenzoic vs benzoic (pKa 3.41, 4.46, 4.19): strongest is", "options": ["4-methoxybenzoic", "benzoic", "4-nitrobenzoic"], "answer": 2, "hint": "Zoom p.25.", "solution": "The NO₂ group is an EWG and lowers pKa; OMe is an EDG and raises it.", "wrong": ["4-Methoxybenzoic acid is the weakest (highest pKa).", "Benzoic acid sits between the two.", ""]}], "group": "07 / ACID STRENGTH", "watch": "Select an acid to see its pKa; use 'Why > phenol?' for Ex 8.20. Smaller pKa = stronger acid; EWG lower it and EDG raise it."}, {"id": "acid-rxn", "nav": "Reactions & uses of acids", "title": "Esterify, α-halogenate, decarboxylate — then put the acid to work", "deck": "Fischer esterification (remove water). SOCl₂ → RCOCl. HVZ. LiAlH₄ / B₂H₆ vs NaBH₄. Soda-lime decarboxylation. Uses §8.10.", "minutes": 12, "section": "8.9–8.10", "pages": [25, 28], "print": "251–254", "sim": "acidrxn", "simTitle": "Esterification, HVZ, decarboxylation, uses", "quick": ["C–OH cleavage: Fischer esterification RCOOH + R′OH ⇌ RCOOR′ + H₂O (H₂SO₄). Mechanism: protonate C=O, alcohol adds, lose water (zoom p.26). Ex 8.18: remove water or ester as formed (Le Chatelier). PCl₅/PCl₃/SOCl₂ → RCOCl (SOCl₂ preferred, gases). NH₃ then heat → amide. Anhydrides from heating with P₂O₅/H₂SO₄.", "–COOH group: LiAlH₄ or better B₂H₆ → 1° alcohol (NaBH₄ does not reduce COOH). Soda lime (NaOH:CaO = 3:1) decarboxylation → RH. Kolbe electrolysis → R–R. HVZ: α-H + X₂ / red P → α-halo acid. Aromatic acids: EAS meta, no F–C.", "Uses: methanoic (rubber, textile, dyeing, leather, electroplating); ethanoic (solvent, vinegar); hexanedioic (nylon-6,6); benzoate esters (perfumery); sodium benzoate (preservative); fatty acids (soaps)."], "formulas": [{"label": "Fischer", "html": "RCOOH + R′OH ⇌ RCOOR′ + H₂O (H⁺)", "cond": "remove H₂O or ester"}, {"label": "HVZ", "html": "RCH₂COOH + X₂ / red P → RCHXCOOH", "cond": "needs α-H"}, {"label": "Soda lime", "html": "RCOONa + NaOH/CaO, heat → RH + Na₂CO₃", "cond": "lose CO₂"}, {"label": "Hydride", "html": "LiAlH₄ or B₂H₆ → RCH₂OH; NaBH₄ no reaction", "cond": "B₂H₆ more chemoselective"}], "deeper": "Ex 8.16: acetylation, Cannizzaro, cross aldol, decarboxylation — named reactions spanning both halves of the chapter. Ex 8.19: C₅H₁₀O ketone, 69.77% C, 11.63% H, MM 86, no Tollens, NaHSO₃ +, iodoform +, vigorous ox → ethanoic + propanoic → pentan-2-one.", "worked": {"title": "Ex 8.19 elemental analysis", "problem": "Find the compound from 69.77% C, 11.63% H, rest O, M = 86, and the test pattern.", "given": "69.77% C, 11.63% H, rest O; M = 86; no Tollens; NaHSO₃ adduct; iodoform positive; oxidation → ethanoic + propanoic acid.", "steps": ["%O = 18.60. In 100 g: C 5.81 mol, H 11.63 mol, O 1.16 mol → C₅H₁₀O; formula mass 5×12+10+16 = 86 checks.", "No Tollens → not an aldehyde; NaHSO₃ adduct → a carbonyl; iodoform positive → a methyl ketone, CH₃CO–.", "Oxidation to ethanoic acid (C₂) + propanoic acid (C₃) fixes the carbonyl at C-2: pentan-2-one."], "answer": "Pentan-2-one, CH₃COCH₂CH₂CH₃ (official key, p. 305)."}, "prediction": {"prompt": "NaBH₄ does not reduce carboxylic acids, but LiAlH₄ does. HVZ needs which extra reagent besides Cl₂ or Br₂?", "options": ["AlCl₃", "red phosphorus", "Pd–BaSO₄"], "answer": 1, "explanation": "Hell–Volhard–Zelinsky: halogen + red P. AlCl₃ is Friedel–Crafts (blocked for acids). Pd–BaSO₄ is Rosenmund."}, "connect": [{"title": "Sodium benzoate in pickles and soft drinks", "text": "A food preservative made from benzoic acid — §8.10 in the kitchen."}, {"title": "Soaps from fatty acids", "text": "Higher fatty acids plus NaOH give soap; the carboxyl group of this unit is the head of every soap micelle."}, {"title": "Wow: aspirin is made by acetylation", "text": "Salicylic acid carries both a phenolic –OH and a –COOH. Acetylation with acetic anhydride makes acetylsalicylic acid — the reaction of §8.9.2 on a medicine-shelf molecule.", "wow": true, "links": [{"t": "NCERT Chemistry — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech203.pdf"}], "video": {"id": "dbdVMThH1n8", "title": "Fischer esterification | Carboxylic acids and derivatives | Organic chemistry | Khan Academy", "channel": "Khan Academy"}}], "recall": "Write Fischer (with the Le Chatelier note), HVZ, soda-lime decarboxylation, and the Ex 8.19 structure.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Soda lime is NaOH and CaO in the ratio 3 : 1. How many parts of NaOH correspond to one part of CaO?", "answer": 3, "tolerance": 0.01, "unit": "parts NaOH", "hint": "§8.9.3 decarboxylation.", "solution": "The reprint states a 3 : 1 ratio of NaOH to CaO."}, {"level": "Medium", "type": "mcq", "prompt": "NaBH₄ and carboxylic acids:", "options": ["both LiAlH₄ and NaBH₄ reduce COOH to 1° alcohol", "NaBH₄ does not reduce COOH; LiAlH₄ (or B₂H₆) does", "neither reduces COOH"], "answer": 1, "hint": "§8.9.3.", "solution": "NaBH₄ is too mild for the carboxyl group.", "wrong": ["NaBH₄ leaves –COOH untouched.", "", "LiAlH₄ and diborane both reduce it."]}, {"level": "Hard", "type": "mcq", "prompt": "The compound of Ex 8.19 is", "options": ["pentan-3-one", "pentan-2-one", "pentanal"], "answer": 1, "hint": "Iodoform + no Tollens + oxidation to ethanoic and propanoic acid.", "solution": "The methyl ketone is CH₃COCH₂CH₂CH₃.", "wrong": ["Pentan-3-one would not give iodoform.", "", "Pentanal would reduce Tollens' reagent."]}], "group": "08 / ACID REACTIONS & USES", "watch": "Pick esterification, HVZ, decarboxylation or uses. The Fischer panel animates the equilibrium and reminds you to remove water."}], "exercises": [{"q": 1, "title": "Definitions of ten carbonyl terms", "conceptIdx": 3, "page": 29, "question": "What is meant by the following terms ? Give an example of the reaction in each case.\n(i) Cyanohydrin (ii) Acetal (iii) Semicarbazone (iv) Aldol (v) Hemiacetal (vi) Oxime (vii) Ketal (viii) Imine (ix) 2,4-DNP-derivative (x) Schiff’s base. (The reprint prints two items numbered (vii); the missing (viii) is imine.)", "given": "Definitions come from §8.4 (nucleophilic addition) and Table 8.2 (N-substituted derivatives).", "steps": ["(i) Cyanohydrin: R₂C(OH)CN, formed by addition of HCN (base/CN⁻ catalysis) to C=O; e.g. CH₃CHO + HCN → CH₃CH(OH)CN.", "(ii) Acetal: RCH(OR′)₂ (two alkoxy groups on one carbon) from an aldehyde + 2 R′OH/dry HCl; e.g. CH₃CH(OC₂H₅)₂.", "(iii) Semicarbazone: C=NNHCONH₂ from C=O + semicarbazide (H₂NNHCONH₂); e.g. propanone semicarbazone.", "(iv) Aldol: β-hydroxy aldehyde/ketone from two carbonyls having α-H with dilute base; e.g. 2 CH₃CHO → CH₃CH(OH)CH₂CHO (3-hydroxybutanal).", "(v) Hemiacetal: RCH(OH)OR′ — one –OR and one –OH on the same carbon, formed by addition of one alcohol to an aldehyde.", "(vi) Oxime: C=N–OH from C=O + NH₂OH; e.g. CH₃CH=NOH (ethanal oxime).", "(vii) Ketal: R₂C(OR′)₂ from a ketone + 2 R′OH (or a cyclic ethylene ketal with ethane-1,2-diol).", "(viii) Imine: C=NR from C=O + RNH₂ by addition–elimination; a Schiff's base (ix) is the aromatic/alkyl imine, e.g. PhCH=NPh.", "(ix) 2,4-DNP derivative: the orange/yellow 2,4-dinitrophenylhydrazone from C=O + 2,4-dinitrophenylhydrazine — the qualitative test for a carbonyl.", "(x) Schiff's base: imine from an aldehyde + a primary amine, RCH=NR′, e.g. C₆H₅CHO + C₆H₅NH₂ → C₆H₅CH=NC₆H₅."], "answer": "(i) Cyanohydrin: R₂C(OH)CN from C=O + HCN, e.g. CH₃CH(OH)CN. (ii) Acetal: RCH(OR′)₂ (two –OR on one carbon), e.g. CH₃CH(OC₂H₅)₂. (iii) Semicarbazone: C=NNHCONH₂ from C=O + H₂NNHCONH₂, e.g. propanone semicarbazone. (iv) Aldol: β-hydroxy aldehyde/ketone from two carbonyls with α-H and dilute base, e.g. 3-hydroxybutanal. (v) Hemiacetal: RCH(OH)OR′ — one –OR and one –OH on the same carbon. (vi) Oxime: C=N–OH from C=O + NH₂OH, e.g. CH₃CH=NOH. (vii) Ketal: R₂C(OR′)₂ from a ketone + 2 R′OH (or the cyclic ethylene ketal). (viii) Imine: C=NR from C=O + RNH₂. (ix) 2,4-DNP derivative: the orange/yellow 2,4-dinitrophenylhydrazone. (x) Schiff's base: an imine from an aldehyde + a primary amine, e.g. C₆H₅CH=NC₆H₅.", "takeaway": "Nucleophiles add across the polar C=O; with nitrogen nucleophiles the addition–elimination product is a C=N–Z derivative.", "conceptName": "Nucleophilic addition to C=O", "printPage": 255}, {"q": 2, "title": "IUPAC names of seven compounds", "conceptIdx": 0, "page": 29, "question": "Name the following compounds according to IUPAC system of nomenclature:\n(i) CH₃CH(CH₃)CH₂CH₂CHO (ii) CH₃CH₂COCH(C₂H₅)CH₂CH₂Cl (iii) CH₃CH=CHCHO (iv) CH₃COCH₂COCH₃ (v) CH₃CH(CH₃)CH₂C(CH₃)₂COCH₃ (vi) (CH₃)₃CCH₂COOH (vii) OHCC₆H₄CHO-p.", "given": "Seven condensed formulae; choose the longest chain bearing the principal group (CHO or COOH = C-1, ketone C=O lowest locant).", "steps": ["(i) Five-carbon chain with CHO at C-1 and methyl at C-4: 4-methylpentanal.", "(ii) Six-carbon chain with C=O at C-3, ethyl at C-4 and Cl at C-6: 6-chloro-4-ethylhexan-3-one.", "(iii) Four-carbon chain with the double bond at C-2: but-2-enal.", "(iv) Five-carbon chain with C=O at C-2 and C-4: pentane-2,4-dione.", "(v) Six-carbon chain with C=O at C-2 and methyls at C-3 (two) and C-5: 3,3,5-trimethylhexan-2-one.", "(vi) Four-carbon chain ending in COOH with two methyls at C-3: 3,3-dimethylbutanoic acid.", "(vii) Two CHO groups para on the ring: benzene-1,4-dicarbaldehyde."], "answer": "(i) 4-methylpentanal; (ii) 6-chloro-4-ethylhexan-3-one; (iii) but-2-enal; (iv) pentane-2,4-dione; (v) 3,3,5-trimethylhexan-2-one; (vi) 3,3-dimethylbutanoic acid; (vii) benzene-1,4-dicarbaldehyde.", "takeaway": "The aldehyde/acid carbon is always C-1; the ketone C=O takes the lowest possible locant.", "conceptName": "Carbonyl nomenclature", "printPage": 255}, {"q": 3, "title": "Structures from eight names", "conceptIdx": 0, "page": 29, "question": "Draw the structures of the following compounds.\n(i) 3-Methylbutanal (ii) p-Nitropropiophenone (iii) p-Methylbenzaldehyde (iv) 4-Methylpent-3-en-2-one (v) 4-Chloropentan-2-one (vi) 3-Bromo-4-phenylpentanoic acid (vii) p,p′-Dihydroxybenzophenone (viii) Hex-2-en-4-ynoic acid.", "given": "Eight systematic names; build the parent chain/ring first, then the substituents.", "steps": ["(i) 3-Methylbutanal: (CH₃)₂CHCH₂CHO.", "(ii) p-Nitropropiophenone: p-O₂N–C₆H₄–COCH₂CH₃.", "(iii) p-Methylbenzaldehyde: p-CH₃–C₆H₄–CHO.", "(iv) 4-Methylpent-3-en-2-one: CH₃COCH=C(CH₃)₂ (mesityl oxide of Table 8.1).", "(v) 4-Chloropentan-2-one: CH₃COCH₂CHClCH₃.", "(vi) 3-Bromo-4-phenylpentanoic acid: HOOCCH₂CHBrCH(CH₃)C₆H₅.", "(vii) p,p′-Dihydroxybenzophenone: (p-HO–C₆H₄)₂C=O.", "(viii) Hex-2-en-4-ynoic acid: HOOC–CH=CH–C≡C–CH₃."], "answer": "(i) (CH₃)₂CHCH₂CHO; (ii) p-O₂NC₆H₄COCH₂CH₃; (iii) p-CH₃C₆H₄CHO; (iv) CH₃COCH=C(CH₃)₂ (mesityl oxide); (v) CH₃COCH₂CHClCH₃; (vi) HOOCCH₂CHBrCH(CH₃)C₆H₅; (vii) (p-HOC₆H₄)₂C=O; (viii) HOOCCH=CHC≡CCH₃.", "takeaway": "Read the parent (chain or ring) from the suffix, then place every substituent by its locant.", "conceptName": "Carbonyl nomenclature", "printPage": 255}, {"q": 4, "title": "Names and common names of six carbonyls", "conceptIdx": 0, "page": 29, "question": "Write the IUPAC names of the following ketones and aldehydes. Wherever possible, give also common names.\n(i) CH₃CO(CH₂)₄CH₃ (ii) CH₃CH₂CHBrCH₂CH(CH₃)CHO (iii) CH₃(CH₂)₅CHO (iv) Ph–CH=CH–CHO (v) cyclopentane ring carrying a –CHO group (Fig. 8.4) (vi) PhCOPh.", "given": "Structures (i)–(iv) and (vi) are condensed formulae; (v) is the ring drawn in Fig. 8.4.", "steps": ["(i) Seven-carbon chain with C=O at C-2: heptan-2-one (common: methyl pentyl ketone).", "(ii) Six-carbon chain with CHO at C-1: the first chiral centre is C-4 bearing Br; methyl at C-2: 4-bromo-2-methylhexanal.", "(iii) Seven-carbon chain with CHO at C-1: heptanal (common: enanthaldehyde).", "(iv) Three-carbon chain with the double bond at C-2 and phenyl at C-3: 3-phenylprop-2-enal (common: cinnamaldehyde).", "(v) The –CHO is attached to a cyclopentane ring: cyclopentanecarbaldehyde.", "(vi) Two phenyl groups on a carbonyl carbon: diphenylmethanone (common: benzophenone)."], "answer": "(i) heptan-2-one (methyl pentyl ketone); (ii) 4-bromo-2-methylhexanal; (iii) heptanal; (iv) 3-phenylprop-2-enal (cinnamaldehyde); (v) cyclopentanecarbaldehyde; (vi) diphenylmethanone (benzophenone).", "takeaway": "A –CHO attached to a ring is named as a carbaldehyde, not as an alkanal.", "conceptName": "Carbonyl nomenclature", "figure": "8.4", "printPage": 255}, {"q": 5, "title": "Structures of six derivatives", "conceptIdx": 3, "page": 29, "question": "Draw structures of the following derivatives.\n(i) The 2,4-dinitrophenylhydrazone of benzaldehyde (ii) Cyclopropanone oxime (iii) Acetaldehydedimethylacetal (iv) The semicarbazone of cyclobutanone (v) The ethylene ketal of hexan-3-one (vi) The methyl hemiacetal of formaldehyde.", "given": "Replace C=O by C=N–Z or C(OR)₂ as named in Table 8.2 and §8.4.", "steps": ["(i) PhCH=N–NH–C₆H₃(NO₂)₂ (2,4-dinitrophenylhydrazone).", "(ii) Cyclopropanone oxime: the three-membered ring carbon becomes C=N–OH.", "(iii) Acetaldehydedimethylacetal: CH₃CH(OCH₃)₂.", "(iv) Cyclobutanone semicarbazone: the ring carbon becomes C=NNHCONH₂.", "(v) Ethylene ketal of hexan-3-one: C-3 of the hexane chain is part of a 1,3-dioxolane ring (–O–CH₂–CH₂–O–).", "(vi) Methyl hemiacetal of formaldehyde: HO–CH₂–OCH₃ (one OH and one OCH₃ on the same carbon)."], "answer": "(i) PhCH=NNH–C₆H₃(NO₂)₂; (ii) cyclopropanone C=N–OH; (iii) CH₃CH(OCH₃)₂; (iv) cyclobutanone C=NNHCONH₂; (v) the 1,3-dioxolane of hexan-3-one (–O–CH₂–CH₂–O– at C-3); (vi) HOCH₂OCH₃ (one –OH + one –OCH₃ on the same carbon).", "takeaway": "Derivatives keep the carbonyl carbon and change only the two bonds to oxygen into C=N–Z or C–OR.", "conceptName": "Nucleophilic addition to C=O", "printPage": 255}, {"q": 6, "title": "Reactions of cyclohexanecarbaldehyde", "conceptIdx": 3, "page": 30, "question": "Predict the products formed when cyclohexanecarbaldehyde reacts with following reagents.\n(i) PhMgBr and then H₃O⁺ (ii) Tollens’ reagent (iii) Semicarbazide and weak acid (iv) Excess ethanol and acid (v) Zinc amalgam and dilute hydrochloric acid.", "given": "Substrate: cyclohexanecarbaldehyde, C₆H₁₁CHO.", "steps": ["(i) Grignard addition then hydrolysis gives the secondary alcohol cyclohexyl(phenyl)methanol, C₆H₁₁CH(OH)C₆H₅.", "(ii) Tollens' reagent oxidises the aldehyde to the carboxylate: cyclohexanecarboxylate (cyclohexanecarboxylic acid on acidification), with a silver mirror.", "(iii) Semicarbazide + weak acid gives the semicarbazone C₆H₁₁CH=NNHCONH₂.", "(iv) Excess ethanol with dry HCl gives the diethyl acetal C₆H₁₁CH(OC₂H₅)₂.", "(v) Zn–Hg/dilute HCl (Clemmensen) reduces –CHO to –CH₃: methylcyclohexane."], "answer": "(i) cyclohexyl(phenyl)methanol; (ii) cyclohexanecarboxylate/cyclohexanecarboxylic acid (Ag mirror); (iii) cyclohexanecarbaldehyde semicarbazone; (iv) the diethyl acetal; (v) methylcyclohexane.", "takeaway": "Polar C=O is attacked by nucleophiles (Grignard, alcohols) or converted to C=N; only Clemmensen removes the oxygen entirely.", "conceptName": "Nucleophilic addition to C=O", "printPage": 256}, {"q": 7, "title": "Aldol, Cannizzaro or neither?", "conceptIdx": 4, "page": 30, "question": "Which of the following compounds would undergo aldol condensation, which the Cannizzaro reaction and which neither? Write the structures of the expected products of aldol condensation and Cannizzaro reaction.\n(i) Methanal (ii) 2-Methylpentanal (iii) Benzaldehyde (iv) Benzophenone (v) Cyclohexanone (vi) 1-Phenylpropanone (vii) Phenylacetaldehyde (viii) Butan-1-ol (ix) 2,2-Dimethylbutanal.", "given": "The deciding test is the presence of at least one α-hydrogen; Cannizzaro additionally needs an aldehyde.", "steps": ["Aldol condensation requires an α-H: (ii), (v), (vi) and (vii) qualify.", "Cannizzaro requires an aldehyde with no α-H: (i) methanal, (iii) benzaldehyde and (ix) 2,2-dimethylbutanal qualify.", "Neither: (iv) benzophenone is a ketone with no α-H (so it cannot do aldol and is not an aldehyde for Cannizzaro) and (viii) butan-1-ol is an alcohol, not a carbonyl.", "Aldol products (β-hydroxy carbonyls): 2-methylpentanal → its 3-hydroxy-2-methyl derivative; cyclohexanone → 2-(1-hydroxycyclohexyl)cyclohexanone; 1-phenylpropanone → its aldol; phenylacetaldehyde → its β-hydroxy aldol.", "Cannizzaro products: HCHO → CH₃OH + HCOO⁻; PhCHO → PhCH₂OH + PhCOO⁻; 2,2-dimethylbutanal → the corresponding alcohol + carboxylate."], "answer": "Aldol: (ii), (v), (vi), (vii). Cannizzaro: (i), (iii), (ix). Neither: (iv), (viii). (Official key: (ii),(v),(vi),(vii) aldol; (i),(iii),(ix) Cannizzaro; (iv),(viii) neither.)", "takeaway": "No α-H + aldehyde = Cannizzaro; α-H present = aldol; no α-H and not an aldehyde = neither.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 8, "title": "Ethanal into three products", "conceptIdx": 4, "page": 30, "question": "How will you convert ethanal into the following compounds?\n(i) Butane-1,3-diol (ii) But-2-enal (iii) But-2-enoic acid", "given": "Start from ethanal, CH₃CHO; the first step is the same aldol in every case.", "steps": ["With dilute NaOH, two molecules of ethanal undergo aldol addition to 3-hydroxybutanal, CH₃CH(OH)CH₂CHO.", "(i) Reduce the aldol with NaBH₄ (or H₂/Ni) to butane-1,3-diol, CH₃CH(OH)CH₂CH₂OH.", "(ii) Heat the aldol to dehydrate it to but-2-enal, CH₃CH=CHCHO.", "(iii) Oxidise but-2-enal with a mild oxidant (Tollens' reagent / alkaline KMnO₄) to but-2-enoic acid, CH₃CH=CHCOOH."], "answer": "Ethanal first undergoes dilute-NaOH aldol to 3-hydroxybutanal, CH₃CH(OH)CH₂CHO. (i) NaBH₄ (or H₂/Ni) reduction gives butane-1,3-diol; (ii) heating dehydrates the aldol to but-2-enal; (iii) mild oxidation (Tollens' reagent or alkaline KMnO₄) gives but-2-enoic acid.", "takeaway": "One aldol gives three different products depending on the finishing reagent.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 9, "title": "Four aldols from propanal and butanal", "conceptIdx": 4, "page": 30, "question": "Write structural formulas and names of four possible aldol condensation products from propanal and butanal. In each case, indicate which aldehyde acts as nucleophile and which as electrophile.", "given": "Two different aldehydes, each with α-hydrogens; both self-condensation and crossed condensation are possible.", "steps": ["Self-condensation of propanal: propanal enolate (nucleophile) + propanal (electrophile) → 3-hydroxy-2-methylpentanal, which dehydrates to 2-methylpent-2-enal, CH₃CH₂CH=C(CH₃)CHO.", "Self-condensation of butanal: butanal enolate (nucleophile) + butanal (electrophile) → 3-hydroxy-2-ethylhexanal → 2-ethylhex-2-enal, CH₃CH₂CH₂CH=C(C₂H₅)CHO.", "Crossed condensation, propanal as nucleophile: propanal enolate + butanal → 3-hydroxy-2-methylhexanal → 2-methylhex-2-enal, CH₃CH₂CH₂CH=C(CH₃)CHO.", "Crossed condensation, butanal as nucleophile: butanal enolate + propanal → 3-hydroxy-2-ethylpentanal → 2-ethylpent-2-enal, CH₃CH₂CH=C(C₂H₅)CHO.", "In every case the enolate-forming aldehyde (the one losing an α-H) is the nucleophile; the other carbonyl carbon is the electrophile."], "answer": "Four aldol (β-hydroxy) products and their dehydrated enals: 3-hydroxy-2-methylpentanal → 2-methylpent-2-enal [propanal + propanal]; 3-hydroxy-2-ethylhexanal → 2-ethylhex-2-enal [butanal + butanal]; 3-hydroxy-2-methylhexanal → 2-methylhex-2-enal [propanal enolate + butanal]; 3-hydroxy-2-ethylpentanal → 2-ethylpent-2-enal [butanal enolate + propanal]. The enolate partner is the nucleophile in each case.", "takeaway": "Crossed aldol gives a mixture; label the enolate (Nu) and the attacked aldehyde (E) for each product.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 10, "title": "Identify C₉H₁₀O", "conceptIdx": 4, "page": 30, "question": "An organic compound with the molecular formula C₉H₁₀O forms 2,4-DNP derivative, reduces Tollens’ reagent and undergoes Cannizzaro reaction. On vigorous oxidation, it gives 1,2-benzenedicarboxylic acid. Identify the compound.", "given": "C₉H₁₀O; 2,4-DNP positive, Tollens positive, Cannizzaro positive; oxidation gives phthalic acid.", "steps": ["2,4-DNP positive → a carbonyl compound. Tollens positive → an aldehyde.", "Cannizzaro positive → the aldehyde has no α-hydrogen, so the carbonyl must be attached directly to the benzene ring (an aromatic aldehyde).", "Vigorous oxidation gives phthalic acid (1,2-benzenedicarboxylic acid), so a second oxidisable side chain sits ortho to the aldehyde on the ring.", "C₉H₁₀O with the ring (C₆H₄) + CHO + C₂H₅ gives 2-ethylbenzaldehyde, C₆H₄(CHO)(C₂H₅); the ethyl group oxidises to –COOH."], "answer": "2-Ethylbenzaldehyde (official key: 2-ethylbenzaldehyde).", "takeaway": "No α-H + aromatic ring + phthalic acid on oxidation fixes the aldehyde and the ortho alkyl chain together.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 11, "title": "Ester puzzle C₈H₁₆O₂", "conceptIdx": 5, "page": 30, "question": "An organic compound (A) (molecular formula C₈H₁₆O₂) was hydrolysed with dilute sulphuric acid to give a carboxylic acid (B) and an alcohol (C). Oxidation of (C) with chromic acid produced (B). (C) on dehydration gives but-1-ene. Write equations for the reactions involved.", "given": "A = C₈H₁₆O₂ (an ester); C dehydrates to but-1-ene and oxidises to B.", "steps": ["C gives but-1-ene on dehydration, so C is the primary alcohol butan-1-ol, CH₃CH₂CH₂CH₂OH.", "Oxidation of C with chromic acid gives butanoic acid, CH₃CH₂CH₂COOH — this is B.", "A is the ester of B and C: CH₃CH₂CH₂COOCH₂CH₂CH₂CH₃ (butyl butanoate); hydrolysis gives B + C."], "answer": "A = butyl butanoate, CH₃CH₂CH₂COO(CH₂)₃CH₃; B = butanoic acid; C = butan-1-ol.", "takeaway": "Work backwards from the alkene to the alcohol, then match the acid and the ester formula.", "conceptName": "Carboxylic acids: names & preparation", "printPage": 256}, {"q": 12, "title": "Three orderings", "conceptIdx": 6, "page": 30, "question": "Arrange the following compounds in increasing order of their property as indicated:\n(i) Acetaldehyde, Acetone, Di-tert-butyl ketone, Methyl tert-butyl ketone (reactivity towards HCN)\n(ii) CH₃CH₂CH(Br)COOH, CH₃CH(Br)CH₂COOH, (CH₃)₂CHCOOH, CH₃CH₂CH₂COOH (acid strength)\n(iii) Benzoic acid, 4-Nitrobenzoic acid, 3,4-Dinitrobenzoic acid, 4-Methoxybenzoic acid (acid strength).", "given": "Part (i) uses steric + electronic effects on nucleophilic addition; parts (ii)/(iii) use inductive/resonance effects on acidity.", "steps": ["(i) More and larger alkyl groups hinder the nucleophile and reduce Cδ⁺: di-tert-butyl ketone < methyl tert-butyl ketone < acetone < acetaldehyde.", "(ii) Br withdraws inductively, strongest when closest to COOH; branching adds +I: (CH₃)₂CHCOOH < CH₃CH₂CH₂COOH < CH₃CH(Br)CH₂COOH < CH₃CH₂CH(Br)COOH.", "(iii) EWG raise acidity, EDG lower it, and two nitro groups are stronger than one: 4-methoxybenzoic acid < benzoic acid < 4-nitrobenzoic acid < 3,4-dinitrobenzoic acid."], "answer": "(i) di-tert-butyl ketone < methyl tert-butyl ketone < acetone < acetaldehyde; (ii) (CH₃)₂CHCOOH < CH₃CH₂CH₂COOH < CH₃CH(Br)CH₂COOH < CH₃CH₂CH(Br)COOH; (iii) 4-methoxybenzoic acid < benzoic acid < 4-nitrobenzoic acid < 3,4-dinitrobenzoic acid. (Official key confirmed.)", "takeaway": "Proximity and electron demand decide both orders: steric hindrance for addition, inductive distance for acidity.", "conceptName": "Acidity of carboxylic acids", "printPage": 256}, {"q": 13, "title": "Seven chemical tests", "conceptIdx": 4, "page": 30, "question": "Give simple chemical tests to distinguish between the following pairs of compounds.\n(i) Propanal and Propanone (ii) Acetophenone and Benzophenone (iii) Phenol and Benzoic acid (iv) Benzoic acid and Ethyl benzoate (v) Pentan-2-one and Pentan-3-one (vi) Benzaldehyde and Acetophenone (vii) Ethanal and Propanal.", "given": "Available tests: Tollens/Fehling (aldehyde), iodoform (CH₃CO– or CH₃CH(OH)–), NaHCO₃ (carboxylic acid), FeCl₃ (phenol).", "steps": ["(i) Tollens (or Fehling): only propanal gives a silver mirror / red Cu₂O; propanone does not.", "(ii) Iodoform: acetophenone (CH₃CO–) gives yellow CHI₃; benzophenone (Ph₂CO) does not.", "(iii) NaHCO₃ solution: benzoic acid effervesces (CO₂); phenol does not (it is too weak). FeCl₃ gives a violet colour with phenol only.", "(iv) NaHCO₃: benzoic acid effervesces; ethyl benzoate is neutral.", "(v) Iodoform: pentan-2-one (CH₃CO–) is positive; pentan-3-one is not.", "(vi) Tollens: benzaldehyde gives a silver mirror; acetophenone does not. (Iodoform is also positive only for acetophenone.)", "(vii) Iodoform: ethanal (CH₃CHO) is positive; propanal is not."], "answer": "Tollens/Fehling for aldehydes; iodoform for CH₃CO– / CH₃CH(OH)–; NaHCO₃ for carboxylic acids; FeCl₃ for phenol.", "takeaway": "Pick the test that keys on the one structural difference in the pair, not on a property both share.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 14, "title": "Five syntheses from benzene with C₁ reagents", "conceptIdx": 5, "page": 30, "question": "How will you prepare the following compounds from benzene? You may use any inorganic reagent and any organic reagent having not more than one carbon atom\n(i) Methyl benzoate (ii) m-Nitrobenzoic acid (iii) p-Nitrobenzoic acid (iv) Phenylacetic acid (v) p-Nitrobenzaldehyde.", "given": "Benzene as the only carbon skeleton; every added organic carbon must come from a C₁ reagent (CH₃Cl, CH₃OH, KCN, …).", "steps": ["(i) Benzene + CH₃Cl/AlCl₃ (Friedel–Crafts) → toluene; hot alkaline KMnO₄ → benzoic acid; CH₃OH/H₂SO₄ (esterification) → methyl benzoate.", "(ii) Toluene → benzoic acid (KMnO₄); then nitration with conc. HNO₃/H₂SO₄ places NO₂ meta to –COOH → m-nitrobenzoic acid.", "(iii) Toluene + HNO₃/H₂SO₄ → p-nitrotoluene (major); oxidation of the methyl with alkaline KMnO₄ → p-nitrobenzoic acid.", "(iv) Toluene + Cl₂/hν → benzyl chloride; + KCN (C₁) → phenylacetonitrile; hydrolysis (H₃O⁺) → phenylacetic acid, C₆H₅CH₂COOH.", "(v) p-Nitrotoluene (from toluene) + CrO₂Cl₂ (Étard) or CrO₃/Ac₂O → p-nitrobenzaldehyde — the side chain stops at –CHO."], "answer": "(i) Benzene → toluene (CH₃Cl/AlCl₃) → benzoic acid (KMnO₄) → methyl benzoate (CH₃OH/H₂SO₄). (ii) Toluene → benzoic acid → m-nitrobenzoic acid (HNO₃/H₂SO₄; NO₂ enters meta to –COOH). (iii) Toluene → p-nitrotoluene (HNO₃/H₂SO₄) → p-nitrobenzoic acid (KMnO₄). (iv) Toluene → benzyl chloride (Cl₂/hν) → phenylacetonitrile (KCN) → phenylacetic acid (hydrolysis). (v) p-Nitrotoluene → p-nitrobenzaldehyde (CrO₂Cl₂, Étard).", "takeaway": "Plan the substitution order: F–C builds the C₁ side chain, oxidation sets the acid level, and the existing group decides where the next substituent goes.", "conceptName": "Carboxylic acids: names & preparation", "printPage": 256}, {"q": 15, "title": "Nine conversions in two steps", "conceptIdx": 4, "page": 30, "question": "How will you bring about the following conversions in not more than two steps?\n(i) Propanone to Propene (ii) Benzoic acid to Benzaldehyde (iii) Ethanol to 3-Hydroxybutanal (iv) Benzene to m-Nitroacetophenone (v) Benzaldehyde to Benzophenone (vi) Bromobenzene to 1-Phenylethanol (vii) Benzaldehyde to 3-Phenylpropan-1-ol (viii) Benzaldehyde to α-Hydroxyphenylacetic acid (ix) Benzoic acid to m-Nitrobenzyl alcohol.", "given": "Each conversion has a two-step limit; pick reagents that stop at the required oxidation level.", "steps": ["(i) NaBH₄ reduces propanone to propan-2-ol; conc. H₂SO₄ at 443 K dehydrates it to propene.", "(ii) SOCl₂ converts benzoic acid to benzoyl chloride; Rosenmund reduction (H₂/Pd–BaSO₄) gives benzaldehyde.", "(iii) Oxidise ethanol to ethanal (Cu/573 K or PCC); dilute NaOH aldol gives 3-hydroxybutanal.", "(iv) Friedel–Crafts acetylation (CH₃COCl/AlCl₃) gives acetophenone; nitration (HNO₃/H₂SO₄) enters meta to the acyl group → m-nitroacetophenone.", "(v) Benzaldehyde + PhMgBr, then H₃O⁺, gives diphenylmethanol; oxidation (PCC/CrO₃) gives benzophenone.", "(vi) Bromobenzene + Mg → PhMgBr; then CH₃CHO/H₃O⁺ gives 1-phenylethanol, PhCH(OH)CH₃.", "(vii) Crossed aldol of benzaldehyde with ethanal (dil. NaOH) gives cinnamaldehyde, PhCH=CHCHO; H₂/Ni reduces both C=C and C=O to give 3-phenylpropan-1-ol.", "(viii) Benzaldehyde + HCN gives the cyanohydrin; hydrolysis gives α-hydroxyphenylacetic acid (mandelic acid), PhCH(OH)COOH.", "(ix) Nitration of benzoic acid gives m-nitrobenzoic acid; diborane (B₂H₆) reduces –COOH to –CH₂OH without touching the nitro group → m-nitrobenzyl alcohol."], "answer": "(i) NaBH₄ then conc. H₂SO₄/443 K: propanone → propan-2-ol → propene. (ii) SOCl₂ then H₂/Pd–BaSO₄ (Rosenmund): benzoic acid → benzoyl chloride → benzaldehyde. (iii) Cu/573 K then dilute NaOH: ethanol → ethanal → 3-hydroxybutanal. (iv) CH₃COCl/AlCl₃ then HNO₃/H₂SO₄: benzene → acetophenone → m-nitroacetophenone. (v) PhMgBr then PCC: benzaldehyde → diphenylmethanol → benzophenone. (vi) Mg then CH₃CHO/H₃O⁺: bromobenzene → PhMgBr → 1-phenylethanol. (vii) CH₃CHO/dil. NaOH then H₂/Ni: benzaldehyde → cinnamaldehyde → 3-phenylpropan-1-ol. (viii) HCN then hydrolysis: benzaldehyde → cyanohydrin → α-hydroxyphenylacetic acid. (ix) HNO₃/H₂SO₄ then diborane (B₂H₆): benzoic acid → m-nitrobenzoic acid → m-nitrobenzyl alcohol.", "takeaway": "Match the reagent to the exact oxidation level needed — hydride reductions, Rosenmund and diborane all stop at different places.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 16, "title": "Four named descriptions", "conceptIdx": 4, "page": 30, "question": "Describe the following:\n(i) Acetylation (ii) Cannizzaro reaction (iii) Cross aldol condensation (iv) Decarboxylation.", "given": "Four terms from §§8.4, 8.9.2 and 8.9.4.", "steps": ["(i) Acetylation is the introduction of the CH₃CO– group using acetyl chloride or acetic anhydride, usually with pyridine (for acid chlorides) or an acid catalyst; salicylic acid → aspirin.", "(ii) Cannizzaro reaction: aldehydes with no α-H disproportionate in concentrated alkali, one molecule oxidised to a carboxylate and the other reduced to an alcohol; 2 C₆H₅CHO + NaOH → C₆H₅CH₂OH + C₆H₅COONa.", "(iii) Cross aldol condensation: an aldol between two different carbonyl compounds; it is cleanest when one partner has no α-H (HCHO, PhCHO), e.g. PhCHO + CH₃CHO (dil. NaOH) → PhCH=CHCHO.", "(iv) Decarboxylation: loss of CO₂ from a carboxylic acid salt; RCOONa + NaOH/CaO (soda lime, 3:1), heat → RH + Na₂CO₃; Kolbe electrolysis also decarboxylates."], "answer": "(i) Acetylation: introducing CH₃CO– with acetyl chloride or acetic anhydride (pyridine or acid catalyst), e.g. salicylic acid → aspirin. (ii) Cannizzaro reaction: disproportionation of aldehydes with no α-H in conc. alkali, e.g. 2 C₆H₅CHO + NaOH → C₆H₅CH₂OH + C₆H₅COONa. (iii) Cross aldol condensation: aldol between two different carbonyls, cleanest when one has no α-H, e.g. PhCHO + CH₃CHO → PhCH=CHCHO. (iv) Decarboxylation: loss of CO₂ from a carboxylate on heating with soda lime (NaOH/CaO, 3:1), RCOONa + NaOH → RH + Na₂CO₃.", "takeaway": "These four names cover the whole chapter: substitution at oxygen, redox without α-H, C–C bond formation with α-H, and loss of the carboxyl carbon.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 256}, {"q": 17, "title": "Completing eleven syntheses", "conceptIdx": 1, "page": 31, "question": "Complete each synthesis by giving missing starting material, reagent or products. The eleven reaction schemes are redrawn in Fig. 8.17:\n(i) C₆H₅CH₂CH₃ + KMnO₄/KOH, heat → ? (ii) benzene-1,2-dicarboxylic acid + SOCl₂, heat → ? (iii) C₆H₅CHO + H₂NCONHNH₂ → ? (iv) C₆H₆ → C₆H₅COC₆H₅ (give reagent) (v) 4-oxocyclohexanecarbaldehyde + [Ag(NH₃)₂]⁺ → ? (vi) 2-formylbenzoic acid + NaCN/HCl → ? (vii) C₆H₅CHO + CH₃CH₂CHO, dil. NaOH, heat → ? (viii) CH₃COCH₂COOC₂H₅ + (i) NaBH₄ (ii) H⁺ → ? (ix) cyclohexanol + CrO₃ → ? (x) methylenecyclohexane → cyclohexanecarbaldehyde (give reagents) (xi) (i) O₃ (ii) Zn–H₂O → 2 cyclohexanone (give the missing starting material).", "given": "Eleven arrows from the printed schemes (Fig. 8.17); apply the chapter's reagents: side-chain oxidation, SOCl₂, semicarbazide, Friedel–Crafts acylation, Tollens, cyanohydrin, crossed aldol, NaBH₄, CrO₃, hydroboration–oxidation and ozonolysis.", "steps": ["(i) Ethylbenzene + KMnO₄/KOH/heat oxidises the benzylic side chain to the salt: potassium benzoate, C₆H₅COOK (benzoic acid on acidification).", "(ii) Phthalic acid + SOCl₂/heat converts both –COOH groups to –COCl: phthaloyl chloride, benzene-1,2-dicarbonyl dichloride.", "(iii) C₆H₅CHO + H₂NCONHNH₂ → benzaldehyde semicarbazone, C₆H₅CH=NNHCONH₂.", "(iv) Benzene + C₆H₅COCl/AlCl₃ (Friedel–Crafts acylation) → benzophenone, C₆H₅COC₆H₅.", "(v) Tollens' reagent oxidises only the –CHO of 4-oxocyclohexanecarbaldehyde: 4-oxocyclohexanecarboxylate (the ketone is untouched).", "(vi) NaCN/HCl adds HCN to the aldehyde: 2-[hydroxy(cyano)methyl]benzoic acid.", "(vii) Crossed aldol with dehydration: C₆H₅CH=C(CH₃)CHO (2-methyl-3-phenylprop-2-enal) plus propanal self-condensation products.", "(viii) NaBH₄ then H⁺ reduces the ketone only: CH₃CH(OH)CH₂COOC₂H₅ (ethyl 3-hydroxybutanoate); the ester survives.", "(ix) Cyclohexanol + CrO₃ is oxidised to cyclohexanone.", "(x) Methylenecyclohexane: (1) BH₃, (2) H₂O₂/OH⁻ gives cyclohexylmethanol, then (3) PCC oxidises it to cyclohexanecarbaldehyde.", "(xi) The missing starting material is cyclohexylidenecyclohexane (1,1′-bi(cyclohexylidene)); ozonolysis cleaves the C=C to give two molecules of cyclohexanone."], "answer": "(i) potassium benzoate; (ii) phthaloyl chloride; (iii) benzaldehyde semicarbazone; (iv) C₆H₅COCl/AlCl₃; (v) 4-oxocyclohexanecarboxylate; (vi) the cyanohydrin, 2-[hydroxy(cyano)methyl]benzoic acid; (vii) C₆H₅CH=C(CH₃)CHO; (viii) CH₃CH(OH)CH₂COOC₂H₅; (ix) cyclohexanone; (x) BH₃ then H₂O₂/OH⁻ then PCC; (xi) cyclohexylidenecyclohexane.", "takeaway": "Read the oxidation state of each arrow: Tollens touches only the aldehyde, NaBH₄ only the ketone, and ozonolysis/reduction are chosen for the skeleton change asked for.", "conceptName": "Preparation of aldehydes & ketones", "figure": "8.17", "printPage": 257}, {"q": 18, "title": "Three plausible explanations", "conceptIdx": 3, "page": 31, "question": "Give plausible explanation for each of the following:\n(i) Cyclohexanone forms cyanohydrin in good yield but 2,2,6-trimethylcyclohexanone does not. (ii) There are two –NH₂ groups in semicarbazide. However, only one is involved in the formation of semicarbazones. (iii) During the preparation of esters from a carboxylic acid and an alcohol in the presence of an acid catalyst, the water or the ester should be removed as soon as it is formed.", "given": "Three observations from §8.4 and §8.9.2.", "steps": ["(i) The two methyl groups flanking the carbonyl in 2,2,6-trimethylcyclohexanone sterically block the approach of the nucleophile CN⁻, so the cyanohydrin forms very poorly; cyclohexanone has no such flanking groups.", "(ii) In semicarbazide, H₂N–NH–CO–NH₂, the –NH₂ attached to the C=O is deactivated by resonance with the amide carbonyl and is not nucleophilic; only the terminal –NH₂ attacks the carbonyl.", "(iii) Fischer esterification is a reversible equilibrium; removing water (or distilling off the ester) shifts the equilibrium to the product side (Le Chatelier's principle) and gives a better yield."], "answer": "Steric hindrance (i); resonance-deactivated amide nitrogen (ii); remove water/ester to drive the equilibrium (iii).", "takeaway": "Steric blocking, resonance deactivation and Le Chatelier explain three apparently different observations in one chapter.", "conceptName": "Nucleophilic addition to C=O", "printPage": 257}, {"q": 19, "title": "Identify the C₅H₁₀O ketone", "conceptIdx": 4, "page": 31, "question": "An organic compound contains 69.77% carbon, 11.63% hydrogen and rest oxygen. The molecular mass of the compound is 86. It does not reduce Tollens’ reagent but forms an addition compound with sodium hydrogensulphite and give positive iodoform test. On vigorous oxidation it gives ethanoic and propanoic acid. Write the possible structure of the compound.", "given": "69.77% C, 11.63% H, rest O; M = 86; no Tollens; NaHSO₃ adduct; iodoform positive; oxidation gives ethanoic + propanoic acid.", "steps": ["%O = 100 − (69.77 + 11.63) = 18.60. In 100 g: C = 69.77/12 = 5.81 mol, H = 11.63/1 = 11.63 mol, O = 18.60/16 = 1.1625 mol.", "Divide by the smallest: C : H : O = 5 : 10 : 1, so the empirical formula is C₅H₁₀O and its empirical mass (86) equals the given molecular mass.", "No Tollens → not an aldehyde; NaHSO₃ adduct → a carbonyl (ketone); iodoform positive → a CH₃CO– methyl ketone.", "Vigorous oxidation to ethanoic acid (C₂) + propanoic acid (C₃) means the carbonyl carbon is C-2: pentan-2-one, CH₃COCH₂CH₂CH₃."], "answer": "Pentan-2-one, CH₃COCH₂CH₂CH₃ (official key: CH₃COCH₂CH₂CH₃). Check: 5 × 12/86 = 69.77% C and 10 × 1/86 = 11.63% H.", "takeaway": "Percentages give the formula; the test pattern (no Tollens, bisulphite positive, iodoform positive) gives the methyl ketone; the oxidation fragments fix the position.", "conceptName": "Aldol, Cannizzaro and redox", "printPage": 257}, {"q": 20, "title": "Carboxylate vs phenoxide resonance", "conceptIdx": 6, "page": 31, "question": "Although phenoxide ion has more number of resonating structures than carboxylate ion, carboxylic acid is a stronger acid than phenol. Why?", "given": "Compare the carboxylate ion (two equivalent structures, charge on oxygen) with the phenoxide ion (more structures, charge delocalised onto carbon).", "steps": ["The carboxylate ion has two equivalent resonance structures in which the negative charge sits on the more electronegative oxygen atoms.", "Phenoxide has more resonance structures, but they are non-equivalent and place charge on the less electronegative carbon atoms.", "Resonance stabilisation is therefore much greater for the carboxylate than for the phenoxide.", "Greater stabilisation of the conjugate base means the carboxylic acid ionises more readily: pKa ≈ 5 vs 10 for phenol."], "answer": "The quality of delocalisation wins over the count: two equivalent oxygen-centred carboxylate forms stabilise the anion better than the many carbon-centred phenoxide forms.", "takeaway": "Compare resonance forms by how well they place charge on electronegative atoms, not by how many cartoons there are.", "conceptName": "Acidity of carboxylic acids", "printPage": 257}], "exercisesNote": "All 20 questions from the NCERT exercises (printed pp. 255–257), each mapped to the concept it practises, with a full step-by-step solution. Answers follow the NCERT key (Answers to Some Questions in Exercises, pp. 304–305) and the printed structures of the chapter.", "exerciseMap": [[1, "Definitions of ten carbonyl terms", 3, 29], [2, "IUPAC names of seven compounds", 0, 29], [3, "Structures from eight names", 0, 29], [4, "Names and common names of six carbonyls", 0, 29], [5, "Structures of six derivatives", 3, 29], [6, "Reactions of cyclohexanecarbaldehyde", 3, 30], [7, "Aldol, Cannizzaro or neither?", 4, 30], [8, "Ethanal into three products", 4, 30], [9, "Four aldols from propanal and butanal", 4, 30], [10, "Identify C₉H₁₀O", 4, 30], [11, "Ester puzzle C₈H₁₆O₂", 5, 30], [12, "Three orderings", 6, 30], [13, "Seven chemical tests", 4, 30], [14, "Five syntheses from benzene with C₁ reagents", 5, 30], [15, "Nine conversions in two steps", 4, 30], [16, "Four named descriptions", 4, 30], [17, "Completing eleven syntheses", 1, 31], [18, "Three plausible explanations", 3, 31], [19, "Identify the C₅H₁₀O ketone", 4, 31], [20, "Carboxylate vs phenoxide resonance", 6, 31]]};
+</script>
+<script>
+// Textbook structures used by the lech203 exercises, redrawn as SVG from the printed
+// structures in books/originals/Class12-Chemistry-Pt2_lech203.pdf (exercise pp. 255–257).
+// Figure 8.4 is the cyclopentanecarbaldehyde ring of Ex 8.4(v); Fig. 8.17 is the eleven-scheme
+// synthesis puzzle of Ex 8.17.
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", GOLD = "#fbbf24", GREEN = "#34d399";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 15) + '" ' +
+      'text-anchor="' + (o.anchor || "middle") + '"' + (o.weight ? ' font-weight="' + o.weight + '"' : '') +
+      (o.mono ? ' font-family="ui-monospace,monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + (color || INK) +
+      '" stroke-width="' + (w || 2) + '" stroke-linecap="round"/>';
+  }
+  function arrow(x1, y, x2, color){
+    return line(x1, y, x2, y, color || GOLD, 2) +
+      '<polygon points="' + x2 + ',' + y + ' ' + (x2 - 11) + ',' + (y - 5) + ' ' + (x2 - 11) + ',' + (y + 5) + '" fill="' + (color || GOLD) + '"/>';
+  }
+  function pts(cx, cy, r, rot){
+    var out = [];
+    for(var k = 0; k < 6; k++){
+      var a = Math.PI / 180 * (60 * k - 90 + (rot || 0));
+      out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    return out;
+  }
+  function cyclo(cx, cy, r, rot){
+    var p = pts(cx, cy, r, rot), s = "";
+    for(var k = 0; k < 6; k++){
+      var q = p[(k + 1) % 6];
+      s += line(p[k][0], p[k][1], q[0], q[1], INK, 2);
+    }
+    return s;
+  }
+  // One row of the Fig. 8.17 scheme: (label) left + reagent/arrow + right.
+  function row(y, label, left, reagent, right){
+    var s = text(24, y + 5, "(" + label + ")", {anchor: "start", size: 14, color: MUTED});
+    s += text(80, y + 5, left, {anchor: "start", size: 13});
+    s += arrow(560, y, 640, GOLD);
+    s += text(600, y - 10, reagent, {size: 12, color: GOLD});
+    s += text(660, y + 5, right, {anchor: "start", size: 13, color: GREEN});
+    return s;
+  }
+
+  var figs = {};
+
+  figs["8.4"] = {
+    caption: "Fig. 8.4 — Exercise 8.4(v): cyclopentanecarbaldehyde (redrawn skeletal ring with –CHO).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 360 260" role="img" aria-label="Cyclopentanecarbaldehyde ring of Exercise 8.4(v)">';
+      s += '<rect width="360" height="260" fill="#09131d"/>';
+      var cx = 170, cy = 140, r = 52;
+      var p = [];
+      for (var k = 0; k < 5; k++){
+        var a = Math.PI / 180 * (72 * k - 90);
+        p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+      }
+      for (var k2 = 0; k2 < 5; k2++){
+        var q = p[(k2 + 1) % 5];
+        s += line(p[k2][0], p[k2][1], q[0], q[1], INK, 2);
+      }
+      var top = p[0];
+      s += line(top[0], top[1], top[0] + 42, top[1] - 30, INK, 2);
+      s += text(top[0] + 52, top[1] - 40, "CHO", {anchor: "middle", size: 16, color: GOLD});
+      s += text(180, 240, "cyclopentanecarbaldehyde · (v) of Exercise 8.4", {size: 12, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.17"] = {
+    caption: "Fig. 8.17 — Exercise 8.17: the eleven synthesis schemes (i)–(xi) with missing reagents/products redrawn.",
+    svg: function(){
+      var s = '<svg viewBox="0 0 900 720" role="img" aria-label="Eleven synthesis schemes of Exercise 8.17">';
+      s += '<rect width="900" height="720" fill="#09131d"/>';
+      s += text(450, 34, "Complete each synthesis — schemes (i)–(xi), redrawn from p. 257", {size: 14, color: MUTED});
+      var rows = [
+        ["i",   "C₆H₅CH₂CH₃",                              "KMnO₄ / KOH, heat",        "C₆H₅COOK (benzoate)"],
+        ["ii",  "benzene-1,2-dicarboxylic acid",            "SOCl₂, heat",              "carbons both → COCl"],
+        ["iii", "C₆H₅CHO + H₂NCONHNH₂",                     "—",                        "C₆H₅CH=NNHCONH₂"],
+        ["iv",  "C₆H₆ → C₆H₅COC₆H₅",                        "C₆H₅COCl / AlCl₃",         "benzophenone"],
+        ["v",   "4-oxocyclohexanecarbaldehyde",             "[Ag(NH₃)₂]⁺",              "COO⁻ (ketone kept)"],
+        ["vi",  "2-formylbenzoic acid",                     "NaCN / HCl",               "cyanohydrin"],
+        ["vii", "C₆H₅CHO + CH₃CH₂CHO",                      "dil. NaOH, Δ",             "C₆H₅CH=C(CH₃)CHO"],
+        ["viii","CH₃COCH₂COOC₂H₅",                          "NaBH₄ then H⁺",            "CH₃CH(OH)CH₂COOC₂H₅"],
+        ["ix",  "cyclohexanol",                             "CrO₃",                     "cyclohexanone"],
+        ["x",   "methylenecyclohexane",                     "BH₃; H₂O₂/OH⁻; PCC",       "cyclohexanecarbaldehyde"],
+        ["xi",  "missing alkene + O₃ then Zn/H₂O",          "—",                        "2 × cyclohexanone"],
+      ];
+      var y = 80;
+      rows.forEach(function(r){ s += row(y, r[0], r[1], r[2], r[3]); y += 56; });
+      s += text(450, 706, "Left column: given/starting material · middle: missing reagent or method · right: product or answer", {size: 11, color: MUTED});
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1416,44 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1479,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1562,35 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1607,10 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1619,17 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1641,15 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1662,6 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1671,6 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1683,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1709,47 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1757,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1766,46 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1851,10 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1873,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +1923,8 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +1933,41 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +1982,6 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +2016,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +2101,9 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2131,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2176,31 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2246,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2256,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2266,31 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2310,12 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2325,10 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2342,41 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2384,7 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1895,27 +2393,237 @@ window.CHAPTER = {"code": "lech203", "chapterNumber": 8, "book_name": "Chemistry
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1951,8 +2659,9 @@ window.SIMS.carbnom = (function(){
     var s = document.getElementById("time-scrubber"); if(s) s.max = 8;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>C=O polar, planar sp²</span></div>';
+    var nids = ["methanal","ethanal","2-methylpropanal","prop-2-enal","benzaldehyde","pentan-2-one","mesityl-oxide","terephthalaldehyde"];
     document.getElementById("preset-bar").innerHTML =
-      names.map(function(n,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" id="n'+i+'">'+(i+1)+'</button>'; }).join("");
+      names.map(function(n,i){ return '<button class="preset-btn'+(i===0?' active':'')+'" data-preset="'+nids[i]+'" id="n'+i+'">'+(i+1)+'</button>'; }).join("");
     names.forEach(function(_,i){
       document.getElementById("n"+i).onclick = function(){ setActivePreset(this); row=i; draw(0); };
     });
@@ -1984,11 +2693,11 @@ window.SIMS.prepald = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Aldehyde route</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Ketone route</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-r">Rosenmund / Stephen</button>' +
-      '<button class="preset-btn" id="p-e">Étard / Gattermann–Koch</button>' +
-      '<button class="preset-btn" id="p-ox">Alcohol oxidation</button>' +
-      '<button class="preset-btn" id="p-fc">Friedel–Crafts acyl</button>' +
-      '<button class="preset-btn" id="p-ozo">Ozonolysis / alkyne</button>';
+      '<button class="preset-btn active" data-preset="rosenmund" id="p-r">Rosenmund / Stephen</button>' +
+      '<button class="preset-btn" data-preset="etard" id="p-e">Étard / Gattermann–Koch</button>' +
+      '<button class="preset-btn" data-preset="oxidation" id="p-ox">Alcohol oxidation</button>' +
+      '<button class="preset-btn" data-preset="friedel-crafts" id="p-fc">Friedel–Crafts acyl</button>' +
+      '<button class="preset-btn" data-preset="ozonolysis" id="p-ozo">Ozonolysis / alkyne</button>';
     document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode="rosen"; draw(0); };
     document.getElementById("p-e").onclick = function(){ setActivePreset(this); mode="etard"; draw(0); };
     document.getElementById("p-ox").onclick = function(){ setActivePreset(this); mode="ox"; draw(0); };
@@ -2022,7 +2731,7 @@ window.SIMS.physcarb = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Polar C=O</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>H-bonding (alcohols, acids)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="b1">Intext 8.3 boiling points</button>';
+      '<button class="preset-btn active" data-preset="boiling-points" id="b1">Intext 8.3 boiling points</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -2053,12 +2762,12 @@ window.SIMS.nucadd = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Carbonyl Cδ⁺</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Tetrahedral intermediate</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="u-m">Fig 8.2 mechanism</button>' +
-      '<button class="preset-btn" id="u-r">Reactivity order</button>' +
-      '<button class="preset-btn" id="u-hcn">HCN cyanohydrin</button>' +
-      '<button class="preset-btn" id="u-ac">Acetal / ketal</button>' +
-      '<button class="preset-btn" id="u-nz">NH₂Z (oxime, 2,4-DNP)</button>' +
-      '<button class="preset-btn" id="u-bz">Ex 8.3 benzaldehyde</button>';
+      '<button class="preset-btn active" data-preset="mechanism" id="u-m">Fig 8.2 mechanism</button>' +
+      '<button class="preset-btn" data-preset="reactivity" id="u-r">Reactivity order</button>' +
+      '<button class="preset-btn" data-preset="cyanohydrin" id="u-hcn">HCN cyanohydrin</button>' +
+      '<button class="preset-btn" data-preset="acetal" id="u-ac">Acetal / ketal</button>' +
+      '<button class="preset-btn" data-preset="nhz" id="u-nz">NH₂Z (oxime, 2,4-DNP)</button>' +
+      '<button class="preset-btn" data-preset="benzaldehyde" id="u-bz">Ex 8.3 benzaldehyde</button>';
     document.getElementById("u-m").onclick = function(){ setActivePreset(this); mode="mech"; App.resetTimeline(); App.play(); };
     document.getElementById("u-r").onclick = function(){ setActivePreset(this); mode="reac"; draw(0); };
     document.getElementById("u-hcn").onclick = function(){ setActivePreset(this); mode="hcn"; draw(0); };
@@ -2149,10 +2858,10 @@ window.SIMS.aldolox = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>α-H / enolate</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>No α-H / Cannizzaro</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="o-a">Aldol</button>' +
-      '<button class="preset-btn" id="o-c">Cannizzaro</button>' +
-      '<button class="preset-btn" id="o-ox">Tollens / Fehling</button>' +
-      '<button class="preset-btn" id="o-red">Clemmensen / Wolff–Kishner</button>';
+      '<button class="preset-btn active" data-preset="aldol" id="o-a">Aldol</button>' +
+      '<button class="preset-btn" data-preset="cannizzaro" id="o-c">Cannizzaro</button>' +
+      '<button class="preset-btn" data-preset="tollens-fehling" id="o-ox">Tollens / Fehling</button>' +
+      '<button class="preset-btn" data-preset="clemmensen-wk" id="o-red">Clemmensen / Wolff–Kishner</button>';
     document.getElementById("o-a").onclick = function(){ setActivePreset(this); mode="aldol"; draw(0); };
     document.getElementById("o-c").onclick = function(){ setActivePreset(this); mode="can"; draw(0); };
     document.getElementById("o-ox").onclick = function(){ setActivePreset(this); mode="ox"; draw(0); };
@@ -2213,9 +2922,10 @@ window.SIMS.acidnom = (function(){
     var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Carboxyl –COOH</span></div>';
+    var cids = ["methanoic","ethanoic","dimethylbutanoic","benzoic","adipic","propenoic"];
     document.getElementById("preset-bar").innerHTML =
-      rows.map(function(r,k){ return '<button class="preset-btn'+(k===0?' active':'')+'" id="c'+k+'">'+(k+1)+'</button>'; }).join("") +
-      '<button class="preset-btn" id="cprep">Preparation</button>';
+      rows.map(function(r,k){ return '<button class="preset-btn'+(k===0?' active':'')+'" data-preset="'+cids[k]+'" id="c'+k+'">'+(k+1)+'</button>'; }).join("") +
+      '<button class="preset-btn" data-preset="preparation" id="cprep">Preparation</button>';
     rows.forEach(function(_,k){
       document.getElementById("c"+k).onclick = function(){ setActivePreset(this); i=k; draw(0); };
     });
@@ -2267,13 +2977,13 @@ window.SIMS.acidstrength = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Stronger (low pKa)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Carboxylate 2 equivalent forms</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="s-et">EtOH 15.9</button>' +
-      '<button class="preset-btn" id="s-ph">PhOH 10</button>' +
-      '<button class="preset-btn active" id="s-ac">AcOH 4.76</button>' +
-      '<button class="preset-btn" id="s-bz">PhCOOH 4.19</button>' +
-      '<button class="preset-btn" id="s-cl">ClCH₂COOH</button>' +
-      '<button class="preset-btn" id="s-tf">CF₃COOH 0.23</button>' +
-      '<button class="preset-btn" id="s-why">Why &gt; phenol?</button>';
+      '<button class="preset-btn" data-preset="ethanol" id="s-et">EtOH 15.9</button>' +
+      '<button class="preset-btn" data-preset="phenol" id="s-ph">PhOH 10</button>' +
+      '<button class="preset-btn active" data-preset="acetic" id="s-ac">AcOH 4.76</button>' +
+      '<button class="preset-btn" data-preset="benzoic" id="s-bz">PhCOOH 4.19</button>' +
+      '<button class="preset-btn" data-preset="chloroacetic" id="s-cl">ClCH₂COOH</button>' +
+      '<button class="preset-btn" data-preset="tfa" id="s-tf">CF₃COOH 0.23</button>' +
+      '<button class="preset-btn" data-preset="why-phenol" id="s-why">Why &gt; phenol?</button>';
     document.getElementById("s-et").onclick = function(){ setActivePreset(this); id="etoh"; draw(0); };
     document.getElementById("s-ph").onclick = function(){ setActivePreset(this); id="ph"; draw(0); };
     document.getElementById("s-ac").onclick = function(){ setActivePreset(this); id="ac"; draw(0); };
@@ -2320,10 +3030,10 @@ window.SIMS.acidrxn = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>C–OH cleavage</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>–COOH / α-H</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="x-e">Esterification</button>' +
-      '<button class="preset-btn" id="x-h">HVZ halogenation</button>' +
-      '<button class="preset-btn" id="x-d">Decarboxylation / LiAlH₄</button>' +
-      '<button class="preset-btn" id="x-u">Uses</button>';
+      '<button class="preset-btn active" data-preset="esterification" id="x-e">Esterification</button>' +
+      '<button class="preset-btn" data-preset="hvz" id="x-h">HVZ halogenation</button>' +
+      '<button class="preset-btn" data-preset="decarboxylation" id="x-d">Decarboxylation / LiAlH₄</button>' +
+      '<button class="preset-btn" data-preset="uses" id="x-u">Uses</button>';
     document.getElementById("x-e").onclick = function(){ setActivePreset(this); mode="est"; App.resetTimeline(); App.play(); };
     document.getElementById("x-h").onclick = function(){ setActivePreset(this); mode="hvz"; draw(0); };
     document.getElementById("x-d").onclick = function(){ setActivePreset(this); mode="dec"; draw(0); };

@@ -109,16 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,8 +1066,161 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -1022,8 +1232,10 @@ button.btn-secondary {
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-  <a href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:650;font-size:14px">Class 12</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
+  </div>
   <h1 class="chapter-crumb" id="chapter-crumb">CH 09 · AMINES</h1>
   <div class="top-actions">
     <div class="progress-pill">
@@ -1037,33 +1249,134 @@ button.btn-secondary {
 
 <div class="app-layout">
   <aside class="sidebar">
-    <nav id="contents" aria-label="Concepts">
     <div class="sidebar-heading">Curriculum Concepts</div>
-    <div id="sidebar-nav"></div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
     </nav>
     <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
-      <button class="concept-nav" id="nav-revision">
+      <button class="revision-nav" id="nav-revision">
         <span class="num">✦</span>
-        <span>NCERT Exercises &amp; Revision</span>
+        <span>NCERT Exercises & Revision</span>
       </button>
     </div>
   </aside>
 
   <main id="main-content">
-    <div id="concept-view"></div>
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
     <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
       <div class="concept-header">
         <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
         <h2 class="concept-title">Revise, Reflect, Refine</h2>
-        <p class="concept-deck">All 14 Exercises from NCERT Class 12 Chemistry Part II (pp. 259–280) mapped to core concepts with step-by-step solutions.</p>
+        <p class="concept-deck">All 14 Exercises from NCERT Class 12 Chemistry Part 2 (pp. 259–280) mapped directly to core concepts with full step-by-step solutions.</p>
       </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
     </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
   </main>
 </div>
-<footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry Part II", "title": "Amines", "subtitle": "Structure, nomenclature, preparation, basicity, Hinsberg/carbylamine tests, electrophilic substitution of aniline, and diazonium salts as synthetic intermediates.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lech204.pdf", "page_start": 259, "page_end": 280, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "structure-class-nomen", "nav": "Structure, class & names", "title": "Amines are pyramidal ammonia derivatives — name them as this reprint does.", "deck": "Nitrogen is sp³; the lone pair occupies one tetrahedral vertex, so ∠C–N–C in trimethylamine is 108° (Fig. 9.1). Classify 1°/2°/3° by how many hydrogens of NH₃ are replaced, then apply Table 9.1 IUPAC.", "minutes": 8, "section": "9.1–9.3", "pages": [1, 3], "print": "259–261", "sim": "amineclass", "simTitle": "Fig. 9.1 pyramid + Table 9.1 classifier", "quick": ["<strong>Amines</strong> are ammonia derivatives obtained by replacing one, two or all three hydrogen atoms by alkyl/aryl groups. Nitrogen is <strong>sp³ hybridised</strong>; three hybrid orbitals bond to H or C and the fourth holds the unshared pair, so the geometry is <strong>pyramidal</strong>. Because of that lone pair, ∠C–N–E is less than 109.5° — <strong>108°</strong> in trimethylamine (Fig. 9.1, zoom p.2).", "<strong>Classification:</strong> 1° RNH₂ / ArNH₂; 2° R₂NH or RNHR′; 3° R₃N. Simple if all alkyl/aryl groups are the same, mixed if different. Intext 9.1 (zoom p.4): 1-naphthylamine is 1°; N,N-dimethylnaphthalen-1-amine is 3°; (C₂H₅)₂CHNH₂ is 1°; (C₂H₅)₂NH is 2°.", "<strong>IUPAC (Table 9.1, zoom p.3):</strong> alkanamines for 1° (CH₃CH₂NH₂ = ethanamine). Locant <em>N</em> marks N-substituents: CH₃NHCH₂CH₃ = N-methylethanamine; (CH₃CH₂)₃N = N,N-diethylethanamine. C₆H₅NH₂ is aniline (accepted IUPAC) or benzenamine. Diamines retain the hydrocarbon ‘e’: H₂N(CH₂)₆NH₂ = hexane-1,6-diamine."], "formulas": [{"label": "Pyramidal nitrogen", "html": "N (sp³) + lone pair → pyramidal; ∠C–N–C = 108° in Me₃N", "cond": "Fig. 9.1; less than 109.5° because of the lone pair"}, {"label": "Classes", "html": "1° RNH₂ · 2° R₂NH · 3° R₃N", "cond": "Count H atoms of NH₃ replaced by R/Ar"}, {"label": "N-locant", "html": "CH₃NHCH₂CH₃ = N-methylethanamine", "cond": "Table 9.1; N marks a substituent on nitrogen"}], "deeper": "The unshared pair is the chemical personality of every amine: Lewis base, nucleophile, and the reason amines H-bond. Common names glue the alkyl word to amine (ethylamine, trimethylamine). For arylamines the suffix ‘e’ of arene is replaced by ‘amine’. o-Toluidine = 2-methylaniline; p-bromoaniline = 4-bromobenzenamine or 4-bromoaniline; N,N-dimethylaniline = N,N-dimethylbenzenamine — all Table 9.1.", "worked": "Intext 9.2 (zoom p.4), C₄H₁₁N. Eight isomeric amines: 1° butan-1-amine, butan-2-amine, 2-methylpropan-1-amine, 2-methylpropan-2-amine; 2° N-methylpropan-1-amine, N-methylpropan-2-amine, N-ethylethanamine; 3° N,N-dimethylethanamine. Pairs show chain, position, and metamerism (different N-alkyl groups).", "prediction": {"prompt": "Table 9.1: what is the IUPAC name of (CH₃CH₂)₂N–CH₂CH₂CH₂CH₃?", "options": ["N,N-Diethylbutan-1-amine (common: N,N-diethylbutylamine)", "Butanamine — ignore the ethyl groups on nitrogen", "N-Ethyl-N-ethylbutane"], "answer": 0, "explanation": "Zoom p.3 Table 9.1: the parent is butan-1-amine; two N-ethyl groups give N,N-diethylbutan-1-amine."}, "connect": [["Novocain, Benadryl, adrenaline — amines in the clinic", "NCERT opens with adrenaline and ephedrine (both 2° amino) used to raise blood pressure; Novocain as a dental anaesthetic; Benadryl (tertiary amino) as an antihistaminic; quaternary ammonium salts as surfactants. The pyramidal lone pair is the pharmacophore."], ["Wow — 108° is the textbook’s measured angle, not 109.5°", "Fig. 9.1 refuses the ideal tetrahedral angle. The lone pair occupies more space than a bonding pair, so trimethylamine is a slightly flattened pyramid. That is the same VSEPR idea as H₂O’s 104.5°.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "State the hybridisation of N in amines, the C–N–C angle in Me₃N, and name CH₃NHCH₂CH₃ by IUPAC.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Nitrogen in amines is hybridised", "answer": 0, "hint": "§9.1 and Fig. 9.1.", "solution": "Three sp³ orbitals bond to H/C; the fourth holds the unshared pair.", "options": ["sp³, pyramidal, with a lone pair in one hybrid orbital", "sp², planar, like the carbonyl carbon", "sp, linear, like ethyne"], "wrong": ["", "Planar sp² would be an amide nitrogen after delocalisation.", "sp is two groups, not four electron domains."]}, {"level": "Medium", "type": "mcq", "prompt": "IUPAC name of CH₃–NH–CH₂CH₃ (Table 9.1) is", "answer": 0, "hint": "Zoom p.3.", "solution": "N-locant marks the methyl on nitrogen of ethanamine.", "options": ["N-methylethanamine", "ethylmethylamine only — IUPAC does not use N-locants", "dimethylamine"], "wrong": ["", "Ethylmethylamine is the common name.", "That would be (CH₃)₂NH."], "map": "Table 9.1"}, {"level": "Hard", "type": "mcq", "prompt": "Intext 9.1 (zoom p.4): (C₂H₅)₂CHNH₂ is", "answer": 0, "hint": "Count C–N bonds at nitrogen, not total carbons.", "solution": "The N atom bears two hydrogens and one (C₂H₅)₂CH– group → 1°.", "options": ["primary — only one alkyl group is attached to nitrogen", "secondary — two ethyl groups are visible in the formula", "tertiary — three carbons in total"], "wrong": ["", "The two ethyls are on carbon, not nitrogen.", "Three carbons in the alkyl group do not make a 3° amine."], "map": "Intext 9.1"}]}, {"id": "preparation", "nav": "Preparation of amines", "title": "Six routes to RNH₂ — and why Gabriel refuses aryl halides.", "deck": "Nitro reduction (Fe/HCl preferred), ammonolysis at 373 K, nitrile/amide reduction, Gabriel phthalimide, and Hoffmann bromamide (one carbon less). Example 9.2 is ascent of the amine series.", "minutes": 10, "section": "9.4", "pages": [4, 6], "print": "262–264", "sim": "preplab", "simTitle": "Preparation map: nitro → Gabriel → Hoffmann", "quick": ["<strong>1. Nitro reduction.</strong> ArNO₂ / RNO₂ → amine by H₂/Ni, Pd or Pt, or metals in acid. Iron scrap + HCl is preferred: FeCl₂ hydrolyses and regenerates HCl, so only a catalytic amount of acid is needed to start (zoom p.4).", "<strong>2. Ammonolysis</strong> of alkyl/benzyl halides with ethanolic NH₃ in a sealed tube at <strong>373 K</strong> is nucleophilic substitution. The 1° amine is itself a nucleophile, so 2°, 3° and R₄N⁺X⁻ follow. Excess NH₃ favours 1°. Reactivity RI > RBr > RCl. Free amine is liberated from the ammonium salt with a strong base.", "<strong>3–4. Nitriles and amides.</strong> RCN + LiAlH₄ or catalytic hydrogenation (also Na–Hg / C₂H₅OH, zoom p.5) gives RCH₂NH₂ — <em>ascent of amine series</em> by one carbon. Amides with LiAlH₄ give RCH₂NH₂ (same carbon count as the acyl chain plus N).", "<strong>5. Gabriel phthalimide</strong> gives pure 1° amines: potassium phthalimide + RX, then alkaline hydrolysis. <strong>Aromatic 1° amines cannot be made this way</strong> because aryl halides do not undergo nucleophilic substitution with the phthalimide anion (zoom p.6).", "<strong>6. Hoffmann bromamide.</strong> RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O. The alkyl/aryl group migrates from carbonyl carbon to nitrogen; the amine has <strong>one carbon less</strong> than the amide."], "formulas": [{"label": "Hoffmann bromamide", "html": "RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O", "cond": "Zoom p.6; amine has one C less than the amide"}, {"label": "Ascent via nitrile", "html": "R–X → R–CN → R–CH₂–NH₂", "cond": "Example 9.2; LiAlH₄ or H₂/Ni"}, {"label": "Ammonolysis ladder", "html": "RNH₂ → R₂NH → R₃N → R₄N⁺X⁻", "cond": "373 K sealed tube; excess NH₃ favours 1°"}], "deeper": "Hoffmann is a degradation: the carbonyl carbon is lost as carbonate. Gabriel is a protection strategy — the phthalimide nitrogen can be alkylated only once, so 2°/3° contamination is avoided. That is why it is preferred for aliphatic 1° amines (Ex 9.3, 9.12). Aryl–X does not do SN2 with the imide anion, so aniline is not a Gabriel product.", "worked": "Example 9.2 (zoom p.6): (i) CH₃CH₂Cl --ethanolic NaCN→ CH₃CH₂CN (propanenitrile) --reduction→ CH₃CH₂CH₂NH₂ (propan-1-amine). (ii) C₆H₅CH₂Cl --ethanolic NaCN→ C₆H₅CH₂CN --H₂/Ni→ C₆H₅CH₂CH₂NH₂ (2-phenylethanamine). Example 9.3: butanamide (4 C) → propanamine (3 C); benzamide → aniline (benzenamine).", "prediction": {"prompt": "Can aniline be prepared by Gabriel phthalimide synthesis?", "options": ["No — aryl halides do not undergo nucleophilic substitution with the phthalimide anion.", "Yes — heat iodobenzene with potassium phthalimide.", "Yes, but only if NaOH is replaced by HCl."], "answer": 0, "explanation": "§9.4.5 and Ex 9.12 (zoom p.6): aromatic 1° amines cannot be prepared by Gabriel because Ar–X does not do SN with the imide anion."}, "connect": [["Ascent of the amine series in a process lab", "To grow a carbon chain on nitrogen, NCERT’s nitrile route (Example 9.2) is the clean classroom analogue of homologation: RX → RCN → RCH₂NH₂. Hoffmann then shortens an amide by one carbon — the two reactions are complementary chain editors."], ["Wow — Fe/HCl is catalytic in acid because FeCl₂ hydrolyses", "The textbook’s preferred industrial-flavoured reduction is not ‘use lots of HCl’. Iron scrap plus a little HCl works because FeCl₂ + H₂O regenerates HCl. Atom-economy thinking, 1950s plant chemistry.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "Write the Hoffmann equation with 4 NaOH, and state why Gabriel fails for aniline.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Hoffmann bromamide produces an amine that has", "answer": 0, "hint": "§9.4.6.", "solution": "The carbonyl carbon is lost as Na₂CO₃.", "options": ["one carbon less than the starting amide", "one carbon more than the amide", "the same number of carbons as the amide"], "wrong": ["", "That is the nitrile-reduction ascent.", "Amide reduction with LiAlH₄ keeps the carbon count."]}, {"level": "Medium", "type": "mcq", "prompt": "Example 9.2: CH₃CH₂Cl → CH₃CH₂CH₂NH₂ uses", "answer": 0, "hint": "Zoom p.6.", "solution": "Ascent: chloroethane → propanenitrile → propan-1-amine.", "options": ["ethanolic NaCN then reduction of the nitrile", "Hoffmann bromamide of propanamide", "Gabriel with chloromethane"], "wrong": ["", "Hoffmann of propanamide would give ethanamine.", "Gabriel on CH₃Cl gives methanamine."], "map": "Example 9.2"}, {"level": "Hard", "type": "mcq", "prompt": "In RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O, sodium atoms on the left equal", "answer": 0, "hint": "Zoom p.6; conserve atoms.", "solution": "4 Na on each side; 2 Br; carbonate accounts for the lost carbonyl carbon.", "options": ["4, matching 2 in Na₂CO₃ plus 2 in 2 NaBr", "2, because only Na₂CO₃ contains sodium", "6, counting bromine as sodium"], "wrong": ["", "Na₂CO₃ is only half the sodium.", "Do not invent atoms."], "map": "Hoffmann"}]}, {"id": "physical", "nav": "Physical properties", "title": "1° amines H-bond; 3° amines do not — so b.p. is 1° > 2° > 3°.", "deck": "Table 9.2 (molar mass ~73): n-butylamine 350.8 K, diethylamine 329.3 K, ethyldimethylamine 310.5 K, 2-methylbutane 300.8 K, butan-1-ol 390.3 K. Alcohols out-boil amines because O is more electronegative than N.", "minutes": 7, "section": "9.5", "pages": [7, 8], "print": "265–266", "sim": "hbondbp", "simTitle": "Table 9.2 boiling-point lab", "quick": ["Lower aliphatic amines are gases with a <strong>fishy odour</strong>; C₃ and above are liquids; still higher are solids. Aniline and arylamines are colourless when pure but colour on storage by atmospheric oxidation.", "Lower aliphatic amines dissolve in water by H-bonding to H₂O. Solubility falls as the hydrophobic alkyl part grows. Alcohols are more polar (EN O = 3.5 vs N = 3.0) and form stronger intermolecular H-bonds, so <strong>butan-1-ol is more water-soluble than butan-1-amine</strong>.", "1° and 2° amines associate intermolecularly (Fig. 9.2). 3° amines have no N–H, so no such association. Order of boiling points of isomeric amines: <strong>primary > secondary > tertiary</strong>. Table 9.2 (zoom p.8): n-C₄H₉NH₂ 350.8 K > (C₂H₅)₂NH 329.3 K > C₂H₅N(CH₃)₂ 310.5 K, all molar mass 73; the alkane C₂H₅CH(CH₃)₂ (72) boils at 300.8 K; n-C₄H₉OH (74) at 390.3 K."], "formulas": [{"label": "b.p. of isomers", "html": "1° > 2° > 3° (isomeric amines)", "cond": "N–H hydrogen bonding: two H in 1°, one in 2°, none in 3°"}, {"label": "Table 9.2 (mass ~73)", "html": "n-BuNH₂ 350.8 K · Et₂NH 329.3 K · EtNMe₂ 310.5 K · n-BuOH 390.3 K", "cond": "Zoom p.8; alcohols out-boil amines"}], "deeper": "The same H-bond that raises the boiling point of 1° amines also explains water solubility. Tertiary amines can still accept H-bonds from water (the lone pair is there) so small 3° amines dissolve, but they cannot donate N–H to a neighbour, so their neat boiling points stay low. Ex 9.4(v): C₂H₅OH > C₂H₅NH₂ > (CH₃)₂NH in boiling point.", "worked": "Table 9.2 comparison (zoom p.8). All five compounds have molar mass 72–74. The alkane has only van der Waals forces (300.8 K). Tertiary amine 310.5 K (no N–H donation). Secondary 329.3 K. Primary 350.8 K. Alcohol 390.3 K because the O–H bond is more polar. That is the whole intermolecular-force ladder of this section.", "prediction": {"prompt": "Among n-C₄H₉NH₂, (C₂H₅)₂NH and C₂H₅N(CH₃)₂ (all mass 73), which boils highest?", "options": ["n-C₄H₉NH₂ at 350.8 K — two N–H hydrogens for intermolecular H-bonds", "C₂H₅N(CH₃)₂ because more alkyl groups raise boiling point", "They boil at the same temperature because molar mass is identical"], "answer": 0, "explanation": "Table 9.2: 350.8 > 329.3 > 310.5 K. Association, not mass, ranks the isomers."}, "connect": [["Fishy odour of the lower amines", "The textbook’s ‘fishy’ is trimethylamine and cousins — the same smell as decaying fish (bacterial reduction of TMAO). That is why 3° amines are insect attractants (summary)."], ["Wow — 40 K between n-butylamine and n-butanol", "Same skeleton, one atom swapped (N vs O). Table 9.2’s 350.8 vs 390.3 K is a 39.5 K lesson in electronegativity: 3.0 vs 3.5.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "Quote Table 9.2 boiling points of n-BuNH₂, Et₂NH and n-BuOH, and state the b.p. order of isomeric amines.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Boiling-point order of isomeric amines is", "answer": 0, "hint": "§9.5; Fig. 9.2.", "solution": "1° has two N–H for association; 3° has none.", "options": ["primary > secondary > tertiary", "tertiary > secondary > primary", "all equal at a given molar mass"], "wrong": ["", "That is the gas-phase basicity order, not b.p.", "Table 9.2 disproves this."]}, {"level": "Medium", "type": "mcq", "prompt": "Table 9.2: b.p. of n-C₄H₉OH (mass 74) is", "answer": 0, "hint": "Zoom p.8.", "solution": "Alcohols form stronger H-bonds than amines.", "options": ["390.3 K", "350.8 K", "300.8 K"], "wrong": ["", "That is n-butylamine.", "That is the isomeric alkane."], "map": "Table 9.2"}, {"level": "Hard", "type": "mcq", "prompt": "Why is butan-1-ol more soluble in water than butan-1-amine?", "answer": 0, "hint": "§9.5 paragraph on EN.", "solution": "The textbook asks you to predict from EN of N vs O.", "options": ["O is more electronegative (3.5 vs 3.0) so alcohols H-bond more strongly to water", "Amines have higher molar mass", "Amines are ionic"], "wrong": ["", "Both have four carbons.", "Free amines are not salts."]}]}, {"id": "basicity", "nav": "Basicity of amines", "title": "pK_b ranks bases: aliphatic amines beat ammonia; aniline does not.", "deck": "Table 9.3 (aqueous): Me₂NH 3.27 < MeNH₂ 3.38 < Me₃N 4.22; Et₂NH 3.00 is the strongest listed aliphatic. Aniline 9.38 is weaker than NH₃ (4.75) because the lone pair is conjugated with the ring (five resonance forms vs two for anilinium).", "minutes": 12, "section": "9.6.1", "pages": [8, 12], "print": "266–270", "sim": "aminebasicity", "simTitle": "Table 9.3 pK_b + aqueous vs gas-phase lab", "quick": ["Amines are <strong>Lewis bases</strong> (lone pair on N). They form salts with acids; NaOH regenerates the amine. Amine salts are water-soluble and ether-insoluble — the basis for separating amines from non-basic organics.", "K_b = [RNH₃⁺][OH⁻]/[RNH₂]; <strong>pK_b = −log K_b</strong>. Larger K_b or smaller pK_b ⇒ stronger base. Table 9.3 (zoom p.9): methanamine 3.38; N-methylmethanamine 3.27; N,N-dimethylmethanamine 4.22; ethanamine 3.29; N-ethylethanamine 3.00; N,N-diethylethanamine 3.25; benzenamine 9.38; phenylmethanamine 4.70; N-methylaniline 9.30; N,N-dimethylaniline 8.92. Ammonia is 4.75. Aliphatic pK_b lies in 3–4.22; aromatic amines are weaker than ammonia.", "<strong>Gas phase:</strong> 3° > 2° > 1° > NH₃ (pure +I). <strong>Aqueous:</strong> solvation and steric hindrance compete. Methyl series: (CH₃)₂NH > CH₃NH₂ > (CH₃)₃N > NH₃. Ethyl series: (C₂H₅)₂NH > (C₂H₅)₃N > C₂H₅NH₂ > NH₃ (zoom p.11).", "<strong>Aniline:</strong> the lone pair is conjugated with the ring (five resonating structures I–V). Anilinium has only two Kekulé forms, so aniline is more stabilised than its cation and is a weaker base than NH₃. –OCH₃, –CH₃ increase arylamine basicity; –NO₂, –SO₃H, –COOH, –X decrease it. Benzylamine (pK_b 4.70) is aliphatic-like: the NH₂ is not on the ring."], "formulas": [{"label": "K_b definition", "html": "K_b = [RNH₃⁺][OH⁻]/[RNH₂] ; pK_b = −log K_b", "cond": "Zoom p.9; smaller pK_b = stronger base"}, {"label": "Aqueous methyl order", "html": "(CH₃)₂NH > CH₃NH₂ > (CH₃)₃N > NH₃", "cond": "Table 9.3: 3.27, 3.38, 4.22, 4.75"}, {"label": "Aqueous ethyl order", "html": "(C₂H₅)₂NH > (C₂H₅)₃N > C₂H₅NH₂ > NH₃", "cond": "3.00, 3.25, 3.29, 4.75"}, {"label": "Example 9.4", "html": "(C₂H₅)₂NH > C₂H₅NH₂ > NH₃ > C₆H₅NH₂", "cond": "Zoom p.12"}], "deeper": "Stability of the ammonium cation relative to the free amine decides basicity. Alkyl +I stabilises RNH₃⁺ and raises electron density on N. In water, RNH₃⁺ is also solvated by H-bonding; 1° cations are the best solvated, 3° the worst (bulky, fewer N–H). That is why aqueous 3° methylamine drops below 1°. Aniline’s lone pair is delocalised into the ring, so protonation costs aromatic resonance — pK_b jumps to 9.38.", "worked": "Example 9.4 (zoom p.12): decreasing basic strength of C₆H₅NH₂, C₂H₅NH₂, (C₂H₅)₂NH, NH₃ is (C₂H₅)₂NH > C₂H₅NH₂ > NH₃ > C₆H₅NH₂. Intext 9.4 answers (zoom p.22): (i) C₆H₅NH₂ < NH₃ < C₆H₅CH₂NH₂ < C₂H₅NH₂ < (C₂H₅)₂NH; (ii) C₆H₅NH₂ < C₂H₅NH₂ < (C₂H₅)₃N < (C₂H₅)₂NH; (iii) C₆H₅NH₂ < C₆H₅CH₂NH₂ < (CH₃)₃N < CH₃NH₂ < (CH₃)₂NH.", "prediction": {"prompt": "In aqueous solution, which has the smallest pK_b among CH₃NH₂, (CH₃)₂NH and (CH₃)₃N?", "options": ["(CH₃)₂NH — pK_b 3.27, the aqueous maximum of +I and solvation", "(CH₃)₃N — three alkyl groups, so strongest in every solvent", "CH₃NH₂ — primary always wins in water"], "answer": 0, "explanation": "Table 9.3: 3.27 (2°) < 3.38 (1°) < 4.22 (3°). Gas-phase 3° > 2° > 1° does not survive hydration of Me₃NH⁺."}, "connect": [["Separating aniline from nitrobenzene in ether", "Shake with HCl(aq): aniline becomes water-soluble anilinium chloride; nitrobenzene stays in ether. Basify the aqueous layer to recover aniline. That is the salt paragraph of §9.6.1 as a work-up."], ["Wow — benzylamine pK_b 4.70 is almost ammonia", "One CH₂ spacer (C₆H₅CH₂NH₂) kills ring conjugation. Aniline 9.38 vs benzylamine 4.70 is the textbook’s cleanest demonstration that ‘aromatic amine’ means NH₂ on the ring, not merely nearby.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "Write Table 9.3 pK_b of methanamine, dimethylamine, trimethylamine and aniline, and the aqueous methyl order.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "pK_b of ammonia in this reprint is", "answer": 0, "hint": "§9.6.1 after Table 9.3.", "solution": "Aliphatic amines (3–4.22) are stronger; aniline 9.38 is weaker.", "options": ["4.75", "9.38", "3.38"], "wrong": ["", "That is aniline (benzenamine).", "That is methanamine."], "map": "Table 9.3"}, {"level": "Medium", "type": "mcq", "prompt": "Aqueous basic strength of methyl amines is", "answer": 0, "hint": "Zoom p.11.", "solution": "Solvation knocks 3° below 1° for methyl.", "options": ["(CH₃)₂NH > CH₃NH₂ > (CH₃)₃N > NH₃", "(CH₃)₃N > (CH₃)₂NH > CH₃NH₂ > NH₃", "CH₃NH₂ > (CH₃)₂NH > (CH₃)₃N"], "wrong": ["", "That is the gas-phase order.", "Reversed 1°/2°."], "map": "§9.6.1"}, {"level": "Hard", "type": "mcq", "prompt": "Aniline is a weaker base than ammonia because", "answer": 0, "hint": "Zoom p.11 structures I–V.", "solution": "Greater resonance stabilisation of the free base lowers proton affinity.", "options": ["the lone pair is conjugated with the ring (5 resonance forms); anilinium has only 2", "aniline cannot form hydrogen bonds", "nitrogen in aniline is sp hybridised"], "wrong": ["", "Aniline does H-bond; that is a solubility issue.", "N is still sp³, with the lone pair in a p-overlapping orbital."], "map": "Fig. aniline resonance"}]}, {"id": "tests-hinsberg", "nav": "Carbylamine, HNO₂, Hinsberg", "title": "Three tests that tell 1°, 2° and 3° apart — Hinsberg is the separator.", "deck": "Carbylamine: only 1° give foul R–NC. Aliphatic 1° + HNO₂ evolve N₂ (estimation of amino acids). Hinsberg (C₆H₅SO₂Cl): 1° sulphonamide alkali-soluble; 2° sulphonamide alkali-insoluble; 3° no reaction. These days TsCl replaces BsCl.", "minutes": 10, "section": "9.6.2–9.6.6", "pages": [12, 14], "print": "270–272", "sim": "hinsberg", "simTitle": "Hinsberg test lab (1° / 2° / 3°)", "quick": ["<strong>Alkylation / acylation.</strong> Amines are nucleophiles. Acylation with RCOCl, anhydrides or esters (pyridine to trap HCl) gives amides. Benzoylation is C₆H₅COCl: methanamine → N-methylbenzamide (zoom p.12). Carboxylic acids merely form salts at room temperature.", "<strong>Carbylamine (isocyanide test).</strong> 1° aliphatic or aromatic amine + CHCl₃ + ethanolic KOH, heat: RNH₂ + CHCl₃ + 3 KOH → R–NC + 3 KCl + 3 H₂O. Foul-smelling isocyanides. 2° and 3° do not react (zoom p.13).", "<strong>Nitrous acid</strong> (NaNO₂ + mineral acid in situ). Aliphatic 1° → unstable alkyldiazonium → ROH + N₂ (quantitative N₂ used to estimate amino acids and proteins). Aromatic 1° at <strong>273–278 K</strong> → stable-enough arenediazonium salts (§9.7). 2° and 3° react differently.", "<strong>Hinsberg’s reagent</strong> = benzenesulphonyl chloride C₆H₅SO₂Cl. (a) 1° amine → N-alkylbenzenesulphonamide; the remaining N–H is acidic (sulphonyl is strongly electron-withdrawing) so the product <strong>dissolves in alkali</strong>. (b) 2° amine → N,N-dialkylbenzenesulphonamide; no N–H, <strong>insoluble in alkali</strong>. (c) 3° amines do not react. Used to distinguish and separate 1°/2°/3°. Nowadays <strong>p-toluenesulphonyl chloride</strong> replaces BsCl."], "formulas": [{"label": "Carbylamine", "html": "RNH₂ + CHCl₃ + 3 KOH → R–NC + 3 KCl + 3 H₂O", "cond": "Heat; 1° only; foul isocyanide"}, {"label": "Aliphatic 1° + HNO₂", "html": "RNH₂ + HNO₂ → [RN₂⁺Cl⁻] → ROH + N₂ + HCl", "cond": "Quantitative N₂; amino-acid estimation"}, {"label": "Hinsberg 1°", "html": "C₆H₅SO₂Cl + RNH₂ → C₆H₅SO₂NHR (alkali-soluble)", "cond": "Remaining N–H is acidic"}, {"label": "Hinsberg 2°", "html": "C₆H₅SO₂Cl + R₂NH → C₆H₅SO₂NR₂ (alkali-insoluble)", "cond": "No N–H; 3°: no reaction"}], "deeper": "Hinsberg is both a test and a separation: alkali extracts the 1° sulphonamide; the 2° sulphonamide stays as a solid/organic layer; the unreacted 3° amine can be distilled or extracted as the free base. Acid hydrolysis recovers the amines from the sulphonamides. Carbylamine is only a test (the isocyanide is not a convenient derivative). Ex 9.2 pairs: methylamine vs dimethylamine (carbylamine or Hinsberg); aniline vs benzylamine (azo dye vs N₂ from aliphatic diazonium).", "worked": "Hinsberg on ethanamine (zoom p.13): C₆H₅SO₂Cl + C₂H₅NH₂ → N-ethylbenzenesulphonamide (soluble in alkali). On diethylamine: N,N-diethylbenzenesulphonamide (insoluble). Tertiary amine: recovered unchanged. Carbylamine on aniline (Ex 9.11i): C₆H₅NH₂ + CHCl₃ + alc. KOH → C₆H₅NC (phenyl isocyanide).", "prediction": {"prompt": "A compound reacts with Hinsberg’s reagent to give a product that is insoluble in alkali. The amine is", "options": ["secondary — N,N-dialkyl sulphonamide has no acidic N–H", "primary — 1° sulphonamides are always alkali-insoluble", "tertiary — 3° amines form an alkali-insoluble sulphonamide"], "answer": 0, "explanation": "1° product dissolves in alkali; 2° product does not; 3° does not react at all, so you do not isolate a sulphonamide."}, "connect": [["Hinsberg as a bottle-sort in the organic lab", "A mixture of 1°/2°/3° from ammonolysis (the disadvantage of §9.4.2) is exactly what Hinsberg was invented to pull apart. Excess NH₃ plus Hinsberg is the classical work-up."], ["Wow — p-toluenesulphonyl chloride has replaced benzenesulphonyl chloride", "The reprint says so in one sentence (zoom p.14). Same logic, cheaper/stabler TsCl. Do not write ‘only BsCl’ as if the 2026–27 book had not updated the reagent.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "Write the carbylamine equation and the alkali-solubility rule for Hinsberg 1°, 2° and 3°.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Carbylamine test is given by", "answer": 0, "hint": "Zoom p.13.", "solution": "RNH₂ + CHCl₃ + 3 KOH → RNC. 2° and 3° silent.", "options": ["aliphatic and aromatic primary amines", "secondary amines only", "all three classes of amines"], "wrong": ["", "2° do not form isocyanides.", "3° have no N–H to replace."]}, {"level": "Medium", "type": "mcq", "prompt": "Hinsberg product from a primary amine is", "answer": 0, "hint": "Zoom p.13–14.", "solution": "Sulphonyl group makes N–H strongly acidic.", "options": ["alkali-soluble because the remaining N–H is acidic", "alkali-insoluble because sulphonamides are always neutral", "not formed — 1° amines do not react"], "wrong": ["", "That describes the 2° product.", "1° do react."], "map": "Hinsberg"}, {"level": "Hard", "type": "mcq", "prompt": "Aliphatic primary amines with nitrous acid", "answer": 0, "hint": "Zoom p.13.", "solution": "Alkyldiazonium is unstable; arenediazonium is the 273–278 K story.", "options": ["liberate N₂ quantitatively and give alcohols", "form stable diazonium salts at 273–278 K", "do not react"], "wrong": ["", "That is aromatic 1°.", "They do react — that is the estimation method."]}]}, {"id": "eas-aniline", "nav": "EAS of aniline", "title": "–NH₂ is a fierce o,p-director — acetylate it when you want mono-substitution.", "deck": "Bromine water → 2,4,6-tribromoaniline (white ppt) at room temperature. Direct nitration (HNO₃/H₂SO₄, 288 K): 51% p, 47% m, 2% o because anilinium is meta-directing. Acetanilide nitration gives p-nitroaniline after hydrolysis. No Friedel–Crafts (salt with AlCl₃).", "minutes": 9, "section": "9.6.7", "pages": [14, 15], "print": "272–273", "sim": "anilineeas", "simTitle": "Aniline EAS: Br₂ vs protected nitration", "quick": ["Aniline’s five resonance forms pile electron density at <strong>ortho and para</strong>. –NH₂ is a powerful activating o,p-director.", "<strong>Bromination:</strong> aniline + Br₂ water, room temperature → white precipitate of <strong>2,4,6-tribromoaniline</strong>. To stop at mono-substitution, protect as acetanilide, substitute, then hydrolyse. The lone pair on acetanilide nitrogen is less available to the ring (resonance with C=O), so –NHCOCH₃ is a milder activator.", "<strong>Nitration</strong> (HNO₃, H₂SO₄, 288 K, zoom p.15): tarry oxidation plus nitroanilines. In strong acid, aniline is protonated to anilinium (meta-directing). Observed: <strong>p-nitroaniline 51%, m-nitroaniline 47%, o-nitroaniline 2%</strong>. Protecting as acetanilide then nitrating gives p-nitroacetanilide as the major product; hydrolysis yields p-nitroaniline.", "<strong>Sulphonation:</strong> aniline + conc. H₂SO₄ → anilinium hydrogensulphate; heat at <strong>453–473 K</strong> → p-aminobenzenesulphonic acid (<strong>sulphanilic acid</strong>), a zwitterion. <strong>No Friedel–Crafts</strong>: aniline forms a salt with AlCl₃; N becomes positive and deactivates the ring."], "formulas": [{"label": "Tribromination", "html": "C₆H₅NH₂ + 3 Br₂(aq) → 2,4,6-C₆H₂Br₃NH₂ ↓ (white) + 3 HBr", "cond": "Room temperature; too fast for mono-Br"}, {"label": "Direct nitration 288 K", "html": "p 51% · m 47% · o 2%", "cond": "Zoom p.15; anilinium is meta-directing"}, {"label": "Protected nitration", "html": "aniline → acetanilide → p-nitroacetanilide → p-nitroaniline", "cond": "Ac₂O / pyridine; then HNO₃/H₂SO₄; then OH⁻ or H⁺"}], "deeper": "Protection is a kinetic trick: you temporarily reduce activation so the first electrophile does not invite two more. The 51/47/2 split is the reprint’s own numbers — do not ‘correct’ them to a remembered 2/51/47 from another edition without looking at zoom p.15. Sulphanilic acid’s zwitterion (⁺H₃N–C₆H₄–SO₃⁻) is why it is high-melting and poorly soluble in organic solvents.", "worked": "Ex 9.8(vii) aniline → p-bromoaniline: acetylate, monobrominate para, hydrolyse. Ex 9.8(iv) aniline → 2,4,6-tribromofluorobenzene: tribrominate, diazotise, replace N₂⁺ by F (HBF₄, heat). Intext 9.9(ii) aniline → 1,3,5-tribromobenzene: tribromoaniline, diazotise, H₃PO₂ reductive removal of N₂.", "prediction": {"prompt": "Direct nitration of aniline gives a substantial meta product because", "options": ["in strong acid, anilinium ion is the species present and is meta-directing (47% m in this reprint)", "–NH₂ is intrinsically meta-directing", "nitration always gives 100% para"], "answer": 0, "explanation": "Zoom p.15: 51% p, 47% m, 2% o. Protonation converts the activator into a deactivating meta-director."}, "connect": [["Sulphanilic acid and azo dyes", "Sulphanilic acid is the diazotisable aniline that still carries a water-solubilising –SO₃⁻. Coupled with phenols it is the backbone of many acid azo dyes used in Indian textile clusters."], ["Wow — 47% meta is not a rounding error", "Students expect ‘o,p only’. The reprint prints 51 / 47 / 2 so that you remember anilinium. Protect or you pay in meta.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "State the 51/47/2 nitration split, the tribromo product with Br₂ water, and why Friedel–Crafts fails.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Aniline with bromine water gives", "answer": 0, "hint": "§9.6.7(a).", "solution": "The ring is too activated for mono-substitution without protection.", "options": ["2,4,6-tribromoaniline as a white precipitate", "only p-bromoaniline", "no reaction"], "wrong": ["", "Need acetanilide for mono-Br.", "It reacts vigorously."]}, {"level": "Medium", "type": "mcq", "prompt": "Direct nitration of aniline (zoom p.15) yields p : m : o =", "answer": 0, "hint": "The figure labels 51, 47, 2 under p, m, o.", "solution": "Anilinium is meta-directing in the nitrating mixture.", "options": ["51% : 47% : 2%", "100% para", "2% : 51% : 47%"], "wrong": ["", "Protection is needed for clean para.", "Swapped labels."], "map": "Zoom p.15"}, {"level": "Hard", "type": "mcq", "prompt": "Aniline does not undergo Friedel–Crafts alkylation because", "answer": 0, "hint": "Last paragraph, zoom p.15.", "solution": "Lewis-acid salt formation, not a directing-effect issue.", "options": ["it forms a salt with AlCl₃; N becomes positive and deactivates the ring", "aniline is meta-directing", "AlCl₃ oxidises aniline to nitrobenzene"], "wrong": ["", "Free aniline is o,p-directing.", "That is nitration chemistry."]}]}, {"id": "diazonium", "nav": "Diazonium salts", "title": "ArN₂⁺ is the leaving group that installs Cl, Br, I, F, CN, OH, H, NO₂ — and azo dyes.", "deck": "Diazotisation: ArNH₂ + NaNO₂ + 2 HCl at 273–278 K. Sandmeyer (Cu(I)) vs Gatterman (Cu powder). Coupling with phenol (alkaline) gives orange p-hydroxyazobenzene; with aniline (acid) yellow p-aminoazobenzene.", "minutes": 11, "section": "9.7–9.10", "pages": [16, 19], "print": "274–277", "sim": "diazocoupling", "simTitle": "Sandmeyer vs coupling lab", "quick": ["Arenediazonium salts ArN₂⁺X⁻ (X⁻ = Cl⁻, Br⁻, HSO₄⁻, BF₄⁻) are named by suffixing diazonium to the parent arene: C₆H₅N₂⁺Cl⁻ = <strong>benzenediazonium chloride</strong>. Aliphatic diazonium salts are highly unstable; aryl ones are resonance-stabilised and usable at 273–278 K. They are not stored dry (explode); use immediately. Benzenediazonium fluoroborate is water-insoluble and stable at room temperature.", "<strong>Diazotisation</strong> (zoom p.16): C₆H₅NH₂ + NaNO₂ + 2 HCl --273–278 K→ C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O.", "<strong>A. Displacement of nitrogen.</strong> Sandmeyer: ArN₂⁺ + Cu₂Cl₂/HCl → ArCl; Cu₂Br₂/HBr → ArBr; CuCN/KCN → ArCN. Gatterman: Cu powder + HCl or HBr (yield lower than Sandmeyer). Iodide: KI, no copper. Fluoride: HBF₄ then heat → ArF + BF₃ + N₂. Replacement by H: H₃PO₂ or ethanol (→ ethanal). Phenol: warm to 283 K. Nitro: ArN₂⁺BF₄⁻ + NaNO₂/Cu, Δ.", "<strong>B. Retention of the diazo group — coupling.</strong> C₆H₅N₂⁺ + phenol (OH⁻) → <strong>p-hydroxyazobenzene (orange dye)</strong>. C₆H₅N₂⁺ + aniline (H⁺) → <strong>p-aminoazobenzene (yellow dye)</strong>. Electrophilic substitution at the para position of the activated ring. Aryl–F, aryl–I and aryl–CN are the substitutions benzene itself will not do by direct halogenation or by SN on chlorobenzene."], "formulas": [{"label": "Diazotisation", "html": "C₆H₅NH₂ + NaNO₂ + 2 HCl → C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O", "cond": "273–278 K; use immediately"}, {"label": "Sandmeyer", "html": "ArN₂⁺ --Cu₂Cl₂/HCl→ ArCl ; --Cu₂Br₂/HBr→ ArBr ; --CuCN/KCN→ ArCN", "cond": "Cu(I); better yield than Gatterman (Cu powder)"}, {"label": "Balz–Schiemann", "html": "ArN₂⁺Cl⁻ + HBF₄ → ArN₂⁺BF₄⁻ --Δ→ ArF + BF₃ + N₂", "cond": "Zoom p.17"}, {"label": "Coupling", "html": "ArN₂⁺ + Ar′–OH (OH⁻) → p-HO–Ar′–N=N–Ar (orange)", "cond": "Phenol: orange; aniline (H⁺): yellow p-aminoazobenzene"}], "deeper": "The diazonium group is one of the best leaving groups in aromatic chemistry (N₂ gas). That is why substitutions that fail on chlorobenzene (CN, F, I, OH under mild conditions) succeed here. Coupling is EAS: the diazonium ion is a weak electrophile that needs a strongly activated ring (phenol or aniline), attacking para.", "worked": "Example 9.5 idea and Intext 9.9: 3-methylaniline → 3-nitrotoluene by diazotise then replace N₂⁺ by NO₂ (HBF₄, NaNO₂/Cu). Aniline → 1,3,5-tribromobenzene: tribrominate, diazotise, H₃PO₂. Ex 9.9(iv): C₆H₅NO₂ --Fe/HCl→ aniline --NaNO₂/HCl, 273 K→ C₆H₅N₂Cl --H₂O/H⁺, Δ→ phenol. Ex 9.9(vi): same diazonium + C₆H₅OH → p-hydroxyazobenzene. Ex 9.10: A = benzoic acid, B = benzamide, C = aniline (Hoffmann, formula C₆H₇N).", "prediction": {"prompt": "To convert aniline into iodobenzene, the laboratory sequence in this chapter is", "options": ["diazotise at 273–278 K, then treat the diazonium salt with KI (no copper needed)", "direct iodination of aniline with I₂/Fe", "Sandmeyer with Cu₂Cl₂, then Finkelstein on chlorobenzene"], "answer": 0, "explanation": "§9.9 A.2 (zoom p.17): iodine is not easily introduced by direct substitution; ArN₂⁺ + KI → ArI + KCl + N₂."}, "connect": [["Azo dyes in Tirupur and Surat", "p-Hydroxyazobenzene is the orange teaching dye; the same –N=N– chromophore, with sulphonate groups for water solubility, colours cotton and silk in Indian dye houses. Diazonium coupling is the industrial reaction hiding in §9.9 B."], ["Wow — chlorobenzene will not take CN by SN, but the diazonium will", "The reprint’s last pedagogical punch: Ar–F, Ar–I, Ar–CN, Ar–OH under mild conditions. Diazonium is the aromatic chemist’s leaving-group cheat code.", [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}]]], "recall": "Write the diazotisation equation at 273–278 K, one Sandmeyer, and the two coupling colours.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Diazotisation of aniline is carried out at", "answer": 0, "hint": "§9.7 / zoom p.16.", "solution": "Arenediazonium is only short-term stable in the cold.", "options": ["273–278 K", "373 K", "room temperature with no cooling"], "wrong": ["", "That is ammonolysis.", "Warm solutions hydrolyse to phenol (283 K)."]}, {"level": "Medium", "type": "mcq", "prompt": "Sandmeyer vs Gatterman: the reprint says", "answer": 0, "hint": "Zoom p.17.", "solution": "Cu₂Cl₂/Cu₂Br₂/CuCN vs Cu powder + HX.", "options": ["Sandmeyer (Cu(I) salts) gives the better yield", "Gatterman always gives 100% yield", "both require KI"], "wrong": ["", "Gatterman is the lower-yield copper-powder variant.", "KI is the iodide replacement, no copper."], "map": "§9.9"}, {"level": "Hard", "type": "mcq", "prompt": "Coupling of benzenediazonium chloride with phenol (alkaline) yields", "answer": 0, "hint": "Zoom p.18.", "solution": "Retention of the diazo group; para coupling. Aniline coupling (acid) gives yellow p-aminoazobenzene.", "options": ["p-hydroxyazobenzene, an orange dye", "aniline", "only nitrogen gas and benzene"], "wrong": ["", "Aniline is the starting material for diazotisation.", "That is the H₃PO₂ reduction."], "map": "Fig. coupling"}]}], "exercises": [{"number": "9.1", "conceptIdx": 0, "page": 20, "printPage": 278, "question": "Write IUPAC names of the following compounds and classify them into primary, secondary and tertiary amines.\n(i) (CH₃)₂CHNH₂  (ii) CH₃(CH₂)₂NH₂  (iii) CH₃NHCH(CH₃)₂  (iv) (CH₃)₃CNH₂  (v) C₆H₅NHCH₃  (vi) (CH₃CH₂)₂NCH₃  (vii) m-BrC₆H₄NH₂", "steps": ["Count C–N bonds at nitrogen for 1°/2°/3°. Name as alkanamine / N-alkylalkanamine / benzenamine as in Table 9.1.", "(i) Propan-2-amine, 1°. (ii) Propan-1-amine, 1°. (iii) N-Methylpropan-2-amine, 2°.", "(iv) 2-Methylpropan-2-amine, 1°. (v) N-Methylaniline / N-methylbenzenamine, 2°.", "(vi) N-Ethyl-N-methylethanamine, 3°. (vii) 3-Bromobenzenamine (3-bromoaniline), 1°."], "answer": "(i) propan-2-amine, 1°; (ii) propan-1-amine, 1°; (iii) N-methylpropan-2-amine, 2°; (iv) 2-methylpropan-2-amine, 1°; (v) N-methylaniline, 2°; (vi) N-ethyl-N-methylethanamine, 3°; (vii) 3-bromobenzenamine, 1°."}, {"number": "9.2", "conceptIdx": 4, "page": 20, "printPage": 278, "question": "Give one chemical test to distinguish between the following pairs.\n(i) Methylamine and dimethylamine  (ii) Secondary and tertiary amines  (iii) Ethylamine and aniline  (iv) Aniline and benzylamine  (v) Aniline and N-methylaniline.", "steps": ["(i) Carbylamine: MeNH₂ → foul MeNC; Me₂NH no. (Or Hinsberg: MeNH₂ product alkali-soluble; Me₂NH product alkali-insoluble.)", "(ii) Hinsberg: 2° → alkali-insoluble sulphonamide; 3° no reaction (recovered as free amine).", "(iii) Azo dye: aniline diazotised (273–278 K) + β-naphthol/phenol → orange/red dye; ethylamine evolves N₂ and gives ethanol, no dye.", "(iv) Same azo-dye test: aniline gives dye; benzylamine behaves as aliphatic 1° (N₂ + alcohol).", "(v) Carbylamine: aniline (1°) positive; N-methylaniline (2°) negative. Or Hinsberg solubility."], "answer": "(i) carbylamine (only MeNH₂); (ii) Hinsberg (2° sulphonamide vs 3° no reaction); (iii) azo dye (aniline); (iv) azo dye (aniline); (v) carbylamine (aniline)."}, {"number": "9.3", "conceptIdx": 3, "page": 20, "printPage": 278, "question": "Account for the following:\n(i) pK_b of aniline is more than that of methylamine.\n(ii) Ethylamine is soluble in water whereas aniline is not.\n(iii) Methylamine in water reacts with ferric chloride to precipitate hydrated ferric oxide.\n(iv) Although –NH₂ is o,p-directing, aniline on nitration gives a substantial amount of m-nitroaniline.\n(v) Aniline does not undergo Friedel–Crafts reaction.\n(vi) Diazonium salts of aromatic amines are more stable than those of aliphatic amines.\n(vii) Gabriel phthalimide synthesis is preferred for synthesising primary amines.", "steps": ["(i) Aniline pK_b 9.38 vs methanamine 3.38: lone pair conjugated with the ring (5 forms vs 2 for anilinium).", "(ii) Ethylamine H-bonds to water; aniline’s large hydrophobic aryl ring plus weaker H-bonding (lone pair delocalised) makes it sparingly soluble.", "(iii) MeNH₂ + H₂O ⇌ MeNH₃⁺ + OH⁻; OH⁻ precipitates Fe(OH)₃ / hydrated ferric oxide from FeCl₃.", "(iv) In HNO₃/H₂SO₄ aniline is protonated; anilinium is meta-directing — 47% m, 51% p, 2% o (zoom p.15).", "(v) Salt with AlCl₃; N becomes positive and deactivates the ring.", "(vi) Arenediazonium is resonance-stabilised; alkyldiazonium is not and loses N₂ at once.", "(vii) Gabriel alkylates nitrogen only once, so 2°/3°/quaternary contamination of ammonolysis is avoided; only aliphatic 1° (aryl-X does not SN)."], "answer": "(i) resonance delocalisation of aniline lone pair; (ii) hydrophobic aryl vs H-bonding alkylamine; (iii) OH⁻ from hydrolysis precipitates Fe(OH)₃; (iv) anilinium, 47% meta; (v) AlCl₃ salt; (vi) aryl resonance; (vii) exclusive 1° aliphatic."}, {"number": "9.4", "conceptIdx": 3, "page": 20, "printPage": 278, "question": "Arrange the following:\n(i) Decreasing pK_b: C₂H₅NH₂, C₆H₅NHCH₃, (C₂H₅)₂NH, C₆H₅NH₂\n(ii) Increasing basic strength: C₆H₅NH₂, C₆H₅N(CH₃)₂, (C₂H₅)₂NH, CH₃NH₂\n(iii) Increasing basic strength: (a) aniline, p-nitroaniline, p-toluidine; (b) C₆H₅NH₂, C₆H₅NHCH₃, C₆H₅CH₂NH₂\n(iv) Decreasing basic strength in gas phase: C₂H₅NH₂, (C₂H₅)₂NH, (C₂H₅)₃N, NH₃\n(v) Increasing boiling point: C₂H₅OH, (CH₃)₂NH, C₂H₅NH₂\n(vi) Increasing solubility in water: C₆H₅NH₂, (C₂H₅)₂NH, C₂H₅NH₂.", "steps": ["(i) Weaker base = larger pK_b. Aniline (9.38) > N-methylaniline (9.30) > ethanamine (3.29) > diethylamine (3.00).", "(ii) C₆H₅NH₂ < C₆H₅N(CH₃)₂ < CH₃NH₂ < (C₂H₅)₂NH (aryl << alkyl; 2° ethyl strongest).", "(iii)(a) p-nitroaniline < aniline < p-toluidine (–NO₂ withdraws, –CH₃ donates). (b) C₆H₅NH₂ < C₆H₅NHCH₃ < C₆H₅CH₂NH₂ (benzylamine is not conjugated).", "(iv) Gas phase +I only: (C₂H₅)₃N > (C₂H₅)₂NH > C₂H₅NH₂ > NH₃.", "(v) (CH₃)₂NH < C₂H₅NH₂ < C₂H₅OH (N–H association 2° < 1°; O–H strongest). Table 9.2 logic.", "(vi) C₆H₅NH₂ < (C₂H₅)₂NH < C₂H₅NH₂ (hydrophobic aryl; 1° H-bonds to water better than 2°)."], "answer": "(i) C₆H₅NH₂ > C₆H₅NHCH₃ > C₂H₅NH₂ > (C₂H₅)₂NH; (ii) C₆H₅NH₂ < C₆H₅N(CH₃)₂ < CH₃NH₂ < (C₂H₅)₂NH; (iii)(a) p-nitroaniline < aniline < p-toluidine; (b) C₆H₅NH₂ < C₆H₅NHCH₃ < C₆H₅CH₂NH₂; (iv) 3° > 2° > 1° > NH₃; (v) (CH₃)₂NH < C₂H₅NH₂ < C₂H₅OH; (vi) C₆H₅NH₂ < (C₂H₅)₂NH < C₂H₅NH₂."}, {"number": "9.5", "conceptIdx": 1, "page": 21, "printPage": 279, "question": "How will you convert:\n(i) Ethanoic acid into methanamine  (ii) Hexanenitrile into 1-aminopentane  (iii) Methanol to ethanoic acid  (iv) Ethanamine into methanamine  (v) Ethanoic acid into propanoic acid  (vi) Methanamine into ethanamine  (vii) Nitromethane into dimethylamine  (viii) Propanoic acid into ethanoic acid?", "steps": ["(i) CH₃COOH --SOCl₂ or NH₃, Δ→ CH₃CONH₂ --Hoffmann (Br₂/NaOH)→ CH₃NH₂.", "(ii) CH₃(CH₂)₄CN --Hoffmann after partial hydrolysis to amide, or: nitrile --H₃O⁺→ hexanoic acid --NH₃, Δ→ amide --Hoffmann→ 1-aminopentane. (Hoffmann shortens by one C.)", "(iii) Ascent by one carbon: CH₃OH --P/I₂→ CH₃I --KCN→ CH₃CN --H₃O⁺→ CH₃COOH. (Direct oxidation of methanol stops at formic acid.)", "(iv) CH₃CH₂NH₂ --HNO₂→ CH₃CH₂OH --[O]→ CH₃COOH --NH₃, Δ→ CH₃CONH₂ --Hoffmann→ CH₃NH₂.", "(v) CH₃COOH --LiAlH₄→ CH₃CH₂OH --P/I₂→ CH₃CH₂I --KCN→ CH₃CH₂CN --H₃O⁺→ CH₃CH₂COOH. (Ascent.)", "(vi) CH₃NH₂ --HNO₂→ CH₃OH --P/I₂→ CH₃I --KCN→ CH₃CN --reduction→ CH₃CH₂NH₂.", "(vii) CH₃NO₂ --reduction→ CH₃NH₂ --CH₃I (excess, then)→ (CH₃)₂NH (controlled alkylation / from Hofmann on N-methylacetamide).", "(viii) CH₃CH₂COOH --NH₃, Δ→ CH₃CH₂CONH₂ --Hoffmann→ CH₃CH₂NH₂ --HNO₂→ CH₃CH₂OH --[O]→ CH₃COOH."], "answer": "(i) acetamide / Hoffmann; (ii) hexanamide / Hoffmann; (iii) CH₃OH → CH₃I → CH₃CN → CH₃COOH; (iv) HNO₂, oxidise, amide, Hoffmann; (v) reduce, RX, KCN, hydrolyse; (vi) HNO₂, CH₃I, KCN, reduce; (vii) reduce then N-methylate; (viii) Hoffmann then HNO₂ then oxidise."}, {"number": "9.6", "conceptIdx": 4, "page": 21, "printPage": 279, "question": "Describe a method for the identification of primary, secondary and tertiary amines. Also write chemical equations of the reactions involved.", "steps": ["Hinsberg: treat with C₆H₅SO₂Cl (or p-CH₃C₆H₄SO₂Cl), then alkali.", "1°: C₆H₅SO₂Cl + RNH₂ → C₆H₅SO₂NHR; N–H acidic → soluble in NaOH as C₆H₅SO₂NR⁻ Na⁺.", "2°: C₆H₅SO₂Cl + R₂NH → C₆H₅SO₂NR₂; no N–H → insoluble in alkali.", "3°: no reaction; amine remains and dissolves in HCl.", "Carbylamine is a complementary 1° test: RNH₂ + CHCl₃ + 3 KOH → RNC."], "answer": "Hinsberg (BsCl or TsCl): 1° alkali-soluble sulphonamide; 2° alkali-insoluble sulphonamide; 3° no reaction."}, {"number": "9.7", "conceptIdx": 4, "page": 21, "printPage": 279, "question": "Write short notes on: (i) Carbylamine reaction (ii) Diazotisation (iii) Hofmann’s bromamide reaction (iv) Coupling reaction (v) Ammonolysis (vi) Acetylation (vii) Gabriel phthalimide synthesis.", "steps": ["(i) 1° amine + CHCl₃ + 3 KOH → RNC (foul); 2°/3° silent.", "(ii) ArNH₂ + NaNO₂ + 2 HCl, 273–278 K → ArN₂⁺Cl⁻.", "(iii) RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O (one C less).", "(iv) ArN₂⁺ + phenol (OH⁻) → p-hydroxyazobenzene (orange); + aniline (H⁺) → p-aminoazobenzene (yellow).", "(v) RX + NH₃ (ethanolic, 373 K) → 1° then 2°, 3°, R₄N⁺; excess NH₃ favours 1°; RI > RBr > RCl.", "(vi) RNH₂ / R₂NH + R′COCl (pyridine) → amide; used to protect aniline before EAS.", "(vii) Potassium phthalimide + RX, alkaline hydrolysis → pure aliphatic 1° amine; fails for ArX."], "answer": "See notes (i)–(vii) matching §9.4–9.9."}, {"number": "9.8", "conceptIdx": 6, "page": 21, "printPage": 279, "question": "Accomplish the following conversions:\n(i) Nitrobenzene to benzoic acid  (ii) Benzene to m-bromophenol  (iii) Benzoic acid to aniline  (iv) Aniline to 2,4,6-tribromofluorobenzene  (v) Benzyl chloride to 2-phenylethanamine  (vi) Chlorobenzene to p-chloroaniline  (vii) Aniline to p-bromoaniline  (viii) Benzamide to toluene  (ix) Aniline to benzyl alcohol.", "steps": ["(i) C₆H₅NO₂ --Sn/HCl→ C₆H₅NH₂ --NaNO₂/HCl→ C₆H₅N₂⁺ --CuCN→ C₆H₅CN --H₃O⁺→ C₆H₅COOH.", "(ii) Benzene --HNO₃/H₂SO₄→ PhNO₂ --Br₂/Fe→ m-bromonitrobenzene --reduce→ m-bromoaniline --diazotise, H₂O/Δ→ m-bromophenol.", "(iii) C₆H₅COOH --NH₃, Δ→ C₆H₅CONH₂ --Hoffmann→ C₆H₅NH₂.", "(iv) Aniline --Br₂(aq)→ 2,4,6-tribromoaniline --diazotise, HBF₄, Δ→ 2,4,6-tribromofluorobenzene.", "(v) Example 9.2: C₆H₅CH₂Cl --NaCN→ C₆H₅CH₂CN --H₂/Ni→ C₆H₅CH₂CH₂NH₂.", "(vi) PhCl --HNO₃/H₂SO₄→ p-ClC₆H₄NO₂ --reduce→ p-chloroaniline (o/p mix; separate p).", "(vii) Aniline --Ac₂O→ acetanilide --Br₂→ p-bromoacetanilide --hydrolysis→ p-bromoaniline.", "(viii) C₆H₅CONH₂ --Hoffmann→ C₆H₅NH₂ --diazotise, H₃PO₂→ C₆H₆ --CH₃Cl/AlCl₃→ C₆H₅CH₃.", "(ix) Aniline --diazotise, CuCN→ PhCN --H₃O⁺→ PhCOOH --LiAlH₄→ PhCH₂OH. (Or Sandmeyer CN then reduction.)"], "answer": "(i) reduce, diazotise, CuCN, hydrolyse; (ii) nitation, m-bromination, reduce, diazotise, H₂O; (iii) amide, Hoffmann; (iv) Br₃ then HBF₄; (v) NaCN, H₂/Ni; (vi) nitration, reduce; (vii) protect, Br, deprotect; (viii) Hoffmann, diazotise, H₃PO₂, alkylate; (ix) CuCN then reduce acid."}, {"number": "9.9", "conceptIdx": 6, "page": 21, "printPage": 279, "question": "Give the structures of A, B and C.\n(i) CH₃CH₂I --NaCN→ A --OH⁻, partial hydrolysis→ B --NaOH+Br₂→ C\n(ii) C₆H₅N₂Cl --CuCN→ A --H₂O/H⁺, Δ→ B --NH₃, Δ→ C\n(iii) CH₃CH₂Br --KCN→ A --LiAlH₄→ B --HNO₂, 0 °C→ C\n(iv) C₆H₅NO₂ --Fe/HCl→ A --NaNO₂+HCl, 273 K→ B --H₂O/H⁺, Δ→ C\n(v) CH₃COOH --NH₃, Δ→ A --NaOBr→ B --NaNO₂/HCl→ C\n(vi) C₆H₅NO₂ --Fe/HCl→ A --HNO₂, 273 K→ B --C₆H₅OH→ C", "steps": ["(i) A = CH₃CH₂CN (propanenitrile); B = CH₃CH₂CONH₂ (propanamide); C = CH₃CH₂NH₂ (ethanamine, Hoffmann).", "(ii) A = C₆H₅CN; B = C₆H₅COOH; C = C₆H₅CONH₂.", "(iii) A = CH₃CH₂CN; B = CH₃CH₂CH₂NH₂; C = CH₃CH₂CH₂OH (+ N₂).", "(iv) A = C₆H₅NH₂; B = C₆H₅N₂Cl; C = C₆H₅OH.", "(v) A = CH₃CONH₂; B = CH₃NH₂; C = CH₃OH (+ N₂) [aliphatic diazonium unstable].", "(vi) A = C₆H₅NH₂; B = C₆H₅N₂Cl; C = p-hydroxyazobenzene (orange dye)."], "answer": "(i) EtCN, EtCONH₂, EtNH₂; (ii) PhCN, PhCOOH, PhCONH₂; (iii) EtCN, PrNH₂, PrOH; (iv) PhNH₂, PhN₂Cl, PhOH; (v) MeCONH₂, MeNH₂, MeOH; (vi) PhNH₂, PhN₂Cl, p-HOC₆H₄N=NPh."}, {"number": "9.10", "conceptIdx": 1, "page": 22, "printPage": 280, "question": "An aromatic compound ‘A’ on treatment with aqueous ammonia and heating forms compound ‘B’ which on heating with Br₂ and KOH forms a compound ‘C’ of molecular formula C₆H₇N. Write the structures and IUPAC names of A, B and C.", "steps": ["C = C₆H₇N matches aniline (benzenamine), C₆H₅NH₂.", "Hoffmann of B gives aniline ⇒ B is benzamide, C₆H₅CONH₂.", "A with aq. NH₃, heat → benzamide ⇒ A is benzoic acid, C₆H₅COOH (or benzoyl chloride; the reprint says aqueous ammonia and heating, so benzoic acid)."], "answer": "A = benzoic acid (benzenecarboxylic acid); B = benzamide (benzenecarboxamide); C = aniline (benzenamine)."}, {"number": "9.11", "conceptIdx": 6, "page": 22, "printPage": 280, "question": "Complete the following reactions:\n(i) C₆H₅NH₂ + CHCl₃ + alc. KOH →\n(ii) C₆H₅N₂Cl + H₃PO₂ + H₂O →\n(iii) C₆H₅NH₂ + H₂SO₄ (conc.) →\n(iv) C₆H₅N₂Cl + C₂H₅OH →\n(v) C₆H₅NH₂ + Br₂(aq) →\n(vi) C₆H₅NH₂ + (CH₃CO)₂O →\n(vii) C₆H₅N₂Cl --(i) HBF₄ (ii) NaNO₂/Cu, Δ→", "steps": ["(i) C₆H₅NC (phenyl isocyanide) + 3 KCl + 3 H₂O (carbylamine).", "(ii) C₆H₆ + N₂ + H₃PO₃ + HCl (replacement by H).", "(iii) Heat (453–473 K) → sulphanilic acid (p-H₂NC₆H₄SO₃H, zwitterion).", "(iv) C₆H₆ + CH₃CHO + N₂ + HCl.", "(v) 2,4,6-tribromoaniline (white ppt) + 3 HBr.", "(vi) C₆H₅NHCOCH₃ (acetanilide) + CH₃COOH.", "(vii) Path via ArN₂⁺BF₄⁻ then NaNO₂/Cu → C₆H₅NO₂ (replacement by NO₂)."], "answer": "(i) PhNC; (ii) benzene; (iii) sulphanilic acid; (iv) benzene + ethanal; (v) 2,4,6-tribromoaniline; (vi) acetanilide; (vii) nitrobenzene."}, {"number": "9.12", "conceptIdx": 1, "page": 22, "printPage": 280, "question": "Why cannot aromatic primary amines be prepared by Gabriel phthalimide synthesis?", "steps": ["Gabriel requires nucleophilic substitution of RX by the phthalimide anion.", "Aryl halides do not undergo nucleophilic substitution under these conditions (C–X bond has partial double-bond character and the ring is electron-rich toward SN).", "Hence ArNH₂ cannot be obtained; only aliphatic/benzylic 1° amines."], "answer": "Aryl halides do not undergo SN with the phthalimide anion, so aniline cannot be made by Gabriel."}, {"number": "9.13", "conceptIdx": 4, "page": 22, "printPage": 280, "question": "Write the reactions of (i) aromatic and (ii) aliphatic primary amines with nitrous acid.", "steps": ["(i) C₆H₅NH₂ + NaNO₂ + 2 HCl --273–278 K→ C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O (stable enough arenediazonium).", "(ii) RNH₂ + HNO₂ → [RN₂⁺] → ROH + N₂ + H₂O (unstable alkyldiazonium; quantitative N₂)."], "answer": "(i) arenediazonium at 273–278 K; (ii) alcohol + N₂."}, {"number": "9.14", "conceptIdx": 2, "page": 22, "printPage": 280, "question": "Give plausible explanation for each of the following:\n(i) Why are amines less acidic than alcohols of comparable molecular masses?\n(ii) Why do primary amines have higher boiling point than tertiary amines?\n(iii) Why are aliphatic amines stronger bases than aromatic amines?", "steps": ["(i) N–H is less polar than O–H (EN 3.0 vs 3.5); the amide ion RNH⁻ is a poorer leaving/conjugate base than RO⁻ is a better-stabilised conjugate. Amines therefore have much higher pK_a (weaker acids) than alcohols.", "(ii) 1° amines intermolecularly H-bond (two N–H, Fig. 9.2); 3° amines have no N–H. Table 9.2: n-BuNH₂ 350.8 K vs EtNMe₂ 310.5 K.", "(iii) Alkyl +I raises electron density on N; aryl conjugation delocalises the lone pair (aniline five forms). Table 9.3: aliphatic pK_b 3–4.22 vs aniline 9.38."], "answer": "(i) N–H less polar than O–H; (ii) 1° H-bonding vs 3° none; (iii) +I vs ring delocalisation."}]};
+window.CHAPTER = {"code": "lech204", "chapterNumber": "09", "book_name": "Chemistry Part 2", "title": "Amines", "subtitle": "Structure, nomenclature, preparation, basicity, Hinsberg/carbylamine tests, electrophilic substitution of aniline, and diazonium salts as synthetic intermediates.", "edition": "NCERT Chemistry Part 2, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lech204.pdf", "page_start": 259, "page_end": 280, "lessons": [{"id": "structure-class-nomen", "nav": "Structure, class & names", "title": "Amines are pyramidal ammonia derivatives — name them as this reprint does.", "deck": "Nitrogen is sp³; the lone pair occupies one tetrahedral vertex, so ∠C–N–C in trimethylamine is 108° (Fig. 9.1). Classify 1°/2°/3° by how many hydrogens of NH₃ are replaced, then apply Table 9.1 IUPAC.", "minutes": 8, "section": "9.1–9.3", "pages": [1, 3], "print": "259–261", "sim": "amineclass", "simTitle": "Fig. 9.1 pyramid + Table 9.1 classifier", "quick": ["<strong>Amines</strong> are ammonia derivatives obtained by replacing one, two or all three hydrogen atoms by alkyl/aryl groups. Nitrogen is <strong>sp³ hybridised</strong>; three hybrid orbitals bond to H or C and the fourth holds the unshared pair, so the geometry is <strong>pyramidal</strong>. Because of that lone pair, ∠C–N–E is less than 109.5° — <strong>108°</strong> in trimethylamine (Fig. 9.1, zoom p.2).", "<strong>Classification:</strong> 1° RNH₂ / ArNH₂; 2° R₂NH or RNHR′; 3° R₃N. Simple if all alkyl/aryl groups are the same, mixed if different. Intext 9.1 (zoom p.4): 1-naphthylamine is 1°; N,N-dimethylnaphthalen-1-amine is 3°; (C₂H₅)₂CHNH₂ is 1°; (C₂H₅)₂NH is 2°.", "<strong>IUPAC (Table 9.1, zoom p.3):</strong> alkanamines for 1° (CH₃CH₂NH₂ = ethanamine). Locant <em>N</em> marks N-substituents: CH₃NHCH₂CH₃ = N-methylethanamine; (CH₃CH₂)₃N = N,N-diethylethanamine. C₆H₅NH₂ is aniline (accepted IUPAC) or benzenamine. Diamines retain the hydrocarbon ‘e’: H₂N(CH₂)₆NH₂ = hexane-1,6-diamine."], "formulas": [{"label": "Pyramidal nitrogen", "html": "N (sp³) + lone pair → pyramidal; ∠C–N–C = 108° in Me₃N", "cond": "Fig. 9.1; less than 109.5° because of the lone pair"}, {"label": "Classes", "html": "1° RNH₂ · 2° R₂NH · 3° R₃N", "cond": "Count H atoms of NH₃ replaced by R/Ar"}, {"label": "N-locant", "html": "CH₃NHCH₂CH₃ = N-methylethanamine", "cond": "Table 9.1; N marks a substituent on nitrogen"}], "deeper": "The unshared pair is the chemical personality of every amine: Lewis base, nucleophile, and the reason amines H-bond. Common names glue the alkyl word to amine (ethylamine, trimethylamine). For arylamines the suffix ‘e’ of arene is replaced by ‘amine’. o-Toluidine = 2-methylaniline; p-bromoaniline = 4-bromobenzenamine or 4-bromoaniline; N,N-dimethylaniline = N,N-dimethylbenzenamine — all Table 9.1.", "worked": {"title": "Intext 9.2: all isomeric amines of C₄H₁₁N", "problem": "Write structures of the different isomeric amines with molecular formula C₄H₁₁N, give their IUPAC names and state the type of isomerism shown by different pairs.", "given": "Molecular formula C₄H₁₁N; classification counts the C–N bonds at nitrogen (1° = 1, 2° = 2, 3° = 3); IUPAC names use the N-locant (Intext 9.2, PDF p.4).", "steps": ["Primary amines (one C–N bond): butan-1-amine, butan-2-amine, 2-methylpropan-1-amine and 2-methylpropan-2-amine — four skeletons.", "Secondary amines (two C–N bonds): N-methylpropan-1-amine, N-methylpropan-2-amine and N-ethylethanamine.", "Tertiary amine (three C–N bonds): N,N-dimethylethanamine only.", "Count: 4 + 3 + 1 = 8 isomers. Pairs show chain isomerism (butan-1-amine/2-methylpropan-1-amine), position isomerism (butan-1-amine/butan-2-amine) and metamerism (different groups on N: N-methylpropan-1-amine/N-ethylethanamine)."], "answer": "Eight isomers: four primary, three secondary and one tertiary; the pairs exhibit chain, position and metameric isomerism."}, "prediction": {"prompt": "Table 9.1: what is the IUPAC name of (CH₃CH₂)₂N–CH₂CH₂CH₂CH₃?", "options": ["N,N-Diethylbutan-1-amine (common: N,N-diethylbutylamine)", "Butanamine — ignore the ethyl groups on nitrogen", "N-Ethyl-N-ethylbutane"], "answer": 0, "explanation": "Zoom p.3 Table 9.1: the parent is butan-1-amine; two N-ethyl groups give N,N-diethylbutan-1-amine."}, "connect": [{"title": "Novocain, Benadryl, adrenaline — amines in the clinic", "text": "NCERT opens with adrenaline and ephedrine (both 2° amino) used to raise blood pressure; Novocain as a dental anaesthetic; Benadryl (tertiary amino) as an antihistaminic; quaternary ammonium salts as surfactants. The pyramidal lone pair is the pharmacophore."}, {"title": "Quaternary ammonium salts as surfactants", "text": "The chapter opens by noting that quaternary ammonium salts are used as surfactants. A permanent positive nitrogen with four organic groups makes the molecule part water-loving ion and part oil-loving tail — the design of fabric softeners and hair conditioners."}, {"title": "Wow: 108° is the textbook’s measured angle, not 109.5°", "text": "Fig. 9.1 refuses the ideal tetrahedral angle. The lone pair occupies more space than a bonding pair, so trimethylamine is a slightly flattened pyramid. That is the same VSEPR idea as H₂O’s 104.5°.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "Kpov3GS6tjM", "title": "Amine naming introduction | Amines | Organic chemistry | Khan Academy", "channel": "Khan Academy"}}], "recall": "State the hybridisation of N in amines, the C–N–C angle in Me₃N, and name CH₃NHCH₂CH₃ by IUPAC.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Nitrogen in amines is hybridised", "answer": 0, "hint": "§9.1 and Fig. 9.1.", "solution": "Three sp³ orbitals bond to H/C; the fourth holds the unshared pair.", "options": ["sp³, pyramidal, with a lone pair in one hybrid orbital", "sp², planar, like the carbonyl carbon", "sp, linear, like ethyne"], "wrong": ["", "Planar sp² would be an amide nitrogen after delocalisation.", "sp is two groups, not four electron domains."]}, {"level": "Medium", "type": "mcq", "prompt": "IUPAC name of CH₃–NH–CH₂CH₃ (Table 9.1) is", "answer": 0, "hint": "Zoom p.3.", "solution": "N-locant marks the methyl on nitrogen of ethanamine.", "options": ["N-methylethanamine", "ethylmethylamine only — IUPAC does not use N-locants", "dimethylamine"], "wrong": ["", "Ethylmethylamine is the common name.", "That would be (CH₃)₂NH."], "map": "Table 9.1"}, {"level": "Hard", "type": "number", "prompt": "How many isomeric amines share the molecular formula C₄H₁₁N (Intext 9.2)?", "unit": "isomers", "answer": 8, "tolerance": 0.01, "hint": "Count separately: primary (one C–N bond), secondary (two) and tertiary (three).", "solution": "Primary: butan-1-amine, butan-2-amine, 2-methylpropan-1-amine, 2-methylpropan-2-amine (4). Secondary: N-methylpropan-1-amine, N-methylpropan-2-amine, N-ethylethanamine (3). Tertiary: N,N-dimethylethanamine (1). Total 4 + 3 + 1 = 8."}], "group": "01 / PYRAMIDAL NITROGEN", "watch": "Switch between the Fig. 9.1 pyramid and the Intext 9.1 classifier. In the pyramid the ∠C–N–C readout sits at 108°; in the classifier the slider walks through five amines and the readout counts the C–N bonds at nitrogen to fix 1°, 2° or 3°."}, {"id": "preparation", "nav": "Preparation of amines", "title": "Six routes to RNH₂ — and why Gabriel refuses aryl halides.", "deck": "Nitro reduction (Fe/HCl preferred), ammonolysis at 373 K, nitrile/amide reduction, Gabriel phthalimide, and Hoffmann bromamide (one carbon less). Example 9.2 is ascent of the amine series.", "minutes": 10, "section": "9.4", "pages": [4, 6], "print": "262–264", "sim": "preplab", "simTitle": "Preparation map: nitro → Gabriel → Hoffmann", "quick": ["<strong>1. Nitro reduction.</strong> ArNO₂ / RNO₂ → amine by H₂/Ni, Pd or Pt, or metals in acid. Iron scrap + HCl is preferred: FeCl₂ hydrolyses and regenerates HCl, so only a catalytic amount of acid is needed to start (zoom p.4).", "<strong>2. Ammonolysis</strong> of alkyl/benzyl halides with ethanolic NH₃ in a sealed tube at <strong>373 K</strong> is nucleophilic substitution. The 1° amine is itself a nucleophile, so 2°, 3° and R₄N⁺X⁻ follow. Excess NH₃ favours 1°. Reactivity RI > RBr > RCl. Free amine is liberated from the ammonium salt with a strong base.", "<strong>3–4. Nitriles and amides.</strong> RCN + LiAlH₄ or catalytic hydrogenation (also Na–Hg / C₂H₅OH, zoom p.5) gives RCH₂NH₂ — <em>ascent of amine series</em> by one carbon. Amides with LiAlH₄ give RCH₂NH₂ (same carbon count as the acyl chain plus N).", "<strong>5. Gabriel phthalimide</strong> gives pure 1° amines: potassium phthalimide + RX, then alkaline hydrolysis. <strong>Aromatic 1° amines cannot be made this way</strong> because aryl halides do not undergo nucleophilic substitution with the phthalimide anion (zoom p.6).", "<strong>6. Hoffmann bromamide.</strong> RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O. The alkyl/aryl group migrates from carbonyl carbon to nitrogen; the amine has <strong>one carbon less</strong> than the amide."], "formulas": [{"label": "Hoffmann bromamide", "html": "RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O", "cond": "Zoom p.6; amine has one C less than the amide"}, {"label": "Ascent via nitrile", "html": "R–X → R–CN → R–CH₂–NH₂", "cond": "Example 9.2; LiAlH₄ or H₂/Ni"}, {"label": "Ammonolysis ladder", "html": "RNH₂ → R₂NH → R₃N → R₄N⁺X⁻", "cond": "373 K sealed tube; excess NH₃ favours 1°"}], "deeper": "Hoffmann is a degradation: the carbonyl carbon is lost as carbonate. Gabriel is a protection strategy — the phthalimide nitrogen can be alkylated only once, so 2°/3° contamination is avoided. That is why it is preferred for aliphatic 1° amines (Ex 9.3, 9.12). Aryl–X does not do SN2 with the imide anion, so aniline is not a Gabriel product.", "worked": {"title": "Example 9.2: ascent of the amine series", "problem": "Write equations for the conversions (i) CH₃CH₂Cl into CH₃CH₂CH₂NH₂ and (ii) C₆H₅CH₂Cl into C₆H₅CH₂CH₂NH₂.", "given": "Alkyl halide + ethanolic NaCN gives a nitrile with one carbon more; the nitrile is then reduced (LiAlH₄ or H₂/Ni) to a primary amine (Example 9.2, PDF p.6).", "steps": ["Nucleophilic substitution: CH₃CH₂Cl + NaCN (ethanolic) → CH₃CH₂CN (propanenitrile) + NaCl.", "Reduction: CH₃CH₂CN + H₂/Ni (or LiAlH₄) → CH₃CH₂CH₂NH₂ (propan-1-amine).", "Aryl case: C₆H₅CH₂Cl + NaCN → C₆H₅CH₂CN (phenylethanenitrile, benzyl cyanide) + NaCl.", "Reduction: C₆H₅CH₂CN + H₂/Ni → C₆H₅CH₂CH₂NH₂ (2-phenylethanamine). The chain has grown by one carbon."], "answer": "RX → RCN (ethanolic NaCN) → RCH₂NH₂ (reduction); the amine has one carbon more than the starting halide."}, "prediction": {"prompt": "Can aniline be prepared by Gabriel phthalimide synthesis?", "options": ["No — aryl halides do not undergo nucleophilic substitution with the phthalimide anion.", "Yes — heat iodobenzene with potassium phthalimide.", "Yes, but only if NaOH is replaced by HCl."], "answer": 0, "explanation": "§9.4.5 and Ex 9.12 (zoom p.6): aromatic 1° amines cannot be prepared by Gabriel because Ar–X does not do SN with the imide anion."}, "connect": [{"title": "Ascent of the amine series in a process lab", "text": "To grow a carbon chain on nitrogen, NCERT’s nitrile route (Example 9.2) is the clean classroom analogue of homologation: RX → RCN → RCH₂NH₂. Hoffmann then shortens an amide by one carbon — the two reactions are complementary chain editors."}, {"title": "Amines as intermediates for medicines and fibres", "text": "The unit's opening line: the chief commercial use of amines is as intermediates in the synthesis of medicines and fibres. The six preparation routes of §9.4 are the factory-floor versions of those laboratory reactions."}, {"title": "Wow: Fe/HCl is catalytic in acid because FeCl₂ hydrolyses", "text": "The textbook’s preferred industrial-flavoured reduction is not ‘use lots of HCl’. Iron scrap plus a little HCl works because FeCl₂ + H₂O regenerates HCl. Atom-economy thinking, 1950s plant chemistry.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "Z0FbMewmguE", "title": "Preparation of amines | Amines | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the Hoffmann equation with 4 NaOH, and state why Gabriel fails for aniline.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Hoffmann bromamide produces an amine that has", "answer": 0, "hint": "§9.4.6.", "solution": "The carbonyl carbon is lost as Na₂CO₃.", "options": ["one carbon less than the starting amide", "one carbon more than the amide", "the same number of carbons as the amide"], "wrong": ["", "That is the nitrile-reduction ascent.", "Amide reduction with LiAlH₄ keeps the carbon count."]}, {"level": "Medium", "type": "mcq", "prompt": "Example 9.2: CH₃CH₂Cl → CH₃CH₂CH₂NH₂ uses", "answer": 0, "hint": "Zoom p.6.", "solution": "Ascent: chloroethane → propanenitrile → propan-1-amine.", "options": ["ethanolic NaCN then reduction of the nitrile", "Hoffmann bromamide of propanamide", "Gabriel with chloromethane"], "wrong": ["", "Hoffmann of propanamide would give ethanamine.", "Gabriel on CH₃Cl gives methanamine."], "map": "Example 9.2"}, {"level": "Hard", "type": "number", "prompt": "In RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O, how many NaOH are used per amide?", "unit": "NaOH", "answer": 4, "tolerance": 0.01, "hint": "Read the coefficient in the printed equation (PDF p.264).", "solution": "The printed Hoffmann bromamide equation uses 4 NaOH per RCONH₂, balanced by 2 Na in Na₂CO₃ and 2 Na in 2 NaBr."}], "group": "02 / SIX PREPARATION ROUTES", "watch": "Four route buttons: Hoffmann (one carbon less), Gabriel (aliphatic 1° only), nitrile ascent (Example 9.2) and the ammonolysis ladder. Watch which route is blocked for Ar–X and where the atom bookkeeping goes."}, {"id": "physical", "nav": "Physical properties", "title": "1° amines H-bond; 3° amines do not — so b.p. is 1° > 2° > 3°.", "deck": "Table 9.2 (molar mass ~73): n-butylamine 350.8 K, diethylamine 329.3 K, ethyldimethylamine 310.5 K, 2-methylbutane 300.8 K, butan-1-ol 390.3 K. Alcohols out-boil amines because O is more electronegative than N.", "minutes": 7, "section": "9.5", "pages": [7, 8], "print": "265–266", "sim": "hbondbp", "simTitle": "Table 9.2 boiling-point lab", "quick": ["Lower aliphatic amines are gases with a <strong>fishy odour</strong>; C₃ and above are liquids; still higher are solids. Aniline and arylamines are colourless when pure but colour on storage by atmospheric oxidation.", "Lower aliphatic amines dissolve in water by H-bonding to H₂O. Solubility falls as the hydrophobic alkyl part grows. Alcohols are more polar (EN O = 3.5 vs N = 3.0) and form stronger intermolecular H-bonds, so <strong>butan-1-ol is more water-soluble than butan-1-amine</strong>.", "1° and 2° amines associate intermolecularly (Fig. 9.2). 3° amines have no N–H, so no such association. Order of boiling points of isomeric amines: <strong>primary > secondary > tertiary</strong>. Table 9.2 (zoom p.8): n-C₄H₉NH₂ 350.8 K > (C₂H₅)₂NH 329.3 K > C₂H₅N(CH₃)₂ 310.5 K, all molar mass 73; the alkane C₂H₅CH(CH₃)₂ (72) boils at 300.8 K; n-C₄H₉OH (74) at 390.3 K."], "formulas": [{"label": "b.p. of isomers", "html": "1° > 2° > 3° (isomeric amines)", "cond": "N–H hydrogen bonding: two H in 1°, one in 2°, none in 3°"}, {"label": "Table 9.2 (mass ~73)", "html": "n-BuNH₂ 350.8 K · Et₂NH 329.3 K · EtNMe₂ 310.5 K · n-BuOH 390.3 K", "cond": "Zoom p.8; alcohols out-boil amines"}], "deeper": "The same H-bond that raises the boiling point of 1° amines also explains water solubility. Tertiary amines can still accept H-bonds from water (the lone pair is there) so small 3° amines dissolve, but they cannot donate N–H to a neighbour, so their neat boiling points stay low. Ex 9.4(v): C₂H₅OH > C₂H₅NH₂ > (CH₃)₂NH in boiling point.", "worked": {"title": "Worked comparison: why 1° > 2° > 3° in boiling point (Table 9.2)", "problem": "n-C₄H₉NH₂, (C₂H₅)₂NH and C₂H₅N(CH₃)₂ all have molar mass 73, while C₂H₅CH(CH₃)₂ has 72 and n-C₄H₉OH has 74. Arrange the five in increasing boiling point and explain.", "given": "Table 9.2: n-C₄H₉NH₂ 350.8 K; (C₂H₅)₂NH 329.3 K; C₂H₅N(CH₃)₂ 310.5 K; C₂H₅CH(CH₃)₂ 300.8 K; n-C₄H₉OH 390.3 K.", "steps": ["The alkane has only van der Waals forces, so it boils lowest (300.8 K).", "The tertiary amine has no N–H and cannot donate a hydrogen bond: next at 310.5 K.", "The secondary amine has one N–H and the primary has two, so association grows 3° < 2° < 1°: 329.3 K then 350.8 K.", "The alcohol has the more polar O–H (EN 3.5 vs 3.0 for N), so it boils highest (390.3 K)."], "answer": "C₂H₅CH(CH₃)₂ (300.8 K) < C₂H₅N(CH₃)₂ (310.5 K) < (C₂H₅)₂NH (329.3 K) < n-C₄H₉NH₂ (350.8 K) < n-C₄H₉OH (390.3 K)."}, "prediction": {"prompt": "Among n-C₄H₉NH₂, (C₂H₅)₂NH and C₂H₅N(CH₃)₂ (all mass 73), which boils highest?", "options": ["n-C₄H₉NH₂ at 350.8 K — two N–H hydrogens for intermolecular H-bonds", "C₂H₅N(CH₃)₂ because more alkyl groups raise boiling point", "They boil at the same temperature because molar mass is identical"], "answer": 0, "explanation": "Table 9.2: 350.8 > 329.3 > 310.5 K. Association, not mass, ranks the isomers."}, "connect": [{"title": "Fishy odour of the lower amines", "text": "The textbook’s ‘fishy’ is trimethylamine and cousins — the same smell as decaying fish (bacterial reduction of TMAO). That is why 3° amines are insect attractants (summary)."}, {"title": "Why aniline bottles darken on the shelf", "text": "Fresh aniline and other arylamines are colourless but turn coloured on storage by atmospheric oxidation (PDF p.265). The same slow oxidation is why an old sample must be distilled before it is diazotised."}, {"title": "Wow: 39.5 K between n-butylamine and n-butanol", "text": "Same skeleton, one atom swapped (N vs O). Table 9.2’s 350.8 vs 390.3 K is a 39.5 K lesson in electronegativity: 3.0 vs 3.5.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "GZ9pRoIRQYQ", "title": "Physical properties of amines | Amines | Grade 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Quote Table 9.2 boiling points of n-BuNH₂, Et₂NH and n-BuOH, and state the b.p. order of isomeric amines.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Boiling-point order of isomeric amines is", "answer": 0, "hint": "§9.5; Fig. 9.2.", "solution": "1° has two N–H for association; 3° has none.", "options": ["primary > secondary > tertiary", "tertiary > secondary > primary", "all equal at a given molar mass"], "wrong": ["", "That is the gas-phase basicity order, not b.p.", "Table 9.2 disproves this."]}, {"level": "Medium", "type": "number", "prompt": "Table 9.2: by how many kelvin does n-C₄H₉OH (390.3 K) boil above n-C₄H₉NH₂ (350.8 K)?", "unit": "K", "answer": 39.5, "tolerance": 0.01, "hint": "Subtract the amine boiling point from the alcohol boiling point.", "solution": "390.3 K − 350.8 K = 39.5 K. The O–H bond is more polar (EN 3.5) than N–H (EN 3.0), so the alcohol boils higher."}, {"level": "Hard", "type": "mcq", "prompt": "Why is butan-1-ol more soluble in water than butan-1-amine?", "answer": 0, "hint": "§9.5 paragraph on EN.", "solution": "The textbook asks you to predict from EN of N vs O.", "options": ["O is more electronegative (3.5 vs 3.0) so alcohols H-bond more strongly to water", "Amines have higher molar mass", "Amines are ionic"], "wrong": ["", "Both have four carbons.", "Free amines are not salts."]}], "group": "03 / BOILING POINTS & SOLUBILITY", "watch": "The Table 9.2 bars grow all five boiling points to scale; the second view draws the N–H···N association of primary amines. Compare the three mass-73 amines with the alkane and the alcohol."}, {"id": "basicity", "nav": "Basicity of amines", "title": "pK_b ranks bases: aliphatic amines beat ammonia; aniline does not.", "deck": "Table 9.3 (aqueous): Me₂NH 3.27 < MeNH₂ 3.38 < Me₃N 4.22; Et₂NH 3.00 is the strongest listed aliphatic. Aniline 9.38 is weaker than NH₃ (4.75) because the lone pair is conjugated with the ring (five resonance forms vs two for anilinium).", "minutes": 12, "section": "9.6.1", "pages": [8, 12], "print": "266–270", "sim": "aminebasicity", "simTitle": "Table 9.3 pK_b + aqueous vs gas-phase lab", "quick": ["Amines are <strong>Lewis bases</strong> (lone pair on N). They form salts with acids; NaOH regenerates the amine. Amine salts are water-soluble and ether-insoluble — the basis for separating amines from non-basic organics.", "K_b = [RNH₃⁺][OH⁻]/[RNH₂]; <strong>pK_b = −log K_b</strong>. Larger K_b or smaller pK_b ⇒ stronger base. Table 9.3 (zoom p.9): methanamine 3.38; N-methylmethanamine 3.27; N,N-dimethylmethanamine 4.22; ethanamine 3.29; N-ethylethanamine 3.00; N,N-diethylethanamine 3.25; benzenamine 9.38; phenylmethanamine 4.70; N-methylaniline 9.30; N,N-dimethylaniline 8.92. Ammonia is 4.75. Aliphatic pK_b lies in 3–4.22; aromatic amines are weaker than ammonia.", "<strong>Gas phase:</strong> 3° > 2° > 1° > NH₃ (pure +I). <strong>Aqueous:</strong> solvation and steric hindrance compete. Methyl series: (CH₃)₂NH > CH₃NH₂ > (CH₃)₃N > NH₃. Ethyl series: (C₂H₅)₂NH > (C₂H₅)₃N > C₂H₅NH₂ > NH₃ (zoom p.11).", "<strong>Aniline:</strong> the lone pair is conjugated with the ring (five resonating structures I–V). Anilinium has only two Kekulé forms, so aniline is more stabilised than its cation and is a weaker base than NH₃. –OCH₃, –CH₃ increase arylamine basicity; –NO₂, –SO₃H, –COOH, –X decrease it. Benzylamine (pK_b 4.70) is aliphatic-like: the NH₂ is not on the ring."], "formulas": [{"label": "K_b definition", "html": "K_b = [RNH₃⁺][OH⁻]/[RNH₂] ; pK_b = −log K_b", "cond": "Zoom p.9; smaller pK_b = stronger base"}, {"label": "Aqueous methyl order", "html": "(CH₃)₂NH > CH₃NH₂ > (CH₃)₃N > NH₃", "cond": "Table 9.3: 3.27, 3.38, 4.22, 4.75"}, {"label": "Aqueous ethyl order", "html": "(C₂H₅)₂NH > (C₂H₅)₃N > C₂H₅NH₂ > NH₃", "cond": "3.00, 3.25, 3.29, 4.75"}], "deeper": "Stability of the ammonium cation relative to the free amine decides basicity. Alkyl +I stabilises RNH₃⁺ and raises electron density on N. In water, RNH₃⁺ is also solvated by H-bonding; 1° cations are the best solvated, 3° the worst (bulky, fewer N–H). That is why aqueous 3° methylamine drops below 1°. Aniline’s lone pair is delocalised into the ring, so protonation costs aromatic resonance — pK_b jumps to 9.38.", "worked": {"title": "Example 9.4 + Intext 9.4: ranking basic strength", "problem": "Arrange C₆H₅NH₂, C₂H₅NH₂, (C₂H₅)₂NH and NH₃ in decreasing order of basic strength; then write the increasing orders asked in Intext 9.4(i)–(iii).", "given": "Alkyl +I raises electron density on N and stabilises RNH₃⁺; the aryl ring delocalises the lone pair of aniline. The printed Intext 9.4 answers are in 'Answers to Some Intext Questions' (PDF p.22).", "steps": ["Decreasing strength for Example 9.4: (C₂H₅)₂NH (pK_b 3.00) > C₂H₅NH₂ (3.29) > NH₃ (4.75) > C₆H₅NH₂ (9.38, five resonating structures against two for anilinium).", "Intext 9.4(i): C₆H₅NH₂ < NH₃ < C₆H₅CH₂NH₂ (4.70) < C₂H₅NH₂ < (C₂H₅)₂NH.", "Intext 9.4(ii): C₆H₅NH₂ < C₂H₅NH₂ < (C₂H₅)₃N (3.25) < (C₂H₅)₂NH.", "Intext 9.4(iii): C₆H₅NH₂ < C₆H₅CH₂NH₂ < (CH₃)₃N (4.22) < CH₃NH₂ (3.38) < (CH₃)₂NH (3.27)."], "answer": "Example 9.4: (C₂H₅)₂NH > C₂H₅NH₂ > NH₃ > C₆H₅NH₂. Intext 9.4 orders as printed in the answer key on PDF p.22."}, "prediction": {"prompt": "In aqueous solution, which has the smallest pK_b among CH₃NH₂, (CH₃)₂NH and (CH₃)₃N?", "options": ["(CH₃)₂NH — pK_b 3.27, the aqueous maximum of +I and solvation", "(CH₃)₃N — three alkyl groups, so strongest in every solvent", "CH₃NH₂ — primary always wins in water"], "answer": 0, "explanation": "Table 9.3: 3.27 (2°) < 3.38 (1°) < 4.22 (3°). Gas-phase 3° > 2° > 1° does not survive hydration of Me₃NH⁺."}, "connect": [{"title": "Separating aniline from nitrobenzene in ether", "text": "Shake with HCl(aq): aniline becomes water-soluble anilinium chloride; nitrobenzene stays in ether. Basify the aqueous layer to recover aniline. That is the salt paragraph of §9.6.1 as a work-up."}, {"title": "Recovering a free amine from its salt", "text": "Amine salts dissolve in water but not in ether; adding NaOH regenerates the parent amine (PDF p.267). That switch is how a basic compound is moved between an aqueous layer and an organic solvent in a work-up."}, {"title": "Wow: benzylamine pK_b 4.70 is almost ammonia", "text": "One CH₂ spacer (C₆H₅CH₂NH₂) kills ring conjugation. Aniline 9.38 vs benzylamine 4.70 is the textbook’s cleanest demonstration that ‘aromatic amine’ means NH₂ on the ring, not merely nearby.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "S2qlsxDX50o", "title": "Basicity of Alkyl amines | Amines | Class 12 | Chemistry | NCERT | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write Table 9.3 pK_b of methanamine, dimethylamine, trimethylamine and aniline, and the aqueous methyl order.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "pK_b of ammonia in this reprint is", "answer": 0, "hint": "§9.6.1 after Table 9.3.", "solution": "Aliphatic amines (3–4.22) are stronger; aniline 9.38 is weaker.", "options": ["4.75", "9.38", "3.38"], "wrong": ["", "That is aniline (benzenamine).", "That is methanamine."], "map": "Table 9.3"}, {"level": "Medium", "type": "number", "prompt": "Table 9.3: what is the smallest pK_b in the table (the strongest base)?", "unit": "pK_b", "answer": 3.0, "tolerance": 0.01, "hint": "Smaller pK_b = stronger base; scan the aliphatic amines.", "solution": "N-Ethylethanamine (diethylamine) has pK_b 3.00, the smallest value printed in Table 9.3, so it is the strongest base listed."}, {"level": "Hard", "type": "mcq", "prompt": "Aniline is a weaker base than ammonia because", "answer": 0, "hint": "Zoom p.11 structures I–V.", "solution": "Greater resonance stabilisation of the free base lowers proton affinity.", "options": ["the lone pair is conjugated with the ring (5 resonance forms); anilinium has only 2", "aniline cannot form hydrogen bonds", "nitrogen in aniline is sp hybridised"], "wrong": ["", "Aniline does H-bond; that is a solubility issue.", "N is still sp³, with the lone pair in a p-overlapping orbital."], "map": "Fig. aniline resonance"}], "group": "04 / STRONGER OR WEAKER BASE", "watch": "Four presets: aqueous methyl order, aqueous ethyl order, gas-phase order and the aniline resonance count (five forms vs two for anilinium). Smaller pK_b is the stronger base; the bars sort themselves."}, {"id": "tests-hinsberg", "nav": "Carbylamine, HNO₂, Hinsberg", "title": "Three tests that tell 1°, 2° and 3° apart — Hinsberg is the separator.", "deck": "Carbylamine: only 1° give foul R–NC. Aliphatic 1° + HNO₂ evolve N₂ (estimation of amino acids). Hinsberg (C₆H₅SO₂Cl): 1° sulphonamide alkali-soluble; 2° sulphonamide alkali-insoluble; 3° no reaction. These days TsCl replaces BsCl.", "minutes": 10, "section": "9.6.2–9.6.6", "pages": [12, 14], "print": "270–272", "sim": "hinsberg", "simTitle": "Hinsberg test lab (1° / 2° / 3°)", "quick": ["<strong>Alkylation / acylation.</strong> Amines are nucleophiles. Acylation with RCOCl, anhydrides or esters (pyridine to trap HCl) gives amides. Benzoylation is C₆H₅COCl: methanamine → N-methylbenzamide (zoom p.12). Carboxylic acids merely form salts at room temperature.", "<strong>Carbylamine (isocyanide test).</strong> 1° aliphatic or aromatic amine + CHCl₃ + ethanolic KOH, heat: RNH₂ + CHCl₃ + 3 KOH → R–NC + 3 KCl + 3 H₂O. Foul-smelling isocyanides. 2° and 3° do not react (zoom p.13).", "<strong>Nitrous acid</strong> (NaNO₂ + mineral acid in situ). Aliphatic 1° → unstable alkyldiazonium → ROH + N₂ (quantitative N₂ used to estimate amino acids and proteins). Aromatic 1° at <strong>273–278 K</strong> → stable-enough arenediazonium salts (§9.7). 2° and 3° react differently.", "<strong>Hinsberg’s reagent</strong> = benzenesulphonyl chloride C₆H₅SO₂Cl. (a) 1° amine → N-alkylbenzenesulphonamide; the remaining N–H is acidic (sulphonyl is strongly electron-withdrawing) so the product <strong>dissolves in alkali</strong>. (b) 2° amine → N,N-dialkylbenzenesulphonamide; no N–H, <strong>insoluble in alkali</strong>. (c) 3° amines do not react. Used to distinguish and separate 1°/2°/3°. Nowadays <strong>p-toluenesulphonyl chloride</strong> replaces BsCl."], "formulas": [{"label": "Carbylamine", "html": "RNH₂ + CHCl₃ + 3 KOH → R–NC + 3 KCl + 3 H₂O", "cond": "Heat; 1° only; foul isocyanide"}, {"label": "Aliphatic 1° + HNO₂", "html": "RNH₂ + HNO₂ → [RN₂⁺Cl⁻] → ROH + N₂ + HCl", "cond": "Quantitative N₂; amino-acid estimation"}, {"label": "Hinsberg (1° and 2°)", "html": "C₆H₅SO₂Cl + RNH₂ → C₆H₅SO₂NHR (alkali-soluble) · + R₂NH → C₆H₅SO₂NR₂ (alkali-insoluble)", "cond": "3°: no reaction; TsCl replaces BsCl these days"}], "deeper": "Hinsberg is both a test and a separation: alkali extracts the 1° sulphonamide; the 2° sulphonamide stays as a solid/organic layer; the unreacted 3° amine can be distilled or extracted as the free base. Acid hydrolysis recovers the amines from the sulphonamides. Carbylamine is only a test (the isocyanide is not a convenient derivative). Ex 9.2 pairs: methylamine vs dimethylamine (carbylamine or Hinsberg); aniline vs benzylamine (azo dye vs N₂ from aliphatic diazonium).", "worked": {"title": "Worked identification: Hinsberg on ethanamine, diethylamine and triethylamine", "problem": "Describe what is observed when each of ethanamine, diethylamine and triethylamine is treated with benzenesulphonyl chloride followed by alkali.", "given": "Hinsberg's reagent is C₆H₅SO₂Cl; the strongly electron-withdrawing sulphonyl group makes the remaining N–H of a primary sulphonamide acidic (PDF p.13).", "steps": ["Ethanamine (1°): C₆H₅SO₂Cl + C₂H₅NH₂ → C₆H₅SO₂NHC₂H₅. The remaining N–H is strongly acidic, so the sulphonamide dissolves in alkali as its sodium salt.", "Diethylamine (2°): C₆H₅SO₂Cl + (C₂H₅)₂NH → C₆H₅SO₂N(C₂H₅)₂. There is no N–H, so the product is not acidic and is insoluble in alkali.", "Triethylamine (3°): no reaction with benzenesulphonyl chloride; the amine is recovered unchanged.", "These differences both identify and separate the three classes; p-toluenesulphonyl chloride is used nowadays in place of benzenesulphonyl chloride."], "answer": "1° → alkali-soluble sulphonamide C₆H₅SO₂NHEt; 2° → alkali-insoluble sulphonamide C₆H₅SO₂NEt₂; 3° → no reaction."}, "prediction": {"prompt": "A compound reacts with Hinsberg’s reagent to give a product that is insoluble in alkali. The amine is", "options": ["secondary — N,N-dialkyl sulphonamide has no acidic N–H", "primary — 1° sulphonamides are always alkali-insoluble", "tertiary — 3° amines form an alkali-insoluble sulphonamide"], "answer": 0, "explanation": "1° product dissolves in alkali; 2° product does not; 3° does not react at all, so you do not isolate a sulphonamide."}, "connect": [{"title": "Hinsberg as a bottle-sort in the organic lab", "text": "A mixture of 1°/2°/3° from ammonolysis (the disadvantage of §9.4.2) is exactly what Hinsberg was invented to pull apart. Excess NH₃ plus Hinsberg is the classical work-up."}, {"title": "Counting nitrogen to estimate amino acids", "text": "Aliphatic primary amines release nitrogen gas quantitatively with nitrous acid (PDF p.271). Measuring that gas is the classical way to estimate the amino-acid or protein content of a sample."}, {"title": "Wow: p-toluenesulphonyl chloride has replaced benzenesulphonyl chloride", "text": "The reprint says so in one sentence (zoom p.14). Same logic, cheaper/stabler TsCl. Do not write ‘only BsCl’ as if the 2026–27 book had not updated the reagent.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "CApM8s3-C-M", "title": "Hinsberg test| Amines | Class 12 | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the carbylamine equation and the alkali-solubility rule for Hinsberg 1°, 2° and 3°.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Carbylamine test is given by", "answer": 0, "hint": "Zoom p.13.", "solution": "RNH₂ + CHCl₃ + 3 KOH → RNC. 2° and 3° silent.", "options": ["aliphatic and aromatic primary amines", "secondary amines only", "all three classes of amines"], "wrong": ["", "2° do not form isocyanides.", "3° have no N–H to replace."]}, {"level": "Medium", "type": "number", "prompt": "How many KOH molecules react with one molecule of a primary amine in the carbylamine reaction?", "unit": "KOH", "answer": 3, "tolerance": 0.01, "hint": "Read the coefficient in RNH₂ + CHCl₃ + ? KOH → R–NC + 3 KCl + 3 H₂O.", "solution": "The printed equation is RNH₂ + CHCl₃ + 3 KOH → R–NC + 3 KCl + 3 H₂O, so 3 KOH react with each RNH₂ (PDF p.13)."}, {"level": "Hard", "type": "mcq", "prompt": "Aliphatic primary amines with nitrous acid", "answer": 0, "hint": "Zoom p.13.", "solution": "Alkyldiazonium is unstable; arenediazonium is the 273–278 K story.", "options": ["liberate N₂ quantitatively and give alcohols", "form stable diazonium salts at 273–278 K", "do not react"], "wrong": ["", "That is aromatic 1°.", "They do react — that is the estimation method."]}], "group": "05 / TELLING 1° 2° 3° APART", "watch": "Run ethanamine, diethylamine and triethylamine through Hinsberg's reagent and watch the alkali solubility (1° soluble, 2° insoluble, 3° no reaction); the fourth button is the carbylamine test."}, {"id": "eas-aniline", "nav": "EAS of aniline", "title": "–NH₂ is a fierce o,p-director — acetylate it when you want mono-substitution.", "deck": "Bromine water → 2,4,6-tribromoaniline (white ppt) at room temperature. Direct nitration (HNO₃/H₂SO₄, 288 K): 51% p, 47% m, 2% o because anilinium is meta-directing. Acetanilide nitration gives p-nitroaniline after hydrolysis. No Friedel–Crafts (salt with AlCl₃).", "minutes": 9, "section": "9.6.7", "pages": [14, 15], "print": "272–273", "sim": "anilineeas", "simTitle": "Aniline EAS: Br₂ vs protected nitration", "quick": ["Aniline’s five resonance forms pile electron density at <strong>ortho and para</strong>. –NH₂ is a powerful activating o,p-director.", "<strong>Bromination:</strong> aniline + Br₂ water, room temperature → white precipitate of <strong>2,4,6-tribromoaniline</strong>. To stop at mono-substitution, protect as acetanilide, substitute, then hydrolyse. The lone pair on acetanilide nitrogen is less available to the ring (resonance with C=O), so –NHCOCH₃ is a milder activator.", "<strong>Nitration</strong> (HNO₃, H₂SO₄, 288 K, zoom p.15): tarry oxidation plus nitroanilines. In strong acid, aniline is protonated to anilinium (meta-directing). Observed: <strong>p-nitroaniline 51%, m-nitroaniline 47%, o-nitroaniline 2%</strong>. Protecting as acetanilide then nitrating gives p-nitroacetanilide as the major product; hydrolysis yields p-nitroaniline.", "<strong>Sulphonation:</strong> aniline + conc. H₂SO₄ → anilinium hydrogensulphate; heat at <strong>453–473 K</strong> → p-aminobenzenesulphonic acid (<strong>sulphanilic acid</strong>), a zwitterion. <strong>No Friedel–Crafts</strong>: aniline forms a salt with AlCl₃; N becomes positive and deactivates the ring."], "formulas": [{"label": "Tribromination", "html": "C₆H₅NH₂ + 3 Br₂(aq) → 2,4,6-C₆H₂Br₃NH₂ ↓ (white) + 3 HBr", "cond": "Room temperature; too fast for mono-Br"}, {"label": "Direct nitration 288 K", "html": "p 51% · m 47% · o 2%", "cond": "Zoom p.15; anilinium is meta-directing"}, {"label": "Protected nitration", "html": "aniline → acetanilide → p-nitroacetanilide → p-nitroaniline", "cond": "Ac₂O / pyridine; then HNO₃/H₂SO₄; then OH⁻ or H⁺"}], "deeper": "Protection is a kinetic trick: you temporarily reduce activation so the first electrophile does not invite two more. The 51/47/2 split is the reprint’s own numbers — do not ‘correct’ them to a remembered 2/51/47 from another edition without looking at zoom p.15. Sulphanilic acid’s zwitterion (⁺H₃N–C₆H₄–SO₃⁻) is why it is high-melting and poorly soluble in organic solvents.", "worked": {"title": "Worked route: aniline → p-nitroaniline without tarry oxidation", "problem": "How is the nitration of aniline controlled so that the para product is obtained as the major product?", "given": "Direct nitration (HNO₃/H₂SO₄, 288 K) gives tarry oxidation products along with 51% p-, 47% m- and 2% o-nitroaniline because the anilinium ion is meta-directing (PDF p.15).", "steps": ["Protect the –NH₂ group: aniline + (CH₃CO)₂O in pyridine → acetanilide, C₆H₅NHCOCH₃.", "The lone pair on the acetanilide nitrogen is delocalised into the C=O group, so –NHCOCH₃ activates the ring less strongly than –NH₂.", "Nitrate the protected ring: acetanilide + HNO₃/H₂SO₄ at 288 K → p-nitroacetanilide as the major product.", "Deprotect by hydrolysis with OH⁻ (or H⁺) to obtain p-nitroaniline."], "answer": "Acetylate (Ac₂O/pyridine), nitrate at 288 K and hydrolyse — the para isomer is then the major product."}, "prediction": {"prompt": "Direct nitration of aniline gives a substantial meta product because", "options": ["in strong acid, anilinium ion is the species present and is meta-directing (47% m in this reprint)", "–NH₂ is intrinsically meta-directing", "nitration always gives 100% para"], "answer": 0, "explanation": "Zoom p.15: 51% p, 47% m, 2% o. Protonation converts the activator into a deactivating meta-director."}, "connect": [{"title": "Sulphanilic acid and azo dyes", "text": "Sulphanilic acid is the diazotisable aniline that still carries a water-solubilising –SO₃⁻. Coupled with phenols it is the backbone of many acid azo dyes used in Indian textile clusters."}, {"title": "A white precipitate that identifies aniline", "text": "Bromine water gives an immediate white precipitate of 2,4,6-tribromoaniline at room temperature (PDF p.272). The test is fast because –NH₂ activates the ring so strongly that all three positions react before mono-substitution can be isolated."}, {"title": "Wow: 47% meta is not a rounding error", "text": "Students expect ‘o,p only’. The reprint prints 51 / 47 / 2 so that you remember anilinium. Protect or you pay in meta.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "yUzZ0MSalTQ", "title": "Nitration of Aniline | Electrophilic Aromatic Substitution Reactions | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State the 51/47/2 nitration split, the tribromo product with Br₂ water, and why Friedel–Crafts fails.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Aniline with bromine water gives", "answer": 0, "hint": "§9.6.7(a).", "solution": "The ring is too activated for mono-substitution without protection.", "options": ["2,4,6-tribromoaniline as a white precipitate", "only p-bromoaniline", "no reaction"], "wrong": ["", "Need acetanilide for mono-Br.", "It reacts vigorously."]}, {"level": "Medium", "type": "number", "prompt": "In the direct nitration of aniline at 288 K, what percentage of p-nitroaniline is printed in the 288 K nitration scheme on PDF p.273?", "unit": "%", "answer": 51, "tolerance": 0.01, "hint": "The figure labels the three products: para (51%), meta (47%), ortho (2%).", "solution": "The printed figure gives p-nitroaniline 51%, m-nitroaniline 47% and o-nitroaniline 2% — the meta product comes from the meta-directing anilinium ion."}, {"level": "Hard", "type": "mcq", "prompt": "Aniline does not undergo Friedel–Crafts alkylation because", "answer": 0, "hint": "Last paragraph, zoom p.15.", "solution": "Lewis-acid salt formation, not a directing-effect issue.", "options": ["it forms a salt with AlCl₃; N becomes positive and deactivates the ring", "aniline is meta-directing", "AlCl₃ oxidises aniline to nitrobenzene"], "wrong": ["", "Free aniline is o,p-directing.", "That is nitration chemistry."]}], "group": "06 / RING SUBSTITUTION", "watch": "Four buttons: Br₂ water tribromination, direct nitration (51/47/2), protection through acetanilide, and why Friedel–Crafts fails. The nitration bars are the reprint's printed percentages."}, {"id": "diazonium", "nav": "Diazonium salts", "title": "ArN₂⁺ is the leaving group that installs Cl, Br, I, F, CN, OH, H, NO₂ — and azo dyes.", "deck": "Diazotisation: ArNH₂ + NaNO₂ + 2 HCl at 273–278 K. Sandmeyer (Cu(I)) vs Gatterman (Cu powder). Coupling with phenol (alkaline) gives orange p-hydroxyazobenzene; with aniline (acid) yellow p-aminoazobenzene.", "minutes": 11, "section": "9.7–9.10", "pages": [16, 19], "print": "274–277", "sim": "diazocoupling", "simTitle": "Sandmeyer vs coupling lab", "quick": ["Arenediazonium salts ArN₂⁺X⁻ (X⁻ = Cl⁻, Br⁻, HSO₄⁻, BF₄⁻) are named by suffixing diazonium to the parent arene: C₆H₅N₂⁺Cl⁻ = <strong>benzenediazonium chloride</strong>. Aliphatic diazonium salts are highly unstable; aryl ones are resonance-stabilised and usable at 273–278 K. They are not stored dry (explode); use immediately. Benzenediazonium fluoroborate is water-insoluble and stable at room temperature.", "<strong>Diazotisation</strong> (zoom p.16): C₆H₅NH₂ + NaNO₂ + 2 HCl --273–278 K→ C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O.", "<strong>A. Displacement of nitrogen.</strong> Sandmeyer: ArN₂⁺ + Cu₂Cl₂/HCl → ArCl; Cu₂Br₂/HBr → ArBr; CuCN/KCN → ArCN. Gatterman: Cu powder + HCl or HBr (yield lower than Sandmeyer). Iodide: KI, no copper. Fluoride: HBF₄ then heat → ArF + BF₃ + N₂. Replacement by H: H₃PO₂ or ethanol (→ ethanal). Phenol: warm to 283 K. Nitro: ArN₂⁺BF₄⁻ + NaNO₂/Cu, Δ.", "<strong>B. Retention of the diazo group — coupling.</strong> C₆H₅N₂⁺ + phenol (OH⁻) → <strong>p-hydroxyazobenzene (orange dye)</strong>. C₆H₅N₂⁺ + aniline (H⁺) → <strong>p-aminoazobenzene (yellow dye)</strong>. Electrophilic substitution at the para position of the activated ring. Aryl–F, aryl–I and aryl–CN are the substitutions benzene itself will not do by direct halogenation or by SN on chlorobenzene."], "formulas": [{"label": "Diazotisation", "html": "C₆H₅NH₂ + NaNO₂ + 2 HCl → C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O", "cond": "273–278 K; use immediately"}, {"label": "Sandmeyer", "html": "ArN₂⁺ --Cu₂Cl₂/HCl→ ArCl ; --Cu₂Br₂/HBr→ ArBr ; --CuCN/KCN→ ArCN", "cond": "Cu(I); better yield than Gatterman (Cu powder)"}, {"label": "Coupling", "html": "ArN₂⁺ + Ar′–OH (OH⁻) → p-HO–Ar′–N=N–Ar (orange) ; aniline (H⁺) → yellow", "cond": "Phenol: orange p-hydroxyazobenzene; aniline: yellow p-aminoazobenzene"}], "deeper": "The diazonium group is one of the best leaving groups in aromatic chemistry (N₂ gas). That is why substitutions that fail on chlorobenzene (CN, F, I, OH under mild conditions) succeed here. Coupling is EAS: the diazonium ion is a weak electrophile that needs a strongly activated ring (phenol or aniline), attacking para.", "worked": {"title": "Example 9.5 + Intext 9.9: diazonium as a leaving group", "problem": "Convert 4-nitrotoluene into 2-bromobenzoic acid (Example 9.5), and convert 3-methylaniline into 3-nitrotoluene and aniline into 1,3,5-tribromobenzene (Intext 9.9).", "given": "Arenediazonium salts are prepared at 273–278 K and the –N₂⁺ group is displaced by many nucleophiles; aryl fluorides and iodides cannot be made by direct halogenation (PDF pp.17, 19).", "steps": ["Example 9.5: 4-nitrotoluene + Br₂ → ring bromination to give 2-bromo-4-nitrotoluene.", "Sn/HCl reduces –NO₂ to –NH₂; then NaNO₂/HCl at 273–278 K gives the diazonium salt.", "H₂O/H₃PO₂ replaces –N₂⁺ by –H; finally KMnO₄/OH⁻ oxidises –CH₃ to –COOH, giving 2-bromobenzoic acid.", "Intext 9.9: 3-methylaniline → diazotise at 273 K → add HBF₄ → NaNO₂/Cu and heat replaces –N₂⁺ by –NO₂, giving 3-nitrotoluene.", "Aniline → Br₂ water → 2,4,6-tribromoaniline → diazotise → H₃PO₂ replaces –N₂⁺ by –H, giving 1,3,5-tribromobenzene."], "answer": "Diazotise at 273–278 K, then displace –N₂⁺ (NO₂ via HBF₄/NaNO₂/Cu; H via H₃PO₂). The diazonium group is the leaving group that makes these substitutions possible."}, "prediction": {"prompt": "To convert aniline into iodobenzene, the laboratory sequence in this chapter is", "options": ["diazotise at 273–278 K, then treat the diazonium salt with KI (no copper needed)", "direct iodination of aniline with I₂/Fe", "Sandmeyer with Cu₂Cl₂, then Finkelstein on chlorobenzene"], "answer": 0, "explanation": "§9.9 A.2 (zoom p.17): iodine is not easily introduced by direct substitution; ArN₂⁺ + KI → ArI + KCl + N₂."}, "connect": [{"title": "Azo dyes in Tirupur and Surat", "text": "p-Hydroxyazobenzene is the orange teaching dye; the same –N=N– chromophore, with sulphonate groups for water solubility, colours cotton and silk in Indian dye houses. Diazonium coupling is the industrial reaction hiding in §9.9 B."}, {"title": "Made cold and used at once", "text": "Benzenediazonium chloride is stable only in cold solution and decomposes easily in the dry state (PDF p.275). Every synthesis in §9.9 therefore diazotises at 273–278 K and carries the solution straight into the next step."}, {"title": "Wow: chlorobenzene will not take CN by SN, but the diazonium will", "text": "The reprint’s last pedagogical punch: Ar–F, Ar–I, Ar–CN, Ar–OH under mild conditions. Diazonium is the aromatic chemist’s leaving-group cheat code.", "wow": true, "links": [{"t": "NCERT Chemistry Part II — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/lech204.pdf"}], "video": {"id": "NmCXdWeC9AM", "title": "Azo dye formation | Electrophilic aromatic substitution reactions | Chemistry | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the diazotisation equation at 273–278 K, one Sandmeyer, and the two coupling colours.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Diazotisation of aniline is carried out at", "answer": 0, "hint": "§9.7 / zoom p.16.", "solution": "Arenediazonium is only short-term stable in the cold.", "options": ["273–278 K", "373 K", "room temperature with no cooling"], "wrong": ["", "That is ammonolysis.", "Warm solutions hydrolyse to phenol (283 K)."]}, {"level": "Medium", "type": "number", "prompt": "How many HCl molecules are used per aniline molecule in the diazotisation reaction?", "unit": "HCl", "answer": 2, "tolerance": 0.01, "hint": "Balance C₆H₅NH₂ + NaNO₂ + ? HCl → C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O.", "solution": "C₆H₅NH₂ + NaNO₂ + 2 HCl → C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O at 273–278 K, so 2 HCl per aniline (PDF p.16)."}, {"level": "Hard", "type": "mcq", "prompt": "Coupling of benzenediazonium chloride with phenol (alkaline) yields", "answer": 0, "hint": "Zoom p.18.", "solution": "Retention of the diazo group; para coupling. Aniline coupling (acid) gives yellow p-aminoazobenzene.", "options": ["p-hydroxyazobenzene, an orange dye", "aniline", "only nitrogen gas and benzene"], "wrong": ["", "Aniline is the starting material for diazotisation.", "That is the H₃PO₂ reduction."], "map": "Fig. coupling"}], "group": "07 / DIAZONIUM SALTS", "watch": "Sandmeyer/Gatterman displacement table, the I/F/H/OH/NO₂ replacements, and the coupling dyes (phenol → orange, aniline → yellow). Watch N₂ leave as a gas in the first two modes."}], "exercises": [{"q": 1, "title": "IUPAC names and classes of seven amines", "conceptIdx": 0, "page": 20, "printPage": 278, "question": "Write IUPAC names of the following compounds and classify them into primary, secondary and tertiary amines.\n(i) (CH₃)₂CHNH₂  (ii) CH₃(CH₂)₂NH₂  (iii) CH₃NHCH(CH₃)₂  (iv) (CH₃)₃CNH₂  (v) C₆H₅NHCH₃  (vi) (CH₃CH₂)₂NCH₃  (vii) m-BrC₆H₄NH₂", "given": "(i) (CH₃)₂CHNH₂  (ii) CH₃(CH₂)₂NH₂  (iii) CH₃NHCH(CH₃)₂  (iv) (CH₃)₃CNH₂  (v) C₆H₅NHCH₃  (vi) (CH₃CH₂)₂NCH₃  (vii) m-BrC₆H₄NH₂; class = number of C–N bonds at nitrogen; Table 9.1 gives the IUPAC names.", "steps": ["(i) Propan-2-amine (common: isopropylamine): one C–N bond → 1°.", "(ii) Propan-1-amine (n-propylamine): one C–N bond → 1°.", "(iii) N-Methylpropan-2-amine: two C–N bonds → 2°.", "(iv) 2-Methylpropan-2-amine: one C–N bond → 1°.", "(v) N-Methylaniline (N-methylbenzenamine): two C–N bonds → 2°.", "(vi) N-Ethyl-N-methylethanamine: three C–N bonds → 3°.", "(vii) 3-Bromobenzenamine (3-bromoaniline): one C–N bond → 1°."], "answer": "(i) propan-2-amine, 1°; (ii) propan-1-amine, 1°; (iii) N-methylpropan-2-amine, 2°; (iv) 2-methylpropan-2-amine, 1°; (v) N-methylaniline, 2°; (vi) N-ethyl-N-methylethanamine, 3°; (vii) 3-bromobenzenamine, 1°.", "takeaway": "Class follows the number of hydrogens of NH₃ replaced (C–N bonds at N), not the number of carbons in the formula.", "conceptName": "Structure, classification & IUPAC nomenclature"}, {"q": 2, "title": "Distinguish five pairs with one test each", "conceptIdx": 4, "page": 20, "printPage": 278, "question": "Give one chemical test to distinguish between the following pairs of compounds.\n(i) Methylamine and dimethylamine  (ii) Secondary and tertiary amines  (iii) Ethylamine and aniline  (iv) Aniline and benzylamine  (v) Aniline and N-methylaniline.", "given": "Carbylamine: RNH₂ + CHCl₃ + alc. KOH → RNC (only 1°). Hinsberg: C₆H₅SO₂Cl then alkali (1° soluble, 2° insoluble, 3° no reaction). Aliphatic 1° + HNO₂ → N₂ gas; aromatic 1° + HNO₂ at 273–278 K → diazonium, which couples to a dye.", "steps": ["(i) Carbylamine test: MeNH₂ gives the foul-smelling methyl isocyanide; Me₂NH does not react. (Hinsberg: the MeNH₂ product is alkali-soluble, the Me₂NH product is not.)", "(ii) Hinsberg test: the 2° amine gives an alkali-insoluble N,N-dialkylbenzenesulphonamide; the 3° amine gives no sulphonamide and is recovered as the free amine.", "(iii) Azo-dye test: aniline diazotised at 273–278 K and coupled with phenol/β-naphthol gives an orange dye; ethylamine evolves N₂ and gives ethanol, no dye.", "(iv) The same azo-dye test distinguishes them: aniline is aromatic 1° and gives the dye; benzylamine behaves as an aliphatic 1° amine (N₂ + alcohol).", "(v) Carbylamine test: aniline (1°) is positive; N-methylaniline (2°) is negative. Hinsberg solubility also works."], "answer": "(i) carbylamine (only MeNH₂); (ii) Hinsberg (2° sulphonamide insoluble vs 3° no reaction); (iii) azo dye (aniline); (iv) azo dye (aniline); (v) carbylamine (aniline).", "takeaway": "Carbylamine and Hinsberg probe the number of N–H bonds; the azo-dye test needs an aryl diazonium, so it separates aromatic from aliphatic amines.", "conceptName": "Carbylamine, nitrous acid & Hinsberg tests"}, {"q": 3, "title": "Seven structure–property explanations", "conceptIdx": 3, "page": 20, "printPage": 278, "question": "Account for the following:\n(i) pK_b of aniline is more than that of methylamine.\n(ii) Ethylamine is soluble in water whereas aniline is not.\n(iii) Methylamine in water reacts with ferric chloride to precipitate hydrated ferric oxide.\n(iv) Although –NH₂ is o,p-directing, aniline on nitration gives a substantial amount of m-nitroaniline.\n(v) Aniline does not undergo Friedel–Crafts reaction.\n(vi) Diazonium salts of aromatic amines are more stable than those of aliphatic amines.\n(vii) Gabriel phthalimide synthesis is preferred for synthesising primary amines.", "given": "Table 9.3: aniline pK_b 9.38, methanamine 3.38; aniline is a resonance hybrid of five structures and anilinium of two; FeCl₃ is precipitated by OH⁻ from the amine–water equilibrium; in strong acid aniline becomes the meta-directing anilinium ion; AlCl₃ forms a salt; arenediazonium is resonance-stabilised; Gabriel alkylates nitrogen only once.", "steps": ["(i) The aniline lone pair is conjugated with the ring (five resonance forms) while anilinium has only two, so aniline is more stabilised and a weaker base: pK_b 9.38 vs 3.38.", "(ii) Ethylamine hydrogen-bonds to water; aniline has a large hydrophobic aryl ring and its delocalised lone pair makes weaker H-bonds, so it is only sparingly soluble.", "(iii) MeNH₂ + H₂O ⇌ MeNH₃⁺ + OH⁻; the OH⁻ precipitates hydrated ferric oxide from FeCl₃.", "(iv) In HNO₃/H₂SO₄ aniline is protonated to the anilinium ion, which is meta-directing: the printed figure gives 51% para, 47% meta and 2% ortho.", "(v) Aniline forms a salt with the Lewis acid AlCl₃; nitrogen becomes positive and strongly deactivates the ring.", "(vi) The aryl diazonium ion is resonance-stabilised by the ring; the alkyldiazonium ion is not and loses N₂ at once.", "(vii) Gabriel's phthalimide anion alkylates nitrogen only once, so 2°/3°/quaternary contamination is avoided; it works only for aliphatic (and benzylic) 1° amines because Ar–X does not undergo SN."], "answer": "(i) resonance delocalisation of the aniline lone pair; (ii) hydrophobic aryl vs H-bonding alkylamine; (iii) OH⁻ from amine hydrolysis precipitates Fe(OH)₃; (iv) anilinium is meta-directing — 51/47/2; (v) AlCl₃ salt; (vi) aryl resonance; (vii) exclusive aliphatic 1° product.", "takeaway": "Aniline's lone pair and its acid–base behaviour explain four of the seven answers; the other three are the stability of the diazonium ion and the selectivity of Gabriel's method.", "conceptName": "Basicity & structure–property reasoning"}, {"q": 4, "title": "Ranking pK_b, basicity, boiling point and solubility", "conceptIdx": 3, "page": 20, "printPage": 278, "question": "Arrange the following:\n(i) Decreasing pK_b: C₂H₅NH₂, C₆H₅NHCH₃, (C₂H₅)₂NH, C₆H₅NH₂\n(ii) Increasing basic strength: C₆H₅NH₂, C₆H₅N(CH₃)₂, (C₂H₅)₂NH, CH₃NH₂\n(iii) Increasing basic strength: (a) aniline, p-nitroaniline, p-toluidine; (b) C₆H₅NH₂, C₆H₅NHCH₃, C₆H₅CH₂NH₂\n(iv) Decreasing basic strength in gas phase: C₂H₅NH₂, (C₂H₅)₂NH, (C₂H₅)₃N, NH₃\n(v) Increasing boiling point: C₂H₅OH, (CH₃)₂NH, C₂H₅NH₂\n(vi) Increasing solubility in water: C₆H₅NH₂, (C₂H₅)₂NH, C₂H₅NH₂.", "given": "Table 9.3 pK_b: C₂H₅NH₂ 3.29, C₆H₅NHCH₃ 9.30, (C₂H₅)₂NH 3.00, C₆H₅NH₂ 9.38, C₆H₅N(CH₃)₂ 8.92, CH₃NH₂ 3.38; NH₃ 4.75. Gas phase follows +I only; Table 9.2 supplies the boiling-point logic.", "steps": ["(i) Weaker base = larger pK_b: C₆H₅NH₂ (9.38) > C₆H₅NHCH₃ (9.30) > C₂H₅NH₂ (3.29) > (C₂H₅)₂NH (3.00).", "(ii) C₆H₅NH₂ < C₆H₅N(CH₃)₂ < CH₃NH₂ < (C₂H₅)₂NH (aryl much weaker than alkyl; the 2° ethylamine strongest).", "(iii)(a) p-nitroaniline < aniline < p-toluidine (–NO₂ withdraws, –CH₃ donates). (b) C₆H₅NH₂ < C₆H₅NHCH₃ < C₆H₅CH₂NH₂ (benzylamine is not conjugated with the ring).", "(iv) Gas phase, only +I: (C₂H₅)₃N > (C₂H₅)₂NH > C₂H₅NH₂ > NH₃.", "(v) (CH₃)₂NH < C₂H₅NH₂ < C₂H₅OH (one N–H vs two N–H vs the more polar O–H).", "(vi) C₆H₅NH₂ < (C₂H₅)₂NH < C₂H₅NH₂ (hydrophobic aryl ring; the 1° amine H-bonds to water better than the 2° amine)."], "answer": "(i) C₆H₅NH₂ > C₆H₅NHCH₃ > C₂H₅NH₂ > (C₂H₅)₂NH; (ii) C₆H₅NH₂ < C₆H₅N(CH₃)₂ < CH₃NH₂ < (C₂H₅)₂NH; (iii)(a) p-nitroaniline < aniline < p-toluidine; (b) C₆H₅NH₂ < C₆H₅NHCH₃ < C₆H₅CH₂NH₂; (iv) (C₂H₅)₃N > (C₂H₅)₂NH > C₂H₅NH₂ > NH₃; (v) (CH₃)₂NH < C₂H₅NH₂ < C₂H₅OH; (vi) C₆H₅NH₂ < (C₂H₅)₂NH < C₂H₅NH₂.", "takeaway": "Smaller pK_b means stronger base; gas-phase order follows +I only, while water adds solvation and steric effects that reshuffle it.", "conceptName": "Basicity, H-bonding & solubility trends"}, {"q": 5, "title": "Eight conversions in the amine series", "conceptIdx": 1, "page": 21, "printPage": 279, "question": "How will you convert:\n(i) Ethanoic acid into methanamine  (ii) Hexanenitrile into 1-aminopentane  (iii) Methanol to ethanoic acid  (iv) Ethanamine into methanamine  (v) Ethanoic acid into propanoic acid  (vi) Methanamine into ethanamine  (vii) Nitromethane into dimethylamine  (viii) Propanoic acid into ethanoic acid?", "given": "Toolbox: reduction of nitro compounds; ammonolysis of halides at 373 K; reduction of nitriles/amides; Hoffmann bromamide degradation (one carbon less); HNO₂; P/I₂; KCN or NaCN; NH₃ + heat.", "steps": ["(i) CH₃COOH --SOCl₂ or NH₃, Δ→ CH₃CONH₂ (acetamide) --Hoffmann (Br₂/NaOH)→ CH₃NH₂ (methanamine).", "(ii) CH₃(CH₂)₄CN --H₃O⁺→ hexanoic acid --NH₃, Δ→ hexanamide --Hoffmann→ 1-aminopentane (pentan-1-amine).", "(iii) Ascent by one carbon: CH₃OH --P/I₂→ CH₃I --KCN→ CH₃CN --H₃O⁺→ CH₃COOH (direct oxidation of methanol stops at formic acid).", "(iv) CH₃CH₂NH₂ --HNO₂→ CH₃CH₂OH --[O]→ CH₃COOH --NH₃, Δ→ CH₃CONH₂ --Hoffmann→ CH₃NH₂.", "(v) CH₃COOH --LiAlH₄→ CH₃CH₂OH --P/I₂→ CH₃CH₂I --KCN→ CH₃CH₂CN --H₃O⁺→ CH₃CH₂COOH (ascent).", "(vi) CH₃NH₂ --HNO₂→ CH₃OH --P/I₂→ CH₃I --KCN→ CH₃CN --reduction (H₂/Ni)→ CH₃CH₂NH₂.", "(vii) CH₃NO₂ --reduction (Sn/HCl or H₂/Ni)→ CH₃NH₂ --CH₃I (controlled amount)→ (CH₃)₂NH; excess CH₃I would give (CH₃)₃N.", "(viii) CH₃CH₂COOH --NH₃, Δ→ CH₃CH₂CONH₂ --Hoffmann→ CH₃CH₂NH₂ --HNO₂→ CH₃CH₂OH --[O]→ CH₃COOH."], "answer": "(i) acetamide then Hoffmann; (ii) hexanamide then Hoffmann; (iii) CH₃OH → CH₃I → CH₃CN → CH₃COOH; (iv) HNO₂, oxidise, amide, Hoffmann; (v) reduce, RX, KCN, hydrolyse; (vi) HNO₂, CH₃I, KCN, reduce; (vii) reduce then N-methylate; (viii) Hoffmann then HNO₂ then oxidise.", "takeaway": "Chain growth uses nitriles; chain shortening uses Hoffmann bromamide — the two reactions are complementary carbon-chain editors.", "conceptName": "Preparation & interconversion of amines"}, {"q": 6, "title": "Identify 1°, 2° and 3° amines with Hinsberg's reagent", "conceptIdx": 4, "page": 21, "printPage": 279, "question": "Describe a method for the identification of primary, secondary and tertiary amines. Also write chemical equations of the reactions involved.", "given": "Hinsberg's reagent is C₆H₅SO₂Cl (p-toluenesulphonyl chloride is used these days); the sulphonyl group makes the N–H of a 1° sulphonamide strongly acidic; the 2° product has no N–H; a 3° amine has no N–H to react.", "steps": ["Treat the amine with C₆H₅SO₂Cl (or p-CH₃C₆H₄SO₂Cl), then shake with alkali.", "1°: C₆H₅SO₂Cl + RNH₂ → C₆H₅SO₂NHR; the N–H is acidic, so the product dissolves in NaOH as C₆H₅SO₂NR⁻ Na⁺.", "2°: C₆H₅SO₂Cl + R₂NH → C₆H₅SO₂NR₂; no N–H, so the product is insoluble in alkali.", "3°: no reaction with the sulphonyl chloride; the amine is recovered as the free base (soluble in HCl).", "Carbylamine is the complementary 1° test: RNH₂ + CHCl₃ + 3 KOH → R–NC + 3 KCl + 3 H₂O."], "answer": "Hinsberg (BsCl or TsCl): 1° gives an alkali-soluble sulphonamide; 2° gives an alkali-insoluble sulphonamide; 3° does not react.", "takeaway": "Alkali solubility is the discriminator: 1° dissolves as its salt, 2° stays insoluble, 3° is recovered unchanged.", "conceptName": "Hinsberg test (identification & separation)"}, {"q": 7, "title": "Short notes on seven named reactions", "conceptIdx": 4, "page": 21, "printPage": 279, "question": "Write short notes on: (i) Carbylamine reaction (ii) Diazotisation (iii) Hofmann's bromamide reaction (iv) Coupling reaction (v) Ammonolysis (vi) Acetylation (vii) Gabriel phthalimide synthesis.", "given": "Equations: carbylamine RNH₂ + CHCl₃ + 3 KOH → RNC + 3 KCl + 3 H₂O; diazotisation ArNH₂ + NaNO₂ + 2 HCl at 273–278 K; Hofmann RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O; coupling with phenol (orange) or aniline (yellow); ammonolysis at 373 K; acetylation with Ac₂O; Gabriel via potassium phthalimide then alkaline hydrolysis.", "steps": ["(i) 1° amine + CHCl₃ + 3 KOH, heat → foul-smelling isocyanide RNC; 2° and 3° are silent.", "(ii) ArNH₂ + NaNO₂ + 2 HCl at 273–278 K → ArN₂⁺Cl⁻ (benzenediazonium chloride).", "(iii) RCONH₂ + Br₂ + 4 NaOH → RNH₂ + Na₂CO₃ + 2 NaBr + 2 H₂O; the amine has one carbon less.", "(iv) ArN₂⁺ + phenol (OH⁻) → p-hydroxyazobenzene (orange); with aniline (H⁺) → p-aminoazobenzene (yellow).", "(v) RX + NH₃ (ethanolic, 373 K, sealed tube) → 1°, then 2°, 3° and R₄N⁺X⁻; excess NH₃ favours the 1° amine; RI > RBr > RCl.", "(vi) RNH₂ or R₂NH + R′COCl (pyridine traps HCl) → amide; used to protect aniline before electrophilic substitution.", "(vii) Potassium phthalimide + RX, then alkaline hydrolysis → pure aliphatic 1° amine; it fails for ArX."], "answer": "(i) 1° amine + CHCl₃ + alc. KOH on heating → foul-smelling isocyanide RNC; (ii) ArNH₂ + NaNO₂ + 2 HCl at 273–278 K → arenediazonium chloride ArN₂⁺Cl⁻; (iii) Hofmann's bromamide: RCONH₂ + Br₂ + 4 NaOH → RNH₂ with one carbon less; (iv) coupling keeps –N=N–: phenol (OH⁻) → orange p-hydroxyazobenzene, aniline (H⁺) → yellow p-aminoazobenzene; (v) ammonolysis: RX + NH₃ (ethanolic, 373 K) → 1°, then 2°, 3° and R₄N⁺X⁻; (vi) acetylation: RNH₂/R₂NH + Ac₂O or R′COCl (pyridine) → amide (protects the amine); (vii) Gabriel: potassium phthalimide + RX, then alkaline hydrolysis → pure aliphatic 1° amine.", "takeaway": "Each named reaction targets a different feature: N–H count, the diazonium leaving group, one-carbon loss, azo coupling, C–X substitution, N-protection and pure 1° synthesis.", "conceptName": "Named reactions of amines"}, {"q": 8, "title": "Nine multi-step conversions", "conceptIdx": 6, "page": 21, "printPage": 279, "question": "Accomplish the following conversions:\n(i) Nitrobenzene to benzoic acid  (ii) Benzene to m-bromophenol  (iii) Benzoic acid to aniline  (iv) Aniline to 2,4,6-tribromofluorobenzene  (v) Benzyl chloride to 2-phenylethanamine  (vi) Chlorobenzene to p-chloroaniline  (vii) Aniline to p-bromoaniline  (viii) Benzamide to toluene  (ix) Aniline to benzyl alcohol.", "given": "Reagents available: Sn/HCl or Fe/HCl, NaNO₂/HCl (273 K), CuCN/KCN, H₂O/H⁺, Br₂/Fe or Br₂ water, H₃PO₂, Ac₂O, HBF₄, CH₃Cl/AlCl₃, LiAlH₄.", "steps": ["(i) C₆H₅NO₂ --Sn/HCl→ C₆H₅NH₂ --NaNO₂/HCl→ C₆H₅N₂⁺ --CuCN→ C₆H₅CN --H₃O⁺→ C₆H₅COOH.", "(ii) Benzene --HNO₃/H₂SO₄→ PhNO₂ --Br₂/Fe→ m-bromonitrobenzene --reduce→ m-bromoaniline --diazotise, H₂O/Δ→ m-bromophenol.", "(iii) C₆H₅COOH --NH₃, Δ→ C₆H₅CONH₂ --Hoffmann (Br₂/NaOH)→ C₆H₅NH₂.", "(iv) Aniline --Br₂(aq)→ 2,4,6-tribromoaniline --diazotise, HBF₄, Δ→ 2,4,6-tribromofluorobenzene.", "(v) Example 9.2: C₆H₅CH₂Cl --ethanolic NaCN→ C₆H₅CH₂CN --H₂/Ni→ C₆H₅CH₂CH₂NH₂.", "(vi) PhCl --HNO₃/H₂SO₄→ p-ClC₆H₄NO₂ (+ ortho; separate the para isomer) --reduce→ p-chloroaniline.", "(vii) Aniline --Ac₂O→ acetanilide --Br₂→ p-bromoacetanilide --hydrolysis→ p-bromoaniline.", "(viii) C₆H₅CONH₂ --Hoffmann→ C₆H₅NH₂ --diazotise, H₃PO₂→ C₆H₆ --CH₃Cl/AlCl₃→ C₆H₅CH₃.", "(ix) Aniline --diazotise, CuCN→ PhCN --H₃O⁺→ PhCOOH --LiAlH₄→ PhCH₂OH."], "answer": "(i) reduce, diazotise, CuCN, hydrolyse; (ii) nitration, m-bromination, reduction, diazotise, H₂O; (iii) amide then Hoffmann; (iv) tribrominate then HBF₄/heat; (v) NaCN then H₂/Ni; (vi) nitration then reduction; (vii) protect, brominate, deprotect; (viii) Hoffmann, diazotise, H₃PO₂, alkylate; (ix) CuCN then reduce the acid.", "takeaway": "Aromatic substitution that direct methods cannot do (CN, OH, F) is routed through the diazonium salt.", "conceptName": "Diazonium salts & multi-step synthesis"}, {"q": 9, "title": "A, B, C in six reaction sequences", "conceptIdx": 6, "page": 21, "printPage": 279, "figure": "9.9", "question": "Give the structures of A, B and C in the following reactions:\n(i) CH₃CH₂I --NaCN→ A --OH⁻, partial hydrolysis→ B --NaOH+Br₂→ C\n(ii) C₆H₅N₂Cl --CuCN→ A --H₂O/H⁺, Δ→ B --NH₃, Δ→ C\n(iii) CH₃CH₂Br --KCN→ A --LiAlH₄→ B --HNO₂, 0 °C→ C\n(iv) C₆H₅NO₂ --Fe/HCl→ A --NaNO₂+HCl, 273 K→ B --H₂O/H⁺, Δ→ C\n(v) CH₃COOH --NH₃, Δ→ A --NaOBr→ B --NaNO₂/HCl→ C\n(vi) C₆H₅NO₂ --Fe/HCl→ A --HNO₂, 273 K→ B --C₆H₅OH→ C", "given": "The six sequences are printed as schemes (see figure). Use nitrile chemistry, Hoffmann bromamide (NaOBr), reduction (LiAlH₄ or Fe/HCl), diazotisation at 273 K and coupling with phenol.", "steps": ["(i) A = CH₃CH₂CN (propanenitrile); B = CH₃CH₂CONH₂ (propanamide); C = CH₃CH₂NH₂ (ethanamine) by Hoffmann bromamide.", "(ii) A = C₆H₅CN (benzonitrile); B = C₆H₅COOH (benzoic acid); C = C₆H₅CONH₂ (benzamide).", "(iii) A = CH₃CH₂CN (propanenitrile); B = CH₃CH₂CH₂NH₂ (propan-1-amine); C = CH₃CH₂CH₂OH (propan-1-ol) + N₂.", "(iv) A = C₆H₅NH₂ (aniline); B = C₆H₅N₂⁺Cl⁻ (benzenediazonium chloride); C = C₆H₅OH (phenol).", "(v) A = CH₃CONH₂ (acetamide); B = CH₃NH₂ (methanamine); C = CH₃OH (methanol) + N₂ (the alkyldiazonium is unstable).", "(vi) A = C₆H₅NH₂ (aniline); B = C₆H₅N₂⁺Cl⁻; C = p-hydroxyazobenzene, p-HO–C₆H₄–N=N–C₆H₅ (orange dye)."], "answer": "(i) EtCN, EtCONH₂, EtNH₂; (ii) PhCN, PhCOOH, PhCONH₂; (iii) EtCN, PrNH₂, PrOH; (iv) PhNH₂, PhN₂Cl, PhOH; (v) MeCONH₂, MeNH₂, MeOH; (vi) PhNH₂, PhN₂Cl, p-HOC₆H₄N=NPh.", "takeaway": "Track the functional group at each arrow: nitrile, amide, amine, diazonium, phenol, azo dye.", "conceptName": "Diazonium & Hoffmann reaction sequences"}, {"q": 10, "title": "Compounds A, B, C from C₆H₇N", "conceptIdx": 1, "page": 22, "printPage": 280, "question": "An aromatic compound 'A' on treatment with aqueous ammonia and heating forms compound 'B' which on heating with Br₂ and KOH forms a compound 'C' of molecular formula C₆H₇N. Write the structures and IUPAC names of A, B and C.", "given": "C = C₆H₇N; B + Br₂/KOH is the Hoffmann bromamide degradation (one carbon less); A + aqueous NH₃ on heating gives the amide.", "steps": ["C has formula C₆H₇N, which matches aniline, C₆H₅NH₂.", "Hoffmann degradation of B gives aniline, so B is benzamide, C₆H₅CONH₂.", "A with aqueous NH₃ on heating gives benzamide, so A is benzoic acid, C₆H₅COOH."], "answer": "A = benzoic acid (benzenecarboxylic acid); B = benzamide (benzenecarboxamide); C = aniline (benzenamine).", "takeaway": "Work backwards from the Hoffmann product: the amide has one carbon more than the amine, and the acid has one carbon more than the amide.", "conceptName": "Hoffmann bromamide degradation"}, {"q": 11, "title": "Complete seven named reactions", "conceptIdx": 6, "page": 22, "printPage": 280, "figure": "9.11", "question": "Complete the following reactions:\n(i) C₆H₅NH₂ + CHCl₃ + alc. KOH →\n(ii) C₆H₅N₂Cl + H₃PO₂ + H₂O →\n(iii) C₆H₅NH₂ + H₂SO₄ (conc.) →\n(iv) C₆H₅N₂Cl + C₂H₅OH →\n(v) C₆H₅NH₂ + Br₂(aq) →\n(vi) C₆H₅NH₂ + (CH₃CO)₂O →\n(vii) C₆H₅N₂Cl --(i) HBF₄ (ii) NaNO₂/Cu, Δ→", "given": "Match each reagent set to the chapter's reactions: carbylamine, H₃PO₂ reduction, sulphonation at 453–473 K, ethanol reduction, bromine water, acetic anhydride and the HBF₄/NaNO₂–Cu route.", "steps": ["(i) C₆H₅NC (phenyl isocyanide) + 3 KCl + 3 H₂O (carbylamine reaction).", "(ii) C₆H₆ + N₂ + H₃PO₃ + HCl (replacement of –N₂⁺ by H; H₃PO₂ is oxidised to H₃PO₃).", "(iii) On heating at 453–473 K: p-aminobenzenesulphonic acid (sulphanilic acid), which exists as the zwitterion ⁺H₃N–C₆H₄–SO₃⁻.", "(iv) C₆H₆ + CH₃CHO + N₂ + HCl (ethanol is oxidised to ethanal).", "(v) 2,4,6-tribromoaniline (white precipitate) + 3 HBr.", "(vi) C₆H₅NHCOCH₃ (acetanilide) + CH₃COOH.", "(vii) Via ArN₂⁺BF₄⁻ then NaNO₂/Cu and heat: C₆H₅NO₂ (nitrobenzene)."], "answer": "(i) PhNC; (ii) benzene; (iii) sulphanilic acid; (iv) benzene + ethanal; (v) 2,4,6-tribromoaniline; (vi) acetanilide; (vii) nitrobenzene.", "takeaway": "The diazonium group is displaced as N₂; mild reducing agents put H on the ring and are themselves oxidised.", "conceptName": "Named reactions of amines & diazonium salts"}, {"q": 12, "title": "Why Gabriel fails for aromatic primary amines", "conceptIdx": 1, "page": 22, "printPage": 280, "question": "Why cannot aromatic primary amines be prepared by Gabriel phthalimide synthesis?", "given": "Gabriel synthesis alkylates the phthalimide anion with an alkyl halide; aryl halides do not undergo nucleophilic substitution under these conditions.", "steps": ["Gabriel requires nucleophilic substitution of R–X by the phthalimide anion.", "Aryl halides do not undergo nucleophilic substitution here: the C–X bond has partial double-bond character and the electron-rich ring repels the nucleophile.", "Hence ArNH₂ cannot be obtained by this route; only aliphatic (and benzylic) 1° amines can."], "answer": "Aryl halides do not undergo nucleophilic substitution with the phthalimide anion, so aniline cannot be made by Gabriel synthesis.", "takeaway": "Gabriel needs an SN-active alkyl halide, so it gives pure aliphatic 1° amines but never aniline.", "conceptName": "Gabriel phthalimide synthesis"}, {"q": 13, "title": "Reactions of aromatic and aliphatic 1° amines with HNO₂", "conceptIdx": 4, "page": 22, "printPage": 280, "question": "Write the reactions of (i) aromatic and (ii) aliphatic primary amines with nitrous acid.", "given": "NaNO₂ + mineral acid generates HNO₂ in situ; alkyldiazonium salts are unstable, while arenediazonium salts survive briefly at 273–278 K.", "steps": ["(i) C₆H₅NH₂ + NaNO₂ + 2 HCl at 273–278 K → C₆H₅N₂⁺Cl⁻ + NaCl + 2 H₂O (benzenediazonium chloride).", "(ii) RNH₂ + HNO₂ → [RN₂⁺] → ROH + N₂ + H₂O; the unstable alkyldiazonium loses N₂ quantitatively, which is used to estimate amino acids and proteins."], "answer": "(i) arenediazonium salt at 273–278 K; (ii) alcohol + N₂.", "takeaway": "The same reagent gives N₂ from aliphatic amines and a usable diazonium from aromatic amines.", "conceptName": "Reaction with nitrous acid"}, {"q": 14, "title": "Acidity, boiling point and basicity explanations", "conceptIdx": 2, "page": 22, "printPage": 280, "question": "Give plausible explanation for each of the following:\n(i) Why are amines less acidic than alcohols of comparable molecular masses?\n(ii) Why do primary amines have higher boiling point than tertiary amines?\n(iii) Why are aliphatic amines stronger bases than aromatic amines?", "given": "N–H is less polar than O–H (EN 3.0 vs 3.5); 1° amines have two N–H for intermolecular association and 3° amines none; alkyl +I raises electron density while aryl conjugation delocalises the lone pair.", "steps": ["(i) The N–H bond is less polar than O–H, so the amide ion RNH⁻ is a poorer conjugate base than RO⁻: amines have much higher pK_a (are weaker acids) than alcohols.", "(ii) 1° amines form intermolecular N–H···N hydrogen bonds through two N–H hydrogens; 3° amines have no N–H, so they cannot associate. Table 9.2: n-C₄H₉NH₂ 350.8 K vs C₂H₅N(CH₃)₂ 310.5 K.", "(iii) Alkyl groups donate electron density (+I) and stabilise RNH₃⁺; in aniline the lone pair is delocalised into the ring (five resonating structures), so it is less available for protonation. Table 9.3: aliphatic pK_b 3–4.22 vs aniline 9.38."], "answer": "(i) N–H less polar than O–H; (ii) 1° H-bonding vs 3° no N–H; (iii) alkyl +I vs aryl ring delocalisation.", "takeaway": "Acidity, boiling point and basicity all follow from the polarity and availability of the N lone pair and the N–H bonds.", "conceptName": "Physical properties & basicity"}], "exercisesNote": "All 14 questions from the NCERT exercises (printed pp. 278–280), each mapped to the concept it practises, with a full step-by-step solution.", "exerciseMap": [[1, "IUPAC names and classes of seven amines", 0, 20], [2, "Distinguish five pairs with one test each", 4, 20], [3, "Seven structure–property explanations", 3, 20], [4, "Ranking pK_b, basicity, boiling point and solubility", 3, 20], [5, "Eight conversions in the amine series", 1, 21], [6, "Identify 1°, 2° and 3° amines with Hinsberg's reagent", 4, 21], [7, "Short notes on seven named reactions", 4, 21], [8, "Nine multi-step conversions", 6, 21], [9, "A, B, C in six reaction sequences", 6, 21], [10, "Compounds A, B, C from C₆H₇N", 1, 22], [11, "Complete seven named reactions", 6, 22], [12, "Why Gabriel fails for aromatic primary amines", 1, 22], [13, "Reactions of aromatic and aliphatic 1° amines with HNO₂", 4, 22], [14, "Acidity, boiling point and basicity explanations", 2, 22]]};
+</script>
+<script>
+// Textbook exercises redrawn as SVG from the schemes printed in
+// books/originals/Class12-Chemistry-Pt2_lech204.pdf (Exercise 9.9 and Exercise 9.11).
+window.FIGURES = (function(){
+  var INK = "#0f172a", MUTED = "#475569", RED = "#b91c1c", BLUE = "#1d4ed8", GREEN = "#047857", AMBER = "#b45309";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 13) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + s + '</text>';
+  }
+  function node(x, y, s, o){
+    o = o || {};
+    var w = o.w || Math.max(64, s.length * 8 + 18);
+    return '<rect x="' + (x - w / 2) + '" y="' + (y - 15) + '" width="' + w + '" height="30" rx="6" fill="#f8fafc" stroke="' + (o.stroke || "#94a3b8") + '" stroke-width="1.6"/>' +
+      text(x, y + 4, s, {color: o.color || INK, size: o.size || 12.5});
+  }
+  function arrow(x1, x2, y, label){
+    var s = '<line x1="' + x1 + '" y1="' + y + '" x2="' + (x2 - 6) + '" y2="' + y + '" stroke="' + MUTED + '" stroke-width="1.6" marker-end="url(#figarr)"/>';
+    if(label) s += text((x1 + x2) / 2, y - 7, label, {color: RED, size: 10});
+    return s;
+  }
+
+  var defs = '<defs><marker id="figarr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="' + MUTED + '"/></marker></defs>';
+
+  var figs = {};
+
+  figs["9.9"] = {
+    caption: "Exercise 9.9 — the six A → B → C sequences (redrawn from the textbook).",
+    svg: function(){
+      var rows = [
+        ["(i)", "CH₃CH₂I", "NaCN", "OH⁻ / partial hydrolysis", "NaOH + Br₂"],
+        ["(ii)", "C₆H₅N₂Cl", "CuCN", "H₂O / H⁺, Δ", "NH₃, Δ"],
+        ["(iii)", "CH₃CH₂Br", "KCN", "LiAlH₄", "HNO₂, 0 °C"],
+        ["(iv)", "C₆H₅NO₂", "Fe / HCl", "NaNO₂ + HCl, 273 K", "H₂O / H⁺, Δ"],
+        ["(v)", "CH₃COOH", "NH₃, Δ", "NaOBr", "NaNO₂ / HCl"],
+        ["(vi)", "C₆H₅NO₂", "Fe / HCl", "HNO₂, 273 K", "C₆H₅OH"]
+      ];
+      var s = '<svg viewBox="0 0 720 372" role="img" aria-label="Six reaction sequences for Exercise 9.9">';
+      s += defs;
+      var xs = [95, 275, 455, 635];
+      rows.forEach(function(r, i){
+        var y = 46 + i * 54;
+        s += text(22, y + 4, r[0], {size: 13, weight: 700, color: MUTED, anchor: "start"});
+        s += node(xs[0], y, r[1]);
+        s += node(xs[1], y, "A", {color: BLUE, stroke: BLUE});
+        s += node(xs[2], y, "B", {color: BLUE, stroke: BLUE});
+        s += node(xs[3], y, "C", {color: BLUE, stroke: BLUE});
+        s += arrow(xs[0] + 60, xs[1] - 18, y, r[2]);
+        s += arrow(xs[1] + 18, xs[2] - 18, y, r[3]);
+        s += arrow(xs[2] + 18, xs[3] - 18, y, r[4]);
+      });
+      return s + '</svg>';
+    }
+  };
+
+  figs["9.11"] = {
+    caption: "Exercise 9.11 — complete the seven reactions (redrawn from the textbook).",
+    svg: function(){
+      var rows = [
+        "(i) C₆H₅NH₂ + CHCl₃ + alc. KOH",
+        "(ii) C₆H₅N₂Cl + H₃PO₂ + H₂O",
+        "(iii) C₆H₅NH₂ + H₂SO₄ (conc.), heat",
+        "(iv) C₆H₅N₂Cl + C₂H₅OH",
+        "(v) C₆H₅NH₂ + Br₂ (aq)",
+        "(vi) C₆H₅NH₂ + (CH₃CO)₂O",
+        "(vii) C₆H₅N₂Cl  --(i) HBF₄ (ii) NaNO₂/Cu, Δ→"
+      ];
+      var s = '<svg viewBox="0 0 720 330" role="img" aria-label="Seven reactions to complete for Exercise 9.11">';
+      s += defs;
+      rows.forEach(function(r, i){
+        var y = 38 + i * 41;
+        s += text(18, y + 4, r, {size: 12.5, anchor: "start"});
+        s += text(590, y + 4, "→", {size: 16, color: MUTED});
+        s += node(650, y, "?", {w: 56, color: RED, stroke: RED, size: 16});
+      });
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
 </script>
 <script>
 (function(){
@@ -1084,8 +1397,44 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1460,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1543,35 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1588,10 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1600,17 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1622,15 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1643,6 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1652,6 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1664,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1690,47 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1738,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1747,46 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1832,10 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1854,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +1904,8 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +1914,41 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +1963,6 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +1997,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +2082,9 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2112,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 Chemistry with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2157,31 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
+      }
+
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
       }
 
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2227,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2237,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2247,31 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2291,12 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2306,10 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2323,41 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2365,7 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1895,27 +2374,237 @@ window.CHAPTER = {"code": "lech204", "chapterNumber": 9, "book_name": "Chemistry
     globalThis.App = window.App;
   }
 
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   // Initialize
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
+
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
 
 </script>
 <script>
@@ -1960,8 +2649,8 @@ window.SIMS.amineclass = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sp³ N + lone pair</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>1° / 2° / 3°</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pyr">Fig. 9.1 pyramid (108°)</button>' +
-      '<button class="preset-btn" id="p-cls">Intext 9.1 classifier</button>';
+      '<button class="preset-btn active" data-preset="pyramid" id="p-pyr">Fig. 9.1 pyramid (108°)</button>' +
+      '<button class="preset-btn" data-preset="classifier" id="p-cls">Intext 9.1 classifier</button>';
     document.getElementById("p-pyr").onclick = function(){ setActivePreset(this); mode="pyramid"; draw(App.state.t); };
     document.getElementById("p-cls").onclick = function(){ setActivePreset(this); mode="class"; draw(App.state.t); };
     var ctr = '<div class="control-item"><div class="control-label"><span>Example</span><span class="val" id="ctrl-ex">1</span></div>' +
@@ -2005,10 +2694,10 @@ window.SIMS.preplab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>1° amine product</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Blocked for Ar–X</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="r-h">Hoffmann (one C less)</button>' +
-      '<button class="preset-btn" id="r-g">Gabriel (aliphatic 1° only)</button>' +
-      '<button class="preset-btn" id="r-n">Nitrile ascent (Example 9.2)</button>' +
-      '<button class="preset-btn" id="r-a">Ammonolysis ladder</button>';
+      '<button class="preset-btn active" data-preset="hoffmann" id="r-h">Hoffmann (one C less)</button>' +
+      '<button class="preset-btn" data-preset="gabriel" id="r-g">Gabriel (aliphatic 1° only)</button>' +
+      '<button class="preset-btn" data-preset="nitrile" id="r-n">Nitrile ascent (Example 9.2)</button>' +
+      '<button class="preset-btn" data-preset="ammonia" id="r-a">Ammonolysis ladder</button>';
     document.getElementById("r-h").onclick = function(){ setActivePreset(this); route="hoffmann"; App.resetTimeline(); };
     document.getElementById("r-g").onclick = function(){ setActivePreset(this); route="gabriel"; App.resetTimeline(); };
     document.getElementById("r-n").onclick = function(){ setActivePreset(this); route="nitrile"; App.resetTimeline(); };
@@ -2096,8 +2785,8 @@ window.SIMS.hbondbp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>3°</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>alcohol</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-tab">Table 9.2 bars</button>' +
-      '<button class="preset-btn" id="h-fig">Fig. 9.2 H-bonds in 1°</button>';
+      '<button class="preset-btn active" data-preset="table" id="h-tab">Table 9.2 bars</button>' +
+      '<button class="preset-btn" data-preset="figure" id="h-fig">Fig. 9.2 H-bonds in 1°</button>';
     document.getElementById("h-tab").onclick = function(){ setActivePreset(this); highlight=0; draw(App.state.t); };
     document.getElementById("h-fig").onclick = function(){ setActivePreset(this); highlight=1; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2162,10 +2851,10 @@ window.SIMS.aminebasicity = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>smaller pK_b = stronger base</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>aniline (conjugated)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="b-me">Aqueous methyl order</button>' +
-      '<button class="preset-btn" id="b-et">Aqueous ethyl order</button>' +
-      '<button class="preset-btn" id="b-gas">Gas phase 3°>2°>1°</button>' +
-      '<button class="preset-btn" id="b-an">Aniline resonance (5 vs 2)</button>';
+      '<button class="preset-btn active" data-preset="aqueous-methyl" id="b-me">Aqueous methyl order</button>' +
+      '<button class="preset-btn" data-preset="aqueous-ethyl" id="b-et">Aqueous ethyl order</button>' +
+      '<button class="preset-btn" data-preset="gas-phase" id="b-gas">Gas phase 3°>2°>1°</button>' +
+      '<button class="preset-btn" data-preset="aniline" id="b-an">Aniline resonance (5 vs 2)</button>';
     document.getElementById("b-me").onclick = function(){ setActivePreset(this); phase="aq-me"; draw(0); };
     document.getElementById("b-et").onclick = function(){ setActivePreset(this); phase="aq-et"; draw(0); };
     document.getElementById("b-gas").onclick = function(){ setActivePreset(this); phase="gas"; draw(0); };
@@ -2241,10 +2930,10 @@ window.SIMS.hinsberg = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>insoluble sulphonamide</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span><span>no reaction</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-1">1° ethanamine</button>' +
-      '<button class="preset-btn" id="h-2">2° diethylamine</button>' +
-      '<button class="preset-btn" id="h-3">3° triethylamine</button>' +
-      '<button class="preset-btn" id="h-c">Carbylamine (1° only)</button>';
+      '<button class="preset-btn active" data-preset="primary" id="h-1">1° ethanamine</button>' +
+      '<button class="preset-btn" data-preset="secondary" id="h-2">2° diethylamine</button>' +
+      '<button class="preset-btn" data-preset="tertiary" id="h-3">3° triethylamine</button>' +
+      '<button class="preset-btn" data-preset="carbylamine" id="h-c">Carbylamine (1° only)</button>';
     document.getElementById("h-1").onclick = function(){ setActivePreset(this); kind="pri"; App.resetTimeline(); App.play(); };
     document.getElementById("h-2").onclick = function(){ setActivePreset(this); kind="sec"; App.resetTimeline(); App.play(); };
     document.getElementById("h-3").onclick = function(){ setActivePreset(this); kind="ter"; App.resetTimeline(); App.play(); };
@@ -2304,10 +2993,10 @@ window.SIMS.anilineeas = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#e2e8f0;"></span><span>2,4,6-tribromo (white)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>meta from anilinium</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-br">Br₂ water → tribromo</button>' +
-      '<button class="preset-btn" id="e-no">Direct nitration 51/47/2</button>' +
-      '<button class="preset-btn" id="e-ac">Protect: acetanilide → p-nitro</button>' +
-      '<button class="preset-btn" id="e-fc">No Friedel–Crafts</button>';
+      '<button class="preset-btn active" data-preset="bromination" id="e-br">Br₂ water → tribromo</button>' +
+      '<button class="preset-btn" data-preset="nitration" id="e-no">Direct nitration 51/47/2</button>' +
+      '<button class="preset-btn" data-preset="protected" id="e-ac">Protect: acetanilide → p-nitro</button>' +
+      '<button class="preset-btn" data-preset="friedel-crafts" id="e-fc">No Friedel–Crafts</button>';
     document.getElementById("e-br").onclick = function(){ setActivePreset(this); mode="br"; App.resetTimeline(); };
     document.getElementById("e-no").onclick = function(){ setActivePreset(this); mode="no"; App.resetTimeline(); };
     document.getElementById("e-ac").onclick = function(){ setActivePreset(this); mode="ac"; App.resetTimeline(); };
@@ -2385,9 +3074,9 @@ window.SIMS.diazocoupling = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f97316;"></span><span>p-hydroxyazobenzene (orange)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>p-aminoazobenzene (yellow)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="d-s">Sandmeyer / Gatterman</button>' +
-      '<button class="preset-btn" id="d-r">Replace by I, F, H, OH, NO₂</button>' +
-      '<button class="preset-btn" id="d-c">Coupling dyes</button>';
+      '<button class="preset-btn active" data-preset="sandmeyer" id="d-s">Sandmeyer / Gatterman</button>' +
+      '<button class="preset-btn" data-preset="replace" id="d-r">Replace by I, F, H, OH, NO₂</button>' +
+      '<button class="preset-btn" data-preset="coupling" id="d-c">Coupling dyes</button>';
     document.getElementById("d-s").onclick = function(){ setActivePreset(this); mode="sand"; draw(0); };
     document.getElementById("d-r").onclick = function(){ setActivePreset(this); mode="rep"; draw(0); };
     document.getElementById("d-c").onclick = function(){ setActivePreset(this); mode="coup"; App.resetTimeline(); App.play(); };

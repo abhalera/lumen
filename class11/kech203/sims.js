@@ -20,12 +20,12 @@ window.SIMS.conformationlab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-eth-stag">Ethane Staggered (60°, Min Strain)</button>' +
-      '    <button class="filter-chip" id="btn-eth-ecl">Ethane Eclipsed (0°, Max Strain)</button>' +
-      '    <button class="filter-chip" id="btn-but-anti">Butane Anti (180°, 0 kJ/mol)</button>' +
-      '    <button class="filter-chip" id="btn-but-gauche">Butane Gauche (60°, 3.8 kJ/mol)</button>' +
-      '    <button class="filter-chip" id="btn-but-ecl">Butane Eclipsed (120°, 16 kJ/mol)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-eth-stag">Ethane Staggered (60°, Min Strain)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-eth-ecl">Ethane Eclipsed (0°, Max Strain)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-but-anti">Butane Anti (180°, 0 kJ/mol)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-but-gauche">Butane Gauche (60°, 3.8 kJ/mol)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-but-ecl">Butane Eclipsed (120°, 16 kJ/mol)</button>' +
       '  </div>' +
       '  <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">' +
       '    <label style="font-size:13px;font-weight:600;">Dihedral Angle (θ):</label>' +
@@ -56,8 +56,8 @@ window.SIMS.conformationlab = {
       // Energy calculation
       var energy, confName, stabilityTxt;
       if(mol === 'ethane'){
-        // E = (V0 / 2) * (1 - cos(3 * theta)) where V0 = 12.55 kJ/mol
-        energy = (12.55 / 2) * (1 - Math.cos(3 * rad));
+        // E = (V0 / 2) * (1 + cos(3 * theta)) where V0 = 12.55 kJ/mol (0 at staggered 60 deg)
+        energy = (12.55 / 2) * (1 + Math.cos(3 * rad));
         if(angle % 120 === 60) { confName = 'Staggered Conformation'; stabilityTxt = '<span style="color:#10b981;font-weight:bold;">Global Energy Minimum (Most Stable, 0 kJ/mol)</span>'; }
         else if(angle % 120 === 0) { confName = 'Eclipsed Conformation'; stabilityTxt = '<span style="color:#ef4444;font-weight:bold;">Maximum Torsional Strain (12.55 kJ/mol, Least Stable)</span>'; }
         else { confName = 'Skew / Intermediate Conformation'; stabilityTxt = '<span style="color:#f59e0b;font-weight:bold;">Intermediate Torsional Energy</span>'; }
@@ -144,12 +144,12 @@ window.SIMS.freeradicalsim = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-rad-init">1. Initiation (Cl₂ ⟶ 2 Cl•)</button>' +
-      '    <button class="filter-chip" id="btn-rad-prop1">2. Propagation A (Cl• + CH₄)</button>' +
-      '    <button class="filter-chip" id="btn-rad-prop2">3. Propagation B (•CH₃ + Cl₂)</button>' +
-      '    <button class="filter-chip" id="btn-rad-term">4. Termination: Ethane (Ex 9.1)</button>' +
-      '    <button class="filter-chip" id="btn-rad-wurtz">5. Wurtz Odd-Alkane Flaw (Ex 9.25)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-rad-init">1. Initiation (Cl₂ ⟶ 2 Cl•)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rad-prop1">2. Propagation A (Cl• + CH₄)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rad-prop2">3. Propagation B (•CH₃ + Cl₂)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rad-term">4. Termination: Ethane (Ex 9.1)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-rad-wurtz">5. Wurtz Odd-Alkane Flaw (Ex 9.25)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-radical" viewBox="0 0 700 220" style="width:100%;height:auto;max-height:220px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -165,7 +165,7 @@ window.SIMS.freeradicalsim = {
       var title, eq, deltaH, desc, svgContent;
       if(step === 'initiation'){
         title = 'Stage 1: Chain Initiation (Photochemical Homolysis of Chlorine)';
-        eq = 'Cl–Cl \\xrightarrow{h\\nu \\text{ or } \\Delta} Cl^\\bullet + Cl^\\bullet';
+        eq = 'Cl–Cl —hν or Δ→ Cl• + Cl•';
         deltaH = '+242 kJ/mol (Endothermic homolytic cleavage)';
         desc = 'The Cl–Cl bond (bond enthalpy 242 kJ/mol) is significantly weaker than the C–H bond (414 kJ/mol) or C–C bond (347 kJ/mol). Absorption of a quantum of UV light (hν) promotes homolytic fission, generating two neutral, highly reactive chlorine free radicals possessing an unpaired electron.';
         svgContent = 
@@ -183,7 +183,7 @@ window.SIMS.freeradicalsim = {
           '</g>';
       } else if(step === 'prop1'){
         title = 'Stage 2: Chain Propagation A (Hydrogen Abstraction)';
-        eq = 'Cl^\\bullet + H–CH_3 \\longrightarrow HCl + ^\\bullet CH_3';
+        eq = 'Cl• + H–CH₃ ⟶ HCl + •CH₃';
         deltaH = '+4 kJ/mol (Slightly endothermic, rate-limiting)';
         desc = 'A chlorine radical collides with a methane molecule and abstracts a hydrogen atom, forming a molecule of HCl and generating a planar, sp² hybridized methyl free radical (•CH₃) with an odd unpaired electron.';
         svgContent = 
@@ -200,7 +200,7 @@ window.SIMS.freeradicalsim = {
           '</g>';
       } else if(step === 'prop2'){
         title = 'Stage 2: Chain Propagation B (Chlorine Abstraction & Chain Regeneration)';
-        eq = '^\\bullet CH_3 + Cl–Cl \\longrightarrow CH_3Cl + Cl^\\bullet';
+        eq = '•CH₃ + Cl–Cl ⟶ CH₃Cl + Cl•';
         deltaH = '−109 kJ/mol (Exothermic, highly favorable)';
         desc = 'The methyl radical attacks a chlorine molecule, abstracting a chlorine atom to form the chloromethane product (CH₃Cl) while regenerating a fresh chlorine radical (Cl•). This newly formed Cl• immediately attacks another methane molecule, perpetuating thousands of propagation cycles!';
         svgContent = 
@@ -216,7 +216,7 @@ window.SIMS.freeradicalsim = {
           '</g>';
       } else if(step === 'term_ethane'){
         title = 'Stage 3: Chain Termination — Dimerization to Trace Ethane (NCERT Ex 9.1)';
-        eq = '^\\bullet CH_3 + ^\\bullet CH_3 \\longrightarrow CH_3–CH_3 \\quad (\\text{Ethane, } C_2H_6)';
+        eq = '•CH₃ + •CH₃ ⟶ CH₃–CH₃ (Ethane, C₂H₆)';
         deltaH = '−368 kJ/mol (Highly exothermic radical coupling)';
         desc = 'When two methyl free radicals collide in the gas phase, their unpaired electrons pair up to form a new carbon-carbon σ-bond. This termination pathway consumes free radicals and definitively explains the presence of trace amounts of ethane in the chlorination of pure methane!';
         svgContent = 
@@ -233,7 +233,7 @@ window.SIMS.freeradicalsim = {
           '</g>';
       } else {
         title = 'Wurtz Reaction of Mixed Alkyl Halides (NCERT Ex 9.25)';
-        eq = 'CH_3I + C_2H_5I + 2 Na \\xrightarrow{\\text{dry ether}} C_2H_6 + C_3H_8 + C_4H_{10} + 2 NaI';
+        eq = 'CH₃I + C₂H₅I + 2Na —[dry ether]→ C₂H₆ + C₃H₈ + C₄H₁₀ + 2NaI';
         deltaH = 'Statistical mixture of 3 alkanes (Poor yield of propane)';
         desc = 'When synthesizing odd-carbon propane from CH₃I and C₂H₅I, sodium reacts indiscriminately with both radicals. Three combinations occur: (1) •CH₃ + •CH₃ ⟶ Ethane (b.p. −89°C), (2) •CH₃ + •C₂H₅ ⟶ Propane (b.p. −42°C), (3) •C₂H₅ + •C₂H₅ ⟶ Butane (b.p. −0.5°C). The mixture is extremely difficult to separate, rendering Wurtz reaction unviable for odd-carbon alkanes.';
         svgContent = 
@@ -272,10 +272,10 @@ window.SIMS.cistranslab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-geom-hex">Hex-2-ene (Ex 9.9: b.p. Comparison)</button>' +
-      '    <button class="filter-chip" id="btn-geom-but">But-2-ene (cis vs trans)</button>' +
-      '    <button class="filter-chip" id="btn-geom-dcl">1,2-Dichloroethene (Polarity)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-geom-hex">Hex-2-ene (Ex 9.9: b.p. Comparison)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-geom-but">But-2-ene (cis vs trans)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-geom-dcl">1,2-Dichloroethene (Polarity)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-cistrans" viewBox="0 0 700 240" style="width:100%;height:auto;max-height:240px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -364,10 +364,10 @@ window.SIMS.markovnikovsim = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-mode-mark">Markovnikov Ionic Addition (2° Carbocation)</button>' +
-      '    <button class="filter-chip" id="btn-mode-anti">Kharasch Peroxide Effect (2° Radical, Ex 9.16)</button>' +
-      '    <button class="filter-chip" id="btn-mode-ozo">Ozonolysis Cleavage Engine (Ex 9.4, 9.5, 9.17)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-mode-mark">Markovnikov Ionic Addition (2° Carbocation)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-mode-anti">Kharasch Peroxide Effect (2° Radical, Ex 9.16)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-mode-ozo">Ozonolysis Cleavage Engine (Ex 9.4, 9.5, 9.17)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-mark" viewBox="0 0 700 230" style="width:100%;height:auto;max-height:230px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -383,7 +383,7 @@ window.SIMS.markovnikovsim = {
       var title, rxnEq, intName, prodName, desc, svgContent;
       if(mode === 'markovnikov'){
         title = 'Electrophilic Addition of HBr to Propene (Markovnikov Rule)';
-        rxnEq = 'CH_3–CH=CH_2 + HBr \\xrightarrow{\\text{no peroxide}} CH_3–CH(Br)–CH_3 \\quad (\\text{2-Bromopropane})';
+        rxnEq = 'CH₃–CH=CH₂ + HBr —[no peroxide]→ CH₃–CH(Br)–CH₃ (2-Bromopropane)';
         intName = 'Secondary Carbocation intermediate: CH₃–C⁺H–CH₃ (6 α-hydrogens)';
         prodName = 'Major Product: 2-Bromopropane (Markovnikov addition)';
         desc = 'Step 1: The double bond attacks H⁺. Addition of H⁺ to terminal C1 yields the 2° carbocation, stabilized by 6 hyperconjugative α-H atoms (far more stable than 1° CH₃CH₂CH₂⁺). Step 2: Bromide ion (Br⁻) attacks the positive carbon to yield 2-bromopropane.';
@@ -402,7 +402,7 @@ window.SIMS.markovnikovsim = {
           '</g>';
       } else if(mode === 'peroxide'){
         title = 'Free-Radical Addition of HBr to Propene (Kharasch Peroxide Effect — Ex 9.16)';
-        rxnEq = 'CH_3–CH=CH_2 + HBr \\xrightarrow{\\text{Benzoyl Peroxide}} CH_3–CH_2–CH_2Br \\quad (\\text{1-Bromopropane})';
+        rxnEq = 'CH₃–CH=CH₂ + HBr —[benzoyl peroxide]→ CH₃–CH₂–CH₂Br (1-Bromopropane)';
         intName = 'Secondary Free Radical intermediate: CH₃–C•H–CH₂Br';
         prodName = 'Major Product: 1-Bromopropane (Anti-Markovnikov)';
         desc = 'In the presence of peroxide, bromine free radical (Br•) attacks first. Attack at terminal C1 yields the more stable 2° carbon radical (CH₃C•H–CH₂Br). The 2° radical abstracts H from HBr to yield 1-bromopropane. HCl and HI fail because their propagation steps are endothermic!';
@@ -421,7 +421,7 @@ window.SIMS.markovnikovsim = {
           '</g>';
       } else {
         title = 'Ozonolysis Cleavage Engine (Alkenes & Benzene Derivatives)';
-        rxnEq = '1.\\text{ Pent-2-ene} \\to \\text{Ethanal + Propanal}; \\quad 2.\\text{ o-Xylene} \\to 3\\text{ Glyoxal} + 2\\text{ Methylglyoxal} + 1\\text{ Dimethylglyoxal}';
+        rxnEq = '1. Pent-2-ene → Ethanal + Propanal; 2. o-Xylene → 3 Glyoxal + 2 Methylglyoxal + 1 Dimethylglyoxal';
         intName = 'Molozonide ⟶ Ozonide ⟶ Carbonyl Cleavage Products with Zn/H₂O';
         prodName = 'Pinpoints exact location of C=C double bonds in unknown hydrocarbons';
         desc = 'Zinc dust prevents H₂O₂ from oxidizing aldehydes to carboxylic acids. The isolation of glyoxal, methylglyoxal, and dimethylglyoxal in a 3:2:1 molar ratio from o-xylene provides experimental proof of the Kekulé resonance of benzene (NCERT Ex 9.17).';
@@ -460,10 +460,10 @@ window.SIMS.alkynelab = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-alk-acid">Hybridization & Acidity (Ex 9.18)</button>' +
-      '    <button class="filter-chip" id="btn-alk-silver">Terminal Alkyne Tollens Test (Ag⁺)</button>' +
-      '    <button class="filter-chip" id="btn-alk-hyd">Kucherov Hydration (Hg²⁺ / H₂SO₄)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-alk-acid">Hybridization & Acidity (Ex 9.18)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-alk-silver">Terminal Alkyne Tollens Test (Ag⁺)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-alk-hyd">Kucherov Hydration (Hg²⁺ / H₂SO₄)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-alkyne" viewBox="0 0 700 230" style="width:100%;height:auto;max-height:230px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -479,7 +479,7 @@ window.SIMS.alkynelab = {
       var title, eq, desc, svgContent;
       if(testType === 'acidity'){
         title = 'Acidity Trend Governed by Carbon Hybridization (% s-Character)';
-        eq = 'HC\\equiv CH\\ (sp,\\ 50\\%\\ s) > C_6H_6\\ (sp^2,\\ 33.3\\%\\ s) > C_6H_{14}\\ (sp^3,\\ 25\\%\\ s)';
+        eq = 'HC≡CH (sp, 50% s) > C₆H₆ (sp², 33.3% s) > C₆H₁₄ (sp³, 25% s)';
         desc = 'Electrons in an sp orbital are held closer to the nucleus due to 50% spherical s-character, making sp carbon the most electronegative. The C–H bond is strongly polarized, and the conjugate base acetylide carbanion (HC≡C:⁻) is exceptionally stable. Ethyne has pKa ≈ 25, benzene pKa ≈ 43, and hexane pKa ≈ 50.';
         svgContent = 
           '<g transform="translate(350, 110)">' +
@@ -501,7 +501,7 @@ window.SIMS.alkynelab = {
           '</g>';
       } else if(testType === 'silver'){
         title = 'Heavy Metal Acetylide Test (Distinguishing Terminal from Internal Alkynes)';
-        eq = 'CH_3–C\\equiv CH + [Ag(NH_3)_2]^+ \\longrightarrow CH_3–C\\equiv C–Ag\\downarrow\\ (\\text{White Precipitate}) + NH_4^+ + NH_3';
+        eq = 'CH₃–C≡CH + [Ag(NH₃)₂]⁺ ⟶ CH₃–C≡C–Ag↓ (white ppt) + NH₄⁺ + NH₃';
         desc = 'Terminal alkynes contain an acidic hydrogen and form insoluble silver acetylides (white precipitate) with Tollens\' reagent and copper acetylides (red precipitate) with ammoniacal Cu₂Cl₂. Internal alkynes (like but-2-yne, CH₃–C≡C–CH₃) lack acidic hydrogen and give NO reaction!';
         svgContent = 
           '<g transform="translate(350, 100)">' +
@@ -518,7 +518,7 @@ window.SIMS.alkynelab = {
           '</g>';
       } else {
         title = 'Kucherov Catalytic Hydration of Alkynes (HgSO₄ / H₂SO₄ at 333 K)';
-        eq = 'CH\\equiv CH + H_2O \\xrightarrow[333\\text{ K}]{Hg^{2+}/H^+} [CH_2=CH–OH] \\xrightarrow{\\text{tautomerism}} CH_3–CHO \\quad (\\text{Ethanal})';
+        eq = 'CH≡CH + H₂O —[Hg²⁺/H⁺, 333 K]→ [CH₂=CH–OH] —[tautomerism]→ CH₃–CHO (Ethanal)';
         desc = 'Water adds across the triple bond according to Markovnikov\'s rule to form an unstable enol. Rapid keto-enol tautomerism shifts the hydrogen from oxygen to carbon, yielding an aldehyde (ethanal from ethyne) or a ketone (propan-2-one / acetone from propyne).';
         svgContent = 
           '<g transform="translate(350, 110)">' +
@@ -557,13 +557,13 @@ window.SIMS.aromaticitytester = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
-      '    <button class="filter-chip active" id="btn-aro-benz">Benzene (6π, Aromatic)</button>' +
-      '    <button class="filter-chip" id="btn-aro-cot">Cyclooctatetraene (8π, Tub, Ex 9.12)</button>' +
-      '    <button class="filter-chip" id="btn-aro-cpani">Cyclopentadienyl Anion (6π, Aromatic)</button>' +
-      '    <button class="filter-chip" id="btn-aro-cpdie">1,3-Cyclopentadiene (sp³, Ex 9.12)</button>' +
-      '    <button class="filter-chip" id="btn-aro-trop">Tropylium Cation (6π, Aromatic)</button>' +
-      '    <button class="filter-chip" id="btn-aro-cbd">Cyclobutadiene (4π, Antiaromatic)</button>' +
+      '  <div id="preset-bar" class="preset-bar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '    <button class="filter-chip preset-btn active" id="btn-aro-benz">Benzene (6π, Aromatic)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-aro-cot">Cyclooctatetraene (8π, Tub, Ex 9.12)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-aro-cpani">Cyclopentadienyl Anion (6π, Aromatic)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-aro-cpdie">1,3-Cyclopentadiene (sp³, Ex 9.12)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-aro-trop">Tropylium Cation (6π, Aromatic)</button>' +
+      '    <button class="filter-chip preset-btn" id="btn-aro-cbd">Cyclobutadiene (4π, Antiaromatic)</button>' +
       '  </div>' +
       '  <div style="background:var(--paper-soft);padding:14px;border-radius:8px;border:1px solid var(--line);">' +
       '    <svg id="svg-aromatic" viewBox="0 0 700 230" style="width:100%;height:auto;max-height:230px;background:#0f172a;border-radius:6px;"></svg>' +
@@ -700,7 +700,7 @@ window.SIMS.easmechanism = {
 
     container.innerHTML = 
       '<div class="sim-wrapper" style="font-family:var(--font-sans);color:var(--ink);">' +
-      '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
+      '  <div id="lab-controls" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">' +
       '    <div>' +
       '      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">EAS Reaction Type:</label>' +
       '      <select id="sel-eas-rxn" style="width:100%;padding:6px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);">' +
@@ -819,3 +819,104 @@ window.SIMS.c4 = window.SIMS.markovnikovsim;
 window.SIMS.c5 = window.SIMS.alkynelab;
 window.SIMS.c6 = window.SIMS.aromaticitytester;
 window.SIMS.c7 = window.SIMS.easmechanism;
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function" || sim.mount._qaWrapped) return;
+  var originalMount = sim.mount;
+  // One-arg wrapper: the runtime passes simMount only when mount.length >= 1
+  // on a sim without .draw, so this wrapper must keep that arity (else the
+  // runtime passes the lesson object and container.querySelector explodes).
+  // _qaWrapped also skips the c1..c7 aliases (same objects, no double wrap).
+  var wrapped = function(container){
+    if(!(container && typeof container.querySelector === "function")){
+      container = document.getElementById("sim-mount-point") || document.body;
+    }
+    originalMount.call(sim, container);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+    bridgeLab();
+  };
+  wrapped._qaWrapped = true;
+  sim.mount = wrapped;
+});
+
+// Lab bridge: these sims render private readouts (et-readout, svg-et, ...)
+// instead of the runtime's #lab-readout/#lab-verdict/#diagram, which their
+// innerHTML mount wipes. Mirror the sim text into runtime-expected elements
+// so browser QA (a shared script) can read end states. Mirrors sit off-screen
+// (display:none would make innerText read back empty).
+var labBridgeObserver = null, labBridgeWrap = null;
+function bridgeLab(){
+  var mount = document.getElementById("sim-mount-point");
+  if(!mount) return;
+  var wrap = mount.querySelector(".sim-wrapper");
+  if(!wrap) return;
+  function ensure(id, ns){
+    var el = document.getElementById(id);
+    if(!el){
+      el = ns ? document.createElementNS(ns, "svg") : document.createElement("div");
+      el.id = id;
+      el.style.cssText = "position:absolute;left:-9999px;top:0;";
+      mount.appendChild(el);
+    }
+    return el;
+  }
+  var ro = ensure("lab-readout"), vd = ensure("lab-verdict"),
+      dg = ensure("diagram", "http://www.w3.org/2000/svg");
+  ro.textContent = wrap.innerText || "";
+  var svg = wrap.querySelector("svg");
+  dg.textContent = svg ? (svg.textContent || "") : "";
+  if(wrap !== labBridgeWrap){
+    if(labBridgeObserver) labBridgeObserver.disconnect();
+    labBridgeObserver = new MutationObserver(function(){ bridgeLab(); });
+    labBridgeObserver.observe(wrap, { childList: true, subtree: true, characterData: true });
+    labBridgeWrap = wrap;
+  }
+}
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

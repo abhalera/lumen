@@ -32,7 +32,7 @@ window.SIMS.dynamiceq = (function(){
     },
     "no2-n2o4": {
       name: "Dimerization Equilibrium: 2 NO₂(g) (Brown) ⇌ N₂O₄(g) (Colorless)",
-      kc: "6.8 × 10⁻³",
+      kc: "215.5 (at 298 K)",
       reactants: "2 NO₂", products: "N₂O₄",
       rf: function(t){ return Math.max(15, 90 * Math.exp(-t * 1.1)); },
       rb: function(t){ return Math.min(45, 45 * (1 - Math.exp(-t * 1.1))); },
@@ -531,8 +531,8 @@ window.SIMS.phweakacid = (function(){
   var userC = 0.05; // M
 
   var acids = {
-    "acetic": { name: "Acetic Acid (CH₃COOH)", ka: 1.8e-5, pka: 4.74 },
-    "hf": { name: "Hydrofluoric Acid (HF)", ka: 3.2e-4, pka: 3.49 },
+    "acetic": { name: "Acetic Acid (CH₃COOH)", ka: 1.74e-5, pka: 4.76 },
+    "hf": { name: "Hydrofluoric Acid (HF)", ka: 6.8e-4, pka: 3.17 },
     "chloro": { name: "Chloroacetic Acid (CH₂ClCOOH)", ka: 1.35e-3, pka: 2.87 }
   };
 
@@ -545,8 +545,8 @@ window.SIMS.phweakacid = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Resulting pH Scale</span></div>';
 
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-wa-ace">Acetic Acid (K_a = 1.8 × 10⁻⁵)</button>' +
-      '<button class="preset-btn" id="p-wa-hf">HF (K_a = 3.2 × 10⁻⁴)</button>' +
+      '<button class="preset-btn active" id="p-wa-ace">Acetic Acid (K_a = 1.74 × 10⁻⁵)</button>' +
+      '<button class="preset-btn" id="p-wa-hf">HF (K_a = 6.8 × 10⁻⁴)</button>' +
       '<button class="preset-btn" id="p-wa-cl">Chloroacetic (K_a = 1.35 × 10⁻³)</button>';
 
     document.getElementById("p-wa-ace").onclick = function(){ setActivePreset(this); acidType = "acetic"; draw(0); };
@@ -738,9 +738,9 @@ window.SIMS.ksplab = (function(){
     },
     "caf2": {
       name: "Calcium Fluoride (CaF₂)",
-      ksp: 4.14e-11, type: "AB2",
-      pureS: 2.18e-4,
-      calcS: function(c){ return c > 0 ? (4.14e-11 / (c * c)) : 2.18e-4; }
+      ksp: 5.3e-9, type: "AB2",
+      pureS: 1.10e-3,
+      calcS: function(c){ return c > 0 ? (5.3e-9 / (c * c)) : 1.10e-3; }
     }
   };
 
@@ -823,3 +823,63 @@ window.SIMS.ksplab = (function(){
 
   return { mount: mount, draw: draw };
 })();
+
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  // Zero-arg wrapper: the runtime wipes the play block when mount.length >= 1
+  // on a sim without .draw, so this wrapper must not declare parameters.
+  sim.mount = function(){
+    originalMount.apply(sim, arguments);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

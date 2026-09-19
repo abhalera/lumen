@@ -38,6 +38,13 @@
 
 All 23 end-exercises of this reprint mapped with steps in `chapter.json`. Fig. 5.11–5.15 read from zooms p.18–21. No Additional Exercises (those were dropped in the rationalised edition).
 
+## Verification and browser QA
+
+- `tests/verify.cjs`: 167 source, structure, exercise, recomputation, video and packaging checks.
+- `tests/expect.json`: 16 named simulation presets with concrete final-state assertions.
+- Browser QA: 121 checks at desktop, tablet and mobile widths, 0 failures, 0 console errors. The revision capture reaches the harness's 12,000 px cap on this long exercise bank.
+- Videos: two candidates per lesson were checked through YouTube oEmbed; the first verified result is wired to each lesson's explicit Wow card.
+
 ## Edition notes
 
 - This 21-page rationalised reprint has **no** Additional Exercises and **no** deleted older appendices.

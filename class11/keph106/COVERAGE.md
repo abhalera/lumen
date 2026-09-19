@@ -37,6 +37,13 @@
 
 All 17 end-exercises of this reprint mapped. No Additional Exercises in this rationalised file.
 
+## Verification and browser QA
+
+- `tests/verify.cjs`: 138 source, structure, exercise, recomputation, video and packaging checks.
+- `tests/expect.json`: 15 named simulation presets with concrete final-state assertions.
+- Browser QA: 126 checks at desktop, tablet and mobile widths, 0 failures, 0 console errors.
+- Videos: two candidates per lesson were checked through YouTube oEmbed; the first verified result is wired to each lesson's explicit Wow card.
+
 ## Edition notes (honest gaps)
 
 - **No parallel-axis theorem** and **no perpendicular-axis theorem** sections in this 35-page reprint (older prints had them). Table 6.1 is quoted without derivation, as the book states.

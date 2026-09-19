@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 12: Kinetic Theory — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -109,16 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +312,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +497,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +629,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +681,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +770,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +964,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,14 +1067,168 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
 
 </style>
 </head>
@@ -1063,9 +1275,11 @@ button.btn-secondary {
 <footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics", "title": "Kinetic Theory", "subtitle": "Ideal gas, pressure from molecular impacts, rms speed, equipartition, specific heats, mean free path.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph205.pdf", "page_start": 244, "page_end": 258, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "molecular-nature", "nav": "Molecular nature of matter", "title": "Matter is atoms in perpetual motion — Kanada said so; Dalton made it quantitative.", "deck": "Atomic hypothesis: little particles that attract at a few ångströms and repel when squeezed. Solids and liquids pack at ~2 Å; gases have mean free paths of thousands of ångströms. This chapter is the gas as a swarm of those particles.", "minutes": 7, "section": "12.1–12.2", "pages": [1, 3], "print": "244–246", "sim": "atoms", "simTitle": "Solid pack vs gas swarm (ångströms)", "quick": ["Boyle (1661) already treated gases as tiny particles. Kinetic theory, built by Maxwell, Boltzmann and others, gives a molecular reading of pressure and temperature, recovers the gas laws and Avogadro’s hypothesis, and estimates molecular sizes from viscosity and diffusion.", "Feynman’s atomic hypothesis: all things are made of atoms — little particles that move around in perpetual motion, attracting when a little apart, repelling when squeezed. Kanada (Vaiśeṣika) and Democritus guessed the picture; Dalton explained the laws of definite and multiple proportions. Avogadro: equal volumes of gases at the same T, P contain equal numbers of molecules.", "Atomic size ~ 1 Å = 10<sup>−10</sup> m. In solids and liquids, neighbours sit a few Å apart. In gases the typical gap is tens of Å, and the <strong>mean free path</strong> is thousands of Å. A gas in a closed flask looks still; the equilibrium is dynamic."], "formulas": [{"label": "Atomic size", "html": "1 Å = 10<sup>−10</sup> m", "cond": "solids/liquids packed at ~2 Å"}, {"label": "Avogadro", "html": "equal V, T, P  ⇒  equal N", "cond": "explains Gay-Lussac once Dalton is molecular"}], "deeper": "Atoms are not elementary: nucleus + electrons, protons and neutrons, quarks, perhaps strings. This chapter stops at molecules of a gas. Lalitavistara (2nd century BCE) already guessed an atomic size of order 10<sup>−10</sup> m — a coincidence of conjecture, not a measurement.", "worked": "Example 12.1 (zoom p.4): density of water 1000 kg m⁻³, of steam at 100 °C and 1 atm 0.6 kg m⁻³. The vapour occupies 1000/0.6 ≈ 1.67×10³ times the liquid volume, so the molecular-volume fraction in the vapour is 6×10⁻⁴.", "prediction": {"prompt": "Steam at 100 °C, 1 atm has density 0.6 kg m⁻³; liquid water is 1000 kg m⁻³. The fraction of space actually filled by molecules in the steam is about", "options": ["6×10⁻⁴ — the liquid is essentially close-packed, so the fraction scales as the density ratio", "1, because a gas fills its container", "0, because molecules are points"], "answer": 0, "explanation": "Example 12.1. ‘Fills the container’ is the volume the swarm occupies, not the volume of the molecules themselves."}, "connect": [["Mustard seed vs Meru", "Kanada’s argument: if matter could be subdivided without end, a mustard seed and the Meru mountain would not differ. That is the same instinct as a modern mole of 6×10²³ molecules — a finite graininess."], ["Wow — we can see atoms now", "Electron microscopes and scanning tunnelling microscopes image atoms. Kinetic theory was accepted before that, on the strength of gas laws, Brownian motion and specific heats — not pictures.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "State the atomic hypothesis in Feynman’s words and quote the steam molecular-volume fraction 6×10⁻⁴.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Avogadro’s law says that equal volumes of all gases at the same T and P have", "options": ["the same number of molecules", "the same mass", "the same rms speed"], "answer": 0, "hint": "§12.2.", "solution": "N is common. Mass depends on molar mass; rms speed depends on m and T.", "wrong": ["", "Mass = μM, and M differs.", "v_rms = √(3kT/m)."]}, {"level": "Medium", "type": "number", "map": "Example 12.1", "prompt": "Molecular-volume fraction in steam at 100 °C, 1 atm (densities 0.6 and 1000 kg m⁻³) is 6×10^{?}", "answer": -4, "unit": "exponent", "tolerance": 0.1, "hint": "0.6/1000 = 6×10⁻⁴.", "solution": "Density ratio 0.6/1000 = 6×10⁻⁴."}, {"level": "Hard", "type": "mcq", "prompt": "Mean free path in a gas is of order", "options": ["thousands of ångströms, ~1000 molecular diameters", "one ångström, the molecular size itself", "metres, the size of the room"], "answer": 0, "hint": "§12.2 and Points to Ponder 2.", "solution": "Intermolecular distance is only ~10× the solid spacing; what is large is the free path between collisions.", "wrong": ["", "That is the size, not the path.", "Only in a high vacuum."]}]}, {"id": "gas-laws", "nav": "Behaviour of gases", "title": "PV = μRT is the equation of an ideal gas — a limit of real gases at low P, high T.", "deck": "Boyle P ∝ 1/V at fixed T, Charles V ∝ T at fixed P, and Avogadro combine into PV = μRT = N k_B T. Dalton: the total pressure is the sum of partial pressures.", "minutes": 8, "section": "12.3", "pages": [3, 5], "print": "246–248", "sim": "idealgas", "simTitle": "Boyle and Charles slides; departures from ideal", "quick": ["A given sample of gas at low pressure and high temperature obeys PV = KT, with K ∝ N. The same constant per molecule for all gases is Boltzmann’s k<sub>B</sub>, so <strong>PV = N k<sub>B</sub> T = μ R T</strong> with R = N<sub>A</sub> k<sub>B</sub> = 8.314 J mol⁻¹ K⁻¹ and k<sub>B</sub> = 1.38×10⁻²³ J K⁻¹.", "Fixed μ, T: Boyle, PV = const. Fixed P: Charles, V ∝ T. Real gases (Fig. 12.1–12.3) hug these laws at low P and high T and peel away near liquefaction. Dalton: for a non-reacting mixture, P = Σ P<sub>i</sub> with each P<sub>i</sub> = μ<sub>i</sub> RT/V.", "Molar volume at STP (0 °C, 1 atm) is 22.4 L for any ideal gas (Example 12.8 / Ex 12.2)."], "formulas": [{"label": "Ideal gas law", "html": "PV = μ R T = N k<sub>B</sub> T", "cond": "Eqs. (12.3), (12.4); R = 8.314 J mol⁻¹ K⁻¹"}, {"label": "Boyle", "html": "PV = const  (T, μ fixed)", "cond": "Eq. (12.6)"}, {"label": "Dalton partial pressures", "html": "P = P₁ + P₂ + …", "cond": "non-reactive mixture of ideal gases"}], "deeper": "An ideal gas is the equation, not a substance: the limit in which molecular volume and intermolecular potential energy are negligible. CO₂ on Fig. 12.3 follows Charles (dotted) far above the liquefaction region and bends as it approaches it.", "worked": "Example 12.4 (zoom p.5): Ne and O₂, partial-pressure ratio 3:2. Then μ_Ne/μ_O₂ = 3/2 so N_Ne/N_O₂ = 3/2. Mass-density ratio ρ_Ne/ρ_O₂ = (μ₁/μ₂)×(M₁/M₂) = (3/2)×(20.2/32.0) = 0.947.", "prediction": {"prompt": "A 22.4 L flask at 0 °C and 1 atm holds helium. How many moles?", "options": ["1 mol — that is the molar volume of any ideal gas at STP", "4 mol, because M_He = 4", "22.4 mol"], "answer": 0, "explanation": "Ex 12.2 / Example 12.8. Molar volume is universal; the mass in the flask would be 4 g, not the mole count."}, "connect": [["Hospital oxygen cylinder (Ex 12.4)", "A 30 L cylinder, gauge 15 atm at 27 °C, later 11 atm at 17 °C, has lost about 0.14 kg of O₂. Gauge pressure is P − 1 atm; the ideal-gas law uses absolute P and T."], ["Wow — 22.4 L is a coincidence of our STP choice", "R T/P at 273 K and 1.01×10⁵ Pa is 0.0224 m³. Change the standard and the number changes; the law does not.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write PV = μRT and state Boyle, Charles and Dalton in one line each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Boltzmann’s constant k_B equals", "options": ["R / N_A", "R N_A", "P V"], "answer": 0, "hint": "R = N_A k_B.", "solution": "k_B = 1.38×10⁻²³ J K⁻¹ = R/N_A.", "wrong": ["", "That is huge.", "PV = N k_B T, not k_B itself."]}, {"level": "Medium", "type": "number", "map": "Ex 12.2", "prompt": "Molar volume of an ideal gas at STP, in litres, is", "answer": 22.4, "unit": "L", "tolerance": 0.05, "hint": "RT/P at 273 K, 1 atm.", "solution": "8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."}, {"level": "Hard", "type": "number", "map": "Example 12.4", "prompt": "Ne:O₂ partial-pressure ratio 3:2. Mass-density ratio ρ_Ne/ρ_O₂ (M = 20.2, 32.0) is", "answer": 0.947, "unit": "", "tolerance": 0.005, "hint": "(3/2)×(20.2/32).", "solution": "1.5 × 0.63125 = 0.947."}]}, {"id": "kinetic-pressure", "nav": "Pressure from molecular impacts", "title": "P = (1/3) n m ⟨v²⟩ — pressure is momentum dumped on the wall per second per area.", "deck": "Elastic collision with a wall reverses v_x and delivers 2 m v_x. Counting hits gives P = n m ⟨v_x²⟩ = (1/3) n m ⟨v²⟩. The container shape does not matter; collisions among molecules do not spoil the average.", "minutes": 9, "section": "12.4.1", "pages": [6, 7], "print": "249–250", "sim": "pressure", "simTitle": "Fig. 12.4 wall collision ledger", "quick": ["Ideal-gas kinetic theory: many molecules, random motion, elastic collisions, molecular size ≪ mean gap, no long-range forces. A molecule hitting a wall parallel to the yz-plane rebounds with v_x → −v_x and imparts momentum 2mv_x (Fig. 12.4).", "In time Δt, molecules in a slab of volume A v_x Δt can hit; half of them are inbound. Momentum per unit time per unit area from one speed class is n m v_x². Summing classes and using isotropy ⟨v_x²⟩ = ⟨v²⟩/3 yields <strong>P = (1/3) n m ⟨v²⟩</strong> (Eq. 12.14).", "Shape of the vessel drops out (Pascal). Molecule–molecule collisions reshuffle who has velocity (v_x, v_y, v_z) but do not change the average if the distribution is steady."], "formulas": [{"label": "Momentum to wall", "html": "Δp<sub>x</sub> = 2 m v<sub>x</sub>", "cond": "elastic hit on a massive wall"}, {"label": "Pressure", "html": "P = (1/3) n m ⟨v²⟩", "cond": "Eq. (12.14); n = N/V"}], "deeper": "‘There is a distribution in velocities’ (NCERT) — this reprint does not write the Maxwell speed-distribution formula as a numbered equation, but it uses that distribution’s second moment ⟨v²⟩. The rms speed is defined from that moment. Visualising the distribution is a way of seeing why a single speed would be a lie.", "worked": "Combine P = (1/3) n m ⟨v²⟩ with PV = N k_B T: (1/3) N m ⟨v²⟩ = N k_B T so (1/2) m ⟨v²⟩ = (3/2) k_B T. Translational KE of the whole gas E = (3/2) N k_B T, and PV = (2/3) E.", "prediction": {"prompt": "If every molecular speed in a flask doubled at fixed volume and number, the pressure would", "options": ["quadruple, because P ∝ ⟨v²⟩", "double, because P ∝ v", "stay the same, because n is fixed"], "answer": 0, "explanation": "Eq. (12.14). Doubling speeds multiplies every 2mv_x and the hit rate by 2, so P × 4. That is also T × 4, since T ∝ ⟨v²⟩."}, "connect": [["Tyre wall as a momentum dump", "Each air molecule that bounces off the inner rubber donates 2mv_n. A denser fill (larger n) or a hotter tyre (larger ⟨v²⟩) both raise P — the two handles in Eq. (12.14)."], ["Wow — a fluid has pressure in its interior, not only on the wall", "Points to Ponder 1: any layer inside the gas is in equilibrium because the two sides push equally. The wall derivation is a convenient book-keeping, not a claim that pressure ‘lives’ only at surfaces.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Derive P = (1/3)nm⟨v²⟩ in three lines: momentum per hit, hit rate, isotropy.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In an elastic collision with a massive wall, the molecule’s v_x", "options": ["reverses, imparting 2m v_x to the wall", "becomes zero", "is unchanged"], "answer": 0, "hint": "Fig. 12.4.", "solution": "v_x → −v_x; Δp_molecule = −2m v_x; wall receives +2m v_x.", "wrong": ["", "That would be perfectly inelastic.", "Then no pressure."]}, {"level": "Medium", "type": "mcq", "prompt": "Isotropy is used to replace ⟨v_x²⟩ by", "options": ["⟨v²⟩/3", "⟨v²⟩", "⟨v⟩²"], "answer": 0, "hint": "Eq. (12.13).", "solution": "No preferred axis, so the three mean-square components share ⟨v²⟩ equally.", "wrong": ["", "That would triple the pressure.", "Points to Ponder 5: ⟨v²⟩ ≠ ⟨v⟩²."]}, {"level": "Hard", "type": "mcq", "prompt": "Molecule–molecule collisions are ignored in the wall-hit count because", "options": ["the distribution is steady: a collision that removes one (v_x, v_y, v_z) supplies another", "molecules never collide in an ideal gas", "collisions are inelastic so they do not affect momentum"], "answer": 0, "hint": "§12.4.1 remarks.", "solution": "Ideal-gas collisions are elastic and rare compared with free flight. The average is what enters P.", "wrong": ["", "They collide; the mean free path is finite.", "Elastic is the assumption."]}]}, {"id": "kinetic-temp-rms", "nav": "Temperature and rms speed", "title": "Temperature is (2/3k_B) times the average translational KE per molecule.", "deck": "½ m ⟨v²⟩ = (3/2) k_B T. Then v_rms = √(3k_B T/m) = √(3RT/M). At 300 K, nitrogen’s v_rms is 516 m s⁻¹ — the order of the speed of sound. Lighter molecules run faster at the same T.", "minutes": 9, "section": "12.4.2", "pages": [7, 8], "print": "250–251", "sim": "maxwell", "simTitle": "Maxwell-style speeds: v_rms of N₂, He, Ar", "quick": ["Matching the kinetic pressure to the ideal-gas law gives <strong>½ m ⟨v²⟩ = (3/2) k<sub>B</sub> T</strong> (Eq. 12.19). Temperature is a measure of average translational KE per molecule, independent of what the molecule is. Total translational energy E = (3/2) N k<sub>B</sub> T (Eq. 12.18), so PV = (2/3) E.", "Root-mean-square speed <strong>v<sub>rms</sub> = √⟨v²⟩ = √(3k<sub>B</sub> T/m) = √(3RT/M)</strong>. For N₂ at 300 K, m = 4.65×10⁻²⁶ kg and v_rms = 516 m s⁻¹ (zoom p.7). In a mixture at one T, the heavier species has the smaller v_rms (Example 12.5: Ar vs Cl₂, ratio 1.33).", "Uranium hexafluoride effusion (Example 12.6): ²³⁵UF₆ vs ²³⁸UF₆, mass 349 vs 352, speed ratio 1.0044 — a 0.44 % difference, exploited (inefficiently) by porous-wall enrichment."], "formulas": [{"label": "Kinetic temperature", "html": "½ m ⟨v²⟩ = (3/2) k<sub>B</sub> T", "cond": "Eq. (12.19); translational KE only"}, {"label": "rms speed", "html": "v<sub>rms</sub> = √(3k<sub>B</sub> T/m) = √(3 R T/M)", "cond": "N₂ at 300 K: 516 m s⁻¹"}, {"label": "Mixture", "html": "v<sub>rms,1</sub> / v<sub>rms,2</sub> = √(M₂/M₁)  at the same T", "cond": "Example 12.5"}], "deeper": "⟨v²⟩ is not ⟨v⟩² (Points to Ponder 5). The Maxwell speed distribution is asymmetric: most probable < mean < rms. This reprint never writes f(v) dv as a numbered law, but the three speeds are the natural language of ⟨v⟩, ⟨v²⟩ and the peak. Gravity does not pile all the air on the floor because ½mv² ≫ mgh for room heights (Points to Ponder 4).", "worked": "Example 12.5 (zoom p.7–8): Ar and Cl₂ at 27 °C. (i) Average KE per molecule is (3/2)k_B T for both, ratio 1:1. (ii) v_rms(Ar)/v_rms(Cl₂) = √(70.9/39.9) = 1.33. The 2:1 mass composition never enters.", "prediction": {"prompt": "Argon atoms and chlorine molecules share a flask at 27 °C. The ratio of average translational KE per molecule is", "options": ["1 : 1 — it depends only on T", "39.9 : 70.9 — proportional to mass", "2 : 1 — the mass composition of the flask"], "answer": 0, "explanation": "Example 12.5(i). Equipartition of translational KE is species-blind."}, "connect": [["BARC and porous-wall enrichment", "Example 12.6 is the physics of gaseous diffusion: the 0.44 % speed edge of ²³⁵UF₆ over ²³⁸UF₆, compounded over many stages. India used heavy-water and centrifuge routes; the textbook point is Graham’s law from v_rms."], ["Wow — 516 m s⁻¹ in the air of this room", "Nitrogen molecules at 27 °C outrun a cricket ball and match the order of the speed of sound. They do not empty the room because they collide ~10⁹ times a second (mean free path, §12.7).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write ½m⟨v²⟩ = (3/2)k_B T and v_rms for N₂ at 300 K.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "v_rms at a given T is larger for", "options": ["lighter molecules", "heavier molecules", "molecules with more atoms, regardless of mass"], "answer": 0, "hint": "v_rms = √(3kT/m).", "solution": "Helium outruns argon at the same T (Ex 12.8, 12.9).", "wrong": ["", "Heavier means slower.", "Atom count enters mass, not a separate factor."]}, {"level": "Medium", "type": "number", "map": "N₂ at 300 K", "prompt": "v_rms of nitrogen at 300 K, as quoted in the chapter (m s⁻¹), is", "answer": 516, "unit": "m s⁻¹", "tolerance": 2, "hint": "√(3kT/m) with m = 28 u.", "solution": "NCERT evaluates 516 m s⁻¹. Order of the speed of sound."}, {"level": "Hard", "type": "number", "map": "Ex 12.9", "prompt": "T (K) at which argon atoms have the same v_rms as helium at −20 °C (M_Ar = 39.9, M_He = 4.0) is", "answer": 2524, "unit": "K", "tolerance": 5, "hint": "T_Ar / T_He = M_Ar / M_He.", "solution": "T_He = 253 K; T_Ar = 253 × 39.9/4 = 2524 K."}]}, {"id": "equipartition", "nav": "Law of equipartition", "title": "Each quadratic energy term gets ½ k_B T — translation, rotation, and two for each vibration.", "deck": "Maxwell proved that in equilibrium every squared term in the energy shares equally. A monatomic gas has 3 translational degrees; a rigid diatomic has 5; each vibrational mode adds 2 (KE + PE).", "minutes": 8, "section": "12.5", "pages": [9, 10], "print": "252–253", "sim": "equipart", "simTitle": "Degrees of freedom: mono, di, poly", "quick": ["The law of equipartition (Maxwell): if a system is in equilibrium at T, the energy is distributed equally among the modes of absorption, <strong>½ k<sub>B</sub> T per quadratic term</strong>. Each translational or rotational degree of freedom is one such term. Each vibrational frequency contributes two (kinetic and potential), hence k<sub>B</sub> T.", "Monatomic: 3 translational. Diatomic (rigid rotator, no vibration): 3 translational + 2 rotational = 5. A linear molecule’s rotation about its axis is frozen (tiny moment of inertia, quantum). Vibration of a diatomic is one frequency, two terms, but is often frozen at room temperature (end of §12.6).", "Polyatomic: 3 translational + 3 rotational + vibrational modes. Fig. 12.6 sketches the motions."], "formulas": [{"label": "Equipartition", "html": "⟨ε⟩ = ½ k<sub>B</sub> T per quadratic term", "cond": "Eq. (12.22) family; Points to Ponder 3"}, {"label": "Diatomic (room T)", "html": "f = 5  (3 trans + 2 rot)", "cond": "vibration usually frozen"}, {"label": "Vibrational mode", "html": "2 × ½ k<sub>B</sub> T = k<sub>B</sub> T", "cond": "KE + PE"}], "deeper": "Quantum mechanics, not this chapter, explains why some modes are frozen: the energy step ħω or ħ²/2I may be ≫ k_B T. Equipartition is the high-T limit. NCERT is honest that vibration of H₂ is off at room temperature and that carbon’s solid C is an exception to 3R.", "worked": "A diatomic at room T: U_trans = (3/2)μRT, U_rot = μRT, U_vib ≈ 0, so U = (5/2)μRT. That is why C_v = 5R/2 in the next section, not 7R/2.", "prediction": {"prompt": "A vibrational mode is said to have two degrees of freedom. Why two, not one?", "options": ["The energy has two squared terms, ½k q² + ½μ q̇², and each takes ½ k_B T", "The molecule can vibrate along x and along y", "One for each atom"], "answer": 0, "explanation": "Points to Ponder 3 and Eq. (12.26). Count quadratic terms, not ‘ways of moving’ naively."}, "connect": [["Why H₂ at 300 K is ‘diatomic rigid’", "A hydrogen molecule rotates freely (rotational spacing small) but its bond is a stiff spring (vibrational spacing large). Room-temperature C_v sits at 5R/2, and only climbs toward 7R/2 when the gas is hot."], ["Wow — gravity does not win against k_B T", "mgh for 10 m is ~10⁻²² J; ½ m v² ~ 10⁻²¹ J. Air molecules bounce many times their own ‘fall’ between collisions, so they do not settle on the floor (Points to Ponder 4).", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "State equipartition, count f for monatomic and room-T diatomic, and say why vibration is two terms.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Each translational degree of freedom carries, on average", "options": ["½ k_B T", "k_B T", "3/2 k_B T"], "answer": 0, "hint": "Equipartition.", "solution": "One quadratic term. The 3/2 k_B T is the sum of three of them.", "wrong": ["", "That is one vibrational mode.", "That is all three translations."]}, {"level": "Medium", "type": "mcq", "prompt": "A rigid diatomic molecule has f =", "options": ["5", "3", "6"], "answer": 0, "hint": "3 trans + 2 rot.", "solution": "Rotation about the bond axis is frozen. Vibration is a separate, often frozen, pair of terms.", "wrong": ["", "That is monatomic.", "That would be a non-linear polyatomic rotator."]}, {"level": "Hard", "type": "mcq", "prompt": "In a mixture of Ne, Cl₂ and UF₆ at the same T and P, v_rms is largest for", "options": ["neon — lightest molecules", "chlorine", "uranium hexafluoride"], "answer": 0, "hint": "Ex 12.8.", "solution": "Equal N (Avogadro). v_rms ∝ 1/√M. Neon wins. Translational KE per molecule is the same for all three.", "wrong": ["", "Heavier than Ne.", "Heaviest, slowest."]}]}, {"id": "gas-specific-heats", "nav": "Specific heats of gases", "title": "C_v = (f/2) R and C_p = C_v + R — predicted, then compared with Table 12.2.", "deck": "Monatomic: C_v = 3R/2, γ = 5/3. Diatomic (no vibration): C_v = 5R/2, γ = 7/5. Polyatomic: C_v = (f/2)R with f > 6 once vibration joins. Solids: C ≈ 3R (Dulong–Petit), carbon excepted.", "minutes": 8, "section": "12.6", "pages": [10, 12], "print": "253–255", "sim": "cvgas", "simTitle": "Heat a flask: helium vs nitrogen vs a solid", "quick": ["From U = (f/2) μ R T, <strong>C<sub>v</sub> = (f/2) R</strong> and C<sub>p</sub> = C<sub>v</sub> + R, so γ = 1 + 2/f. Monatomic (He, Ar): C<sub>v</sub> = 3R/2, C<sub>p</sub> = 5R/2, γ = 5/3. Diatomic at room T: 5R/2, 7R/2, γ = 7/5. Table 12.1 vs 12.2: the match is good for translation+rotation and improves when vibration is included at high T.", "Example 12.8: 44.8 L of He at STP is 2 mol; cylinder of fixed volume, ΔT = 15 K. Q = μ C_v ΔT = 2 × (3/2)R × 15 = 45 R = 374 J.", "Solids: each atom is a 3-D oscillator, U = 3 R T per mole, C = 3R (Eq. 12.37, Table 12.3). Carbon is the stubborn exception at room T."], "formulas": [{"label": "Molar C_v", "html": "C<sub>v</sub> = (f/2) R", "cond": "ideal gas; f degrees of freedom"}, {"label": "γ", "html": "γ = C<sub>p</sub>/C<sub>v</sub> = 1 + 2/f", "cond": "monatomic 5/3, diatomic 7/5"}, {"label": "Solid", "html": "C = 3 R", "cond": "Eq. (12.37); ordinary T"}], "deeper": "The ‘failure’ of equipartition at low T is a victory of quantum theory, not a failure of kinetic theory’s bookkeeping. This reprint does not develop that quantum theory; it records the experimental table and notes where vibration is missing.", "worked": "Example 12.8 (zoom p.11): 44.8 L He at STP ⇒ 2 mol (molar volume 22.4 L). Fixed V so C_v = 3R/2. Q = 2 × 1.5 × 8.31 × 15 = 374 J.", "prediction": {"prompt": "A rigid 44.8 L cylinder of helium at STP is warmed 15 °C. The heat needed is set by", "options": ["C_v, not C_p, because the volume is fixed — 374 J", "C_p, because the cylinder is ‘at constant atmospheric pressure’", "3R per mole of a solid, because helium freezes"], "answer": 0, "explanation": "Example 12.8. ‘Fixed capacity’ is isochoric. Helium is still a monatomic gas."}, "connect": [["Helium in a Bangalore MRI magnet", "Boil-off heat load is computed with C_p of He gas once it has vaporised, and with the latent heat of the liquid. The 3R/2 of the monatomic vapour is why helium is a light, ‘cheap-per-degree’ gas to warm — and why it escapes so fast (large v_rms)."], ["Wow — 374 J for 2 mol of He, 15 K", "That is a handful of calories. The same ΔT for 2 mol of a room-temperature diatomic would be 5/3 times larger (C_v = 5R/2). Degrees of freedom are a heat-capacity multiplier.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write C_v for mono and diatomic gases and compute Example 12.8.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a monatomic ideal gas, γ is", "options": ["5/3", "7/5", "4/3"], "answer": 0, "hint": "C_p = 5R/2, C_v = 3R/2.", "solution": "γ = 5/3. 7/5 is room-T diatomic; 4/3 is a polyatomic with f = 6.", "wrong": ["", "Diatomic.", "f = 6 rotator."]}, {"level": "Medium", "type": "number", "map": "Example 12.8", "prompt": "Heat (J) to raise 44.8 L of He at STP by 15 K at fixed volume (R = 8.31) is", "answer": 374, "unit": "J", "tolerance": 2, "hint": "2 mol × (3/2)R × 15.", "solution": "45 × 8.31 = 374 J."}, {"level": "Hard", "type": "mcq", "prompt": "Dulong–Petit C = 3R for solids fails at low T because", "options": ["vibrational modes freeze out (quantum); this reprint records the fact, it does not derive ħω", "solids are not made of atoms", "R changes with temperature"], "answer": 0, "hint": "§12.6.4; carbon exception at room T.", "solution": "Equipartition is a high-T law. Carbon’s stiff lattice is still frozen at 300 K.", "wrong": ["", "They are.", "R is a constant."]}]}, {"id": "mean-free-path", "nav": "Mean free path", "title": "ℓ = 1 / (√2 π n d²) — why a 500 m s⁻¹ molecule takes minutes to cross a room.", "deck": "A molecule of diameter d sweeps a collision cylinder π d² ⟨v⟩ Δt. With partners also moving, the exact mean free path is 1/(√2 π n d²). At STP, ℓ ~ 10⁻⁷ m ≈ 1500 d, and the time between collisions is ~ 10⁻¹⁰ s.", "minutes": 8, "section": "12.7", "pages": [12, 13], "print": "255–256", "sim": "mfp", "simTitle": "Collision cylinder and a kitchen gas leak", "quick": ["Molecules are fast, yet a kitchen LPG leak does not fill the house in a millisecond. Finite size ⇒ collisions. A sphere of diameter d sweeping at ⟨v⟩ has collision rate n π d² ⟨v⟩, so a first estimate ℓ = 1/(n π d²) (Eq. 12.39).", "Partners move too; replace ⟨v⟩ by the mean relative speed. The exact result is <strong>ℓ = 1/(√2 π n d²)</strong> (Eq. 12.40). At STP, n = 2.7×10²⁵ m⁻³, d ≈ 2×10⁻¹⁰ m, ℓ ≈ 2.9×10⁻⁷ m ≈ 1500 d, τ ≈ 6.1×10⁻¹⁰ s (Eq. 12.41).", "Example 12.9: water vapour at 373 K, n scales as 1/T, ℓ ≈ 4×10⁻⁷ m. Mean free path is ~100× the interatomic distance and ~1000× the molecular size (Points to Ponder 2)."], "formulas": [{"label": "Mean free path", "html": "ℓ = 1 / (√2 π n d²)", "cond": "Eq. (12.40)"}, {"label": "Collision time", "html": "τ = ℓ / ⟨v⟩", "cond": "STP air: τ ≈ 6.1×10⁻¹⁰ s"}], "deeper": "In a highly evacuated tube, n is small and ℓ can be as large as the apparatus — that is the Knudsen regime, where molecules hit walls more than each other. Diffusion then is not a random walk of steps ℓ but a wall-to-wall flight.", "worked": "Ex 12.10 (zoom p.15): N₂ at 2.0 atm, 17 °C, radius 1.0 Å. n = P/(k_B T) ≈ 5.06×10²⁵ m⁻³, d = 2.0×10⁻¹⁰ m, ℓ = 1/(√2 π n d²) ≈ 1.0×10⁻⁷ m. v_rms ≈ 493 m s⁻¹, collision frequency v/ℓ ≈ 5×10⁹ s⁻¹. Collision duration ~ d/v is ~1000 times shorter than the free-flight time.", "prediction": {"prompt": "A nitrogen molecule at STP has v_rms ~ 500 m s⁻¹. Why does a smell take seconds to cross a room?", "options": ["It random-walks in steps of ℓ ~ 10⁻⁷ m, ~10⁹ collisions per second, so net progress is slow", "Molecules are actually slow; 500 m s⁻¹ is a misprint", "They travel in straight lines at the speed of sound and the room is huge"], "answer": 0, "explanation": "§12.7 opening: smoke holds together for hours because paths are incessantly deflected. Diffusion distance ~ √(ℓ v t), not v t."}, "connect": [["LPG leak in a kitchen", "You smell it at the door after seconds to minutes, not microseconds. That delay is the mean-free-path random walk, plus convection. Opening a window raises ℓ only slightly; it mostly adds a bulk air current."], ["Wow — 1500 molecular diameters of empty flight", "Between collisions a nitrogen molecule flies ~0.3 μm — short for us, enormous for it. Kinetic theory’s ideal-gas ‘no size’ is that statement: the molecules occupy a tiny fraction of the volume, yet they still collide.", [{"t": "NCERT Physics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/keph205.pdf"}]]], "recall": "Write ℓ = 1/(√2 π n d²) and the STP numbers ℓ ≈ 2.9×10⁻⁷ m, τ ≈ 6.1×10⁻¹⁰ s.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Mean free path ℓ is the average distance a molecule travels", "options": ["between two successive collisions", "from wall to wall", "in one second"], "answer": 0, "hint": "§12.7.", "solution": "Definition. Wall-to-wall equals ℓ only in high vacuum.", "wrong": ["", "Only in the Knudsen regime.", "That is ⟨v⟩."]}, {"level": "Medium", "type": "mcq", "prompt": "ℓ depends on n and d as", "options": ["1/(n d²)", "1/(n d)", "n d²"], "answer": 0, "hint": "Eq. (12.40).", "solution": "Collision cylinder area ~ d², target density n.", "wrong": ["", "Missing a power of d.", "That is a rate, not a path."]}, {"level": "Hard", "type": "number", "map": "Eq. 12.41", "prompt": "At STP, n ≈ 2.7×10²⁵ m⁻³ and d ≈ 2×10⁻¹⁰ m. ℓ in metres, to one significant figure as 3×10^{?}", "answer": -7, "unit": "exponent of 10", "tolerance": 0.2, "hint": "NCERT: 2.9×10⁻⁷ m ≈ 1500 d.", "solution": "ℓ = 1/(√2 π n d²) ≈ 2.9×10⁻⁷ m."}]}], "exercises": [{"number": "12.1", "section": "Exercises", "conceptIdx": 0, "page": 14, "printPage": 257, "question": "Estimate the fraction of molecular volume to the actual volume occupied by oxygen gas at STP. Take the diameter of an oxygen molecule to be 3 Å.", "steps": ["Radius r = 1.5×10⁻¹⁰ m. Volume of one molecule = (4/3)π r³ ≈ 1.41×10⁻²⁹ m³.", "One mole: N_A × that volume ≈ 8.5×10⁻⁶ m³.", "Molar volume at STP = 22.4×10⁻³ m³.", "Fraction ≈ 8.5×10⁻⁶ / 22.4×10⁻³ ≈ 3.8×10⁻⁴."], "answer": "≈ 3.8 × 10⁻⁴"}, {"number": "12.2", "section": "Exercises", "conceptIdx": 1, "page": 14, "printPage": 257, "question": "Molar volume is the volume occupied by 1 mol of any (ideal) gas at standard temperature and pressure (STP: 1 atmospheric pressure, 0 °C). Show that it is 22.4 litres.", "steps": ["V = RT/P with T = 273 K, P = 1.013×10⁵ Pa, R = 8.31 J mol⁻¹ K⁻¹.", "V = 8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."], "answer": "22.4 L"}, {"number": "12.3", "section": "Exercises", "conceptIdx": 1, "page": 14, "printPage": 257, "question": "Figure 12.8 shows plot of PV/T versus P for 1.00×10⁻³ kg of oxygen gas at two different temperatures. (a) What does the dotted plot signify? (b) Which is true: T₁ > T₂ or T₁ < T₂? (c) What is the value of PV/T where the curves meet on the y-axis? (d) If we obtained similar plots for 1.00×10⁻³ kg of hydrogen, would we get the same value of PV/T at the intercept? If not, what mass of hydrogen yields the same intercept? (M_O₂ = 32.0 u, M_H₂ = 2.02 u, R = 8.31 J mol⁻¹ K⁻¹.)", "steps": ["(a) Dotted line: ideal-gas behaviour, PV/T = μR, independent of P.", "(b) T₁ > T₂: the higher-T curve stays ideal to larger P (Fig. 12.8).", "(c) μ = 0.001/0.032 = 1/32 mol; μR = 8.31/32 = 0.260 J K⁻¹.", "(d) No. Need the same μ, so m_H₂ = (2.02/32)×1.00×10⁻³ kg = 6.31×10⁻⁵ kg."], "answer": "(a) ideal gas (b) T₁ > T₂ (c) 0.26 J K⁻¹ (d) 6.31×10⁻⁵ kg of H₂"}, {"number": "12.4", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "An oxygen cylinder of volume 30 litre has an initial gauge pressure of 15 atm and a temperature of 27 °C. After some oxygen is withdrawn from the cylinder, the gauge pressure drops to 11 atm and its temperature drops to 17 °C. Estimate the mass of oxygen taken out of the cylinder (R = 8.31 J mol⁻¹ K⁻¹, molecular mass of O₂ = 32 u).", "given": "V = 30 L = 0.030 m³; P_gauge,i = 15 atm ⇒ P_i = 16 atm; P_f = 12 atm; T_i = 300 K; T_f = 290 K", "steps": ["Use absolute pressures. μ_i = P_i V / (RT_i) = 16×1.013×10⁵×0.030 / (8.31×300) = 19.48 mol.", "μ_f = 12×1.013×10⁵×0.030 / (8.31×290) = 15.12 mol.", "Δm = (19.48 − 15.12)×32 g = 0.140 kg."], "answer": "0.14 kg"}, {"number": "12.5", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "An air bubble of volume 1.0 cm³ rises from the bottom of a lake 40 m deep at a temperature of 12 °C. To what volume does it grow when it reaches the surface, which is at a temperature of 35 °C?", "steps": ["P_bottom = 1.013×10⁵ + 10³×9.8×40 = 4.933×10⁵ Pa; P_top = 1.013×10⁵ Pa.", "V₂ = V₁ (P₁/P₂)(T₂/T₁) = 1.0 × (4.933/1.013) × (308/285) ≈ 5.26 cm³."], "answer": "5.3 cm³ (≈ 5.26 cm³)"}, {"number": "12.6", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "Estimate the total number of air molecules (inclusive of oxygen, nitrogen, water vapour and other constituents) in a room of capacity 25.0 m³ at a temperature of 27 °C and 1 atm pressure.", "steps": ["N = PV / k_B T = 1.013×10⁵ × 25 / (1.38×10⁻²³ × 300) = 6.11×10²⁶."], "answer": "6.1 × 10²⁶"}, {"number": "12.7", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "Estimate the average thermal energy of a helium atom at (i) room temperature (27 °C), (ii) the temperature on the surface of the Sun (6000 K), (iii) the temperature of 10 million kelvin (the typical core temperature in the case of a star).", "steps": ["Average translational KE = (3/2) k_B T.", "(i) (3/2)×1.38×10⁻²³×300 = 6.21×10⁻²¹ J.", "(ii) (3/2)×1.38×10⁻²³×6000 = 1.24×10⁻¹⁹ J.", "(iii) (3/2)×1.38×10⁻²³×10⁷ = 2.07×10⁻¹⁶ J."], "answer": "(i) 6.21×10⁻²¹ J  (ii) 1.24×10⁻¹⁹ J  (iii) 2.07×10⁻¹⁶ J"}, {"number": "12.8", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "Three vessels of equal capacity have gases at the same temperature and pressure. The first vessel contains neon (monatomic), the second contains chlorine (diatomic), and the third contains uranium hexafluoride (polyatomic). Do the vessels contain equal number of respective molecules ? Is the root mean square speed of molecules the same in the three cases? If not, in which case is vrms the largest ?", "steps": ["Avogadro: equal V, T, P ⇒ equal N. Yes.", "v_rms = √(3kT/m) is not the same; largest for the lightest (neon)."], "answer": "Equal N; v_rms largest for neon"}, {"number": "12.9", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "At what temperature is the root mean square speed of an atom in an argon gas cylinder equal to the rms speed of a helium gas atom at – 20 °C ? (atomic mass of Ar = 39.9 u, of He = 4.0 u).", "steps": ["v_rms equal ⇒ T/M equal.", "T_Ar = T_He × (M_Ar/M_He) = 253 × 39.9/4.0 = 2524 K."], "answer": "2.52 × 10³ K"}, {"number": "12.10", "section": "Exercises", "conceptIdx": 6, "page": 15, "printPage": 258, "question": "Estimate the mean free path and collision frequency of a nitrogen molecule in a cylinder containing nitrogen at 2.0 atm and temperature 17 0C. Take the radius of a nitrogen molecule to be roughly 1.0 Å. Compare the collision time with the time the molecule moves freely between two successive collisions (Molecular mass of N2 = 28.0 u).", "steps": ["n = P/kT = 2×1.013×10⁵ / (1.38×10⁻²³×290) = 5.06×10²⁵ m⁻³.", "d = 2.0×10⁻¹⁰ m; ℓ = 1/(√2 π n d²) ≈ 1.0×10⁻⁷ m.", "v_rms = √(3RT/M) = √(3×8.31×290 / 0.028) ≈ 493 m s⁻¹.", "Collision frequency v/ℓ ≈ 4.9×10⁹ s⁻¹.", "Collision duration ~ d/v vs free time ℓ/v: ratio ~ d/ℓ ~ 2×10⁻³. Free flight lasts ~500× longer than a collision."], "answer": "ℓ ≈ 1.0×10⁻⁷ m; frequency ≈ 4.9×10⁹ s⁻¹; collision time ≪ free time (~1/500)"}]};
+window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics", "title": "Kinetic Theory", "subtitle": "Ideal gas, pressure from molecular impacts, rms speed, equipartition, specific heats, mean free path.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/keph205.pdf", "page_start": 244, "page_end": 258, "extraction": "PyMuPDF dict spans + 2× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "molecular-nature", "nav": "Molecular nature of matter", "title": "Matter is atoms in perpetual motion — Kanada said so; Dalton made it quantitative.", "deck": "Atomic hypothesis: little particles that attract at a few ångströms and repel when squeezed. Solids and liquids pack at ~2 Å; gases have mean free paths of thousands of ångströms. This chapter is the gas as a swarm of those particles.", "minutes": 7, "section": "12.1–12.2", "pages": [1, 3], "print": "244–246", "sim": "atoms", "simTitle": "Solid pack vs gas swarm (ångströms)", "quick": ["Boyle (1661) already treated gases as tiny particles. Kinetic theory, built by Maxwell, Boltzmann and others, gives a molecular reading of pressure and temperature, recovers the gas laws and Avogadro’s hypothesis, and estimates molecular sizes from viscosity and diffusion.", "Feynman’s atomic hypothesis: all things are made of atoms — little particles that move around in perpetual motion, attracting when a little apart, repelling when squeezed. Kanada (Vaiśeṣika) and Democritus guessed the picture; Dalton explained the laws of definite and multiple proportions. Avogadro: equal volumes of gases at the same T, P contain equal numbers of molecules.", "Atomic size ~ 1 Å = 10<sup>−10</sup> m. In solids and liquids, neighbours sit a few Å apart. In gases the typical gap is tens of Å, and the <strong>mean free path</strong> is thousands of Å. A gas in a closed flask looks still; the equilibrium is dynamic."], "formulas": [{"label": "Atomic size", "html": "1 Å = 10<sup>−10</sup> m", "cond": "solids/liquids packed at ~2 Å"}, {"label": "Avogadro", "html": "equal V, T, P  ⇒  equal N", "cond": "explains Gay-Lussac once Dalton is molecular"}], "deeper": "Atoms are not elementary: nucleus + electrons, protons and neutrons, quarks, perhaps strings. This chapter stops at molecules of a gas. Lalitavistara (2nd century BCE) already guessed an atomic size of order 10<sup>−10</sup> m — a coincidence of conjecture, not a measurement.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Estimate the fraction of molecular volume to the actual volume occupied by oxygen gas at STP. Take the diameter of an oxygen molecule to be 3 Å.", "given": "Estimate the fraction of molecular volume to the actual volume occupied by oxygen gas at STP. Take the diameter of an oxygen molecule to be 3 Å.", "steps": ["Radius r = 1.5×10⁻¹⁰ m. Volume of one molecule = (4/3)π r³ ≈ 1.41×10⁻²⁹ m³.", "One mole: N_A × that volume ≈ 8.5×10⁻⁶ m³.", "Molar volume at STP = 22.4×10⁻³ m³."], "answer": "≈ 3.8 × 10⁻⁴"}, "prediction": {"prompt": "Steam at 100 °C, 1 atm has density 0.6 kg m⁻³; liquid water is 1000 kg m⁻³. The fraction of space actually filled by molecules in the steam is about", "options": ["6×10⁻⁴ — the liquid is essentially close-packed, so the fraction scales as the density ratio", "1, because a gas fills its container", "0, because molecules are points"], "answer": 0, "explanation": "Example 12.1. ‘Fills the container’ is the volume the swarm occupies, not the volume of the molecules themselves."}, "connect": [["Mustard seed vs Meru", "Kanada’s argument: if matter could be subdivided without end, a mustard seed and the Meru mountain would not differ. That is the same instinct as a modern mole of 6×10²³ molecules — a finite graininess."], ["Wow — we can see atoms now", "Electron microscopes and scanning tunnelling microscopes image atoms. Kinetic theory was accepted before that, on the strength of gas laws, Brownian motion and specific heats — not pictures.", null, {"id": "h1xLjLnDfYQ", "title": "Class 11th Physics | Molecular Nature of Matter | Behaviour of Gases | Example 12.1 to 12.4", "channel": "Ignited Minds"}]], "recall": "State the atomic hypothesis in Feynman’s words and quote the steam molecular-volume fraction 6×10⁻⁴.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Avogadro’s law says that equal volumes of all gases at the same T and P have", "options": ["the same number of molecules", "the same mass", "the same rms speed"], "answer": 0, "hint": "§12.2.", "solution": "N is common. Mass depends on molar mass; rms speed depends on m and T.", "wrong": ["", "Mass = μM, and M differs.", "v_rms = √(3kT/m)."]}, {"level": "Medium", "type": "number", "map": "Example 12.1", "prompt": "Molecular-volume fraction in steam at 100 °C, 1 atm (densities 0.6 and 1000 kg m⁻³) is 6×10^{?}", "answer": -4, "unit": "exponent", "tolerance": 0.1, "hint": "0.6/1000 = 6×10⁻⁴.", "solution": "Density ratio 0.6/1000 = 6×10⁻⁴."}, {"level": "Hard", "type": "mcq", "prompt": "Mean free path in a gas is of order", "options": ["thousands of ångströms, ~1000 molecular diameters", "one ångström, the molecular size itself", "metres, the size of the room"], "answer": 0, "hint": "§12.2 and Points to Ponder 2.", "solution": "Intermolecular distance is only ~10× the solid spacing; what is large is the free path between collisions.", "wrong": ["", "That is the size, not the path.", "Only in a high vacuum."]}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}, {"id": "gas-laws", "nav": "Behaviour of gases", "title": "PV = μRT is the equation of an ideal gas — a limit of real gases at low P, high T.", "deck": "Boyle P ∝ 1/V at fixed T, Charles V ∝ T at fixed P, and Avogadro combine into PV = μRT = N k_B T. Dalton: the total pressure is the sum of partial pressures.", "minutes": 8, "section": "12.3", "pages": [3, 5], "print": "246–248", "sim": "idealgas", "simTitle": "Boyle and Charles slides; departures from ideal", "quick": ["A given sample of gas at low pressure and high temperature obeys PV = KT, with K ∝ N. The same constant per molecule for all gases is Boltzmann’s k<sub>B</sub>, so <strong>PV = N k<sub>B</sub> T = μ R T</strong> with R = N<sub>A</sub> k<sub>B</sub> = 8.314 J mol⁻¹ K⁻¹ and k<sub>B</sub> = 1.38×10⁻²³ J K⁻¹.", "Fixed μ, T: Boyle, PV = const. Fixed P: Charles, V ∝ T. Real gases (Fig. 12.1–12.3) hug these laws at low P and high T and peel away near liquefaction. Dalton: for a non-reacting mixture, P = Σ P<sub>i</sub> with each P<sub>i</sub> = μ<sub>i</sub> RT/V.", "Molar volume at STP (0 °C, 1 atm) is 22.4 L for any ideal gas (Example 12.8 / Ex 12.2)."], "formulas": [{"label": "Ideal gas law", "html": "PV = μ R T = N k<sub>B</sub> T", "cond": "Eqs. (12.3), (12.4); R = 8.314 J mol⁻¹ K⁻¹"}, {"label": "Boyle", "html": "PV = const  (T, μ fixed)", "cond": "Eq. (12.6)"}, {"label": "Dalton partial pressures", "html": "P = P₁ + P₂ + …", "cond": "non-reactive mixture of ideal gases"}], "deeper": "An ideal gas is the equation, not a substance: the limit in which molecular volume and intermolecular potential energy are negligible. CO₂ on Fig. 12.3 follows Charles (dotted) far above the liquefaction region and bends as it approaches it.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Molar volume is the volume occupied by 1 mol of any (ideal) gas at standard temperature and pressure (STP: 1 atmospheric pressure, 0 °C). Show that it is 22.4 litres.", "given": "Molar volume is the volume occupied by 1 mol of any (ideal) gas at standard temperature and pressure (STP: 1 atmospheric pressure, 0 °C). Show that it is 22.4 litres.", "steps": ["V = RT/P with T = 273 K, P = 1.013×10⁵ Pa, R = 8.31 J mol⁻¹ K⁻¹.", "V = 8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."], "answer": "22.4 L"}, "prediction": {"prompt": "A 22.4 L flask at 0 °C and 1 atm holds helium. How many moles?", "options": ["1 mol — that is the molar volume of any ideal gas at STP", "4 mol, because M_He = 4", "22.4 mol"], "answer": 0, "explanation": "Ex 12.2 / Example 12.8. Molar volume is universal; the mass in the flask would be 4 g, not the mole count."}, "connect": [["Hospital oxygen cylinder (Ex 12.4)", "A 30 L cylinder, gauge 15 atm at 27 °C, later 11 atm at 17 °C, has lost about 0.14 kg of O₂. Gauge pressure is P − 1 atm; the ideal-gas law uses absolute P and T."], ["Wow — 22.4 L is a coincidence of our STP choice", "R T/P at 273 K and 1.01×10⁵ Pa is 0.0224 m³. Change the standard and the number changes; the law does not.", null, {"id": "robEY-idcLU", "title": "Kinetic Molecular Theory and the Ideal Gas Laws", "channel": "Professor Dave Explains"}]], "recall": "Write PV = μRT and state Boyle, Charles and Dalton in one line each.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Boltzmann’s constant k_B equals", "options": ["R / N_A", "R N_A", "P V"], "answer": 0, "hint": "R = N_A k_B.", "solution": "k_B = 1.38×10⁻²³ J K⁻¹ = R/N_A.", "wrong": ["", "That is huge.", "PV = N k_B T, not k_B itself."]}, {"level": "Medium", "type": "number", "map": "Ex 12.2", "prompt": "Molar volume of an ideal gas at STP, in litres, is", "answer": 22.4, "unit": "L", "tolerance": 0.05, "hint": "RT/P at 273 K, 1 atm.", "solution": "8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."}, {"level": "Hard", "type": "number", "map": "Example 12.4", "prompt": "Ne:O₂ partial-pressure ratio 3:2. Mass-density ratio ρ_Ne/ρ_O₂ (M = 20.2, 32.0) is", "answer": 0.947, "unit": "", "tolerance": 0.005, "hint": "(3/2)×(20.2/32).", "solution": "1.5 × 0.63125 = 0.947."}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}, {"id": "kinetic-pressure", "nav": "Pressure from molecular impacts", "title": "P = (1/3) n m ⟨v²⟩ — pressure is momentum dumped on the wall per second per area.", "deck": "Elastic collision with a wall reverses v_x and delivers 2 m v_x. Counting hits gives P = n m ⟨v_x²⟩ = (1/3) n m ⟨v²⟩. The container shape does not matter; collisions among molecules do not spoil the average.", "minutes": 9, "section": "12.4.1", "pages": [6, 7], "print": "249–250", "sim": "pressure", "simTitle": "Fig. 12.4 wall collision ledger", "quick": ["Ideal-gas kinetic theory: many molecules, random motion, elastic collisions, molecular size ≪ mean gap, no long-range forces. A molecule hitting a wall parallel to the yz-plane rebounds with v_x → −v_x and imparts momentum 2mv_x (Fig. 12.4).", "In time Δt, molecules in a slab of volume A v_x Δt can hit; half of them are inbound. Momentum per unit time per unit area from one speed class is n m v_x². Summing classes and using isotropy ⟨v_x²⟩ = ⟨v²⟩/3 yields <strong>P = (1/3) n m ⟨v²⟩</strong> (Eq. 12.14).", "Shape of the vessel drops out (Pascal). Molecule–molecule collisions reshuffle who has velocity (v_x, v_y, v_z) but do not change the average if the distribution is steady."], "formulas": [{"label": "Momentum to wall", "html": "Δp<sub>x</sub> = 2 m v<sub>x</sub>", "cond": "elastic hit on a massive wall"}, {"label": "Pressure", "html": "P = (1/3) n m ⟨v²⟩", "cond": "Eq. (12.14); n = N/V"}], "deeper": "‘There is a distribution in velocities’ (NCERT) — this reprint does not write the Maxwell speed-distribution formula as a numbered equation, but it uses that distribution’s second moment ⟨v²⟩. The rms speed is defined from that moment. Visualising the distribution is a way of seeing why a single speed would be a lie.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Figure 12.8 shows plot of PV/T versus P for 1.00×10⁻³ kg of oxygen gas at two different temperatures. (a) What does the dotted plot signify? (b) Which is true: T₁ > T₂ or T₁ < T₂? (c) What is the value of PV/T where the curves meet on the y-axis? (d) If we obtained similar plots for 1.00×10⁻³ kg of hydrogen, would we get the same value of PV/T at the intercept? If not, what mass of hydrogen yields the same intercept? (M_O₂ = 32.0 u, M_H₂ = 2.02 u, R = 8.31 J mol⁻¹ K⁻¹.)", "given": "Figure 12.8 shows plot of PV/T versus P for 1.00×10⁻³ kg of oxygen gas at two different temperatures. (a) What does the dotted plot signify? (b) Which is true: T₁ > T₂ or T₁ < T₂? (c) What is the value of PV/T where the curves meet on the y-axis? (d) If we obtained similar plots for 1.00×10⁻³ kg of hydrogen, would we get the same value of PV/T at the intercept? If not, what mass of hydrogen yields the same intercept? (M_O₂ = 32.0 u, M_H₂ = 2.02 u, R = 8.31 J mol⁻¹ K⁻¹.)", "steps": ["(a) Dotted line: ideal-gas behaviour, PV/T = μR, independent of P.", "(b) T₁ > T₂: the higher-T curve stays ideal to larger P (Fig. 12.8).", "(c) μ = 0.001/0.032 = 1/32 mol; μR = 8.31/32 = 0.260 J K⁻¹."], "answer": "(a) ideal gas (b) T₁ > T₂ (c) 0.26 J K⁻¹ (d) 6.31×10⁻⁵ kg of H₂"}, "prediction": {"prompt": "If every molecular speed in a flask doubled at fixed volume and number, the pressure would", "options": ["quadruple, because P ∝ ⟨v²⟩", "double, because P ∝ v", "stay the same, because n is fixed"], "answer": 0, "explanation": "Eq. (12.14). Doubling speeds multiplies every 2mv_x and the hit rate by 2, so P × 4. That is also T × 4, since T ∝ ⟨v²⟩."}, "connect": [["Tyre wall as a momentum dump", "Each air molecule that bounces off the inner rubber donates 2mv_n. A denser fill (larger n) or a hotter tyre (larger ⟨v²⟩) both raise P — the two handles in Eq. (12.14)."], ["Wow — a fluid has pressure in its interior, not only on the wall", "Points to Ponder 1: any layer inside the gas is in equilibrium because the two sides push equally. The wall derivation is a convenient book-keeping, not a claim that pressure ‘lives’ only at surfaces.", null, {"id": "2DzA2_ej_SU", "title": "Molecular Kinetic Theory (simple derivation) - Kinetic Theory (Lesson 4)", "channel": "vt.physics"}]], "recall": "Derive P = (1/3)nm⟨v²⟩ in three lines: momentum per hit, hit rate, isotropy.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In an elastic collision with a massive wall, the molecule’s v_x", "options": ["reverses, imparting 2m v_x to the wall", "becomes zero", "is unchanged"], "answer": 0, "hint": "Fig. 12.4.", "solution": "v_x → −v_x; Δp_molecule = −2m v_x; wall receives +2m v_x.", "wrong": ["", "That would be perfectly inelastic.", "Then no pressure."]}, {"level": "Medium", "type": "mcq", "prompt": "Isotropy is used to replace ⟨v_x²⟩ by", "options": ["⟨v²⟩/3", "⟨v²⟩", "⟨v⟩²"], "answer": 0, "hint": "Eq. (12.13).", "solution": "No preferred axis, so the three mean-square components share ⟨v²⟩ equally.", "wrong": ["", "That would triple the pressure.", "Points to Ponder 5: ⟨v²⟩ ≠ ⟨v⟩²."]}, {"level": "Hard", "type": "mcq", "prompt": "Molecule–molecule collisions are ignored in the wall-hit count because", "options": ["the distribution is steady: a collision that removes one (v_x, v_y, v_z) supplies another", "molecules never collide in an ideal gas", "collisions are inelastic so they do not affect momentum"], "answer": 0, "hint": "§12.4.1 remarks.", "solution": "Ideal-gas collisions are elastic and rare compared with free flight. The average is what enters P.", "wrong": ["", "They collide; the mean free path is finite.", "Elastic is the assumption."]}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}, {"id": "kinetic-temp-rms", "nav": "Temperature and rms speed", "title": "Temperature is (2/3k_B) times the average translational KE per molecule.", "deck": "½ m ⟨v²⟩ = (3/2) k_B T. Then v_rms = √(3k_B T/m) = √(3RT/M). At 300 K, nitrogen’s v_rms is 516 m s⁻¹ — the order of the speed of sound. Lighter molecules run faster at the same T.", "minutes": 9, "section": "12.4.2", "pages": [7, 8], "print": "250–251", "sim": "maxwell", "simTitle": "Maxwell-style speeds: v_rms of N₂, He, Ar", "quick": ["Matching the kinetic pressure to the ideal-gas law gives <strong>½ m ⟨v²⟩ = (3/2) k<sub>B</sub> T</strong> (Eq. 12.19). Temperature is a measure of average translational KE per molecule, independent of what the molecule is. Total translational energy E = (3/2) N k<sub>B</sub> T (Eq. 12.18), so PV = (2/3) E.", "Root-mean-square speed <strong>v<sub>rms</sub> = √⟨v²⟩ = √(3k<sub>B</sub> T/m) = √(3RT/M)</strong>. For N₂ at 300 K, m = 4.65×10⁻²⁶ kg and v_rms = 516 m s⁻¹ (zoom p.7). In a mixture at one T, the heavier species has the smaller v_rms (Example 12.5: Ar vs Cl₂, ratio 1.33).", "Uranium hexafluoride effusion (Example 12.6): ²³⁵UF₆ vs ²³⁸UF₆, mass 349 vs 352, speed ratio 1.0044 — a 0.44 % difference, exploited (inefficiently) by porous-wall enrichment."], "formulas": [{"label": "Kinetic temperature", "html": "½ m ⟨v²⟩ = (3/2) k<sub>B</sub> T", "cond": "Eq. (12.19); translational KE only"}, {"label": "rms speed", "html": "v<sub>rms</sub> = √(3k<sub>B</sub> T/m) = √(3 R T/M)", "cond": "N₂ at 300 K: 516 m s⁻¹"}, {"label": "Mixture", "html": "v<sub>rms,1</sub> / v<sub>rms,2</sub> = √(M₂/M₁)  at the same T", "cond": "Example 12.5"}], "deeper": "⟨v²⟩ is not ⟨v⟩² (Points to Ponder 5). The Maxwell speed distribution is asymmetric: most probable < mean < rms. This reprint never writes f(v) dv as a numbered law, but the three speeds are the natural language of ⟨v⟩, ⟨v²⟩ and the peak. Gravity does not pile all the air on the floor because ½mv² ≫ mgh for room heights (Points to Ponder 4).", "worked": {"title": "Worked source example · PDF p.15", "problem": "An oxygen cylinder of volume 30 litre has an initial gauge pressure of 15 atm and a temperature of 27 °C. After some oxygen is withdrawn from the cylinder, the gauge pressure drops to 11 atm and its temperature drops to 17 °C. Estimate the mass of oxygen taken out of the cylinder (R = 8.31 J mol⁻¹ K⁻¹, molecular mass of O₂ = 32 u).", "given": "An oxygen cylinder of volume 30 litre has an initial gauge pressure of 15 atm and a temperature of 27 °C. After some oxygen is withdrawn from the cylinder, the gauge pressure drops to 11 atm and its temperature drops to 17 °C. Estimate the mass of oxygen taken out of the cylinder (R = 8.31 J mol⁻¹ K⁻¹, molecular mass of O₂ = 32 u).", "steps": ["Use absolute pressures. μ_i = P_i V / (RT_i) = 16×1.013×10⁵×0.030 / (8.31×300) = 19.48 mol.", "μ_f = 12×1.013×10⁵×0.030 / (8.31×290) = 15.12 mol.", "Δm = (19.48 − 15.12)×32 g = 0.140 kg."], "answer": "0.14 kg"}, "prediction": {"prompt": "Argon atoms and chlorine molecules share a flask at 27 °C. The ratio of average translational KE per molecule is", "options": ["1 : 1 — it depends only on T", "39.9 : 70.9 — proportional to mass", "2 : 1 — the mass composition of the flask"], "answer": 0, "explanation": "Example 12.5(i). Equipartition of translational KE is species-blind."}, "connect": [["BARC and porous-wall enrichment", "Example 12.6 is the physics of gaseous diffusion: the 0.44 % speed edge of ²³⁵UF₆ over ²³⁸UF₆, compounded over many stages. India used heavy-water and centrifuge routes; the textbook point is Graham’s law from v_rms."], ["Wow — 516 m s⁻¹ in the air of this room", "Nitrogen molecules at 27 °C outrun a cricket ball and match the order of the speed of sound. They do not empty the room because they collide ~10⁹ times a second (mean free path, §12.7).", null, {"id": "gg2xSW0MIlM", "title": "Kinetic Theory 03 : RMS Velocity , Maxwell's distribution of Velocities and Mean Free Path", "channel": "Physics Wallah - Alakh Pandey"}]], "recall": "Write ½m⟨v²⟩ = (3/2)k_B T and v_rms for N₂ at 300 K.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "v_rms at a given T is larger for", "options": ["lighter molecules", "heavier molecules", "molecules with more atoms, regardless of mass"], "answer": 0, "hint": "v_rms = √(3kT/m).", "solution": "Helium outruns argon at the same T (Ex 12.8, 12.9).", "wrong": ["", "Heavier means slower.", "Atom count enters mass, not a separate factor."]}, {"level": "Medium", "type": "number", "map": "N₂ at 300 K", "prompt": "v_rms of nitrogen at 300 K, as quoted in the chapter (m s⁻¹), is", "answer": 516, "unit": "m s⁻¹", "tolerance": 2, "hint": "√(3kT/m) with m = 28 u.", "solution": "NCERT evaluates 516 m s⁻¹. Order of the speed of sound."}, {"level": "Hard", "type": "number", "map": "Ex 12.9", "prompt": "T (K) at which argon atoms have the same v_rms as helium at −20 °C (M_Ar = 39.9, M_He = 4.0) is", "answer": 2524, "unit": "K", "tolerance": 5, "hint": "T_Ar / T_He = M_Ar / M_He.", "solution": "T_He = 253 K; T_Ar = 253 × 39.9/4 = 2524 K."}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}, {"id": "equipartition", "nav": "Law of equipartition", "title": "Each quadratic energy term gets ½ k_B T — translation, rotation, and two for each vibration.", "deck": "Maxwell proved that in equilibrium every squared term in the energy shares equally. A monatomic gas has 3 translational degrees; a rigid diatomic has 5; each vibrational mode adds 2 (KE + PE).", "minutes": 8, "section": "12.5", "pages": [9, 10], "print": "252–253", "sim": "equipart", "simTitle": "Degrees of freedom: mono, di, poly", "quick": ["The law of equipartition (Maxwell): if a system is in equilibrium at T, the energy is distributed equally among the modes of absorption, <strong>½ k<sub>B</sub> T per quadratic term</strong>. Each translational or rotational degree of freedom is one such term. Each vibrational frequency contributes two (kinetic and potential), hence k<sub>B</sub> T.", "Monatomic: 3 translational. Diatomic (rigid rotator, no vibration): 3 translational + 2 rotational = 5. A linear molecule’s rotation about its axis is frozen (tiny moment of inertia, quantum). Vibration of a diatomic is one frequency, two terms, but is often frozen at room temperature (end of §12.6).", "Polyatomic: 3 translational + 3 rotational + vibrational modes. Fig. 12.6 sketches the motions."], "formulas": [{"label": "Equipartition", "html": "⟨ε⟩ = ½ k<sub>B</sub> T per quadratic term", "cond": "Eq. (12.22) family; Points to Ponder 3"}, {"label": "Diatomic (room T)", "html": "f = 5  (3 trans + 2 rot)", "cond": "vibration usually frozen"}, {"label": "Vibrational mode", "html": "2 × ½ k<sub>B</sub> T = k<sub>B</sub> T", "cond": "KE + PE"}], "deeper": "Quantum mechanics, not this chapter, explains why some modes are frozen: the energy step ħω or ħ²/2I may be ≫ k_B T. Equipartition is the high-T limit. NCERT is honest that vibration of H₂ is off at room temperature and that carbon’s solid C is an exception to 3R.", "worked": {"title": "Worked source example · PDF p.15", "problem": "An air bubble of volume 1.0 cm³ rises from the bottom of a lake 40 m deep at a temperature of 12 °C. To what volume does it grow when it reaches the surface, which is at a temperature of 35 °C?", "given": "An air bubble of volume 1.0 cm³ rises from the bottom of a lake 40 m deep at a temperature of 12 °C. To what volume does it grow when it reaches the surface, which is at a temperature of 35 °C?", "steps": ["P_bottom = 1.013×10⁵ + 10³×9.8×40 = 4.933×10⁵ Pa; P_top = 1.013×10⁵ Pa.", "V₂ = V₁ (P₁/P₂)(T₂/T₁) = 1.0 × (4.933/1.013) × (308/285) ≈ 5.26 cm³."], "answer": "5.3 cm³ (≈ 5.26 cm³)"}, "prediction": {"prompt": "A vibrational mode is said to have two degrees of freedom. Why two, not one?", "options": ["The energy has two squared terms, ½k q² + ½μ q̇², and each takes ½ k_B T", "The molecule can vibrate along x and along y", "One for each atom"], "answer": 0, "explanation": "Points to Ponder 3 and Eq. (12.26). Count quadratic terms, not ‘ways of moving’ naively."}, "connect": [["Why H₂ at 300 K is ‘diatomic rigid’", "A hydrogen molecule rotates freely (rotational spacing small) but its bond is a stiff spring (vibrational spacing large). Room-temperature C_v sits at 5R/2, and only climbs toward 7R/2 when the gas is hot."], ["Wow — gravity does not win against k_B T", "mgh for 10 m is ~10⁻²² J; ½ m v² ~ 10⁻²¹ J. Air molecules bounce many times their own ‘fall’ between collisions, so they do not settle on the floor (Points to Ponder 4).", null, {"id": "MY9D5gR1pUQ", "title": "Law of Equipartition of Energy", "channel": "Pramod Niranjan (PN Sir) @ PHYSICS24"}]], "recall": "State equipartition, count f for monatomic and room-T diatomic, and say why vibration is two terms.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Each translational degree of freedom carries, on average", "options": ["½ k_B T", "k_B T", "3/2 k_B T"], "answer": 0, "hint": "Equipartition.", "solution": "One quadratic term. The 3/2 k_B T is the sum of three of them.", "wrong": ["", "That is one vibrational mode.", "That is all three translations."]}, {"level": "Medium", "type": "mcq", "prompt": "A rigid diatomic molecule has f =", "options": ["5", "3", "6"], "answer": 0, "hint": "3 trans + 2 rot.", "solution": "Rotation about the bond axis is frozen. Vibration is a separate, often frozen, pair of terms.", "wrong": ["", "That is monatomic.", "That would be a non-linear polyatomic rotator."]}, {"level": "Hard", "type": "mcq", "prompt": "In a mixture of Ne, Cl₂ and UF₆ at the same T and P, v_rms is largest for", "options": ["neon — lightest molecules", "chlorine", "uranium hexafluoride"], "answer": 0, "hint": "Ex 12.8.", "solution": "Equal N (Avogadro). v_rms ∝ 1/√M. Neon wins. Translational KE per molecule is the same for all three.", "wrong": ["", "Heavier than Ne.", "Heaviest, slowest."]}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}, {"id": "gas-specific-heats", "nav": "Specific heats of gases", "title": "C_v = (f/2) R and C_p = C_v + R — predicted, then compared with Table 12.2.", "deck": "Monatomic: C_v = 3R/2, γ = 5/3. Diatomic (no vibration): C_v = 5R/2, γ = 7/5. Polyatomic: C_v = (f/2)R with f > 6 once vibration joins. Solids: C ≈ 3R (Dulong–Petit), carbon excepted.", "minutes": 8, "section": "12.6", "pages": [10, 12], "print": "253–255", "sim": "cvgas", "simTitle": "Heat a flask: helium vs nitrogen vs a solid", "quick": ["From U = (f/2) μ R T, <strong>C<sub>v</sub> = (f/2) R</strong> and C<sub>p</sub> = C<sub>v</sub> + R, so γ = 1 + 2/f. Monatomic (He, Ar): C<sub>v</sub> = 3R/2, C<sub>p</sub> = 5R/2, γ = 5/3. Diatomic at room T: 5R/2, 7R/2, γ = 7/5. Table 12.1 vs 12.2: the match is good for translation+rotation and improves when vibration is included at high T.", "Example 12.8: 44.8 L of He at STP is 2 mol; cylinder of fixed volume, ΔT = 15 K. Q = μ C_v ΔT = 2 × (3/2)R × 15 = 45 R = 374 J.", "Solids: each atom is a 3-D oscillator, U = 3 R T per mole, C = 3R (Eq. 12.37, Table 12.3). Carbon is the stubborn exception at room T."], "formulas": [{"label": "Molar C_v", "html": "C<sub>v</sub> = (f/2) R", "cond": "ideal gas; f degrees of freedom"}, {"label": "γ", "html": "γ = C<sub>p</sub>/C<sub>v</sub> = 1 + 2/f", "cond": "monatomic 5/3, diatomic 7/5"}, {"label": "Solid", "html": "C = 3 R", "cond": "Eq. (12.37); ordinary T"}], "deeper": "The ‘failure’ of equipartition at low T is a victory of quantum theory, not a failure of kinetic theory’s bookkeeping. This reprint does not develop that quantum theory; it records the experimental table and notes where vibration is missing.", "worked": {"title": "Worked source example · PDF p.15", "problem": "Estimate the total number of air molecules (inclusive of oxygen, nitrogen, water vapour and other constituents) in a room of capacity 25.0 m³ at a temperature of 27 °C and 1 atm pressure.", "given": "Estimate the total number of air molecules (inclusive of oxygen, nitrogen, water vapour and other constituents) in a room of capacity 25.0 m³ at a temperature of 27 °C and 1 atm pressure.", "steps": ["N = PV / k_B T = 1.013×10⁵ × 25 / (1.38×10⁻²³ × 300) = 6.11×10²⁶."], "answer": "6.1 × 10²⁶"}, "prediction": {"prompt": "A rigid 44.8 L cylinder of helium at STP is warmed 15 °C. The heat needed is set by", "options": ["C_v, not C_p, because the volume is fixed — 374 J", "C_p, because the cylinder is ‘at constant atmospheric pressure’", "3R per mole of a solid, because helium freezes"], "answer": 0, "explanation": "Example 12.8. ‘Fixed capacity’ is isochoric. Helium is still a monatomic gas."}, "connect": [["Helium in a Bangalore MRI magnet", "Boil-off heat load is computed with C_p of He gas once it has vaporised, and with the latent heat of the liquid. The 3R/2 of the monatomic vapour is why helium is a light, ‘cheap-per-degree’ gas to warm — and why it escapes so fast (large v_rms)."], ["Wow — 374 J for 2 mol of He, 15 K", "That is a handful of calories. The same ΔT for 2 mol of a room-temperature diatomic would be 5/3 times larger (C_v = 5R/2). Degrees of freedom are a heat-capacity multiplier.", null, {"id": "clUhMDBU3aw", "title": "Physics Kinetic Theory part 1 (Introduction) CBSE class 11", "channel": "LearnoHub - Class 11, 12"}]], "recall": "Write C_v for mono and diatomic gases and compute Example 12.8.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a monatomic ideal gas, γ is", "options": ["5/3", "7/5", "4/3"], "answer": 0, "hint": "C_p = 5R/2, C_v = 3R/2.", "solution": "γ = 5/3. 7/5 is room-T diatomic; 4/3 is a polyatomic with f = 6.", "wrong": ["", "Diatomic.", "f = 6 rotator."]}, {"level": "Medium", "type": "number", "map": "Example 12.8", "prompt": "Heat (J) to raise 44.8 L of He at STP by 15 K at fixed volume (R = 8.31) is", "answer": 374, "unit": "J", "tolerance": 2, "hint": "2 mol × (3/2)R × 15.", "solution": "45 × 8.31 = 374 J."}, {"level": "Hard", "type": "mcq", "prompt": "Dulong–Petit C = 3R for solids fails at low T because", "options": ["vibrational modes freeze out (quantum); this reprint records the fact, it does not derive ħω", "solids are not made of atoms", "R changes with temperature"], "answer": 0, "hint": "§12.6.4; carbon exception at room T.", "solution": "Equipartition is a high-T law. Carbon’s stiff lattice is still frozen at 300 K.", "wrong": ["", "They are.", "R is a constant."]}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}, {"id": "mean-free-path", "nav": "Mean free path", "title": "ℓ = 1 / (√2 π n d²) — why a 500 m s⁻¹ molecule takes minutes to cross a room.", "deck": "A molecule of diameter d sweeps a collision cylinder π d² ⟨v⟩ Δt. With partners also moving, the exact mean free path is 1/(√2 π n d²). At STP, ℓ ~ 10⁻⁷ m ≈ 1500 d, and the time between collisions is ~ 10⁻¹⁰ s.", "minutes": 8, "section": "12.7", "pages": [12, 13], "print": "255–256", "sim": "mfp", "simTitle": "Collision cylinder and a kitchen gas leak", "quick": ["Molecules are fast, yet a kitchen LPG leak does not fill the house in a millisecond. Finite size ⇒ collisions. A sphere of diameter d sweeping at ⟨v⟩ has collision rate n π d² ⟨v⟩, so a first estimate ℓ = 1/(n π d²) (Eq. 12.39).", "Partners move too; replace ⟨v⟩ by the mean relative speed. The exact result is <strong>ℓ = 1/(√2 π n d²)</strong> (Eq. 12.40). At STP, n = 2.7×10²⁵ m⁻³, d ≈ 2×10⁻¹⁰ m, ℓ ≈ 2.9×10⁻⁷ m ≈ 1500 d, τ ≈ 6.1×10⁻¹⁰ s (Eq. 12.41).", "Example 12.9: water vapour at 373 K, n scales as 1/T, ℓ ≈ 4×10⁻⁷ m. Mean free path is ~100× the interatomic distance and ~1000× the molecular size (Points to Ponder 2)."], "formulas": [{"label": "Mean free path", "html": "ℓ = 1 / (√2 π n d²)", "cond": "Eq. (12.40)"}, {"label": "Collision time", "html": "τ = ℓ / ⟨v⟩", "cond": "STP air: τ ≈ 6.1×10⁻¹⁰ s"}], "deeper": "In a highly evacuated tube, n is small and ℓ can be as large as the apparatus — that is the Knudsen regime, where molecules hit walls more than each other. Diffusion then is not a random walk of steps ℓ but a wall-to-wall flight.", "worked": {"title": "Worked source example · PDF p.15", "problem": "Estimate the average thermal energy of a helium atom at (i) room temperature (27 °C), (ii) the temperature on the surface of the Sun (6000 K), (iii) the temperature of 10 million kelvin (the typical core temperature in the case of a star).", "given": "Estimate the average thermal energy of a helium atom at (i) room temperature (27 °C), (ii) the temperature on the surface of the Sun (6000 K), (iii) the temperature of 10 million kelvin (the typical core temperature in the case of a star).", "steps": ["Average translational KE = (3/2) k_B T.", "(i) (3/2)×1.38×10⁻²³×300 = 6.21×10⁻²¹ J.", "(ii) (3/2)×1.38×10⁻²³×6000 = 1.24×10⁻¹⁹ J."], "answer": "(i) 6.21×10⁻²¹ J  (ii) 1.24×10⁻¹⁹ J  (iii) 2.07×10⁻¹⁶ J"}, "prediction": {"prompt": "A nitrogen molecule at STP has v_rms ~ 500 m s⁻¹. Why does a smell take seconds to cross a room?", "options": ["It random-walks in steps of ℓ ~ 10⁻⁷ m, ~10⁹ collisions per second, so net progress is slow", "Molecules are actually slow; 500 m s⁻¹ is a misprint", "They travel in straight lines at the speed of sound and the room is huge"], "answer": 0, "explanation": "§12.7 opening: smoke holds together for hours because paths are incessantly deflected. Diffusion distance ~ √(ℓ v t), not v t."}, "connect": [["LPG leak in a kitchen", "You smell it at the door after seconds to minutes, not microseconds. That delay is the mean-free-path random walk, plus convection. Opening a window raises ℓ only slightly; it mostly adds a bulk air current."], ["Wow — 1500 molecular diameters of empty flight", "Between collisions a nitrogen molecule flies ~0.3 μm — short for us, enormous for it. Kinetic theory’s ideal-gas ‘no size’ is that statement: the molecules occupy a tiny fraction of the volume, yet they still collide.", null, {"id": "eYmFB4S39Vc", "title": "Mean free path | Kinetic theory | Grade 11 | Physics | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write ℓ = 1/(√2 π n d²) and the STP numbers ℓ ≈ 2.9×10⁻⁷ m, τ ≈ 6.1×10⁻¹⁰ s.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Mean free path ℓ is the average distance a molecule travels", "options": ["between two successive collisions", "from wall to wall", "in one second"], "answer": 0, "hint": "§12.7.", "solution": "Definition. Wall-to-wall equals ℓ only in high vacuum.", "wrong": ["", "Only in the Knudsen regime.", "That is ⟨v⟩."]}, {"level": "Medium", "type": "mcq", "prompt": "ℓ depends on n and d as", "options": ["1/(n d²)", "1/(n d)", "n d²"], "answer": 0, "hint": "Eq. (12.40).", "solution": "Collision cylinder area ~ d², target density n.", "wrong": ["", "Missing a power of d.", "That is a rate, not a path."]}, {"level": "Hard", "type": "number", "map": "Eq. 12.41", "prompt": "At STP, n ≈ 2.7×10²⁵ m⁻³ and d ≈ 2×10⁻¹⁰ m. ℓ in metres, to one significant figure as 3×10^{?}", "answer": -7, "unit": "exponent of 10", "tolerance": 0.2, "hint": "NCERT: 2.9×10⁻⁷ m ≈ 1500 d.", "solution": "ℓ = 1/(√2 π n d²) ≈ 2.9×10⁻⁷ m."}], "group": "Kinetic Theory", "watch": "Change the scenario and verify the displayed physical quantity."}], "exercises": [{"number": "12.1", "section": "Exercises", "conceptIdx": 0, "page": 14, "printPage": 257, "question": "Estimate the fraction of molecular volume to the actual volume occupied by oxygen gas at STP. Take the diameter of an oxygen molecule to be 3 Å.", "steps": ["Radius r = 1.5×10⁻¹⁰ m. Volume of one molecule = (4/3)π r³ ≈ 1.41×10⁻²⁹ m³.", "One mole: N_A × that volume ≈ 8.5×10⁻⁶ m³.", "Molar volume at STP = 22.4×10⁻³ m³.", "Fraction ≈ 8.5×10⁻⁶ / 22.4×10⁻³ ≈ 3.8×10⁻⁴."], "answer": "≈ 3.8 × 10⁻⁴", "q": 1, "given": "Estimate the fraction of molecular volume to the actual volume occupied by oxygen gas at STP. Take the diameter of an oxygen molecule to be 3 Å.", "title": "Exercise Q1", "takeaway": "Check units and limiting cases.", "conceptName": "Molecular nature of matter"}, {"number": "12.2", "section": "Exercises", "conceptIdx": 1, "page": 14, "printPage": 257, "question": "Molar volume is the volume occupied by 1 mol of any (ideal) gas at standard temperature and pressure (STP: 1 atmospheric pressure, 0 °C). Show that it is 22.4 litres.", "steps": ["V = RT/P with T = 273 K, P = 1.013×10⁵ Pa, R = 8.31 J mol⁻¹ K⁻¹.", "V = 8.31×273 / 1.013×10⁵ = 2.24×10⁻² m³ = 22.4 L."], "answer": "22.4 L", "q": 2, "given": "Molar volume is the volume occupied by 1 mol of any (ideal) gas at standard temperature and pressure (STP: 1 atmospheric pressure, 0 °C). Show that it is 22.4 litres.", "title": "Exercise Q2", "takeaway": "Check units and limiting cases.", "conceptName": "Behaviour of gases"}, {"number": "12.3", "section": "Exercises", "conceptIdx": 1, "page": 14, "printPage": 257, "question": "Figure 12.8 shows plot of PV/T versus P for 1.00×10⁻³ kg of oxygen gas at two different temperatures. (a) What does the dotted plot signify? (b) Which is true: T₁ > T₂ or T₁ < T₂? (c) What is the value of PV/T where the curves meet on the y-axis? (d) If we obtained similar plots for 1.00×10⁻³ kg of hydrogen, would we get the same value of PV/T at the intercept? If not, what mass of hydrogen yields the same intercept? (M_O₂ = 32.0 u, M_H₂ = 2.02 u, R = 8.31 J mol⁻¹ K⁻¹.)", "steps": ["(a) Dotted line: ideal-gas behaviour, PV/T = μR, independent of P.", "(b) T₁ > T₂: the higher-T curve stays ideal to larger P (Fig. 12.8).", "(c) μ = 0.001/0.032 = 1/32 mol; μR = 8.31/32 = 0.260 J K⁻¹.", "(d) No. Need the same μ, so m_H₂ = (2.02/32)×1.00×10⁻³ kg = 6.31×10⁻⁵ kg."], "answer": "(a) ideal gas (b) T₁ > T₂ (c) 0.26 J K⁻¹ (d) 6.31×10⁻⁵ kg of H₂", "q": 3, "given": "Figure 12.8 shows plot of PV/T versus P for 1.00×10⁻³ kg of oxygen gas at two different temperatures. (a) What does the dotted plot signify? (b) Which is true: T₁ > T₂ or T₁ < T₂? (c) What is the value of PV/T where the curves meet on the y-axis? (d) If we obtained similar plots for 1.00×10⁻³ kg of hydrogen, would we get the same value of PV/T at the intercept? If not, what mass of hydrogen yields the same intercept? (M_O₂ = 32.0 u, M_H₂ = 2.02 u, R = 8.31 J mol⁻¹ K⁻¹.)", "title": "Exercise Q3", "takeaway": "Check units and limiting cases.", "conceptName": "Behaviour of gases"}, {"number": "12.4", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "An oxygen cylinder of volume 30 litre has an initial gauge pressure of 15 atm and a temperature of 27 °C. After some oxygen is withdrawn from the cylinder, the gauge pressure drops to 11 atm and its temperature drops to 17 °C. Estimate the mass of oxygen taken out of the cylinder (R = 8.31 J mol⁻¹ K⁻¹, molecular mass of O₂ = 32 u).", "given": "V = 30 L = 0.030 m³; P_gauge,i = 15 atm ⇒ P_i = 16 atm; P_f = 12 atm; T_i = 300 K; T_f = 290 K", "steps": ["Use absolute pressures. μ_i = P_i V / (RT_i) = 16×1.013×10⁵×0.030 / (8.31×300) = 19.48 mol.", "μ_f = 12×1.013×10⁵×0.030 / (8.31×290) = 15.12 mol.", "Δm = (19.48 − 15.12)×32 g = 0.140 kg."], "answer": "0.14 kg", "q": 4, "title": "Exercise Q4", "takeaway": "Check units and limiting cases.", "conceptName": "Behaviour of gases"}, {"number": "12.5", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "An air bubble of volume 1.0 cm³ rises from the bottom of a lake 40 m deep at a temperature of 12 °C. To what volume does it grow when it reaches the surface, which is at a temperature of 35 °C?", "steps": ["P_bottom = 1.013×10⁵ + 10³×9.8×40 = 4.933×10⁵ Pa; P_top = 1.013×10⁵ Pa.", "V₂ = V₁ (P₁/P₂)(T₂/T₁) = 1.0 × (4.933/1.013) × (308/285) ≈ 5.26 cm³."], "answer": "5.3 cm³ (≈ 5.26 cm³)", "q": 5, "given": "An air bubble of volume 1.0 cm³ rises from the bottom of a lake 40 m deep at a temperature of 12 °C. To what volume does it grow when it reaches the surface, which is at a temperature of 35 °C?", "title": "Exercise Q5", "takeaway": "Check units and limiting cases.", "conceptName": "Behaviour of gases"}, {"number": "12.6", "section": "Exercises", "conceptIdx": 1, "page": 15, "printPage": 258, "question": "Estimate the total number of air molecules (inclusive of oxygen, nitrogen, water vapour and other constituents) in a room of capacity 25.0 m³ at a temperature of 27 °C and 1 atm pressure.", "steps": ["Read the givens and identify the physical law.", "N = PV / k_B T = 1.013×10⁵ × 25 / (1.38×10⁻²³ × 300) = 6.11×10²⁶.", "Substitute values and check units."], "answer": "6.1 × 10²⁶", "q": 6, "given": "Estimate the total number of air molecules (inclusive of oxygen, nitrogen, water vapour and other constituents) in a room of capacity 25.0 m³ at a temperature of 27 °C and 1 atm pressure.", "title": "Exercise Q6", "takeaway": "Check units and limiting cases.", "conceptName": "Behaviour of gases"}, {"number": "12.7", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "Estimate the average thermal energy of a helium atom at (i) room temperature (27 °C), (ii) the temperature on the surface of the Sun (6000 K), (iii) the temperature of 10 million kelvin (the typical core temperature in the case of a star).", "steps": ["Average translational KE = (3/2) k_B T.", "(i) (3/2)×1.38×10⁻²³×300 = 6.21×10⁻²¹ J.", "(ii) (3/2)×1.38×10⁻²³×6000 = 1.24×10⁻¹⁹ J.", "(iii) (3/2)×1.38×10⁻²³×10⁷ = 2.07×10⁻¹⁶ J."], "answer": "(i) 6.21×10⁻²¹ J  (ii) 1.24×10⁻¹⁹ J  (iii) 2.07×10⁻¹⁶ J", "q": 7, "given": "Estimate the average thermal energy of a helium atom at (i) room temperature (27 °C), (ii) the temperature on the surface of the Sun (6000 K), (iii) the temperature of 10 million kelvin (the typical core temperature in the case of a star).", "title": "Exercise Q7", "takeaway": "Check units and limiting cases.", "conceptName": "Temperature and rms speed"}, {"number": "12.8", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "Three vessels of equal capacity have gases at the same temperature and pressure. The first vessel contains neon (monatomic), the second contains chlorine (diatomic), and the third contains uranium hexafluoride (polyatomic). Do the vessels contain equal number of respective molecules ? Is the root mean square speed of molecules the same in the three cases? If not, in which case is vrms the largest ?", "steps": ["Avogadro: equal V, T, P ⇒ equal N. Yes.", "v_rms = √(3kT/m) is not the same; largest for the lightest (neon)."], "answer": "Equal N; v_rms largest for neon", "q": 8, "given": "Three vessels of equal capacity have gases at the same temperature and pressure. The first vessel contains neon (monatomic), the second contains chlorine (diatomic), and the third contains uranium hexafluoride (polyatomic). Do the vessels contain equal number of respective molecules ? Is the root mean square speed of molecules the same in the three cases? If not, in which case is vrms the largest ?", "title": "Exercise Q8", "takeaway": "Check units and limiting cases.", "conceptName": "Temperature and rms speed"}, {"number": "12.9", "section": "Exercises", "conceptIdx": 3, "page": 15, "printPage": 258, "question": "At what temperature is the root mean square speed of an atom in an argon gas cylinder equal to the rms speed of a helium gas atom at – 20 °C ? (atomic mass of Ar = 39.9 u, of He = 4.0 u).", "steps": ["v_rms equal ⇒ T/M equal.", "T_Ar = T_He × (M_Ar/M_He) = 253 × 39.9/4.0 = 2524 K."], "answer": "2.52 × 10³ K", "q": 9, "given": "At what temperature is the root mean square speed of an atom in an argon gas cylinder equal to the rms speed of a helium gas atom at – 20 °C ? (atomic mass of Ar = 39.9 u, of He = 4.0 u).", "title": "Exercise Q9", "takeaway": "Check units and limiting cases.", "conceptName": "Temperature and rms speed"}, {"number": "12.10", "section": "Exercises", "conceptIdx": 6, "page": 15, "printPage": 258, "question": "Estimate the mean free path and collision frequency of a nitrogen molecule in a cylinder containing nitrogen at 2.0 atm and temperature 17 0C. Take the radius of a nitrogen molecule to be roughly 1.0 Å. Compare the collision time with the time the molecule moves freely between two successive collisions (Molecular mass of N2 = 28.0 u).", "steps": ["n = P/kT = 2×1.013×10⁵ / (1.38×10⁻²³×290) = 5.06×10²⁵ m⁻³.", "d = 2.0×10⁻¹⁰ m; ℓ = 1/(√2 π n d²) ≈ 1.0×10⁻⁷ m.", "v_rms = √(3RT/M) = √(3×8.31×290 / 0.028) ≈ 493 m s⁻¹.", "Collision frequency v/ℓ ≈ 4.9×10⁹ s⁻¹.", "Collision duration ~ d/v vs free time ℓ/v: ratio ~ d/ℓ ~ 2×10⁻³. Free flight lasts ~500× longer than a collision."], "answer": "ℓ ≈ 1.0×10⁻⁷ m; frequency ≈ 4.9×10⁹ s⁻¹; collision time ≪ free time (~1/500)", "q": 10, "given": "Estimate the mean free path and collision frequency of a nitrogen molecule in a cylinder containing nitrogen at 2.0 atm and temperature 17 0C. Take the radius of a nitrogen molecule to be roughly 1.0 Å. Compare the collision time with the time the molecule moves freely between two successive collisions (Molecular mass of N2 = 28.0 u).", "title": "Exercise Q10", "takeaway": "Check units and limiting cases.", "conceptName": "Mean free path"}], "exerciseMap": [[1, "Exercise Q1", 0, 14], [2, "Exercise Q2", 1, 14], [3, "Exercise Q3", 1, 14], [4, "Exercise Q4", 1, 15], [5, "Exercise Q5", 1, 15], [6, "Exercise Q6", 1, 15], [7, "Exercise Q7", 3, 15], [8, "Exercise Q8", 3, 15], [9, "Exercise Q9", 3, 15], [10, "Exercise Q10", 6, 15]], "exercisesNote": "All 10 source questions audited from the 15-page PDF."};
 </script>
 <script>
+// Shared Class 11 Maths runtime, adapted from verified lemh101.
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1084,8 +1298,44 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1361,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1444,35 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1489,10 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,17 +1501,17 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1242,10 +1523,15 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? (Array.isArray(l.pages) ? l.pages.join("–") : l.pages) : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1258,8 +1544,6 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var quickItems = [];
     if(Array.isArray(l.quick)) {
       quickItems = l.quick;
-    } else if(typeof l.quick === 'string' && l.quick) {
-      quickItems = [l.quick];
     } else if(Array.isArray(l.summary)) {
       quickItems = l.summary;
     } else if(l.reading_content) {
@@ -1269,7 +1553,6 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     }
 
     html += '<div class="quick-summary">' + quickItems.map(function(p){
-      if(typeof p !== 'string') return '';
       if(p.includes('<p>') || p.includes('<div>') || p.includes('<h3>')) return p;
       var formatted = p.replace(/###\s+(.*?)\n/g, '<h3 style="margin-top:16px;color:var(--ink);">$1</h3>')
                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -1282,7 +1565,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1308,42 +1591,47 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1351,7 +1639,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1360,57 +1648,46 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
-    var rawConnect = l.connect || [];
-    var connectItems = [];
-    if (typeof rawConnect === 'string' && rawConnect.trim()) {
-      connectItems = [{ title: "Real-World Application", text: rawConnect }];
-    } else if (Array.isArray(rawConnect)) {
-      connectItems = rawConnect;
-    } else if (rawConnect && typeof rawConnect === 'object') {
-      connectItems = [rawConnect];
-    }
+    var connectItems = l.connect || [];
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = typeof item === 'string' ? "Real World Application" : (Array.isArray(item) ? item[0] : (item.title || "Real World Context"));
-          var desc = typeof item === 'string' ? item : (Array.isArray(item) ? item[1] : (item.text || item.desc || ""));
-          var links = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []))) : [];
-          var v = (typeof item === 'object' && item !== null) ? (Array.isArray(item) ? (item[3] || null) : (item.video || null)) : null;
-          var wow = /^Wow/i.test(title);
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1456,6 +1733,10 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1474,7 +1755,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1524,7 +1805,8 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1533,6 +1815,41 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1547,9 +1864,6 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1584,7 +1898,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1669,10 +1983,9 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var rawNum = C.chapterNumber || (C.chapter_meta && C.chapter_meta.number) || (C.code ? C.code.replace(/\D/g, '') : "01");
-    var chNum = (!isNaN(parseInt(rawNum))) ? String(rawNum).padStart(2, '0') : rawNum;
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1700,7 +2013,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 ' + (C.book_name || "Science") + ' with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1745,20 +2058,31 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + (ex.q || qNum) + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1804,7 +2128,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1814,7 +2138,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1824,11 +2148,31 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1848,16 +2192,12 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1867,6 +2207,10 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1880,6 +2224,41 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1887,6 +2266,7 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1896,29 +2276,239 @@ window.CHAPTER = {"code": "keph205", "chapterNumber": 12, "book_name": "Physics"
   }
 
   // Initialize
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
-  }
-
   initStorage();
   buildSidebar();
   updateProgress();
   routeFromHash();
 })();
 
+
 </script>
 <script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
+
+
 var App = window.App;
 window.SIMS = {};
 
@@ -1944,8 +2534,8 @@ window.SIMS.atoms = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Atom / molecule</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="a-s">Solid ~2 Å packing</button>' +
-      '<button class="preset-btn" id="a-g">Gas: swarm + large free path</button>';
+      '<button class="preset-btn active" data-preset="a-s" id="a-s">Solid ~2 Å packing</button>' +
+      '<button class="preset-btn" data-preset="a-g" id="a-g">Gas: swarm + large free path</button>';
     document.getElementById("a-s").onclick = function(){ setActivePreset(this); mode="solid"; App.resetTimeline(); App.play(); };
     document.getElementById("a-g").onclick = function(){ setActivePreset(this); mode="gas"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -1985,9 +2575,9 @@ window.SIMS.idealgas = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Ideal PV = μRT</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Real-gas peel-off</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="g-b">Boyle: P vs 1/V</button>' +
-      '<button class="preset-btn" id="g-c">Charles: V vs T</button>' +
-      '<button class="preset-btn" id="g-s">STP molar volume 22.4 L</button>';
+      '<button class="preset-btn active" data-preset="g-b" id="g-b">Boyle: P vs 1/V</button>' +
+      '<button class="preset-btn" data-preset="g-c" id="g-c">Charles: V vs T</button>' +
+      '<button class="preset-btn" data-preset="g-s" id="g-s">STP molar volume 22.4 L</button>';
     document.getElementById("g-b").onclick = function(){ setActivePreset(this); law="boyle"; App.resetTimeline(); App.play(); };
     document.getElementById("g-c").onclick = function(){ setActivePreset(this); law="charles"; App.resetTimeline(); App.play(); };
     document.getElementById("g-s").onclick = function(){ setActivePreset(this); law="stp"; App.resetTimeline(); App.play(); };
@@ -2034,7 +2624,7 @@ window.SIMS.pressure = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Inbound molecule</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Wall</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pr1">Fig 12.4 elastic bounce</button>';
+      '<button class="preset-btn active" data-preset="pr1" id="pr1">Fig 12.4 elastic bounce</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -2046,7 +2636,6 @@ window.SIMS.pressure = (function(){
     m += '<rect x="540" y="40" width="28" height="220" fill="#38bdf8"/>';
     m += '<text x="554" y="30" fill="#94a3b8" font-size="12" text-anchor="middle">wall</text>';
     m += '<circle cx="'+x+'" cy="150" r="12" fill="#f59e0b"/>';
-    m += '<text x="x" y="0"></text>';
     var vx = cycle < 0.8 ? "+v_x" : "−v_x";
     m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Δp on wall = 2 m v_x per hit</text>';
     svg.innerHTML = m;
@@ -2076,10 +2665,10 @@ window.SIMS.maxwell = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Speed distribution (shape)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v_rms</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="m-n2">N₂ 300 K · 516 m/s</button>' +
-      '<button class="preset-btn" id="m-he">He 300 K (lighter, faster)</button>' +
-      '<button class="preset-btn" id="m-ar">Ar 300 K (heavier, slower)</button>' +
-      '<button class="preset-btn" id="m-hot">N₂ 600 K (hotter, faster)</button>';
+      '<button class="preset-btn active" data-preset="m-n2" id="m-n2">N₂ 300 K · 516 m/s</button>' +
+      '<button class="preset-btn" data-preset="m-he" id="m-he">He 300 K (lighter, faster)</button>' +
+      '<button class="preset-btn" data-preset="m-ar" id="m-ar">Ar 300 K (heavier, slower)</button>' +
+      '<button class="preset-btn" data-preset="m-hot" id="m-hot">N₂ 600 K (hotter, faster)</button>';
     document.getElementById("m-n2").onclick = function(){ setActivePreset(this); gas="n2"; App.resetTimeline(); };
     document.getElementById("m-he").onclick = function(){ setActivePreset(this); gas="he"; App.resetTimeline(); };
     document.getElementById("m-ar").onclick = function(){ setActivePreset(this); gas="ar"; App.resetTimeline(); };
@@ -2128,9 +2717,9 @@ window.SIMS.equipart = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Rotation</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Vibration (often frozen)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-m">Monatomic f = 3</button>' +
-      '<button class="preset-btn" id="e-d">Diatomic room T f = 5</button>' +
-      '<button class="preset-btn" id="e-v">Diatomic hot f = 7</button>';
+      '<button class="preset-btn active" data-preset="e-m" id="e-m">Monatomic f = 3</button>' +
+      '<button class="preset-btn" data-preset="e-d" id="e-d">Diatomic room T f = 5</button>' +
+      '<button class="preset-btn" data-preset="e-v" id="e-v">Diatomic hot f = 7</button>';
     document.getElementById("e-m").onclick = function(){ setActivePreset(this); kind="mono"; App.resetTimeline(); };
     document.getElementById("e-d").onclick = function(){ setActivePreset(this); kind="di"; App.resetTimeline(); };
     document.getElementById("e-v").onclick = function(){ setActivePreset(this); kind="vib"; App.resetTimeline(); };
@@ -2166,8 +2755,8 @@ window.SIMS.cvgas = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Heat in at fixed V</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c-he">Ex 12.8 helium 374 J</button>' +
-      '<button class="preset-btn" id="c-n2">Same flask of N₂ (diatomic)</button>';
+      '<button class="preset-btn active" data-preset="c-he" id="c-he">Ex 12.8 helium 374 J</button>' +
+      '<button class="preset-btn" data-preset="c-n2" id="c-n2">Same flask of N₂ (diatomic)</button>';
     document.getElementById("c-he").onclick = function(){ setActivePreset(this); gas="he"; App.resetTimeline(); App.play(); };
     document.getElementById("c-n2").onclick = function(){ setActivePreset(this); gas="n2"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2199,7 +2788,7 @@ window.SIMS.mfp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Tagged molecule</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Collision cylinder</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="mf1">STP air ℓ ≈ 2.9×10⁻⁷ m</button>';
+      '<button class="preset-btn active" data-preset="mf1" id="mf1">STP air ℓ ≈ 2.9×10⁻⁷ m</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }

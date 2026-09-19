@@ -1,820 +1,362 @@
-
-// =========================================================================
-// IEMH102: INTRODUCTION TO LINEAR POLYNOMIALS
-// Interactive Algebraic Manipulatives & Laboratory Engines
-// =========================================================================
-
-window.SIM_STATE = {
-  currentConcept: 'c1',
-  isPlaying: false,
-  timer: null,
-  scrubberVal: 0,
-  speed: 1,
-  // Concept-specific states
-  c1: { c3: 0, c2: 0, c1: 4, c0: -3 },
-  c2: { a: 5, b: -3, x: 2 },
-  c3: { start: 500, rate: 150, months: 6 },
-  c4: { t: 4, growRate: 0.5, growBase: 1.75, decayRate: -8, decayBase: 100 },
-  c5: { a: 2, b: 3 },
-  c6: { mode: 'parallel', a: 2, b1: 3.5, b2: -3.67, matchN: 3 }
-};
-
-window.SIM_ENGINES = {
-
-  // -----------------------------------------------------------------------
-  // LAB 1: POLYNOMIAL DEGREE & TERM DISSECTOR (pp. 16–20)
-  // -----------------------------------------------------------------------
-  c1: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🔬 Polynomial Degree & Term Dissector Workbench</div>
-            <div style="font-size:13px;color:#94a3b8;">Standard Univariate Form: c₃x³ + c₂x² + c₁x + c₀</div>
-          </div>
-          <div id="c1-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;padding:16px;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;">
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Cubic Coeff (c₃): <b id="c1-c3-val" style="color:#ec4899;">0</b></label>
-              <input type="range" id="c1-slider-c3" min="-5" max="5" value="0" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Quadratic Coeff (c₂): <b id="c1-c2-val" style="color:#f59e0b;">0</b></label>
-              <input type="range" id="c1-slider-c2" min="-5" max="5" value="0" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Linear Coeff (c₁): <b id="c1-c1-val" style="color:#38bdf8;">4</b></label>
-              <input type="range" id="c1-slider-c1" min="-5" max="5" value="4" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:11px;color:#94a3b8;display:block;">Constant (c₀): <b id="c1-c0-val" style="color:#10b981;">-3</b></label>
-              <input type="range" id="c1-slider-c0" min="-9" max="9" value="-3" step="1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      ['c3','c2','c1','c0'].forEach(function(k) {
-        document.getElementById('c1-slider-' + k).addEventListener('input', function(e) {
-          window.SIM_STATE.c1[k] = parseInt(e.target.value);
-          self.render();
-        });
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c1;
-      var c3 = state.c3, c2 = state.c2, c1 = state.c1, c0 = state.c0;
-      document.getElementById('c1-c3-val').textContent = c3;
-      document.getElementById('c1-c2-val').textContent = c2;
-      document.getElementById('c1-c1-val').textContent = c1;
-      document.getElementById('c1-c0-val').textContent = c0;
-
-      // Determine degree
-      var deg = 0;
-      var degName = "Constant Polynomial";
-      var badgeColor = "#10b981";
-      if(c3 !== 0) { deg = 3; degName = "Cubic Polynomial (Degree 3)"; badgeColor = "#ec4899"; }
-      else if(c2 !== 0) { deg = 2; degName = "Quadratic Polynomial (Degree 2)"; badgeColor = "#f59e0b"; }
-      else if(c1 !== 0) { deg = 1; degName = "Linear Polynomial (Degree 1)"; badgeColor = "#38bdf8"; }
-      else if(c0 !== 0) { deg = 0; degName = "Constant Polynomial (Degree 0)"; badgeColor = "#10b981"; }
-      else { deg = "Undefined"; degName = "Zero Polynomial (Degree Undefined)"; badgeColor = "#64748b"; }
-
-      // Build expression string
-      var terms = [];
-      if(c3 !== 0) terms.push((c3 === 1 ? '' : c3 === -1 ? '-' : c3) + 'x³');
-      if(c2 !== 0) terms.push((terms.length && c2 > 0 ? '+ ' : terms.length && c2 < 0 ? '- ' : (c2 < 0 ? '-' : '')) + (Math.abs(c2) === 1 ? '' : Math.abs(c2)) + 'x²');
-      if(c1 !== 0) terms.push((terms.length && c1 > 0 ? '+ ' : terms.length && c1 < 0 ? '- ' : (c1 < 0 ? '-' : '')) + (Math.abs(c1) === 1 ? '' : Math.abs(c1)) + 'x');
-      if(c0 !== 0) terms.push((terms.length && c0 > 0 ? '+ ' : terms.length && c0 < 0 ? '- ' : (c0 < 0 ? '-' : '')) + Math.abs(c0));
-      var polyStr = terms.length ? terms.join(' ') : '0';
-
-      var html = `
-        <div style="text-align:center;padding:16px 8px;">
-          <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:6px;">Current Polynomial Expression:</div>
-          <div style="font:700 28px/1.3 Georgia,serif;color:#ffffff;margin-bottom:12px;">p(x) = ${polyStr}</div>
-          <div style="display:inline-block;background:${badgeColor};color:#0f172a;font-weight:800;font-size:13px;padding:6px 14px;border-radius:999px;">
-            ${degName}
-          </div>
-          
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:24px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid ${c3!==0?'#ec4899':'#334155'};">
-              <div style="font-size:11px;color:#94a3b8;">Cubic Term</div>
-              <div style="font-weight:700;font-size:16px;color:#ec4899;">${c3!==0?c3+'x³':'—'}</div>
-              <div style="font-size:10px;color:#64748b;">Exponent = 3</div>
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid ${c2!==0?'#f59e0b':'#334155'};">
-              <div style="font-size:11px;color:#94a3b8;">Quadratic Term</div>
-              <div style="font-weight:700;font-size:16px;color:#f59e0b;">${c2!==0?c2+'x²':'—'}</div>
-              <div style="font-size:10px;color:#64748b;">Exponent = 2</div>
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid ${c1!==0?'#38bdf8':'#334155'};">
-              <div style="font-size:11px;color:#94a3b8;">Linear Term</div>
-              <div style="font-weight:700;font-size:16px;color:#38bdf8;">${c1!==0?c1+'x':'—'}</div>
-              <div style="font-size:10px;color:#64748b;">Exponent = 1</div>
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid ${c0!==0?'#10b981':'#334155'};">
-              <div style="font-size:11px;color:#94a3b8;">Constant Term</div>
-              <div style="font-weight:700;font-size:16px;color:#10b981;">${c0!==0?c0:'—'}</div>
-              <div style="font-size:10px;color:#64748b;">Exponent = 0</div>
-            </div>
-          </div>
-        </div>
-      `;
-      document.getElementById('c1-svg-box').innerHTML = html;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Polynomial:</b> p(x) = ${polyStr}</div>
-            <div><b>Highest Non-Zero Exponent:</b> ${deg}</div>
-            <div><b>Classification:</b> <span style="color:${badgeColor};font-weight:700;">${degName}</span></div>
-            <div><b>Linear Form ax + b:</b> ${c3===0&&c2===0&&c1!==0 ? 'YES (a = '+c1+', b = '+c0+')' : 'NO'}</div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Polynomial Classification:</strong> The polynomial <em>p(x) = ${polyStr}</em> has degree <b>${deg}</b>. 
-          ${c3===0 && c2===0 && c1!==0 ? 'This is a true <b>Linear Polynomial</b> of the standard form ax + b, representing uniform linear rate of change.' : (c3!==0||c2!==0 ? 'This is NOT a linear polynomial because it contains non-linear terms of degree ' + deg + '.' : 'This is a constant polynomial of degree 0.')}
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c1 = { c3: 0, c2: 0, c1: 4, c0: -3 }; }
-      else if(idx === 1) { window.SIM_STATE.c1 = { c3: 0, c2: 2, c1: -5, c0: 3 }; }
-      else if(idx === 2) { window.SIM_STATE.c1 = { c3: 1, c2: 0, c1: 2, c0: -1 }; }
-      ['c3','c2','c1','c0'].forEach(function(k) {
-        document.getElementById('c1-slider-' + k).value = window.SIM_STATE.c1[k];
-      });
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 2: INPUT-OUTPUT FUNCTION MACHINE (pp. 20–23)
-  // -----------------------------------------------------------------------
-  c2: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">⚙️ Polynomial Input-Output Evaluation Machine</div>
-            <div style="font-size:13px;color:#94a3b8;">Input x → Processor [5x - 3] → Output p(x)</div>
-          </div>
-          <div id="c2-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Input Value x: <b id="c2-x-val" style="color:#38bdf8;">2</b></label>
-              <input type="range" id="c2-slider-x" min="-5" max="5" value="2" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;display:flex;align-items:center;justify-content:center;">
-              <button id="c2-btn-zero" style="background:#38bdf8;color:#0f172a;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;width:100%;">
-                🎯 Snap to Zero (x = 3/5 = 0.6)
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c2-slider-x').addEventListener('input', function(e) {
-        window.SIM_STATE.c2.x = parseFloat(e.target.value);
-        self.render();
-      });
-      document.getElementById('c2-btn-zero').addEventListener('click', function() {
-        window.SIM_STATE.c2.x = 0.6;
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c2;
-      var W = 720, H = 340;
-      var x = state.x, a = state.a, b = state.b;
-      var result = a * x + b;
-      var zeroRoot = -b / a;
-
-      document.getElementById('c2-x-val').textContent = x;
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // 1. Input Hopper (Left)
-      svg += '<polygon points="80,70 180,70 150,130 110,130" fill="#334155" stroke="#60a5fa" stroke-width="2"/>';
-      svg += '<text x="130" y="55" fill="#60a5fa" font-size="13" font-weight="700" text-anchor="middle">Input Hopper</text>';
-      svg += '<circle cx="130" cy="95" r="22" fill="#38bdf8"/>';
-      svg += '<text x="130" y="100" fill="#0f172a" font-size="14" font-weight="800" text-anchor="middle">x = ' + x + '</text>';
-
-      // Arrow Hopper to Machine
-      svg += '<line x1="130" y1="130" x2="130" y2="170" stroke="#60a5fa" stroke-width="3" stroke-dasharray="4,4"/>';
-      svg += '<line x1="130" y1="170" x2="250" y2="170" stroke="#60a5fa" stroke-width="3"/>';
-
-      // 2. Machine Chamber (Center)
-      svg += '<rect x="250" y="90" width="220" height="160" rx="12" fill="#090d16" stroke="#f59e0b" stroke-width="3"/>';
-      svg += '<text x="360" y="120" fill="#f59e0b" font-size="15" font-weight="800" text-anchor="middle">⚙️ PROCESSING ENGINE</text>';
-      svg += '<text x="360" y="150" fill="#ffffff" font-size="14" text-anchor="middle">Multiply by 5: 5(' + x + ') = ' + (5*x) + '</text>';
-      svg += '<text x="360" y="180" fill="#ffffff" font-size="14" text-anchor="middle">Subtract 3: ' + (5*x) + ' - 3</text>';
-      svg += '<text x="360" y="220" fill="#38bdf8" font-size="16" font-weight="800" text-anchor="middle">p(' + x + ') = ' + result + '</text>';
-
-      // Arrow Machine to Output Tray
-      svg += '<line x1="470" y1="170" x2="550" y2="170" stroke="#10b981" stroke-width="3"/>';
-
-      // 3. Output Tray (Right)
-      svg += '<rect x="550" y="120" width="130" height="100" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2"/>';
-      svg += '<text x="615" y="145" fill="#10b981" font-size="13" font-weight="700" text-anchor="middle">Output Tray</text>';
-      svg += '<circle cx="615" cy="180" r="26" fill="' + (result === 0 ? '#f59e0b' : '#10b981') + '"/>';
-      svg += '<text x="615" y="186" fill="#0f172a" font-size="16" font-weight="800" text-anchor="middle">' + result + '</text>';
-
-      // Zero Indicator Banner at bottom
-      if(Math.abs(result) < 0.001) {
-        svg += '<rect x="180" y="275" width="360" height="34" rx="17" fill="#f59e0b"/>';
-        svg += '<text x="360" y="297" fill="#0f172a" font-size="14" font-weight="800" text-anchor="middle">🎯 ZERO LOCATED: x = 0.6 produces p(x) = 0!</text>';
-      } else {
-        svg += '<text x="360" y="300" fill="#94a3b8" font-size="12" text-anchor="middle">Unique Zero of p(x) = 5x - 3 lies at x = -b/a = 3/5 = 0.6</text>';
-      }
-
-      svg += '</svg>';
-      document.getElementById('c2-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Input Value x:</b> ${x}</div>
-            <div><b>Polynomial Rule:</b> p(x) = 5x - 3</div>
-            <div><b>Output p(x):</b> <span style="color:${result===0?'#f59e0b':'#10b981'};font-weight:700;">${result}</span></div>
-            <div><b>Root / Zero Condition:</b> ${result === 0 ? 'ZERO ACHIEVED' : 'Non-zero'}</div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Evaluation Mechanics:</strong> For input <b>x = ${x}</b>, the function engine evaluates 5(${x}) - 3 = <b>${result}</b>. 
-          ${result === 0 ? 'Since p(' + x + ') = 0, x = ' + x + ' is the exact root / zero of the linear polynomial!' : 'To reach an output of 0, the input must equal the root x = -(-3)/5 = 3/5 = 0.6.'}
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c2.x = 2; }
-      else if(idx === 1) { window.SIM_STATE.c2.x = 0; }
-      else if(idx === 2) { window.SIM_STATE.c2.x = -1; }
-      document.getElementById('c2-slider-x').value = window.SIM_STATE.c2.x;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 3: LINEAR PATTERNS & SAVINGS ACCUMULATOR (pp. 24–27)
-  // -----------------------------------------------------------------------
-  c3: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">💰 Linear Sequence & Savings Account Stepper (Ex Set 2.3)</div>
-            <div style="font-size:13px;color:#94a3b8;">Base ₹500 + ₹150 every month: S(n) = 500 + 150n</div>
-          </div>
-          <div id="c3-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Months Elapsed (n): <b id="c3-n-val" style="color:#38bdf8;">6 months</b></label>
-              <input type="range" id="c3-slider-n" min="0" max="12" value="6" step="1" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Monthly Rate: <b style="color:#10b981;">₹150 / month</b></label>
-              <div style="font-size:13px;color:#94a3b8;padding-top:4px;">Constant difference: ΔS = ₹150</div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c3-slider-n').addEventListener('input', function(e) {
-        window.SIM_STATE.c3.months = parseInt(e.target.value);
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c3;
-      var W = 720, H = 340;
-      var n = state.months;
-      var base = state.start, rate = state.rate;
-      var currentTotal = base + rate * n;
-
-      document.getElementById('c3-n-val').textContent = n + ' months';
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      var ox = 80, oy = 280;
-      var maxN = 12;
-      var maxS = base + rate * maxN; // 500 + 1800 = 2300
-      var scX = (W - 140) / maxN; // ~48px
-      var scY = 220 / maxS; // ~0.095
-
-      // Axes
-      svg += '<line x1="' + ox + '" y1="' + oy + '" x2="' + (W - 30) + '" y2="' + oy + '" stroke="#60a5fa" stroke-width="2"/>';
-      svg += '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="30" stroke="#60a5fa" stroke-width="2"/>';
-      svg += '<text x="' + (W - 20) + '" y="' + (oy + 18) + '" fill="#94a3b8" font-size="11">Month n</text>';
-      svg += '<text x="' + ox + '" y="20" fill="#94a3b8" font-size="11">Balance S(n) ₹</text>';
-
-      // Bars & Line path
-      var pts = [];
-      for(var m = 0; m <= maxN; m++) {
-        var val = base + rate * m;
-        var bx = ox + m * scX;
-        var by = oy - val * scY;
-        pts.push(bx + ',' + by);
-
-        if(m <= n) {
-          // Bar
-          svg += '<rect x="' + (bx - 12) + '" y="' + by + '" width="24" height="' + (val * scY) + '" fill="#38bdf8" opacity="0.35" rx="3"/>';
-        }
-        svg += '<circle cx="' + bx + '" cy="' + by + '" r="' + (m === n ? 7 : 4) + '" fill="' + (m === n ? '#f59e0b' : '#38bdf8') + '"/>';
-        if(m % 2 === 0) svg += '<text x="' + bx + '" y="' + (oy + 18) + '" fill="#94a3b8" font-size="10" text-anchor="middle">' + m + '</text>';
-      }
-
-      // Linear trajectory line
-      svg += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,3"/>';
-
-      // Current Highlight
-      var curX = ox + n * scX;
-      var curY = oy - currentTotal * scY;
-      svg += '<line x1="' + curX + '" y1="' + oy + '" x2="' + curX + '" y2="' + curY + '" stroke="#f59e0b" stroke-width="2"/>';
-      svg += '<circle cx="' + curX + '" cy="' + curY + '" r="8" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>';
-      svg += '<rect x="' + (curX - 60) + '" y="' + (curY - 34) + '" width="120" height="24" rx="6" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>';
-      svg += '<text x="' + curX + '" y="' + (curY - 18) + '" fill="#f59e0b" font-size="12" font-weight="800" text-anchor="middle">₹' + currentTotal + '</text>';
-
-      // Step difference indicator
-      if(n > 0) {
-        var prevY = oy - (base + rate * (n - 1)) * scY;
-        svg += '<text x="' + (curX + 15) + '" y="' + ((curY + prevY)/2 + 4) + '" fill="#10b981" font-size="11" font-weight="700">+₹150</text>';
-      }
-
-      svg += '</svg>';
-      document.getElementById('c3-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Initial Savings:</b> ₹${base}</div>
-            <div><b>Month n:</b> ${n}</div>
-            <div><b>Total Balance S(n):</b> <span style="color:#f59e0b;font-weight:700;">₹${currentTotal}</span></div>
-            <div><b>Constant Increment:</b> <span style="color:#10b981;">+₹150 / month</span></div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Linear Sequence Growth:</strong> The bank savings sequence grows strictly linearly according to <b>S(n) = 500 + 150n</b>. 
-          At month <b>n = ${n}</b>, total accumulation is <b>₹${currentTotal}</b>. The step difference between any two adjacent months is constantly ₹150.
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c3.months = 6; }
-      else if(idx === 1) { window.SIM_STATE.c3.months = 2; }
-      else if(idx === 2) { window.SIM_STATE.c3.months = 12; }
-      document.getElementById('c3-slider-n').value = window.SIM_STATE.c3.months;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 4: LINEAR GROWTH VS DECAY DUAL EXPLORER (pp. 28–30)
-  // -----------------------------------------------------------------------
-  c4: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🌱 Linear Growth (+a) vs Linear Decay (-a) Studio</div>
-            <div style="font-size:13px;color:#94a3b8;">Plant Height vs Leaking Water Tank</div>
-          </div>
-          <div id="c4-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Time Elapsed (t): <b id="c4-t-val" style="color:#38bdf8;">4 months</b></label>
-              <input type="range" id="c4-slider-t" min="0" max="10" value="4" step="1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c4-slider-t').addEventListener('input', function(e) {
-        window.SIM_STATE.c4.t = parseInt(e.target.value);
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c4;
-      var W = 720, H = 340;
-      var t = state.t;
-
-      var plantHeight = state.growBase + state.growRate * t; // 1.75 + 0.5t
-      var tankWater = state.decayBase + state.decayRate * t; // 100 - 8t
-
-      document.getElementById('c4-t-val').textContent = t + ' time units';
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Split Screen divider
-      svg += '<line x1="360" y1="20" x2="360" y2="320" stroke="#334155" stroke-width="2" stroke-dasharray="4,4"/>';
-
-      // --- LEFT SIDE: LINEAR GROWTH (Plant) ---
-      svg += '<text x="180" y="35" fill="#10b981" font-size="14" font-weight="800" text-anchor="middle">🌱 LINEAR GROWTH (Slope a > 0)</text>';
-      svg += '<text x="180" y="55" fill="#94a3b8" font-size="12" text-anchor="middle">h(t) = 1.75 + 0.5t (feet)</text>';
-
-      // Ground line
-      svg += '<line x1="50" y1="270" x2="310" y2="270" stroke="#475569" stroke-width="3"/>';
-
-      // Plant stem
-      var pPx = plantHeight * 30; // 30px per foot
-      svg += '<rect x="175" y="' + (270 - pPx) + '" width="10" height="' + pPx + '" fill="#10b981" rx="4"/>';
-      // Leaves
-      svg += '<circle cx="170" cy="' + (270 - pPx) + '" r="12" fill="#10b981"/>';
-      svg += '<circle cx="190" cy="' + (270 - pPx) + '" r="12" fill="#10b981"/>';
-      svg += '<text x="180" y="' + (270 - pPx - 16) + '" fill="#10b981" font-size="14" font-weight="800" text-anchor="middle">' + plantHeight.toFixed(2) + ' ft</text>';
-
-      // --- RIGHT SIDE: LINEAR DECAY (Water Tank) ---
-      svg += '<text x="540" y="35" fill="#ef4444" font-size="14" font-weight="800" text-anchor="middle">🚰 LINEAR DECAY (Slope a < 0)</text>';
-      svg += '<text x="540" y="55" fill="#94a3b8" font-size="12" text-anchor="middle">V(t) = 100 - 8t (litres)</text>';
-
-      // Tank outline
-      var tx = 480, ty = 90, tw = 120, th = 180;
-      svg += '<rect x="' + tx + '" y="' + ty + '" width="' + tw + '" height="' + th + '" fill="#090d16" stroke="#475569" stroke-width="3" rx="6"/>';
-
-      // Water fill
-      var wHeight = (tankWater / 100) * th;
-      svg += '<rect x="' + (tx + 3) + '" y="' + (ty + th - wHeight) + '" width="' + (tw - 6) + '" height="' + wHeight + '" fill="#38bdf8" opacity="0.6"/>';
-      svg += '<text x="' + (tx + tw/2) + '" y="' + (ty + th - wHeight - 10) + '" fill="#38bdf8" font-size="14" font-weight="800" text-anchor="middle">' + tankWater + ' L</text>';
-
-      svg += '</svg>';
-      document.getElementById('c4-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Elapsed Time t:</b> ${t} units</div>
-            <div><b>Plant Height h(t):</b> <span style="color:#10b981;font-weight:700;">${plantHeight.toFixed(2)} ft</span> (Growth: +0.5/t)</div>
-            <div><b>Tank Water V(t):</b> <span style="color:#ef4444;font-weight:700;">${tankWater} L</span> (Decay: -8/t)</div>
-            <div><b>Slope Contrast:</b> a = +0.5 vs a = -8</div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Growth vs Decay Comparison:</strong> The plant height exhibits <b>linear growth</b> because its slope a = +0.5 is positive. 
-          The water tank exhibits <b>linear decay</b> because its slope a = -8 is negative. Both follow the standard form y = ax + b!
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c4.t = 4; }
-      else if(idx === 1) { window.SIM_STATE.c4.t = 7; }
-      else if(idx === 2) { window.SIM_STATE.c4.t = 0; }
-      document.getElementById('c4-slider-t').value = window.SIM_STATE.c4.t;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 5: STRAIGHT-LINE SLOPE & INTERCEPT BENCH (pp. 31–36)
-  // -----------------------------------------------------------------------
-  c5: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">📈 Dynamic Straight-Line Slope & Intercept Bench</div>
-            <div style="font-size:13px;color:#94a3b8;">y = ax + b (Slope a, y-Intercept b)</div>
-          </div>
-          <div id="c5-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Slope (a = Rise / Run): <b id="c5-a-val" style="color:#38bdf8;">+2</b></label>
-              <input type="range" id="c5-slider-a" min="-5" max="5" value="2" step="0.5" style="width:100%;">
-            </div>
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">y-Intercept (b): <b id="c5-b-val" style="color:#f59e0b;">+3</b></label>
-              <input type="range" id="c5-slider-b" min="-6" max="6" value="3" step="0.5" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c5-slider-a').addEventListener('input', function(e) {
-        window.SIM_STATE.c5.a = parseFloat(e.target.value); self.render();
-      });
-      document.getElementById('c5-slider-b').addEventListener('input', function(e) {
-        window.SIM_STATE.c5.b = parseFloat(e.target.value); self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c5;
-      var W = 720, H = 340;
-      var cx = W / 2, cy = H / 2;
-      var scale = 22; // 22px per unit
-
-      var a = state.a, b = state.b;
-      document.getElementById('c5-a-val').textContent = (a >= 0 ? '+' : '') + a;
-      document.getElementById('c5-b-val').textContent = (b >= 0 ? '+' : '') + b;
-
-      // x-intercept root = -b/a (if a != 0)
-      var rootX = a !== 0 ? (-b / a) : null;
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Grid
-      for(var i = -15; i <= 15; i++) {
-        var gx = cx + i * scale;
-        var gy = cy + i * scale;
-        if(gx >= 0 && gx <= W) svg += '<line x1="' + gx + '" y1="0" x2="' + gx + '" y2="' + H + '" stroke="#334155" stroke-width="' + (i===0?2:0.5) + '"/>';
-        if(gy >= 0 && gy <= H) svg += '<line x1="0" y1="' + gy + '" x2="' + W + '" y2="' + gy + '" stroke="#334155" stroke-width="' + (i===0?2:0.5) + '"/>';
-      }
-
-      // Line y = ax + b
-      var xLeft = -15, yLeft = a * xLeft + b;
-      var xRight = 15, yRight = a * xRight + b;
-      var p1x = cx + xLeft * scale, p1y = cy - yLeft * scale;
-      var p2x = cx + xRight * scale, p2y = cy - yRight * scale;
-      svg += '<line x1="' + p1x + '" y1="' + p1y + '" x2="' + p2x + '" y2="' + p2y + '" stroke="#38bdf8" stroke-width="3.5"/>';
-
-      // y-intercept marker at (0, b)
-      var yintX = cx, yintY = cy - b * scale;
-      svg += '<circle cx="' + yintX + '" cy="' + yintY + '" r="7" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>';
-      svg += '<text x="' + (yintX + 12) + '" y="' + (yintY + 4) + '" fill="#f59e0b" font-weight="700" font-size="12">y-int (0, ' + b + ')</text>';
-
-      // x-intercept marker at (-b/a, 0)
-      if(rootX !== null && rootX >= -15 && rootX <= 15) {
-        var xintX = cx + rootX * scale, xintY = cy;
-        svg += '<circle cx="' + xintX + '" cy="' + xintY + '" r="7" fill="#10b981" stroke="#ffffff" stroke-width="2"/>';
-        svg += '<text x="' + xintX + '" y="' + (xintY + 20) + '" fill="#10b981" font-weight="700" font-size="12" text-anchor="middle">x-int (' + rootX.toFixed(2) + ', 0)</text>';
-      }
-
-      // Origin
-      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#ffffff"/>';
-
-      svg += '</svg>';
-      document.getElementById('c5-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Line Equation:</b> y = ${a}x + (${b})</div>
-            <div><b>Slope (Steepness):</b> a = ${a} (${a>0?'Rises ↗':a<0?'Falls ↘':'Horizontal —'})</div>
-            <div><b>y-Intercept:</b> (0, ${b})</div>
-            <div><b>x-Intercept (Root):</b> ${rootX !== null ? '(' + rootX.toFixed(2) + ', 0)' : 'None (Parallel to x-axis)'}</div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Slope-Intercept Verification:</strong> The line <em>y = ${a}x + ${b}</em> has slope <b>a = ${a}</b> and crosses the y-axis at <b>(0, ${b})</b>. 
-          ${b === 0 ? 'Since b = 0, the line passes directly through the origin (0, 0).' : 'The constant b = ' + b + ' shifts the line vertically by ' + Math.abs(b) + ' units.'}
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c5.a = 2; window.SIM_STATE.c5.b = 3; }
-      else if(idx === 1) { window.SIM_STATE.c5.a = -3; window.SIM_STATE.c5.b = 4; }
-      else if(idx === 2) { window.SIM_STATE.c5.a = 1.5; window.SIM_STATE.c5.b = 0; }
-      document.getElementById('c5-slider-a').value = window.SIM_STATE.c5.a;
-      document.getElementById('c5-slider-b').value = window.SIM_STATE.c5.b;
-      this.render();
-    }
-  },
-
-  // -----------------------------------------------------------------------
-  // LAB 6: PARALLEL FAMILIES & MATCHSTICK HEXAGONS (pp. 37–40)
-  // -----------------------------------------------------------------------
-  c6: {
-    init: function(container) {
-      container.innerHTML = `
-        <div style="background:#0f172a;border-radius:12px;padding:16px;color:#f8fafc;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-            <div style="font-weight:700;font-size:15px;color:#38bdf8;">🔷 Hexagon Matchstick Pattern & Parallel Lines Studio</div>
-            <div style="font-size:13px;color:#94a3b8;">M(n) = 5n + 1 (Ex 12) & Parallel Lines y = ax + b</div>
-          </div>
-          <div id="c6-svg-box" style="position:relative;background:#1e293b;border-radius:8px;border:1px solid #334155;overflow:hidden;"></div>
-          
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px;">
-            <div style="background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155;">
-              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px;">Matchstick Stage Number (n): <b id="c6-n-val" style="color:#38bdf8;">Stage 3</b></label>
-              <input type="range" id="c6-slider-n" min="1" max="6" value="3" step="1" style="width:100%;">
-            </div>
-          </div>
-        </div>
-      `;
-
-      var self = this;
-      document.getElementById('c6-slider-n').addEventListener('input', function(e) {
-        window.SIM_STATE.c6.matchN = parseInt(e.target.value);
-        self.render();
-      });
-
-      this.render();
-    },
-
-    render: function() {
-      var state = window.SIM_STATE.c6;
-      var W = 720, H = 340;
-      var n = state.matchN;
-      var totalSticks = 5 * n + 1;
-
-      document.getElementById('c6-n-val').textContent = 'Stage ' + n + ' (' + totalSticks + ' matchsticks)';
-
-      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="340" style="display:block;">';
-
-      // Chained regular hexagons
-      var r = 28; // radius
-      var dx = r * 1.5; // step between centers
-      var cy = 130;
-      var startX = (W - n * dx) / 2 + 10;
-
-      for(var i = 0; i < n; i++) {
-        var hx = startX + i * dx;
-        // Draw 6 edges as matchsticks
-        var pts = [];
-        for(var a = 0; a < 6; a++) {
-          var angle = (a * 60) * Math.PI / 180;
-          var px = hx + r * Math.cos(angle);
-          var py = cy + r * Math.sin(angle);
-          pts.push([px, py]);
-        }
-
-        // Polygon matchstick edges
-        for(var e = 0; e < 6; e++) {
-          var pA = pts[e], pB = pts[(e + 1) % 6];
-          var isShared = (i > 0 && e === 3); // Left edge of subsequent hexagon is shared
-          svg += '<line x1="' + pA[0] + '" y1="' + pA[1] + '" x2="' + pB[0] + '" y2="' + pB[1] + '" stroke="' + (isShared ? '#94a3b8' : '#f59e0b') + '" stroke-width="' + (isShared ? 2 : 4) + '"/>';
-          svg += '<circle cx="' + pA[0] + '" cy="' + pA[1] + '" r="3.5" fill="#ef4444"/>';
-        }
-        svg += '<text x="' + hx + '" y="' + (cy + 5) + '" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Hex ' + (i+1) + '</text>';
-      }
-
-      // Pattern formula banner
-      svg += '<rect x="80" y="220" width="' + (W - 160) + '" height="80" rx="10" fill="#090d16" stroke="#334155" stroke-width="2"/>';
-      svg += '<text x="' + (W/2) + '" y="250" fill="#f59e0b" font-size="16" font-weight="800" text-anchor="middle">Hexagon Progression Formula: M(n) = 5n + 1</text>';
-      svg += '<text x="' + (W/2) + '" y="280" fill="#ffffff" font-size="14" text-anchor="middle">Stage ' + n + ': M(' + n + ') = 5(' + n + ') + 1 = ' + totalSticks + ' matchsticks (Stage 15 = 76, 200 is impossible)</text>';
-
-      svg += '</svg>';
-      document.getElementById('c6-svg-box').innerHTML = svg;
-
-      var readout = document.getElementById('lab-readout');
-      if (readout) {
-        readout.innerHTML = `
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
-            <div><b>Current Stage (n):</b> ${n}</div>
-            <div><b>Number of Hexagons:</b> ${n}</div>
-            <div><b>Total Matchsticks:</b> <span style="color:#f59e0b;font-weight:700;">${totalSticks}</span></div>
-            <div><b>General Linear Rule:</b> M(n) = 5n + 1</div>
-          </div>
-        `;
-      }
-
-      var verdict = document.getElementById('lab-verdict');
-      if (verdict) {
-        verdict.innerHTML = `
-          <strong>Pattern Rule Verification:</strong> Stage 1 requires 6 matchsticks. Every new hexagon shares 1 edge with the preceding hexagon, adding exactly <b>5 new matchsticks</b> per stage. 
-          The formula is <b>M(n) = 5n + 1</b>. For 200 matchsticks: 5n + 1 = 200 => 5n = 199 => n = 39.8 (not an integer), proving 200 matchsticks cannot form a complete stage!
-        `;
-      }
-    },
-
-    setPreset: function(idx) {
-      if(idx === 0) { window.SIM_STATE.c6.matchN = 3; }
-      else if(idx === 1) { window.SIM_STATE.c6.matchN = 5; }
-      else if(idx === 2) { window.SIM_STATE.c6.matchN = 1; }
-      document.getElementById('c6-slider-n').value = window.SIM_STATE.c6.matchN;
-      this.render();
-    }
+// iemh102 labs: Introduction to Linear Polynomials.
+var App = window.App; var LAB = window.LAB; window.SIMS = {};
+function nM2(v, d){ var L = window.LAB; if(d !== undefined) return L.num(v, d); var a = Math.abs(v); if(Math.abs(a - Math.round(a)) < 1e-9) return L.num(v, 0); if(Math.abs(a * 10 - Math.round(a * 10)) < 1e-9) return L.num(v, 1); return L.num(v, 2); }
+function clampM2(x, a, b){ return Math.max(a, Math.min(b, x)); }
+function eqM2(a, b){
+  var A = Math.abs(a - 1) < 1e-9 ? "x" : Math.abs(a + 1) < 1e-9 ? "−x" : Math.abs(a) < 1e-9 ? "" : nM2(a) + "x";
+  if(A === "") return "y = " + nM2(b);
+  return "y = " + A + (Math.abs(b) > 1e-9 ? (b > 0 ? " + " : " − ") + nM2(Math.abs(b)) : "");
+}
+// Coordinate plane with separate x and y scales, centred in the 720-wide lab.
+function planeM2(L, v){
+  var C = L.C, ox = Math.round((720 - (v.xmax - v.xmin) * v.sx) / 2), oy = v.top || 16, m = "";
+  var X = function(x){ return ox + (x - v.xmin) * v.sx; }, Y = function(y){ return oy + (v.ymax - y) * v.sy; };
+  for(var x = v.xmin; x <= v.xmax; x++) m += L.line(X(x), Y(v.ymin), X(x), Y(v.ymax), C.grid, 1);
+  for(var y = v.ymin; y <= v.ymax; y++) m += L.line(X(v.xmin), Y(y), X(v.xmax), Y(y), C.grid, 1);
+  m += L.line(X(v.xmin), Y(0), X(v.xmax), Y(0), C.faint, 2) + L.line(X(0), Y(v.ymin), X(0), Y(v.ymax), C.faint, 2);
+  m += L.text(X(v.xmax) + 10, Y(0) + 4, "x", {size: 12, color: C.muted}) + L.text(X(0), Y(v.ymax) - 4, "y", {size: 12, color: C.muted});
+  for(var i = v.xmin; i <= v.xmax; i++) if(i && i % (v.xev || 2) === 0) m += L.text(X(i), Y(0) + 13, nM2(i), {size: 9, color: C.muted});
+  for(var j = v.ymin; j <= v.ymax; j++) if(j && j % (v.yev || 2) === 0) m += L.text(X(0) - 4, Y(j) + 3, nM2(j), {size: 9, color: C.muted, anchor: "end"});
+  return {svg: m, X: X, Y: Y, v: v, h: Math.round(oy + (v.ymax - v.ymin) * v.sy + 24)};
+}
+// The part of y = ax + b inside the plane, drawn up to fraction f of its length.
+function lineM2(L, P, a, b, color, w, f, label){
+  var v = P.v, pts = [];
+  [v.xmin, v.xmax].forEach(function(x){ var y = a * x + b; if(y >= v.ymin - 1e-9 && y <= v.ymax + 1e-9) pts.push([x, y]); });
+  if(Math.abs(a) > 1e-12) [v.ymin, v.ymax].forEach(function(y){ var x = (y - b) / a; if(x >= v.xmin - 1e-9 && x <= v.xmax + 1e-9) pts.push([x, y]); });
+  if(pts.length < 2) return "";
+  pts.sort(function(p, q){ return p[0] - q[0]; });
+  var p0 = pts[0], p1 = pts[pts.length - 1], k = f === undefined ? 1 : f, e = [p0[0] + (p1[0] - p0[0]) * k, p0[1] + (p1[1] - p0[1]) * k];
+  var m = L.line(P.X(p0[0]), P.Y(p0[1]), P.X(e[0]), P.Y(e[1]), color, w || 3), right = p1[0] >= v.xmax - 1e-6;
+  if(label && k >= 1) m += L.text(P.X(p1[0]) + (right ? -4 : 6), P.Y(p1[1]) + (p1[1] >= v.ymax - 1e-6 ? 14 : -6), label, {size: 12, color: color, anchor: right ? "end" : "start", weight: 700});
+  return m;
+}
+function dotM2(L, P, x, y, color, label, dx, dy){ return L.circle(P.X(x), P.Y(y), 4.5, color) + (label ? L.text(P.X(x) + (dx === undefined ? 7 : dx), P.Y(y) + (dy === undefined ? -7 : dy), label, {size: 11, color: color, anchor: "start", weight: 700}) : ""); }
+function sliderSetM2(L, st, defs){
+  L.controls(defs.map(function(d){ return L.slider(d[0], d[1], d[2], d[3], d[4], st[d[5]], nM2(st[d[5]])); }).join(""));
+  defs.forEach(function(d){ L.onInput(d[0], function(v){ st[d[5]] = v; L.setVal(d[0], nM2(v)); App.resetTimeline(); App.play(); }); });
+}
+
+// Lab 1 — Expressions and polynomials (Examples 1–3, degrees)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "raju", x: 3, y: 2, l: 10, w: 6, len: 7};
+  var DEF = {raju: [["m2x", "x (red boxes)", 0, 10, 1, "x"], ["m2y", "y (blue boxes)", 0, 10, 1, "y"]], garden: [["m2l", "l (length, m)", 2, 20, 1, "l"], ["m2w", "w (width, m)", 2, 15, 1, "w"]], wire: [["m2len", "x (length, cm)", 0.5, 9.5, 0.5, "len"]], degree: []};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.05, speed: 1});
+    L.legend({raju: [[C.danger, "red box: 4 pens"], [C.vel, "blue box: 5 pencils"], [C.path, "free pens"]], garden: [[C.danger, "wire fence, ₹100 per m"], [C.path, "wooden fence, ₹80 per m"], [C.ok, "seeds, ₹50 per m²"]], wire: [[C.path, "20 cm wire"], [C.danger, "the chosen length on the area curve"]], degree: [[C.path, "highest power"], [C.ok, "degree and name"]]}[id]);
+    L.watch({raju: "Example 1: x red boxes of 4 pens, y blue boxes of 5 pencils and 3 free pens. Change x and y.", garden: "Example 2: wire along both lengths, wood along both widths, and seeds over the whole area. Change l and w.", wire: "Example 3: a 20 cm wire bent into a rectangle. If the length is x cm, the width is (10 − x) cm.", degree: "Four polynomials from the text. The highest power of the variable names each one."}[id]);
+    sliderSetM2(L, st, DEF[id]);
+    L.restart(true);
   }
-};
+  function box(x, y, col, label){ return L.rect(x, y, 34, 30, col, ' rx="4" opacity="0.85"') + L.text(x + 17, y + 20, label, {size: 12, color: "#fff", weight: 700}); }
+  function draw(t){
+    var m = "", msg, k = Math.floor(clampM2(t, 0, 3) + 1e-9), i;
+    if(st.preset === "raju"){
+      var x = st.x, y = st.y, tot = 4 * x + 5 * y + 3;
+      for(i = 0; i < x; i++) m += box(30 + i * 42, 30, C.danger, "4");
+      for(i = 0; i < y; i++) m += box(30 + i * 42, 100, C.vel, "5");
+      for(i = 0; i < 3; i++) m += L.line(50 + i * 26, 180, 50 + i * 26, 222, C.path, 5);
+      m += L.text(500, 52, "4x = " + (4 * x), {size: 16, color: k >= 1 ? C.danger : C.faint, anchor: "start", weight: 700}) + L.text(500, 122, "5y = " + (5 * y), {size: 16, color: k >= 2 ? C.vel : C.faint, anchor: "start", weight: 700}) + L.text(500, 206, "+ 3 free pens", {size: 16, color: k >= 3 ? C.path : C.faint, anchor: "start", weight: 700});
+      L.svg(m, "Raju’s boxes of pens and pencils", 240);
+      L.readout([["Expression", "4x + 5y + 3"], ["Terms", "4x, 5y, 3"], ["Coefficients", "4 and 5; constant 3"], ["Total", t >= 3 ? String(tot) : "…", C.path]]);
+      msg = t < 3 ? "Adding the terms…" : "4x + 5y + 3 = 4 × " + x + " + 5 × " + y + " + 3 = <b>" + tot + " pens and pencils</b>.";
+    } else if(st.preset === "garden"){
+      var l = st.l, w = st.w, s = Math.min(400 / l, 210 / w), gx = 60, gy = 34, W = l * s, H = w * s, c1 = 200 * l, c2 = 160 * w, c3 = 50 * l * w;
+      m += L.rect(gx, gy, W, H, k >= 3 ? "rgba(52,211,153,0.35)" : "rgba(52,211,153,0.08)");
+      m += L.line(gx, gy, gx + W, gy, k >= 1 ? C.danger : C.faint, 5) + L.line(gx, gy + H, gx + W, gy + H, k >= 1 ? C.danger : C.faint, 5) + L.line(gx, gy, gx, gy + H, k >= 2 ? C.path : C.faint, 5) + L.line(gx + W, gy, gx + W, gy + H, k >= 2 ? C.path : C.faint, 5);
+      m += L.text(gx + W / 2, gy - 10, "l = " + l + " m", {size: 12, color: C.text}) + L.text(gx + W + 10, gy + H / 2, "w = " + w + " m", {size: 12, color: C.text, anchor: "start"});
+      m += L.text(610, 70, "200l = ₹" + c1, {size: 14, color: k >= 1 ? C.danger : C.faint, weight: 700}) + L.text(610, 110, "160w = ₹" + c2, {size: 14, color: k >= 2 ? C.path : C.faint, weight: 700}) + L.text(610, 150, "50lw = ₹" + c3, {size: 14, color: k >= 3 ? C.ok : C.faint, weight: 700});
+      L.svg(m, "Garden fencing and seeds", 270);
+      L.readout([["Expression", "200l + 160w + 50lw"], ["Variables", "l and w"], ["Coefficients", "200, 160, 50"], ["Total cost", t >= 3 ? "₹" + (c1 + c2 + c3) : "…", C.ok]]);
+      msg = t < 3 ? "Pricing each part…" : "Cost = 200 × " + l + " + 160 × " + w + " + 50 × " + l + " × " + w + " = <b>₹" + (c1 + c2 + c3) + "</b>.";
+    } else if(st.preset === "wire"){
+      var xl = st.len, wd = 10 - xl, sc = 22, ar = 10 * xl - xl * xl, pts = [], q;
+      m += L.rect(50, 40, xl * sc, wd * sc, C.area, ' stroke="' + C.path + '" stroke-width="4"');
+      m += L.text(50 + xl * sc / 2, 30, "x = " + nM2(xl) + " cm", {size: 12, color: C.text}) + L.text(58 + xl * sc, 40 + wd * sc / 2, "10 − x = " + nM2(wd) + " cm", {size: 12, color: C.text, anchor: "start"});
+      var g = L.graph({x0: 450, y0: 250, w: 240, h: 190, tmax: 10, vmin: 0, vmax: 25, tStep: 2, vStep: 5, tLabel: "length x (cm)", vLabel: "area (cm²)", tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return L.num(v, 0); }});
+      for(q = 0; q <= 40; q++){ var xx = q / 4; pts.push([xx, 10 * xx - xx * xx]); }
+      m += g.svg + L.polyline(g, pts, C.path, 2.5) + L.circle(g.X(xl), g.Y(ar), 6, C.danger);
+      L.svg(m, "Wire rectangle and its area", 290);
+      L.readout([["Length", nM2(xl) + " cm"], ["Width", nM2(wd) + " cm"], ["Area 10x − x²", nM2(ar) + " cm²", C.path], ["Perimeter", "20 cm"]]);
+      msg = t < 3 ? "Bending the wire…" : "Length " + nM2(xl) + " cm, width " + nM2(wd) + " cm: area = 10 × " + nM2(xl) + " − " + nM2(xl) + "² = <b>" + nM2(ar) + " cm²</b>. The largest area, 25 cm², comes from the square with x = 5.";
+    } else {
+      var rows = [["5y³ + y² + 2y − 1", "5y³", 3, "cubic"], ["x² + 5x + 1", "x²", 2, "quadratic"], ["3z + 7", "3z", 1, "linear"], ["8 = 8x⁰", "8x⁰", 0, "constant"]];
+      rows.forEach(function(r, n){
+        var on = t >= n * 0.75;
+        m += L.rect(30, 20 + n * 60, 660, 48, on ? "rgba(245,158,11,0.10)" : "rgba(148,163,184,0.05)", ' rx="8"') + L.text(50, 51 + n * 60, r[0], {size: 19, color: C.text, anchor: "start", mono: true});
+        if(on) m += L.text(330, 51 + n * 60, "highest power: " + r[1], {size: 14, color: C.path, anchor: "start"}) + L.text(675, 51 + n * 60, "degree " + r[2] + ", " + r[3], {size: 14, color: C.ok, anchor: "end", weight: 700});
+      });
+      L.svg(m, "Degrees of polynomials", 270);
+      L.readout(rows.map(function(r, n){ return [r[0], t >= n * 0.75 ? "degree " + r[2] : "…", C.ok]; }));
+      msg = t < 3 ? "Finding the highest powers…" : "Degrees 3, 2, 1 and 0 name the polynomials <b>cubic, quadratic, linear and constant</b>.";
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["raju", "Example 1: Raju’s boxes"], ["garden", "Example 2: the garden"], ["wire", "Example 3: wire rectangle"], ["degree", "Degrees of polynomials"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.terms = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-// Global control bindings
-window.initSimControls = function() {
-  var pBtn = document.getElementById('sim-btn-play');
-  var rBtn = document.getElementById('sim-btn-reset');
-  var sBtn = document.getElementById('sim-btn-step');
+// Lab 2 — Linear polynomials, a linear equation and function machines (§2.2)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "square", input: 4, xin: 6};
+  var MAXT = {square: 5, chess: 5, sum: 4, machine: 3, area: 3};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: MAXT[id], step: 0.05, speed: 1});
+    L.legend({square: [[C.vel, "square and its perimeter"], [C.path, "constant difference"]], chess: [[C.vel, "amount paid"], [C.path, "₹750"]], sum: [[C.vel, "x"], [C.path, "10 more"]], machine: [[C.vel, "input"], [C.path, "output"]], area: [[C.vel, "input"], [C.path, "output"]]}[id]);
+    L.watch({square: "Example 4: sides 1, 1.5, 2, 2.5 and 3 cm. Watch the perimeter 4x change by equal amounts.", chess: "Example 5: ₹200 joining fee plus ₹50 per match. Where does ₹750 come?", sum: "Example 6: the sum of two numbers is 64 and one is 10 more than the other.", machine: "Fig. 2.3: the machine 2x + 3. Change the input.", area: "Think and Reflect: the wire-rectangle area 10x − x² as a machine. Input the length."}[id]);
+    if(id === "machine") sliderSetM2(L, st, [["m2in", "input x", -10, 10, 1, "input"]]);
+    else if(id === "area") sliderSetM2(L, st, [["m2ain", "input x (cm)", 0, 10, 0.5, "xin"]]);
+    else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "square"){
+      var sides = [1, 1.5, 2, 2.5, 3], n = Math.min(5, Math.floor(t + 1e-9) + 1), x = 40;
+      sides.forEach(function(s, i){
+        var px = s * 40, on = i < n;
+        m += L.rect(x, 170 - px, px, px, on ? "rgba(56,189,248,0.25)" : "none", ' stroke="' + (on ? C.vel : C.faint) + '" stroke-width="2"');
+        m += L.text(x + px / 2, 192, "side " + nM2(s) + " cm", {size: 11, color: C.muted}) + (on ? L.text(x + px / 2, 214, "P = " + nM2(4 * s) + " cm", {size: 13, color: C.vel, weight: 700}) : "");
+        if(i > 0 && on) m += L.text(x - 18, 240, "+2", {size: 13, color: C.path, weight: 700});
+        x += px + 36;
+      });
+      L.svg(m, "Perimeters of squares", 255);
+      L.readout([["Rule", "P = 4x"], ["Perimeters", sides.slice(0, n).map(function(s){ return nM2(4 * s); }).join(", ") + " cm"], ["Difference", n > 1 ? "2 cm each step" : "…", C.path]]);
+      msg = t < 5 ? "Growing the side by 0.5 cm…" : "Perimeters 4, 6, 8, 10, 12 cm: each 0.5 cm added to the side adds <b>2 cm</b> to the perimeter.";
+    } else if(st.preset === "chess"){
+      var g = L.graph({x0: 90, y0: 250, w: 560, h: 200, tmax: 12, vmin: 0, vmax: 800, tStep: 1, vStep: 100, tLabel: "matches played m", vLabel: "amount paid (₹)", tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return L.num(v, 0); }});
+      var shown = Math.min(11, Math.floor(t / 5 * 11 + 1e-9));
+      m += g.svg;
+      for(var i = 1; i <= shown; i++){ var val = 200 + 50 * i; m += L.rect(g.X(i) - 12, g.Y(val), 24, g.Y(0) - g.Y(val), i === 11 ? C.path : C.vel, ' opacity="0.8"'); }
+      if(t >= 5) m += L.line(g.X(0), g.Y(750), g.X(11), g.Y(750), C.path, 1.5, "5 4") + L.text(g.X(11), g.Y(750) - 8, "₹750", {size: 12, color: C.path, weight: 700});
+      L.svg(m, "Chess club fees", 290);
+      L.readout([["Rule", "₹(200 + 50m)"], ["Bars shown", shown ? "m = 1 to " + shown : "…"], ["Step", "₹50 per match", C.vel], ["₹750 pays for", t >= 5 ? "11 matches" : "…", C.path]]);
+      msg = t < 5 ? "Adding matches…" : "Each extra match adds <b>₹50</b>. A player who paid ₹750 played (750 − 200) ÷ 50 = <b>11 matches</b>.";
+    } else if(st.preset === "sum"){
+      var steps = ["x + (x + 10) = 64", "2x + 10 = 64", "2x = 54", "x = 27"], k2 = Math.min(4, Math.floor(t + 1e-9) + 1), sc = 7, bx = 40;
+      m += L.rect(bx, 40, 27 * sc, 34, C.vel, ' rx="4"') + L.text(bx + 27 * sc / 2, 62, k2 >= 4 ? "27" : "x", {size: 13, color: "#fff", weight: 700});
+      m += L.rect(bx, 90, 27 * sc, 34, C.vel, ' rx="4"') + L.rect(bx + 27 * sc, 90, 10 * sc, 34, C.path, ' rx="4"') + L.text(bx + 27 * sc / 2, 112, k2 >= 4 ? "27" : "x", {size: 13, color: "#fff", weight: 700}) + L.text(bx + 32 * sc, 112, "10", {size: 13, color: "#111", weight: 700});
+      m += L.text(bx + 18 * sc, 150, "smaller + larger = 64", {size: 12, color: C.muted});
+      steps.slice(0, k2).forEach(function(s, n){ m += L.text(560, 50 + n * 38, s, {size: 16, color: n === k2 - 1 ? C.path : C.text, weight: 700, mono: true}); });
+      L.svg(m, "Two numbers with sum 64", 200);
+      L.readout([["Smaller", k2 >= 4 ? "27" : "x", C.vel], ["Larger", k2 >= 4 ? "37" : "x + 10", C.path], ["Sum", "64"]]);
+      msg = t < 4 ? "Solving step by step…" : "x = 27, so the numbers are <b>27 and 37</b> (27 + 37 = 64).";
+    } else {
+      var isA = st.preset === "area", xin = isA ? st.xin : st.input, out = isA ? 10 * xin - xin * xin : 2 * xin + 3, f = clampM2(t / 3, 0, 1);
+      m += L.rect(250, 60, 220, 120, "rgba(167,139,250,0.18)", ' rx="16" stroke="' + C.disp + '" stroke-width="3"') + L.text(360, 116, isA ? "10x − x²" : "2x + 3", {size: 26, color: C.text, weight: 700, mono: true}) + L.text(360, 156, "function machine", {size: 12, color: C.muted});
+      m += L.arrow(70, 120, 245, 120, C.vel, 3) + L.arrow(475, 120, 650, 120, C.path, 3) + L.text(70, 100, "input x = " + nM2(xin), {size: 15, color: C.vel, anchor: "start", weight: 700});
+      if(f >= 1) m += L.text(650, 100, "output " + nM2(out), {size: 15, color: C.path, anchor: "end", weight: 700});
+      var bxp = f < 0.5 ? 70 + 175 * (f / 0.5) : 475 + 175 * ((f - 0.5) / 0.5);
+      m += L.circle(bxp, 120, 10, f < 0.5 ? C.vel : C.path);
+      L.svg(m, "Function machine", 210);
+      var sub = isA ? "10 × " + nM2(xin) + " − " + nM2(xin) + "²" : "2 × " + (xin < 0 ? "(" + nM2(xin) + ")" : nM2(xin)) + " + 3";
+      L.readout([["Input", nM2(xin), C.vel], ["Substitute", sub], ["Output", f >= 1 ? nM2(out) + (isA ? " cm²" : "") : "…", C.path]]);
+      msg = t < 3 ? "Processing the input…" : sub + " = <b>" + nM2(out) + (isA ? " cm²" : "") + "</b>" + (isA ? ": a quadratic function of x." : ": a linear function of x.");
+    }
+    L.verdict(msg);
+  }
+  function mount(){ L.presets([["square", "Example 4: square perimeters"], ["chess", "Example 5: chess club"], ["sum", "Example 6: sum 64"], ["machine", "Fig. 2.3: machine 2x + 3"], ["area", "Think and Reflect: area machine"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.linear = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-  if(pBtn) {
-    pBtn.onclick = function() {
-      window.SIM_STATE.isPlaying = !window.SIM_STATE.isPlaying;
-      pBtn.textContent = window.SIM_STATE.isPlaying ? '⏸ Pause' : '▶ Play';
-      if(window.SIM_STATE.isPlaying) {
-        window.SIM_STATE.timer = setInterval(function() {
-          var cid = window.SIM_STATE.currentConcept;
-          if(cid === 'c2') {
-            window.SIM_STATE.c2.x = (window.SIM_STATE.c2.x + 1) > 5 ? -5 : window.SIM_STATE.c2.x + 1;
-            var sl = document.getElementById('c2-slider-x'); if(sl) sl.value = window.SIM_STATE.c2.x;
-            window.SIM_ENGINES.c2.render();
-          } else if(cid === 'c3') {
-            window.SIM_STATE.c3.months = (window.SIM_STATE.c3.months + 1) > 12 ? 0 : window.SIM_STATE.c3.months + 1;
-            var sl3 = document.getElementById('c3-slider-n'); if(sl3) sl3.value = window.SIM_STATE.c3.months;
-            window.SIM_ENGINES.c3.render();
-          } else if(cid === 'c4') {
-            window.SIM_STATE.c4.t = (window.SIM_STATE.c4.t + 1) > 10 ? 0 : window.SIM_STATE.c4.t + 1;
-            var sl4 = document.getElementById('c4-slider-t'); if(sl4) sl4.value = window.SIM_STATE.c4.t;
-            window.SIM_ENGINES.c4.render();
-          } else if(cid === 'c5') {
-            window.SIM_STATE.c5.b = (window.SIM_STATE.c5.b + 1) > 6 ? -6 : window.SIM_STATE.c5.b + 1;
-            var sl5 = document.getElementById('c5-slider-b'); if(sl5) sl5.value = window.SIM_STATE.c5.b;
-            window.SIM_ENGINES.c5.render();
-          } else if(cid === 'c6') {
-            window.SIM_STATE.c6.matchN = (window.SIM_STATE.c6.matchN + 1) > 6 ? 1 : window.SIM_STATE.c6.matchN + 1;
-            var sl6 = document.getElementById('c6-slider-n'); if(sl6) sl6.value = window.SIM_STATE.c6.matchN;
-            window.SIM_ENGINES.c6.render();
-          }
-        }, 1000 / window.SIM_STATE.speed);
-      } else {
-        clearInterval(window.SIM_STATE.timer);
+// Lab 3 — Linear patterns (§2.3: Fig. 2.4, Examples 7–8)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "tiles"};
+  var MAXT = {tiles: 7, bela: 5, auto: 5};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: MAXT[id], step: 0.05, speed: 1});
+    L.legend({tiles: [["#fb923c", "square tile"]], bela: [[C.danger, "money left"], [C.path, "day 12"], [C.vel, "day 15"]], auto: [[C.danger, "fare"], [C.vel, "9 km"], [C.path, "10 km"]]}[id]);
+    L.watch({tiles: "Fig. 2.4: each stage adds one tile to each column. Count the tiles in Stages 1 to 7.", bela: "Example 7: Bela starts with ₹100 and spends ₹5 every day.", auto: "Example 8: ₹25 covers the first 2 km; each further km adds ₹15."}[id]);
+    L.controls(""); L.restart(true);
+  }
+  function draw(t){
+    var m = "", msg;
+    if(st.preset === "tiles"){
+      var n = clampM2(Math.floor(t + 1e-9) + 1, 1, 7), sz = 17, x = 24, base = 230;
+      for(var s = 1; s <= 7; s++){
+        var on = s <= n, fill = on ? "rgba(251,146,60,0.75)" : "none", edge = ' stroke="' + (on ? "#9a3412" : C.faint) + '" stroke-width="1"';
+        for(var r = 0; r < s; r++) m += L.rect(x + sz, base - (r + 1) * sz, sz, sz, fill, edge);
+        for(var r2 = 0; r2 < s - 1; r2++) m += L.rect(x, base - (r2 + 1) * sz, sz, sz, fill, edge);
+        m += L.text(x + sz, base + 16, "Stage " + s, {size: 10, color: C.muted}) + (on ? L.text(x + sz, base + 32, (2 * s - 1) + " tiles", {size: 11, color: C.path, weight: 700}) : "");
+        x += 2 * sz + 60;
       }
-    };
+      L.svg(m, "Growing pattern of square tiles", 280);
+      var seq = []; for(var q = 1; q <= n; q++) seq.push(2 * q - 1);
+      L.readout([["Tiles", seq.join(", "), C.path], ["Difference", "2"], ["Stage n", "2n − 1"], ["Stage 15 / Stage 26", t >= 7 ? "29 / 51 tiles" : "…"]]);
+      msg = t < 7 ? "Adding two tiles per stage…" : "Stage 7 has <b>13 tiles</b>. Stage n has 2n − 1 tiles, so Stage 15 has 29 and the stage with 47 tiles is Stage 24.";
+    } else if(st.preset === "bela"){
+      var g = L.graph({x0: 80, y0: 250, w: 580, h: 200, tmax: 20, vmin: 0, vmax: 100, tStep: 2, vStep: 20, tLabel: "day n", vLabel: "money left (₹)", tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return L.num(v, 0); }});
+      var dmax = clampM2(t / 5, 0, 1) * 20, dn = Math.floor(dmax + 1e-9);
+      m += g.svg + L.polyline(g, [[0, 100], [dmax, 100 - 5 * dmax]], C.danger, 3);
+      for(var d = 0; d <= dn; d++) m += L.circle(g.X(d), g.Y(100 - 5 * d), d === 12 || d === 15 ? 6 : 3.5, d === 12 ? C.path : d === 15 ? C.vel : C.danger);
+      if(t >= 5) m += L.text(g.X(12) + 8, g.Y(40) - 8, "day 12: ₹40", {size: 12, color: C.path, anchor: "start", weight: 700}) + L.text(g.X(15) + 8, g.Y(25) - 8, "day 15: ₹25", {size: 12, color: C.vel, anchor: "start", weight: 700});
+      L.svg(m, "Bela’s pocket money", 290);
+      L.readout([["Rule", "₹(100 − 5n)"], ["Day", String(dn)], ["Money left", "₹" + (100 - 5 * dn), C.danger], ["Runs out", t >= 5 ? "after 20 days" : "…"]]);
+      msg = t < 5 ? "Spending ₹5 a day…" : "Bela has ₹40 left on day 12 and ₹25 on day 15; the money lasts <b>20 days</b>.";
+    } else {
+      var g2 = L.graph({x0: 80, y0: 250, w: 580, h: 200, tmax: 11, vmin: 0, vmax: 160, tStep: 1, vStep: 20, tLabel: "distance n (km)", vLabel: "fare (₹)", tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return L.num(v, 0); }});
+      var km = Math.min(10, Math.floor(clampM2(t / 5, 0, 1) * 10 + 1e-9));
+      m += g2.svg;
+      for(var k = 1; k <= km; k++){ var fare = k <= 2 ? 25 : 15 * k - 5; m += L.rect(g2.X(k) - 14, g2.Y(fare), 28, g2.Y(0) - g2.Y(fare), k === 9 ? C.vel : k === 10 ? C.path : C.danger, ' opacity="0.8"') + L.text(g2.X(k), g2.Y(fare) - 5, String(fare), {size: 10, color: C.text}); }
+      L.svg(m, "Auto-rickshaw fares", 290);
+      L.readout([["Rule (n ≥ 2 km)", "25 + 15(n − 2) = 15n − 5"], ["Distance", km + " km"], ["Fare", km ? "₹" + (km <= 2 ? 25 : 15 * km - 5) : "…", C.path], ["₹130 pays for", t >= 5 ? "9 km" : "…", C.vel]]);
+      msg = t < 5 ? "Adding kilometres…" : "10 km costs 25 + 15 × 8 = <b>₹145</b>; a fare of ₹130 pays for 9 km.";
+    }
+    L.verdict(msg);
   }
+  function mount(){ L.presets([["tiles", "Fig. 2.4: square tiles"], ["bela", "Example 7: Bela’s money"], ["auto", "Example 8: auto fare"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.patterns = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-  if(rBtn) {
-    rBtn.onclick = function() {
-      clearInterval(window.SIM_STATE.timer);
-      window.SIM_STATE.isPlaying = false;
-      if(pBtn) pBtn.textContent = '▶ Play';
-      var cid = window.SIM_STATE.currentConcept;
-      if(window.SIM_ENGINES[cid] && window.SIM_ENGINES[cid].setPreset) {
-        window.SIM_ENGINES[cid].setPreset(0);
-      }
-    };
+// Lab 4 — Linear growth and decay (§2.4, Exercise Set 2.4)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "journey"};
+  var CFG = {
+    journey: {f: function(x){ return 100 + 60 * x; }, tmax: 15, vmax: 1000, tStep: 1, vStep: 100, tl: "distance d (km)", vl: "cost C (₹)", rule: "C(d) = 100 + 60d", col: "ok", kind: "growth: +₹60 per km", unit: ["₹", ""]},
+    tank: {f: function(x){ return 3 - 0.5 * x; }, tmax: 6, vmax: 3, tStep: 1, vStep: 0.5, tl: "month t", vl: "height h (m)", rule: "h(t) = 3 − 0.5t", col: "vel", kind: "decay: −0.5 m per month", unit: ["", " m"]},
+    plant: {f: function(x){ return 1.75 + 0.5 * x; }, tmax: 10, vmax: 7, tStep: 1, vStep: 1, tl: "month t", vl: "height h (ft)", rule: "h = 1.75 + 0.5t", col: "ok", kind: "growth: +0.5 ft per month", unit: ["", " ft"]},
+    phone: {f: function(x){ return 10000 - 800 * x; }, tmax: 8, vmax: 10000, tStep: 1, vStep: 2000, tl: "year t", vl: "value v (₹)", rule: "v = 10000 − 800t", col: "danger", kind: "decay: −₹800 per year", unit: ["₹", ""]}
+  };
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 4, step: 0.04, speed: 1});
+    L.legend([[C[CFG[id].col], CFG[id].rule]]);
+    L.watch({journey: "Example 9: every kilometre adds the same ₹60 to the cost.", tank: "Example 10: every month the water level drops by the same 0.5 m.", plant: "Exercise Set 2.4 Q1: a 1.75 ft plant grows 0.5 ft each month.", phone: "Exercise Set 2.4 Q2: a ₹10,000 phone loses ₹800 of value each year."}[id]);
+    L.controls(""); L.restart(true);
   }
-
-  if(sBtn) {
-    sBtn.onclick = function() {
-      var cid = window.SIM_STATE.currentConcept;
-      if(cid === 'c3') {
-        window.SIM_STATE.c3.months = (window.SIM_STATE.c3.months + 1) > 12 ? 0 : window.SIM_STATE.c3.months + 1;
-        var sl = document.getElementById('c3-slider-n'); if(sl) sl.value = window.SIM_STATE.c3.months;
-        window.SIM_ENGINES.c3.render();
-      } else if(cid === 'c6') {
-        window.SIM_STATE.c6.matchN = (window.SIM_STATE.c6.matchN + 1) > 6 ? 1 : window.SIM_STATE.c6.matchN + 1;
-        var sl6 = document.getElementById('c6-slider-n'); if(sl6) sl6.value = window.SIM_STATE.c6.matchN;
-        window.SIM_ENGINES.c6.render();
-      }
-    };
+  function draw(t){
+    var c = CFG[st.preset], col = C[c.col], xnow = clampM2(t / 4, 0, 1) * c.tmax, tank = st.preset === "tank", m;
+    var g = L.graph({x0: tank ? 320 : 100, y0: 255, w: tank ? 360 : 570, h: 210, tmax: c.tmax, vmin: 0, vmax: c.vmax, tStep: c.tStep, vStep: c.vStep, tLabel: c.tl, vLabel: c.vl, tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return nM2(v); }});
+    m = g.svg + L.polyline(g, [[0, c.f(0)], [xnow, c.f(xnow)]], col, 3);
+    var tt = Math.floor(xnow + 1e-9);
+    for(var i = 0; i <= tt; i++) m += L.circle(g.X(i), g.Y(c.f(i)), 4, col);
+    if(tank){ var hh = c.f(xnow); m += L.rect(70, 45, 150, 210, "none", ' stroke="' + C.faint + '" stroke-width="3"') + L.rect(72, 45 + 210 * (1 - hh / 3), 146, 210 * hh / 3, "rgba(56,189,248,0.45)") + L.text(145, 276, "h = " + nM2(hh, 2) + " m", {size: 13, color: C.vel, weight: 700}); }
+    L.svg(m, c.rule, 300);
+    L.readout([["Rule", c.rule], [c.tl, String(tt)], [c.vl, c.unit[0] + nM2(c.f(tt)) + c.unit[1], col], ["Linear", c.kind]]);
+    L.verdict(t < 4 ? "Stepping through equal intervals…" : {journey: "15 km costs 100 + 60 × 15 = <b>₹1000</b>, and ₹700 buys (700 − 100) ÷ 60 = 10 km. Equal rises of ₹60: linear growth.", tank: "After 5 months the water is 3 − 0.5 × 5 = <b>0.5 m</b> deep, and the tank is empty at 6 months. Equal falls of 0.5 m: linear decay.", plant: "After 7 months the plant is 1.75 + 0.5 × 7 = <b>5.25 ft</b> tall. Equal rises of 0.5 ft: linear growth.", phone: "After 3 years the phone is worth 10000 − 800 × 3 = <b>₹7600</b>. Equal falls of ₹800: linear decay."}[st.preset]);
   }
+  function mount(){ L.presets([["journey", "Example 9: journey cost"], ["tank", "Example 10: water tank"], ["plant", "Set 2.4 Q1: plant"], ["phone", "Set 2.4 Q2: phone value"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.growth = {mount: mount, draw: draw, select: select, state: st};
+})();
 
-  // Presets
-  var p0 = document.getElementById('sim-preset-0');
-  var p1 = document.getElementById('sim-preset-1');
-  var p2 = document.getElementById('sim-preset-2');
-  if(p0) p0.onclick = function() { var cid = window.SIM_STATE.currentConcept; if(window.SIM_ENGINES[cid]) window.SIM_ENGINES[cid].setPreset(0); };
-  if(p1) p1.onclick = function() { var cid = window.SIM_STATE.currentConcept; if(window.SIM_ENGINES[cid]) window.SIM_ENGINES[cid].setPreset(1); };
-  if(p2) p2.onclick = function() { var cid = window.SIM_STATE.currentConcept; if(window.SIM_ENGINES[cid]) window.SIM_ENGINES[cid].setPreset(2); };
-};
-
-// Mount active lab
-window.mountSimulation = function(conceptId, container) {
-  window.SIM_STATE.currentConcept = conceptId;
-  clearInterval(window.SIM_STATE.timer);
-  window.SIM_STATE.isPlaying = false;
-  var engine = window.SIM_ENGINES[conceptId];
-  if (engine && engine.init) {
-    engine.init(container);
-    window.initSimControls();
+// Lab 5 — Finding y = ax + b from two observations (§2.5)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "telecom"};
+  var CFG = {
+    telecom: {p: [10, 350], q: [20, 550], tmax: 25, vmin: 0, vmax: 700, tStep: 5, vStep: 100, tl: "data x (GB)", vl: "bill y (₹)", eq: "y = 20x + 150"},
+    modules: {p: [10, 400], q: [14, 500], tmax: 20, vmin: 0, vmax: 700, tStep: 2, vStep: 100, tl: "modules x", vl: "bill y (₹)", eq: "y = 25x + 150"},
+    gym: {p: [10, 800], q: [15, 1100], tmax: 20, vmin: 0, vmax: 1400, tStep: 2, vStep: 200, tl: "court hours x", vl: "bill y (₹)", eq: "y = 60x + 200"},
+    temp: {p: [32, 0], q: [212, 100], tmax: 240, vmin: -20, vmax: 120, tStep: 40, vStep: 20, tl: "temperature (°F)", vl: "temperature (°C)", eq: "°C = (5/9)(°F − 32)"}
+  };
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.04, speed: 1});
+    L.legend([[C.vel, "observations"], [C.path, "line through them"], [C.ok, "y-intercept b"]]);
+    L.watch({telecom: "Example 11: ₹350 for 10 GB and ₹550 for 20 GB.", modules: "Exercise Set 2.5 Q1: ₹400 for 10 modules and ₹500 for 14.", gym: "Exercise Set 2.5 Q2: ₹800 for 10 hours and ₹1100 for 15 hours.", temp: "Exercise Set 2.5 Q3: ice melts at 32 °F = 0 °C and water boils at 212 °F = 100 °C."}[id]);
+    L.controls(""); L.restart(true);
   }
-};
+  function draw(t){
+    var c = CFG[st.preset], a = (c.q[1] - c.p[1]) / (c.q[0] - c.p[0]), b = c.p[1] - a * c.p[0], temp = st.preset === "temp", m;
+    var g = L.graph({x0: 100, y0: 260, w: 560, h: 220, tmax: c.tmax, vmin: c.vmin, vmax: c.vmax, tStep: c.tStep, vStep: c.vStep, tLabel: c.tl, vLabel: c.vl, tFmt: function(v){ return L.num(v, 0); }, vFmt: function(v){ return L.num(v, 0); }});
+    m = g.svg;
+    [c.p, c.q].forEach(function(pt, i){ if(t >= 0.3 + i * 0.6) m += L.circle(g.X(pt[0]), g.Y(pt[1]), 6, C.vel) + L.text(g.X(pt[0]) + 8, g.Y(pt[1]) + 18, "(" + pt[0] + ", " + pt[1] + ")", {size: 11, color: C.vel, anchor: "start", weight: 700}); });
+    if(t >= 1.5){ var f = clampM2((t - 1.5) / 1.5, 0, 1); m += L.polyline(g, [[0, b], [c.tmax * f, b + a * c.tmax * f]], C.path, 3); }
+    if(t >= 3) m += L.circle(g.X(0), g.Y(b), 6, C.ok) + L.text(g.X(0) + 10, g.Y(b) - 8, "b = " + nM2(b, temp ? 2 : 0), {size: 12, color: C.ok, anchor: "start", weight: 700});
+    L.svg(m, "Two observations fix a line", 300);
+    var aTxt = temp ? "100 ÷ 180 = 5/9" : "(" + c.q[1] + " − " + c.p[1] + ") ÷ (" + c.q[0] + " − " + c.p[0] + ") = " + nM2(a);
+    var bTxt = temp ? "0 − (5/9) × 32 = −160/9 ≈ −17.78" : c.p[1] + " − " + c.p[0] + " × " + nM2(a) + " = " + nM2(b);
+    L.readout([["Observations", "(" + c.p.join(", ") + ") and (" + c.q.join(", ") + ")", C.vel], ["a", t >= 2 ? aTxt : "…", C.path], ["b", t >= 3 ? bTxt : "…", C.ok]]);
+    L.verdict(t < 3 ? "Fitting the line…" : "a = " + aTxt + " and b = " + bTxt + ", so <b>" + c.eq + "</b>.");
+  }
+  function mount(){ L.presets([["telecom", "Example 11: data plan"], ["modules", "Set 2.5 Q1: modules"], ["gym", "Set 2.5 Q2: gym"], ["temp", "Set 2.5 Q3: °C and °F"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.relation = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 6 — Graphs and slope (§2.6: Fig. 2.5, Examples 12–15)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "fig25", a: 1.5};
+  var V = {xmin: -6, xmax: 6, ymin: -13, ymax: 13, sx: 26, sy: 11, top: 14, xev: 2, yev: 2};
+  var SETS = {
+    fig25: {pts: [[0, 1, "A (0, 1)"], [3, 7, "B (3, 7)"], [1, 3, "(1, 3)"], [2, 5, "(2, 5)"]], lines: [[2, 1, "y = 2x + 1"]]},
+    ex12: {pts: [[-1, -3, "(−1, −3)"], [0, 0, "(0, 0)"], [1, 3, "(1, 3)"], [3, 9, "(3, 9)"], [4, 12, "(4, 12)"]], lines: [[3, 0, "y = 3x"]]},
+    ex13: {pts: [[-3, 6, "(−3, 6)"], [-2, 4, "(−2, 4)"], [0, 0, "(0, 0)"], [1, -2, "(1, −2)"], [2, -4, "(2, −4)"], [3, -6, "(3, −6)"]], lines: [[-2, 0, "y = −2x"]]},
+    fig29: {pts: [], lines: [[0.5, 0, "y = ½x"], [1, 0, "y = x"], [2, 0, "y = 2x"]]},
+    fig211: {pts: [], lines: [[-1 / 3, 0, "y = −⅓x"], [-1, 0, "y = −x"], [-3, 0, "y = −3x"]]}
+  };
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.04, speed: 1});
+    L.legend(id === "explore" ? [[C.faint, "y = x for comparison"], [C.vel, "y = ax"]] : [[C.text, "plotted points"], [C.vel, "line"]]);
+    L.watch({fig25: "Fig. 2.5: two points A and B fix the line y = 2x + 1; other points on it satisfy the equation.", ex12: "Example 12: five points on one straight line. What rule connects x and y?", ex13: "Example 13: six points on a line through the origin that falls.", fig29: "Figs. 2.8–2.9: y = ½x, y = x and y = 2x on the same axes.", fig211: "Figs. 2.10–2.11: y = −⅓x, y = −x and y = −3x on the same axes.", explore: "Change a and compare y = ax with y = x."}[id]);
+    if(id === "explore") sliderSetM2(L, st, [["m2a", "slope a", -4, 4, 0.5, "a"]]);
+    else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var P = planeM2(L, V), m = P.svg, ex = st.preset === "explore", s = ex ? {pts: [], lines: [[1, 0, "y = x"], [st.a, 0, eqM2(st.a, 0)]]} : SETS[st.preset], cols = [C.vel, C.path, C.acc], msg;
+    var np = s.pts.length, tp = np ? 1.2 : 0;
+    s.pts.forEach(function(p, i){ if(t >= tp * i / np) m += dotM2(L, P, p[0], p[1], C.text, p[2]); });
+    s.lines.forEach(function(ln, i){ var f = clampM2((t - tp - i * 0.6) / 0.6, 0, 1); if(f > 0) m += lineM2(L, P, ln[0], ln[1], ex && i === 0 ? C.faint : cols[i % 3], 3, f, ln[2]); });
+    L.svg(m, "Graphs of straight lines", P.h);
+    var done = t >= 3;
+    if(st.preset === "fig25"){ L.readout([["Line", "y = 2x + 1"], ["Two points", "A (0, 1), B (3, 7)"], ["Check (7, 15)", "2 × 7 + 1 = 15"]]); msg = "A (0, 1) and B (3, 7) fix the line <b>y = 2x + 1</b>; (1, 3), (2, 5) and (7, 15) also satisfy it."; }
+    else if(st.preset === "ex12"){ L.readout([["Rule", "y = 3 × x"], ["Slope", "3"], ["Through origin", "yes"]]); msg = "Every y-coordinate is 3 times the x-coordinate, so the line is <b>y = 3x</b>."; }
+    else if(st.preset === "ex13"){ L.readout([["Rule", "y = −2 × x"], ["Slope", "−2"], ["Direction", "falls"]]); msg = "Every y-coordinate is −2 times the x-coordinate, so the line is <b>y = −2x</b>, falling from left to right."; }
+    else if(st.preset === "fig29"){ L.readout([["Slopes", "½, 1, 2"], ["All pass through", "(0, 0)"], ["Steepest", "y = 2x", C.acc]]); msg = "All three pass through the origin and rise. <b>y = 2x is the steepest</b> (a greater than 1) and y = ½x the least steep (a less than 1)."; }
+    else if(st.preset === "fig211"){ L.readout([["Slopes", "−⅓, −1, −3"], ["All pass through", "(0, 0)"], ["Steepest", "y = −3x", C.acc]]); msg = "All three pass through the origin and fall. <b>y = −3x falls most steeply</b> and y = −⅓x falls most gently."; }
+    else {
+      var a = st.a, dir = a > 0 ? "rises" : a < 0 ? "falls" : "is flat (it is the x-axis)", steep = Math.abs(Math.abs(a) - 1) < 1e-9 ? "exactly as steeply as y = x" : Math.abs(a) > 1 ? "more steeply than y = x" : "less steeply than y = x";
+      L.readout([["Equation", eqM2(a, 0)], ["Slope a", nM2(a), C.vel], ["Direction", a > 0 ? "rises" : a < 0 ? "falls" : "flat"]]);
+      msg = eqM2(a, 0) + " passes through the origin and <b>" + dir + "</b>" + (a ? ", " + steep : "") + ".";
+    }
+    L.verdict(done ? msg : "Plotting…");
+  }
+  function mount(){ L.presets([["fig25", "Fig. 2.5: y = 2x + 1"], ["ex12", "Example 12"], ["ex13", "Example 13"], ["fig29", "Fig. 2.9: a > 0"], ["fig211", "Fig. 2.11: a < 0"], ["explore", "Explore: change a"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.slope = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// Lab 7 — y-intercept and parallel lines (§2.6: Example 16, Figs. 2.12–2.14)
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "mirror", a: 2, b: 1};
+  var V = {xmin: -6, xmax: 6, ymin: -10, ymax: 12, sx: 26, sy: 12, top: 14, xev: 2, yev: 2};
+  var SETS = {mirror: [[3, 1, "y = 3x + 1"], [-3, 1, "y = −3x + 1"]], ex16: [[2, -1, "y = 2x − 1"], [2, 1, "y = 2x + 1"], [2, 5, "y = 2x + 5"]], fig214: [[2, 5, "y = 2x + 5"], [1, 3, "y = x + 3"], [3, -2, "y = 3x − 2"]]};
+  function select(id){
+    st.preset = id; L.markPreset(id);
+    L.timeline({maxT: 3, step: 0.04, speed: 1});
+    L.legend([[C.vel, "first line"], [C.path, "second line"], [C.acc, "third line"]]);
+    L.watch({mirror: "Think and Reflect: y = 3x + 1 and y = −3x + 1.", ex16: "Example 16: y = 2x − 1, y = 2x + 1 and y = 2x + 5 on the same axes (Fig. 2.13).", fig214: "Fig. 2.14: y = 2x + 5, y = x + 3 and y = 3x − 2. Where does each cut the y-axis?", explore: "Change a and b separately: a turns the line, b slides it."}[id]);
+    if(id === "explore") sliderSetM2(L, st, [["m2ia", "slope a", -3, 3, 0.5, "a"], ["m2ib", "y-intercept b", -6, 6, 1, "b"]]);
+    else L.controls("");
+    L.restart(true);
+  }
+  function draw(t){
+    var P = planeM2(L, V), m = P.svg, ex = st.preset === "explore", lines = ex ? [[st.a, st.b, eqM2(st.a, st.b)]] : SETS[st.preset], cols = [C.vel, C.path, C.acc], names = st.preset === "fig214" ? ["A ", "B ", "C "] : ["", "", ""], msg;
+    lines.forEach(function(ln, i){
+      var f = clampM2((t - i * 0.9) / 0.9, 0, 1);
+      if(f > 0) m += lineM2(L, P, ln[0], ln[1], cols[i % 3], 3, f, ln[2]);
+      if(f >= 1) m += dotM2(L, P, 0, ln[1], cols[i % 3], names[i] + "(0, " + nM2(ln[1]) + ")", -78, 4);
+    });
+    L.svg(m, "y-intercepts and parallel lines", P.h);
+    if(st.preset === "mirror"){ L.readout([["Slopes", "3 and −3"], ["y-intercept", "1 for both", C.ok], ["Relation", "mirror images in the y-axis"]]); msg = "Both lines cut the y-axis at <b>(0, 1)</b>. y = 3x + 1 rises and y = −3x + 1 falls: each is the mirror image of the other in the y-axis."; }
+    else if(st.preset === "ex16"){ L.readout([["Slope", "2 for all three"], ["y-intercepts", "−1, 1, 5"], ["Relation", "parallel", C.ok]]); msg = "Same slope 2, different b: the lines are <b>parallel</b>, cutting the y-axis at (0, −1), (0, 1) and (0, 5)."; }
+    else if(st.preset === "fig214"){ L.readout([["A", "y = 2x + 5 → (0, 5)", C.vel], ["B", "y = x + 3 → (0, 3)", C.path], ["C", "y = 3x − 2 → (0, −2)", C.acc]]); msg = "A (0, 5), B (0, 3) and C (0, −2): each line y = ax + b cuts the y-axis at <b>(0, b)</b>."; }
+    else {
+      var a = st.a, b = st.b;
+      L.readout([["Slope a", nM2(a), C.vel], ["y-intercept b", nM2(b), C.ok], ["Cuts the y-axis at", "(0, " + nM2(b) + ")"], ["Cuts the x-axis at", a ? "(" + nM2(-b / a) + ", 0)" : b ? "never" : "every point"]]);
+      msg = eqM2(a, b) + ": slope " + nM2(a) + " and y-intercept " + nM2(b) + ", so it cuts the y-axis at <b>(0, " + nM2(b) + ")</b>.";
+    }
+    L.verdict(t >= 3 ? msg : "Drawing the lines…");
+  }
+  function mount(){ L.presets([["mirror", "y = 3x + 1 and y = −3x + 1"], ["ex16", "Example 16: parallel lines"], ["fig214", "Fig. 2.14: y-intercepts"], ["explore", "Explore: a and b"]], st.preset, select); select(st.preset); App.pause(); App.resetTimeline(); }
+  window.SIMS.intercept = {mount: mount, draw: draw, select: select, state: st};
+})();

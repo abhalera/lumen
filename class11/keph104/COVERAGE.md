@@ -41,6 +41,13 @@ There is **no numbered Example 4.10a/4.13 in-chapter beyond 4.12**. Example numb
 
 All 23 mapped. The exercise header says **take g=10 m s⁻²** for numerical work. Fig. 4.16 (zoom p.21): x=0 (t<0), linear to (4 s, 3 m), then constant — impulse ±3 N s.
 
+## Verification and browser QA
+
+- `tests/verify.cjs`: 519 source, structure, exercise, calculation, video and packaging checks.
+- `tests/expect.json`: 13 named simulation presets with concrete final-state assertions.
+- Browser QA: 112 checks at desktop, tablet and mobile widths, 0 failures, 0 console errors; concept, revision and responsive screenshots captured.
+- Videos: two candidates per lesson were independently checked through YouTube oEmbed; the first verified result is wired to each lesson's explicit Wow card.
+
 ## Edition notes / honest gaps
 
 - No Additional Exercises in this 22-page PDF.

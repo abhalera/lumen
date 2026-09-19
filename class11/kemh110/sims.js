@@ -36,11 +36,11 @@ window.SIMS.conecut = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Double-napped cone</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Cutting plane</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="k-c">β=90° circle</button>' +
-      '<button class="preset-btn" id="k-e">α&lt;β&lt;90° ellipse</button>' +
-      '<button class="preset-btn" id="k-p">β=α parabola</button>' +
-      '<button class="preset-btn" id="k-h">β&lt;α hyperbola</button>' +
-      '<button class="preset-btn" id="k-d">vertex: degenerate</button>';
+      '<button class="preset-btn active" data-preset="k-c" id="k-c">β=90° circle</button>' +
+      '<button class="preset-btn" data-preset="k-e" id="k-e">α&lt;β&lt;90° ellipse</button>' +
+      '<button class="preset-btn" data-preset="k-p" id="k-p">β=α parabola</button>' +
+      '<button class="preset-btn" data-preset="k-h" id="k-h">β&lt;α hyperbola</button>' +
+      '<button class="preset-btn" data-preset="k-d" id="k-d">vertex: degenerate</button>';
     [["k-c","circle"],["k-e","ellipse"],["k-p","parabola"],["k-h","hyperbola"],["k-d","degen"]].forEach(function(p){
       document.getElementById(p[0]).onclick = function(){ setActivePreset(this); kind=p[1]; draw(0); };
     });
@@ -89,9 +89,9 @@ window.SIMS.circlehk = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Circle</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Centre (h,k)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="c0">x²+y²=r² origin</button>' +
-      '<button class="preset-btn active" id="c1">Ex 2: (−3,2), r=4</button>' +
-      '<button class="preset-btn" id="c2">Ex 3: complete the square</button>';
+      '<button class="preset-btn" data-preset="c0" id="c0">x²+y²=r² origin</button>' +
+      '<button class="preset-btn active" data-preset="c1" id="c1">Ex 2: (−3,2), r=4</button>' +
+      '<button class="preset-btn" data-preset="c2" id="c2">Ex 3: complete the square</button>';
     document.getElementById("c0").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-h").value=0; document.getElementById("ctrl-k").value=0; document.getElementById("ctrl-r").value=4; draw(0); };
     document.getElementById("c1").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-h").value=-3; document.getElementById("ctrl-k").value=2; document.getElementById("ctrl-r").value=4; draw(0); };
     document.getElementById("c2").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-h").value=-4; document.getElementById("ctrl-k").value=-5; document.getElementById("ctrl-r").value=7; draw(0); };
@@ -128,10 +128,10 @@ window.SIMS.parabola = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Directrix</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Latus rectum</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="f-yp">y²=4ax (right)</button>' +
-      '<button class="preset-btn" id="f-yn">y²=−4ax (left)</button>' +
-      '<button class="preset-btn" id="f-xp">x²=4ay (up)</button>' +
-      '<button class="preset-btn" id="f-xn">x²=−4ay (down)</button>';
+      '<button class="preset-btn active" data-preset="f-yp" id="f-yp">y²=4ax (right)</button>' +
+      '<button class="preset-btn" data-preset="f-yn" id="f-yn">y²=−4ax (left)</button>' +
+      '<button class="preset-btn" data-preset="f-xp" id="f-xp">x²=4ay (up)</button>' +
+      '<button class="preset-btn" data-preset="f-xn" id="f-xn">x²=−4ay (down)</button>';
     document.getElementById("f-yp").onclick = function(){ setActivePreset(this); form="y2p"; draw(0); };
     document.getElementById("f-yn").onclick = function(){ setActivePreset(this); form="y2n"; draw(0); };
     document.getElementById("f-xp").onclick = function(){ setActivePreset(this); form="x2p"; draw(0); };
@@ -178,8 +178,8 @@ window.SIMS.ellipse = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Foci</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f472b6;"></span><span>Latus rectum</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-x">Ex 9: x²/25 + y²/9 = 1</button>' +
-      '<button class="preset-btn" id="e-y">Ex 10: major on y-axis</button>';
+      '<button class="preset-btn active" data-preset="e-x" id="e-x">Ex 9: x²/25 + y²/9 = 1</button>' +
+      '<button class="preset-btn" data-preset="e-y" id="e-y">Ex 10: major on y-axis</button>';
     document.getElementById("e-x").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-a").value=5; document.getElementById("ctrl-b").value=3; document.getElementById("ctrl-ax").value=0; draw(0); };
     document.getElementById("e-y").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-a").value=3; document.getElementById("ctrl-b").value=2; document.getElementById("ctrl-ax").value=1; draw(0); };
     document.getElementById("lab-controls").innerHTML =
@@ -225,8 +225,8 @@ window.SIMS.hyperbola = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Hyperbola</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Foci</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-x">x²/a² − y²/b² = 1</button>' +
-      '<button class="preset-btn" id="h-y">y²/a² − x²/b² = 1</button>';
+      '<button class="preset-btn active" data-preset="h-x" id="h-x">x²/a² − y²/b² = 1</button>' +
+      '<button class="preset-btn" data-preset="h-y" id="h-y">y²/a² − x²/b² = 1</button>';
     document.getElementById("h-x").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-or").value=0; draw(0); };
     document.getElementById("h-y").onclick = function(){ setActivePreset(this); document.getElementById("ctrl-or").value=1; draw(0); };
     document.getElementById("lab-controls").innerHTML =
@@ -291,8 +291,8 @@ window.SIMS.conicapp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Parabolic mirror y²=20x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Focus</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="ap-m">Ex 17: mirror a=5, depth 45</button>' +
-      '<button class="preset-btn" id="ap-b">Ex 18: beam sag</button>';
+      '<button class="preset-btn active" data-preset="ap-m" id="ap-m">Ex 17: mirror a=5, depth 45</button>' +
+      '<button class="preset-btn" data-preset="ap-b" id="ap-b">Ex 18: beam sag</button>';
     document.getElementById("ap-m").onclick = function(){ setActivePreset(this); mode="m"; draw(0); };
     document.getElementById("ap-b").onclick = function(){ setActivePreset(this); mode="b"; draw(0); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -309,8 +309,8 @@ window.SIMS.conicapp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Application parabola</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Focus / vertex</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="ap-m">Ex 17 mirror AB=60 cm</button>' +
-      '<button class="preset-btn" id="ap-b">Ex 18 beam 2√6 m</button>';
+      '<button class="preset-btn active" data-preset="ap-m" id="ap-m">Ex 17 mirror AB=60 cm</button>' +
+      '<button class="preset-btn" data-preset="ap-b" id="ap-b">Ex 18 beam 2√6 m</button>';
     document.getElementById("ap-m").onclick = function(){ setActivePreset(this); mode="m"; draw(0); };
     document.getElementById("ap-b").onclick = function(){ setActivePreset(this); mode="b"; draw(0); };
     document.getElementById("lab-controls").innerHTML = "";

@@ -1,355 +1,435 @@
+// Class 12 Biology, Chapter 3 (lebo103) — simulation labs.
+// One lab per lesson, on the shared Lumen lab framework (window.SIMS + window.LAB).
 var App = window.App;
+var LAB = window.LAB;
 window.SIMS = {};
 
-function setActivePreset(btn){
-  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-  if(btn) btn.classList.add("active");
-}
-function svgEl(){ return document.getElementById("diagram"); }
-function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
-function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
-function cell(label, val, color){
-  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
-    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
-}
-function numEl(id, fallback){
-  var n = document.getElementById(id);
-  return n ? Number(n.value) : fallback;
+function labNoTimeline(){
+  var tb = document.getElementById("legacy-lab-toolbar");
+  if(tb) tb.style.display = "none";
 }
 
-window.SIMS["repro-health-strategies"] = (function(){
-  var pillar = "awareness";
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Awareness</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Care + infrastructure</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Legal ban (sex-determination)</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-aw">Ex 1-4: awareness + RCH</button>' +
-      '<button class="preset-btn" id="p-infra">Infrastructure + immunisation</button>' +
-      '<button class="preset-btn" id="p-amn">Amniocentesis rule (Ex 8)</button>';
-    document.getElementById("p-aw").onclick = function(){ setActivePreset(this); pillar="awareness"; draw(App.state.t); };
-    document.getElementById("p-infra").onclick = function(){ setActivePreset(this); pillar="infra"; draw(App.state.t); };
-    document.getElementById("p-amn").onclick = function(){ setActivePreset(this); pillar="amnio"; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Audience reached</span><span class="val" id="ctrl-ad">adolescents</span></div>' +
-      '<select id="ctrl-adsel"><option value="adolescents">adolescents (myths vs facts)</option><option value="couples">fertile + marriageable-age couples</option><option value="mothers">pregnant mothers + post-natal</option></select></div>';
-    document.getElementById("ctrl-adsel").onchange = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var asel = document.getElementById("ctrl-adsel");
-    var aud = asel ? asel.value : "adolescents";
-    var e1 = document.getElementById("ctrl-ad"); if(e1) e1.textContent = aud;
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Sec 3.1: RCH = awareness + facilities and support (family planning 1951)</text>';
-    var ao = pillar === "awareness" ? 1 : 0.45, io = pillar === "infra" ? 1 : 0.45, bo = pillar === "amnio" ? 1 : 0.45;
-    m += '<g opacity="' + ao + '"><rect x="30" y="45" width="215" height="215" rx="8" fill="#0f1f2e" stroke="#38bdf8"/>';
-    m += '<text x="137" y="66" fill="#38bdf8" font-size="12" text-anchor="middle">AWARENESS</text>';
-    m += '<text x="45" y="92" fill="#e2e8f0" font-size="11">organs, adolescence</text>';
-    m += '<text x="45" y="110" fill="#e2e8f0" font-size="11">hygiene, STDs, AIDS</text>';
-    m += '<text x="45" y="128" fill="#e2e8f0" font-size="11">birth control, pregnancy</text>';
-    m += '<text x="45" y="146" fill="#e2e8f0" font-size="11">breast feeding, equal</text>';
-    m += '<text x="45" y="164" fill="#e2e8f0" font-size="11">opportunities, population</text>';
-    m += '<text x="45" y="186" fill="#94a3b8" font-size="11">media + parents, teachers,</text>';
-    m += '<text x="45" y="202" fill="#94a3b8" font-size="11">friends; sex education</text>';
-    m += '<text x="45" y="218" fill="#94a3b8" font-size="11">in schools vs myths</text>';
-    m += '<text x="45" y="240" fill="#38bdf8" font-size="11">audience: ' + aud + '</text></g>';
-    m += '<g opacity="' + io + '"><rect x="258" y="45" width="215" height="215" rx="8" fill="#0f1f2e" stroke="#f59e0b"/>';
-    m += '<text x="365" y="66" fill="#f59e0b" font-size="12" text-anchor="middle">CARE + INFRA</text>';
-    m += '<text x="273" y="92" fill="#e2e8f0" font-size="11">pregnancy, delivery</text>';
-    m += '<text x="273" y="110" fill="#e2e8f0" font-size="11">STDs, abortions,</text>';
-    m += '<text x="273" y="128" fill="#e2e8f0" font-size="11">contraception, menstrual</text>';
-    m += '<text x="273" y="146" fill="#e2e8f0" font-size="11">problems, infertility</text>';
-    m += '<text x="273" y="168" fill="#94a3b8" font-size="11">massive child immunisation</text>';
-    m += '<text x="273" y="186" fill="#94a3b8" font-size="11">research: Saheli, CDRI</text>';
-    m += '<text x="273" y="204" fill="#94a3b8" font-size="11">Lucknow (see Sec 3.2)</text>';
-    m += '<text x="273" y="228" fill="#f59e0b" font-size="11">assisted deliveries up;</text>';
-    m += '<text x="273" y="244" fill="#f59e0b" font-size="11">MMR/IMR down; small families</text></g>';
-    m += '<g opacity="' + bo + '"><rect x="486" y="45" width="204" height="215" rx="8" fill="#0f1f2e" stroke="#f87171"/>';
-    m += '<text x="588" y="66" fill="#f87171" font-size="12" text-anchor="middle">AMNIOCENTESIS</text>';
-    m += '<text x="500" y="92" fill="#e2e8f0" font-size="11">tests Down, haemophilia,</text>';
-    m += '<text x="500" y="110" fill="#e2e8f0" font-size="11">sickle-cell, survivability</text>';
-    m += '<text x="500" y="132" fill="#f87171" font-size="11">statutory BAN on use for</text>';
-    m += '<text x="500" y="150" fill="#f87171" font-size="11">sex-determination:</text>';
-    m += '<text x="500" y="168" fill="#f87171" font-size="11">checks female foeticide</text>';
-    m += '<text x="500" y="192" fill="#94a3b8" font-size="11">amniotic fluid + fetal</text>';
-    m += '<text x="500" y="208" fill="#94a3b8" font-size="11">cells analysed</text>';
-    m += '<text x="500" y="230" fill="#94a3b8" font-size="11">India among first: 1951</text>';
-    m += '<text x="500" y="246" fill="#94a3b8" font-size="11">family planning -&gt; RCH</text></g>';
-    svg.innerHTML = m;
-    readout(cell("WHO", "physical+emotional+behavioural+social", "#38bdf8") + cell("start", "1951 family planning", "#f59e0b") + cell("tasks", "awareness + facilities"));
-    if(pillar === "amnio") verdict("<b>Exercise 8, Sec 3.1:</b> amniocentesis analyses fluid for <b>Down syndrome, haemophilia, sickle-cell anaemia, survivability</b>; the statutory <b>ban on sex-determination</b> checks female foeticide. Ban is necessary — misuse + illegal MTP is condemned in Sec 3.3 too.");
-    else if(pillar === "infra") verdict("<b>Exercises 2/4, Sec 3.1:</b> infrastructure for pregnancy, delivery, STDs, abortions, contraception, infertility + better techniques; massive <b>child immunisation</b>; research (Saheli). Improvement = assisted deliveries, post-natal care, lower MMR/IMR, small families, STD detection/cure.");
-    else verdict("<b>Exercises 1-3, Sec 3.1:</b> WHO health = <b>total well-being (physical, emotional, behavioural, social)</b>. India among first (1951). Awareness via media, parents, teachers + <b>sex education in schools</b> so adolescents get facts, not myths. Audience now: <b>" + aud + "</b>.");
-  }
-  return { mount: mount, draw: draw };
-})();
-
-window.SIMS["population-contraception"] = (function(){
-  var method = "condom";
-  var mode = "method";
-  var info = {
-    "abstinence": ["natural", "no coitus day 10-17 (fertile); withdrawal; lactational amenorrhoea <= 6 mo", "no devices; ~nil side effects; failure high"],
-    "condom": ["barrier", "latex sheath (Nirodh male brand); diaphragm/cap/vault cover cervix + spermicide", "blocks meeting; added STI/AIDS cover; disposable/self-inserted"],
-    "iud": ["IUD (doctor/nurse)", "Lippes loop | CuT, Cu7, Multiload 375 | Progestasert, LNG-20", "phagocytosis + Cu motility block + hormone uterus/cervix"],
-    "pill": ["oral", "progestogen / progestogen-estrogen 21 d from first 5 d + 7 d gap; Saheli weekly non-steroidal (CDRI Lucknow)", "inhibit ovulation + implantation; mucus vs sperm"],
-    "injectable": ["injectable/implant", "progestogen +/- estrogen, longer-acting like pills", "same pill logic; longer duration"],
-    "emergency": ["emergency <= 72 h", "progestogen / combo or IUD within 72 h of unprotected coitus", "post-coital; rape/failure backup"],
-    "surgical": ["surgical (terminal)", "vasectomy (vas deferens) / tubectomy (fallopian tube); block transport", "highly effective; reversibility very poor"]
+// -------------------------------------------------------------------------
+// Lab 1 — RCH strategy explorer (NCERT §3.1, reproductive health strategies)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var DATA = {
+    awareness: {
+      name: "Awareness & sex education",
+      who: "total well-being: physical + emotional + behavioural + social",
+      anchor: "§3.1: media, parents, teachers, friends; sex education in schools",
+      improves: "better sex-related awareness; myths replaced by right information",
+      verdict: "<b>Awareness:</b> the primary RCH step — audio-visual and print media, parents, relatives, teachers, friends, and <b>sex education in schools</b> give right information about organs, adolescence, hygiene, STDs/AIDS and birth control."
+    },
+    infra: {
+      name: "Care & infrastructure",
+      who: "medical assistance for every reproduction-related problem",
+      anchor: "§3.1: infrastructural facilities, professional expertise, material support",
+      improves: "more assisted deliveries, better post-natal care, lower MMR and IMR",
+      verdict: "<b>Care + infrastructure:</b> pregnancy, delivery, STDs, abortions, contraception, menstrual problems and infertility need facilities, expertise and material support; improvement shows up as assisted deliveries, post-natal care and falling MMR/IMR."
+    },
+    law: {
+      name: "Programmes & legal ban",
+      who: "family planning since 1951, now RCH; statutory guardrails",
+      anchor: "§3.1: amniocentesis ban for sex-determination; massive child immunisation",
+      improves: "check on female foeticide; healthier mothers and children",
+      verdict: "<b>Programmes + law:</b> family planning began in <b>1951</b> and continues as RCH; the <b>statutory ban on amniocentesis for sex-determination</b> legally checks female foeticide, alongside massive child immunisation."
+    }
   };
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Natural / barrier</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>IUD / pill / injectable</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Emergency / surgical</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-pop">Population figures</button>' +
-      '<button class="preset-btn active" id="p-met">Method comparator</button>' +
-      '<button class="preset-btn" id="p-ideal">Ideal criteria (Ex 7)</button>';
-    mode = "method";
-    document.getElementById("p-pop").onclick = function(){ setActivePreset(this); mode="pop"; draw(App.state.t); };
-    document.getElementById("p-met").onclick = function(){ setActivePreset(this); mode="method"; draw(App.state.t); };
-    document.getElementById("p-ideal").onclick = function(){ setActivePreset(this); mode="ideal"; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Method</span><span class="val" id="ctrl-m">condom</span></div>' +
-      '<select id="ctrl-msel"><option value="abstinence">natural (abstinence/withdrawal/lactational)</option><option value="condom" selected>barrier (condom/diaphragm)</option><option value="iud">IUDs (Lippes/Cu/hormone)</option><option value="pill">pills (21+7; Saheli)</option><option value="injectable">injectables/implants</option><option value="emergency">emergency (&lt;=72 h)</option><option value="surgical">surgical (vasectomy/tubectomy)</option></select></div>';
-    document.getElementById("ctrl-msel").onchange = function(){ mode="method"; setActivePreset(document.getElementById("p-met")); draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var msel = document.getElementById("ctrl-msel");
-    method = msel ? msel.value : "condom";
-    if(!info[method]) method = "condom";
-    var e1 = document.getElementById("ctrl-m"); if(e1) e1.textContent = method;
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    if(mode === "pop"){
-      m += '<text x="360" y="26" fill="#94a3b8" font-size="13" text-anchor="middle">Sec 3.2 in-text title: Population Stabilisation and Birth Control (Ex 5)</text>';
-      m += '<text x="80" y="70" fill="#e2e8f0" font-size="13">world: ~2B (1900) -&gt; ~6B (2000) -&gt; 7.2B (2011)</text>';
-      m += '<text x="80" y="96" fill="#e2e8f0" font-size="13">India: ~350M (independence) -&gt; ~1B (2000) -&gt; 1.2B+ (May 2011)</text>';
-      m += '<text x="80" y="122" fill="#94a3b8" font-size="12">reasons: death rate, MMR, IMR down; more reproductive-age people</text>';
-      m += '<text x="80" y="148" fill="#f59e0b" font-size="13">2011 growth still &lt; 2% = 20/1000/yr: still rapid</text>';
-      m += '<rect x="80" y="165" width="560" height="14" rx="7" fill="#1e293b"/>';
-      m += '<rect x="80" y="165" width="' + (560*0.02*8) + '" height="14" rx="7" fill="#f59e0b"/>';
-      m += '<text x="80" y="200" fill="#94a3b8" font-size="12">responses: Hum Do Hamare Do; one-child urban norm; marriage 18 F / 21 M; incentives</text>';
-      m += '<text x="80" y="226" fill="#94a3b8" font-size="12">contraceptive groups: natural, barrier, IUD, oral, injectable, implant, surgical (Fig. 3.1-3.4)</text>';
-      m += '<text x="80" y="252" fill="#f87171" font-size="12">book gives NO efficacy rates - none shown; use only with qualified medical advice</text>';
-    } else if(mode === "ideal"){
-      m += '<text x="360" y="26" fill="#94a3b8" font-size="13" text-anchor="middle">Ideal contraceptive + cautions (Sec 3.2, Ex 6-7)</text>';
-      var items = ["user-friendly", "easily available", "effective + reversible", "no/least side-effects", "no interference with drive/desire/act"];
-      for(var i=0;i<items.length;i++){
-        m += '<rect x="120" y="' + (60+i*34) + '" width="480" height="26" rx="6" fill="#0f1f2e" stroke="#34d399"/>';
-        m += '<text x="360" y="' + (78+i*34) + '" fill="#e2e8f0" font-size="12" text-anchor="middle">' + items[i] + '</text>';
+  var st = {preset: "awareness"};
+
+  function draw(){
+    var key = st.preset, d = DATA[key];
+    var m = "";
+    var cols = [
+      ["awareness", "AWARENESS", "#38bdf8"],
+      ["infra", "CARE + INFRA", "#f59e0b"],
+      ["law", "PROGRAMMES + LAW", "#f87171"]
+    ];
+    cols.forEach(function(col, i){
+      var x = 30 + i * 222, on = col[0] === key;
+      m += L.rect(x, 45, 210, 190, on ? "#12283d" : "#0c1825", ' rx="10" stroke="' + col[2] + '" stroke-width="' + (on ? 3 : 1) + '"' + (on ? "" : ' opacity="0.55"'));
+      m += L.text(x + 105, 70, col[1], {size: 15, weight: 700, color: col[2]});
+      if(col[0] === "awareness"){
+        m += L.text(x + 14, 100, "organs, adolescence", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 118, "hygiene, STDs, AIDS", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 136, "birth control, care of", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 154, "pregnant mothers, breast", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 172, "feeding, equal chances", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 196, "media + schools", {size: 11, anchor: "start", color: "#7dd3fc"});
+        m += L.text(x + 14, 214, "against myths", {size: 11, anchor: "start", color: "#7dd3fc"});
+      } else if(col[0] === "infra"){
+        m += L.text(x + 14, 100, "pregnancy, delivery", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 118, "STDs, abortions", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 136, "contraception, menstrual", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 154, "problems, infertility", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 178, "child immunisation", {size: 11, anchor: "start", color: "#fcd34d"});
+        m += L.text(x + 14, 196, "research support", {size: 11, anchor: "start", color: "#fcd34d"});
+        m += L.text(x + 14, 214, "(Saheli, CDRI Lucknow)", {size: 11, anchor: "start", color: "#fcd34d"});
+      } else {
+        m += L.text(x + 14, 100, "family planning 1951", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 118, "now RCH programmes", {size: 11, anchor: "start"});
+        m += L.text(x + 14, 142, "BAN amniocentesis", {size: 11, anchor: "start", color: "#fca5a5"});
+        m += L.text(x + 14, 160, "for sex-determination", {size: 11, anchor: "start", color: "#fca5a5"});
+        m += L.text(x + 14, 184, "checks female foeticide", {size: 11, anchor: "start", color: "#fca5a5"});
+        m += L.text(x + 14, 214, "amniocentesis tests:", {size: 11, anchor: "start", color: "#94a3b8"});
+        m += L.text(x + 14, 228, "Down, haemophilia, sickle-cell", {size: 10, anchor: "start", color: "#94a3b8"});
       }
-      m += '<text x="360" y="252" fill="#f87171" font-size="11" text-anchor="middle">Ex 7: gonad removal is NOT contraception (irreversible, kills hormones/drive)</text>';
-      m += '<text x="360" y="270" fill="#94a3b8" font-size="11" text-anchor="middle">possible ill-effects (nausea, bleeding, even breast cancer): not very significant, not to be ignored</text>';
-    } else {
-      var d = info[method];
-      m += '<text x="360" y="26" fill="#94a3b8" font-size="13" text-anchor="middle">Method comparator — type, mechanism, book facts (no invented rates)</text>';
-      m += '<rect x="60" y="50" width="600" height="200" rx="8" fill="#0f1f2e" stroke="#38bdf8"/>';
-      m += '<text x="360" y="76" fill="#38bdf8" font-size="14" text-anchor="middle">' + d[0] + ': ' + method + '</text>';
-      m += '<text x="90" y="112" fill="#e2e8f0" font-size="12">regimen/names: ' + d[1] + '</text>';
-      m += '<text x="90" y="142" fill="#94a3b8" font-size="12">mechanism: ' + d[2] + '</text>';
-      m += '<text x="90" y="172" fill="#f59e0b" font-size="12">natural windows: fertile day 10-17; lactational only &lt;= 6 mo + full feeding</text>';
-      m += '<text x="90" y="196" fill="#f59e0b" font-size="12">pill: 21 d from first 5 d + 7 d gap; emergency: &lt;= 72 h; surgery: poor reversibility</text>';
-      m += '<text x="90" y="220" fill="#f87171" font-size="12">no efficacy rates in book - comparator stays qualitative by design</text>';
-      m += '<text x="90" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Fig. 3.1 condoms 3.2 Copper-T 3.3 implants 3.4 vasectomy/tubectomy; Saheli: non-steroidal, once a week</text>';
-    }
-    svg.innerHTML = m;
-    readout(cell("method", method) + cell("type", info[method][0], "#38bdf8") + cell("fertile", "day 10-17", "#f59e0b") + cell("emergency", "<= 72 h", "#f87171"));
-    if(mode === "pop") verdict("<b>Exercise 5, Sec 3.2:</b> explosion from falling death/MMR/IMR + more reproductive-age people. 2011 census growth <b>&lt;2% (20/1000/yr)</b> — still scarcity-threatening. Answers: smaller families, <b>Hum Do Hamare Do</b>, marriage <b>18/21</b>, incentives.");
-    else if(mode === "ideal") verdict("<b>Exercises 6-7, Sec 3.2:</b> ideal = user-friendly, available, effective, reversible, safe, desire-neutral. <b>Ex 7:</b> gonad removal fails every test (permanent, hormonal). Contraceptives oppose conception — take only under <b>qualified medical advice</b>.");
-    else verdict("<b>Section 3.2, Ex 12(a)(c)(d):</b> <b>" + method + "</b> (" + info[method][0] + "): " + info[method][1] + ". Mechanism: " + info[method][2] + ". Surgery blocks <b>transport, not formation</b>; pills are 21+7 (Saheli weekly); IUDs: Lippes | CuT/Cu7/Multiload 375 | Progestasert/LNG-20.");
+    });
+    L.svg(m, "Three RCH pillars, current focus: " + d.name + ".", 260);
+    L.readout([
+      ["Focus", d.name, "#38bdf8"],
+      ["WHO view", d.who],
+      ["Book anchor", d.anchor],
+      ["Improvement shown by", d.improves, C.ok]
+    ]);
+    L.verdict(d.verdict);
   }
-  return { mount: mount, draw: draw };
-})();
 
-window.SIMS["mtp"] = (function(){
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
   function mount(){
-    App.state.maxT = 24;
-    var s = document.getElementById("time-scrubber"); if(s){ s.max = 24; s.value = 8; }
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>First trimester: relatively safe (&lt;=12 wk)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>12-24 wk: two RMPs, riskier</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Illegal/quack + misuse: unsafe</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-w8">8 weeks: one RMP</button>' +
-      '<button class="preset-btn" id="p-w20">20 weeks: two RMPs</button>' +
-      '<button class="preset-btn" id="p-trend">Unhealthy trends</button>';
-    document.getElementById("p-w8").onclick = function(){ setActivePreset(this); App.state.t = 8; var r=document.getElementById("ctrl-wk-range"); if(r) r.value=8; draw(App.state.t); };
-    document.getElementById("p-w20").onclick = function(){ setActivePreset(this); App.state.t = 20; var r=document.getElementById("ctrl-wk-range"); if(r) r.value=20; draw(App.state.t); };
-    document.getElementById("p-trend").onclick = function(){ setActivePreset(this); draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Weeks of pregnancy</span><span class="val" id="ctrl-wk">8</span></div>' +
-      '<input type="range" id="ctrl-wk-range" min="1" max="24" step="1" value="8"></div>';
-    document.getElementById("ctrl-wk-range").oninput = function(){ App.state.t = Number(this.value); draw(App.state.t); };
-    draw(8);
+    labNoTimeline();
+    L.presets([["awareness", "Awareness & sex education"], ["infra", "Care & infrastructure"], ["law", "Programmes & legal ban"]], st.preset, select);
+    L.legend([["#38bdf8", "awareness"], ["#f59e0b", "care + infrastructure"], ["#f87171", "programmes + legal ban"]]);
+    draw();
   }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var ctrl = document.getElementById("ctrl-wk-range");
-    var wk = ctrl ? Math.round(Number(ctrl.value)) : Math.round(t);
-    if(wk < 1) wk = 1; if(wk > 24) wk = 24;
-    var e1 = document.getElementById("ctrl-wk"); if(e1) e1.textContent = wk;
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Sec 3.3 + MTP (Amendment) Act 2017 box, p.46 (legal since 1971)</text>';
-    m += '<line x1="60" y1="150" x2="660" y2="150" stroke="#475569" stroke-width="4"/>';
-    for(var w=1;w<=24;w++){
-      var x = 60 + (w-1)*(600/23);
-      var col = w <= 12 ? "#34d399" : "#f59e0b";
-      m += '<line x1="' + x + '" y1="130" x2="' + x + '" y2="170" stroke="' + col + '" stroke-width="3"/>';
-    }
-    var cx = 60 + (wk-1)*(600/23);
-    m += '<circle cx="' + cx + '" cy="150" r="12" fill="#f8fafc" stroke="#38bdf8" stroke-width="3"/>';
-    m += '<line x1="' + (60+11*(600/23)) + '" y1="110" x2="' + (60+11*(600/23)) + '" y2="190" stroke="#f8fafc" stroke-dasharray="5 3"/>';
-    m += '<text x="' + (60+11*(600/23)) + '" y="100" fill="#e2e8f0" font-size="11" text-anchor="middle">12 wk line</text>';
-    var cx2 = 60 + 23*(600/23);
-    m += '<text x="' + cx2 + '" y="100" fill="#e2e8f0" font-size="11" text-anchor="middle">24 wk</text>';
-    var rule = wk <= 12 ? "one RMP opinion" : "TWO RMP opinions (good faith)";
-    var col2 = wk <= 12 ? "#34d399" : "#f59e0b";
-    m += '<rect x="60" y="200" width="600" height="70" rx="8" fill="#0f1f2e" stroke="' + col2 + '"/>';
-    m += '<text x="360" y="222" fill="' + col2 + '" font-size="13" text-anchor="middle">week ' + wk + ': ' + rule + '</text>';
-    m += '<text x="360" y="242" fill="#94a3b8" font-size="11" text-anchor="middle">grounds: (i) risk to woman / grave injury to health; (ii) serious handicap risk to child</text>';
-    m += '<text x="360" y="260" fill="#94a3b8" font-size="11" text-anchor="middle">45-50M MTPs/yr ~= 1/5 conceptions; 2nd trimester much riskier; quack abortions unsafe</text>';
-    svg.innerHTML = m;
-    readout(cell("week", String(wk), col2) + cell("opinions", wk <= 12 ? "1 RMP" : "2 RMPs", col2) + cell("safety", wk <= 12 ? "relatively safe" : "riskier", "#f59e0b") + cell("law", "1971 legalised"));
-    if(wk <= 12) verdict("<b>2017 box, Sec 3.3:</b> within the <b>first 12 weeks</b>, termination on the <b>opinion of one registered medical practitioner</b> on the stated grounds. <b>First trimester = relatively safe</b>. 1971 legalisation had strict anti-misuse conditions.");
-    else verdict("<b>2017 box, Sec 3.3:</b> more than 12 but <b>fewer than 24 weeks</b> needs <b>two RMPs, in good faith</b>, on ground (i) or (ii). <b>Second trimester much riskier</b>. Majority illegal/quack MTPs + amniocentesis-then-female-foeticide are the condemned trends.");
-  }
-  return { mount: mount, draw: draw };
+
+  window.SIMS.rch = {mount: mount, draw: draw, select: select, state: st};
 })();
 
-window.SIMS["stis"] = (function(){
-  var pick = "gonorrhoea";
-  var curable = {"gonorrhoea": true, "syphilis": true, "chlamydiasis": true, "genital warts": true, "trichomoniasis": true, "genital herpes": false, "hepatitis-B": false, "HIV": false};
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Curable if early + proper</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Excepted: HIV, hepatitis-B, herpes</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Prevention triad</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-cur">Ex 12(b): curable set</button>' +
-      '<button class="preset-btn" id="p-exc">Excepted trio</button>' +
-      '<button class="preset-btn" id="p-pre">Ex 10: prevention triad</button>';
-    document.getElementById("p-cur").onclick = function(){ setActivePreset(this); pick="syphilis"; var r=document.getElementById("ctrl-sti"); if(r) r.value="syphilis"; draw(App.state.t); };
-    document.getElementById("p-exc").onclick = function(){ setActivePreset(this); pick="HIV"; var r=document.getElementById("ctrl-sti"); if(r) r.value="HIV"; draw(App.state.t); };
-    document.getElementById("p-pre").onclick = function(){ setActivePreset(this); draw(App.state.t); };
-    var opts = "";
-    for(var k in curable){ opts += '<option value="' + k + '"' + (k===pick ? " selected" : "") + '>' + k + '</option>'; }
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Infection</span><span class="val" id="ctrl-stiv">gonorrhoea</span></div>' +
-      '<select id="ctrl-sti">' + opts + '</select></div>';
-    document.getElementById("ctrl-sti").onchange = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var sel = document.getElementById("ctrl-sti");
-    pick = sel ? sel.value : pick;
-    if(!(pick in curable)) pick = "gonorrhoea";
-    var e1 = document.getElementById("ctrl-stiv"); if(e1) e1.textContent = pick;
-    var ok = curable[pick];
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Sec 3.4 in-text title: Sexually Transmitted Infections (Ex 10, 12b)</text>';
-    var keys = ["gonorrhoea", "syphilis", "chlamydiasis", "genital warts", "trichomoniasis", "genital herpes", "hepatitis-B", "HIV"];
-    for(var i=0;i<keys.length;i++){
-      var x = 70 + (i%4)*160, y = 60 + Math.floor(i/4)*90;
-      var c = curable[keys[i]] ? "#34d399" : "#f87171";
-      var isPick = keys[i] === pick;
-      m += '<rect x="' + x + '" y="' + y + '" width="140" height="60" rx="8" fill="' + (isPick ? "#1d3350" : "#0f1f2e") + '" stroke="' + c + '" stroke-width="' + (isPick?3:1) + '"/>';
-      m += '<text x="' + (x+70) + '" y="' + (y+26) + '" fill="#e2e8f0" font-size="11" text-anchor="middle">' + keys[i] + '</text>';
-      m += '<text x="' + (x+70) + '" y="' + (y+44) + '" fill="' + c + '" font-size="10" text-anchor="middle">' + (curable[keys[i]] ? "curable if early" : "NOT completely curable") + '</text>';
+// -------------------------------------------------------------------------
+// Lab 2 — Contraceptive method comparator (NCERT §3.2)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var METHODS = {
+    natural: {
+      name: "Natural / traditional",
+      principle: "Avoid the ovum and sperms meeting — no medicines, no devices",
+      facts: "periodic abstinence day 10–17; withdrawal before ejaculation; lactational amenorrhoea",
+      status: "effective only up to six months of full breast-feeding",
+      verdict: "<b>Natural methods:</b> abstain during the <b>fertile period (day 10–17)</b>, use withdrawal (<i>coitus interruptus</i>), or rely on <b>lactational amenorrhoea</b> — effective only up to <b>six months</b> following parturition. Side effects almost nil; <b>chances of failure are high</b>."
+    },
+    barrier: {
+      name: "Barrier methods",
+      principle: "A physical sheath stops the ejaculated semen from entering the female tract",
+      facts: "condoms (male and female) · diaphragms, cervical caps, vaults with spermicidal creams/jellies/foams",
+      status: "condoms also protect against STIs and AIDS",
+      verdict: "<b>Barriers:</b> condoms of thin rubber/latex cover the penis or the vagina and cervix; <b>'Nirodh'</b> is the popular male brand. Diaphragms, cervical caps and vaults are reusable cervix covers, usually with spermicidal creams, jellies or foams. Condoms give the <b>additional benefit of STI/AIDS protection</b>."
+    },
+    iud: {
+      name: "IUDs",
+      principle: "Inserted in the uterus by doctors or expert nurses; increase phagocytosis of sperms",
+      facts: "non-medicated Lippes loop · copper CuT, Cu7, Multiload 375 · hormone Progestasert, LNG-20",
+      status: "ideal for delaying or spacing children; widely accepted in India",
+      verdict: "<b>IUDs:</b> copper ions suppress sperm motility and fertilising capacity; hormone-releasing IUDs also make the <b>uterus unsuitable for implantation</b> and the <b>cervix hostile to sperms</b>. Examples: Lippes loop; CuT, Cu7, Multiload 375; Progestasert, LNG-20."
+    },
+    pill: {
+      name: "Oral pills",
+      principle: "Inhibit ovulation and implantation and alter cervical mucus against sperm entry",
+      facts: "progestogen or progestogen–estrogen daily for 21 days from the first five days, then a 7-day gap",
+      status: "Saheli is a non-steroidal once-a-week pill",
+      verdict: "<b>Pills:</b> taken daily for <b>21 days</b>, starting preferably within the first five days of the cycle, then a <b>7-day gap</b> repeated till conception must be prevented. Very effective with lesser side effects; <b>Saheli</b> (CDRI Lucknow) is non-steroidal and taken <b>once a week</b>."
+    },
+    emergency: {
+      name: "Emergency contraceptives",
+      principle: "Act after unprotected coitus to avoid a possible pregnancy",
+      facts: "progestogens/progestogen–estrogen or IUDs within 72 hours of coitus",
+      status: "for rape or casual unprotected intercourse",
+      verdict: "<b>Emergency:</b> progestogens, progestogen–estrogen combinations or IUDs used <b>within 72 hours of coitus</b> are very effective after rape or casual unprotected intercourse."
+    },
+    surgical: {
+      name: "Surgical / sterilisation",
+      principle: "Terminal method that blocks gamete transport",
+      facts: "vasectomy (vas deferens cut/tied) · tubectomy (fallopian tube cut/tied)",
+      status: "highly effective, but reversibility is very poor",
+      verdict: "<b>Surgery:</b> <b>vasectomy</b> removes or ties a small part of the vas deferens; <b>tubectomy</b> removes or ties a small part of the fallopian tube. Highly effective, but <b>reversibility is very poor</b> — a terminal method."
     }
-    m += '<rect x="60" y="232" width="600" height="52" rx="8" fill="#0f1f2e" stroke="' + (ok ? "#34d399" : "#f87171") + '"/>';
-    m += '<text x="360" y="252" fill="' + (ok ? "#34d399" : "#f87171") + '" font-size="13" text-anchor="middle">' + pick + ': ' + (ok ? "completely curable if detected early + treated properly" : "excepted — not completely curable") + '</text>';
-    m += '<text x="360" y="270" fill="#94a3b8" font-size="11" text-anchor="middle">early signs minor (itch, discharge, pain, swelling); females often asymptomatic; peak 15-24; complications PID, ectopy, infertility, cancer</text>';
-    svg.innerHTML = m;
-    readout(cell("infection", pick) + cell("curable?", ok ? "YES if early" : "NO (excepted)", ok ? "#34d399" : "#f87171") + cell("also spreads via", (pick === "HIV" || pick === "hepatitis-B") ? "needles/transfusion/mother" : "sexual (VD/RTI)", "#38bdf8"));
-    verdict("<b>Exercises 10/12(b), Sec 3.4:</b> " + (ok ? "<b>" + pick + "</b> is in the curable set — with early detection + proper complete treatment." : "<b>" + pick + "</b> is in the <b>excepted trio (HIV, hepatitis-B, genital herpes)</b> — not completely curable.") + " Prevention: <b>(i)</b> avoid unknown/multiple partners; <b>(ii)</b> always <b>condoms</b>; <b>(iii)</b> qualified doctor early + full treatment.");
-  }
-  return { mount: mount, draw: draw };
-})();
-
-window.SIMS["infertility-art"] = (function(){
-  var tech = "IVF-ZIFT";
-  var desc = {
-    "IVF-ZIFT": "IVF outside body (test-tube baby); zygote/early embryos up to 8 blastomeres -> fallopian tube (ZIFT)",
-    "IVF-IUT": "IVF outside body; embryos with MORE than 8 blastomeres -> uterus (IUT)",
-    "GIFT": "donor ovum -> fallopian tube of female who cannot produce one but can carry",
-    "ICSI": "sperm injected directly into ovum in laboratory",
-    "AI-IUI": "semen (husband/healthy donor) -> vagina, or uterus (IUI); for non-insemination / very low counts",
-    "ADOPT": "legal adoption: as yet one of the best methods (many orphaned children)"
   };
+  var st = {preset: "pill"};
+
+  function draw(){
+    var d = METHODS[st.preset];
+    var m = "";
+    m += L.rect(240, 52, 240, 150, "#0f1f2e", ' rx="14" stroke="' + C.muted + '" stroke-width="1.5"');
+    m += L.text(360, 80, d.name.toUpperCase(), {size: 15, weight: 700, color: "#7dd3fc"});
+    var lines = d.facts.split(" · ");
+    lines.forEach(function(t, i){
+      m += L.text(360, 108 + i * 22, t, {size: 12, color: C.text});
+    });
+    m += L.circle(130, 128, 16, "#f9a8d4");
+    m += L.text(130, 134, "ovum", {size: 10, color: "#500724"});
+    m += L.circle(590, 128, 16, "#a5f3fc");
+    m += L.text(590, 134, "sperm", {size: 10, color: "#164e63"});
+    var blocked = st.preset === "barrier" || st.preset === "iud" || st.preset === "surgical";
+    m += L.arrow(152, 128, blocked ? 250 : 360, 128, blocked ? C.danger : C.ok, 3);
+    m += L.arrow(568, 128, blocked ? 470 : 360, 128, blocked ? C.danger : C.ok, 3);
+    m += L.text(360, 235, blocked ? "meeting blocked" : "method acts before/after meeting", {size: 13, color: blocked ? C.danger : C.ok, weight: 700});
+    m += L.text(360, 258, "use only in consultation with qualified medical professionals", {size: 11, color: C.muted});
+    L.svg(m, d.name + ": " + d.principle + ".", 290);
+    L.readout([
+      ["Method", d.name, "#38bdf8"],
+      ["Principle", d.principle],
+      ["Book facts", d.facts],
+      ["Status", d.status, st.preset === "surgical" ? C.danger : C.ok]
+    ]);
+    L.verdict(d.verdict);
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
   function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Tube transfer (ZIFT/GIFT)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Uterus transfer (IUT)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Lab / adoption</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-zi">ZIFT vs IUT (8 rule)</button>' +
-      '<button class="preset-btn" id="p-gi">GIFT / ICSI / AI</button>' +
-      '<button class="preset-btn" id="p-ad">Ex 9/11: definition + adoption</button>';
-    document.getElementById("p-zi").onclick = function(){ setActivePreset(this); tech="IVF-ZIFT"; var r=document.getElementById("ctrl-art"); if(r) r.value=tech; draw(App.state.t); };
-    document.getElementById("p-gi").onclick = function(){ setActivePreset(this); tech="ICSI"; var r=document.getElementById("ctrl-art"); if(r) r.value=tech; draw(App.state.t); };
-    document.getElementById("p-ad").onclick = function(){ setActivePreset(this); tech="ADOPT"; var r=document.getElementById("ctrl-art"); if(r) r.value=tech; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>ART</span><span class="val" id="ctrl-artv">IVF-ZIFT</span></div>' +
-      '<select id="ctrl-art"><option value="IVF-ZIFT">IVF + ZIFT (&lt;=8 to tube)</option><option value="IVF-IUT">IVF + IUT (&gt;8 to uterus)</option><option value="GIFT">GIFT (donor ovum to tube)</option><option value="ICSI">ICSI (sperm into ovum)</option><option value="AI-IUI">AI / IUI (semen to vagina/uterus)</option><option value="ADOPT">legal adoption</option></select></div>' +
-      '<div class="control-item"><div class="control-label"><span>Blastomeres</span><span class="val" id="ctrl-bl">4</span></div>' +
-      '<input type="range" id="ctrl-bl-range" min="1" max="16" step="1" value="4"></div>';
-    document.getElementById("ctrl-art").onchange = function(){ draw(App.state.t); };
-    document.getElementById("ctrl-bl-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
+    labNoTimeline();
+    L.presets([
+      ["natural", "Natural"], ["barrier", "Barrier"], ["iud", "IUDs"],
+      ["pill", "Oral pills"], ["emergency", "Emergency"], ["surgical", "Surgical"]
+    ], st.preset, select);
+    L.legend([["#7dd3fc", "method card"], [C.danger, "gamete meeting blocked"]]);
+    draw();
   }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var sel = document.getElementById("ctrl-art");
-    tech = sel ? sel.value : tech;
-    if(!desc[tech]) tech = "IVF-ZIFT";
-    var bl = Math.round(numEl("ctrl-bl-range", 4));
-    var e1 = document.getElementById("ctrl-artv"); if(e1) e1.textContent = tech;
-    var e2 = document.getElementById("ctrl-bl"); if(e2) e2.textContent = bl;
-    var route = bl <= 8 ? "ZIFT -> fallopian tube" : "IUT -> uterus";
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="22" fill="#94a3b8" font-size="13" text-anchor="middle">Sec 3.5: infertility = no children despite unprotected cohabitation (summary: even after 2 yrs)</text>';
-    m += '<rect x="40" y="50" width="180" height="120" rx="8" fill="#0f1f2e" stroke="#38bdf8"/>';
-    m += '<text x="130" y="72" fill="#38bdf8" font-size="12" text-anchor="middle">LAB (IVF)</text>';
-    m += '<circle cx="100" cy="110" r="10" fill="#f472b6"/><circle cx="160" cy="110" r="8" fill="#38bdf8"/>';
-    m += '<text x="130" y="140" fill="#94a3b8" font-size="10" text-anchor="middle">ova wife/donor +</text>';
-    m += '<text x="130" y="154" fill="#94a3b8" font-size="10" text-anchor="middle">sperms husband/donor</text>';
-    m += '<rect x="260" y="50" width="180" height="120" rx="8" fill="#0f1f2e" stroke="#f59e0b"/>';
-    m += '<text x="350" y="72" fill="#f59e0b" font-size="12" text-anchor="middle">EMBRYO (' + bl + ' cells)</text>';
-    for(var i=0;i<Math.min(16,bl);i++){
-      var bx = 290 + (i%4)*36, by = 95 + Math.floor(i/4)*22;
-      m += '<circle cx="' + bx + '" cy="' + by + '" r="9" fill="#f59e0b" opacity="0.9"/>';
+
+  window.SIMS.contraception = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 3 — MTP legal-window explainer (NCERT §3.3 + 2017 Amendment box)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "early", week: 8};
+
+  function rules(w){
+    if(w <= 12) return {
+      zone: "first trimester", safe: "relatively safe", rmp: "one registered medical practitioner",
+      verdict: "<b>Within the first 12 weeks:</b> the pregnancy may be terminated on the opinion of <b>one registered medical practitioner</b> if a ground in the 2017 box exists. First-trimester MTP is considered <b>relatively safe</b>."
+    };
+    if(w < 24) return {
+      zone: "second trimester", safe: "much riskier", rmp: "two registered medical practitioners",
+      verdict: "<b>More than 12 but fewer than 24 weeks:</b> <b>two registered medical practitioners</b> must be of the opinion, formed in good faith, that a required ground exists. Second-trimester abortions are <b>much riskier</b>."
+    };
+    return {
+      zone: "beyond the box's stated rule", safe: "outside the 2017 box's wording", rmp: "not stated in the book",
+      verdict: "<b>24 weeks and beyond:</b> the 2017 box's rule is written for <b>fewer than 24 weeks</b>, so this chapter does not state a rule here — refer to the Act and medical advice."
+    };
+  }
+
+  function draw(){
+    var w = st.week, r = rules(w);
+    var m = "";
+    var x0 = 70, x1 = 650, y = 120, sx = (x1 - x0) / 28;
+    m += L.line(x0, y, x1, y, C.faint, 3);
+    m += L.rect(x0, y - 8, 12 * sx, 16, "rgba(52,211,153,0.35)");
+    m += L.rect(x0 + 12 * sx, y - 8, 12 * sx, 16, "rgba(245,158,11,0.35)");
+    m += L.rect(x0 + 24 * sx, y - 8, 4 * sx, 16, "rgba(239,68,68,0.35)");
+    [0, 4, 8, 12, 16, 20, 24, 28].forEach(function(t){
+      m += L.text(x0 + t * sx, y + 28, t + "w", {size: 11, color: C.muted});
+    });
+    m += L.text(x0 + 6 * sx, y - 24, "≤ 12 weeks: 1 RMP", {size: 12, color: C.ok});
+    m += L.text(x0 + 18 * sx, y - 24, "12–24: 2 RMPs", {size: 12, color: "#fbbf24"});
+    m += L.text(x0 + 26 * sx, y - 24, "≥ 24", {size: 12, color: C.danger});
+    m += L.circle(x0 + Math.min(w, 28) * sx, y, 9, "#f8fafc", ' stroke="#0f172a" stroke-width="2"');
+    m += L.text(x0 + Math.min(w, 28) * sx, y + 4, "▲", {size: 10, color: "#0f172a"});
+    m += L.text(360, 52, "MEDICAL TERMINATION OF PREGNANCY — the book's 2017 box", {size: 14, weight: 700, color: "#7dd3fc"});
+    m += L.text(360, 210, "Grounds: (i) risk to the woman's life or grave injury to health; (ii) substantial risk of serious handicap to the child", {size: 11, color: C.muted});
+    m += L.text(360, 232, "MTP legalised in India in 1971; 45–50 million MTPs a year worldwide ≈ 1/5 of conceptions", {size: 11, color: C.muted});
+    L.svg(m, "Pregnancy week " + w + " on the MTP rule timeline.", 260);
+    L.readout([
+      ["Pregnancy week", w + " weeks", "#38bdf8"],
+      ["Safety", r.safe],
+      ["Opinion required", r.rmp, r.rmp.indexOf("two") >= 0 ? "#fbbf24" : C.ok],
+      ["Book zone", r.zone]
+    ]);
+    L.verdict(r.verdict);
+  }
+
+  function setWeek(w){
+    st.week = w;
+    L.setVal("mtp-week", w + " weeks");
+    draw();
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    var w = id === "early" ? 8 : (id === "mid" ? 20 : 28);
+    setWeek(w);
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["early", "8 weeks (early)"], ["mid", "20 weeks (mid)"], ["late", "28 weeks (beyond)"]], st.preset, select);
+    L.controls(L.slider("mtp-week", "Pregnancy week", 4, 28, 1, st.week, st.week + " weeks"));
+    L.onInput("mtp-week", function(v){ st.preset = ""; L.markPreset(""); setWeek(v); });
+    L.legend([[C.ok, "≤ 12 weeks: one RMP"], ["#fbbf24", "12–24 weeks: two RMPs"], [C.danger, "≥ 24 weeks: beyond the book's box"]]);
+    draw();
+  }
+
+  window.SIMS.mtp = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 4 — STI curability classifier (NCERT §3.4)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var STIS = {
+    gonorrhoea: {name: "Gonorrhoea", curable: true, routes: "sexual intercourse", note: "completely curable if detected early and treated properly"},
+    syphilis: {name: "Syphilis", curable: true, routes: "sexual intercourse", note: "completely curable if detected early and treated properly"},
+    chlamydiasis: {name: "Chlamydiasis", curable: true, routes: "sexual intercourse", note: "completely curable if detected early and treated properly"},
+    trichomoniasis: {name: "Trichomoniasis", curable: true, routes: "sexual intercourse", note: "completely curable if detected early and treated properly"},
+    herpes: {name: "Genital herpes", curable: false, routes: "sexual intercourse", note: "one of the three exceptions — not completely curable"},
+    hepatitisb: {name: "Hepatitis-B", curable: false, routes: "sexual intercourse; also needles/instruments, transfusion, mother to foetus", note: "one of the three exceptions — not completely curable"},
+    hiv: {name: "HIV (leading to AIDS)", curable: false, routes: "sexual intercourse; also needles/instruments, transfusion, mother to foetus", note: "most dangerous of the listed STIs — one of the three exceptions"}
+  };
+  var st = {preset: "gonorrhoea"};
+
+  function draw(){
+    var d = STIS[st.preset];
+    var m = "";
+    m += L.rect(40, 50, 640, 92, d.curable ? "#0e2a22" : "#2a1517", ' rx="12" stroke="' + (d.curable ? C.ok : C.danger) + '" stroke-width="2"');
+    m += L.text(360, 82, d.name.toUpperCase(), {size: 20, weight: 700, color: d.curable ? C.ok : C.danger});
+    m += L.text(360, 112, d.curable ? "COMPLETELY CURABLE if detected early and treated properly" : "NOT completely curable — one of the book's three exceptions", {size: 13, color: d.curable ? C.ok : C.danger});
+    m += L.text(60, 178, "Routes: " + d.routes, {size: 12, color: C.text, anchor: "start"});
+    m += L.text(60, 200, "Early signs: itching, fluid discharge, slight pain, swellings — infected females may be asymptomatic", {size: 11, color: C.muted, anchor: "start"});
+    m += L.text(60, 222, "Late complications: PID, abortions, still births, ectopic pregnancies, infertility or cancer", {size: 11, color: C.muted, anchor: "start"});
+    m += L.rect(40, 244, 640, 30, "#0c1825", ' rx="8" stroke="' + C.faint + '"');
+    m += L.text(360, 264, "Prevention: avoid unknown/multiple partners · use condoms · early qualified doctor + complete treatment", {size: 11, color: "#7dd3fc"});
+    L.svg(m, d.name + ": " + (d.curable ? "completely curable if detected early" : "not completely curable") + ".", 290);
+    L.readout([
+      ["Infection", d.name, d.curable ? C.ok : C.danger],
+      ["Group", d.curable ? "curable if detected early" : "excepted from complete cure", d.curable ? C.ok : C.danger],
+      ["Routes", d.routes],
+      ["Prevention", "partner choice · condoms · qualified doctor"]
+    ]);
+    L.verdict("<b>" + d.name + ":</b> " + d.note + ". The three exceptions to complete cure are <b>hepatitis-B, genital herpes and HIV</b>; incidence peaks at <b>15–24 years</b>.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([
+      ["gonorrhoea", "Gonorrhoea"], ["syphilis", "Syphilis"], ["chlamydiasis", "Chlamydiasis"],
+      ["trichomoniasis", "Trichomoniasis"], ["herpes", "Genital herpes"], ["hepatitisb", "Hepatitis-B"], ["hiv", "HIV"]
+    ], st.preset, select);
+    L.legend([[C.ok, "curable if early"], [C.danger, "not completely curable"]]);
+    draw();
+  }
+
+  window.SIMS.stis = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 5 — ART matcher (NCERT §3.5)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var ART = {
+    ivf: {
+      name: "IVF–ET (test tube baby)",
+      what: "Ova (wife/donor) and sperms (husband/donor) form the zygote outside the body under simulated conditions",
+      dest: "zygote/embryo transferred to complete development in the female tract",
+      rule: "IVF = fertilisation outside the body, followed by embryo transfer (ET)",
+      verdict: "<b>IVF–ET:</b> fertilisation outside the body under conditions similar to the body's, then transfer of the zygote or early embryo. Popularly called the <b>'test tube baby' programme</b>. The transfer destination follows the blastomere rule: ZIFT or IUT."
+    },
+    zift: {
+      name: "ZIFT (zygote intra fallopian transfer)",
+      what: "Zygote or early embryo with up to 8 blastomeres is transferred",
+      dest: "fallopian tube",
+      rule: "≤ 8 blastomeres → fallopian tube",
+      verdict: "<b>ZIFT:</b> a zygote or early embryo with <b>up to 8 blastomeres</b> is transferred into the <b>fallopian tube</b> for further development."
+    },
+    iut: {
+      name: "IUT (intra uterine transfer)",
+      what: "Embryo with more than 8 blastomeres is transferred",
+      dest: "uterus",
+      rule: "> 8 blastomeres → uterus",
+      verdict: "<b>IUT:</b> embryos with <b>more than 8 blastomeres</b> are transferred into the <b>uterus</b> to complete further development. Embryos formed by in-vivo fertilisation can also be transferred this way."
+    },
+    gift: {
+      name: "GIFT (gamete intra fallopian transfer)",
+      what: "An ovum collected from a donor is transferred",
+      dest: "fallopian tube of another female who cannot produce one but can support fertilisation",
+      rule: "donor ovum → fallopian tube",
+      verdict: "<b>GIFT:</b> transfer of a <b>donor ovum</b> into the <b>fallopian tube</b> of a female who cannot produce one but can provide a suitable environment for fertilisation and further development."
+    },
+    icsi: {
+      name: "ICSI (intra cytoplasmic sperm injection)",
+      what: "A sperm is directly injected into the ovum to form an embryo in the laboratory",
+      dest: "laboratory embryo (then transferred)",
+      rule: "one sperm → directly into the ovum",
+      verdict: "<b>ICSI:</b> a specialised laboratory procedure in which a <b>sperm is directly injected into the ovum</b> to form an embryo."
+    },
+    ai: {
+      name: "AI / IUI (artificial insemination)",
+      what: "Semen from the husband or a healthy donor is artificially introduced",
+      dest: "vagina or uterus (IUI = intra-uterine insemination)",
+      rule: "used when the male cannot inseminate or sperm counts are very low",
+      verdict: "<b>AI:</b> semen collected from the husband or a healthy donor is introduced into the <b>vagina</b> or into the <b>uterus (IUI)</b>; it corrects inability to inseminate or very low sperm counts."
     }
-    m += '<text x="350" y="158" fill="#e2e8f0" font-size="11" text-anchor="middle">' + route + '</text>';
-    m += '<rect x="480" y="50" width="200" height="120" rx="8" fill="#0f1f2e" stroke="#34d399"/>';
-    m += '<text x="580" y="72" fill="#34d399" font-size="12" text-anchor="middle">CHOICE: ' + tech + '</text>';
-    m += '<text x="495" y="96" fill="#e2e8f0" font-size="10">' + desc[tech].slice(0,44) + '</text>';
-    m += '<text x="495" y="112" fill="#e2e8f0" font-size="10">' + desc[tech].slice(44,88) + '</text>';
-    m += '<text x="495" y="128" fill="#e2e8f0" font-size="10">' + desc[tech].slice(88,132) + '</text>';
-    m += '<text x="495" y="150" fill="#94a3b8" font-size="10">precision + cost; few</text>';
-    m += '<text x="495" y="164" fill="#94a3b8" font-size="10">centres; social factors</text>';
-    m += '<rect x="40" y="185" width="640" height="95" rx="8" fill="#0f1f2e" stroke="#475569"/>';
-    m += '<text x="360" y="207" fill="#e2e8f0" font-size="12" text-anchor="middle">causes: physical, congenital, diseases, drugs, immunological, psychological — often MALE partner</text>';
-    m += '<text x="360" y="229" fill="#94a3b8" font-size="11" text-anchor="middle">GIFT: donor ovum to tube | ICSI: sperm into ovum | AI/IUI: semen to vagina/uterus (low counts)</text>';
-    m += '<text x="360" y="249" fill="#94a3b8" font-size="11" text-anchor="middle">in-vivo embryos also transferable; clinics first correct treatable disorders</text>';
-    m += '<text x="360" y="267" fill="#34d399" font-size="11" text-anchor="middle">Ex 11(b) FALSE: not always female; Ex 9 + legal adoption as best humane option</text>';
-    svg.innerHTML = m;
-    readout(cell("ART", tech, "#34d399") + cell("blastomeres", String(bl), "#f59e0b") + cell("book route", route) + cell("threshold", "2 yrs", "#38bdf8"));
-    if(tech === "ADOPT") verdict("<b>Exercises 9/11, Sec 3.5:</b> India has many orphaned children — <b>legal adoption is as yet one of the best methods</b> for parenthood. Techniques need precision, cost, few centres; emotional/religious/social factors also deter ART.");
-    else verdict("<b>Exercise 9/12(d), Sec 3.5:</b> " + desc[tech] + ". Slider at " + bl + " blastomeres -&gt; book route <b>" + route + "</b> (Ex 12d: embryos NOT always to uterus). Infertility often lies with the <b>male partner</b> — blaming only women is wrong (Ex 11b).");
+  };
+  var st = {preset: "zift"};
+
+  function draw(){
+    var d = ART[st.preset];
+    var m = "";
+    m += L.rect(40, 80, 150, 90, "#0f1f2e", ' rx="12" stroke="#f9a8d4" stroke-width="2"');
+    m += L.text(115, 112, "OVUM", {size: 14, weight: 700, color: "#f9a8d4"});
+    m += L.text(115, 136, st.preset === "gift" ? "donor" : "wife/donor", {size: 11});
+    m += L.rect(270, 80, 180, 90, "#0f1f2e", ' rx="12" stroke="#7dd3fc" stroke-width="2"');
+    m += L.text(360, 112, st.preset === "ai" ? "SEMEN" : "SPERM", {size: 14, weight: 700, color: "#7dd3fc"});
+    m += L.text(360, 136, st.preset === "ai" ? "husband/donor" : "husband/donor", {size: 11});
+    m += L.rect(530, 80, 150, 90, "#0f1f2e", ' rx="12" stroke="#a3e635" stroke-width="2"');
+    m += L.text(605, 112, st.preset === "ai" ? "VAGINA / UTERUS" : "LAB / EGG", {size: 12, weight: 700, color: "#a3e635"});
+    m += L.text(605, 136, st.preset === "ai" ? "IUI" : "ICSI / IVF", {size: 11});
+    if(st.preset === "gift") m += L.arrow(190, 125, 530, 125, "#f9a8d4", 3);
+    else if(st.preset === "ai") m += L.arrow(450, 125, 530, 125, "#7dd3fc", 3);
+    else {
+      m += L.arrow(190, 105, 530, 105, "#f9a8d4", 3);
+      m += L.arrow(450, 145, 530, 145, "#7dd3fc", 3);
+    }
+    m += L.text(360, 210, d.rule, {size: 15, weight: 700, color: "#a3e635"});
+    m += L.text(360, 238, "destination: " + d.dest, {size: 12, color: C.text});
+    m += L.text(360, 262, "precision handling, expensive instrumentation — available in very few centres", {size: 11, color: C.muted});
+    L.svg(m, d.name + ": " + d.rule + ".", 290);
+    L.readout([
+      ["Technique", d.name, "#38bdf8"],
+      ["What it does", d.what],
+      ["Rule", d.rule],
+      ["Destination", d.dest, C.ok]
+    ]);
+    L.verdict(d.verdict);
   }
-  return { mount: mount, draw: draw };
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([
+      ["ivf", "IVF–ET"], ["zift", "ZIFT"], ["iut", "IUT"],
+      ["gift", "GIFT"], ["icsi", "ICSI"], ["ai", "AI / IUI"]
+    ], st.preset, select);
+    L.legend([["#f9a8d4", "ovum"], ["#7dd3fc", "sperm / semen"], ["#a3e635", "laboratory or destination"]]);
+    draw();
+  }
+
+  window.SIMS.art = {mount: mount, draw: draw, select: select, state: st};
 })();

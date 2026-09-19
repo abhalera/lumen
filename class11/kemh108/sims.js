@@ -20,8 +20,8 @@ window.SIMS["ancestor-tree"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>2ⁿ ancestors in generation n</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-an">10 generations</button>' +
-      '<button class="preset-btn" id="p-fi">Fibonacci</button>';
+      '<button class="preset-btn active" data-preset="p-an" id="p-an">10 generations</button>' +
+      '<button class="preset-btn" data-preset="p-fi" id="p-fi">Fibonacci</button>';
     var mode="an";
     document.getElementById("p-an").onclick = function(){ setActivePreset(this); mode="an"; App.resetTimeline(); App.play(); };
     document.getElementById("p-fi").onclick = function(){ setActivePreset(this); mode="fi"; App.resetTimeline(); App.play(); };
@@ -66,8 +66,8 @@ window.SIMS["series-sum"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>odd numbers</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-odd">1+3+5+7 (sum 16)</button>' +
-      '<button class="preset-btn" id="p-ex3">Example 3: 1+3+5+7+9</button>';
+      '<button class="preset-btn active" data-preset="p-odd" id="p-odd">1+3+5+7 (sum 16)</button>' +
+      '<button class="preset-btn" data-preset="p-ex3" id="p-ex3">Example 3: 1+3+5+7+9</button>';
     var mode="odd";
     document.getElementById("p-odd").onclick = function(){ setActivePreset(this); mode="odd"; App.resetTimeline(); App.play(); };
     document.getElementById("p-ex3").onclick = function(){ setActivePreset(this); mode="ex3"; App.resetTimeline(); App.play(); };
@@ -105,9 +105,9 @@ window.SIMS["gp-terms"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>aₙ = a rⁿ⁻¹</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p5">5, 25, 125, …</button>' +
-      '<button class="preset-btn" id="p2">2, 8, 32, … → 131072</button>' +
-      '<button class="preset-btn" id="p6">Example 6 → 3072</button>';
+      '<button class="preset-btn active" data-preset="p5" id="p5">5, 25, 125, …</button>' +
+      '<button class="preset-btn" data-preset="p2" id="p2">2, 8, 32, … → 131072</button>' +
+      '<button class="preset-btn" data-preset="p6" id="p6">Example 6 → 3072</button>';
     document.getElementById("p5").onclick = function(){ setActivePreset(this); a=5;r=5; App.resetTimeline(); };
     document.getElementById("p2").onclick = function(){ setActivePreset(this); a=2;r=4; App.resetTimeline(); };
     document.getElementById("p6").onclick = function(){ setActivePreset(this); a=6;r=2; App.resetTimeline(); };
@@ -142,8 +142,8 @@ window.SIMS["gp-sum"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Sₙ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>infinite ceiling a/(1−r)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pe7">Example 7 · r=2/3</button>' +
-      '<button class="preset-btn" id="pe8">Example 8 · r=1/2, target 3069/512</button>';
+      '<button class="preset-btn active" data-preset="pe7" id="pe7">Example 7 · r=2/3</button>' +
+      '<button class="preset-btn" data-preset="pe8" id="pe8">Example 8 · r=1/2, target 3069/512</button>';
     document.getElementById("pe7").onclick = function(){ setActivePreset(this); a=1;r=2/3; App.resetTimeline(); };
     document.getElementById("pe8").onclick = function(){ setActivePreset(this); a=3;r=0.5; App.resetTimeline(); };
     document.getElementById("lab-controls").innerHTML =
@@ -182,8 +182,8 @@ window.SIMS["sevens-series"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>7, 77, 777, …</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p7">Example 10 · sevens</button>' +
-      '<button class="preset-btn" id="p11">Example 11 · 2046 ancestors</button>';
+      '<button class="preset-btn active" data-preset="p7" id="p7">Example 10 · sevens</button>' +
+      '<button class="preset-btn" data-preset="p11" id="p11">Example 11 · 2046 ancestors</button>';
     var mode="sev";
     document.getElementById("p7").onclick = function(){ setActivePreset(this); mode="sev"; draw(); };
     document.getElementById("p11").onclick = function(){ setActivePreset(this); mode="anc"; draw(); };
@@ -228,8 +228,8 @@ window.SIMS["insert-gm"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>inserted means</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pp">r = +4 → 4, 16, 64</button>' +
-      '<button class="preset-btn" id="pm">r = −4 → −4, 16, −64</button>';
+      '<button class="preset-btn active" data-preset="pp" id="pp">r = +4 → 4, 16, 64</button>' +
+      '<button class="preset-btn" data-preset="pm" id="pm">r = −4 → −4, 16, −64</button>';
     document.getElementById("pp").onclick = function(){ setActivePreset(this); sign=1; draw(); };
     document.getElementById("pm").onclick = function(){ setActivePreset(this); sign=-1; draw(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -261,8 +261,8 @@ window.SIMS["am-gm-compare"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A.M.</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>G.M.</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pe13">Example 13 · 4 and 16</button>' +
-      '<button class="preset-btn" id="peq">a=b=9 · equality</button>';
+      '<button class="preset-btn active" data-preset="pe13" id="pe13">Example 13 · 4 and 16</button>' +
+      '<button class="preset-btn" data-preset="peq" id="peq">a=b=9 · equality</button>';
     document.getElementById("pe13").onclick = function(){ setActivePreset(this); a=4;b=16; draw(); };
     document.getElementById("peq").onclick = function(){ setActivePreset(this); a=9;b=9; draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -306,8 +306,8 @@ window.SIMS["fd-compound"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>compound 10%</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>depreciation 20%</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pfd">₹500 @ 10% for 10 yr</button>' +
-      '<button class="preset-btn" id="pdep">₹15625 · (0.8)⁵</button>';
+      '<button class="preset-btn active" data-preset="pfd" id="pfd">₹500 @ 10% for 10 yr</button>' +
+      '<button class="preset-btn" data-preset="pdep" id="pdep">₹15625 · (0.8)⁵</button>';
     var mode="fd";
     document.getElementById("pfd").onclick = function(){ setActivePreset(this); mode="fd"; App.resetTimeline(); App.play(); };
     document.getElementById("pdep").onclick = function(){ setActivePreset(this); mode="dep"; App.resetTimeline(); App.play(); };

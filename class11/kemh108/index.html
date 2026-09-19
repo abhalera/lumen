@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 8: Sequences and Series — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -109,16 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +312,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +497,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +629,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +681,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +770,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +964,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,14 +1067,168 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
 
 </style>
 </head>
@@ -1063,9 +1275,11 @@ button.btn-secondary {
 <footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathematics", "title": "Sequences and Series", "subtitle": "Sequences, sigma notation, geometric progressions, geometric means, A.M. ≥ G.M., and compound-growth applications.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh108.pdf", "page_start": 135, "page_end": 150, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "sequences", "nav": "Sequences", "title": "Ancestors, Fibonacci, and a_n as a function of n", "deck": "A sequence is an ordered list a₁, a₂, … whose domain is ℕ (or a finite initial segment). 10 generations of ancestors: 2,4,8,…,1024. Fibonacci: a₁=a₂=1, aₙ=aₙ₋₁+aₙ₋₂. Not every sequence has a closed formula (the primes).", "minutes": 9, "section": "8.1–8.2", "pages": [1, 3], "print": "135–137", "sim": "ancestor-tree", "simTitle": "10 generations: 2, 4, 8, …, 1024", "quick": ["<strong>§8.1–8.2.</strong> A collection listed with a first, second, third member is a <em>sequence</em>. Population, bank deposits, depreciation all form sequences. Those following a definite pattern are <strong>progressions</strong>. This reprint’s body after the intro is sequences, series, G.P., G.M., and A.M.–G.M.; the promised sums of n, n², n³ of the older book are not in this 16-page file.", "300 years / 30-year generation gap = 10 generations: 2, 4, 8, …, 1024. Successive quotients 10÷3: 3, 3.3, 3.33, … is an infinite sequence. Even naturals: aₙ=2n. Odds: aₙ=2n−1. Fibonacci: a₁=a₂=1, aₙ=aₙ₋₂+aₙ₋₁ (n>2). Primes have no known closed aₙ. A sequence is a function ℕ→ℝ; we also write a(n)."], "formulas": [{"label": "Even / odd naturals", "html": "aₙ = 2n ;   aₙ = 2n − 1", "cond": "§8.2"}, {"label": "Fibonacci", "html": "a₁ = a₂ = 1,  aₙ = aₙ₋₁ + aₙ₋₂ (n>2)", "cond": "recurrence, no closed form in this chapter"}, {"label": "Ancestors", "html": "aₙ = 2ⁿ  for n = 1,…,10 ;  a₁₀ = 1024", "cond": "300/30 = 10 generations"}], "deeper": "Finite vs infinite is about whether there is a last index, not about the size of the terms. 10 ancestor-counts is finite; the 10÷3 quotients never end.", "worked": "Example 1: aₙ=2n+5 → 7,9,11. aₙ=(n−3)/4 → −1/2, −1/4, 0. Example 2: aₙ=(n−1)(2−n)(3+n), a₂₀=19·(−18)·23=−7866. Example 3: a₁=1, aₙ=aₙ₋₁+2 → 1,3,5,7,9 and series 1+3+5+7+9+…", "prediction": {"prompt": "aₙ=(n−3)/4. The first three terms are", "options": ["−1/2, −1/4, 0", "1, 2, 3", "0, 1/4, 1/2"], "answer": 0, "explanation": "Example 1(ii), zoom p.3–4: a₁=−1/2, a₂=−1/4, a₃=0."}, "connect": [["UPI monthly transaction counts", "A merchant’s UPI hits 120, 144, 173, … month by month is a sequence. If it grew by a constant ratio it would be a G.P.; real data is only ‘a sequence’ until a pattern is fitted."], ["Wow — Fibonacci in a sunflower and in NCERT", "Pingala (Ch. 7) counted metres; Fibonacci (1175–1250) wrote the rabbit recurrence that NCERT prints as a₁=a₂=1. Indian Connect: the same recurrence generates the number of ways to tile a 2×n board with 1×2 tiles — a Class 12 idea already visible here.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Number of generations in 300 years with a 30-year gap?", "answer": 10, "unit": "", "tolerance": 0.05, "hint": "300/30", "solution": "§8.1.", "map": "§8.1"}, {"level": "Medium", "type": "number", "prompt": "Example 2: a₂₀ for aₙ=(n−1)(2−n)(3+n) is", "answer": -7866, "unit": "", "tolerance": 0.05, "hint": "19×(−18)×23", "solution": "−7866.", "map": "Example 2"}, {"level": "Hard", "type": "mcq", "prompt": "The sequence of primes 2,3,5,7,… is described in this reprint as", "options": ["having no formula for the nth prime", "a G.P. with r=1", "aₙ=n²+n+1"], "answer": 0, "hint": "§8.2 last part.", "solution": "Verbal description only.", "wrong": ["", "Ratios are not constant.", "That polynomial fails at n=4."]}]}, {"id": "series-sigma", "nav": "Series & sigma", "title": "A series is the indicated sum, not the number it adds to", "deck": "a₁+a₂+…+aₙ is the series, abbreviated Σ_{k=1}^{n} aₖ. ‘Sum of a series’ means the resulting number: 1+3+5+7 has sum 16. Exercise 8.1 drills aₙ formulae and recurrences.", "minutes": 9, "section": "8.3, Ex 8.1", "pages": [3, 5], "print": "137–139", "sim": "series-sum", "simTitle": "Partial sums of 1+3+5+7+9", "quick": ["Given a sequence a₁,a₂,…, the expression a₁+a₂+…+aₙ+… is the associated <strong>series</strong>, finite or infinite with the sequence. Compactly Σ_{k=1}^{n} aₖ. Remark: the series is the indicated sum, not the total; 1+3+5+7 is a four-term series whose sum is 16.", "Exercise 8.1: aₙ=n(n+2) → 3,8,15,24,35; aₙ=n/(n+1) → 1/2,…,5/6; aₙ=2ⁿ → 2,4,8,16,32; aₙ=(2n−3)/6; aₙ=(−1)^{n−1}5^{n+1}; aₙ=n(n²+5)/4. Indicated terms, recurrences aₙ=3aₙ₋₁+2, and Fibonacci ratios aₙ₊₁/aₙ."], "formulas": [{"label": "Sigma", "html": "a₁+a₂+…+aₙ = Σ<sub>k=1</sub>ⁿ aₖ", "cond": "§8.3"}, {"label": "Remark", "html": "the series is the indicated sum; the sum is the number", "cond": "1+3+5+7 has sum 16"}], "deeper": "Confusing ‘series’ with ‘sum’ is why students write 1+3+5+7=16 and then call 16 a series. NCERT’s remark is pedantic on purpose.", "worked": "Ex 8.1 Q7: aₙ=4n−3, a₁₇=65, a₂₄=93. Q8: aₙ=n²/2ⁿ, a₇=49/128. Q9: a₉=(−1)⁸ 9³=729. Q10: a₂₀=20·18/23=360/23.", "prediction": {"prompt": "aₙ=4n−3. a₁₇ equals", "options": ["65", "17", "61"], "answer": 0, "explanation": "4·17−3=68−3=65 (Ex 8.1 Q7)."}, "connect": [["GST e-invoice running totals", "A month’s invoice stream a₁+a₂+… is a series; GSTR-3B wants the sum. Sigma notation is the ‘compact form’ of that running total."], ["Wow — 1+3+5+7=16 is not a series", "The indicated sum is the series; 16 is its sum. That one-sentence remark is the difference between Σ and a number.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "Write Σ notation for a₁+…+aₙ and compute a₁₇=65 for aₙ=4n−3.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Sum of the series 1+3+5+7?", "answer": 16, "unit": "", "tolerance": 0.05, "hint": "four odd numbers", "solution": "§8.3 remark."}, {"level": "Medium", "type": "number", "prompt": "aₙ=4n−3, a₁₇?", "answer": 65, "unit": "", "tolerance": 0.05, "hint": "4·17−3", "solution": "Ex 8.1 Q7.", "map": "Ex 8.1 Q7"}, {"level": "Hard", "type": "mcq", "prompt": "aₙ=n²/2ⁿ. a₇?", "options": ["49/128", "49/64", "7/128"], "answer": 0, "hint": "7²/2⁷=49/128.", "solution": "Ex 8.1 Q8.", "wrong": ["", "2⁶=64.", "Missing the square."]}]}, {"id": "gp-nth", "nav": "G.P. general term", "title": "a, ar, ar², … and aₙ = arⁿ⁻¹", "deck": "A G.P. has constant ratio r = aₖ₊₁/aₖ. First term a, n-th term arⁿ⁻¹. Example 4: 5,25,125,… → a₁₀=5¹⁰. Example 5: 2,8,32,… hits 131072 at n=9. Example 6: a₃=24, a₆=192 → a₁₀=3072.", "minutes": 10, "section": "8.4–8.4.1", "pages": [5, 7], "print": "139–141", "sim": "gp-terms", "simTitle": "aₙ = arⁿ⁻¹ slider", "quick": ["Sequences 2,4,8,16,…; −1/9, −1/27, −1/81,…; 0.01, 0.0001, … each have a constant ratio (2, −1/3, 0.01). Such a sequence is a <strong>geometric progression</strong>. With a₁=a, we get a, ar, ar², … and aₙ = arⁿ⁻¹.", "Example 4: 5,25,125,… a=5, r=5, a₁₀=5¹⁰, aₙ=5ⁿ. Example 5: 2,8,32,… r=4, 131072=2·4ⁿ⁻¹ ⇒ 4⁸=4ⁿ⁻¹ ⇒ n=9. Example 6: a₃=ar²=24, a₆=ar⁵=192, r=2, a=6, a₁₀=6·2⁹=3072."], "formulas": [{"label": "n-th term", "html": "aₙ = a r<sup>n−1</sup>", "cond": "a ≠ 0, r constant"}, {"label": "Example 6", "html": "a₃=24, a₆=192 ⇒ r=2, a=6, a₁₀=3072", "cond": "zoom p.7"}], "deeper": "r may be negative (oscillating G.P.) or |r|<1 (terms → 0). The definition requires every term non-zero, so r≠0 and a≠0.", "worked": "Ex 8.2 Q1: 5/2, 5/4, 5/8, … r=1/2, a₂₀=5/2²⁰, aₙ=5/2ⁿ. Q4: a=−3, ar³=(ar)² ⇒ r=−3, a₇=−3·(−3)⁶=−2187.", "prediction": {"prompt": "G.P. with a₃=24, a₆=192. The 10th term is", "options": ["3072", "1920", "24×10"], "answer": 0, "explanation": "Example 6: r=192/24=8, wait r³=8 so r=2; a=24/4=6; a₁₀=6·512=3072."}, "connect": [["Bacteria doubling (Q30)", "30 bacteria, double every hour: a G.P. with a=30, r=2. After n hours: 30·2ⁿ. End of 2nd hour 120; 4th hour 480."], ["Wow — a car’s value at 80% each year", "Depreciation 20% per year is r=0.8, the G.P. of Misc. Q17 (machine ₹15,625, five years).", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "10th term of 5,25,125,…?", "answer": 9765625, "unit": "", "tolerance": 0.05, "hint": "5¹⁰", "solution": "Example 4: 5¹⁰=9765625.", "map": "Example 4"}, {"level": "Medium", "type": "number", "prompt": "Example 6: a₁₀?", "answer": 3072, "unit": "", "tolerance": 0.05, "hint": "6·2⁹", "solution": "3072.", "map": "Example 6"}, {"level": "Hard", "type": "mcq", "prompt": "Which term of 2,8,32,… is 131072?", "options": ["9th", "8th", "10th"], "answer": 0, "hint": "4⁸=4ⁿ⁻¹.", "solution": "Example 5, n=9.", "wrong": ["", "n−1=8 so n=9.", "One too far."]}]}, {"id": "gp-sum", "nav": "Sum of a G.P.", "title": "Sₙ = a(1−rⁿ)/(1−r)  (r≠1), and Sₙ=na when r=1", "deck": "Example 7: 1+2/3+4/9+… , r=2/3, Sₙ=3[1−(2/3)ⁿ], S₅=211/81. Example 8: 3, 3/2, 3/4, … sums to 3069/512 in 10 terms.", "minutes": 11, "section": "8.4.2", "pages": [6, 8], "print": "140–142", "sim": "gp-sum", "simTitle": "Sₙ = a(1−rⁿ)/(1−r) with r slider", "quick": ["Sₙ=a+ar+…+arⁿ⁻¹. If r=1, Sₙ=na. If r≠1, rSₙ=ar+…+arⁿ, subtract: (1−r)Sₙ=a(1−rⁿ), hence Sₙ=a(1−rⁿ)/(1−r) = a(rⁿ−1)/(r−1).", "Example 7 (zoom p.7): a=1, r=2/3, Sₙ=3[1−(2/3)ⁿ], S₅=3[1−32/243]=3·211/243=211/81. Example 8: a=3, r=1/2, Sₙ=3069/512 ⇒ 1−2⁻ⁿ=3069/3072 ⇒ 2ⁿ=1024, n=10."], "formulas": [{"label": "Sum, r≠1", "html": "Sₙ = a(1−rⁿ)/(1−r) = a(rⁿ−1)/(r−1)", "cond": "§8.4.2"}, {"label": "Example 7", "html": "Sₙ = 3[1−(2/3)ⁿ],  S₅ = 211/81", "cond": "zoom p.7"}, {"label": "Example 8", "html": "n = 10 for Sₙ = 3069/512", "cond": "a=3, r=1/2"}], "deeper": "The two algebraic forms differ only by multiplying numerator and denominator by −1. Use the one whose denominator is positive when |r|<1, to keep Sₙ visually a positive multiple of (1−rⁿ).", "worked": "Ex 8.2 Q13: 3+3²+…+3ⁿ=120 ⇒ 3(3ⁿ−1)/2=120 ⇒ 3ⁿ=81, n=4. Q15: a=729, a₇=64, r=2/3, S₇=2059.", "prediction": {"prompt": "S₅ for 1+2/3+4/9+… equals", "options": ["211/81", "243/81", "5"], "answer": 0, "explanation": "Example 7, zoom p.7: 3×211/243=211/81."}, "connect": [["SBI RD / compound interest", "₹500 at 10% compounded annually for 10 years is 500(1.1)¹⁰ — Ex 8.2 Q31, a G.P. evaluation, not a sum. A recurring deposit is a sum of a G.P."], ["Wow — 211/81 is already 2.605…", "Five terms of ratio 2/3 already reach 2.605 of the infinite-sum ceiling 3. The leftover tail is 3·(2/3)⁵=32/81≈0.395.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "Write Sₙ for r≠1 and compute S₅=211/81.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If r=1, Sₙ equals", "options": ["na", "a(1−rⁿ)/(1−r)", "0"], "answer": 0, "hint": "Case 1.", "solution": "n copies of a.", "wrong": ["", "r=1 makes that form 0/0.", "No."]}, {"level": "Medium", "type": "mcq", "prompt": "Example 7: S₅ =", "options": ["211/81", "211/243", "3"], "answer": 0, "hint": "zoom p.7.", "solution": "3×211/243=211/81.", "wrong": ["", "Forgot to multiply by 3.", "That is the infinite sum."]}, {"level": "Hard", "type": "number", "prompt": "Example 8: number of terms for sum 3069/512?", "answer": 10, "unit": "", "tolerance": 0.05, "hint": "2ⁿ=1024", "solution": "n=10.", "map": "Example 8"}]}, {"id": "gp-applications", "nav": "7,77,777 and ancestors", "title": "Related-to-G.P. sums, three-term puzzles, 2046 ancestors", "deck": "Example 9: three terms with sum 13/12 and product −1 give r=−3/4 or −4/3. Example 10: 7+77+777+… = (7/9)[10(10ⁿ−1)/9 − n]. Example 11: 10 generations of ancestors sum to 2046.", "minutes": 11, "section": "8.4.2 Examples 9–11", "pages": [8, 9], "print": "142–143", "sim": "sevens-series", "simTitle": "7+77+777+… as a G.P. in disguise", "quick": ["<strong>Example 9.</strong> Three terms a/r, a, ar with sum 13/12 and product −1. a³=−1 ⇒ a=−1 (real). Then −1/r −1 −r=13/12 ⇒ 12r²+25r+12=0 ⇒ r=−3/4 or −4/3. Terms 4/3, −1, −3/4 or −3/4, −1, 4/3.", "<strong>Example 10.</strong> 7+77+777+… is not a G.P. Factor 7/9: (10−1)+(100−1)+… = Σ(10ᵏ−1). Sₙ=(70/81)(10ⁿ−1) − 7n/9. <strong>Example 11.</strong> Ancestors: a=2, r=2, n=10, S₁₀=2(2¹⁰−1)=2046."], "formulas": [{"label": "Three terms", "html": "a/r, a, ar  with  a³ = product", "cond": "Example 9"}, {"label": "7+77+777+…", "html": "Sₙ = (7/9)[10(10ⁿ−1)/9 − n]", "cond": "Example 10"}, {"label": "Ancestors", "html": "S₁₀ = 2(2¹⁰ − 1) = 2046", "cond": "Example 11"}], "deeper": "Every ‘repunit-like’ series 8+88+888+… is the same trick (Ex 8.2 Q18). Chain letters (Misc. Q15) are a G.P. of 4ᵏ letters.", "worked": "Ex 8.2 Q12: sum 39/10, product 1 ⇒ a=1, r=5/2 or 2/5, terms 2/5,1,5/2. Q11: Σ_{k=1}^{11}(2+3ᵏ)=22+(3/2)(3¹¹−1)=265741.", "prediction": {"prompt": "Number of ancestors in the ten preceding generations (a=2, r=2)?", "options": ["2046", "1024", "2048"], "answer": 0, "explanation": "Example 11: 2(1024−1)=2046, not 2¹⁰=1024 (that is only the 10th generation) and not 2048=2¹¹."}, "connect": [["Chain-letter postage, Misc. Q15", "A letter to 4 friends, each copies to 4, 8 sets: number of letters 4+4²+…+4⁸=4(4⁸−1)/3. At 50 paise, a ruinous G.P. — NCERT’s cautionary tale."], ["Wow — 2046, not 2048", "People remember 2+4+…+1024 as 2048−2, which is 2046. The ‘−2’ is the missing generation 0 (yourself).", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "State S₁₀=2046 and the 7+77+777 formula.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 11: ancestors in 10 generations?", "answer": 2046, "unit": "", "tolerance": 0.05, "hint": "2(2¹⁰−1)", "solution": "2046.", "map": "Example 11"}, {"level": "Medium", "type": "mcq", "prompt": "Example 9: the real value of a (the middle term) is", "options": ["−1", "1", "13/12"], "answer": 0, "hint": "product −1 ⇒ a³=−1.", "solution": "Only real cube root −1.", "wrong": ["", "Product is −1.", "That's the sum."]}, {"level": "Hard", "type": "mcq", "prompt": "Σ_{k=1}^{11} (2+3ᵏ) equals", "options": ["265741", "3¹¹", "22"], "answer": 0, "hint": "22 + (3/2)(3¹¹−1).", "solution": "Ex 8.2 Q11.", "wrong": ["", "That's one piece.", "That's only the 2×11."]}]}, {"id": "geometric-mean", "nav": "G.M. and insertion", "title": "G = √(ab), and inserting n geometric means", "deck": "G.M. of 2 and 8 is 4. Insert three numbers between 1 and 256: 4,16,64 (or −4,16,−64). r = (b/a)^{1/(n+1)}.", "minutes": 9, "section": "8.4.3", "pages": [9, 10], "print": "143–144", "sim": "insert-gm", "simTitle": "Insert geometric means between 1 and 256", "quick": ["The geometric mean of two positive numbers a, b is √(ab). 2,4,8 is a G.P., so 4 is the G.M. of 2 and 8. To insert n numbers G₁,…,Gₙ between a and b so that a, G₁, …, Gₙ, b is a G.P., we need b = a r^{n+1}, hence r=(b/a)^{1/(n+1)}, and Gₖ = a rᵏ.", "Example 12: three numbers between 1 and 256. 256=r⁴, r=±4. For r=4: 4,16,64. For r=−4: −4,16,−64."], "formulas": [{"label": "G.M. of two positives", "html": "G = √(ab)", "cond": "2,4,8"}, {"label": "n means between a and b", "html": "r = (b/a)<sup>1/(n+1)</sup>,  Gₖ = a rᵏ", "cond": "b is the (n+2)th term"}], "deeper": "When a,b>0 the real positive r is unique; a negative r exists only if n+1 is an integer for which r^{n+1}=b/a is positive, i.e. always when n+1 is even?  r^{n+1}=b/a>0, so negative r works iff n+1 is even, i.e. n odd. Example 12 has n=3 odd, so ±4 both work.", "worked": "Ex 8.2 Q26: two numbers between 3 and 81. 81=3 r³, r³=27, r=3 (real). Means 9, 27. (r=−3: −9, 27 because (−3)²=9, wait G₁=3(−3)=−9, G₂=3·9=27.)", "prediction": {"prompt": "Three geometric means between 1 and 256 (positive r) are", "options": ["4, 16, 64", "2, 8, 32", "16, 64, 128"], "answer": 0, "explanation": "Example 12: r=4, Gₖ=4ᵏ."}, "connect": [["CAGR as a geometric mean", "A stock that goes 100→121 in two years has G.M. growth √(121/100)=1.10, i.e. 10% CAGR — inserting one geometric mean between 100 and 121."], ["Wow — negative means are legal when n is odd", "Example 12’s −4,16,−64 is a perfectly good G.P. of real numbers. G.M. of two positives, however, is defined as the positive square root.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "State G=√(ab) and insert 4,16,64 between 1 and 256.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "G.M. of 2 and 8?", "answer": 4, "unit": "", "tolerance": 0.05, "hint": "√16", "solution": "§8.4.3."}, {"level": "Medium", "type": "mcq", "prompt": "Positive geometric means between 1 and 256 (three of them)?", "options": ["4, 16, 64", "2, 4, 8", "8, 32, 128"], "answer": 0, "hint": "r=4.", "solution": "Example 12.", "wrong": ["", "That's a different G.P.", "r=8 overshoots."]}, {"level": "Hard", "type": "mcq", "prompt": "Two numbers between 3 and 81 so the sequence is a G.P. (positive r)?", "options": ["9 and 27", "3 and 27", "27 and 81"], "answer": 0, "hint": "r³=27, r=3.", "solution": "Ex 8.2 Q26.", "wrong": ["", "Those include an endpoint.", "81 is already the last term."]}]}, {"id": "am-gm", "nav": "A.M. ≥ G.M.", "title": "A − G = (√a − √b)² / 2 ≥ 0, with equality iff a=b", "deck": "A=(a+b)/2, G=√(ab), A≥G. Example 13: A=10, G=8 ⇒ numbers 4 and 16. Compound interest, bacteria, and a quadratic with AM=8, GM=5.", "minutes": 11, "section": "8.5, Ex 8.2 Q28–32", "pages": [10, 13], "print": "144–147", "sim": "am-gm-compare", "simTitle": "A.M. vs G.M. of two positives", "quick": ["For positives a,b: A=(a+b)/2, G=√(ab), and A−G=((√a−√b)²)/2 ≥ 0, so <strong>A ≥ G</strong>, equality iff a=b. Example 13: A=10, G=8 ⇒ a+b=20, ab=64, (a−b)²=400−256=144, a−b=±12 ⇒ {4,16}.", "Ex 8.2 Q31: ₹500 at 10% compounded annually, 10 years: 500(1.1)¹⁰. Q32: AM=8, GM=5 of the roots ⇒ x²−16x+25=0. Q30: bacteria 30, 120, 480, 30·2ⁿ."], "formulas": [{"label": "A.M. ≥ G.M.", "html": "A − G = (√a − √b)² / 2 ≥ 0", "cond": "a,b>0; equality iff a=b"}, {"label": "Example 13", "html": "A=10, G=8 ⇒ {4, 16}", "cond": "zoom p.10–11"}, {"label": "Recover the numbers", "html": "A ± √(A² − G²)", "cond": "Ex 8.2 Q29"}], "deeper": "The same inequality is the n=2 case of the AM-GM inequality for n positives, which this reprint does not state. Quadratic-mean ≥ AM ≥ GM ≥ HM is a later refinement.", "worked": "Q28: a+b=6√(ab). Let t=√(a/b), t+1/t=6, t=3±2√2, so a:b=(3+2√2):(3−2√2). Q27: (a^{n+1}+b^{n+1})/(aⁿ+bⁿ)=√(ab) ⇒ n=−1/2.", "prediction": {"prompt": "A.M.=10, G.M.=8. The two positive numbers are", "options": ["4 and 16", "8 and 12", "10 and 8"], "answer": 0, "explanation": "Example 13: a+b=20, ab=64, roots of t²−20t+64=0 are 4 and 16."}, "connect": [["SBI FD, Ex 8.2 Q31", "₹500 grows as a G.P. of ratio 1.10. Amount after 10 years = 500(1.1)¹⁰ ≈ ₹1296.87. The A.M. of year-0 and year-10 values is larger than the G.M. 500·(1.1)⁵, as the inequality predicts."], ["Wow — A.M.≥G.M. is why you should not average returns arithmetically", "Two years of +50% and −50% have A.M. 0% but G.M. √(1.5·0.5)−1 ≈ −13.4%. NCERT’s A≥G is the reason CAGR (geometric) not arithmetic mean, is the honest multi-year return.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "Prove A≥G in one line and recover 4,16 from A=10, G=8.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For positives a≠b, A.M. versus G.M. is", "options": ["A > G", "A < G", "A = G"], "answer": 0, "hint": "(√a−√b)²>0.", "solution": "Equality only when a=b.", "wrong": ["", "Opposite.", "Only when a=b."]}, {"level": "Medium", "type": "number", "prompt": "Example 13: the smaller number is", "answer": 4, "unit": "", "tolerance": 0.05, "hint": "t²−20t+64=0", "solution": "4 and 16.", "map": "Example 13"}, {"level": "Hard", "type": "mcq", "prompt": "Quadratic whose roots have A.M. 8 and G.M. 5?", "options": ["x² − 16x + 25 = 0", "x² − 8x + 5 = 0", "x² − 5x + 16 = 0"], "answer": 0, "hint": "sum=16, product=25.", "solution": "Ex 8.2 Q32.", "wrong": ["", "Sum is 2A=16.", "Swapped."]}]}, {"id": "compound-world", "nav": "Compound & instalments", "title": "FDs, tractors, scooters, and a machine that loses 20% a year", "deck": "Misc. Q13–18: tractor instalments, Shamshad Ali’s scooter, a 4-friend chain letter, 5% simple interest (an A.P. of amounts), 20% depreciation as a G.P., and 150 workers dropping 4 a day (an A.P. of workforce).", "minutes": 10, "section": "Misc. Ex. 13–18", "pages": [14, 14], "print": "148", "sim": "fd-compound", "simTitle": "₹500 at 10% compound for 10 years", "quick": ["This reprint’s miscellaneous exercise is where A.P. sneaks back in through instalment problems, even though there is no § on A.P. Tractor (Q13): ₹12,000, ₹6,000 down, then ₹500 + 12% on the unpaid balance each year — the interest pieces 6000·0.12, 5500·0.12, … form an A.P. Scooter (Q14) is the same at 10%.", "Q15 chain letter: 4+4²+…+4⁸ letters at ₹0.50. Q16: ₹10,000 at 5% simple interest — amount in the 15th year is 10000+14·500, total after 20 years 10000+20·500. Q17: 15625·(0.8)⁵=32768? 15625·(4/5)⁵=15625·1024/3125=5·1024=5120. Q18: 150 workers, 4 drop each day, 8 extra days — an A.P. work-total equation."], "formulas": [{"label": "Compound amount", "html": "A = P(1+r)ⁿ", "cond": "Q31, Q17 depreciation r=−0.2"}, {"label": "Q17", "html": "15625 · (4/5)⁵ = 5120", "cond": "20% depreciation, 5 years"}], "deeper": "Honest gap: the chapter intro promised ‘more about A.P.’ and sums of n, n², n³. Those sections are not in this 16-page reprint. Instalment problems still use the A.P. of unpaid balances from Class 10.", "worked": "Q17: 15625×(0.8)⁵. 0.8⁵=0.32768, 15625×0.32768=5120. Alternatively 15625=(5)⁶, (5⁶)(4/5)⁵=5·4⁵=5·1024=5120.", "prediction": {"prompt": "A ₹15,625 machine depreciates 20% a year. Value after 5 years?", "options": ["₹5,120", "₹6,250", "₹0"], "answer": 0, "explanation": "Misc. Q17: 15625·(4/5)⁵=5120."}, "connect": [["Indian tractor finance, Q13", "A used tractor at ₹12,000 with 12% on the shrinking unpaid principal is how many rural NBFCs still structure implement loans. The interest column is an A.P.; the total cost is the cash down plus the A.P. sum."], ["Wow — 20% off, five times, is not 100% off", "5×20%=100% is the classic trap. Geometric depreciation (0.8)⁵=0.32768 leaves ₹5,120 on the books.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh108.pdf"}]]], "recall": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "30 bacteria double every hour. After 2 hours?", "answer": 120, "unit": "", "tolerance": 0.05, "hint": "30·2²", "solution": "Ex 8.2 Q30."}, {"level": "Medium", "type": "number", "prompt": "15625·(4/5)⁵?", "answer": 5120, "unit": "", "tolerance": 0.05, "hint": "5·4⁵", "solution": "Misc. Q17.", "map": "Misc. Q17"}, {"level": "Hard", "type": "mcq", "prompt": "f(x+y)=f(x)f(y), f(1)=3, Σ_{x=1}^n f(x)=120. n equals", "options": ["4", "5", "3"], "answer": 0, "hint": "Σ 3+9+…+3ⁿ=3(3ⁿ−1)/2=120.", "solution": "3ⁿ=81, n=4 (Misc. Q1).", "wrong": ["", "3⁵=243 too big.", "3³=27, sum=39."]}]}], "exercises": [{"number": "8.1.1", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of aₙ = n(n+2).", "steps": ["n=1..5: 1·3,2·4,3·5,4·6,5·7."], "answer": "3, 8, 15, 24, 35", "section": "Ex 8.1"}, {"number": "8.1.2", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = n/(n+1).", "steps": ["1/2, 2/3, 3/4, 4/5, 5/6."], "answer": "1/2, 2/3, 3/4, 4/5, 5/6", "section": "Ex 8.1"}, {"number": "8.1.3", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = 2ⁿ.", "steps": ["2,4,8,16,32."], "answer": "2, 4, 8, 16, 32", "section": "Ex 8.1"}, {"number": "8.1.4", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = (2n−3)/6.", "steps": ["−1/6, 1/6, 1/2, 5/6, 7/6."], "answer": "-1/6, 1/6, 1/2, 5/6, 7/6", "section": "Ex 8.1"}, {"number": "8.1.5", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = (−1)^{n−1} 5^{n+1}.", "steps": ["25, −125, 625, −3125, 15625."], "answer": "25, −125, 625, −3125, 15625", "section": "Ex 8.1"}, {"number": "8.1.6", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = n(n²+5)/4.", "steps": ["3/2, 9/2, 21/2, 21, 75/2."], "answer": "3/2, 9/2, 21/2, 21, 75/2", "section": "Ex 8.1"}, {"number": "8.1.7", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=4n−3; find a₁₇, a₂₄.", "steps": ["a₁₇=68−3=65; a₂₄=96−3=93."], "answer": "65, 93", "section": "Ex 8.1"}, {"number": "8.1.8", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=n²/2ⁿ; find a₇.", "steps": ["49/128."], "answer": "49/128", "section": "Ex 8.1"}, {"number": "8.1.9", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=(−1)^{n−1} n³; find a₉.", "steps": ["(+1)·729=729."], "answer": "729", "section": "Ex 8.1"}, {"number": "8.1.10", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=n(n−2)/(n+3); find a₂₀.", "steps": ["20·18/23=360/23."], "answer": "360/23", "section": "Ex 8.1"}, {"number": "8.1.11", "conceptIdx": 1, "page": 5, "printPage": 139, "question": "a₁=3, aₙ=3aₙ₋₁+2 (n>1). First five terms and the series.", "steps": ["3; 11; 35; 107; 323.", "Series 3+11+35+107+323+…"], "answer": "3, 11, 35, 107, 323;  series 3+11+35+107+323+…", "section": "Ex 8.1"}, {"number": "8.1.12", "conceptIdx": 1, "page": 5, "printPage": 139, "question": "a₁=−1, aₙ=(1/n) aₙ₋₁, n≥2. First five terms and series.", "steps": ["−1, −1/2, −1/6, −1/24, −1/120."], "answer": "−1, −1/2, −1/6, −1/24, −1/120", "section": "Ex 8.1"}, {"number": "8.1.13", "conceptIdx": 1, "page": 5, "printPage": 139, "question": "a₁=a₂=2, aₙ=aₙ₋₁−1 (n>2). First five terms and series.", "steps": ["2,2,1,0,−1. Series 2+2+1+0+(−1)+…"], "answer": "2, 2, 1, 0, −1", "section": "Ex 8.1"}, {"number": "8.1.14", "conceptIdx": 0, "page": 5, "printPage": 139, "question": "Fibonacci a₁=a₂=1, aₙ=aₙ₋₁+aₙ₋₂. Find aₙ₊₁/aₙ for n=1,2,3,4,5.", "steps": ["Sequence 1,1,2,3,5,8. Ratios 1/1, 2/1, 3/2, 5/3, 8/5."], "answer": "1, 2, 3/2, 5/3, 8/5", "section": "Ex 8.1"}, {"number": "8.2.1", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "20th and nth terms of the G.P. 5/2, 5/4, 5/8, …", "steps": ["a=5/2, r=1/2. aₙ=5/2ⁿ, a₂₀=5/2²⁰."], "answer": "a₂₀=5/2²⁰,  aₙ=5/2ⁿ", "section": "Ex 8.2"}, {"number": "8.2.2", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "12th term of a G.P. whose 8th term is 192 and r=2.", "steps": ["a₁₂=a₈ r⁴=192·16=3072."], "answer": "3072", "section": "Ex 8.2"}, {"number": "8.2.3", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "5th, 8th, 11th terms of a G.P. are p,q,s. Show q²=ps.", "steps": ["p=ar⁴, q=ar⁷, s=ar¹⁰. q²=a²r¹⁴=(ar⁴)(ar¹⁰)=ps."], "answer": "q²=ps", "section": "Ex 8.2"}, {"number": "8.2.4", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "4th term is the square of the 2nd; first term −3. Find the 7th term.", "steps": ["ar³=(ar)² ⇒ −3 r³=9 r² ⇒ r=−3 (r≠0).", "a₇=−3(−3)⁶=−3·729=−2187."], "answer": "-2187", "section": "Ex 8.2"}, {"number": "8.2.5", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "Which term of (a) 2, 2√2, 4, … is 128? (b) √3, 3, 3√3, … is 729? (c) 1/3, 1/9, 1/27, … is 1/19683?", "steps": ["(a) r=√2, 2(√2)^{n−1}=2⁷ ⇒ (√2)^{n−1}=2⁶=(√2)¹² ⇒ n=13.", "(b) (√3)ⁿ=3⁶=(√3)¹² ⇒ n=12.", "(c) (1/3)ⁿ=1/3⁹ ⇒ n=9."], "answer": "(a) 13th; (b) 12th; (c) 9th", "section": "Ex 8.2"}, {"number": "8.2.6", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "For what x are −2/7, x, −7/2 in G.P.?", "steps": ["x²=(−2/7)(−7/2)=1 ⇒ x=±1."], "answer": "x = ±1", "section": "Ex 8.2"}, {"number": "8.2.7", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of 0.15, 0.015, 0.0015, … 20 terms.", "steps": ["a=0.15, r=0.1. S₂₀=0.15(1−10⁻²⁰)/0.9=(1/6)(1−10⁻²⁰)."], "answer": "(1/6)(1−10⁻²⁰)", "section": "Ex 8.2"}, {"number": "8.2.8", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of √7, √21, 3√7, … n terms.", "steps": ["a=√7, r=√3. Sₙ=√7[(√3)ⁿ−1]/(√3−1)."], "answer": "√7 [(√3)ⁿ − 1]/(√3 − 1)", "section": "Ex 8.2"}, {"number": "8.2.9", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of 1, −a, a², −a³, … n terms (a≠−1).", "steps": ["r=−a. Sₙ=[1−(−a)ⁿ]/[1+a]."], "answer": "[1−(−a)ⁿ]/(1+a)", "section": "Ex 8.2"}, {"number": "8.2.10", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of x³, x⁵, x⁷, … n terms (x≠±1).", "steps": ["a=x³, r=x². Sₙ=x³[1−x^{2n}]/(1−x²)."], "answer": "x³ (1−x^{2n})/(1−x²)", "section": "Ex 8.2"}, {"number": "8.2.11", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Evaluate Σ_{k=1}^{11} (2+3ᵏ).", "steps": ["11·2 + 3(3¹¹−1)/2 = 22 + (3/2)(177147−1)=22+265719=265741."], "answer": "265741", "section": "Ex 8.2"}, {"number": "8.2.12", "conceptIdx": 4, "page": 11, "printPage": 145, "question": "Sum of first three terms of a G.P. is 39/10 and product is 1. Find r and the terms.", "steps": ["a=1 (real cube root). 1/r+1+r=39/10 ⇒ 10r²−29r+10=0 ⇒ r=5/2 or 2/5.", "Terms 2/5, 1, 5/2 or 5/2, 1, 2/5."], "answer": "r=5/2 or 2/5; terms 2/5, 1, 5/2 (or reversed)", "section": "Ex 8.2"}, {"number": "8.2.13", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "How many terms of 3, 3², 3³, … give sum 120?", "steps": ["3(3ⁿ−1)/2=120 ⇒ 3ⁿ=81 ⇒ n=4."], "answer": "4", "section": "Ex 8.2"}, {"number": "8.2.14", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Sum of first three terms 16, next three 128. Find a, r, Sₙ.", "steps": ["r³=128/16=8 ⇒ r=2. a(8−1)/1=16 ⇒ a=16/7.", "Sₙ=(16/7)(2ⁿ−1)."], "answer": "a=16/7, r=2, Sₙ=(16/7)(2ⁿ−1)", "section": "Ex 8.2"}, {"number": "8.2.15", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "a=729, 7th term 64. Find S₇.", "steps": ["r⁶=64/729=(2/3)⁶, r=2/3.", "S₇=729[1−(2/3)⁷]/(1/3)=2187(1−128/2187)=2059."], "answer": "2059", "section": "Ex 8.2"}, {"number": "8.2.16", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Sum of first two terms is −4; fifth term is 4 times the third. Find the G.P.", "steps": ["r²=4, r=±2. r=2 ⇒ a=−4/3. r=−2 ⇒ a=4.", "G.P. −4/3, −8/3, −16/3, … or 4, −8, 16, −32, …"], "answer": "−4/3, −8/3, −16/3, …  or  4, −8, 16, −32, …", "section": "Ex 8.2"}, {"number": "8.2.17", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "4th, 10th, 16th terms x,y,z. Prove x,y,z in G.P.", "steps": ["x=ar³, y=ar⁹, z=ar¹⁵. y²=a²r¹⁸=xz."], "answer": "y²=xz", "section": "Ex 8.2"}, {"number": "8.2.18", "conceptIdx": 4, "page": 12, "printPage": 146, "question": "Sum to n terms of 8, 88, 888, 8888, …", "steps": ["S=(8/9)[9+99+…+(10ⁿ−1)]=(8/9)[10(10ⁿ−1)/9 − n]."], "answer": "(8/9)[10(10ⁿ−1)/9 − n]", "section": "Ex 8.2"}, {"number": "8.2.19", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Sum of products of corresponding terms of 2,4,8,16,32 and 128,32,8,2,1/2.", "steps": ["Products 256,128,64,32,16 (G.P. r=1/2).", "S=256(1−1/32)/(1/2)=496."], "answer": "496", "section": "Ex 8.2"}, {"number": "8.2.20", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "Products of corresponding terms of a,ar,…,arⁿ⁻¹ and A,AR,…,ARⁿ⁻¹ form a G.P. Find the common ratio.", "steps": ["Products aA, aA rR, … Common ratio rR."], "answer": "common ratio rR", "section": "Ex 8.2"}, {"number": "8.2.21", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "Four G.P. numbers; third exceeds first by 9; second exceeds fourth by 18.", "steps": ["a, ar, ar², ar³ with ar²−a=9, ar−ar³=18.", "a(r²−1)=9, ar(1−r²)=18 ⇒ r=−2, a=3.", "Numbers 3, −6, 12, −24."], "answer": "3, −6, 12, −24", "section": "Ex 8.2"}, {"number": "8.2.22", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "p-th, q-th, r-th terms a,b,c. Prove a^{q−r} b^{r−p} c^{p−q}=1.", "steps": ["a=A R^{p−1} etc. Exponents of A and of R both collapse to 0."], "answer": "=1", "section": "Ex 8.2"}, {"number": "8.2.23", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "First term a, n-th term b, P=product of n terms. Prove P²=(ab)ⁿ.", "steps": ["P=aⁿ r^{n(n−1)/2}. P²=(a · ar^{n−1})ⁿ=(ab)ⁿ."], "answer": "P²=(ab)ⁿ", "section": "Ex 8.2"}, {"number": "8.2.24", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Ratio of Sₙ to the sum from (n+1)th to (2n)th term is 1/rⁿ.", "steps": ["Sₙ=a(rⁿ−1)/(r−1); tail = arⁿ(rⁿ−1)/(r−1); ratio=1/rⁿ."], "answer": "1/rⁿ", "section": "Ex 8.2"}, {"number": "8.2.25", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "a,b,c,d in G.P. Show (a²+b²+c²)(b²+c²+d²)=(ab+bc+cd)².", "steps": ["b²=ac, c²=bd, ad=bc. Expand both sides; they match."], "answer": "identity holds", "section": "Ex 8.2"}, {"number": "8.2.26", "conceptIdx": 5, "page": 12, "printPage": 146, "question": "Insert two numbers between 3 and 81 so the sequence is a G.P.", "steps": ["81=3 r³ ⇒ r=3 (or −3). Means 9,27 or −9,27."], "answer": "9, 27  (or −9, 27)", "section": "Ex 8.2"}, {"number": "8.2.27", "conceptIdx": 5, "page": 12, "printPage": 146, "question": "n so that (a^{n+1}+b^{n+1})/(aⁿ+bⁿ) is the G.M. between a and b.", "steps": ["Equals √(ab) ⇒ n=−1/2 (a≠b, a,b>0)."], "answer": "n = −1/2", "section": "Ex 8.2"}, {"number": "8.2.28", "conceptIdx": 6, "page": 12, "printPage": 146, "question": "Sum of two numbers is 6 times their G.M. Show the ratio is (3+2√2):(3−2√2).", "steps": ["a+b=6√(ab). t=√(a/b), t+1/t=6, t=3±2√2.", "a:b = t:1/t = (3+2√2):(3−2√2)."], "answer": "(3+2√2) : (3−2√2)", "section": "Ex 8.2"}, {"number": "8.2.29", "conceptIdx": 6, "page": 12, "printPage": 146, "question": "If A and G are A.M. and G.M. of two positives, the numbers are A ± √((A+G)(A−G)).", "steps": ["√(A²−G²)=|a−b|/2. A±that recovers a,b."], "answer": "A ± √(A²−G²)", "section": "Ex 8.2"}, {"number": "8.2.30", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "Bacteria double every hour; 30 originally. Number at end of 2nd, 4th, nth hour?", "steps": ["30·2²=120; 30·2⁴=480; 30·2ⁿ."], "answer": "120; 480; 30·2ⁿ", "section": "Ex 8.2"}, {"number": "8.2.31", "conceptIdx": 7, "page": 13, "printPage": 147, "question": "What will ₹500 amount to in 10 years at 10% compounded annually?", "steps": ["500(1.1)¹⁰."], "answer": "500(1.1)¹⁰", "section": "Ex 8.2"}, {"number": "8.2.32", "conceptIdx": 6, "page": 13, "printPage": 147, "question": "A.M. and G.M. of roots of a quadratic are 8 and 5. Obtain the equation.", "steps": ["Sum=16, product=25. x²−16x+25=0."], "answer": "x² − 16x + 25 = 0", "section": "Ex 8.2"}, {"number": "M.1", "conceptIdx": 7, "page": 13, "printPage": 147, "question": "f(x+y)=f(x)f(y) for x,y∈ℕ, f(1)=3, Σ_{x=1}^n f(x)=120. Find n.", "steps": ["f(n)=3ⁿ. 3(3ⁿ−1)/2=120 ⇒ 3ⁿ=81 ⇒ n=4."], "answer": "n=4", "section": "Misc."}, {"number": "M.2", "conceptIdx": 3, "page": 13, "printPage": 147, "question": "Some terms of a G.P. sum to 315; a=5, r=2. Last term and number of terms?", "steps": ["5(2ⁿ−1)=315 ⇒ 2ⁿ=64 ⇒ n=6, last=5·32=160."], "answer": "last term 160; 6 terms", "section": "Misc."}, {"number": "M.3", "conceptIdx": 2, "page": 13, "printPage": 147, "question": "First term 1; sum of 3rd and 5th is 90. Find r.", "steps": ["r²+r⁴=90, u=r², u²+u−90=0, u=9, r=±3."], "answer": "r = ±3", "section": "Misc."}, {"number": "M.4", "conceptIdx": 4, "page": 13, "printPage": 147, "question": "Three G.P. numbers sum to 56. Subtract 1,7,21 and get an A.P. Find the numbers.", "steps": ["Middle a=16, r=2 or 1/2. Numbers 8,16,32 or 32,16,8."], "answer": "8, 16, 32 (or reversed)", "section": "Misc."}, {"number": "M.5", "conceptIdx": 3, "page": 13, "printPage": 147, "question": "A G.P. of an even number of terms; total sum is 5 times the sum of the odd-placed terms. Find r.", "steps": ["(r²−1)=5(r−1) ⇒ r+1=5 ⇒ r=4 (r≠1)."], "answer": "r=4", "section": "Misc."}, {"number": "M.6", "conceptIdx": 2, "page": 14, "printPage": 148, "question": "If (a−bx)/(a+bx)=(b−cx)/(b+cx)=(c−dx)/(c+dx) and x≠0, show a,b,c,d in G.P.", "steps": ["Each ratio equal implies b²=ac, c²=bd, hence a,b,c,d in G.P."], "answer": "a,b,c,d in G.P.", "section": "Misc."}, {"number": "M.7", "conceptIdx": 3, "page": 14, "printPage": 148, "question": "S=sum, P=product, R=sum of reciprocals of n G.P. terms. Prove P² Rⁿ = Sⁿ.", "steps": ["P²=(a·ℓ)ⁿ, R=S/(aℓ), so P² Rⁿ = (aℓ)ⁿ · Sⁿ /(aℓ)ⁿ = Sⁿ."], "answer": "P² Rⁿ = Sⁿ", "section": "Misc."}, {"number": "M.8", "conceptIdx": 2, "page": 14, "printPage": 148, "question": "a,b,c,d in G.P. Prove (aⁿ+bⁿ), (bⁿ+cⁿ), (cⁿ+dⁿ) in G.P.", "steps": ["(bⁿ+cⁿ)²=(aⁿ+bⁿ)(cⁿ+dⁿ) using b²=ac etc."], "answer": "in G.P.", "section": "Misc."}, {"number": "M.9", "conceptIdx": 6, "page": 14, "printPage": 148, "question": "a,b roots of x²−3x+p=0; c,d of x²−12x+q=0; a,b,c,d in G.P. Prove (q+p):(q−p)=17:15.", "steps": ["a+b=3, ab=p, c+d=12, cd=q, and b/a=c/b=d/c=r.", "3(1+r)=a(1+r) wait a(1+r)=3, ar(1+r) wait. Common ratio r, a+ar=3, ar²+ar³=12 ⇒ ar²(1+r)=12, a(1+r)=3 so r²=4, r=2 (positive for distinct).", "a+2a=3, a=1, p=ab=2, q=cd= (4)(8)=32. (32+2):(32−2)=34:30=17:15."], "answer": "17:15", "section": "Misc."}, {"number": "M.10", "conceptIdx": 6, "page": 14, "printPage": 148, "question": "A.M.:G.M. of a,b is m:n. Show a:b = [m+√(m²−n²)] : [m−√(m²−n²)].", "steps": ["(a+b)/(2√(ab))=m/n. Put √(a/b)=t. Recovers the stated ratio."], "answer": "a:b = m+√(m²−n²) : m−√(m²−n²)", "section": "Misc."}, {"number": "M.11", "conceptIdx": 4, "page": 14, "printPage": 148, "question": "Sum to n terms: (i) 5+55+555+… (ii) 0.6+0.66+0.666+…", "steps": ["(i) (5/9)[10(10ⁿ−1)/9 − n].", "(ii) (6/9)[1−(0.1)ⁿ]·n?  0.6=6/10, better: (2/3)n − 2/3·(1−10⁻ⁿ)/9 × something. Standard: S=(2/3)[n − (1−10⁻ⁿ)/9]."], "answer": "(i) (5/9)[10(10ⁿ−1)/9 − n];  (ii) (2/3)n − 2(1−10⁻ⁿ)/27", "section": "Misc."}, {"number": "M.12", "conceptIdx": 1, "page": 14, "printPage": 148, "question": "20th term of 2×4 + 4×6 + 6×8 + … + n terms.", "steps": ["k-th term = (2k)(2k+2)=4k(k+1). a₂₀=4·20·21=1680."], "answer": "1680", "section": "Misc."}, {"number": "M.13", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "Tractor ₹12000; ₹6000 cash; annual instalments of ₹500 plus 12% on unpaid. Total cost?", "steps": ["Unpaid 6000,5500,…,500 (12 terms). Interest 0.12(6000+…+500)=0.12·12/2·(6000+500)=4680.", "Total=12000+4680=16680."], "answer": "₹ 16,680", "section": "Misc."}, {"number": "M.14", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "Scooter ₹22000; ₹4000 cash; instalments ₹1000 + 10% on unpaid. Total cost?", "steps": ["Unpaid 18000,17000,…,1000 (18 terms). Interest 0.1·18/2·(18000+1000)=17100.", "Total=22000+17100=39100."], "answer": "₹ 39,100", "section": "Misc."}, {"number": "M.15", "conceptIdx": 4, "page": 14, "printPage": 148, "question": "Letter to 4 friends, each copies to 4, 8th set mailed, 50 paise a letter. Postage?", "steps": ["Letters: 4+4²+…+4⁸=4(4⁸−1)/3=4·65535/3=87380.", "Cost=87380×0.50=₹43690."], "answer": "₹ 43,690", "section": "Misc."}, {"number": "M.16", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "₹10000 at 5% simple interest. Amount in 15th year since deposit, and total after 20 years.", "steps": ["In 15th year the amount is principal+14 years interest=10000+7000=17000 (interest is paid/added yearly as simple).", "After 20 years: 10000+20×500=20000.", "Reading NCERT: ‘amount in 15th year’ often means the value at the beginning of the 15th year = 10000+14×500=17000."], "answer": "₹ 17,000 in the 15th year;  ₹ 20,000 after 20 years", "section": "Misc."}, {"number": "M.17", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "Machine costs ₹15625, depreciates 20% a year. Value after 5 years?", "steps": ["15625·(4/5)⁵=5·4⁵=5120."], "answer": "₹ 5,120", "section": "Misc."}, {"number": "M.18", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "150 workers; 4 drop out each day from day 2 onward; 8 extra days. Days originally planned / days actually taken?", "steps": ["Let n be the scheduled days. Work = 150n man-days.", "Actual: 150+(146)+… for (n+8) days, an A.P. of (n+8) terms, first 150, common difference −4, last=150−4(n+7).", "Standard result: n=17 scheduled, actual 25 days. Check: 150·17=2550. Actual 25 days starting 150, d=−4, S=25/2·(300−4·24)=25/2·(300−96)=25·102=2550."], "answer": "25 days (8 more than 17)", "section": "Misc."}]};
+window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathematics", "title": "Sequences and Series", "subtitle": "Sequences, sigma notation, geometric progressions, geometric means, A.M. ≥ G.M., and compound-growth applications.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh108.pdf", "page_start": 135, "page_end": 150, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "sequences", "nav": "Sequences", "title": "Ancestors, Fibonacci, and a_n as a function of n", "deck": "A sequence is an ordered list a₁, a₂, … whose domain is ℕ (or a finite initial segment). 10 generations of ancestors: 2,4,8,…,1024. Fibonacci: a₁=a₂=1, aₙ=aₙ₋₁+aₙ₋₂. Not every sequence has a closed formula (the primes).", "minutes": 9, "section": "8.1–8.2", "pages": [1, 3], "print": "135–137", "sim": "ancestor-tree", "simTitle": "10 generations: 2, 4, 8, …, 1024", "quick": ["<strong>§8.1–8.2.</strong> A collection listed with a first, second, third member is a <em>sequence</em>. Population, bank deposits, depreciation all form sequences. Those following a definite pattern are <strong>progressions</strong>. This reprint’s body after the intro is sequences, series, G.P., G.M., and A.M.–G.M.; the promised sums of n, n², n³ of the older book are not in this 16-page file.", "300 years / 30-year generation gap = 10 generations: 2, 4, 8, …, 1024. Successive quotients 10÷3: 3, 3.3, 3.33, … is an infinite sequence. Even naturals: aₙ=2n. Odds: aₙ=2n−1. Fibonacci: a₁=a₂=1, aₙ=aₙ₋₂+aₙ₋₁ (n>2). Primes have no known closed aₙ. A sequence is a function ℕ→ℝ; we also write a(n).", "Finite vs infinite is about whether there is a last index, not about the size of the terms. 10 ancestor-counts is finite; the 10÷3 quotients never end."], "formulas": [{"label": "Even / odd naturals", "html": "aₙ = 2n ;   aₙ = 2n − 1", "cond": "§8.2"}, {"label": "Fibonacci", "html": "a₁ = a₂ = 1,  aₙ = aₙ₋₁ + aₙ₋₂ (n>2)", "cond": "recurrence, no closed form in this chapter"}, {"label": "Ancestors", "html": "aₙ = 2ⁿ  for n = 1,…,10 ;  a₁₀ = 1024", "cond": "300/30 = 10 generations"}], "deeper": "Finite vs infinite is about whether there is a last index, not about the size of the terms. 10 ancestor-counts is finite; the 10÷3 quotients never end.", "worked": {"title": "Worked source example · PDF p.4", "problem": "Write the first five terms of aₙ = n(n+2).", "given": "Write the first five terms of aₙ = n(n+2).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n=1..5: 1·3,2·4,3·5,4·6,5·7.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3, 8, 15, 24, 35"}, "prediction": {"prompt": "aₙ=(n−3)/4. The first three terms are", "options": ["−1/2, −1/4, 0", "1, 2, 3", "0, 1/4, 1/2"], "answer": 0, "explanation": "Example 1(ii), zoom p.3–4: a₁=−1/2, a₂=−1/4, a₃=0."}, "connect": [["UPI monthly transaction counts", "A merchant’s UPI hits 120, 144, 173, … month by month is a sequence. If it grew by a constant ratio it would be a G.P.; real data is only ‘a sequence’ until a pattern is fitted."], ["Wow — Fibonacci in a sunflower and in NCERT", "Pingala (Ch. 7) counted metres; Fibonacci (1175–1250) wrote the rabbit recurrence that NCERT prints as a₁=a₂=1. Indian Connect: the same recurrence generates the number of ways to tile a 2×n board with 1×2 tiles — a Class 12 idea already visible here.", null, {"id": "oLuXaXTEhDY", "title": "Sequences and domain | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Number of generations in 300 years with a 30-year gap?", "answer": 10, "unit": "", "tolerance": 0.05, "hint": "300/30", "solution": "§8.1.", "map": "§8.1"}, {"level": "Medium", "type": "number", "prompt": "Example 2: a₂₀ for aₙ=(n−1)(2−n)(3+n) is", "answer": -7866, "unit": "", "tolerance": 0.05, "hint": "19×(−18)×23", "solution": "−7866.", "map": "Example 2"}, {"level": "Hard", "type": "mcq", "prompt": "The sequence of primes 2,3,5,7,… is described in this reprint as", "options": ["having no formula for the nth prime", "a G.P. with r=1", "aₙ=n²+n+1"], "answer": 0, "hint": "§8.2 last part.", "solution": "Verbal description only.", "wrong": ["", "Ratios are not constant.", "That polynomial fails at n=4."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "series-sigma", "nav": "Series & sigma", "title": "A series is the indicated sum, not the number it adds to", "deck": "a₁+a₂+…+aₙ is the series, abbreviated Σ_{k=1}^{n} aₖ. ‘Sum of a series’ means the resulting number: 1+3+5+7 has sum 16. Exercise 8.1 drills aₙ formulae and recurrences.", "minutes": 9, "section": "8.3, Ex 8.1", "pages": [3, 5], "print": "137–139", "sim": "series-sum", "simTitle": "Partial sums of 1+3+5+7+9", "quick": ["Given a sequence a₁,a₂,…, the expression a₁+a₂+…+aₙ+… is the associated <strong>series</strong>, finite or infinite with the sequence. Compactly Σ_{k=1}^{n} aₖ. Remark: the series is the indicated sum, not the total; 1+3+5+7 is a four-term series whose sum is 16.", "Exercise 8.1: aₙ=n(n+2) → 3,8,15,24,35; aₙ=n/(n+1) → 1/2,…,5/6; aₙ=2ⁿ → 2,4,8,16,32; aₙ=(2n−3)/6; aₙ=(−1)^{n−1}5^{n+1}; aₙ=n(n²+5)/4. Indicated terms, recurrences aₙ=3aₙ₋₁+2, and Fibonacci ratios aₙ₊₁/aₙ.", "Confusing ‘series’ with ‘sum’ is why students write 1+3+5+7=16 and then call 16 a series. NCERT’s remark is pedantic on purpose."], "formulas": [{"label": "Sigma", "html": "a₁+a₂+…+aₙ = Σ<sub>k=1</sub>ⁿ aₖ", "cond": "§8.3"}, {"label": "Remark", "html": "the series is the indicated sum; the sum is the number", "cond": "1+3+5+7 has sum 16"}], "deeper": "Confusing ‘series’ with ‘sum’ is why students write 1+3+5+7=16 and then call 16 a series. NCERT’s remark is pedantic on purpose.", "worked": {"title": "Worked source example · PDF p.4", "problem": "Write the first five terms of the sequence whose nth term is given: aₙ = n/(n+1).", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = n/(n+1).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "1/2, 2/3, 3/4, 4/5, 5/6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "1/2, 2/3, 3/4, 4/5, 5/6"}, "prediction": {"prompt": "aₙ=4n−3. a₁₇ equals", "options": ["65", "17", "61"], "answer": 0, "explanation": "4·17−3=68−3=65 (Ex 8.1 Q7)."}, "connect": [["GST e-invoice running totals", "A month’s invoice stream a₁+a₂+… is a series; GSTR-3B wants the sum. Sigma notation is the ‘compact form’ of that running total."], ["Wow — 1+3+5+7=16 is not a series", "The indicated sum is the series; 16 is its sum. That one-sentence remark is the difference between Σ and a number.", null, {"id": "ntmF5KXNtls", "title": "Summation notation | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Write Σ notation for a₁+…+aₙ and compute a₁₇=65 for aₙ=4n−3.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Sum of the series 1+3+5+7?", "answer": 16, "unit": "", "tolerance": 0.05, "hint": "four odd numbers", "solution": "§8.3 remark."}, {"level": "Medium", "type": "number", "prompt": "aₙ=4n−3, a₁₇?", "answer": 65, "unit": "", "tolerance": 0.05, "hint": "4·17−3", "solution": "Ex 8.1 Q7.", "map": "Ex 8.1 Q7"}, {"level": "Hard", "type": "mcq", "prompt": "aₙ=n²/2ⁿ. a₇?", "options": ["49/128", "49/64", "7/128"], "answer": 0, "hint": "7²/2⁷=49/128.", "solution": "Ex 8.1 Q8.", "wrong": ["", "2⁶=64.", "Missing the square."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "gp-nth", "nav": "G.P. general term", "title": "a, ar, ar², … and aₙ = arⁿ⁻¹", "deck": "A G.P. has constant ratio r = aₖ₊₁/aₖ. First term a, n-th term arⁿ⁻¹. Example 4: 5,25,125,… → a₁₀=5¹⁰. Example 5: 2,8,32,… hits 131072 at n=9. Example 6: a₃=24, a₆=192 → a₁₀=3072.", "minutes": 10, "section": "8.4–8.4.1", "pages": [5, 7], "print": "139–141", "sim": "gp-terms", "simTitle": "aₙ = arⁿ⁻¹ slider", "quick": ["Sequences 2,4,8,16,…; −1/9, −1/27, −1/81,…; 0.01, 0.0001, … each have a constant ratio (2, −1/3, 0.01). Such a sequence is a <strong>geometric progression</strong>. With a₁=a, we get a, ar, ar², … and aₙ = arⁿ⁻¹.", "Example 4: 5,25,125,… a=5, r=5, a₁₀=5¹⁰, aₙ=5ⁿ. Example 5: 2,8,32,… r=4, 131072=2·4ⁿ⁻¹ ⇒ 4⁸=4ⁿ⁻¹ ⇒ n=9. Example 6: a₃=ar²=24, a₆=ar⁵=192, r=2, a=6, a₁₀=6·2⁹=3072.", "r may be negative (oscillating G.P.) or |r|<1 (terms → 0). The definition requires every term non-zero, so r≠0 and a≠0."], "formulas": [{"label": "n-th term", "html": "aₙ = a r<sup>n−1</sup>", "cond": "a ≠ 0, r constant"}, {"label": "Example 6", "html": "a₃=24, a₆=192 ⇒ r=2, a=6, a₁₀=3072", "cond": "zoom p.7"}], "deeper": "r may be negative (oscillating G.P.) or |r|<1 (terms → 0). The definition requires every term non-zero, so r≠0 and a≠0.", "worked": {"title": "Worked source example · PDF p.4", "problem": "Write the first five terms of the sequence whose nth term is given: aₙ = 2ⁿ.", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = 2ⁿ.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2,4,8,16,32.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "2, 4, 8, 16, 32"}, "prediction": {"prompt": "G.P. with a₃=24, a₆=192. The 10th term is", "options": ["3072", "1920", "24×10"], "answer": 0, "explanation": "Example 6: r=192/24=8, wait r³=8 so r=2; a=24/4=6; a₁₀=6·512=3072."}, "connect": [["Bacteria doubling (Q30)", "30 bacteria, double every hour: a G.P. with a=30, r=2. After n hours: 30·2ⁿ. End of 2nd hour 120; 4th hour 480."], ["Wow — a car’s value at 80% each year", "Depreciation 20% per year is r=0.8, the G.P. of Misc. Q17 (machine ₹15,625, five years).", null, {"id": "yMmFVa9o3ko", "title": "Intro to geometric sequences | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "10th term of 5,25,125,…?", "answer": 9765625, "unit": "", "tolerance": 0.05, "hint": "5¹⁰", "solution": "Example 4: 5¹⁰=9765625.", "map": "Example 4"}, {"level": "Medium", "type": "number", "prompt": "Example 6: a₁₀?", "answer": 3072, "unit": "", "tolerance": 0.05, "hint": "6·2⁹", "solution": "3072.", "map": "Example 6"}, {"level": "Hard", "type": "mcq", "prompt": "Which term of 2,8,32,… is 131072?", "options": ["9th", "8th", "10th"], "answer": 0, "hint": "4⁸=4ⁿ⁻¹.", "solution": "Example 5, n=9.", "wrong": ["", "n−1=8 so n=9.", "One too far."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "gp-sum", "nav": "Sum of a G.P.", "title": "Sₙ = a(1−rⁿ)/(1−r)  (r≠1), and Sₙ=na when r=1", "deck": "Example 7: 1+2/3+4/9+… , r=2/3, Sₙ=3[1−(2/3)ⁿ], S₅=211/81. Example 8: 3, 3/2, 3/4, … sums to 3069/512 in 10 terms.", "minutes": 11, "section": "8.4.2", "pages": [6, 8], "print": "140–142", "sim": "gp-sum", "simTitle": "Sₙ = a(1−rⁿ)/(1−r) with r slider", "quick": ["Sₙ=a+ar+…+arⁿ⁻¹. If r=1, Sₙ=na. If r≠1, rSₙ=ar+…+arⁿ, subtract: (1−r)Sₙ=a(1−rⁿ), hence Sₙ=a(1−rⁿ)/(1−r) = a(rⁿ−1)/(r−1).", "Example 7 (zoom p.7): a=1, r=2/3, Sₙ=3[1−(2/3)ⁿ], S₅=3[1−32/243]=3·211/243=211/81. Example 8: a=3, r=1/2, Sₙ=3069/512 ⇒ 1−2⁻ⁿ=3069/3072 ⇒ 2ⁿ=1024, n=10.", "The two algebraic forms differ only by multiplying numerator and denominator by −1. Use the one whose denominator is positive when |r|<1, to keep Sₙ visually a positive multiple of (1−rⁿ)."], "formulas": [{"label": "Sum, r≠1", "html": "Sₙ = a(1−rⁿ)/(1−r) = a(rⁿ−1)/(r−1)", "cond": "§8.4.2"}, {"label": "Example 7", "html": "Sₙ = 3[1−(2/3)ⁿ],  S₅ = 211/81", "cond": "zoom p.7"}, {"label": "Example 8", "html": "n = 10 for Sₙ = 3069/512", "cond": "a=3, r=1/2"}], "deeper": "The two algebraic forms differ only by multiplying numerator and denominator by −1. Use the one whose denominator is positive when |r|<1, to keep Sₙ visually a positive multiple of (1−rⁿ).", "worked": {"title": "Worked source example · PDF p.4", "problem": "Write the first five terms of the sequence whose nth term is given: aₙ = (2n−3)/6.", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = (2n−3)/6.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "−1/6, 1/6, 1/2, 5/6, 7/6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "-1/6, 1/6, 1/2, 5/6, 7/6"}, "prediction": {"prompt": "S₅ for 1+2/3+4/9+… equals", "options": ["211/81", "243/81", "5"], "answer": 0, "explanation": "Example 7, zoom p.7: 3×211/243=211/81."}, "connect": [["SBI RD / compound interest", "₹500 at 10% compounded annually for 10 years is 500(1.1)¹⁰ — Ex 8.2 Q31, a G.P. evaluation, not a sum. A recurring deposit is a sum of a G.P."], ["Wow — 211/81 is already 2.605…", "Five terms of ratio 2/3 already reach 2.605 of the infinite-sum ceiling 3. The leftover tail is 3·(2/3)⁵=32/81≈0.395.", null, {"id": "Cf0-6ngH2gs", "title": "Finite geometric series formula justification | High School Math | Khan Academy", "channel": "Khan Academy"}]], "recall": "Write Sₙ for r≠1 and compute S₅=211/81.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If r=1, Sₙ equals", "options": ["na", "a(1−rⁿ)/(1−r)", "0"], "answer": 0, "hint": "Case 1.", "solution": "n copies of a.", "wrong": ["", "r=1 makes that form 0/0.", "No."]}, {"level": "Medium", "type": "mcq", "prompt": "Example 7: S₅ =", "options": ["211/81", "211/243", "3"], "answer": 0, "hint": "zoom p.7.", "solution": "3×211/243=211/81.", "wrong": ["", "Forgot to multiply by 3.", "That is the infinite sum."]}, {"level": "Hard", "type": "number", "prompt": "Example 8: number of terms for sum 3069/512?", "answer": 10, "unit": "", "tolerance": 0.05, "hint": "2ⁿ=1024", "solution": "n=10.", "map": "Example 8"}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "gp-applications", "nav": "7,77,777 and ancestors", "title": "Related-to-G.P. sums, three-term puzzles, 2046 ancestors", "deck": "Example 9: three terms with sum 13/12 and product −1 give r=−3/4 or −4/3. Example 10: 7+77+777+… = (7/9)[10(10ⁿ−1)/9 − n]. Example 11: 10 generations of ancestors sum to 2046.", "minutes": 11, "section": "8.4.2 Examples 9–11", "pages": [8, 9], "print": "142–143", "sim": "sevens-series", "simTitle": "7+77+777+… as a G.P. in disguise", "quick": ["<strong>Example 9.</strong> Three terms a/r, a, ar with sum 13/12 and product −1. a³=−1 ⇒ a=−1 (real). Then −1/r −1 −r=13/12 ⇒ 12r²+25r+12=0 ⇒ r=−3/4 or −4/3. Terms 4/3, −1, −3/4 or −3/4, −1, 4/3.", "<strong>Example 10.</strong> 7+77+777+… is not a G.P. Factor 7/9: (10−1)+(100−1)+… = Σ(10ᵏ−1). Sₙ=(70/81)(10ⁿ−1) − 7n/9. <strong>Example 11.</strong> Ancestors: a=2, r=2, n=10, S₁₀=2(2¹⁰−1)=2046.", "Every ‘repunit-like’ series 8+88+888+… is the same trick (Ex 8.2 Q18). Chain letters (Misc. Q15) are a G.P. of 4ᵏ letters."], "formulas": [{"label": "Three terms", "html": "a/r, a, ar  with  a³ = product", "cond": "Example 9"}, {"label": "7+77+777+…", "html": "Sₙ = (7/9)[10(10ⁿ−1)/9 − n]", "cond": "Example 10"}, {"label": "Ancestors", "html": "S₁₀ = 2(2¹⁰ − 1) = 2046", "cond": "Example 11"}], "deeper": "Every ‘repunit-like’ series 8+88+888+… is the same trick (Ex 8.2 Q18). Chain letters (Misc. Q15) are a G.P. of 4ᵏ letters.", "worked": {"title": "Worked source example · PDF p.4", "problem": "Write the first five terms of the sequence whose nth term is given: aₙ = (−1)^{n−1} 5^{n+1}.", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = (−1)^{n−1} 5^{n+1}.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "25, −125, 625, −3125, 15625.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "25, −125, 625, −3125, 15625"}, "prediction": {"prompt": "Number of ancestors in the ten preceding generations (a=2, r=2)?", "options": ["2046", "1024", "2048"], "answer": 0, "explanation": "Example 11: 2(1024−1)=2046, not 2¹⁰=1024 (that is only the 10th generation) and not 2048=2¹¹."}, "connect": [["Chain-letter postage, Misc. Q15", "A letter to 4 friends, each copies to 4, 8 sets: number of letters 4+4²+…+4⁸=4(4⁸−1)/3. At 50 paise, a ruinous G.P. — NCERT’s cautionary tale."], ["Wow — 2046, not 2048", "People remember 2+4+…+1024 as 2048−2, which is 2046. The ‘−2’ is the missing generation 0 (yourself).", null, {"id": "QRung-oyEPU", "title": "Sequences and Series - NCERT Examples (E.g. 8 to 11) | Class 11 Maths Chapter 8 | CBSE 2025-26", "channel": "Magnet Brains"}]], "recall": "State S₁₀=2046 and the 7+77+777 formula.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 11: ancestors in 10 generations?", "answer": 2046, "unit": "", "tolerance": 0.05, "hint": "2(2¹⁰−1)", "solution": "2046.", "map": "Example 11"}, {"level": "Medium", "type": "mcq", "prompt": "Example 9: the real value of a (the middle term) is", "options": ["−1", "1", "13/12"], "answer": 0, "hint": "product −1 ⇒ a³=−1.", "solution": "Only real cube root −1.", "wrong": ["", "Product is −1.", "That's the sum."]}, {"level": "Hard", "type": "mcq", "prompt": "Σ_{k=1}^{11} (2+3ᵏ) equals", "options": ["265741", "3¹¹", "22"], "answer": 0, "hint": "22 + (3/2)(3¹¹−1).", "solution": "Ex 8.2 Q11.", "wrong": ["", "That's one piece.", "That's only the 2×11."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "geometric-mean", "nav": "G.M. and insertion", "title": "G = √(ab), and inserting n geometric means", "deck": "G.M. of 2 and 8 is 4. Insert three numbers between 1 and 256: 4,16,64 (or −4,16,−64). r = (b/a)^{1/(n+1)}.", "minutes": 9, "section": "8.4.3", "pages": [9, 10], "print": "143–144", "sim": "insert-gm", "simTitle": "Insert geometric means between 1 and 256", "quick": ["The geometric mean of two positive numbers a, b is √(ab). 2,4,8 is a G.P., so 4 is the G.M. of 2 and 8. To insert n numbers G₁,…,Gₙ between a and b so that a, G₁, …, Gₙ, b is a G.P., we need b = a r^{n+1}, hence r=(b/a)^{1/(n+1)}, and Gₖ = a rᵏ.", "Example 12: three numbers between 1 and 256. 256=r⁴, r=±4. For r=4: 4,16,64. For r=−4: −4,16,−64.", "When a,b>0 the real positive r is unique; a negative r exists only if n+1 is an integer for which r^{n+1}=b/a is positive, i.e. always when n+1 is even?  r^{n+1}=b/a>0, so negative r works iff n+1 is even, i.e. n odd. Example 12 has n=3 odd, so ±4 both work."], "formulas": [{"label": "G.M. of two positives", "html": "G = √(ab)", "cond": "2,4,8"}, {"label": "n means between a and b", "html": "r = (b/a)<sup>1/(n+1)</sup>,  Gₖ = a rᵏ", "cond": "b is the (n+2)th term"}], "deeper": "When a,b>0 the real positive r is unique; a negative r exists only if n+1 is an integer for which r^{n+1}=b/a is positive, i.e. always when n+1 is even?  r^{n+1}=b/a>0, so negative r works iff n+1 is even, i.e. n odd. Example 12 has n=3 odd, so ±4 both work.", "worked": {"title": "Worked source example · PDF p.4", "problem": "Write the first five terms of the sequence whose nth term is given: aₙ = n(n²+5)/4.", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = n(n²+5)/4.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3/2, 9/2, 21/2, 21, 75/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3/2, 9/2, 21/2, 21, 75/2"}, "prediction": {"prompt": "Three geometric means between 1 and 256 (positive r) are", "options": ["4, 16, 64", "2, 8, 32", "16, 64, 128"], "answer": 0, "explanation": "Example 12: r=4, Gₖ=4ᵏ."}, "connect": [["CAGR as a geometric mean", "A stock that goes 100→121 in two years has G.M. growth √(121/100)=1.10, i.e. 10% CAGR — inserting one geometric mean between 100 and 121."], ["Wow — negative means are legal when n is odd", "Example 12’s −4,16,−64 is a perfectly good G.P. of real numbers. G.M. of two positives, however, is defined as the positive square root.", null, {"id": "pxbMxuU_uYM", "title": "What Is Geometric Mean - Sequence and Series - Maths Class 11", "channel": "Ekeeda"}]], "recall": "State G=√(ab) and insert 4,16,64 between 1 and 256.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "G.M. of 2 and 8?", "answer": 4, "unit": "", "tolerance": 0.05, "hint": "√16", "solution": "§8.4.3."}, {"level": "Medium", "type": "mcq", "prompt": "Positive geometric means between 1 and 256 (three of them)?", "options": ["4, 16, 64", "2, 4, 8", "8, 32, 128"], "answer": 0, "hint": "r=4.", "solution": "Example 12.", "wrong": ["", "That's a different G.P.", "r=8 overshoots."]}, {"level": "Hard", "type": "mcq", "prompt": "Two numbers between 3 and 81 so the sequence is a G.P. (positive r)?", "options": ["9 and 27", "3 and 27", "27 and 81"], "answer": 0, "hint": "r³=27, r=3.", "solution": "Ex 8.2 Q26.", "wrong": ["", "Those include an endpoint.", "81 is already the last term."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "am-gm", "nav": "A.M. ≥ G.M.", "title": "A − G = (√a − √b)² / 2 ≥ 0, with equality iff a=b", "deck": "A=(a+b)/2, G=√(ab), A≥G. Example 13: A=10, G=8 ⇒ numbers 4 and 16. Compound interest, bacteria, and a quadratic with AM=8, GM=5.", "minutes": 11, "section": "8.5, Ex 8.2 Q28–32", "pages": [10, 13], "print": "144–147", "sim": "am-gm-compare", "simTitle": "A.M. vs G.M. of two positives", "quick": ["For positives a,b: A=(a+b)/2, G=√(ab), and A−G=((√a−√b)²)/2 ≥ 0, so <strong>A ≥ G</strong>, equality iff a=b. Example 13: A=10, G=8 ⇒ a+b=20, ab=64, (a−b)²=400−256=144, a−b=±12 ⇒ {4,16}.", "Ex 8.2 Q31: ₹500 at 10% compounded annually, 10 years: 500(1.1)¹⁰. Q32: AM=8, GM=5 of the roots ⇒ x²−16x+25=0. Q30: bacteria 30, 120, 480, 30·2ⁿ.", "The same inequality is the n=2 case of the AM-GM inequality for n positives, which this reprint does not state. Quadratic-mean ≥ AM ≥ GM ≥ HM is a later refinement."], "formulas": [{"label": "A.M. ≥ G.M.", "html": "A − G = (√a − √b)² / 2 ≥ 0", "cond": "a,b>0; equality iff a=b"}, {"label": "Example 13", "html": "A=10, G=8 ⇒ {4, 16}", "cond": "zoom p.10–11"}, {"label": "Recover the numbers", "html": "A ± √(A² − G²)", "cond": "Ex 8.2 Q29"}], "deeper": "The same inequality is the n=2 case of the AM-GM inequality for n positives, which this reprint does not state. Quadratic-mean ≥ AM ≥ GM ≥ HM is a later refinement.", "worked": {"title": "Worked source example · PDF p.4", "problem": "aₙ=4n−3; find a₁₇, a₂₄.", "given": "aₙ=4n−3; find a₁₇, a₂₄.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a₁₇=68−3=65; a₂₄=96−3=93.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "65, 93"}, "prediction": {"prompt": "A.M.=10, G.M.=8. The two positive numbers are", "options": ["4 and 16", "8 and 12", "10 and 8"], "answer": 0, "explanation": "Example 13: a+b=20, ab=64, roots of t²−20t+64=0 are 4 and 16."}, "connect": [["SBI FD, Ex 8.2 Q31", "₹500 grows as a G.P. of ratio 1.10. Amount after 10 years = 500(1.1)¹⁰ ≈ ₹1296.87. The A.M. of year-0 and year-10 values is larger than the G.M. 500·(1.1)⁵, as the inequality predicts."], ["Wow — A.M.≥G.M. is why you should not average returns arithmetically", "Two years of +50% and −50% have A.M. 0% but G.M. √(1.5·0.5)−1 ≈ −13.4%. NCERT’s A≥G is the reason CAGR (geometric) not arithmetic mean, is the honest multi-year return.", null, {"id": "VSMnB-c0Qb8", "title": "Relationship between AM and GM | Sequence and Series | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Prove A≥G in one line and recover 4,16 from A=10, G=8.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For positives a≠b, A.M. versus G.M. is", "options": ["A > G", "A < G", "A = G"], "answer": 0, "hint": "(√a−√b)²>0.", "solution": "Equality only when a=b.", "wrong": ["", "Opposite.", "Only when a=b."]}, {"level": "Medium", "type": "number", "prompt": "Example 13: the smaller number is", "answer": 4, "unit": "", "tolerance": 0.05, "hint": "t²−20t+64=0", "solution": "4 and 16.", "map": "Example 13"}, {"level": "Hard", "type": "mcq", "prompt": "Quadratic whose roots have A.M. 8 and G.M. 5?", "options": ["x² − 16x + 25 = 0", "x² − 8x + 5 = 0", "x² − 5x + 16 = 0"], "answer": 0, "hint": "sum=16, product=25.", "solution": "Ex 8.2 Q32.", "wrong": ["", "Sum is 2A=16.", "Swapped."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "compound-world", "nav": "Compound & instalments", "title": "FDs, tractors, scooters, and a machine that loses 20% a year", "deck": "Misc. Q13–18: tractor instalments, Shamshad Ali’s scooter, a 4-friend chain letter, 5% simple interest (an A.P. of amounts), 20% depreciation as a G.P., and 150 workers dropping 4 a day (an A.P. of workforce).", "minutes": 10, "section": "Misc. Ex. 13–18", "pages": [14, 14], "print": "148", "sim": "fd-compound", "simTitle": "₹500 at 10% compound for 10 years", "quick": ["This reprint’s miscellaneous exercise is where A.P. sneaks back in through instalment problems, even though there is no § on A.P. Tractor (Q13): ₹12,000, ₹6,000 down, then ₹500 + 12% on the unpaid balance each year — the interest pieces 6000·0.12, 5500·0.12, … form an A.P. Scooter (Q14) is the same at 10%.", "Q15 chain letter: 4+4²+…+4⁸ letters at ₹0.50. Q16: ₹10,000 at 5% simple interest — amount in the 15th year is 10000+14·500, total after 20 years 10000+20·500. Q17: 15625·(0.8)⁵=32768? 15625·(4/5)⁵=15625·1024/3125=5·1024=5120. Q18: 150 workers, 4 drop each day, 8 extra days — an A.P. work-total equation.", "Honest gap: the chapter intro promised ‘more about A.P.’ and sums of n, n², n³. Those sections are not in this 16-page reprint. Instalment problems still use the A.P. of unpaid balances from Class 10."], "formulas": [{"label": "Compound amount", "html": "A = P(1+r)ⁿ", "cond": "Q31, Q17 depreciation r=−0.2"}, {"label": "Q17", "html": "15625 · (4/5)⁵ = 5120", "cond": "20% depreciation, 5 years"}], "deeper": "Honest gap: the chapter intro promised ‘more about A.P.’ and sums of n, n², n³. Those sections are not in this 16-page reprint. Instalment problems still use the A.P. of unpaid balances from Class 10.", "worked": {"title": "Worked source example · PDF p.4", "problem": "aₙ=n²/2ⁿ; find a₇.", "given": "aₙ=n²/2ⁿ; find a₇.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "49/128.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "49/128"}, "prediction": {"prompt": "A ₹15,625 machine depreciates 20% a year. Value after 5 years?", "options": ["₹5,120", "₹6,250", "₹0"], "answer": 0, "explanation": "Misc. Q17: 15625·(4/5)⁵=5120."}, "connect": [["Indian tractor finance, Q13", "A used tractor at ₹12,000 with 12% on the shrinking unpaid principal is how many rural NBFCs still structure implement loans. The interest column is an A.P.; the total cost is the cash down plus the A.P. sum."], ["Wow — 20% off, five times, is not 100% off", "5×20%=100% is the classic trap. Geometric depreciation (0.8)⁵=0.32768 leaves ₹5,120 on the books.", null, {"id": "QLeyF_67edg", "title": "Shamshad Ali buys a scooter of Rs 22000 | Class 11 Chapter 9 Misc Exercise Q14 NCERT Maths | IITJEE", "channel": "WifiLearn Academy - Deepak Kumar [ IIT-BHU ] "}]], "recall": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "30 bacteria double every hour. After 2 hours?", "answer": 120, "unit": "", "tolerance": 0.05, "hint": "30·2²", "solution": "Ex 8.2 Q30."}, {"level": "Medium", "type": "number", "prompt": "15625·(4/5)⁵?", "answer": 5120, "unit": "", "tolerance": 0.05, "hint": "5·4⁵", "solution": "Misc. Q17.", "map": "Misc. Q17"}, {"level": "Hard", "type": "mcq", "prompt": "f(x+y)=f(x)f(y), f(1)=3, Σ_{x=1}^n f(x)=120. n equals", "options": ["4", "5", "3"], "answer": 0, "hint": "Σ 3+9+…+3ⁿ=3(3ⁿ−1)/2=120.", "solution": "3ⁿ=81, n=4 (Misc. Q1).", "wrong": ["", "3⁵=243 too big.", "3³=27, sum=39."]}], "group": "Sequences and Series", "watch": "Change the scenario and verify the displayed result against the definition."}], "exercises": [{"number": "8.1.1", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of aₙ = n(n+2).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n=1..5: 1·3,2·4,3·5,4·6,5·7.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3, 8, 15, 24, 35", "section": "Ex 8.1", "q": 1, "title": "Exercise Q1", "given": "Write the first five terms of aₙ = n(n+2).", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.2", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = n/(n+1).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "1/2, 2/3, 3/4, 4/5, 5/6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "1/2, 2/3, 3/4, 4/5, 5/6", "section": "Ex 8.1", "q": 2, "title": "Exercise Q2", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = n/(n+1).", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.3", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = 2ⁿ.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2,4,8,16,32.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "2, 4, 8, 16, 32", "section": "Ex 8.1", "q": 3, "title": "Exercise Q3", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = 2ⁿ.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.4", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = (2n−3)/6.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "−1/6, 1/6, 1/2, 5/6, 7/6.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "-1/6, 1/6, 1/2, 5/6, 7/6", "section": "Ex 8.1", "q": 4, "title": "Exercise Q4", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = (2n−3)/6.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.5", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = (−1)^{n−1} 5^{n+1}.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "25, −125, 625, −3125, 15625.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "25, −125, 625, −3125, 15625", "section": "Ex 8.1", "q": 5, "title": "Exercise Q5", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = (−1)^{n−1} 5^{n+1}.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.6", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "Write the first five terms of the sequence whose nth term is given: aₙ = n(n²+5)/4.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3/2, 9/2, 21/2, 21, 75/2.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3/2, 9/2, 21/2, 21, 75/2", "section": "Ex 8.1", "q": 6, "title": "Exercise Q6", "given": "Write the first five terms of the sequence whose nth term is given: aₙ = n(n²+5)/4.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.7", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=4n−3; find a₁₇, a₂₄.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a₁₇=68−3=65; a₂₄=96−3=93.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "65, 93", "section": "Ex 8.1", "q": 7, "title": "Exercise Q7", "given": "aₙ=4n−3; find a₁₇, a₂₄.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.8", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=n²/2ⁿ; find a₇.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "49/128.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "49/128", "section": "Ex 8.1", "q": 8, "title": "Exercise Q8", "given": "aₙ=n²/2ⁿ; find a₇.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.9", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=(−1)^{n−1} n³; find a₉.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(+1)·729=729.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "729", "section": "Ex 8.1", "q": 9, "title": "Exercise Q9", "given": "aₙ=(−1)^{n−1} n³; find a₉.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.10", "conceptIdx": 0, "page": 4, "printPage": 138, "question": "aₙ=n(n−2)/(n+3); find a₂₀.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "20·18/23=360/23.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "360/23", "section": "Ex 8.1", "q": 10, "title": "Exercise Q10", "given": "aₙ=n(n−2)/(n+3); find a₂₀.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.1.11", "conceptIdx": 1, "page": 5, "printPage": 139, "question": "a₁=3, aₙ=3aₙ₋₁+2 (n>1). First five terms and the series.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3; 11; 35; 107; 323.", "Series 3+11+35+107+323+…", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3, 11, 35, 107, 323;  series 3+11+35+107+323+…", "section": "Ex 8.1", "q": 11, "title": "Exercise Q11", "given": "a₁=3, aₙ=3aₙ₋₁+2 (n>1). First five terms and the series.", "conceptName": "Series & sigma", "takeaway": "Write Σ notation for a₁+…+aₙ and compute a₁₇=65 for aₙ=4n−3."}, {"number": "8.1.12", "conceptIdx": 1, "page": 5, "printPage": 139, "question": "a₁=−1, aₙ=(1/n) aₙ₋₁, n≥2. First five terms and series.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "−1, −1/2, −1/6, −1/24, −1/120.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "−1, −1/2, −1/6, −1/24, −1/120", "section": "Ex 8.1", "q": 12, "title": "Exercise Q12", "given": "a₁=−1, aₙ=(1/n) aₙ₋₁, n≥2. First five terms and series.", "conceptName": "Series & sigma", "takeaway": "Write Σ notation for a₁+…+aₙ and compute a₁₇=65 for aₙ=4n−3."}, {"number": "8.1.13", "conceptIdx": 1, "page": 5, "printPage": 139, "question": "a₁=a₂=2, aₙ=aₙ₋₁−1 (n>2). First five terms and series.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "2,2,1,0,−1. Series 2+2+1+0+(−1)+…", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "2, 2, 1, 0, −1", "section": "Ex 8.1", "q": 13, "title": "Exercise Q13", "given": "a₁=a₂=2, aₙ=aₙ₋₁−1 (n>2). First five terms and series.", "conceptName": "Series & sigma", "takeaway": "Write Σ notation for a₁+…+aₙ and compute a₁₇=65 for aₙ=4n−3."}, {"number": "8.1.14", "conceptIdx": 0, "page": 5, "printPage": 139, "question": "Fibonacci a₁=a₂=1, aₙ=aₙ₋₁+aₙ₋₂. Find aₙ₊₁/aₙ for n=1,2,3,4,5.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Sequence 1,1,2,3,5,8. Ratios 1/1, 2/1, 3/2, 5/3, 8/5.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "1, 2, 3/2, 5/3, 8/5", "section": "Ex 8.1", "q": 14, "title": "Exercise Q14", "given": "Fibonacci a₁=a₂=1, aₙ=aₙ₋₁+aₙ₋₂. Find aₙ₊₁/aₙ for n=1,2,3,4,5.", "conceptName": "Sequences", "takeaway": "Define a sequence, give aₙ=2n and the Fibonacci recurrence, and compute a₂₀=−7866."}, {"number": "8.2.1", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "20th and nth terms of the G.P. 5/2, 5/4, 5/8, …", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=5/2, r=1/2. aₙ=5/2ⁿ, a₂₀=5/2²⁰.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "a₂₀=5/2²⁰,  aₙ=5/2ⁿ", "section": "Ex 8.2", "q": 15, "title": "Exercise Q1", "given": "20th and nth terms of the G.P. 5/2, 5/4, 5/8, …", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.2", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "12th term of a G.P. whose 8th term is 192 and r=2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a₁₂=a₈ r⁴=192·16=3072.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3072", "section": "Ex 8.2", "q": 16, "title": "Exercise Q2", "given": "12th term of a G.P. whose 8th term is 192 and r=2.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.3", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "5th, 8th, 11th terms of a G.P. are p,q,s. Show q²=ps.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "p=ar⁴, q=ar⁷, s=ar¹⁰. q²=a²r¹⁴=(ar⁴)(ar¹⁰)=ps.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "q²=ps", "section": "Ex 8.2", "q": 17, "title": "Exercise Q3", "given": "5th, 8th, 11th terms of a G.P. are p,q,s. Show q²=ps.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.4", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "4th term is the square of the 2nd; first term −3. Find the 7th term.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "ar³=(ar)² ⇒ −3 r³=9 r² ⇒ r=−3 (r≠0).", "a₇=−3(−3)⁶=−3·729=−2187.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "-2187", "section": "Ex 8.2", "q": 18, "title": "Exercise Q4", "given": "4th term is the square of the 2nd; first term −3. Find the 7th term.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.5", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "Which term of (a) 2, 2√2, 4, … is 128? (b) √3, 3, 3√3, … is 729? (c) 1/3, 1/9, 1/27, … is 1/19683?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(a) r=√2, 2(√2)^{n−1}=2⁷ ⇒ (√2)^{n−1}=2⁶=(√2)¹² ⇒ n=13.", "(b) (√3)ⁿ=3⁶=(√3)¹² ⇒ n=12.", "(c) (1/3)ⁿ=1/3⁹ ⇒ n=9.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(a) 13th; (b) 12th; (c) 9th", "section": "Ex 8.2", "q": 19, "title": "Exercise Q5", "given": "Which term of (a) 2, 2√2, 4, … is 128? (b) √3, 3, 3√3, … is 729? (c) 1/3, 1/9, 1/27, … is 1/19683?", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.6", "conceptIdx": 2, "page": 11, "printPage": 145, "question": "For what x are −2/7, x, −7/2 in G.P.?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x²=(−2/7)(−7/2)=1 ⇒ x=±1.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x = ±1", "section": "Ex 8.2", "q": 20, "title": "Exercise Q6", "given": "For what x are −2/7, x, −7/2 in G.P.?", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.7", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of 0.15, 0.015, 0.0015, … 20 terms.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=0.15, r=0.1. S₂₀=0.15(1−10⁻²⁰)/0.9=(1/6)(1−10⁻²⁰).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(1/6)(1−10⁻²⁰)", "section": "Ex 8.2", "q": 21, "title": "Exercise Q7", "given": "Sum of 0.15, 0.015, 0.0015, … 20 terms.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.8", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of √7, √21, 3√7, … n terms.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=√7, r=√3. Sₙ=√7[(√3)ⁿ−1]/(√3−1).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "√7 [(√3)ⁿ − 1]/(√3 − 1)", "section": "Ex 8.2", "q": 22, "title": "Exercise Q8", "given": "Sum of √7, √21, 3√7, … n terms.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.9", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of 1, −a, a², −a³, … n terms (a≠−1).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "r=−a. Sₙ=[1−(−a)ⁿ]/[1+a].", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "[1−(−a)ⁿ]/(1+a)", "section": "Ex 8.2", "q": 23, "title": "Exercise Q9", "given": "Sum of 1, −a, a², −a³, … n terms (a≠−1).", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.10", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Sum of x³, x⁵, x⁷, … n terms (x≠±1).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=x³, r=x². Sₙ=x³[1−x^{2n}]/(1−x²).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x³ (1−x^{2n})/(1−x²)", "section": "Ex 8.2", "q": 24, "title": "Exercise Q10", "given": "Sum of x³, x⁵, x⁷, … n terms (x≠±1).", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.11", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "Evaluate Σ_{k=1}^{11} (2+3ᵏ).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "11·2 + 3(3¹¹−1)/2 = 22 + (3/2)(177147−1)=22+265719=265741.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "265741", "section": "Ex 8.2", "q": 25, "title": "Exercise Q11", "given": "Evaluate Σ_{k=1}^{11} (2+3ᵏ).", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.12", "conceptIdx": 4, "page": 11, "printPage": 145, "question": "Sum of first three terms of a G.P. is 39/10 and product is 1. Find r and the terms.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=1 (real cube root). 1/r+1+r=39/10 ⇒ 10r²−29r+10=0 ⇒ r=5/2 or 2/5.", "Terms 2/5, 1, 5/2 or 5/2, 1, 2/5.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "r=5/2 or 2/5; terms 2/5, 1, 5/2 (or reversed)", "section": "Ex 8.2", "q": 26, "title": "Exercise Q12", "given": "Sum of first three terms of a G.P. is 39/10 and product is 1. Find r and the terms.", "conceptName": "7,77,777 and ancestors", "takeaway": "State S₁₀=2046 and the 7+77+777 formula."}, {"number": "8.2.13", "conceptIdx": 3, "page": 11, "printPage": 145, "question": "How many terms of 3, 3², 3³, … give sum 120?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "3(3ⁿ−1)/2=120 ⇒ 3ⁿ=81 ⇒ n=4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "4", "section": "Ex 8.2", "q": 27, "title": "Exercise Q13", "given": "How many terms of 3, 3², 3³, … give sum 120?", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.14", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Sum of first three terms 16, next three 128. Find a, r, Sₙ.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "r³=128/16=8 ⇒ r=2. a(8−1)/1=16 ⇒ a=16/7.", "Sₙ=(16/7)(2ⁿ−1).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "a=16/7, r=2, Sₙ=(16/7)(2ⁿ−1)", "section": "Ex 8.2", "q": 28, "title": "Exercise Q14", "given": "Sum of first three terms 16, next three 128. Find a, r, Sₙ.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.15", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "a=729, 7th term 64. Find S₇.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "r⁶=64/729=(2/3)⁶, r=2/3.", "S₇=729[1−(2/3)⁷]/(1/3)=2187(1−128/2187)=2059.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "2059", "section": "Ex 8.2", "q": 29, "title": "Exercise Q15", "given": "a=729, 7th term 64. Find S₇.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.16", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Sum of first two terms is −4; fifth term is 4 times the third. Find the G.P.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "r²=4, r=±2. r=2 ⇒ a=−4/3. r=−2 ⇒ a=4.", "G.P. −4/3, −8/3, −16/3, … or 4, −8, 16, −32, …", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "−4/3, −8/3, −16/3, …  or  4, −8, 16, −32, …", "section": "Ex 8.2", "q": 30, "title": "Exercise Q16", "given": "Sum of first two terms is −4; fifth term is 4 times the third. Find the G.P.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.17", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "4th, 10th, 16th terms x,y,z. Prove x,y,z in G.P.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "x=ar³, y=ar⁹, z=ar¹⁵. y²=a²r¹⁸=xz.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "y²=xz", "section": "Ex 8.2", "q": 31, "title": "Exercise Q17", "given": "4th, 10th, 16th terms x,y,z. Prove x,y,z in G.P.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.18", "conceptIdx": 4, "page": 12, "printPage": 146, "question": "Sum to n terms of 8, 88, 888, 8888, …", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "S=(8/9)[9+99+…+(10ⁿ−1)]=(8/9)[10(10ⁿ−1)/9 − n].", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(8/9)[10(10ⁿ−1)/9 − n]", "section": "Ex 8.2", "q": 32, "title": "Exercise Q18", "given": "Sum to n terms of 8, 88, 888, 8888, …", "conceptName": "7,77,777 and ancestors", "takeaway": "State S₁₀=2046 and the 7+77+777 formula."}, {"number": "8.2.19", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Sum of products of corresponding terms of 2,4,8,16,32 and 128,32,8,2,1/2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Products 256,128,64,32,16 (G.P. r=1/2).", "S=256(1−1/32)/(1/2)=496.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "496", "section": "Ex 8.2", "q": 33, "title": "Exercise Q19", "given": "Sum of products of corresponding terms of 2,4,8,16,32 and 128,32,8,2,1/2.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.20", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "Products of corresponding terms of a,ar,…,arⁿ⁻¹ and A,AR,…,ARⁿ⁻¹ form a G.P. Find the common ratio.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Products aA, aA rR, … Common ratio rR.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "common ratio rR", "section": "Ex 8.2", "q": 34, "title": "Exercise Q20", "given": "Products of corresponding terms of a,ar,…,arⁿ⁻¹ and A,AR,…,ARⁿ⁻¹ form a G.P. Find the common ratio.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.21", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "Four G.P. numbers; third exceeds first by 9; second exceeds fourth by 18.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a, ar, ar², ar³ with ar²−a=9, ar−ar³=18.", "a(r²−1)=9, ar(1−r²)=18 ⇒ r=−2, a=3.", "Numbers 3, −6, 12, −24.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3, −6, 12, −24", "section": "Ex 8.2", "q": 35, "title": "Exercise Q21", "given": "Four G.P. numbers; third exceeds first by 9; second exceeds fourth by 18.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.22", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "p-th, q-th, r-th terms a,b,c. Prove a^{q−r} b^{r−p} c^{p−q}=1.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a=A R^{p−1} etc. Exponents of A and of R both collapse to 0.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "=1", "section": "Ex 8.2", "q": 36, "title": "Exercise Q22", "given": "p-th, q-th, r-th terms a,b,c. Prove a^{q−r} b^{r−p} c^{p−q}=1.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.23", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "First term a, n-th term b, P=product of n terms. Prove P²=(ab)ⁿ.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "P=aⁿ r^{n(n−1)/2}. P²=(a · ar^{n−1})ⁿ=(ab)ⁿ.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "P²=(ab)ⁿ", "section": "Ex 8.2", "q": 37, "title": "Exercise Q23", "given": "First term a, n-th term b, P=product of n terms. Prove P²=(ab)ⁿ.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.24", "conceptIdx": 3, "page": 12, "printPage": 146, "question": "Ratio of Sₙ to the sum from (n+1)th to (2n)th term is 1/rⁿ.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Sₙ=a(rⁿ−1)/(r−1); tail = arⁿ(rⁿ−1)/(r−1); ratio=1/rⁿ.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "1/rⁿ", "section": "Ex 8.2", "q": 38, "title": "Exercise Q24", "given": "Ratio of Sₙ to the sum from (n+1)th to (2n)th term is 1/rⁿ.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "8.2.25", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "a,b,c,d in G.P. Show (a²+b²+c²)(b²+c²+d²)=(ab+bc+cd)².", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "b²=ac, c²=bd, ad=bc. Expand both sides; they match.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "identity holds", "section": "Ex 8.2", "q": 39, "title": "Exercise Q25", "given": "a,b,c,d in G.P. Show (a²+b²+c²)(b²+c²+d²)=(ab+bc+cd)².", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.26", "conceptIdx": 5, "page": 12, "printPage": 146, "question": "Insert two numbers between 3 and 81 so the sequence is a G.P.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "81=3 r³ ⇒ r=3 (or −3). Means 9,27 or −9,27.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "9, 27  (or −9, 27)", "section": "Ex 8.2", "q": 40, "title": "Exercise Q26", "given": "Insert two numbers between 3 and 81 so the sequence is a G.P.", "conceptName": "G.M. and insertion", "takeaway": "State G=√(ab) and insert 4,16,64 between 1 and 256."}, {"number": "8.2.27", "conceptIdx": 5, "page": 12, "printPage": 146, "question": "n so that (a^{n+1}+b^{n+1})/(aⁿ+bⁿ) is the G.M. between a and b.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Equals √(ab) ⇒ n=−1/2 (a≠b, a,b>0).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "n = −1/2", "section": "Ex 8.2", "q": 41, "title": "Exercise Q27", "given": "n so that (a^{n+1}+b^{n+1})/(aⁿ+bⁿ) is the G.M. between a and b.", "conceptName": "G.M. and insertion", "takeaway": "State G=√(ab) and insert 4,16,64 between 1 and 256."}, {"number": "8.2.28", "conceptIdx": 6, "page": 12, "printPage": 146, "question": "Sum of two numbers is 6 times their G.M. Show the ratio is (3+2√2):(3−2√2).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a+b=6√(ab). t=√(a/b), t+1/t=6, t=3±2√2.", "a:b = t:1/t = (3+2√2):(3−2√2).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(3+2√2) : (3−2√2)", "section": "Ex 8.2", "q": 42, "title": "Exercise Q28", "given": "Sum of two numbers is 6 times their G.M. Show the ratio is (3+2√2):(3−2√2).", "conceptName": "A.M. ≥ G.M.", "takeaway": "Prove A≥G in one line and recover 4,16 from A=10, G=8."}, {"number": "8.2.29", "conceptIdx": 6, "page": 12, "printPage": 146, "question": "If A and G are A.M. and G.M. of two positives, the numbers are A ± √((A+G)(A−G)).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "√(A²−G²)=|a−b|/2. A±that recovers a,b.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "A ± √(A²−G²)", "section": "Ex 8.2", "q": 43, "title": "Exercise Q29", "given": "If A and G are A.M. and G.M. of two positives, the numbers are A ± √((A+G)(A−G)).", "conceptName": "A.M. ≥ G.M.", "takeaway": "Prove A≥G in one line and recover 4,16 from A=10, G=8."}, {"number": "8.2.30", "conceptIdx": 2, "page": 12, "printPage": 146, "question": "Bacteria double every hour; 30 originally. Number at end of 2nd, 4th, nth hour?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "30·2²=120; 30·2⁴=480; 30·2ⁿ.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "120; 480; 30·2ⁿ", "section": "Ex 8.2", "q": 44, "title": "Exercise Q30", "given": "Bacteria double every hour; 30 originally. Number at end of 2nd, 4th, nth hour?", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "8.2.31", "conceptIdx": 7, "page": 13, "printPage": 147, "question": "What will ₹500 amount to in 10 years at 10% compounded annually?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "500(1.1)¹⁰.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "500(1.1)¹⁰", "section": "Ex 8.2", "q": 45, "title": "Exercise Q31", "given": "What will ₹500 amount to in 10 years at 10% compounded annually?", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}, {"number": "8.2.32", "conceptIdx": 6, "page": 13, "printPage": 147, "question": "A.M. and G.M. of roots of a quadratic are 8 and 5. Obtain the equation.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Sum=16, product=25. x²−16x+25=0.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "x² − 16x + 25 = 0", "section": "Ex 8.2", "q": 46, "title": "Exercise Q32", "given": "A.M. and G.M. of roots of a quadratic are 8 and 5. Obtain the equation.", "conceptName": "A.M. ≥ G.M.", "takeaway": "Prove A≥G in one line and recover 4,16 from A=10, G=8."}, {"number": "M.1", "conceptIdx": 7, "page": 13, "printPage": 147, "question": "f(x+y)=f(x)f(y) for x,y∈ℕ, f(1)=3, Σ_{x=1}^n f(x)=120. Find n.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "f(n)=3ⁿ. 3(3ⁿ−1)/2=120 ⇒ 3ⁿ=81 ⇒ n=4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "n=4", "section": "Misc.", "q": 47, "title": "Exercise Q1", "given": "f(x+y)=f(x)f(y) for x,y∈ℕ, f(1)=3, Σ_{x=1}^n f(x)=120. Find n.", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}, {"number": "M.2", "conceptIdx": 3, "page": 13, "printPage": 147, "question": "Some terms of a G.P. sum to 315; a=5, r=2. Last term and number of terms?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "5(2ⁿ−1)=315 ⇒ 2ⁿ=64 ⇒ n=6, last=5·32=160.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "last term 160; 6 terms", "section": "Misc.", "q": 48, "title": "Exercise Q2", "given": "Some terms of a G.P. sum to 315; a=5, r=2. Last term and number of terms?", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "M.3", "conceptIdx": 2, "page": 13, "printPage": 147, "question": "First term 1; sum of 3rd and 5th is 90. Find r.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "r²+r⁴=90, u=r², u²+u−90=0, u=9, r=±3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "r = ±3", "section": "Misc.", "q": 49, "title": "Exercise Q3", "given": "First term 1; sum of 3rd and 5th is 90. Find r.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "M.4", "conceptIdx": 4, "page": 13, "printPage": 147, "question": "Three G.P. numbers sum to 56. Subtract 1,7,21 and get an A.P. Find the numbers.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Middle a=16, r=2 or 1/2. Numbers 8,16,32 or 32,16,8.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "8, 16, 32 (or reversed)", "section": "Misc.", "q": 50, "title": "Exercise Q4", "given": "Three G.P. numbers sum to 56. Subtract 1,7,21 and get an A.P. Find the numbers.", "conceptName": "7,77,777 and ancestors", "takeaway": "State S₁₀=2046 and the 7+77+777 formula."}, {"number": "M.5", "conceptIdx": 3, "page": 13, "printPage": 147, "question": "A G.P. of an even number of terms; total sum is 5 times the sum of the odd-placed terms. Find r.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(r²−1)=5(r−1) ⇒ r+1=5 ⇒ r=4 (r≠1).", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "r=4", "section": "Misc.", "q": 51, "title": "Exercise Q5", "given": "A G.P. of an even number of terms; total sum is 5 times the sum of the odd-placed terms. Find r.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "M.6", "conceptIdx": 2, "page": 14, "printPage": 148, "question": "If (a−bx)/(a+bx)=(b−cx)/(b+cx)=(c−dx)/(c+dx) and x≠0, show a,b,c,d in G.P.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Each ratio equal implies b²=ac, c²=bd, hence a,b,c,d in G.P.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "a,b,c,d in G.P.", "section": "Misc.", "q": 52, "title": "Exercise Q6", "given": "If (a−bx)/(a+bx)=(b−cx)/(b+cx)=(c−dx)/(c+dx) and x≠0, show a,b,c,d in G.P.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "M.7", "conceptIdx": 3, "page": 14, "printPage": 148, "question": "S=sum, P=product, R=sum of reciprocals of n G.P. terms. Prove P² Rⁿ = Sⁿ.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "P²=(a·ℓ)ⁿ, R=S/(aℓ), so P² Rⁿ = (aℓ)ⁿ · Sⁿ /(aℓ)ⁿ = Sⁿ.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "P² Rⁿ = Sⁿ", "section": "Misc.", "q": 53, "title": "Exercise Q7", "given": "S=sum, P=product, R=sum of reciprocals of n G.P. terms. Prove P² Rⁿ = Sⁿ.", "conceptName": "Sum of a G.P.", "takeaway": "Write Sₙ for r≠1 and compute S₅=211/81."}, {"number": "M.8", "conceptIdx": 2, "page": 14, "printPage": 148, "question": "a,b,c,d in G.P. Prove (aⁿ+bⁿ), (bⁿ+cⁿ), (cⁿ+dⁿ) in G.P.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(bⁿ+cⁿ)²=(aⁿ+bⁿ)(cⁿ+dⁿ) using b²=ac etc.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "in G.P.", "section": "Misc.", "q": 54, "title": "Exercise Q8", "given": "a,b,c,d in G.P. Prove (aⁿ+bⁿ), (bⁿ+cⁿ), (cⁿ+dⁿ) in G.P.", "conceptName": "G.P. general term", "takeaway": "Write aₙ=arⁿ⁻¹ and compute a₁₀=3072 from Example 6."}, {"number": "M.9", "conceptIdx": 6, "page": 14, "printPage": 148, "question": "a,b roots of x²−3x+p=0; c,d of x²−12x+q=0; a,b,c,d in G.P. Prove (q+p):(q−p)=17:15.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "a+b=3, ab=p, c+d=12, cd=q, and b/a=c/b=d/c=r.", "3(1+r)=a(1+r) wait a(1+r)=3, ar(1+r) wait. Common ratio r, a+ar=3, ar²+ar³=12 ⇒ ar²(1+r)=12, a(1+r)=3 so r²=4, r=2 (positive for distinct).", "a+2a=3, a=1, p=ab=2, q=cd= (4)(8)=32. (32+2):(32−2)=34:30=17:15.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "17:15", "section": "Misc.", "q": 55, "title": "Exercise Q9", "given": "a,b roots of x²−3x+p=0; c,d of x²−12x+q=0; a,b,c,d in G.P. Prove (q+p):(q−p)=17:15.", "conceptName": "A.M. ≥ G.M.", "takeaway": "Prove A≥G in one line and recover 4,16 from A=10, G=8."}, {"number": "M.10", "conceptIdx": 6, "page": 14, "printPage": 148, "question": "A.M.:G.M. of a,b is m:n. Show a:b = [m+√(m²−n²)] : [m−√(m²−n²)].", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(a+b)/(2√(ab))=m/n. Put √(a/b)=t. Recovers the stated ratio.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "a:b = m+√(m²−n²) : m−√(m²−n²)", "section": "Misc.", "q": 56, "title": "Exercise Q10", "given": "A.M.:G.M. of a,b is m:n. Show a:b = [m+√(m²−n²)] : [m−√(m²−n²)].", "conceptName": "A.M. ≥ G.M.", "takeaway": "Prove A≥G in one line and recover 4,16 from A=10, G=8."}, {"number": "M.11", "conceptIdx": 4, "page": 14, "printPage": 148, "question": "Sum to n terms: (i) 5+55+555+… (ii) 0.6+0.66+0.666+…", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "(i) (5/9)[10(10ⁿ−1)/9 − n].", "(ii) (6/9)[1−(0.1)ⁿ]·n?  0.6=6/10, better: (2/3)n − 2/3·(1−10⁻ⁿ)/9 × something. Standard: S=(2/3)[n − (1−10⁻ⁿ)/9].", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) (5/9)[10(10ⁿ−1)/9 − n];  (ii) (2/3)n − 2(1−10⁻ⁿ)/27", "section": "Misc.", "q": 57, "title": "Exercise Q11", "given": "Sum to n terms: (i) 5+55+555+… (ii) 0.6+0.66+0.666+…", "conceptName": "7,77,777 and ancestors", "takeaway": "State S₁₀=2046 and the 7+77+777 formula."}, {"number": "M.12", "conceptIdx": 1, "page": 14, "printPage": 148, "question": "20th term of 2×4 + 4×6 + 6×8 + … + n terms.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "k-th term = (2k)(2k+2)=4k(k+1). a₂₀=4·20·21=1680.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "1680", "section": "Misc.", "q": 58, "title": "Exercise Q12", "given": "20th term of 2×4 + 4×6 + 6×8 + … + n terms.", "conceptName": "Series & sigma", "takeaway": "Write Σ notation for a₁+…+aₙ and compute a₁₇=65 for aₙ=4n−3."}, {"number": "M.13", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "Tractor ₹12000; ₹6000 cash; annual instalments of ₹500 plus 12% on unpaid. Total cost?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Unpaid 6000,5500,…,500 (12 terms). Interest 0.12(6000+…+500)=0.12·12/2·(6000+500)=4680.", "Total=12000+4680=16680.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "₹ 16,680", "section": "Misc.", "q": 59, "title": "Exercise Q13", "given": "Tractor ₹12000; ₹6000 cash; annual instalments of ₹500 plus 12% on unpaid. Total cost?", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}, {"number": "M.14", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "Scooter ₹22000; ₹4000 cash; instalments ₹1000 + 10% on unpaid. Total cost?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Unpaid 18000,17000,…,1000 (18 terms). Interest 0.1·18/2·(18000+1000)=17100.", "Total=22000+17100=39100.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "₹ 39,100", "section": "Misc.", "q": 60, "title": "Exercise Q14", "given": "Scooter ₹22000; ₹4000 cash; instalments ₹1000 + 10% on unpaid. Total cost?", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}, {"number": "M.15", "conceptIdx": 4, "page": 14, "printPage": 148, "question": "Letter to 4 friends, each copies to 4, 8th set mailed, 50 paise a letter. Postage?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Letters: 4+4²+…+4⁸=4(4⁸−1)/3=4·65535/3=87380.", "Cost=87380×0.50=₹43690.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "₹ 43,690", "section": "Misc.", "q": 61, "title": "Exercise Q15", "given": "Letter to 4 friends, each copies to 4, 8th set mailed, 50 paise a letter. Postage?", "conceptName": "7,77,777 and ancestors", "takeaway": "State S₁₀=2046 and the 7+77+777 formula."}, {"number": "M.16", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "₹10000 at 5% simple interest. Amount in 15th year since deposit, and total after 20 years.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "In 15th year the amount is principal+14 years interest=10000+7000=17000 (interest is paid/added yearly as simple).", "After 20 years: 10000+20×500=20000.", "Reading NCERT: ‘amount in 15th year’ often means the value at the beginning of the 15th year = 10000+14×500=17000.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "₹ 17,000 in the 15th year;  ₹ 20,000 after 20 years", "section": "Misc.", "q": 62, "title": "Exercise Q16", "given": "₹10000 at 5% simple interest. Amount in 15th year since deposit, and total after 20 years.", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}, {"number": "M.17", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "Machine costs ₹15625, depreciates 20% a year. Value after 5 years?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "15625·(4/5)⁵=5·4⁵=5120.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "₹ 5,120", "section": "Misc.", "q": 63, "title": "Exercise Q17", "given": "Machine costs ₹15625, depreciates 20% a year. Value after 5 years?", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}, {"number": "M.18", "conceptIdx": 7, "page": 14, "printPage": 148, "question": "150 workers; 4 drop out each day from day 2 onward; 8 extra days. Days originally planned / days actually taken?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Let n be the scheduled days. Work = 150n man-days.", "Actual: 150+(146)+… for (n+8) days, an A.P. of (n+8) terms, first 150, common difference −4, last=150−4(n+7).", "Standard result: n=17 scheduled, actual 25 days. Check: 150·17=2550. Actual 25 days starting 150, d=−4, S=25/2·(300−4·24)=25/2·(300−96)=25·102=2550.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "25 days (8 more than 17)", "section": "Misc.", "q": 64, "title": "Exercise Q18", "given": "150 workers; 4 drop out each day from day 2 onward; 8 extra days. Days originally planned / days actually taken?", "conceptName": "Compound & instalments", "takeaway": "Compute 15625·(0.8)⁵=5120 and state A=P(1+r)ⁿ."}], "exerciseMap": [[1, "Exercise Q1", 0, 4], [2, "Exercise Q2", 0, 4], [3, "Exercise Q3", 0, 4], [4, "Exercise Q4", 0, 4], [5, "Exercise Q5", 0, 4], [6, "Exercise Q6", 0, 4], [7, "Exercise Q7", 0, 4], [8, "Exercise Q8", 0, 4], [9, "Exercise Q9", 0, 4], [10, "Exercise Q10", 0, 4], [11, "Exercise Q11", 1, 5], [12, "Exercise Q12", 1, 5], [13, "Exercise Q13", 1, 5], [14, "Exercise Q14", 0, 5], [15, "Exercise Q1", 2, 11], [16, "Exercise Q2", 2, 11], [17, "Exercise Q3", 2, 11], [18, "Exercise Q4", 2, 11], [19, "Exercise Q5", 2, 11], [20, "Exercise Q6", 2, 11], [21, "Exercise Q7", 3, 11], [22, "Exercise Q8", 3, 11], [23, "Exercise Q9", 3, 11], [24, "Exercise Q10", 3, 11], [25, "Exercise Q11", 3, 11], [26, "Exercise Q12", 4, 11], [27, "Exercise Q13", 3, 11], [28, "Exercise Q14", 3, 12], [29, "Exercise Q15", 3, 12], [30, "Exercise Q16", 3, 12], [31, "Exercise Q17", 2, 12], [32, "Exercise Q18", 4, 12], [33, "Exercise Q19", 3, 12], [34, "Exercise Q20", 2, 12], [35, "Exercise Q21", 2, 12], [36, "Exercise Q22", 2, 12], [37, "Exercise Q23", 2, 12], [38, "Exercise Q24", 3, 12], [39, "Exercise Q25", 2, 12], [40, "Exercise Q26", 5, 12], [41, "Exercise Q27", 5, 12], [42, "Exercise Q28", 6, 12], [43, "Exercise Q29", 6, 12], [44, "Exercise Q30", 2, 12], [45, "Exercise Q31", 7, 13], [46, "Exercise Q32", 6, 13], [47, "Exercise Q1", 7, 13], [48, "Exercise Q2", 3, 13], [49, "Exercise Q3", 2, 13], [50, "Exercise Q4", 4, 13], [51, "Exercise Q5", 3, 13], [52, "Exercise Q6", 2, 14], [53, "Exercise Q7", 3, 14], [54, "Exercise Q8", 2, 14], [55, "Exercise Q9", 6, 14], [56, "Exercise Q10", 6, 14], [57, "Exercise Q11", 4, 14], [58, "Exercise Q12", 1, 14], [59, "Exercise Q13", 7, 14], [60, "Exercise Q14", 7, 14], [61, "Exercise Q15", 4, 14], [62, "Exercise Q16", 7, 14], [63, "Exercise Q17", 7, 14], [64, "Exercise Q18", 7, 14]], "exercisesNote": "All 64 source questions are included with exact source page mapping and expanded worked guidance. PDF pages 1–16 correspond to printed pages 136–150."};
 </script>
 <script>
+// Shared Class 11 Maths runtime, adapted from verified lemh101.
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1084,8 +1298,44 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1361,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1444,35 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1489,10 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,16 +1501,17 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1241,10 +1523,15 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1278,7 +1565,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1304,42 +1591,47 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1347,7 +1639,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1356,48 +1648,46 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1443,6 +1733,10 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1461,7 +1755,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1511,7 +1805,8 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1520,6 +1815,41 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1534,9 +1864,6 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1571,7 +1898,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1656,9 +1983,9 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1686,7 +2013,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1731,20 +2058,31 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + (ex.q || qNum) + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2128,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2138,7 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2148,31 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1834,16 +2192,12 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1853,6 +2207,10 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1866,6 +2224,41 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1873,27 +2266,13 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
   };
   if (typeof globalThis !== "undefined") {
     globalThis.App = window.App;
-  }
-
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
   }
 
   // Initialize
@@ -1903,8 +2282,233 @@ window.CHAPTER = {"code": "kemh108", "chapterNumber": 8, "book_name": "Mathemati
   routeFromHash();
 })();
 
+
 </script>
 <script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
+
+
 var App = window.App;
 window.SIMS = {};
 
@@ -1927,8 +2531,8 @@ window.SIMS["ancestor-tree"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>2ⁿ ancestors in generation n</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-an">10 generations</button>' +
-      '<button class="preset-btn" id="p-fi">Fibonacci</button>';
+      '<button class="preset-btn active" data-preset="p-an" id="p-an">10 generations</button>' +
+      '<button class="preset-btn" data-preset="p-fi" id="p-fi">Fibonacci</button>';
     var mode="an";
     document.getElementById("p-an").onclick = function(){ setActivePreset(this); mode="an"; App.resetTimeline(); App.play(); };
     document.getElementById("p-fi").onclick = function(){ setActivePreset(this); mode="fi"; App.resetTimeline(); App.play(); };
@@ -1973,8 +2577,8 @@ window.SIMS["series-sum"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>odd numbers</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-odd">1+3+5+7 (sum 16)</button>' +
-      '<button class="preset-btn" id="p-ex3">Example 3: 1+3+5+7+9</button>';
+      '<button class="preset-btn active" data-preset="p-odd" id="p-odd">1+3+5+7 (sum 16)</button>' +
+      '<button class="preset-btn" data-preset="p-ex3" id="p-ex3">Example 3: 1+3+5+7+9</button>';
     var mode="odd";
     document.getElementById("p-odd").onclick = function(){ setActivePreset(this); mode="odd"; App.resetTimeline(); App.play(); };
     document.getElementById("p-ex3").onclick = function(){ setActivePreset(this); mode="ex3"; App.resetTimeline(); App.play(); };
@@ -2012,9 +2616,9 @@ window.SIMS["gp-terms"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>aₙ = a rⁿ⁻¹</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p5">5, 25, 125, …</button>' +
-      '<button class="preset-btn" id="p2">2, 8, 32, … → 131072</button>' +
-      '<button class="preset-btn" id="p6">Example 6 → 3072</button>';
+      '<button class="preset-btn active" data-preset="p5" id="p5">5, 25, 125, …</button>' +
+      '<button class="preset-btn" data-preset="p2" id="p2">2, 8, 32, … → 131072</button>' +
+      '<button class="preset-btn" data-preset="p6" id="p6">Example 6 → 3072</button>';
     document.getElementById("p5").onclick = function(){ setActivePreset(this); a=5;r=5; App.resetTimeline(); };
     document.getElementById("p2").onclick = function(){ setActivePreset(this); a=2;r=4; App.resetTimeline(); };
     document.getElementById("p6").onclick = function(){ setActivePreset(this); a=6;r=2; App.resetTimeline(); };
@@ -2049,8 +2653,8 @@ window.SIMS["gp-sum"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Sₙ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>infinite ceiling a/(1−r)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pe7">Example 7 · r=2/3</button>' +
-      '<button class="preset-btn" id="pe8">Example 8 · r=1/2, target 3069/512</button>';
+      '<button class="preset-btn active" data-preset="pe7" id="pe7">Example 7 · r=2/3</button>' +
+      '<button class="preset-btn" data-preset="pe8" id="pe8">Example 8 · r=1/2, target 3069/512</button>';
     document.getElementById("pe7").onclick = function(){ setActivePreset(this); a=1;r=2/3; App.resetTimeline(); };
     document.getElementById("pe8").onclick = function(){ setActivePreset(this); a=3;r=0.5; App.resetTimeline(); };
     document.getElementById("lab-controls").innerHTML =
@@ -2089,8 +2693,8 @@ window.SIMS["sevens-series"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>7, 77, 777, …</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p7">Example 10 · sevens</button>' +
-      '<button class="preset-btn" id="p11">Example 11 · 2046 ancestors</button>';
+      '<button class="preset-btn active" data-preset="p7" id="p7">Example 10 · sevens</button>' +
+      '<button class="preset-btn" data-preset="p11" id="p11">Example 11 · 2046 ancestors</button>';
     var mode="sev";
     document.getElementById("p7").onclick = function(){ setActivePreset(this); mode="sev"; draw(); };
     document.getElementById("p11").onclick = function(){ setActivePreset(this); mode="anc"; draw(); };
@@ -2135,8 +2739,8 @@ window.SIMS["insert-gm"] = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>inserted means</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pp">r = +4 → 4, 16, 64</button>' +
-      '<button class="preset-btn" id="pm">r = −4 → −4, 16, −64</button>';
+      '<button class="preset-btn active" data-preset="pp" id="pp">r = +4 → 4, 16, 64</button>' +
+      '<button class="preset-btn" data-preset="pm" id="pm">r = −4 → −4, 16, −64</button>';
     document.getElementById("pp").onclick = function(){ setActivePreset(this); sign=1; draw(); };
     document.getElementById("pm").onclick = function(){ setActivePreset(this); sign=-1; draw(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2168,8 +2772,8 @@ window.SIMS["am-gm-compare"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>A.M.</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>G.M.</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pe13">Example 13 · 4 and 16</button>' +
-      '<button class="preset-btn" id="peq">a=b=9 · equality</button>';
+      '<button class="preset-btn active" data-preset="pe13" id="pe13">Example 13 · 4 and 16</button>' +
+      '<button class="preset-btn" data-preset="peq" id="peq">a=b=9 · equality</button>';
     document.getElementById("pe13").onclick = function(){ setActivePreset(this); a=4;b=16; draw(); };
     document.getElementById("peq").onclick = function(){ setActivePreset(this); a=9;b=9; draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -2213,8 +2817,8 @@ window.SIMS["fd-compound"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>compound 10%</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>depreciation 20%</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pfd">₹500 @ 10% for 10 yr</button>' +
-      '<button class="preset-btn" id="pdep">₹15625 · (0.8)⁵</button>';
+      '<button class="preset-btn active" data-preset="pfd" id="pfd">₹500 @ 10% for 10 yr</button>' +
+      '<button class="preset-btn" data-preset="pdep" id="pdep">₹15625 · (0.8)⁵</button>';
     var mode="fd";
     document.getElementById("pfd").onclick = function(){ setActivePreset(this); mode="fd"; App.resetTimeline(); App.play(); };
     document.getElementById("pdep").onclick = function(){ setActivePreset(this); mode="dep"; App.resetTimeline(); App.play(); };

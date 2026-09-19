@@ -34,3 +34,11 @@ Honest gaps in this 13-page PDF:
 - **§4.5’s polar representation is in the heading only.** After Fig 4.3 (conjugate as a mirror) the text jumps to Miscellaneous Examples. There is no z=r(cos θ+i sin θ), no argument, no Euler/De Moivre paragraph.
 
 Not invented.
+
+## Standard audit (kemh104)
+
+- Read and audited all 13 PDF pages of `books/originals/Class11-Maths_kemh104.pdf`, printed pages 76–88 (offset +75), including the source exercise and miscellaneous answer stems.
+- Added source fixtures for all 28 exercises with exact question, page, and answer fields; expanded each solution to auditable multi-step guidance and added lesson worked-example objects.
+- Independent verifier: `node tests/verify.cjs` (source, mathematics, structure and packaging assertions).
+- Browser QA: `NODE_PATH=... node scripts/chapter_tools/browser_qa.cjs output/Class11/kemh104` — 96 checks, 0 failures, 0 console errors.
+- All six lessons include their assigned agy-imported oEmbed video metadata.

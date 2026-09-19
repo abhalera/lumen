@@ -34,6 +34,13 @@
 
 All 21 end-exercises of this reprint mapped from zooms p.15–17. Fig. 7.11 intensity arrows read from zoom p.16. No Additional Exercises in this file.
 
+## Verification and browser QA
+
+- `tests/verify.cjs`: source identity, exercise mapping, recomputation, video metadata and packaging checks.
+- `tests/expect.json`: 15 named simulation presets with concrete final-state assertions.
+- Browser QA: 118 checks at desktop, tablet and mobile widths, 0 failures, 0 console errors.
+- Videos: two candidates per lesson were checked through YouTube oEmbed; the first verified result is wired to each lesson's explicit Wow card.
+
 ## Edition notes
 
 - Rationalised 17-page chapter: Kepler, Newton, G, g(h)/g(d), PE, escape, satellites, orbital energy. **No** geostationary-orbit derivation as a numbered section, **no** gravitational potential *theory* beyond V=−GMm/r, **no** deleted older appendices invented.

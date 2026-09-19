@@ -1,23 +1,62 @@
 # NCERT Coverage Audit: Class 11 Chemistry Chapter 4 (kech104)
 
-**Textbook:** NCERT Class 11 Chemistry Part I, Chapter 4: *Chemical Bonding and Molecular Structure*  
-**Edition/Reprint:** 2026–27 (Rationalized Curricular Standard)  
-**Extraction Engine:** PyMuPDF (`fitz` span dictionary + 2× PNG zoom proofs, no pdftotext)  
+**Textbook:** NCERT Class 11 Chemistry Part I, Chapter 4: *Chemical Bonding and Molecular Structure*
+**Edition/Reprint:** 2026–27
+**Source PDF:** `books/originals/Class11-Chemistry-Pt1_kech104.pdf` (36 pdf pages, printed pp. 100–135)
+**SHA-256:** `e24381616647f4f98fc4beddf03132f33b13b74384dd639cf2d70acae1fe1e9a` (in `output/Class11/SOURCE-MANIFEST-CHEMISTRY.json`)
+**Extraction Engine:** PyMuPDF (`fitz` span dictionary + 2× PNG zoom proofs, no pdftotext)
 **Status:** 100% Comprehensive Coverage
 
----
+## Verification status (2026-09-19, muse-textbooks)
 
+- `tests/verify.cjs`: 655 checks pass (source-PDF hash fixture, packaging, lesson schema, 32 browser
+  fixtures, 40 exercises with exact pages + source-wording checks, every quantitative answer recomputed
+  from the book's givens — Born-Haber cycles, formal charges, bond orders, σ counts, Δχ ladder, dipole
+  conversion — plus worked-example values and 7 video wire-ups).
+- `browser_qa.cjs`: 206 checks, 0 failures, 0 console errors (1280px + 390px + 768px, all 32 lab scenarios).
+- Videos: 7/7 wow cards wire the results file's oEmbed-verified first candidates
+  (work/class11-chemistry-videos/results/kech104.json), each re-verified 200 OK with exact id/title/channel;
+  `tests/verify.cjs` cross-checks every wired id/title/channel exactly.
+- Shape migrated to the lech101 standard: top-level code/title/book/edition/source/page span,
+  concepts→lessons, connect pairs→3 objects (1 wow + links + video), worked strings→objects,
+  group/watch, quizzes level/type/solution/wrong, exercises q/title/given/steps/answer/takeaway/
+  conceptIdx/conceptName/page/printPage (+99 offset), exerciseMap/exercisesNote.
+
+## Honest fixes (verified against the PDF, not silently patched)
+
+- **NF3 dipole 0.24 → 0.23 D** in 5 chapter spots + 3 sim spots (PDF dipole table: NH3/NF3/BF3 = 1.47/0.23/0).
+- **PCl5 axial/equatorial 219/204 → 212/202 pm** in 5 spots (Adams & Bartell gas-phase electron
+  diffraction: mean 2.061 Å with axial 0.104 Å longer gives eq 2.019, ax 2.123 Å).
+- **Worked-example labels** corrected from in-text Problems to Exercises (the book has only Problems
+  4.1–4.4: Lewis CO, nitrite ion, CO3²⁻ and CO2 structures); carbonate formal-charge worked reframed as
+  supporting Exercises 4.4 & 4.11.
+- **Born-Haber cycle kept as a labeled extension**: the rationalized NCERT omits it (zero hits in the PDF),
+  so the worked title says "(extension)" and the sim derives every value from displayed modern inputs.
+- **MgO lattice 3791 → 3844 kJ/mol** to match the sim's Born-Haber derivation (148 + 249 + 2188 + 657 −
+  601.7); 3791/3795 are older-input variants — internal consistency with the shown derivation wins.
+- **Van der Waals range normalized** to ≈2–10 kJ/mol (was 2–5 in one lesson spot, 2–10 in Q4.39).
+- Figure-dependent questions (Q4.12 tautomer structures, Q4.20 acetic-acid skeleton) are solved with full
+  textual structure descriptions, so no figure is required to follow the steps.
+
+## Draft errors fixed against the PDF
+
+- NF3/PCl5/worked-label/VdW/MgO fixes above; one broken `$$p><p>` tag (stray fragment) in Q4.22's solution;
+  `$$` display spans collapsed and converted (nested-brace parser for frac/overset/vec/dot); lesson page
+  spans corrected to true section locations; sims.js gained the zero-arg data-preset shim, prediction-marking
+  aliases and presentation normalization (draw exports already present; no dead tail to remove).
+
+---
 ## 1. Pedagogical Concept Mapping
 
 | Concept ID | Title | NCERT Section | Textbook Pages | Simulation Lab | Practice Quizzes |
 | :--- | :--- | :---: | :---: | :--- | :---: |
-| `kossel-lewis-octet` | Kössel-Lewis Approach, Formal Charge & Octet Limitations | 4.1 | 1–5 | `lewisdot` (Lewis Dot & Formal Charge) | 3 |
-| `ionic-bond-lattice` | Ionic Bonding, Lattice Enthalpy & Born-Haber Cycle | 4.2 | 5–8 | `bornhaber` (Born-Haber Cycle Lab) | 3 |
-| `bond-parameters-dipole` | Bond Parameters, Resonance & Dipole Moments: NH₃ vs NF₃ | 4.3 | 8–14 | `dipolelab` (3D Dipole Vector Lab) | 3 |
-| `vsepr-theory` | VSEPR Theory: Electron Repulsion & Molecular Geometry | 4.4 | 14–20 | `vseprlab` (3D VSEPR Distortion Lab) | 3 |
-| `valence-bond-hybrid` | Valence Bond Theory, Orbital Overlap & Hybridization | 4.5, 4.6 | 20–28 | `hybridsim` (Orbital Overlap & Hybrid Lab) | 3 |
-| `molecular-orbital-theory` | Molecular Orbital Theory & Paramagnetism of Oxygen | 4.7 | 28–34 | `mothelab` (MO Energy Diagram Lab) | 3 |
-| `hydrogen-bonding` | Hydrogen Bonding: Inter/Intramolecular & Water Anomalies | 4.8 | 34–36 | `hbondlab` (H-Bond Dynamic Cage Lab) | 3 |
+| `kossel-lewis-octet` | Kössel-Lewis Approach & Octet Rule | 4.1, 4.2 | 1–7 (pr. 100–106) | `lewisdot` (Formal-charge ledger) | 3 |
+| `ionic-bond-lattice` | Ionic Bonding & Lattice Energy | 4.2 | 7 (pr. 106) | `bornhaber` (Hess-cycle verifier) | 3 |
+| `bond-parameters-dipole` | Bond Parameters, Resonance & Dipoles | 4.3 | 8–12 (pr. 107–111) | `dipolelab` (Vector addition) | 3 |
+| `vsepr-theory` | VSEPR Shapes & Lone Pairs | 4.4 | 13–17 (pr. 112–116) | `vseprlab` (AB₂–AB₆ explorer) | 3 |
+| `valence-bond-hybrid` | Valence Bond & Hybridization | 4.5, 4.6 | 18–25 (pr. 117–124) | `hybridsim` (sp/sp²/sp³ + σ/π) | 3 |
+| `molecular-orbital-theory` | Molecular Orbital Theory | 4.7, 4.8 | 26–31 (pr. 125–130) | `mothelab` (BO & magnetism) | 3 |
+| `hydrogen-bonding` | Hydrogen Bonding & Anomalies | 4.9 | 32–33 (pr. 131–132) | `hbondlab` (Ice/water/isomers) | 3 |
 
 **Totals:** 7 core pedagogical concepts, 21 multi-tier practice questions, 7 interactive canvas/SVG simulations.
 
@@ -27,21 +66,19 @@
 
 | Exercise Range | Topics Covered | Status | Verification Method |
 | :--- | :--- | :---: | :--- |
-| **4.1 – 4.5** | Chemical bond formation, Lewis dot symbols, Lewis ions, structures (H2S, SiCl4, BeF2, CO3²⁻, HCOOH), Octet rule significance & 5 limitations | ✅ Complete | Formal charge & Lewis octet analysis |
-| **4.6 – 4.8** | Favourable factors for ionic bonds, VSEPR shapes (BeCl2, BCl3, SiCl4, AsF5, H2S, PH3), NH3 vs H2O bond angle compression | ✅ Complete | Born-Haber energetics & VSEPR lp-lp repulsion |
-| **4.9 – 4.12** | Bond strength vs bond order, bond length definition, CO3²⁻ resonance aspects, H3PO3 tautomerism vs resonance rule | ✅ Complete | MO bond order & nuclear coordinate invariance |
-| **4.13 – 4.16** | Resonance of SO3, NO2, NO3⁻, electron transfer Lewis symbols (K/S, Ca/O, Al/N), CO2 (linear 0 D) vs H2O (bent 1.85 D), dipole moment applications | ✅ Complete | Canonical formal charges & vector summation |
-| **4.17 – 4.20** | Electronegativity vs Δ_eg H, polar covalent bonds, ionic character order (N2 < ClF3 ≤ SO2 < K2O < LiF), acetic acid correct Lewis structure | ✅ Complete | Pauling electronegativity & valence counts |
-| **4.21 – 4.23** | CH4 tetrahedral vs square planar (109.5° vs 90° repulsion), BeH2 zero dipole moment, NH3 (1.47 D) vs NF3 (0.24 D) dipole explanation | ✅ Complete | VSEPR steric energy & dipole vector algebra |
-| **4.24 – 4.26** | Hybridization definition (sp, sp², sp³ shapes), AlCl3 + Cl⁻ → AlCl4⁻ (sp² to sp³), BF3 + NH3 → F3B·NH3 (B: sp²→sp³, N: sp³) | ✅ Complete | Steric number & coordinate dative bond tracking |
-| **4.27 – 4.30** | Double & triple bond orbital diagrams (C2H4, C2H2), σ and π bond counts (C2H2: 3σ, 2π; C2H4: 5σ, 1π), x-axis overlap (2py-2py forms π), carbon hybridization | ✅ Complete | Axial vs lateral overlap geometry |
-| **4.31 – 4.34** | Bond pair vs lone pair illustrations, σ vs π comparison table, H2 formation via Heitler-London VBT curve (74 pm, 435.8 kJ/mol), LCAO 3 conditions | ✅ Complete | Quantum mechanics & Heitler-London potential well |
-| **4.35 – 4.37** | MOT proof of Be2 non-existence (BO = 0), O2/O2⁺/O2⁻/O2²⁻ stability & magnetism, orbital wave function (+)/(-) phase significance | ✅ Complete | Molecular orbital configuration & unpaired spins |
-| **4.38 – 4.40** | PCl5 sp³d hybridization & axial bond elongation (219 pm vs 204 pm), Hydrogen bond definition & vdW comparison, Bond order calculation (N2=3, O2=2, O2⁺=2.5, O2⁻=1.5) | ✅ Complete | Steric 90° repulsions & (Nb - Na)/2 derivations |
+| **4.1 – 4.5** | Bond formation, Lewis dots/symbols, octet rule & limits | ✅ Complete | Source-wording + answer-statement checks |
+| **4.6 – 4.13** | Ionic factors, VSEPR shapes, NH3/H2O angles, bond order/length, resonance | ✅ Complete | Steric-number, FC & BO recomputation |
+| **4.14 – 4.20** | Electron transfer, dipole geometry, EN vs EG, polar bonds, ionic character, acetic acid | ✅ Complete | Δχ ladder (0/1.0/2.7/3.0); dipole values |
+| **4.21 – 4.27** | CH4 shape, BeH2/NH3/NF3 dipoles, hybridization concept/Al/B changes, multiple bonds | ✅ Complete | Vector logic; sp(n) upgrade checks |
+| **4.28 – 4.34** | σ/π counts, overlap rules, per-carbon hybridization, bp/lp, σ vs π, H2 VB curve, LCAO | ✅ Complete | Bond-count arithmetic (3/5/9 σ) |
+| **4.35 – 4.40** | Be2 absence, O2-series stability/magnetism, orbital signs, PCl5, H-bond, bond orders | ✅ Complete | MO ladder (0/1.0/1.5/2.0/2.5/3.0) |
+
+**Total Exercises:** 40 / 40 (100% verified coverage).
 
 ---
 
-## 3. Pedagogical Integrity & Verification Metrics
-- **Strict Budget:** Compiled `index.html` size < 2.0 MB with zero external CDN dependencies.
-- **Zero Iframe Policy:** No eager static iframes; all simulations implemented as native modular JavaScript SVG/Canvas labs.
-- **Automated Regression:** Verified via `output/Class11/kech104/tests/verify.cjs` and the master suite `tests/verify-class11-chemistry.cjs`.
+## 3. Offline Budget & Zero-CDN Compliance
+
+- Single standalone HTML bundle compiled via `scripts/class11/build_chapter.py kech104` (281.4 KB).
+- Strict budget: < 2.0 MB (zero external CDN links, zero unauthenticated external scripts).
+- Math and typography rendered via native SVG and accessible modern CSS tokens.

@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Class 12 Mathematics — Three Dimensional Geometry.">
-  <title>Three Dimensional Geometry — Class 12 Mathematics</title>
-  <style>:root {
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 11: Three Dimensional Geometry — Interactive Textbook</title>
+<style>
+:root {
   --ink: #152637;
   --muted: #536678;
   --paper: #ffffff;
@@ -75,6 +75,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -285,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -600,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -652,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +692,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,78 +1067,322 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
-  <a class="skip-link" href="#main-content">Skip to lesson</a>
-  <header class="topbar">
-    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-    <a class="class-link" href="../index.html">Class 12</a><span class="class-pill">CLASS 12 <span aria-hidden="true">·</span> MATHEMATICS</span>
-  </header>
-  <div class="app-layout">
-    <aside class="sidebar" aria-label="Chapter navigation">
-      <div class="sidebar-heading">Chapter concepts</div>
-      <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--line);">
-        <button class="concept-nav" id="nav-revision"><span class="num">✦</span><span>NCERT Exercises &amp; Revision</span></button>
-      </div>
-      <div style="margin:18px 10px 0;color:var(--muted);font-size:12px;line-height:1.5;">
-        Source: <a href="https://ncert.nic.in/textbook/pdf/lemh205.pdf" target="_blank" rel="noopener">lemh205 PDF ↗</a>
-      </div>
-    </aside>
-    <main id="main-content">
-      <div id="concept-view"></div>
-      <div id="revision-view" class="revision-page" data-block="revise">
-        <div class="concept-header">
-          <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
-          <h1 class="concept-title">Revise, Reflect, Refine</h1>
-          <p class="concept-deck">Mapped source exercises plus an original practice path for Class 12 Mathematics.</p>
-        </div>
-      </div>
-    </main>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
   </div>
-  <footer style="max-width:1040px;margin:0 auto;padding:0 36px 34px;color:var(--muted);font-size:12px;">
-    Source-aware first release · <a href="PLAN.md">Chapter plan</a> · <a href="../MATHS-STATUS.md">Maths status</a>
-  </footer>
-  <script>window.CHAPTER = {"code": "lemh205", "chapterNumber": 11, "book_name": "Mathematics", "title": "Three Dimensional Geometry", "subtitle": "Direction ratios and vectors let us write, compare and measure lines in space.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lemh205.pdf", "ncert": "https://ncert.nic.in/textbook/pdf/lemh205.pdf", "page_start": 1, "page_end": 17, "extraction": "PyMuPDF page text, dict spans, blocks, and selected PNG zooms. pdftotext not used.", "lessons": [{"id": "direction-cosines-and-ratios", "nav": "Direction cosines and ratios", "title": "Direction cosines are the cosines of a line's angles with the coordinate axes.", "deck": "The squared direction cosines add to one; direction ratios are any proportional triple.", "minutes": 8, "section": "11.2", "pages": [1], "print": "PDF p.1", "sim": "lines3d", "simTitle": "Angle between lines", "quick": ["Direction cosines are the cosines of a line's angles with the coordinate axes.", "The squared direction cosines add to one; direction ratios are any proportional triple."], "formulas": [{"label": "Key relation", "html": "l²+m²+n²=1", "cond": "Source section 11.2"}], "deeper": "Direction cosines are the cosines of a line's angles with the coordinate axes. The squared direction cosines add to one; direction ratios are any proportional triple. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "Direction ratios 2,−3,6 give length 7, so the cosines are 2/7,−3/7,6/7.", "prediction": {"prompt": "For ratios 2,−3,6, the positive z direction cosine is…", "options": ["6/7", "6/11", "3/7"], "answer": 0, "explanation": "The reliable anchor is l²+m²+n²=1. The squared direction cosines add to one; direction ratios are any proportional triple."}, "connect": [["GPS positioning", "A line of sight is represented by a direction vector through a known point.", [], {"id": "O0f_dfOl4S4", "title": "3D Geometry Class 12 One Shot | NCERT Revision | Maths Chapter 11 | VIJETA 2026", "channel": "NCERT Wallah"}], ["Architecture", "Angles and shortest distances between beams matter even when lines do not meet."]], "recall": "Say it without looking: The squared direction cosines add to one; direction ratios are any proportional triple. Then write l²+m²+n²=1.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Direction cosines and ratios?", "options": ["The squared direction cosines add to one; direction ratios are any proportional triple.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "The squared direction cosines add to one; direction ratios are any proportional triple.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Direction cosines and ratios?", "options": ["l²+m²+n²=1", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "l²+m²+n²=1", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "For ratios 2,−3,6, the positive z direction cosine is…", "options": ["6/7", "6/11", "3/7"], "answer": 0, "hint": "Start with l²+m²+n²=1. Check the domain, sign or dimensions before choosing.", "solution": "6/7 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §11.2 — Direction cosines and ratios (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh205.pdf#page=1"}], "printPages": "377"}, {"id": "equation-of-a-line", "nav": "Equation of a line", "title": "A line is determined by a point and a direction vector, in vector or Cartesian form.", "deck": "The parameter t moves from the anchor point in the direction of the ratios.", "minutes": 8, "section": "11.3", "pages": [5], "print": "PDF p.5", "sim": "lines3d", "simTitle": "Angle between lines", "quick": ["A line is determined by a point and a direction vector, in vector or Cartesian form.", "The parameter t moves from the anchor point in the direction of the ratios."], "formulas": [{"label": "Key relation", "html": "r=a+λb;  (x−x₁)/a=(y−y₁)/b=(z−z₁)/c", "cond": "Source section 11.3"}], "deeper": "A line is determined by a point and a direction vector, in vector or Cartesian form. The parameter t moves from the anchor point in the direction of the ratios. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "Through (1,2,3) with direction (2,−1,4): r=(i+2j+3k)+λ(2i−j+4k).", "prediction": {"prompt": "The x coordinate on that line is…", "options": ["1+2λ", "2+λ", "3+4λ"], "answer": 0, "explanation": "The reliable anchor is r=a+λb;  (x−x₁)/a=(y−y₁)/b=(z−z₁)/c. The parameter t moves from the anchor point in the direction of the ratios."}, "connect": [["Architecture", "Angles and shortest distances between beams matter even when lines do not meet."], ["3D graphics", "Ray casting and camera geometry use line equations and direction ratios."]], "recall": "Say it without looking: The parameter t moves from the anchor point in the direction of the ratios. Then write r=a+λb;  (x−x₁)/a=(y−y₁)/b=(z−z₁)/c.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Equation of a line?", "options": ["The parameter t moves from the anchor point in the direction of the ratios.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "The parameter t moves from the anchor point in the direction of the ratios.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Equation of a line?", "options": ["r=a+λb;  (x−x₁)/a=(y−y₁)/b=(z−z₁)/c", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "r=a+λb;  (x−x₁)/a=(y−y₁)/b=(z−z₁)/c", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "The x coordinate on that line is…", "options": ["1+2λ", "2+λ", "3+4λ"], "answer": 0, "hint": "Start with r=a+λb;  (x−x₁)/a=(y−y₁)/b=(z−z₁)/c. Check the domain, sign or dimensions before choosing.", "solution": "1+2λ follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §11.3 — Equation of a line (official PDF, PDF p.5)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh205.pdf#page=5"}], "printPages": "381"}, {"id": "angle-between-two-lines", "nav": "Angle between two lines", "title": "The angle between lines is the angle between their direction vectors.", "deck": "Use the dot product of direction ratios and divide by both magnitudes.", "minutes": 8, "section": "11.4", "pages": [7], "print": "PDF p.7", "sim": "lines3d", "simTitle": "Angle between lines", "quick": ["The angle between lines is the angle between their direction vectors.", "Use the dot product of direction ratios and divide by both magnitudes."], "formulas": [{"label": "Key relation", "html": "cosθ=(a₁a₂+b₁b₂+c₁c₂)/(|a||b|)", "cond": "Source section 11.4"}], "deeper": "The angle between lines is the angle between their direction vectors. Use the dot product of direction ratios and divide by both magnitudes. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "Directions i and j give cosθ=0, hence 90°.", "prediction": {"prompt": "The angle between direction vectors i and j is…", "options": ["90°", "0°", "45°"], "answer": 0, "explanation": "The reliable anchor is cosθ=(a₁a₂+b₁b₂+c₁c₂)/(|a||b|). Use the dot product of direction ratios and divide by both magnitudes."}, "connect": [["3D graphics", "Ray casting and camera geometry use line equations and direction ratios."], ["GPS positioning", "A line of sight is represented by a direction vector through a known point."]], "recall": "Say it without looking: Use the dot product of direction ratios and divide by both magnitudes. Then write cosθ=(a₁a₂+b₁b₂+c₁c₂)/(|a||b|).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Angle between two lines?", "options": ["Use the dot product of direction ratios and divide by both magnitudes.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Use the dot product of direction ratios and divide by both magnitudes.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Angle between two lines?", "options": ["cosθ=(a₁a₂+b₁b₂+c₁c₂)/(|a||b|)", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "cosθ=(a₁a₂+b₁b₂+c₁c₂)/(|a||b|)", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "The angle between direction vectors i and j is…", "options": ["90°", "0°", "45°"], "answer": 0, "hint": "Start with cosθ=(a₁a₂+b₁b₂+c₁c₂)/(|a||b|). Check the domain, sign or dimensions before choosing.", "solution": "90° follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §11.4 — Angle between two lines (official PDF, PDF p.7)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh205.pdf#page=7"}], "printPages": "383"}, {"id": "shortest-distance", "nav": "Shortest distance", "title": "Skew lines do not meet, but a common perpendicular gives their shortest distance.", "deck": "For parallel lines use a cross-product distance; for skew lines use a scalar triple product.", "minutes": 8, "section": "11.5", "pages": [9], "print": "PDF p.9", "sim": "lines3d", "simTitle": "Angle between lines", "quick": ["Skew lines do not meet, but a common perpendicular gives their shortest distance.", "For parallel lines use a cross-product distance; for skew lines use a scalar triple product."], "formulas": [{"label": "Key relation", "html": "d=|(a₂−a₁)·(b₁×b₂)|/|b₁×b₂|", "cond": "Source section 11.5"}], "deeper": "Skew lines do not meet, but a common perpendicular gives their shortest distance. For parallel lines use a cross-product distance; for skew lines use a scalar triple product. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "Parallel lines have the same direction; their separation is measured perpendicular to that direction.", "prediction": {"prompt": "The shortest distance between intersecting lines is…", "options": ["0", "their sum of lengths", "always 1"], "answer": 0, "explanation": "The reliable anchor is d=|(a₂−a₁)·(b₁×b₂)|/|b₁×b₂|. For parallel lines use a cross-product distance; for skew lines use a scalar triple product."}, "connect": [["GPS positioning", "A line of sight is represented by a direction vector through a known point."], ["Architecture", "Angles and shortest distances between beams matter even when lines do not meet."]], "recall": "Say it without looking: For parallel lines use a cross-product distance; for skew lines use a scalar triple product. Then write d=|(a₂−a₁)·(b₁×b₂)|/|b₁×b₂|.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Shortest distance?", "options": ["For parallel lines use a cross-product distance; for skew lines use a scalar triple product.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "For parallel lines use a cross-product distance; for skew lines use a scalar triple product.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Shortest distance?", "options": ["d=|(a₂−a₁)·(b₁×b₂)|/|b₁×b₂|", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "d=|(a₂−a₁)·(b₁×b₂)|/|b₁×b₂|", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "The shortest distance between intersecting lines is…", "options": ["0", "their sum of lengths", "always 1"], "answer": 0, "hint": "Start with d=|(a₂−a₁)·(b₁×b₂)|/|b₁×b₂|. Check the domain, sign or dimensions before choosing.", "solution": "0 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §11.5 — Shortest distance (official PDF, PDF p.9)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh205.pdf#page=9"}], "printPages": "385"}], "sections": [{"section": "11.2", "title": "Direction cosines and ratios", "page": 1}, {"section": "11.3", "title": "Equation of a line", "page": 5}, {"section": "11.4", "title": "Angle between two lines", "page": 7}, {"section": "11.5", "title": "Shortest distance", "page": 9}], "exercises": [{"number": "11.1.1", "exercise": "11.1", "question": "If a line makes angles 90°, 135°, 45° with the x, y and z-axes respectively, find its direction cosines.", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 1", "conceptIdx": 0, "steps": ["Direction cosines are l = cos α, m = cos β, n = cos γ.", "l = cos 90° = 0, m = cos 135° = −1/√2, n = cos 45° = 1/√2.", "Check: l² + m² + n² = 0 + 1/2 + 1/2 = 1."], "answer": "0, −1/√2, 1/√2"}, {"number": "11.1.2", "exercise": "11.1", "question": "Find the direction cosines of a line which makes equal angles with the coordinate axes.", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 2", "conceptIdx": 0, "steps": ["Let the equal angle be α, so l = m = n = cos α.", "Use l² + m² + n² = 1: 3cos²α = 1, so cos α = ±1/√3.", "Hence the direction cosines are 1/√3, 1/√3, 1/√3 or −1/√3, −1/√3, −1/√3."], "answer": "l = m = n = 1/√3 or l = m = n = −1/√3"}, {"number": "11.1.3", "exercise": "11.1", "question": "If a line has the direction ratios −18, 12, −4, then what are its direction cosines?", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 3", "conceptIdx": 0, "steps": ["Divisor = √((−18)² + 12² + (−4)²) = √(324 + 144 + 16) = √484 = 22.", "Divide each ratio by 22: −18/22, 12/22, −4/22.", "Simplify to −9/11, 6/11, −2/11."], "answer": "−9/11, 6/11, −2/11"}, {"number": "11.1.4", "exercise": "11.1", "question": "Show that the points (2, 3, 4), (−1, −2, 1), (5, 8, 7) are collinear.", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 4", "conceptIdx": 0, "steps": ["Direction ratios of AB = (−1 − 2, −2 − 3, 1 − 4) = (−3, −5, −3).", "Direction ratios of BC = (5 + 1, 8 + 2, 7 − 1) = (6, 10, 6) = −2(−3, −5, −3).", "AB and BC have proportional direction ratios and share point B, so A, B, C are collinear."], "answer": "The points are collinear."}, {"number": "11.1.5", "exercise": "11.1", "question": "Find the direction cosines of the sides of the triangle whose vertices are (3, 5, −4), (−1, 1, 2) and (−5, −5, −2).", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 5", "conceptIdx": 0, "steps": ["Side AB: ratios (−4, −4, 6), length √68 = 2√17; cosines (−2/√17, −2/√17, 3/√17).", "Side BC: ratios (−4, −6, −4), length √68 = 2√17; cosines (−2/√17, −3/√17, −2/√17).", "Side CA: ratios (8, 10, −2), length √168 = 2√42; cosines (4/√42, 5/√42, −1/√42)."], "answer": "AB: (−2/√17, −2/√17, 3/√17); BC: (−2/√17, −3/√17, −2/√17); CA: (4/√42, 5/√42, −1/√42)"}, {"number": "11.2.1", "exercise": "11.2", "question": "Show that the three lines with direction cosines 12/13, −3/13, −4/13; 4/13, 12/13, 3/13; 3/13, −4/13, 12/13 are mutually perpendicular.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 1", "conceptIdx": 1, "steps": ["Pair 1–2: (12·4 + (−3)(12) + (−4)(3))/169 = (48 − 36 − 12)/169 = 0.", "Pair 2–3: (4·3 + 12·(−4) + 3·12)/169 = (12 − 48 + 36)/169 = 0.", "Pair 1–3: (12·3 + (−3)(−4) + (−4)(12))/169 = (36 + 12 − 48)/169 = 0. All three pairs are perpendicular."], "answer": "The three lines are mutually perpendicular."}, {"number": "11.2.2", "exercise": "11.2", "question": "Show that the line through the points (1, −1, 2), (3, 4, −2) is perpendicular to the line through the points (0, 3, 2) and (3, 5, 6).", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 2", "conceptIdx": 1, "steps": ["Direction ratios of first line: (2, 5, −4).", "Direction ratios of second line: (3, 2, 4).", "Dot product = 2·3 + 5·2 + (−4)·4 = 6 + 10 − 16 = 0, so the lines are perpendicular."], "answer": "The lines are perpendicular."}, {"number": "11.2.3", "exercise": "11.2", "question": "Show that the line through the points (4, 7, 8), (2, 3, 4) is parallel to the line through the points (−1, −2, 1), (1, 2, 5).", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 3", "conceptIdx": 1, "steps": ["Direction ratios of first line: (−2, −4, −4).", "Direction ratios of second line: (2, 4, 4) = −1·(−2, −4, −4).", "Direction ratios are proportional, so the lines are parallel."], "answer": "The lines are parallel."}, {"number": "11.2.4", "exercise": "11.2", "question": "Find the equation of the line which passes through the point (1, 2, 3) and is parallel to the vector 3i + 2j − 2k.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 4", "conceptIdx": 1, "steps": ["Vector form r = a + λb with a = i + 2j + 3k, b = 3i + 2j − 2k.", "Cartesian form: (x − 1)/3 = (y − 2)/2 = (z − 3)/(−2).", "Both use the point (1, 2, 3) and direction ratios (3, 2, −2)."], "answer": "Vector: r = (i + 2j + 3k) + λ(3i + 2j − 2k); Cartesian: (x − 1)/3 = (y − 2)/2 = (z − 3)/(−2)"}, {"number": "11.2.5", "exercise": "11.2", "question": "Find the equation of the line in vector and in cartesian form that passes through the point with position vector 2i − j + 4k and is in the direction i + 2j − k.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 5", "conceptIdx": 1, "steps": ["Vector form: r = (2i − j + 4k) + λ(i + 2j − k).", "Point is (2, −1, 4) and direction ratios are (1, 2, −1).", "Cartesian form: (x − 2)/1 = (y + 1)/2 = (z − 4)/(−1)."], "answer": "Vector: r = (2i − j + 4k) + λ(i + 2j − k); Cartesian: (x − 2)/1 = (y + 1)/2 = (z − 4)/(−1)"}, {"number": "11.2.6", "exercise": "11.2", "question": "Find the cartesian equation of the line which passes through the point (−2, 4, −5) and parallel to the line given by (x + 3)/3 = (y − 4)/5 = (z + 8)/6.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 6", "conceptIdx": 1, "steps": ["The given line has direction ratios (3, 5, 6); a parallel line uses the same ratios.", "The required line passes through (−2, 4, −5).", "Cartesian equation: (x + 2)/3 = (y − 4)/5 = (z + 5)/6."], "answer": "(x + 2)/3 = (y − 4)/5 = (z + 5)/6"}, {"number": "11.2.7", "exercise": "11.2", "question": "The cartesian equation of a line is (x − 5)/3 = (y + 4)/7 = (z − 6)/2. Write its vector form.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 7", "conceptIdx": 1, "steps": ["A point on the line is (5, −4, 6) with position vector 5i − 4j + 6k.", "Direction ratios (3, 7, 2) give direction vector 3i + 7j + 2k.", "Vector form: r = (5i − 4j + 6k) + λ(3i + 7j + 2k)."], "answer": "r = (5i − 4j + 6k) + λ(3i + 7j + 2k)"}, {"number": "11.2.8", "exercise": "11.2", "question": "Find the angle between the following pairs of lines: (i) r = 2i − 5j + k + λ(3i + 2j + 6k) and r = 7i − 6k + μ(i + 2j + 2k); (ii) r = 3i + j − 2k + λ(i − j − 2k) and r = 2i − j − 56k + μ(3i − 5j − 4k).", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 8", "conceptIdx": 1, "steps": ["(i) b₁ = (3, 2, 6), b₂ = (1, 2, 2): cos θ = |3 + 4 + 12|/(7·3) = 19/21.", "(ii) b₁ = (1, −1, −2), b₂ = (3, −5, −4): dot = 3 + 5 + 8 = 16; |b₁| = √6, |b₂| = 5√2.", "cos θ = 16/(5√12) = 8/(5√3). Hence θ = cos⁻¹(19/21) and cos⁻¹(8/(5√3))."], "answer": "(i) cos⁻¹(19/21); (ii) cos⁻¹(8/(5√3))"}, {"number": "11.2.9", "exercise": "11.2", "question": "Find the angle between the following pair of lines: (i) (x − 2)/2 = (y − 1)/5 = (z + 3)/(−3) and (x + 2)/(−1) = (y − 4)/8 = (z − 5)/4; (ii) x/2 = y/2 = z/1 and (x − 5)/4 = (y − 2)/1 = (z − 3)/8. Find the values of p so that the lines (1 − x)/3 = (7y − 14)/(2p) = (z − 3)/2 and (7 − 7x)/(3p) = (y − 5)/1 = (6 − z)/5 are at right angles.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 9", "conceptIdx": 1, "steps": ["Q9(i): d₁ = (2, 5, −3), d₂ = (−1, 8, 4); dot = 26, |d₁| = √38, |d₂| = 9; cos θ = 26/(9√38).", "Q9(ii): d₁ = (2, 2, 1), d₂ = (4, 1, 8); dot = 18, |d₁| = 3, |d₂| = 9; cos θ = 18/27 = 2/3.", "Q10: standard directions are (−3, 2p/7, 2) and (−3p/7, 1, −5); dot = 9p/7 + 2p/7 − 10 = 0 gives p = 70/11."], "answer": "Q9: (i) cos⁻¹(26/(9√38)); (ii) cos⁻¹(2/3). Q10: p = 70/11"}, {"number": "11.2.11", "exercise": "11.2", "question": "Show that the lines (x − 5)/7 = (y + 2)/(−5) = z/1 and x/1 = y/2 = z/3 are perpendicular to each other.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 11", "conceptIdx": 1, "steps": ["Direction ratios: (7, −5, 1) and (1, 2, 3).", "Dot product = 7·1 + (−5)·2 + 1·3 = 7 − 10 + 3 = 0.", "Zero dot product means the lines are perpendicular."], "answer": "The lines are perpendicular."}, {"number": "11.2.12", "exercise": "11.2", "question": "Find the shortest distance between the lines r = (i + 2j + k) + λ(i − j + k) and r = 2i − j − k + μ(2i + j + 2k).", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 12", "conceptIdx": 1, "steps": ["a₂ − a₁ = (1, −3, −2); b₁ × b₂ = (−3, 0, 3) with |b₁ × b₂| = 3√2.", "(a₂ − a₁)·(b₁ × b₂) = −9, absolute value 9.", "d = 9/(3√2) = 3/√2 = 3√2/2 units."], "answer": "3√2/2 units"}, {"number": "11.2.13", "exercise": "11.2", "question": "Find the shortest distance between the lines (x + 1)/7 = (y + 1)/(−6) = (z + 1)/1 and (x − 3)/1 = (y − 5)/(−2) = (z − 7)/1.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 13", "conceptIdx": 1, "steps": ["a₁ = (−1, −1, −1), d₁ = (7, −6, 1); a₂ = (3, 5, 7), d₂ = (1, −2, 1).", "d₁ × d₂ = (−4, −6, −8), |d₁ × d₂| = 2√29; (a₂ − a₁)·(d₁ × d₂) = −116.", "d = 116/(2√29) = 2√29 units."], "answer": "2√29 units"}, {"number": "11.2.14", "exercise": "11.2", "question": "Find the shortest distance between the lines whose vector equations are r = (i + 2j + 3k) + λ(i − 3j + 2k) and r = 4i + 5j + 6k + μ(2i + 3j + k).", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 14", "conceptIdx": 1, "steps": ["a₂ − a₁ = (3, 3, 3); b₁ × b₂ = (−9, 3, 9) with magnitude 3√19.", "(a₂ − a₁)·(b₁ × b₂) = −27 + 9 + 27 = 9.", "d = 9/(3√19) = 3/√19 = 3√19/19 units."], "answer": "3/√19 units (= 3√19/19 units)"}, {"number": "11.2.15", "exercise": "11.2", "question": "Find the shortest distance between the lines whose vector equations are r = (1 − t)i + (t − 2)j + (3 − 2t)k and r = (s + 1)i + (2s − 1)j − (2s + 1)k.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 15", "conceptIdx": 1, "steps": ["First line: a₁ = (1, −2, 3), b₁ = (−1, 1, −2); second: a₂ = (1, −1, −1), b₂ = (1, 2, −2).", "b₁ × b₂ = (2, −4, −3), magnitude √29; (a₂ − a₁)·(b₁ × b₂) = 8.", "d = 8/√29 = 8√29/29 units."], "answer": "8/√29 units (= 8√29/29 units)"}, {"number": "Misc.1", "exercise": "Misc", "question": "Find the angle between the lines whose direction ratios are a, b, c and b − c, c − a, a − b.", "page": 14, "endPage": 14, "title": "NCERT Exercise Misc · Question 1", "conceptIdx": 0, "steps": ["cos θ = |a(b − c) + b(c − a) + c(a − b)|/(magnitudes).", "Numerator = ab − ac + bc − ab + ca − bc = 0.", "Hence cos θ = 0, so θ = 90° (π/2)."], "answer": "90° (π/2)"}, {"number": "Misc.2", "exercise": "Misc", "question": "Find the equation of a line parallel to x-axis and passing through the origin.", "page": 14, "endPage": 14, "title": "NCERT Exercise Misc · Question 2", "conceptIdx": 0, "steps": ["Direction of x-axis is (1, 0, 0); line passes through (0, 0, 0).", "Vector equation: r = λi.", "Cartesian equation: x/1 = y/0 = z/0, i.e. y = 0 and z = 0."], "answer": "Vector: r = λi; Cartesian: x/1 = y/0 = z/0 (i.e. y = 0, z = 0)"}, {"number": "Misc.3", "exercise": "Misc", "question": "If the lines (x − 1)/(−3) = (y − 2)/(2k) = (z − 3)/2 and (x − 1)/(3k) = (y − 1)/1 = (z − 6)/(−5) are perpendicular, find the value of k.", "page": 15, "endPage": 15, "title": "NCERT Exercise Misc · Question 3", "conceptIdx": 0, "steps": ["Direction ratios: (−3, 2k, 2) and (3k, 1, −5).", "Perpendicular: dot = (−3)(3k) + (2k)(1) + (2)(−5) = −7k − 10 = 0.", "Hence k = −10/7."], "answer": "k = −10/7"}, {"number": "Misc.4", "exercise": "Misc", "question": "Find the shortest distance between lines r = 6i + 2j + 2k + λ(i − 2j + 2k) and r = −4i − k + μ(3i − 2j − 2k).", "page": 15, "endPage": 15, "title": "NCERT Exercise Misc · Question 4", "conceptIdx": 0, "steps": ["a₂ − a₁ = (−10, −2, −3); b₁ × b₂ = (8, 8, 4) with magnitude 12.", "(a₂ − a₁)·(b₁ × b₂) = −80 − 16 − 12 = −108, absolute value 108.", "d = 108/12 = 9 units."], "answer": "9 units"}, {"number": "Misc.5", "exercise": "Misc", "question": "Find the vector equation of the line passing through the point (1, 2, −4) and perpendicular to the two lines: (x − 8)/3 = (y + 19)/(−16) = (z − 10)/7 and (x − 15)/3 = (y − 29)/8 = (z − 5)/(−5).", "page": 15, "endPage": 15, "title": "NCERT Exercise Misc · Question 5", "conceptIdx": 0, "steps": ["The lines have directions d₁ = (3, −16, 7), d₂ = (3, 8, −5).", "Required direction d₁ × d₂ = (24, 36, 72) = 12(2, 3, 6).", "Through (1, 2, −4): r = (i + 2j − 4k) + λ(2i + 3j + 6k)."], "answer": "r = (i + 2j − 4k) + λ(2i + 3j + 6k); Cartesian: (x − 1)/2 = (y − 2)/3 = (z + 4)/6"}], "exerciseMap": [{"number": "11.1.1", "exercise": "11.1", "question": "If a line makes angles 90°, 135°, 45° with the x, y and z-axes respectively, find its direction cosines.", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 1", "conceptIdx": 0, "steps": ["Direction cosines are l = cos α, m = cos β, n = cos γ.", "l = cos 90° = 0, m = cos 135° = −1/√2, n = cos 45° = 1/√2.", "Check: l² + m² + n² = 0 + 1/2 + 1/2 = 1."], "answer": "0, −1/√2, 1/√2"}, {"number": "11.1.2", "exercise": "11.1", "question": "Find the direction cosines of a line which makes equal angles with the coordinate axes.", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 2", "conceptIdx": 0, "steps": ["Let the equal angle be α, so l = m = n = cos α.", "Use l² + m² + n² = 1: 3cos²α = 1, so cos α = ±1/√3.", "Hence the direction cosines are 1/√3, 1/√3, 1/√3 or −1/√3, −1/√3, −1/√3."], "answer": "l = m = n = 1/√3 or l = m = n = −1/√3"}, {"number": "11.1.3", "exercise": "11.1", "question": "If a line has the direction ratios −18, 12, −4, then what are its direction cosines?", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 3", "conceptIdx": 0, "steps": ["Divisor = √((−18)² + 12² + (−4)²) = √(324 + 144 + 16) = √484 = 22.", "Divide each ratio by 22: −18/22, 12/22, −4/22.", "Simplify to −9/11, 6/11, −2/11."], "answer": "−9/11, 6/11, −2/11"}, {"number": "11.1.4", "exercise": "11.1", "question": "Show that the points (2, 3, 4), (−1, −2, 1), (5, 8, 7) are collinear.", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 4", "conceptIdx": 0, "steps": ["Direction ratios of AB = (−1 − 2, −2 − 3, 1 − 4) = (−3, −5, −3).", "Direction ratios of BC = (5 + 1, 8 + 2, 7 − 1) = (6, 10, 6) = −2(−3, −5, −3).", "AB and BC have proportional direction ratios and share point B, so A, B, C are collinear."], "answer": "The points are collinear."}, {"number": "11.1.5", "exercise": "11.1", "question": "Find the direction cosines of the sides of the triangle whose vertices are (3, 5, −4), (−1, 1, 2) and (−5, −5, −2).", "page": 5, "endPage": 5, "title": "NCERT Exercise 11.1 · Question 5", "conceptIdx": 0, "steps": ["Side AB: ratios (−4, −4, 6), length √68 = 2√17; cosines (−2/√17, −2/√17, 3/√17).", "Side BC: ratios (−4, −6, −4), length √68 = 2√17; cosines (−2/√17, −3/√17, −2/√17).", "Side CA: ratios (8, 10, −2), length √168 = 2√42; cosines (4/√42, 5/√42, −1/√42)."], "answer": "AB: (−2/√17, −2/√17, 3/√17); BC: (−2/√17, −3/√17, −2/√17); CA: (4/√42, 5/√42, −1/√42)"}, {"number": "11.2.1", "exercise": "11.2", "question": "Show that the three lines with direction cosines 12/13, −3/13, −4/13; 4/13, 12/13, 3/13; 3/13, −4/13, 12/13 are mutually perpendicular.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 1", "conceptIdx": 1, "steps": ["Pair 1–2: (12·4 + (−3)(12) + (−4)(3))/169 = (48 − 36 − 12)/169 = 0.", "Pair 2–3: (4·3 + 12·(−4) + 3·12)/169 = (12 − 48 + 36)/169 = 0.", "Pair 1–3: (12·3 + (−3)(−4) + (−4)(12))/169 = (36 + 12 − 48)/169 = 0. All three pairs are perpendicular."], "answer": "The three lines are mutually perpendicular."}, {"number": "11.2.2", "exercise": "11.2", "question": "Show that the line through the points (1, −1, 2), (3, 4, −2) is perpendicular to the line through the points (0, 3, 2) and (3, 5, 6).", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 2", "conceptIdx": 1, "steps": ["Direction ratios of first line: (2, 5, −4).", "Direction ratios of second line: (3, 2, 4).", "Dot product = 2·3 + 5·2 + (−4)·4 = 6 + 10 − 16 = 0, so the lines are perpendicular."], "answer": "The lines are perpendicular."}, {"number": "11.2.3", "exercise": "11.2", "question": "Show that the line through the points (4, 7, 8), (2, 3, 4) is parallel to the line through the points (−1, −2, 1), (1, 2, 5).", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 3", "conceptIdx": 1, "steps": ["Direction ratios of first line: (−2, −4, −4).", "Direction ratios of second line: (2, 4, 4) = −1·(−2, −4, −4).", "Direction ratios are proportional, so the lines are parallel."], "answer": "The lines are parallel."}, {"number": "11.2.4", "exercise": "11.2", "question": "Find the equation of the line which passes through the point (1, 2, 3) and is parallel to the vector 3i + 2j − 2k.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 4", "conceptIdx": 1, "steps": ["Vector form r = a + λb with a = i + 2j + 3k, b = 3i + 2j − 2k.", "Cartesian form: (x − 1)/3 = (y − 2)/2 = (z − 3)/(−2).", "Both use the point (1, 2, 3) and direction ratios (3, 2, −2)."], "answer": "Vector: r = (i + 2j + 3k) + λ(3i + 2j − 2k); Cartesian: (x − 1)/3 = (y − 2)/2 = (z − 3)/(−2)"}, {"number": "11.2.5", "exercise": "11.2", "question": "Find the equation of the line in vector and in cartesian form that passes through the point with position vector 2i − j + 4k and is in the direction i + 2j − k.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 5", "conceptIdx": 1, "steps": ["Vector form: r = (2i − j + 4k) + λ(i + 2j − k).", "Point is (2, −1, 4) and direction ratios are (1, 2, −1).", "Cartesian form: (x − 2)/1 = (y + 1)/2 = (z − 4)/(−1)."], "answer": "Vector: r = (2i − j + 4k) + λ(i + 2j − k); Cartesian: (x − 2)/1 = (y + 1)/2 = (z − 4)/(−1)"}, {"number": "11.2.6", "exercise": "11.2", "question": "Find the cartesian equation of the line which passes through the point (−2, 4, −5) and parallel to the line given by (x + 3)/3 = (y − 4)/5 = (z + 8)/6.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 6", "conceptIdx": 1, "steps": ["The given line has direction ratios (3, 5, 6); a parallel line uses the same ratios.", "The required line passes through (−2, 4, −5).", "Cartesian equation: (x + 2)/3 = (y − 4)/5 = (z + 5)/6."], "answer": "(x + 2)/3 = (y − 4)/5 = (z + 5)/6"}, {"number": "11.2.7", "exercise": "11.2", "question": "The cartesian equation of a line is (x − 5)/3 = (y + 4)/7 = (z − 6)/2. Write its vector form.", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 7", "conceptIdx": 1, "steps": ["A point on the line is (5, −4, 6) with position vector 5i − 4j + 6k.", "Direction ratios (3, 7, 2) give direction vector 3i + 7j + 2k.", "Vector form: r = (5i − 4j + 6k) + λ(3i + 7j + 2k)."], "answer": "r = (5i − 4j + 6k) + λ(3i + 7j + 2k)"}, {"number": "11.2.8", "exercise": "11.2", "question": "Find the angle between the following pairs of lines: (i) r = 2i − 5j + k + λ(3i + 2j + 6k) and r = 7i − 6k + μ(i + 2j + 2k); (ii) r = 3i + j − 2k + λ(i − j − 2k) and r = 2i − j − 56k + μ(3i − 5j − 4k).", "page": 13, "endPage": 13, "title": "NCERT Exercise 11.2 · Question 8", "conceptIdx": 1, "steps": ["(i) b₁ = (3, 2, 6), b₂ = (1, 2, 2): cos θ = |3 + 4 + 12|/(7·3) = 19/21.", "(ii) b₁ = (1, −1, −2), b₂ = (3, −5, −4): dot = 3 + 5 + 8 = 16; |b₁| = √6, |b₂| = 5√2.", "cos θ = 16/(5√12) = 8/(5√3). Hence θ = cos⁻¹(19/21) and cos⁻¹(8/(5√3))."], "answer": "(i) cos⁻¹(19/21); (ii) cos⁻¹(8/(5√3))"}, {"number": "11.2.9", "exercise": "11.2", "question": "Find the angle between the following pair of lines: (i) (x − 2)/2 = (y − 1)/5 = (z + 3)/(−3) and (x + 2)/(−1) = (y − 4)/8 = (z − 5)/4; (ii) x/2 = y/2 = z/1 and (x − 5)/4 = (y − 2)/1 = (z − 3)/8. Find the values of p so that the lines (1 − x)/3 = (7y − 14)/(2p) = (z − 3)/2 and (7 − 7x)/(3p) = (y − 5)/1 = (6 − z)/5 are at right angles.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 9", "conceptIdx": 1, "steps": ["Q9(i): d₁ = (2, 5, −3), d₂ = (−1, 8, 4); dot = 26, |d₁| = √38, |d₂| = 9; cos θ = 26/(9√38).", "Q9(ii): d₁ = (2, 2, 1), d₂ = (4, 1, 8); dot = 18, |d₁| = 3, |d₂| = 9; cos θ = 18/27 = 2/3.", "Q10: standard directions are (−3, 2p/7, 2) and (−3p/7, 1, −5); dot = 9p/7 + 2p/7 − 10 = 0 gives p = 70/11."], "answer": "Q9: (i) cos⁻¹(26/(9√38)); (ii) cos⁻¹(2/3). Q10: p = 70/11"}, {"number": "11.2.11", "exercise": "11.2", "question": "Show that the lines (x − 5)/7 = (y + 2)/(−5) = z/1 and x/1 = y/2 = z/3 are perpendicular to each other.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 11", "conceptIdx": 1, "steps": ["Direction ratios: (7, −5, 1) and (1, 2, 3).", "Dot product = 7·1 + (−5)·2 + 1·3 = 7 − 10 + 3 = 0.", "Zero dot product means the lines are perpendicular."], "answer": "The lines are perpendicular."}, {"number": "11.2.12", "exercise": "11.2", "question": "Find the shortest distance between the lines r = (i + 2j + k) + λ(i − j + k) and r = 2i − j − k + μ(2i + j + 2k).", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 12", "conceptIdx": 1, "steps": ["a₂ − a₁ = (1, −3, −2); b₁ × b₂ = (−3, 0, 3) with |b₁ × b₂| = 3√2.", "(a₂ − a₁)·(b₁ × b₂) = −9, absolute value 9.", "d = 9/(3√2) = 3/√2 = 3√2/2 units."], "answer": "3√2/2 units"}, {"number": "11.2.13", "exercise": "11.2", "question": "Find the shortest distance between the lines (x + 1)/7 = (y + 1)/(−6) = (z + 1)/1 and (x − 3)/1 = (y − 5)/(−2) = (z − 7)/1.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 13", "conceptIdx": 1, "steps": ["a₁ = (−1, −1, −1), d₁ = (7, −6, 1); a₂ = (3, 5, 7), d₂ = (1, −2, 1).", "d₁ × d₂ = (−4, −6, −8), |d₁ × d₂| = 2√29; (a₂ − a₁)·(d₁ × d₂) = −116.", "d = 116/(2√29) = 2√29 units."], "answer": "2√29 units"}, {"number": "11.2.14", "exercise": "11.2", "question": "Find the shortest distance between the lines whose vector equations are r = (i + 2j + 3k) + λ(i − 3j + 2k) and r = 4i + 5j + 6k + μ(2i + 3j + k).", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 14", "conceptIdx": 1, "steps": ["a₂ − a₁ = (3, 3, 3); b₁ × b₂ = (−9, 3, 9) with magnitude 3√19.", "(a₂ − a₁)·(b₁ × b₂) = −27 + 9 + 27 = 9.", "d = 9/(3√19) = 3/√19 = 3√19/19 units."], "answer": "3/√19 units (= 3√19/19 units)"}, {"number": "11.2.15", "exercise": "11.2", "question": "Find the shortest distance between the lines whose vector equations are r = (1 − t)i + (t − 2)j + (3 − 2t)k and r = (s + 1)i + (2s − 1)j − (2s + 1)k.", "page": 14, "endPage": 14, "title": "NCERT Exercise 11.2 · Question 15", "conceptIdx": 1, "steps": ["First line: a₁ = (1, −2, 3), b₁ = (−1, 1, −2); second: a₂ = (1, −1, −1), b₂ = (1, 2, −2).", "b₁ × b₂ = (2, −4, −3), magnitude √29; (a₂ − a₁)·(b₁ × b₂) = 8.", "d = 8/√29 = 8√29/29 units."], "answer": "8/√29 units (= 8√29/29 units)"}, {"number": "Misc.1", "exercise": "Misc", "question": "Find the angle between the lines whose direction ratios are a, b, c and b − c, c − a, a − b.", "page": 14, "endPage": 14, "title": "NCERT Exercise Misc · Question 1", "conceptIdx": 0, "steps": ["cos θ = |a(b − c) + b(c − a) + c(a − b)|/(magnitudes).", "Numerator = ab − ac + bc − ab + ca − bc = 0.", "Hence cos θ = 0, so θ = 90° (π/2)."], "answer": "90° (π/2)"}, {"number": "Misc.2", "exercise": "Misc", "question": "Find the equation of a line parallel to x-axis and passing through the origin.", "page": 14, "endPage": 14, "title": "NCERT Exercise Misc · Question 2", "conceptIdx": 0, "steps": ["Direction of x-axis is (1, 0, 0); line passes through (0, 0, 0).", "Vector equation: r = λi.", "Cartesian equation: x/1 = y/0 = z/0, i.e. y = 0 and z = 0."], "answer": "Vector: r = λi; Cartesian: x/1 = y/0 = z/0 (i.e. y = 0, z = 0)"}, {"number": "Misc.3", "exercise": "Misc", "question": "If the lines (x − 1)/(−3) = (y − 2)/(2k) = (z − 3)/2 and (x − 1)/(3k) = (y − 1)/1 = (z − 6)/(−5) are perpendicular, find the value of k.", "page": 15, "endPage": 15, "title": "NCERT Exercise Misc · Question 3", "conceptIdx": 0, "steps": ["Direction ratios: (−3, 2k, 2) and (3k, 1, −5).", "Perpendicular: dot = (−3)(3k) + (2k)(1) + (2)(−5) = −7k − 10 = 0.", "Hence k = −10/7."], "answer": "k = −10/7"}, {"number": "Misc.4", "exercise": "Misc", "question": "Find the shortest distance between lines r = 6i + 2j + 2k + λ(i − 2j + 2k) and r = −4i − k + μ(3i − 2j − 2k).", "page": 15, "endPage": 15, "title": "NCERT Exercise Misc · Question 4", "conceptIdx": 0, "steps": ["a₂ − a₁ = (−10, −2, −3); b₁ × b₂ = (8, 8, 4) with magnitude 12.", "(a₂ − a₁)·(b₁ × b₂) = −80 − 16 − 12 = −108, absolute value 108.", "d = 108/12 = 9 units."], "answer": "9 units"}, {"number": "Misc.5", "exercise": "Misc", "question": "Find the vector equation of the line passing through the point (1, 2, −4) and perpendicular to the two lines: (x − 8)/3 = (y + 19)/(−16) = (z − 10)/7 and (x − 15)/3 = (y − 29)/8 = (z − 5)/(−5).", "page": 15, "endPage": 15, "title": "NCERT Exercise Misc · Question 5", "conceptIdx": 0, "steps": ["The lines have directions d₁ = (3, −16, 7), d₂ = (3, 8, −5).", "Required direction d₁ × d₂ = (24, 36, 72) = 12(2, 3, 6).", "Through (1, 2, −4): r = (i + 2j − 4k) + λ(2i + 3j + 6k)."], "answer": "r = (i + 2j − 4k) + λ(2i + 3j + 6k); Cartesian: (x − 1)/2 = (y − 2)/3 = (z + 4)/6"}], "pageOffset": 376, "printPageStart": 377, "printPageEnd": 393, "paginationProvenance": "folio-read-17-samples"};</script>
-  <script>(function(){
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 11 · THREE DIMENSIONAL GEOMETRY</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="12"></progress>
+      <span id="progress-text">0 / 12</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="revision-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises & Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 25 Exercises from NCERT Class 12 Mathematics Part 2 (pp. 1–17) mapped directly to core concepts with full step-by-step solutions.</p>
+      </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
+    </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"code": "lemh205", "chapterNumber": "11", "title": "Three Dimensional Geometry", "subtitle": "NCERT Class 12 Mathematics Part 2, Chapter 11", "book_name": "Mathematics Part 2", "edition": "NCERT Mathematics Part 2, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lemh205.pdf", "page_start": 1, "page_end": 17, "pageOffset": 376, "printPageStart": 377, "printPageEnd": 393, "exercisesNote": "All 25 questions from the NCERT exercises (Exercise 11.1, Exercise 11.2 and the Miscellaneous Exercise, printed pp. 381–391), each mapped to the concept it practises with a full step-by-step solution.", "lessons": [{"id": "direction-cosines-and-ratios", "nav": "Direction cosines & ratios", "group": "01 / ANGLES A LINE MAKES WITH THE AXES", "title": "Direction cosines fix the orientation of a line in space", "deck": "A directed line makes three angles with the coordinate axes. The cosines of those angles, l, m and n, are its direction cosines, and they always satisfy l² + m² + n² = 1.", "minutes": 8, "section": "11.2", "pages": [1, 5], "print": "377–381", "sim": "dircos", "simTitle": "Direction-cosine bench: ratios in, cosines out", "watch": "Move the ratio sliders. The three cosines change, but the unit check l² + m² + n² stays exactly 1.", "quick": ["<strong>Direction cosines</strong> of a directed line are l = cos α, m = cos β, n = cos γ, where α, β, γ are the angles the line makes with the positive x, y and z-axes.", "They always satisfy the unit relation <strong>l² + m² + n² = 1</strong>. Reversing the direction of the line changes the signs of all three cosines.", "<strong>Direction ratios</strong> a, b, c are any three numbers proportional to l, m, n. A line has infinitely many sets of ratios but only two sets of direction cosines.", "For the line through P(x₁, y₁, z₁) and Q(x₂, y₂, z₂), take ratios x₂ − x₁, y₂ − y₁, z₂ − z₁ and divide each by PQ = √((x₂−x₁)² + (y₂−y₁)² + (z₂−z₁)²)."], "formulas": [{"label": "Direction cosines", "html": "l = cos α, m = cos β, n = cos γ", "cond": "α, β, γ are the angles with the positive coordinate axes"}, {"label": "Unit property", "html": "l² + m² + n² = 1", "cond": "true for every directed line"}, {"label": "Ratios to cosines", "html": "l = a/√(a²+b²+c²), m = b/√(a²+b²+c²), n = c/√(a²+b²+c²)", "cond": "a, b, c is any set of direction ratios"}], "deeper": "Why is the unit relation true? Put a point P(a, b, c) on the line through the origin O. Then OP = √(a²+b²+c²) and the angle α between OP and the x-axis has cos α = a/OP, and similarly for β and γ. The triple (l, m, n) is exactly the unit vector along OP, so its length is 1 — that is l² + m² + n² = 1. Direction ratios are the same vector before normalising, which is why they are non-unique while the direction cosines are fixed up to an overall sign.", "worked": {"title": "NCERT Example 3: direction cosines of a line through two points", "problem": "Find the direction cosines of the line passing through the points P(−2, 4, −5) and Q(1, 2, 3).", "given": "P(−2, 4, −5), Q(1, 2, 3); direction ratios x₂ − x₁, y₂ − y₁, z₂ − z₁.", "steps": ["Direction ratios: (1 − (−2), 2 − 4, 3 − (−5)) = (3, −2, 8).", "Length PQ = √(3² + (−2)² + 8²) = √(9 + 4 + 64) = √77.", "Divide each ratio by √77: l = 3/√77, m = −2/√77, n = 8/√77.", "Check: (9 + 4 + 64)/77 = 77/77 = 1, so the cosines are consistent."], "answer": "The direction cosines are 3/√77, −2/√77, 8/√77."}, "prediction": {"prompt": "A line makes an angle of 60° with both the x-axis and the y-axis. What angle does it make with the z-axis?", "options": ["45°", "30°", "60°", "90°"], "answer": 0, "explanation": "Use l² + m² + n² = 1. Here l = m = cos 60° = 1/2, so n² = 1 − 1/4 − 1/4 = 1/2 and n = ±1/√2, giving γ = 45° (or 135°)."}, "connect": [{"title": "Google Maps and 3D engines", "text": "Every camera ray is stored as a direction vector; normalising it produces the direction cosines that ray-tracing software uses to test intersections."}, {"title": "Crystallography", "text": "A crystal face is described by the angles its normal makes with the crystal axes — the same direction-cosine bookkeeping that NCERT uses for lines."}, {"title": "Wow: aiming a spacecraft antenna", "text": "A deep-space antenna must point along a line in space. Engineers convert that line into direction cosines of the body axes, then solve for the motor angles.", "wow": true, "links": [{"t": "Wikipedia: Direction cosine", "u": "https://en.wikipedia.org/wiki/Direction_cosine"}], "video": {"id": "UXgiobhYfBc", "title": "Direction of a line in 3D | 3D Geometry | Grade 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State the definition of direction cosines and direction ratios, and write the one equation that every set of direction cosines must satisfy.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The direction cosines of the z-axis are:", "options": ["(0, 0, 1)", "(0, 1, 0)", "(1, 0, 0)"], "answer": 0, "hint": "Which axis has the positive z-direction?", "solution": "The z-axis makes angles 90°, 90°, 0° with the x, y, z-axes, so l = 0, m = 0, n = 1.", "wrong": ["", "That is the y-axis.", "That is the x-axis."]}, {"level": "Medium", "type": "number", "prompt": "A line has direction ratios 2, −1, −2. Taking the direction in which the z-component is positive, give its z direction cosine (3 decimal places).", "answer": 0.667, "tolerance": 0.001, "unit": "unitless", "hint": "First find √(a²+b²+c²), then n = c/√(a²+b²+c²) for the chosen sign.", "solution": "√(4 + 1 + 4) = 3, so the three cosines are ±(2/3, −1/3, −2/3). Choosing the direction with positive z gives n = 2/3 ≈ 0.667."}, {"level": "Hard", "type": "mcq", "prompt": "A line makes equal angles with all three coordinate axes. The common angle is:", "options": ["cos⁻¹(1/√3) ≈ 54.7°", "45°", "60°"], "answer": 0, "hint": "Put l = m = n = cos α in l² + m² + n² = 1.", "solution": "3cos²α = 1 gives cos α = 1/√3, so α = cos⁻¹(1/√3) ≈ 54.7°.", "wrong": ["", "At 45° the three cosines would give 3/2 > 1.", "At 60° the three cosines would give 3/4, not 1."]}]}, {"id": "equation-of-a-line", "nav": "Equation of a line", "group": "02 / A POINT PLUS A DIRECTION", "title": "A point and a direction determine a line in space", "deck": "Fix one point on the line and one vector along it, and every other point has the form a + λb. Eliminating λ turns this into the Cartesian equation.", "minutes": 8, "section": "11.3", "pages": [5, 7], "print": "381–383", "sim": "lineeq", "simTitle": "Line builder: point + direction → equations", "watch": "Pick a scenario, then slide λ. The marker stays on the line while the vector and Cartesian equations update.", "quick": ["A line is fixed by <strong>one point and one direction</strong>, or by two points. There is no single 'slope' in space — the direction has three components.", "<strong>Vector form:</strong> r = a + λb, where a is the position vector of a point and b is a vector parallel to the line, λ ∈ ℝ.", "<strong>Cartesian form:</strong> (x − x₁)/a = (y − y₁)/b = (z − z₁)/c, where (x₁, y₁, z₁) is the point and a, b, c are direction ratios.", "If l, m, n are direction cosines, the same equation is written with l, m, n in the denominators — that is the symmetric form with unit direction."], "formulas": [{"label": "Vector form", "html": "r = a + λb", "cond": "a is a point on the line, b ≠ 0 is parallel to it"}, {"label": "Cartesian form", "html": "(x − x₁)/a = (y − y₁)/b = (z − z₁)/c", "cond": "direction ratios a, b, c are taken non-zero"}, {"label": "Through two points", "html": "r = a + λ(b − a)", "cond": "a and b are the position vectors of the two points"}], "deeper": "The parameter λ is a signed scalar: λ = 0 gives the known point, λ > 0 moves forward along b and λ < 0 moves backward, so a single letter sweeps the entire infinite line. The Cartesian form is obtained by writing r = xî + yĵ + zk̂ and equating the three components separately: x = x₁ + λa, y = y₁ + λb, z = z₁ + λc. Solving each for λ and equating removes the parameter and produces the symmetric equations. If one direction ratio is zero, the corresponding numerator is also zero: for example a direction such as (1, 0, 0) gives y = y₁ and z = z₁ directly.", "worked": {"title": "NCERT Example 6: vector and Cartesian equations of a line", "problem": "Find the vector and Cartesian equations of the line through the point (5, 2, −4) and parallel to the vector 3î + 2ĵ − 8k̂.", "given": "Point A(5, 2, −4), direction vector b = 3î + 2ĵ − 8k̂.", "steps": ["Write the position vector of the point: a = 5î + 2ĵ − 4k̂.", "Vector form: r = a + λb = (5î + 2ĵ − 4k̂) + λ(3î + 2ĵ − 8k̂).", "Read the parametric equations: x = 5 + 3λ, y = 2 + 2λ, z = −4 − 8λ.", "Eliminate λ to get the Cartesian form: (x − 5)/3 = (y − 2)/2 = (z + 4)/(−8)."], "answer": "Vector: r = (5î + 2ĵ − 4k̂) + λ(3î + 2ĵ − 8k̂). Cartesian: (x − 5)/3 = (y − 2)/2 = (z + 4)/(−8)."}, "prediction": {"prompt": "The line through (1, 2, 3) parallel to 3î + 2ĵ − 2k̂ has x-coordinate:", "options": ["1 + 3λ", "3 + λ", "2 + 2λ"], "answer": 0, "explanation": "For r = (î + 2ĵ + 3k̂) + λ(3î + 2ĵ − 2k̂), the x-component is x = 1 + 3λ."}, "connect": [{"title": "Flight paths", "text": "Air-traffic control models an aircraft track as a point plus a direction. The same parametric form lets computers predict where two tracks would meet."}, {"title": "Robotics", "text": "A robot arm's tool moves along a line whose equation is written from a joint position and a direction vector — exactly r = a + λb."}, {"title": "Wow: laser cutting and 3D printing", "text": "A cutting laser follows a computed line in space. The tool path is stored as a point and a direction vector, then sampled at many λ values to drive the motors.", "wow": true, "links": [{"t": "Wikipedia: Line (geometry)", "u": "https://en.wikipedia.org/wiki/Line_(geometry)"}], "video": {"id": "UR7bf8yjYHQ", "title": "Equation of a line in space | 3D Geometry | Grade 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the vector and Cartesian forms of the line through a given point in a given direction, and explain what λ measures.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The vector equation of the line through the point with position vector a and parallel to b is:", "options": ["r = a + λb", "r = λa + b", "r = a × b"], "answer": 0, "hint": "Every point of the line is 'the point plus a multiple of the direction'.", "solution": "r = a + λb, where λ is a real parameter. At λ = 0 the point is a.", "wrong": ["", "That is not on the line through a in direction b in general.", "A cross product is perpendicular to both vectors, not along the line."]}, {"level": "Medium", "type": "number", "prompt": "For the line r = (2î − ĵ + 4k̂) + λ(î + 2ĵ − k̂), find the z-coordinate of the point with λ = 3.", "answer": 1, "tolerance": 0.001, "unit": "units", "hint": "Read the z-component: z = 4 + λ(−1).", "solution": "z = 4 + 3(−1) = 1."}, {"level": "Hard", "type": "mcq", "prompt": "The Cartesian equation of the line through (−2, 4, −5) parallel to (x + 3)/3 = (y − 4)/5 = (z + 8)/6 is:", "options": ["(x + 2)/3 = (y − 4)/5 = (z + 5)/6", "(x − 2)/3 = (y + 4)/5 = (z − 5)/6", "(x + 2)/5 = (y − 4)/3 = (z + 5)/6"], "answer": 0, "hint": "Parallel lines share direction ratios; the point changes the constants only.", "solution": "Keep direction ratios (3, 5, 6) and use the point (−2, 4, −5): (x + 2)/3 = (y − 4)/5 = (z + 5)/6.", "wrong": ["", "The signs of the point coordinates are reversed.", "The direction ratios have been permuted."]}]}, {"id": "angle-between-two-lines", "nav": "Angle between two lines", "group": "03 / DOT PRODUCTS IN SPACE", "title": "The angle between two lines is the angle between their direction vectors", "deck": "Two lines in space may not meet, but they still make an angle. Copy both directions to a common origin and take the dot product: cos θ = |b₁·b₂|/(|b₁||b₂|).", "minutes": 8, "section": "11.4", "pages": [7, 9], "print": "383–385", "sim": "anglelines", "simTitle": "Angle bench: dot two directions in space", "watch": "Switch scenarios and watch the dot product. At 90° the numerator is exactly 0; parallel directions give cos θ = 1.", "quick": ["The <strong>angle between two lines</strong> is the acute angle between two lines drawn parallel to them through a common point. It is measured between their direction vectors, never between arbitrary points on the lines.", "For direction ratios (a₁, b₁, c₁) and (a₂, b₂, c₂): cos θ = |a₁a₂ + b₁b₂ + c₁c₂| / (√(a₁²+b₁²+c₁²) · √(a₂²+b₂²+c₂²)). The modulus keeps θ acute.", "Lines are <strong>perpendicular</strong> when a₁a₂ + b₁b₂ + c₁c₂ = 0, and <strong>parallel</strong> when a₁/a₂ = b₁/b₂ = c₁/c₂.", "Direction ratios may be scaled by any non-zero factor without changing the angle — only the direction of each vector matters."], "formulas": [{"label": "Angle between lines", "html": "cos θ = |b₁·b₂| / (|b₁||b₂|)", "cond": "θ is the acute angle, 0 ≤ θ ≤ 90°"}, {"label": "Perpendicular lines", "html": "a₁a₂ + b₁b₂ + c₁c₂ = 0", "cond": "the dot product of the direction ratios vanishes"}, {"label": "Parallel lines", "html": "a₁/a₂ = b₁/b₂ = c₁/c₂", "cond": "the direction vectors are proportional"}], "deeper": "Why is the modulus needed? Two lines do not carry an arrow, so the angle between them is taken as the smaller of the two supplementary angles produced by their directions. The dot product b₁·b₂ is negative when the chosen arrows point more than 90° apart; taking the absolute value replaces θ by 180° − θ, which is the acute angle. For direction cosines the formula simplifies because both vectors are already unit: cos θ = |l₁l₂ + m₁m₂ + n₁n₂|. If two lines actually intersect, the angle is between the lines in their common plane; for skew lines the same formula uses parallel copies through a point.", "worked": {"title": "NCERT Example 8: angle between two Cartesian lines", "problem": "Find the angle between the lines (x + 3)/3 = (y − 1)/5 = (z + 3)/4 and (x + 1)/1 = (y − 4)/1 = (z − 5)/2.", "given": "Direction ratios of the first line (3, 5, 4); of the second line (1, 1, 2).", "steps": ["Write the two direction vectors: b₁ = (3, 5, 4) and b₂ = (1, 1, 2).", "Dot product: b₁·b₂ = 3(1) + 5(1) + 4(2) = 3 + 5 + 8 = 16.", "Magnitudes: |b₁| = √(9 + 25 + 16) = √50 = 5√2 and |b₂| = √(1 + 1 + 4) = √6.", "cos θ = 16/(5√2·√6) = 16/(5√12) = 16/(10√3) = 8/(5√3)."], "answer": "θ = cos⁻¹(8/(5√3)) ≈ 22.2°."}, "prediction": {"prompt": "Two lines have direction cosines (1/√3, 1/√3, 1/√3) and (1/√6, −2/√6, 1/√6). Are they perpendicular?", "options": ["Yes, the dot product is 0", "No, the dot product is 1", "Cannot be decided without the lines' points"], "answer": 0, "explanation": "l₁l₂ + m₁m₂ + n₁n₂ = 1/√18 − 2/√18 + 1/√18 = 0, so the lines are perpendicular. The angle between lines depends only on their directions, not on where they are."}, "connect": [{"title": "Roof trusses", "text": "Engineers check that a brace meets a beam at 90° by dotting their direction vectors — no need to build the joint first."}, {"title": "Computer graphics lighting", "text": "The brightness of a surface depends on the angle between the light direction and the surface normal, computed with the same dot product."}, {"title": "Wow: gravitational-wave detectors", "text": "The LIGO arms are 4 km of pipe that must be perpendicular to fantastic precision. Surveyors verify it with direction vectors, and the tiny angle between them sets the instrument's sensitivity.", "wow": true, "links": [{"t": "Wikipedia: Dot product", "u": "https://en.wikipedia.org/wiki/Dot_product"}], "video": {"id": "r4hNmx5AEI0", "title": "Angle between two lines | 3D Geometry | Grade 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "Write the formula for the angle between two lines in terms of direction ratios, and state the conditions for them to be perpendicular and parallel.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Two lines with direction ratios (a₁, b₁, c₁) and (a₂, b₂, c₂) are perpendicular when:", "options": ["a₁a₂ + b₁b₂ + c₁c₂ = 0", "a₁/a₂ = b₁/b₂ = c₁/c₂", "a₁a₂ + b₁b₂ + c₁c₂ = 1"], "answer": 0, "hint": "Perpendicular means θ = 90°, so cos θ = 0.", "solution": "cos θ = 0 exactly when the scalar product a₁a₂ + b₁b₂ + c₁c₂ = 0.", "wrong": ["", "That is the parallel condition.", "A dot product of 1 does not correspond to 90°."]}, {"level": "Medium", "type": "number", "prompt": "Find cos θ for the directions (2, 2, 1) and (4, 1, 8), correct to 3 decimal places.", "answer": 0.667, "tolerance": 0.001, "unit": "unitless", "hint": "cos θ = |a₁a₂ + b₁b₂ + c₁c₂| / (|b₁||b₂|).", "solution": "Dot = 8 + 2 + 8 = 18; |b₁| = 3, |b₂| = 9; cos θ = 18/27 = 2/3 ≈ 0.667."}, {"level": "Hard", "type": "mcq", "prompt": "Lines with direction ratios (2, 5, −3) and (−1, 8, 4) meet at an angle whose cosine is:", "options": ["26/(9√38)", "26/45", "1/3"], "answer": 0, "hint": "Dot = −2 + 40 − 12 = 26; |b₁| = √38, |b₂| = 9.", "solution": "b₁·b₂ = 26, |b₁| = √(4+25+9) = √38, |b₂| = √(1+64+16) = 9, so cos θ = 26/(9√38).", "wrong": ["", "The second magnitude is 9, not √45.", "The dot product is 26, not 3."]}]}, {"id": "shortest-distance", "nav": "Shortest distance", "group": "04 / SKEW AND PARALLEL LINES", "title": "Skew lines never meet, but a common perpendicular measures their shortest distance", "deck": "Two lines in space may be skew: neither parallel nor intersecting. Their shortest distance is measured along a line perpendicular to both directions.", "minutes": 8, "section": "11.5", "pages": [9, 17], "print": "385–393", "sim": "shortdist", "simTitle": "Distance bench: skew, parallel and intersecting pairs", "watch": "Choose a pair of lines. The readout builds the cross product, the scalar triple product and the final distance; intersecting lines give exactly 0.", "quick": ["If two lines <strong>intersect</strong>, the shortest distance between them is 0. If they are <strong>parallel</strong>, the distance is the perpendicular distance from a point of one line to the other.", "<strong>Skew lines</strong> are neither parallel nor intersecting; they lie in different planes. The shortest segment joining them is perpendicular to both lines.", "For r = a₁ + λb₁ and r = a₂ + μb₂, the distance is d = |(a₂ − a₁)·(b₁ × b₂)| / |b₁ × b₂|.", "For parallel lines with common direction b, the distance is d = |b × (a₂ − a₁)| / |b|."], "formulas": [{"label": "Skew lines", "html": "d = |(a₂ − a₁)·(b₁ × b₂)| / |b₁ × b₂|", "cond": "b₁ × b₂ ≠ 0, so the directions are not parallel"}, {"label": "Parallel lines", "html": "d = |b × (a₂ − a₁)| / |b|", "cond": "both lines have the same direction b"}, {"label": "Intersecting lines", "html": "d = 0", "cond": "the lines share a common point"}], "deeper": "The scalar triple product (a₂ − a₁)·(b₁ × b₂) is the volume of the parallelepiped built on the three vectors. Dividing by the area |b₁ × b₂| of its base leaves the height — the perpendicular separation of the two lines. When the triple product is zero the three vectors are coplanar, so the lines either intersect or are parallel. That is why the formula can be used to test coplanarity: two lines are coplanar exactly when (a₂ − a₁)·(b₁ × b₂) = 0. For parallel lines, b₁ × b₂ = 0 and the skew formula fails, so the cross-product form with one common direction is used instead.", "worked": {"title": "NCERT Example 9: shortest distance between two skew lines", "problem": "Find the shortest distance between the lines r = (î + ĵ) + λ(2î − ĵ + k̂) and r = (2î + ĵ − k̂) + μ(3î − 5ĵ + 2k̂).", "given": "a₁ = î + ĵ, b₁ = 2î − ĵ + k̂; a₂ = 2î + ĵ − k̂, b₂ = 3î − 5ĵ + 2k̂.", "steps": ["a₂ − a₁ = (2 − 1)î + (1 − 1)ĵ + (−1 − 0)k̂ = î − k̂ = (1, 0, −1).", "b₁ × b₂ = |î ĵ k̂; 2 −1 1; 3 −5 2| = î(−2 + 5) − ĵ(4 − 3) + k̂(−10 + 3) = 3î − ĵ − 7k̂.", "|b₁ × b₂| = √(9 + 1 + 49) = √59 and (b₁ × b₂)·(a₂ − a₁) = 3(1) + (−1)(0) + (−7)(−1) = 10.", "d = |10|/√59 = 10/√59."], "answer": "The shortest distance is 10/√59 units ≈ 1.30 units."}, "prediction": {"prompt": "Two lines have a scalar triple product (a₂ − a₁)·(b₁ × b₂) = 0 with b₁ × b₂ ≠ 0. What can you conclude?", "options": ["The lines are coplanar (they meet or are parallel)", "The lines are definitely skew", "The distance is 1"], "answer": 0, "explanation": "A zero triple product means a₂ − a₁, b₁ and b₂ are coplanar, so the two lines lie in one plane and either intersect or are parallel. For skew lines the triple product is non-zero and d > 0."}, "connect": [{"title": "Skew lines on a room", "text": "In a room, one line along the ceiling and another along a different wall are skew: they never meet and are not parallel. Their separation is the shortest distance formula."}, {"title": "Structural alignment", "text": "When two pipes must not touch, engineers compute the shortest distance between their axes to set supports and clearances."}, {"title": "Wow: keeping MRI coils apart", "text": "The wire paths inside an MRI magnet are engineered as skew curves whose clearances are checked with triple products, so that powerful fields never force two conductors together.", "wow": true, "links": [{"t": "Wikipedia: Skew lines", "u": "https://en.wikipedia.org/wiki/Skew_lines"}], "video": {"id": "t7vDAe3-PV8", "title": "Distance between skew lines (intuition) | 3D Geometry | Grade 12 | Math | Khan Academy", "channel": "Khan Academy India - English"}}], "recall": "State the formula for the shortest distance between two skew lines and explain why the scalar triple product detects coplanarity.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The shortest distance between two intersecting lines is:", "options": ["0", "1", "Their common perpendicular length"], "answer": 0, "hint": "At the point of intersection the two lines share a point.", "solution": "They meet, so the smallest separation is 0.", "wrong": ["", "1 is not forced by the geometry.", "A common perpendicular has positive length only for non-intersecting lines."]}, {"level": "Medium", "type": "number", "prompt": "Find the distance between the parallel lines r = (î + 2ĵ − 4k̂) + λ(2î + 3ĵ + 6k̂) and r = (3î + 3ĵ − 5k̂) + μ(2î + 3ĵ + 6k̂), correct to 3 decimal places.", "answer": 2.445, "tolerance": 0.005, "unit": "units", "hint": "Use d = |b × (a₂ − a₁)|/|b| with b = (2, 3, 6).", "solution": "a₂ − a₁ = (2, 1, −1); b × (a₂ − a₁) = (−9, 14, −4); |cross| = √293; |b| = 7; d = √293/7 ≈ 2.445."}, {"level": "Hard", "type": "mcq", "prompt": "For two lines with directions b₁ and b₂, b₁ × b₂ = 0 means the lines are:", "options": ["parallel (or coincident)", "perpendicular", "skew"], "answer": 0, "hint": "A zero cross product means the two direction vectors are proportional.", "solution": "b₁ × b₂ = 0 means b₁ and b₂ are parallel, so the lines have parallel directions.", "wrong": ["", "Perpendicular directions have a maximal cross-product magnitude.", "Skew lines have non-parallel directions, so the cross product is non-zero."]}]}], "exercises": [{"q": 1, "title": "Direction cosines from direction angles", "conceptIdx": 0, "page": 5, "printPage": 381, "question": "If a line makes angles 90°, 135°, 45° with the x, y and z-axes respectively, find its direction cosines.", "given": "α = 90°, β = 135°, γ = 45°; l = cos α, m = cos β, n = cos γ.", "steps": ["l = cos 90° = 0.", "m = cos 135° = −1/√2.", "n = cos 45° = 1/√2.", "Check: 0² + (−1/√2)² + (1/√2)² = 1/2 + 1/2 = 1."], "answer": "l = 0, m = −1/√2, n = 1/√2.", "takeaway": "Direction cosines are just the cosines of the three direction angles; the unit check confirms them.", "conceptName": "Direction cosines and ratios"}, {"q": 2, "title": "Equal angles with the three axes", "conceptIdx": 0, "page": 5, "printPage": 381, "question": "Find the direction cosines of a line which makes equal angles with the coordinate axes.", "given": "Let the common angle be α, so l = m = n = cos α.", "steps": ["Use l² + m² + n² = 1 with l = m = n = cos α.", "3cos²α = 1, so cos α = ±1/√3.", "Hence l = m = n = 1/√3 or l = m = n = −1/√3."], "answer": "l = m = n = 1/√3, or l = m = n = −1/√3 (the two opposite directions).", "takeaway": "Equal direction angles force the three direction cosines to be equal, and the unit relation fixes them.", "conceptName": "Direction cosines and ratios"}, {"q": 3, "title": "Direction cosines from direction ratios", "conceptIdx": 0, "page": 5, "printPage": 381, "question": "If a line has the direction ratios −18, 12, −4, then what are its direction cosines?", "given": "Direction ratios a = −18, b = 12, c = −4.", "steps": ["Find the divisor √(a² + b² + c²) = √(324 + 144 + 16) = √484 = 22.", "Divide each ratio by 22: −18/22, 12/22, −4/22.", "Simplify: −9/11, 6/11, −2/11.", "Check: (−9)² + 6² + (−2)² = 81 + 36 + 4 = 121 = 11²."], "answer": "The direction cosines are −9/11, 6/11, −2/11.", "takeaway": "Direction ratios become direction cosines after dividing by the length of the ratio-vector.", "conceptName": "Direction cosines and ratios"}, {"q": 4, "title": "Collinearity from direction ratios", "conceptIdx": 0, "page": 5, "printPage": 381, "question": "Show that the points (2, 3, 4), (−1, −2, 1), (5, 8, 7) are collinear.", "given": "A(2, 3, 4), B(−1, −2, 1), C(5, 8, 7).", "steps": ["Direction ratios of AB = (−1 − 2, −2 − 3, 1 − 4) = (−3, −5, −3).", "Direction ratios of BC = (5 + 1, 8 + 2, 7 − 1) = (6, 10, 6).", "Since (6, 10, 6) = −2(−3, −5, −3), AB and BC are parallel and share the point B.", "Parallel line segments with a common point make A, B, C collinear."], "answer": "The points (2, 3, 4), (−1, −2, 1), (5, 8, 7) are collinear.", "takeaway": "Proportional direction ratios between consecutive segments prove three points lie on one line.", "conceptName": "Direction cosines and ratios"}, {"q": 5, "title": "Direction cosines of a triangle's sides", "conceptIdx": 0, "page": 5, "printPage": 381, "question": "Find the direction cosines of the sides of the triangle whose vertices are (3, 5, −4), (−1, 1, 2) and (−5, −5, −2).", "given": "A(3, 5, −4), B(−1, 1, 2), C(−5, −5, −2).", "steps": ["Side AB: ratios (−4, −4, 6), |AB| = √68 = 2√17, so cosines are (−2/√17, −2/√17, 3/√17).", "Side BC: ratios (−4, −6, −4), |BC| = √68 = 2√17, so cosines are (−2/√17, −3/√17, −2/√17).", "Side CA: ratios (8, 10, −2), |CA| = √168 = 2√42, so cosines are (4/√42, 5/√42, −1/√42).", "Each triple squares-sum to 1, confirming the computation."], "answer": "AB: (−2/√17, −2/√17, 3/√17); BC: (−2/√17, −3/√17, −2/√17); CA: (4/√42, 5/√42, −1/√42).", "takeaway": "The direction cosines of a segment are its direction ratios divided by the length of the segment.", "conceptName": "Direction cosines and ratios", "figure": "11.2"}, {"q": 6, "title": "Mutually perpendicular direction cosines", "conceptIdx": 2, "page": 5, "printPage": 381, "question": "Show that the three lines with direction cosines 12/13, −3/13, −4/13; 4/13, 12/13, 3/13; 3/13, −4/13, 12/13 are mutually perpendicular.", "given": "L₁: (12/13, −3/13, −4/13); L₂: (4/13, 12/13, 3/13); L₃: (3/13, −4/13, 12/13).", "steps": ["Two lines with direction cosines are perpendicular when l₁l₂ + m₁m₂ + n₁n₂ = 0.", "L₁·L₂ = (12·4 + (−3)·12 + (−4)·3)/13² = (48 − 36 − 12)/169 = 0.", "L₂·L₃ = (4·3 + 12·(−4) + 3·12)/169 = (12 − 48 + 36)/169 = 0.", "L₁·L₃ = (12·3 + (−3)(−4) + (−4)·12)/169 = (36 + 12 − 48)/169 = 0, so every pair is perpendicular."], "answer": "The three lines are mutually perpendicular; each pair of direction vectors has dot product 0.", "takeaway": "Direction cosines make the perpendicularity test a single dot product — no magnitudes are needed.", "conceptName": "Angle between two lines"}, {"q": 7, "title": "Perpendicular lines from two point-pairs", "conceptIdx": 2, "page": 13, "printPage": 389, "question": "Show that the line through the points (1, −1, 2), (3, 4, −2) is perpendicular to the line through the points (0, 3, 2) and (3, 5, 6).", "given": "First line through A(1, −1, 2) and B(3, 4, −2); second through C(0, 3, 2) and D(3, 5, 6).", "steps": ["Direction ratios of AB: (3 − 1, 4 + 1, −2 − 2) = (2, 5, −4).", "Direction ratios of CD: (3 − 0, 5 − 3, 6 − 2) = (3, 2, 4).", "Dot product = 2·3 + 5·2 + (−4)·4 = 6 + 10 − 16 = 0.", "A zero dot product means the direction vectors are perpendicular, hence so are the lines."], "answer": "The two lines are perpendicular.", "takeaway": "To test perpendicularity of lines from their endpoints, first form the direction vectors, then dot them.", "conceptName": "Angle between two lines"}, {"q": 8, "title": "Parallel lines from two point-pairs", "conceptIdx": 2, "page": 13, "printPage": 389, "question": "Show that the line through the points (4, 7, 8), (2, 3, 4) is parallel to the line through the points (−1, −2, 1), (1, 2, 5).", "given": "First line through A(4, 7, 8), B(2, 3, 4); second through C(−1, −2, 1), D(1, 2, 5).", "steps": ["Direction ratios of AB: (2 − 4, 3 − 7, 4 − 8) = (−2, −4, −4).", "Direction ratios of CD: (1 + 1, 2 + 2, 5 − 1) = (2, 4, 4).", "Since (2, 4, 4) = −1 × (−2, −4, −4), the direction ratios are proportional.", "Proportional direction ratios mean parallel directions, so the lines are parallel."], "answer": "The two lines are parallel.", "takeaway": "Parallel lines have direction ratios that differ by one common scale factor — the sign may flip.", "conceptName": "Angle between two lines", "figure": "11.7"}, {"q": 9, "title": "Line through a point parallel to a vector", "conceptIdx": 1, "page": 13, "printPage": 389, "question": "Find the equation of the line which passes through the point (1, 2, 3) and is parallel to the vector 3î + 2ĵ − 2k̂.", "given": "Point (1, 2, 3), direction b = 3î + 2ĵ − 2k̂.", "steps": ["Vector form: r = a + λb with a = î + 2ĵ + 3k̂ and b = 3î + 2ĵ − 2k̂.", "So r = (î + 2ĵ + 3k̂) + λ(3î + 2ĵ − 2k̂).", "Cartesian form uses point (1, 2, 3) and direction ratios (3, 2, −2): (x − 1)/3 = (y − 2)/2 = (z − 3)/(−2)."], "answer": "Vector: r = (î + 2ĵ + 3k̂) + λ(3î + 2ĵ − 2k̂); Cartesian: (x − 1)/3 = (y − 2)/2 = (z − 3)/(−2).", "takeaway": "A line is fixed by a point plus a direction; the same data gives both the vector and Cartesian forms.", "conceptName": "Equation of a line in space"}, {"q": 10, "title": "Line through a position vector along a direction", "conceptIdx": 1, "page": 13, "printPage": 389, "question": "Find the equation of the line in vector and in Cartesian form that passes through the point with position vector 2î − ĵ + 4k̂ and is in the direction î + 2ĵ − k̂.", "given": "Point 2î − ĵ + 4k̂ = (2, −1, 4); direction î + 2ĵ − k̂ = (1, 2, −1).", "steps": ["Vector form: r = (2î − ĵ + 4k̂) + λ(î + 2ĵ − k̂).", "Read the point (2, −1, 4) and direction ratios (1, 2, −1).", "Cartesian form: (x − 2)/1 = (y + 1)/2 = (z − 4)/(−1)."], "answer": "Vector: r = (2î − ĵ + 4k̂) + λ(î + 2ĵ − k̂); Cartesian: (x − 2)/1 = (y + 1)/2 = (z − 4)/(−1).", "takeaway": "Expanding r = a + λb component by component immediately gives the Cartesian equation.", "conceptName": "Equation of a line in space"}, {"q": 11, "title": "Cartesian line parallel to a given line", "conceptIdx": 1, "page": 13, "printPage": 389, "question": "Find the Cartesian equation of the line which passes through the point (−2, 4, −5) and parallel to the line given by (x + 3)/3 = (y − 4)/5 = (z + 8)/6.", "given": "Point (−2, 4, −5); the given line has direction ratios (3, 5, 6).", "steps": ["A parallel line has the same direction ratios, so take (3, 5, 6).", "The required line passes through (−2, 4, −5).", "Substitute into (x − x₁)/a = (y − y₁)/b = (z − z₁)/c: (x + 2)/3 = (y − 4)/5 = (z + 5)/6."], "answer": "(x + 2)/3 = (y − 4)/5 = (z + 5)/6.", "takeaway": "Parallel lines share direction ratios; only the point terms change (watch the signs).", "conceptName": "Equation of a line in space"}, {"q": 12, "title": "Vector form from a Cartesian line", "conceptIdx": 1, "page": 13, "printPage": 389, "question": "The Cartesian equation of a line is (x − 5)/3 = (y + 4)/7 = (z − 6)/2. Write its vector form.", "given": "Cartesian line (x − 5)/3 = (y + 4)/7 = (z − 6)/2.", "steps": ["A point on the line is (5, −4, 6), so a = 5î − 4ĵ + 6k̂.", "The direction ratios are (3, 7, 2), so b = 3î + 7ĵ + 2k̂.", "Vector form: r = a + λb = (5î − 4ĵ + 6k̂) + λ(3î + 7ĵ + 2k̂)."], "answer": "r = (5î − 4ĵ + 6k̂) + λ(3î + 7ĵ + 2k̂).", "takeaway": "Read the point from the constants and the direction from the denominators of the Cartesian form.", "conceptName": "Equation of a line in space"}, {"q": 13, "title": "Angle between two pairs of vector lines", "conceptIdx": 2, "page": 13, "printPage": 389, "question": "Find the angle between the following pairs of lines: (i) r = 2î − 5ĵ + k̂ + λ(3î + 2ĵ + 6k̂) and r = 7î − 6k̂ + μ(î + 2ĵ + 2k̂); (ii) r = 3î + ĵ − 2k̂ + λ(î − ĵ − 2k̂) and r = 2î − ĵ − 56k̂ + μ(3î − 5ĵ − 4k̂).", "given": "(i) b₁ = (3, 2, 6), b₂ = (1, 2, 2); (ii) b₁ = (1, −1, −2), b₂ = (3, −5, −4).", "steps": ["(i) b₁·b₂ = 3·1 + 2·2 + 6·2 = 3 + 4 + 12 = 19; |b₁| = 7, |b₂| = 3.", "(i) cos θ = 19/(7·3) = 19/21, so θ = cos⁻¹(19/21) ≈ 25.2°.", "(ii) b₁·b₂ = 1·3 + (−1)(−5) + (−2)(−4) = 3 + 5 + 8 = 16; |b₁| = √6, |b₂| = √50 = 5√2.", "(ii) cos θ = 16/(√6·5√2) = 16/(5√12) = 8/(5√3), so θ = cos⁻¹(8/(5√3)) ≈ 22.2°."], "answer": "(i) θ = cos⁻¹(19/21); (ii) θ = cos⁻¹(8/(5√3)).", "takeaway": "The angle uses only the direction vectors — ignore the points the lines pass through.", "conceptName": "Angle between two lines"}, {"q": 14, "title": "Angle between Catalan-form lines", "conceptIdx": 2, "page": 14, "printPage": 390, "question": "Find the angle between the following pair of lines: (i) (x − 2)/2 = (y − 1)/5 = (z + 3)/(−3) and (x + 2)/(−1) = (y − 4)/8 = (z − 5)/4; (ii) x/2 = y/2 = z/1 and (x − 5)/4 = (y − 2)/1 = (z − 3)/8.", "given": "(i) d₁ = (2, 5, −3), d₂ = (−1, 8, 4); (ii) d₁ = (2, 2, 1), d₂ = (4, 1, 8).", "steps": ["(i) d₁·d₂ = 2(−1) + 5(8) + (−3)(4) = −2 + 40 − 12 = 26; |d₁| = √38, |d₂| = 9.", "(i) cos θ = 26/(9√38), so θ = cos⁻¹(26/(9√38)) ≈ 62.1°.", "(ii) d₁·d₂ = 2(4) + 2(1) + 1(8) = 8 + 2 + 8 = 18; |d₁| = 3, |d₂| = 9.", "(ii) cos θ = 18/27 = 2/3, so θ = cos⁻¹(2/3) ≈ 48.2°."], "answer": "(i) cos θ = 26/(9√38); (ii) cos θ = 2/3.", "takeaway": "For Cartesian lines, read direction ratios from the denominators, then apply the dot-product formula.", "conceptName": "Angle between two lines"}, {"q": 15, "title": "Values of p for right angles", "conceptIdx": 2, "page": 14, "printPage": 390, "question": "Find the values of p so that the lines (1 − x)/3 = (7y − 14)/(2p) = (z − 3)/2 and (7 − 7x)/(3p) = (y − 5)/1 = (6 − z)/5 are at right angles.", "given": "First line: (1 − x)/3 = (7y − 14)/(2p) = (z − 3)/2. Second line: (7 − 7x)/(3p) = (y − 5)/1 = (6 − z)/5.", "steps": ["Write the first line as (x − 1)/(−3) = (y − 2)/(2p/7) = (z − 3)/2, so d₁ = (−3, 2p/7, 2).", "Write the second as (x − 1)/(−3p/7) = (y − 5)/1 = (z − 6)/(−5), so d₂ = (−3p/7, 1, −5).", "Perpendicular means d₁·d₂ = (−3)(−3p/7) + (2p/7)(1) + (2)(−5) = 9p/7 + 2p/7 − 10 = 11p/7 − 10 = 0.", "Hence 11p/7 = 10 and p = 70/11."], "answer": "p = 70/11.", "takeaway": "Normalise each equation to the standard (x − x₁)/a = (y − y₁)/b = (z − z₁)/c form before reading direction ratios.", "conceptName": "Angle between two lines"}, {"q": 16, "title": "Another pair of perpendicular lines", "conceptIdx": 2, "page": 14, "printPage": 390, "question": "Show that the lines (x − 5)/7 = (y + 2)/(−5) = z/1 and x/1 = y/2 = z/3 are perpendicular to each other.", "given": "Direction ratios (7, −5, 1) and (1, 2, 3).", "steps": ["Direction ratios of the first line: (7, −5, 1).", "Direction ratios of the second line: (1, 2, 3).", "Dot product = 7(1) + (−5)(2) + 1(3) = 7 − 10 + 3 = 0.", "A zero dot product means the lines are perpendicular."], "answer": "The two lines are perpendicular.", "takeaway": "A zero scalar product of direction ratios is both necessary and sufficient for perpendicular lines.", "conceptName": "Angle between two lines"}, {"q": 17, "title": "Shortest distance: vector lines", "conceptIdx": 3, "page": 14, "printPage": 390, "question": "Find the shortest distance between the lines r = (î + 2ĵ + k̂) + λ(î − ĵ + k̂) and r = 2î − ĵ − k̂ + μ(2î + ĵ + 2k̂).", "given": "a₁ = î + 2ĵ + k̂, b₁ = î − ĵ + k̂; a₂ = 2î − ĵ − k̂, b₂ = 2î + ĵ + 2k̂.", "steps": ["a₂ − a₁ = (1, −3, −2).", "b₁ × b₂ = (î − ĵ + k̂) × (2î + ĵ + 2k̂) = î(−2 − 1) − ĵ(2 − 2) + k̂(1 + 2) = (−3, 0, 3).", "|b₁ × b₂| = √(9 + 0 + 9) = 3√2 and (a₂ − a₁)·(b₁ × b₂) = 1(−3) + (−3)(0) + (−2)(3) = −9.", "d = |−9|/(3√2) = 9/(3√2) = 3/√2 = 3√2/2."], "answer": "The shortest distance is 3√2/2 units ≈ 2.12 units.", "takeaway": "The numerator is the scalar triple product; take its absolute value before dividing by |b₁ × b₂|.", "conceptName": "Shortest distance between two lines", "figure": "11.6"}, {"q": 18, "title": "Shortest distance: Cartesian lines", "conceptIdx": 3, "page": 14, "printPage": 390, "question": "Find the shortest distance between the lines (x + 1)/7 = (y + 1)/(−6) = (z + 1)/1 and (x − 3)/1 = (y − 5)/(−2) = (z − 7)/1.", "given": "a₁ = (−1, −1, −1), b₁ = (7, −6, 1); a₂ = (3, 5, 7), b₂ = (1, −2, 1).", "steps": ["a₂ − a₁ = (4, 6, 8).", "b₁ × b₂ = |î ĵ k̂; 7 −6 1; 1 −2 1| = î(−6 + 2) − ĵ(7 − 1) + k̂(−14 + 6) = (−4, −6, −8), so |b₁ × b₂| = 2√29.", "(a₂ − a₁)·(b₁ × b₂) = 4(−4) + 6(−6) + 8(−8) = −116.", "d = 116/(2√29) = 58/√29 = 2√29."], "answer": "The shortest distance is 2√29 units ≈ 10.77 units.", "takeaway": "Cartesian form gives the points and direction ratios directly; keep the signs consistent.", "conceptName": "Shortest distance between two lines", "figure": "11.6"}, {"q": 19, "title": "Shortest distance: two vector lines", "conceptIdx": 3, "page": 14, "printPage": 390, "question": "Find the shortest distance between the lines whose vector equations are r = (î + 2ĵ + 3k̂) + λ(î − 3ĵ + 2k̂) and r = 4î + 5ĵ + 6k̂ + μ(2î + 3ĵ + k̂).", "given": "a₁ = (1, 2, 3), b₁ = (1, −3, 2); a₂ = (4, 5, 6), b₂ = (2, 3, 1).", "steps": ["a₂ − a₁ = (3, 3, 3).", "b₁ × b₂ = |î ĵ k̂; 1 −3 2; 2 3 1| = î(−3 − 6) − ĵ(1 − 4) + k̂(3 + 6) = (−9, 3, 9), so |b₁ × b₂| = √171 = 3√19.", "(a₂ − a₁)·(b₁ × b₂) = 3(−9) + 3(3) + 3(9) = 9.", "d = 9/(3√19) = 3/√19 = 3√19/19."], "answer": "The shortest distance is 3/√19 units ≈ 0.688 units.", "takeaway": "Any multiple of a direction vector gives the same line; the formula is unchanged by rescaling.", "conceptName": "Shortest distance between two lines", "figure": "11.6"}, {"q": 20, "title": "Shortest distance: parametric lines", "conceptIdx": 3, "page": 14, "printPage": 390, "question": "Find the shortest distance between the lines whose vector equations are r = (1 − t)î + (t − 2)ĵ + (3 − 2t)k̂ and r = (s + 1)î + (2s − 1)ĵ − (2s + 1)k̂.", "given": "Line 1: a₁ = (1, −2, 3), b₁ = (−1, 1, −2); line 2: a₂ = (1, −1, −1), b₂ = (1, 2, −2).", "steps": ["Rewrite line 1 as r = (î − 2ĵ + 3k̂) + t(−î + ĵ − 2k̂); line 2 as r = (î − ĵ − k̂) + s(î + 2ĵ − 2k̂).", "b₁ × b₂ = |î ĵ k̂; −1 1 −2; 1 2 −2| = î(−2 + 4) − ĵ(2 + 2) + k̂(−2 − 1) = (2, −4, −3), so |b₁ × b₂| = √29.", "a₂ − a₁ = (0, 1, −4) and (a₂ − a₁)·(b₁ × b₂) = 0(2) + 1(−4) + (−4)(−3) = 8.", "d = |8|/√29 = 8/√29 = 8√29/29."], "answer": "The shortest distance is 8/√29 units ≈ 1.49 units.", "takeaway": "Collect the parameter-independent part as the point and the parameter coefficients as the direction.", "conceptName": "Shortest distance between two lines", "figure": "11.6"}, {"q": 21, "title": "Angle with direction ratios a, b, c", "conceptIdx": 2, "page": 14, "printPage": 390, "question": "Find the angle between the lines whose direction ratios are a, b, c and b − c, c − a, a − b.", "given": "d₁ = (a, b, c), d₂ = (b − c, c − a, a − b).", "steps": ["Dot product = a(b − c) + b(c − a) + c(a − b).", "Expand: ab − ac + bc − ab + ca − bc = 0.", "A zero dot product means cos θ = 0, so the angle is 90°."], "answer": "The lines are perpendicular; θ = 90° (π/2).", "takeaway": "Expansion often collapses a complicated-looking dot product to zero — do the algebra before computing magnitudes.", "conceptName": "Angle between two lines"}, {"q": 22, "title": "Line parallel to the x-axis", "conceptIdx": 1, "page": 15, "printPage": 391, "question": "Find the equation of a line parallel to the x-axis and passing through the origin.", "given": "Direction of the x-axis is î = (1, 0, 0); the origin is (0, 0, 0).", "steps": ["Vector form: r = λî = λî + 0ĵ + 0k̂.", "In Cartesian form x/1 = y/0 = z/0.", "Clearing the zero denominators: y = 0 and z = 0, which is exactly the x-axis."], "answer": "Vector: r = λî; Cartesian: x/1 = y/0 = z/0, i.e. y = 0 and z = 0.", "takeaway": "When a direction ratio is 0, the corresponding numerator must be 0 as well — that is why y = 0 and z = 0.", "conceptName": "Equation of a line in space"}, {"q": 23, "title": "Find k for perpendicular lines", "conceptIdx": 2, "page": 15, "printPage": 391, "question": "If the lines (x − 1)/(−3) = (y − 2)/(2k) = (z − 3)/2 and (x − 1)/(3k) = (y − 1)/1 = (z − 6)/(−5) are perpendicular, find the value of k.", "given": "d₁ = (−3, 2k, 2), d₂ = (3k, 1, −5).", "steps": ["Perpendicular lines satisfy d₁·d₂ = 0.", "d₁·d₂ = (−3)(3k) + (2k)(1) + 2(−5) = −9k + 2k − 10 = −7k − 10.", "Set −7k − 10 = 0, so k = −10/7."], "answer": "k = −10/7.", "takeaway": "The dot-product condition for perpendicularity produces a linear equation for the unknown.", "conceptName": "Angle between two lines"}, {"q": 24, "title": "Shortest distance: Example-style vectors", "conceptIdx": 3, "page": 15, "printPage": 391, "question": "Find the shortest distance between lines r = 6î + 2ĵ + 2k̂ + λ(î − 2ĵ + 2k̂) and r = −4î − k̂ + μ(3î − 2ĵ − 2k̂).", "given": "a₁ = (6, 2, 2), b₁ = (1, −2, 2); a₂ = (−4, 0, −1), b₂ = (3, −2, −2).", "steps": ["a₂ − a₁ = (−10, −2, −3).", "b₁ × b₂ = |î ĵ k̂; 1 −2 2; 3 −2 −2| = î(4 + 4) − ĵ(−2 − 6) + k̂(−2 + 6) = (8, 8, 4), so |b₁ × b₂| = √144 = 12.", "(a₂ − a₁)·(b₁ × b₂) = (−10)(8) + (−2)(8) + (−3)(4) = −80 − 16 − 12 = −108.", "d = 108/12 = 9."], "answer": "The shortest distance is 9 units.", "takeaway": "Compute the cross product first, then the triple product; the ratio gives the perpendicular separation.", "conceptName": "Shortest distance between two lines", "figure": "11.6"}, {"q": 25, "title": "Line perpendicular to two given lines", "conceptIdx": 1, "page": 15, "printPage": 391, "question": "Find the vector equation of the line passing through the point (1, 2, −4) and perpendicular to the two lines: (x − 8)/3 = (y + 19)/(−16) = (z − 10)/7 and (x − 15)/3 = (y − 29)/8 = (z − 5)/(−5).", "given": "Point (1, 2, −4); d₁ = (3, −16, 7), d₂ = (3, 8, −5).", "steps": ["A direction perpendicular to both lines is d₁ × d₂.", "d₁ × d₂ = |î ĵ k̂; 3 −16 7; 3 8 −5| = î(80 − 56) − ĵ(−15 − 21) + k̂(24 + 48) = (24, 36, 72) = 12(2, 3, 6).", "Use the simpler direction (2, 3, 6) through the point (1, 2, −4).", "Vector form: r = (î + 2ĵ − 4k̂) + λ(2î + 3ĵ + 6k̂)."], "answer": "r = (î + 2ĵ − 4k̂) + λ(2î + 3ĵ + 6k̂); Cartesian: (x − 1)/2 = (y − 2)/3 = (z + 4)/6.", "takeaway": "The cross product of two direction vectors is perpendicular to both — the tool for a common perpendicular.", "conceptName": "Equation of a line in space"}], "exerciseMap": [[1, "Direction cosines from direction angles", 0, 5, 381], [2, "Equal angles with the three axes", 0, 5, 381], [3, "Direction cosines from direction ratios", 0, 5, 381], [4, "Collinearity from direction ratios", 0, 5, 381], [5, "Direction cosines of a triangle's sides", 0, 5, 381], [6, "Mutually perpendicular direction cosines", 2, 5, 381], [7, "Perpendicular lines from two point-pairs", 2, 13, 389], [8, "Parallel lines from two point-pairs", 2, 13, 389], [9, "Line through a point parallel to a vector", 1, 13, 389], [10, "Line through a position vector along a direction", 1, 13, 389], [11, "Cartesian line parallel to a given line", 1, 13, 389], [12, "Vector form from a Cartesian line", 1, 13, 389], [13, "Angle between two pairs of vector lines", 2, 13, 389], [14, "Angle between Catalan-form lines", 2, 14, 390], [15, "Values of p for right angles", 2, 14, 390], [16, "Another pair of perpendicular lines", 2, 14, 390], [17, "Shortest distance: vector lines", 3, 14, 390], [18, "Shortest distance: Cartesian lines", 3, 14, 390], [19, "Shortest distance: two vector lines", 3, 14, 390], [20, "Shortest distance: parametric lines", 3, 14, 390], [21, "Angle with direction ratios a, b, c", 2, 14, 390], [22, "Line parallel to the x-axis", 1, 15, 391], [23, "Find k for perpendicular lines", 2, 15, 391], [24, "Shortest distance: Example-style vectors", 3, 15, 391], [25, "Line perpendicular to two given lines", 1, 15, 391]]};
+</script>
+<script>
+// Textbook figures for lemh205 (Three Dimensional Geometry), redrawn as SVG from the
+// vector diagrams in books/originals/Class12-Maths-Pt2_lemh205.pdf (Figs 11.2, 11.6, 11.7).
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", BLUE = "#60a5fa", AMBER = "#f59e0b", GREEN = "#34d399", FAINT = "#475569";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 13) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, c, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + c + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  function dot(x, y, c, r){
+    return '<circle cx="' + x + '" cy="' + y + '" r="' + (r || 4) + '" fill="' + (c || INK) + '"/>';
+  }
+
+  var figs = {};
+
+  figs["11.2"] = {
+    caption: "Fig. 11.2 — Direction cosines of the line joining P(x₁, y₁, z₁) and Q(x₂, y₂, z₂), with direction angles α, β and γ (redrawn).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 380 250" role="img" aria-label="Line through two points showing direction angles">';
+      s += line(60, 205, 330, 205, FAINT, 2) + text(342, 210, "x", { color: MUTED });
+      s += line(60, 205, 60, 35, FAINT, 2) + text(60, 25, "z", { color: MUTED });
+      s += line(60, 205, 150, 245, FAINT, 2) + text(160, 252, "y", { color: MUTED });
+      s += line(90, 190, 300, 70, BLUE, 3);
+      s += '<polygon points="300,70 286,74 290,84" fill="' + BLUE + '"/>';
+      s += dot(90, 190, AMBER, 5) + text(78, 214, "P", { color: AMBER, anchor: "end" });
+      s += dot(300, 70, AMBER, 5) + text(312, 64, "Q", { color: AMBER, anchor: "start" });
+      s += line(300, 70, 300, 205, MUTED, 1.5, "5 4");
+      s += line(90, 190, 300, 190, MUTED, 1.5, "5 4");
+      s += text(195, 178, "x₂ − x₁", { color: MUTED });
+      s += text(312, 145, "z₂ − z₁", { color: MUTED, anchor: "start" });
+      s += text(140, 138, "line PQ", { color: BLUE });
+      s += text(190, 40, "direction ratios (x₂−x₁, y₂−y₁, z₂−z₁)", { size: 12, color: INK, weight: 700 });
+      return s + '</svg>';
+    }
+  };
+
+  figs["11.6"] = {
+    caption: "Fig. 11.6 — Two skew lines l₁ and l₂ with the shortest segment PQ perpendicular to both directions (redrawn).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 380 250" role="img" aria-label="Two skew lines and the common perpendicular">';
+      s += line(50, 90, 330, 70, BLUE, 3);
+      s += '<polygon points="330,70 318,64 316,74" fill="' + BLUE + '"/>';
+      s += line(60, 200, 340, 150, AMBER, 3);
+      s += '<polygon points="340,150 327,144 328,155" fill="' + AMBER + '"/>';
+      s += line(190, 80, 200, 178, GREEN, 2.5, "6 4");
+      s += dot(190, 80, GREEN, 5) + dot(200, 178, GREEN, 5);
+      s += text(142, 74, "l₁", { color: BLUE, weight: 700, size: 15 });
+      s += text(300, 196, "l₂", { color: AMBER, weight: 700, size: 15 });
+      s += text(208, 130, "P", { color: GREEN, anchor: "start" });
+      s += text(208, 176, "Q", { color: GREEN, anchor: "start" });
+      s += text(190, 34, "PQ ⊥ both lines · d = |(a₂−a₁)·(b₁×b₂)| / |b₁×b₂|", { size: 12, color: INK, weight: 700 });
+      s += text(120, 225, "skew lines never meet and are not parallel", { size: 12, color: MUTED });
+      return s + '</svg>';
+    }
+  };
+
+  figs["11.7"] = {
+    caption: "Fig. 11.7 — Distance between parallel lines: the perpendicular from T on l₂ meets l₁ at P (redrawn).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 380 250" role="img" aria-label="Distance between two parallel lines">';
+      s += line(50, 80, 330, 60, BLUE, 3);
+      s += '<polygon points="330,60 318,54 316,64" fill="' + BLUE + '"/>';
+      s += line(50, 190, 330, 170, AMBER, 3);
+      s += '<polygon points="330,170 318,164 316,174" fill="' + AMBER + '"/>';
+      s += line(210, 98, 218, 178, GREEN, 2.5, "6 4");
+      s += dot(210, 98, GREEN, 5) + dot(218, 178, GREEN, 5);
+      s += text(70, 72, "l₁", { color: BLUE, weight: 700, size: 15 });
+      s += text(70, 184, "l₂", { color: AMBER, weight: 700, size: 15 });
+      s += text(200, 92, "P", { color: GREEN, anchor: "end" });
+      s += text(228, 186, "T", { color: GREEN, anchor: "start" });
+      s += text(300, 138, "d = |PT|", { color: GREEN });
+      s += text(190, 30, "b ≠ 0 is the common direction of both lines", { size: 12, color: INK, weight: 700 });
+      s += text(190, 228, "d = |b × (a₂ − a₁)| / |b|", { size: 13, color: MUTED });
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
+</script>
+<script>
+(function(){
   var C = window.CHAPTER;
   if (!C) {
     console.error("No CHAPTER data object found on window.");
@@ -1077,8 +1400,44 @@ button.btn-secondary {
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1104,8 +1463,7 @@ button.btn-secondary {
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1188,7 +1546,35 @@ button.btn-secondary {
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1205,6 +1591,10 @@ button.btn-secondary {
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1213,16 +1603,17 @@ button.btn-secondary {
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1234,19 +1625,22 @@ button.btn-secondary {
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
@@ -1273,7 +1667,7 @@ button.btn-secondary {
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1299,42 +1693,47 @@ button.btn-secondary {
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1342,7 +1741,7 @@ button.btn-secondary {
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1351,56 +1750,51 @@ button.btn-secondary {
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1441,6 +1835,10 @@ button.btn-secondary {
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1459,7 +1857,7 @@ button.btn-secondary {
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1509,7 +1907,8 @@ button.btn-secondary {
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1518,6 +1917,41 @@ button.btn-secondary {
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1532,9 +1966,6 @@ button.btn-secondary {
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1654,9 +2085,9 @@ button.btn-secondary {
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1672,7 +2103,7 @@ button.btn-secondary {
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1683,8 +2114,8 @@ button.btn-secondary {
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1729,22 +2160,31 @@ button.btn-secondary {
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2230,7 @@ button.btn-secondary {
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2240,7 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2250,31 @@ button.btn-secondary {
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1849,6 +2309,10 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1862,6 +2326,41 @@ button.btn-secondary {
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1869,6 +2368,7 @@ button.btn-secondary {
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1883,335 +2383,559 @@ button.btn-secondary {
   updateProgress();
   routeFromHash();
 })();
+
 </script>
-  <script>(function () {
-  "use strict";
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
 
-  var App = window.App;
-  window.SIMS = window.SIMS || {};
+  function $(id){ return document.getElementById(id); }
 
-  function node(id) {
-    return document.getElementById(id);
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
   }
 
-  function esc(value) {
-    return String(value).replace(/[&<>"']/g, function (ch) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
   }
 
-  function text(x, y, value, color, size, anchor) {
-    return '<text x="' + x + '" y="' + y + '" fill="' + (color || "#f8fafc") +
-      '" font-size="' + (size || 15) + '" text-anchor="' + (anchor || "middle") +
-      '">' + esc(value) + "</text>";
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
   }
 
-  function cell(label, value, color) {
-    return '<div class="telemetry-cell"><div class="telemetry-label">' + label +
-      '</div><div class="telemetry-val"' + (color ? ' style="color:' + color + '"' : "") +
-      ">" + value + "</div></div>";
-  }
-
-  function shell(body) {
-    return '<rect width="720" height="300" fill="#09131d"></rect>' + body;
-  }
-
-  function range(key, label, min, max, step, value, unit) {
-    return '<label class="control"><span>' + label + ' <output data-math-output="' + key +
-      '">' + value + " " + (unit || "") + '</output></span><input type="range" data-math-key="' +
-      key + '" aria-label="' + label + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></label>';
-  }
-
-  function select(key, label, options, value) {
-    return '<label class="control"><span>' + label + '</span><select data-math-key="' + key + '">' +
-      options.map(function (item) {
-        return '<option value="' + item[0] + '"' + (String(item[0]) === String(value) ? " selected" : "") +
-          ">" + item[1] + "</option>";
-      }).join("") + "</select></label>";
-  }
-
-  function mountControls(state, controls, draw) {
-    var box = node("lab-controls");
-    if (!box) return;
-    box.innerHTML = controls;
-    box.querySelectorAll("[data-math-key]").forEach(function (input) {
-      input.addEventListener("input", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        var output = box.querySelector('[data-math-output="' + input.getAttribute("data-math-key") + '"]');
-        if (output) output.textContent = input.value;
-        draw(0);
-      });
-      input.addEventListener("change", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        draw(0);
-      });
-    });
-  }
-
-  function mountBase(state, title, controls, draw, legend) {
-    if (App && App.state) {
-      App.state.maxT = 6;
-      var scrubber = node("time-scrubber");
-      if (scrubber) scrubber.max = 6;
-    }
-    var legendBox = node("lab-legend");
-    if (legendBox) legendBox.innerHTML = '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>' + title + "</span></div>";
-    if (legendBox && legend) legendBox.innerHTML += legend;
-    mountControls(state, controls, draw);
-    draw(0);
-  }
-
-  function install(id, title, initial, controls, renderer, legend) {
-    var state = Object.assign({}, initial);
-    function draw(t) {
-      var result = renderer(state, t || 0);
-      var diagram = node("diagram");
-      if (diagram) {
-        diagram.innerHTML = result.svg;
-        diagram.setAttribute("aria-label", title);
-      }
-      var read = node("lab-readout");
-      if (read) read.innerHTML = result.readout;
-      var verdict = node("lab-verdict");
-      if (verdict) verdict.innerHTML = result.verdict;
-    }
-    function mount() {
-      mountBase(state, title, controls(state), draw, legend);
-    }
-    window.SIMS[id] = { mount: mount, draw: draw };
-  }
-
-  install("relations", "Relation mapper", { mode: "equivalence" }, function (s) {
-    return select("mode", "Choose a relation", [
-      ["equivalence", "Congruence mod 3"],
-      ["order", "Less than or equal"],
-      ["identity", "Identity relation"]
-    ], s.mode);
-  }, function (s) {
-    var labels = s.mode === "equivalence" ? ["0~0", "0~3", "1~1", "2~2", "2~5"] :
-      s.mode === "order" ? ["1≤1", "1≤2", "2≤2", "2≤3", "3≤3"] :
-      ["1→1", "2→2", "3→3", "4→4", "5→5"];
-    var rows = labels.map(function (label, i) {
-      return '<rect x="' + (55 + i * 126) + '" y="110" width="105" height="60" rx="9" fill="#15263a" stroke="#38bdf8"></rect>' +
-        text(107 + i * 126, 146, label, "#f8fafc", 16);
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
     }).join("");
-    var property = s.mode === "equivalence" ? "reflexive, symmetric and transitive" :
-      s.mode === "order" ? "reflexive, antisymmetric and transitive" : "reflexive, symmetric and transitive";
-    return {
-      svg: shell(text(360, 45, "A relation is a subset of A × A", "#f8fafc", 18) + rows +
-        text(360, 230, property, "#34d399", 16)),
-      readout: cell("Selected", s.mode) + cell("Pattern", property, "#34d399"),
-      verdict: "<b>Notice:</b> a relation is any chosen set of ordered pairs. A function adds the rule that each input has exactly one output."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>ordered pair</span></div>');
+  }
 
-  install("inverse", "Inverse-function mirror", { fn: "square", x: 1.5 }, function (s) {
-    return select("fn", "Choose a function", [["square", "y = x²"], ["linear", "y = 2x + 1"], ["cube", "y = x³"]], s.fn) +
-      range("x", "Input x", -2, 2, 0.1, s.x, "");
-  }, function (s) {
-    var fn = s.fn === "square" ? function (x) { return x * x; } :
-      s.fn === "linear" ? function (x) { return 2 * x + 1; } :
-      function (x) { return x * x * x; };
-    var pts = "", inv = "", y = fn(s.x);
-    for (var x = -2; x <= 2.01; x += 0.1) {
-      var yy = fn(x);
-      pts += (x === -2 ? "M" : "L") + (260 + x * 55) + " " + (160 - yy * 25) + " ";
-      inv += (x === -2 ? "M" : "L") + (260 + yy * 25) + " " + (160 - x * 55) + " ";
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
     }
-    return {
-      svg: shell('<line x1="100" y1="160" x2="620" y2="160" stroke="#475569"></line><line x1="260" y1="35" x2="260" y2="270" stroke="#475569"></line>' +
-        '<line x1="110" y1="280" x2="600" y2="40" stroke="#94a3b8" stroke-dasharray="7 6"></line>' +
-        '<path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + inv +
-        '" fill="none" stroke="#f59e0b" stroke-width="3"></path><circle cx="' + (260 + s.x * 55) +
-        '" cy="' + (160 - y * 25) + '" r="6" fill="#34d399"></circle>' +
-        text(500, 70, "f(x)", "#38bdf8", 16) + text(500, 100, "f⁻¹(x)", "#f59e0b", 16) +
-        text(500, 130, "y = x mirror", "#94a3b8", 14)),
-      readout: cell("x", s.x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("swap", "(" + y.toFixed(2) + ", " + s.x.toFixed(1) + ")", "#f59e0b"),
-      verdict: "<b>Inverse:</b> exchanging x and y reflects the graph in y = x. A true inverse requires the original function to be one-to-one on its chosen domain."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>inverse graph</span></div>');
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
 
-  install("matrices", "Matrix multiplication table", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    return {
-      svg: shell(text(190, 70, "A", "#38bdf8", 22) + text(510, 70, "B", "#f59e0b", 22) +
-        text(190, 120, "[" + s.a + "  " + s.b + "]", "#f8fafc", 24) + text(190, 160, "[" + s.c + "  " + s.d + "]", "#f8fafc", 24) +
-        text(510, 120, "[" + s.d + "  " + s.b + "]", "#f8fafc", 24) + text(510, 160, "[" + s.c + "  " + s.a + "]", "#f8fafc", 24) +
-        '<path d="M285 130 C335 105 370 105 430 130" fill="none" stroke="#34d399" stroke-width="3" marker-end="url(#arrow-m)"></path>' +
-        text(360, 235, "A × B is defined by row · column products", "#94a3b8", 15) +
-        '<defs><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>'),
-      readout: cell("a₁₁b₁₁ + a₁₂b₂₁", (s.a * s.d + s.b * s.c).toFixed(0), "#34d399") + cell("det A", det.toFixed(0), "#f59e0b"),
-      verdict: "<b>Order matters:</b> matrix multiplication pairs each row of the first matrix with each column of the second. It is not entry-by-entry multiplication."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>row · column</span></div>');
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
 
-  install("determinant", "Determinant area", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    var x2 = 360 + s.a * 35, y2 = 160 - s.c * 25, x3 = 360 + s.b * 35, y3 = 160 - s.d * 25;
-    return {
-      svg: shell('<polygon points="360,160 ' + x2 + ',' + y2 + ' ' + (x2 + x3 - 360) + ',' + (y2 + y3 - 160) + ' ' + x3 + ',' + y3 + '" fill="#38bdf822" stroke="#38bdf8" stroke-width="3"></polygon>' +
-        '<line x1="360" y1="160" x2="' + x2 + '" y2="' + y2 + '" stroke="#f59e0b" stroke-width="3"></line><line x1="360" y1="160" x2="' + x3 + '" y2="' + y3 + '" stroke="#34d399" stroke-width="3"></line>' +
-        text(360, 55, "det [[a,b],[c,d]] = ad − bc", "#f8fafc", 18) + text(360, 250, "signed area scale", "#94a3b8", 15)),
-      readout: cell("det A", det.toFixed(2), det >= 0 ? "#34d399" : "#f87171") + cell("triangle area", Math.abs(det / 2).toFixed(2), "#f59e0b"),
-      verdict: "<b>Geometry:</b> the determinant is the signed area scale of the parallelogram formed by the column vectors. Zero means the vectors are dependent."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>area scale</span></div>');
-
-  install("continuity", "Continuity microscope", { x: 0.5 }, function (s) {
-    return range("x", "Probe x", -1, 2.5, 0.05, s.x, "");
-  }, function (s) {
-    var x = s.x, y = Math.abs(x - 1) < 0.02 ? 3.2 : (x * x - 1) / (x - 1);
-    var pts = "";
-    for (var u = -1; u <= 2.01; u += 0.05) {
-      var v = u === 1 ? 2 : u + 1;
-      pts += (u === -1 ? "M" : "L") + (90 + (u + 1) * 150) + " " + (250 - v * 48) + " ";
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
     }
-    return {
-      svg: shell('<line x1="90" y1="250" x2="570" y2="250" stroke="#475569"></line><line x1="90" y1="70" x2="90" y2="270" stroke="#475569"></line><path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<circle cx="390" cy="154" r="8" fill="#09131d" stroke="#f59e0b" stroke-width="3"></circle><circle cx="' + (90 + (x + 1) * 150) + '" cy="' + (250 - y * 48) + '" r="7" fill="#34d399"></circle>' +
-        text(470, 70, "f(x) = (x²−1)/(x−1)", "#f8fafc", 16) + text(470, 100, "x ≠ 1; removable hole at x=1", "#f59e0b", 14)),
-      readout: cell("probe x", x.toFixed(2)) + cell("nearby value", y.toFixed(2), "#34d399") + cell("limit at 1", "2", "#f59e0b"),
-      verdict: "<b>Limit versus value:</b> the nearby trend can approach 2 even though the displayed function has a hole at x = 1. Continuity requires the value and the limit to agree."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>removable hole</span></div>');
-
-  install("derivative", "Derivative as slope", { x: 1 }, function (s) {
-    return range("x", "Point x", -2.5, 2.5, 0.1, s.x, "");
-  }, function (s) {
-    var x = s.x, y = x * x, m = 2 * x;
-    var x1 = -2.5, x2 = 2.5, y1 = y + m * (x1 - x), y2 = y + m * (x2 - x);
-    var curve = "";
-    for (var u = -2.5; u <= 2.51; u += 0.08) curve += (u === -2.5 ? "M" : "L") + (360 + u * 65) + " " + (160 - u * u * 24) + " ";
-    return {
-      svg: shell('<line x1="80" y1="160" x2="650" y2="160" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<line x1="' + (360 + x1 * 65) + '" y1="' + (160 - y1 * 24) + '" x2="' + (360 + x2 * 65) + '" y2="' + (160 - y2 * 24) + '" stroke="#f59e0b" stroke-width="3"></line><circle cx="' + (360 + x * 65) + '" cy="' + (160 - y * 24) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "y = x²", "#38bdf8", 18) + text(500, 105, "slope f′(x) = 2x", "#f59e0b", 16)),
-      readout: cell("x", x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("f′(x)", m.toFixed(2), "#f59e0b"),
-      verdict: "<b>Derivative:</b> it is the slope of the tangent. At x = 0 the parabola is flat; on the right the slope is positive and on the left it is negative."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>tangent slope</span></div>');
-
-  install("integration", "Integral as accumulated area", { upper: 3 }, function (s) {
-    return range("upper", "Upper limit b", 0.5, 4, 0.1, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b * b / 3, bars = "", n = 12, w = b / n;
-    for (var i = 0; i < n; i += 1) {
-      var u = i * w, h = u * u;
-      bars += '<rect x="' + (100 + u * 110) + '" y="' + (245 - h * 12) + '" width="' + (w * 110 - 2) + '" height="' + (h * 12) + '" fill="#38bdf844"></rect>';
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
     }
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) curve += (x === 0 ? "M" : "L") + (100 + x * 110) + " " + (245 - x * x * 12) + " ";
-    return {
-      svg: shell('<line x1="95" y1="245" x2="555" y2="245" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#f59e0b" stroke-width="3"></path>' + bars +
-        '<line x1="' + (100 + b * 110) + '" y1="65" x2="' + (100 + b * 110) + '" y2="245" stroke="#34d399" stroke-dasharray="6 5" stroke-width="2"></line>' +
-        text(510, 70, "∫₀ᵇ x² dx = b³/3", "#f8fafc", 18) + text(510, 105, "rectangles approximate the area", "#94a3b8", 14)),
-      readout: cell("b", b.toFixed(1)) + cell("area", area.toFixed(3), "#34d399") + cell("meaning", "accumulation", "#f59e0b"),
-      verdict: "<b>Integral:</b> an antiderivative gives a compact way to accumulate infinitely many thin contributions. The rectangles improve as their width shrinks."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>area strips</span></div>');
+    return s;
+  }
 
-  install("area", "Area between curves", { upper: 1 }, function (s) {
-    return range("upper", "Boundary b", 0.2, 2, 0.05, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b / 2 - b * b * b / 3, path = "", region = "";
-    for (var x = 0; x <= b + 0.01; x += 0.03) {
-      path += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
-      region += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
     }
-    for (var y = b; y >= -0.01; y -= 0.03) region += "L" + (120 + y * 190) + " " + (235 - y * y * 70) + " ";
-    return {
-      svg: shell('<line x1="110" y1="235" x2="520" y2="235" stroke="#475569"></line><path d="' + path + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + region + 'Z" fill="#34d39955" stroke="#34d399"></path>' +
-        text(500, 70, "between y=x and y=x²", "#f8fafc", 17) + text(500, 105, "∫(x−x²) dx", "#f59e0b", 16)),
-      readout: cell("b", b.toFixed(2)) + cell("area", area.toFixed(4), "#34d399") + cell("bounds", "0 to b", "#f59e0b"),
-      verdict: "<b>Set up before integrating:</b> area is upper curve minus lower curve on the chosen interval. A sketch prevents a reversed sign."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>bounded region</span></div>');
-
-  install("differential", "Differential-equation flow", { family: "separable", t: 1 }, function (s) {
-    return select("family", "Choose a model", [["separable", "dy/dx = y"], ["linear", "dy/dx + y = 1"], ["decay", "dy/dx = −y"]], s.family) +
-      range("t", "time t", 0, 4, 0.1, s.t, "");
-  }, function (s) {
-    var sign = s.family === "decay" ? -1 : 1;
-    var y = s.family === "linear" ? 1 - Math.exp(-s.t) : Math.exp(sign * s.t);
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) {
-      var value = s.family === "linear" ? 1 - Math.exp(-x) : Math.exp(sign * x);
-      curve += (x === 0 ? "M" : "L") + (100 + x * 100) + " " + (235 - Math.min(2.7, value) * 55) + " ";
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
     }
-    return {
-      svg: shell('<line x1="95" y1="235" x2="530" y2="235" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><circle cx="' + (100 + s.t * 100) + '" cy="' + (235 - Math.min(2.7, y) * 55) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "solve → apply initial condition", "#f8fafc", 16) + text(500, 105, "one family, many possible constants", "#94a3b8", 14)),
-      readout: cell("model", s.family) + cell("y(t)", y.toFixed(3), "#34d399") + cell("t", s.t.toFixed(1), "#f59e0b"),
-      verdict: "<b>Solution family:</b> integrating produces a constant. An initial condition selects one member of the family."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>solution curve</span></div>');
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
 
-  install("vectors", "Vector components", { ax: 3, ay: 2, bx: -1, by: 2 }, function (s) {
-    return range("ax", "Aₓ", -4, 4, 1, s.ax, "") + range("ay", "Aᵧ", -4, 4, 1, s.ay, "") +
-      range("bx", "Bₓ", -4, 4, 1, s.bx, "") + range("by", "Bᵧ", -4, 4, 1, s.by, "");
-  }, function (s) {
-    var rx = s.ax + s.bx, ry = s.ay + s.by, mag = Math.sqrt(rx * rx + ry * ry);
-    function arrow(x, y, dx, dy, color) {
-      return '<line x1="' + x + '" y1="' + y + '" x2="' + (x + dx * 35) + '" y2="' + (y - dy * 35) + '" stroke="' + color + '" stroke-width="4" marker-end="url(#arrow-v)"></line>';
-    }
-    return {
-      svg: shell('<line x1="90" y1="180" x2="630" y2="180" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line>' +
-        arrow(360, 180, s.ax, s.ay, "#38bdf8") + arrow(360, 180, s.bx, s.by, "#f59e0b") + arrow(360, 180, rx, ry, "#34d399") +
-        '<defs><marker id="arrow-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>' +
-        text(500, 65, "R = A + B", "#34d399", 18) + text(500, 105, "components add separately", "#94a3b8", 14)),
-      readout: cell("Rₓ", rx.toFixed(0), "#34d399") + cell("Rᵧ", ry.toFixed(0), "#34d399") + cell("|R|", mag.toFixed(2), "#f59e0b"),
-      verdict: "<b>Vector addition:</b> add horizontal components together and vertical components together. The resultant arrow is the diagonal of the component parallelogram."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>input vectors</span></div><div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>resultant</span></div>');
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
 
-  install("lines3d", "Angle between lines", { angle: 45 }, function (s) {
-    return range("angle", "Projected angle", 0, 90, 1, s.angle, "°");
-  }, function (s) {
-    var c = Math.cos(s.angle * Math.PI / 180);
-    return {
-      svg: shell('<line x1="165" y1="220" x2="530" y2="90" stroke="#38bdf8" stroke-width="5"></line><line x1="165" y1="220" x2="530" y2="220" stroke="#f59e0b" stroke-width="5"></line><path d="M235 195 A75 75 0 0 1 275 174" fill="none" stroke="#34d399" stroke-width="3"></path>' +
-        text(500, 70, "cos θ = (a₁a₂+b₁b₂+c₁c₂)/(|a₁||a₂|)", "#f8fafc", 14) + text(500, 115, "direction ratios → angle", "#94a3b8", 15)),
-      readout: cell("θ", s.angle.toFixed(0) + "°", "#34d399") + cell("cos θ", c.toFixed(3), "#f59e0b"),
-      verdict: "<b>3D line angle:</b> direction ratios are enough. The dot product compares how much the two directions point the same way."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>reference direction</span></div>');
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
 
-  install("lp", "Linear-programming feasible region", { slope: 1 }, function (s) {
-    return range("slope", "Objective slope", -2, 3, 0.1, s.slope, "");
-  }, function (s) {
-    var y1 = 4 - s.slope * 1, y2 = 4 - s.slope * 3;
-    return {
-      svg: shell('<line x1="95" y1="245" x2="600" y2="245" stroke="#475569"></line><line x1="95" y1="55" x2="95" y2="245" stroke="#475569"></line><polygon points="95,245 95,105 300,105 470,245" fill="#34d39955" stroke="#34d399" stroke-width="3"></polygon>' +
-        '<line x1="100" y1="' + (245 - y1 * 35) + '" x2="560" y2="' + (245 - y2 * 35) + '" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8 5"></line>' +
-        '<circle cx="95" cy="105" r="7" fill="#38bdf8"></circle><circle cx="300" cy="105" r="7" fill="#38bdf8"></circle><circle cx="470" cy="245" r="7" fill="#38bdf8"></circle>' +
-        text(500, 65, "objective line slides", "#f8fafc", 17) + text(500, 100, "test the vertices", "#94a3b8", 15)),
-      readout: cell("slope", s.slope.toFixed(1)) + cell("candidate points", "vertices", "#34d399") + cell("method", "corner test", "#f59e0b"),
-      verdict: "<b>Graphical method:</b> the optimum occurs at a corner of the feasible region unless the objective is constant along an edge."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>feasible region</span></div>');
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
 
-  install("probability", "Probability tree", { pA: 0.6, pB: 0.3 }, function (s) {
-    return range("pA", "P(A)", 0.1, 0.9, 0.05, s.pA, "") + range("pB", "P(B|A)", 0.1, 0.9, 0.05, s.pB, "");
-  }, function (s) {
-    var joint = s.pA * s.pB, other = (1 - s.pA) * 0.2, total = joint + other;
-    return {
-      svg: shell('<line x1="110" y1="150" x2="260" y2="90" stroke="#38bdf8" stroke-width="3"></line><line x1="110" y1="150" x2="260" y2="220" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="60" stroke="#34d399" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="125" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="190" stroke="#f59e0b" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="250" stroke="#94a3b8" stroke-width="3"></line>' +
-        text(100, 140, "start", "#f8fafc", 14) + text(260, 78, "A", "#38bdf8", 17) + text(260, 210, "Aᶜ", "#94a3b8", 17) + text(505, 60, "B", "#34d399", 17) + text(505, 125, "Bᶜ", "#94a3b8", 17) +
-        text(505, 190, "B", "#f59e0b", 17) + text(505, 250, "Bᶜ", "#94a3b8", 17)),
-      readout: cell("P(A∩B)", joint.toFixed(3), "#34d399") + cell("P(B)", total.toFixed(3), "#f59e0b") + cell("P(A|B)", (joint / Math.max(total, 0.001)).toFixed(3), "#38bdf8"),
-      verdict: "<b>Bayes:</b> multiply along a branch, add disjoint branches for P(B), then reverse the condition with P(A|B) = P(A∩B)/P(B)."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>target branch</span></div>');
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
 })();
+
+
 </script>
-  <script>if (window.App && typeof window.App.routeFromHash === "function") window.App.routeFromHash();</script>
+<script>
+// Class 12 Mathematics, Chapter 11 (lemh205) — Three Dimensional Geometry labs.
+// One tailored lab per lesson, built on the shared Lumen LAB helpers (window.LAB).
+var App = window.App;
+var LAB = window.LAB;
+window.SIMS = {};
+
+function labNoTimeline(){
+  var tb = document.getElementById("legacy-lab-toolbar");
+  if(tb) tb.style.display = "none";
+}
+
+// Shared isometric projection for the chapter's 3D drawings (720 x 300 canvas).
+function iso(x, y, z, sc){
+  sc = sc || 30;
+  return { x: 330 + (x - y) * sc * 0.80, y: 190 - z * sc * 0.72 + (x + y) * sc * 0.36 };
+}
+function isoLine(p1, p2, color, w){
+  return LAB.line(p1.x, p1.y, p2.x, p2.y, color, w);
+}
+function deg(rad){ return rad * 180 / Math.PI; }
+function safeAcos(v){
+  if(v > 1) v = 1;
+  if(v < -1) v = -1;
+  return Math.acos(v);
+}
+// Formats a 3-vector as 2i − j + 4k (no coefficient 1, proper minus signs).
+function vecStr(p){
+  var out = "";
+  for(var i = 0; i < 3; i += 1){
+    var c = p[i], u = ["i", "j", "k"][i], a = Math.abs(c);
+    var t = (a === 1 ? "" : String(a)) + u;
+    if(i === 0) out += (c < 0 ? "−" : "") + t;
+    else out += (c < 0 ? " − " : " + ") + t;
+  }
+  return out;
+}
+
+// -------------------------------------------------------------------------
+// Lab 1 — Direction cosines and ratios (NCERT §11.2, Example 3)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "pos"};
+  var EQ = {
+    pos:   {a: 2,  b: 3,  c: 6,  note: "A line in the first octant. All three direction cosines are positive."},
+    neg:   {a: -2, b: -3, c: -6, note: "The same line taken in the opposite direction: every direction cosine changes sign."},
+    axes:  {a: 1,  b: 0,  c: 0,  note: "The x-axis itself. Its direction cosines are (1, 0, 0) — a useful check on zero ratios."},
+    equal: {a: 1,  b: 1,  c: 1,  note: "Equal ratios give equal direction cosines 1/√3, the line that makes equal angles with all three axes."}
+  };
+
+  function draw(){
+    var p = EQ[st.preset];
+    var len = Math.sqrt(p.a * p.a + p.b * p.b + p.c * p.c);
+    var l = p.a / len, m = p.b / len, n = p.c / len;
+    var unit = l * l + m * m + n * n;
+    var ox = 230, oy = 235, sc = 30;
+    var O = { x: ox, y: oy };
+    var m2 = "";
+    // axes
+    m2 += L.arrow(ox, oy, ox + 190, oy + 76, C.faint, 2) + L.text(ox + 202, oy + 84, "x", {size: 15, color: C.muted});
+    m2 += L.arrow(ox, oy, ox - 40, oy - 120, C.faint, 2) + L.text(ox - 52, oy - 128, "z", {size: 15, color: C.muted});
+    m2 += L.arrow(ox, oy, ox + 40, oy - 96, C.faint, 2) + L.text(ox + 52, oy - 108, "y", {size: 15, color: C.muted});
+    // the directed line through the origin, extended both ways
+    var tip = { x: ox + l * 118, y: oy - n * 92 + m * 46 };
+    var back = { x: ox - l * 60, y: oy + n * 46 - m * 23 };
+    m2 += L.line(back.x, back.y, tip.x, tip.y, "#38bdf8", 3);
+    m2 += L.arrow(ox + l * 70, oy - n * 55 + m * 27, tip.x, tip.y, "#38bdf8", 3);
+    m2 += L.circle(ox, oy, 5, C.text);
+    m2 += L.text(tip.x, tip.y - 10, "(" + p.a + ", " + p.b + ", " + p.c + ")", {size: 13, color: "#38bdf8", weight: 700});
+    m2 += L.text(360, 34, "direction angles α, β, γ", {size: 16, color: C.text, weight: 700});
+    m2 += L.text(360, 58, "α = " + L.num(deg(safeAcos(l)), 1) + "°   β = " + L.num(deg(safeAcos(m)), 1) + "°   γ = " + L.num(deg(safeAcos(n)), 1) + "°", {size: 15, color: C.muted});
+    L.svg(m2, "A directed line through the origin with angles to the three coordinate axes.", 290);
+    L.readout([
+      ["Ratios (a, b, c)", "(" + p.a + ", " + p.b + ", " + p.c + ")"],
+      ["Length √(a²+b²+c²)", L.num(len, 3)],
+      ["l = a/length", L.num(l, 3), "#38bdf8"],
+      ["m = b/length", L.num(m, 3), "#38bdf8"],
+      ["n = c/length", L.num(n, 3), "#38bdf8"],
+      ["l² + m² + n²", L.num(unit, 3), C.ok]
+    ]);
+    L.verdict("<b>" + p.note + "</b> No matter which ratios you choose, dividing by the length gives direction cosines with l² + m² + n² = " + L.num(unit, 3) + ". Direction ratios are not unique, but the direction cosines (up to an overall sign) are.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["pos", "First octant (2, 3, 6)"], ["neg", "Opposite direction"], ["axes", "Along the x-axis"], ["equal", "Equal angles (1, 1, 1)"]], st.preset, select);
+    L.legend([["#38bdf8", "directed line"], [C.faint, "coordinate axes"], [C.ok, "unit check"]]);
+    L.watch("Select a direction and compare the three cosines. The length used for division is √(a²+b²+c²).");
+    draw();
+  }
+
+  window.SIMS.dircos = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 2 — Equation of a line in space (NCERT §11.3, Example 6)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "ex6", lam: 1};
+  var LINES = {
+    ex6: {p: [5, 2, -4], d: [3, 2, -8], note: "NCERT Example 6: the classic point-plus-direction line, with one negative direction ratio."},
+    ex4: {p: [1, 2, 3], d: [3, 2, -2], note: "NCERT Exercise 11.2, Q4: the line through (1, 2, 3) parallel to 3i + 2j − 2k."},
+    axis: {p: [2, -1, 4], d: [1, 2, -1], note: "NCERT Exercise 11.2, Q5: through 2i − j + 4k in the direction i + 2j − k."}
+  };
+
+  function fmtPoint(p){
+    return "(" + p[0] + ", " + p[1] + ", " + p[2] + ")";
+  }
+
+  function draw(){
+    var line = LINES[st.preset];
+    var p = line.p, d = line.d;
+    var lam = st.lam;
+    var P = [p[0] + lam * d[0], p[1] + lam * d[1], p[2] + lam * d[2]];
+    var A1 = { x: 250, y: 220 };
+    var sc = 26;
+    var m = "";
+    m += L.line(A1.x - 80, A1.y + 96, A1.x + 330, A1.y - 96, C.faint, 1.5, "6 5");
+    // direction vector at the point
+    var q0 = { x: 210, y: 175 };
+    var q1 = { x: 210 + d[0] * sc * 0.9, y: 175 - d[2] * sc * 0.8 + d[1] * sc * 0.5 };
+    m += L.arrow(q0.x, q0.y, q1.x, q1.y, "#f59e0b", 4);
+    m += L.text(q1.x + 6, q1.y - 8, "b = (" + d[0] + ", " + d[1] + ", " + d[2] + ")", {size: 13, color: "#f59e0b", anchor: "start"});
+    m += L.circle(q0.x, q0.y, 6, C.danger);
+    m += L.text(q0.x - 12, q0.y + 22, "A" + fmtPoint(p), {size: 13, color: C.danger, anchor: "start"});
+    // the moving point at parameter lam
+    var px = 250 + (P[0] * 36 - P[1] * 22);
+    var py = 210 - P[2] * 18 + (P[0] * 12 + P[1] * 12);
+    m += L.line(90, 80, 650, 80, "rgba(148,163,184,.25)", 1);
+    m += L.circle(px, py, 8, "#38bdf8");
+    m += L.text(px, py - 14, "P at λ = " + L.num(lam, 1), {size: 14, color: "#38bdf8"});
+    var t0 = -1.4, t1 = 1.6;
+    var B0 = { x: 250 + ((p[0] + t0 * d[0]) * 36 - (p[1] + t0 * d[1]) * 22), y: 210 - (p[2] + t0 * d[2]) * 18 + ((p[0] + t0 * d[0]) * 12 + (p[1] + t0 * d[1]) * 12) };
+    var B1 = { x: 250 + ((p[0] + t1 * d[0]) * 36 - (p[1] + t1 * d[1]) * 22), y: 210 - (p[2] + t1 * d[2]) * 18 + ((p[0] + t1 * d[0]) * 12 + (p[1] + t1 * d[1]) * 12) };
+    m += L.line(B0.x, B0.y, B1.x, B1.y, "#38bdf8", 2.5);
+    L.svg(m, "Line through a fixed point in a fixed direction, with a second point at parameter lambda.", 290);
+    L.readout([
+      ["Point (x₁, y₁, z₁)", fmtPoint(p)],
+      ["Direction (a, b, c)", fmtPoint(d)],
+      ["Vector form", "r = (" + vecStr(p) + ") + λ(" + vecStr(d) + ")", "#38bdf8"],
+      ["Cartesian form", "(x " + (p[0] < 0 ? "+ " + Math.abs(p[0]) : "− " + p[0]) + ")/" + d[0] + " = (y " + (p[1] < 0 ? "+ " + Math.abs(p[1]) : "− " + p[1]) + ")/" + d[1] + " = (z " + (p[2] < 0 ? "+ " + Math.abs(p[2]) : "− " + p[2]) + ")/" + d[2]],
+      ["Point at λ = " + L.num(lam, 1), fmtPoint(P), C.ok]
+    ]);
+    L.verdict("<b>" + line.note + "</b> Sliding λ moves the marker along the same straight line; λ = 0 returns to the known point A. The vector and Cartesian forms both encode the same point and direction.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["ex6", "Example 6 line"], ["ex4", "Through (1, 2, 3)"], ["axis", "Through 2i − j + 4k"]], st.preset, select);
+    L.controls(L.slider("le-lam", "Parameter λ", -2, 2, 0.5, st.lam, "λ = " + L.num(st.lam, 1)));
+    L.onInput("le-lam", function(v){ st.lam = v; L.setVal("le-lam", "λ = " + L.num(v, 1)); draw(); });
+    L.legend([["#f59e0b", "direction b"], [C.danger, "known point A"], ["#38bdf8", "the line / point at λ"]]);
+    L.watch("Switch lines and slide λ. The readout shows the vector and Cartesian equations side by side.");
+    draw();
+  }
+
+  window.SIMS.lineeq = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 3 — Angle between two lines (NCERT §11.4, Example 8)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "acute"};
+  var PAIRS = {
+    perp:     {d1: [1, 1, 2],  d2: [2, -2, 0], note: "Perpendicular directions: the dot product is exactly zero, so the angle is 90°."},
+    acute:    {d1: [2, 2, 1],  d2: [4, 1, 8],  note: "NCERT Exercise 11.2, Q9(ii): cos θ = 2/3, an acute angle of about 48.2°."},
+    parallel: {d1: [1, 2, 3],  d2: [2, 4, 6],  note: "Parallel directions: one vector is a multiple of the other, so cos θ = 1 and θ = 0°."}
+  };
+
+  function draw(){
+    var pr = PAIRS[st.preset];
+    var d1 = pr.d1, d2 = pr.d2;
+    var dot = d1[0] * d2[0] + d1[1] * d2[1] + d1[2] * d2[2];
+    var n1 = Math.sqrt(d1[0] * d1[0] + d1[1] * d1[1] + d1[2] * d1[2]);
+    var n2 = Math.sqrt(d2[0] * d2[0] + d2[1] * d2[1] + d2[2] * d2[2]);
+    var cosT = Math.abs(dot) / (n1 * n2);
+    var theta = deg(safeAcos(cosT));
+    var ox = 300, oy = 225, sc = 52;
+    var m = "";
+    var A = { x: ox + d1[0] * sc, y: oy - d1[1] * sc };
+    var B = { x: ox + d2[0] * sc * 0.9, y: oy - d2[1] * sc * 0.9 };
+    m += L.line(80, 250, 660, 250, C.faint, 1, "5 5");
+    m += L.arrow(ox, oy, A.x, A.y, "#38bdf8", 4);
+    m += L.arrow(ox, oy, B.x, B.y, "#f59e0b", 4);
+    m += L.circle(ox, oy, 5, C.text);
+    m += L.text(A.x, A.y - 12, "b₁", {size: 15, color: "#38bdf8", weight: 700});
+    m += L.text(B.x, B.y - 12, "b₂", {size: 15, color: "#f59e0b", weight: 700});
+    var arcR = 46;
+    var a1 = Math.atan2(A.y - oy, A.x - ox);
+    var a2 = Math.atan2(B.y - oy, B.x - ox);
+    var big = (Math.abs(a1 - a2) > Math.PI) ? 1 : 0;
+    var sx = ox + arcR * Math.cos(a1), sy = oy + arcR * Math.sin(a1);
+    var ex = ox + arcR * Math.cos(a2), ey = oy + arcR * Math.sin(a2);
+    m += '<path d="M ' + sx + ' ' + sy + ' A ' + arcR + ' ' + arcR + ' 0 ' + big + ' 0 ' + ex + ' ' + ey + '" fill="none" stroke="' + C.ok + '" stroke-width="3"/>';
+    m += L.text(ox + 4, oy - 58, "θ = " + L.num(theta, 1) + "°", {size: 18, color: C.ok, weight: 700});
+    m += L.text(360, 40, "cos θ = |b₁·b₂| / (|b₁||b₂|)", {size: 18, color: C.text, weight: 700});
+    L.svg(m, "Two direction vectors from a common point with the angle between them marked.", 290);
+    L.readout([
+      ["d₁", "(" + d1.join(", ") + ")", "#38bdf8"],
+      ["d₂", "(" + d2.join(", ") + ")", "#f59e0b"],
+      ["d₁ · d₂", L.num(dot, 3)],
+      ["|d₁| · |d₂|", L.num(n1 * n2, 3)],
+      ["cos θ = |dot| / product", L.num(cosT, 3), C.ok],
+      ["θ", L.num(theta, 1) + "°", C.ok]
+    ]);
+    L.verdict("<b>" + pr.note + "</b> The angle uses the absolute value of the dot product, so it is always the acute angle between the two lines.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["acute", "Acute angle"], ["perp", "Perpendicular"], ["parallel", "Parallel"]], st.preset, select);
+    L.legend([["#38bdf8", "direction b₁"], ["#f59e0b", "direction b₂"], [C.ok, "angle θ"]]);
+    L.watch("Select a pair of directions. Compare the dot product with the product of the lengths to read off cos θ.");
+    draw();
+  }
+
+  window.SIMS.anglelines = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 4 — Shortest distance between lines (NCERT §11.5, Examples 9 and 10)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var st = {preset: "skew"};
+  var CASES = {
+    skew:     {a1: [1, 1, 0], b1: [2, -1, 1], a2: [2, 1, -1], b2: [3, -5, 2], note: "NCERT Example 9: the lines are skew, so the common perpendicular gives a positive distance."},
+    parallel: {a1: [1, 2, -4], b1: [2, 3, 6], a2: [3, 3, -5], b2: [2, 3, 6], note: "NCERT Example 10: the directions are equal, so the parallel-line formula applies."},
+    meet:     {a1: [0, 0, 0], b1: [1, 1, 0], a2: [0, 0, 0], b2: [1, 0, 1], note: "The two lines share the origin, so they intersect and the shortest distance collapses to zero."}
+  };
+
+  function cross(u, v){
+    return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+  }
+  function sub(u, v){ return [u[0] - v[0], u[1] - v[1], u[2] - v[2]]; }
+  function dot(u, v){ return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]; }
+  function mag(u){ return Math.sqrt(dot(u, u)); }
+
+  function draw(){
+    var cs = CASES[st.preset];
+    var w = sub(cs.a2, cs.a1);
+    var cr = cross(cs.b1, cs.b2);
+    var parallel = (mag(cr) < 1e-9);
+    var num, den, dist, formula, crossLabel, dispCross;
+    if(parallel){
+      var pcross = cross(cs.b1, w);
+      num = mag(pcross); den = mag(cs.b1); dist = num / den; formula = "d = |b × (a₂ − a₁)| / |b|"; crossLabel = "b × (a₂ − a₁)"; dispCross = pcross;
+    } else {
+      num = Math.abs(dot(w, cr)); den = mag(cr); dist = num / den; formula = "d = |(a₂ − a₁)·(b₁ × b₂)| / |b₁ × b₂|"; crossLabel = "b₁ × b₂"; dispCross = cr;
+    }
+    var m = "";
+    var O = iso(0, 0, 0);
+    m += isoLine(iso(-3, 0, 0), iso(3, 0, 0), C.faint, 1.5);
+    m += isoLine(iso(0, -3, 0), iso(0, 3, 0), C.faint, 1.5);
+    m += isoLine(iso(0, 0, -3), iso(0, 0, 3), C.faint, 1.5);
+    m += L.text(O.x + 170, O.y + 48, "x", {size: 13, color: C.muted}) + L.text(O.x - 52, O.y - 12, "y", {size: 13, color: C.muted}) + L.text(O.x - 6, O.y - 128, "z", {size: 13, color: C.muted});
+    var p1 = iso(cs.a1[0] + cs.b1[0] * -1.2, cs.a1[1] + cs.b1[1] * -1.2, cs.a1[2] + cs.b1[2] * -1.2);
+    var p2 = iso(cs.a1[0] + cs.b1[0] * 1.2, cs.a1[1] + cs.b1[1] * 1.2, cs.a1[2] + cs.b1[2] * 1.2);
+    var q1 = iso(cs.a2[0] + cs.b2[0] * -1.2, cs.a2[1] + cs.b2[1] * -1.2, cs.a2[2] + cs.b2[2] * -1.2);
+    var q2 = iso(cs.a2[0] + cs.b2[0] * 1.2, cs.a2[1] + cs.b2[1] * 1.2, cs.a2[2] + cs.b2[2] * 1.2);
+    m += L.line(p1.x, p1.y, p2.x, p2.y, "#38bdf8", 3);
+    m += L.line(q1.x, q1.y, q2.x, q2.y, "#f59e0b", 3);
+    var A1 = iso(cs.a1[0], cs.a1[1], cs.a1[2]);
+    var A2 = iso(cs.a2[0], cs.a2[1], cs.a2[2]);
+    m += L.circle(A1.x, A1.y, 6, "#38bdf8") + L.circle(A2.x, A2.y, 6, "#f59e0b");
+    if(st.preset !== "meet"){
+      m += L.line(A1.x, A1.y, A2.x, A2.y, C.ok, 3, "6 4");
+      var mx = (A1.x + A2.x) / 2, my = (A1.y + A2.y) / 2;
+      m += L.text(mx + 14, my - 8, "d = " + L.num(dist, 3), {size: 15, color: C.ok, weight: 700});
+    } else {
+      m += L.text(A1.x + 20, A1.y - 14, "d = 0 (they meet)", {size: 15, color: C.ok, weight: 700});
+    }
+    m += L.text(360, 30, formula, {size: 16, color: C.text, weight: 700});
+    L.svg(m, "Two lines in space with the shortest-distance segment drawn between them.", 290);
+    L.readout([
+      [crossLabel, "(" + L.num(dispCross[0], 3) + ", " + L.num(dispCross[1], 3) + ", " + L.num(dispCross[2], 3) + ")"],
+      ["a₂ − a₁", "(" + w[0] + ", " + w[1] + ", " + w[2] + ")"],
+      ["Numerator", L.num(num, 3)],
+      ["Denominator", L.num(den, 3)],
+      ["Shortest distance d", L.num(dist, 3), C.ok]
+    ]);
+    L.verdict("<b>" + cs.note + "</b> " + (parallel ? "Because the directions are parallel, b₁ × b₂ = 0; the parallel-line formula is used instead." : "The numerator is the absolute scalar triple product; dividing by |b₁ × b₂| leaves the perpendicular separation."));
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["skew", "Skew lines (Example 9)"], ["parallel", "Parallel lines (Example 10)"], ["meet", "Intersecting lines"]], st.preset, select);
+    L.legend([["#38bdf8", "line 1"], ["#f59e0b", "line 2"], [C.ok, "shortest segment"]]);
+    L.watch("Switch cases. The cross product of the directions, the triple product and the final distance all update in the readout.");
+    draw();
+  }
+
+  window.SIMS.shortdist = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
 </body>
 </html>

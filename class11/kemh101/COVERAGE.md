@@ -46,3 +46,9 @@ All 49 items mapped with verbatim stems (this reprint) and independently compute
 
 Sections in this 23-page PDF run **1.1–1.10** then Miscellaneous Examples / Exercise / Summary / Historical Note.
 There is **no §1.11 Practical problems on union and intersection**, **no Exercise 1.6**, and **no three-set counting formula** n(A∪B∪C) in the body. Misc. Ex 10 still asks for a pairwise-overlap / empty-triple *witness*, which is not the counting formula. Not invented.
+
+## 2026-09-19 independent standard audit
+
+Corrected Ex1.3 Q2(vi): both 2 and 4 divide 36; corrected the circles-through-origin proof; corrected Ex1.3 Q4 and Misc Q8 starting pages; expanded solutions; added all four Ex1.5 Q5 diagrams and exact Venn-region masks.
+
+All source pages were read via PyMuPDF dict spans; stacked expressions and diagrams were checked in rendered page images. Browser QA: 149 checks, 0 failures, 0 console errors (1280, 390, 768px). Required video research is pending; fixture/mathematics assertions currently pass up to the mandatory video assertion, so **this chapter is not yet complete**. Shared-runtime migration across all14 chapters: 113 lesson/revision routes, no page errors.

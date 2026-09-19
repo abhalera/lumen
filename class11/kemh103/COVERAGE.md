@@ -32,3 +32,7 @@ Sections in this 33-page PDF run **3.1–3.4** then Miscellaneous Examples / Exe
 There is **no §3.5 Trigonometric Equations** and **no general solution of sin x = k**. Half-angles appear only as Misc. Ex 8–10. Not invented.
 
 Stacked fractions (π/6, 19π/3, −1/2, …) were reconstructed from y-order + PNG zooms, never from a linear slash.
+
+## 2026-09-19 standard audit
+
+Read all 33 PDF pages with PyMuPDF dict spans; independently checked angle conversion, arc length, quadrant signs, periodic values, sum/difference identities, multiple-angle and half-angle answers. Confirmed Ex 3.2 Q3 source asks cot x=3/4, so its existing sin=-4/5, cos=-3/5 answer is correct. Added source fixtures, expanded solution steps, simulation data-preset hooks, and video metadata. Final verification: 804 assertions PASS; browser QA 115 checks, 0 failures, 0 console errors; 7 oEmbed-verified videos wired.

@@ -1,49 +1,23 @@
-# Chapter 8: Journey Inside the Atom (iesc108)
-## NCERT Class 9 Science (Exploration 2026-27)
+# COVERAGE — iesc108 Journey Inside the Atom
 
-### 1. Curriculum Coverage & Section Mapping
-| Section | Title | Textbook Pages | Pedagogy Concept ID | Interactive Lab |
-| :--- | :--- | :--- | :--- | :--- |
-| **8.1** | Rediscovering the Roots of Atomic Theory | 140–142 | `c1`: Roots & Thomson Model | `lab_roots_thomson` |
-| **8.2.1** | Thomson's Model of an Atom | 142–143 | `c1`: Roots & Thomson Model | `lab_roots_thomson` |
-| **8.2.2** | Testing Thomson's Model: The Gold Foil Experiment | 143–146 | `c2`: Rutherford Gold Foil | `lab_rutherford` |
-| **8.2.3** | Bohr's Model of the Atom | 146–148 | `c3`: Bohr's Quantized Model | `lab_bohr` |
-| **8.3 & 8.3.1**| Subatomic Particles & Discovery of the Neutron | 148–150 | `c4`: Subatomic Trio & BARC | `lab_subatomic` |
-| **8.4, 8.5, 8.6** | Symbols, Atomic Number & Mass Number | 150–153 | `c5`: Atomic & Mass Numbers | `lab_atomic_mass_number` |
-| **8.7 & 8.8** | Electron Distribution (Bohr-Bury) & Valency | 153–156 | `c6`: Bohr-Bury Scheme & Valency | `lab_bohr_bury` |
-| **8.9** | Isotopes, Isobars & Real-World Tech | 156–160 | `c7`: Isotopes, Isobars & Tech | `lab_isotopes_isobars` |
+**Source:** `books/originals/Class09-Science_iesc108.pdf`, 22 PDF pages. Printed page = PDF page + 139.
+**Build:** `python3 scripts/build_chapter.py iesc108`.
+**Checks:**
+- `node output/Class09/iesc108/tests/verify.cjs`
+- `browser_qa.cjs output/Class09/iesc108`
 
-### 2. Activities & Experiments Mapped
-- **Activity 8.1 (p. 143):** Electrostatic deflection of cathode rays $\to$ Simulated in `lab_roots_thomson`.
-- **Activity 8.2 (p. 144):** Alpha scattering through gold foil $\to$ Simulated in `lab_rutherford`.
-- **Activity 8.3 (p. 147):** Energy level transitions and spectral lines $\to$ Modeled in `lab_bohr`.
-- **Activity 8.4 (p. 149):** Neutron scattering at Dhruva reactor $\to$ Simulated in `lab_subatomic`.
-- **Activity 8.5 (p. 152):** Constructing atomic species $^{A}_{Z}X$ $\to$ Simulated in `lab_atomic_mass_number`.
-- **Activity 8.6 (p. 154):** Bohr-Bury shell filling for first 18 elements $\to$ Simulated in `lab_bohr_bury`.
-- **Activity 8.7 (p. 157):** Calculating fractional chlorine atomic mass $\to$ Modeled in `lab_isotopes_isobars`.
+| # | Concept | PDF pp. | NCERT items | Lab |
+|---|---|---|---|---|
+| 1 | Atomic theory, electron, Thomson's model | 1–4 | Think It Over, 8.1, 8.2, 8.2.1, Figs. 8.1–8.3, Note, Meet a Scientist (Thomson), Pause & Ponder 1–3 | `cathode`: tube (same rays for all gases), field, neutral model, P&P 1 unbalanced |
+| 2 | Gold foil experiment, Rutherford's model | 4–6 | 8.2.2, A–C, Figs. 8.4–8.6, Ready to Go Beyond (paper), Think as a Scientist, Meet a Scientist (Rutherford), Pause & Ponder 4–7 | `goldFoil`: Thomson's prediction, result, thick foil (counts illustrative), collapse |
+| 3 | Bohr's model | 7 | 8.2.3, Fig. 8.7, Threads of Curiosity (K, L, M), Next Level Up, Meet a Scientist (Bohr) | `bohr`: shells, L→M absorb, M→L release, stationary state |
+| 4 | Neutron and symbols of elements | 8–10 | 8.3, 8.3.1, Table 8.1, Threads of Curiosity, Ready to Go Beyond, Meet a Scientist (Chadwick), What if, BARC (Fig. 8.8), 8.4, Fig. 8.9, Table 8.2, Pause & Ponder 8–9 | `neutronSymbols`: helium puzzle, particles, C/O/Fe/U nuclei, Latin names |
+| 5 | Atomic number and mass number | 10–11 | 8.5, 8.6, Fig. 8.10, Table 8.3, notation, Pause & Ponder 10–13 | `atomBuilder`: Li, C-12, P&P 10, sliders |
+| 6 | Electron distribution and valency | 12–14 | 8.7, 8.7.1, Fig. 8.11, Table 8.4, Pause & Ponder 14–16, 8.8 | `shells`: H→Ar stepping, Na, O, C, Ar |
+| 7 | Isotopes, average atomic mass, isobars | 15–18 | 8.9, 8.9.1, Figs. 8.12–8.16, uses of isotopes (Fig. 8.14), 8.9.1 A, Pause & Ponder 17–18, 8.9.2, STM/TEM, Meet a Scientist (Bhabha), At a Glance | `isotopes`: H, C, chlorine 35.5 u, bromine 80.0 u, isobars A = 40 |
 
-### 3. Worked Examples Mapped
-- **Worked Example 8.1:** Historical comparison: Kanada's parmanu vs Dalton's atomic theory.
-- **Worked Example 8.2:** Cricket ball scale comparison of nuclear vs atomic dimensions.
-- **Worked Example 8.3:** Bohr shell transition $\Delta E = h\nu$ and photon absorption.
-- **Worked Example 8.4:** Subatomic inventory ($e^-, p^+, n^0$) comparison matrix.
-- **Worked Example 8.5:** Gold $^{197}_{79}\text{Au}$ subatomic count calculation.
-- **Worked Example 8.6:** Electronic configurations and valencies for $Na, Si, Ar$.
-- **Worked Example 8.7:** Bromine fractional average atomic mass calculation ($80.0\text{ u}$).
-
-### 4. End-of-Chapter Exercises Mapped (15/15)
-- Q1: Rutherford gold foil statements analysis
-- Q2: Bohr model statements & reasons
-- Q3: Nuclear species X, Y, Z (Isotopes & Isobars)
-- Q4: Rutherford's deductions on the atomic nucleus
-- Q5: Chronological sequence of atomic models
-- Q6: Electrostatic centripetal attraction holding orbiting electrons
-- Q7: Assertion & Reason on subatomic particles
-- Q8: Magnesium subatomic inventory & Bohr-Bury concentric shell diagram
-- Q9: Fig 8.17 atomic schematics: Lithium, Carbon, Sodium, Oxygen
-- Q10: Atomic stability: Maxwell electromagnetic collapse vs Bohr stationary states
-- Q11: Neutron count in $^{70}\text{X}$ with 31 electrons (Gallium-70: 39 neutrons)
-- Q12: Subatomic composition of Gold ($79\text{p}, 118\text{n}, 79\text{e}$)
-- Q13: Table 8.5 nuclide completion (Boron, Nitrogen, Magnesium, Phosphorus, Hydrogen)
-- Q14: Aman discussion on element X (Chlorine-35 and Chlorine-37 isotopes)
-- Q15: Hypothetical heavy electron thought experiment
+**Exercises:** all 15.
+- **Fig. 8.17:** redrawn with per-shell electron counts read from a high-zoom render of PDF page 20: (a) 2, 1; (b) 2, 5; (c) 2, 8, 3; (d) 2, 7.
+- **Q8:** the answer includes a drawn magnesium atom.
+- **Table 8.5 (Q13):** confirmed from the page image.
+- **Q15:** uses the standard electron-to-proton mass ratio, about 1/1840, which the chapter does not give; this is stated in the solution.

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chapter 13: Statistics — Interactive Textbook</title>
 <style>
+
 :root {
   --ink: #152637;
   --muted: #536678;
@@ -109,16 +110,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
-@media (max-width: 480px) {
-  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
-  .progress-pill { display: none; }
-  .diagram-wrap, .sim-mount-container, .lab-card, .eq-math { max-width: 100%; overflow-x: auto; }
-  svg.diagram { max-width: 100%; height: auto; }
-  main, #main-content { overflow-x: hidden; max-width: 100%; }
-}
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -146,7 +142,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -161,15 +157,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -180,7 +176,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -192,7 +188,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -219,11 +235,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -293,9 +312,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -476,8 +497,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -608,9 +629,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -660,7 +681,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -747,7 +770,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -939,10 +964,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -1009,14 +1067,168 @@ button.btn-secondary {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
+}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
+}
+
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
+
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
+
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
 
 </style>
 </head>
@@ -1063,9 +1275,11 @@ button.btn-secondary {
 <footer style="padding:12px 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)">NCERT © NCERT — educational use. Verify edition at <a href="https://ncert.nic.in/textbook.php">ncert.nic.in/textbook.php</a>.</footer>
 
 <script>
-window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathematics", "title": "Statistics", "subtitle": "Dispersion: range, mean deviation (raw and grouped), variance and standard deviation, the step-deviation shortcut, and the effect of change of origin and scale.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh113.pdf", "page_start": 257, "page_end": 288, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "intro-range", "nav": "Why dispersion? Range", "title": "Two batsmen, one average — range exposes the scatter.", "deck": "Batsmen A and B both average 53 with median 53. A’s scores run 0 to 117 (range 117); B’s run 46 to 60 (range 14). Central tendency is not enough.", "minutes": 8, "section": "13.1–13.3", "pages": [1, 3], "print": "257–259", "sim": "batsmen", "simTitle": "Fig. 13.1–13.2 batsmen A vs B", "quick": ["Statistics analyses data to support decisions. We already know the three measures of <strong>central tendency</strong> — mean, median, mode — which locate a typical value. They do not say how tightly the data hug that value.", "Batsman A: 30, 91, 0, 64, 42, 80, 30, 5, 117, 71. Batsman B: 53, 46, 48, 50, 53, 53, 58, 60, 57, 52. Both have mean 53 and median 53 (zoom p.1–2). Fig. 13.1 shows A scattered from 0 to 117; Fig. 13.2 shows B clustered near 53.", "<strong>§13.2</strong> names four measures of dispersion: range, quartile deviation, mean deviation, standard deviation. This chapter studies all except quartile deviation. <strong>§13.3 Range</strong> = maximum − minimum. Range(A) = 117 − 0 = 117, Range(B) = 60 − 46 = 14. Range is a rough first look; it ignores everything between the extremes and does not use a central value."], "formulas": [{"label": "Mean", "html": "x̄ = (1/n) Σ xᵢ", "cond": "zoom p.2"}, {"label": "Range", "html": "Range = Maximum − Minimum", "cond": "§13.3"}], "deeper": "A selector who only reads averages would call A and B equals. Anyone who has watched a Ranji collapse knows better: A can make 0 or 117; B will grind 50. Dispersion is the statistical name of reliability.", "worked": "Mean of A: (30+91+0+64+42+80+30+5+117+71)/10 = 530/10 = 53. Sorted A: 0,5,30,30,42,64,71,80,91,117 — median (42+64)/2 = 53. Range 117.", "prediction": {"prompt": "A and B have the same mean and median. Who is the more consistent scorer?", "options": ["B — the dots in Fig. 13.2 sit in a 14-run window.", "A — a higher maximum means a better batter.", "They are equally consistent because the averages match."], "answer": 0, "explanation": "Consistency is low dispersion. Range 14 vs 117, and the number-line plots, both pick B."}, "connect": [["Ranji vs T20 openers", "A specialist Test opener’s scores look like B; a T20 pinch-hitter looks like A. Selectors quote both average and strike-rate / standard deviation."], ["Wow — the average lied", "Two cities can share a mean temperature of 25 °C: one is Goa (day 32, night 18), the other is Bengaluru (26 and 24). Range, not the mean, is the packing list.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "Write the range formula and quote Range(A) and Range(B) from the opening example.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Range equals", "options": ["maximum − minimum", "mean − median", "sum of deviations from the mean"], "answer": 0, "hint": "§13.3.", "solution": "A single number: extreme minus extreme.", "wrong": ["", "Those can even be zero together, as here.", "That sum is always 0."]}, {"level": "Medium", "type": "number", "prompt": "Batsman B’s scores run from 46 to 60. The range is", "answer": 14, "unit": "", "tolerance": 0.01, "hint": "60 − 46.", "solution": "14 runs."}, {"level": "Hard", "type": "mcq", "prompt": "Why is range a poor complete measure of dispersion?", "options": ["It ignores all observations between the two extremes and does not use a central value", "It is always zero", "It can only be used for grouped data"], "answer": 0, "hint": "Zoom p.3 after the definition.", "solution": "One outlier sets the range. Mean deviation and SD use every point.", "wrong": ["", "Only if max = min.", "Range is defined for raw lists first."]}]}, {"id": "md-ungrouped", "nav": "Mean deviation (ungrouped)", "title": "Take absolute deviations — because the signed ones sum to zero.", "deck": "M.D.(x̄) = (1/n) Σ |xᵢ − x̄|, M.D.(M) = (1/n) Σ |xᵢ − M|. Example 1: eight scores, mean 9, M.D. = 2.75.", "minutes": 10, "section": "13.4.1", "pages": [3, 6], "print": "259–262", "sim": "mdungroup", "simTitle": "Example 1: absolute deviations about the mean", "quick": ["The deviation of x from a fixed a is x − a. The mean of signed deviations from x̄ is always 0, so it cannot measure scatter. We therefore take <strong>absolute</strong> deviations and average them.", "<strong>Ungrouped data:</strong> M.D.(x̄) = (1/n) Σ |xᵢ − x̄| and M.D.(M) = (1/n) Σ |xᵢ − M|, where M is the median (denoted M in this chapter).", "Example 1 (zoom p.5): 6, 7, 10, 12, 13, 4, 8, 12. Mean = 72/8 = 9. Absolute deviations 3, 2, 1, 3, 4, 5, 1, 3 sum to 22. M.D.(x̄) = 22/8 = <strong>2.75</strong>."], "formulas": [{"label": "M.D. about mean", "html": "M.D.(x̄) = (1/n) Σ |xᵢ − x̄|", "cond": "ungrouped"}, {"label": "M.D. about median", "html": "M.D.(M) = (1/n) Σ |xᵢ − M|", "cond": "M = median"}], "deeper": "Among all choices of the centre c, Σ |xᵢ − c| is minimised when c is a median. That is why M.D.(M) is often slightly smaller than M.D.(x̄). Example 3 uses the median; Example 2 is a longer raw list with mean 10.", "worked": "Example 1 step-by-step (zoom p.5): sum = 72, n = 8, x̄ = 9. Deviations −3, −2, 1, 3, 4, −5, −1, 3. Moduli 3+2+1+3+4+5+1+3 = 22. Divide by 8.", "prediction": {"prompt": "Why do we take |xᵢ − x̄| rather than (xᵢ − x̄) when measuring dispersion?", "options": ["The signed deviations from the mean sum to 0, so their mean is useless as a measure of scatter.", "Absolute values are always integers.", "The median is defined using absolute values."], "answer": 0, "explanation": "Zoom p.3: mean of deviations = 0/n = 0. The modulus stops the plus and minus from cancelling."}, "connect": [["Batting average vs how wildly you swing", "A batter averaging 40 with scores 0 and 80 has M.D. 40; another averaging 40 with 38 and 42 has M.D. 2. Selectors in the Indian dressing room feel this even if they never write the formula."], ["Wow — the mean is a fulcrum", "Signed deviations are forces on a seesaw. They balance (sum to 0). Mean deviation is the average length of those lever-arms.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "Write both ungrouped M.D. formulae and recompute Example 1’s 2.75.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The mean of signed deviations from x̄ is", "options": ["always 0", "the mean deviation", "the range"], "answer": 0, "hint": "Zoom p.3.", "solution": "Σ (xᵢ − x̄) = Σ xᵢ − n x̄ = 0.", "wrong": ["", "M.D. uses the modulus.", "Different formula."]}, {"level": "Medium", "type": "number", "prompt": "Example 1: 6,7,10,12,13,4,8,12. M.D. about the mean is", "answer": 2.75, "unit": "", "tolerance": 0.01, "hint": "22/8.", "solution": "Mean 9, Σ|dev| = 22, 22/8 = 2.75."}, {"level": "Hard", "type": "number", "prompt": "Ex 13.1 Q1: 4,7,8,9,10,12,13,17. M.D. about the mean is", "answer": 3, "unit": "", "tolerance": 0.05, "hint": "Mean = 10, Σ|dev| = 24.", "solution": "(6+3+2+1+0+2+3+7)/8 = 24/8 = 3."}]}, {"id": "md-grouped", "nav": "Mean deviation (grouped)", "title": "Replace a class by its mark, then weight by frequency.", "deck": "M.D.(x̄) = Σ fᵢ |xᵢ − x̄| / N with N = Σ fᵢ. For a continuous series the median uses l + ((N/2 − C)/f)·h, then the same weighted absolute deviations.", "minutes": 10, "section": "13.4.2", "pages": [7, 15], "print": "263–271", "sim": "histmean", "simTitle": "Histogram + mean: Exercise 13.1 Q9–Q10", "quick": ["Data may be a discrete frequency distribution or a continuous (grouped) one. In both cases each distinct xᵢ (or class mark) carries frequency fᵢ, N = Σ fᵢ.", "<strong>Grouped M.D.:</strong> M.D.(x̄) = Σ fᵢ |xᵢ − x̄| / N and M.D.(M) = Σ fᵢ |xᵢ − M| / N (zoom p.31). For a continuous series the median is taken from the median class: M = l + ((N/2 − C)/f) · h.", "Example 7 (zoom p.14): N = 50, median class 20–30, C = 13, f = 15, h = 10 ⇒ M = 20 + (25−13)/15 · 10 = 28. Then M.D.(M) = 508/50 = 10.16."], "formulas": [{"label": "Grouped M.D. about mean", "html": "M.D.(x̄) = Σ fᵢ |xᵢ − x̄| / N", "cond": "xᵢ = class mark, N = Σ fᵢ"}, {"label": "Median (continuous)", "html": "M = l + ((N/2 − C)/f) · h", "cond": "l = lower limit of median class"}], "deeper": "§13.4.3 (zoom p.15): M.D. about the median is not reliable when variability is huge; M.D. about the mean is always at least as large; and because of the modulus, M.D. does not enjoy further algebraic identities. That is the door to variance.", "worked": "Ex 13.1 Q5: x = 5,10,15,20,25; f = 7,4,6,3,5. N = 25, Σ f x = 350, x̄ = 14. Σ f |x−14| = 7·9 + 4·4 + 6·1 + 3·6 + 5·11 = 158. M.D. = 158/25 = 6.32.", "prediction": {"prompt": "In a continuous frequency distribution, the xᵢ used in M.D. is", "options": ["the class mark (mid-value) of each class", "the lower limit of each class", "the frequency itself"], "answer": 0, "explanation": "Every class is represented by its midpoint. The histogram lab paints that midpoint as the orange dot on each bar."}, "connect": [["ASER survey income-classes", "Household income is published in class intervals exactly like Ex 13.1 Q9. The mean and M.D. the report quotes are these weighted-midpoint formulae."], ["Wow — a histogram is a mean-deviation machine", "Each bar is fᵢ units high and |xᵢ − x̄| away from the green mean line. The formula is literally the first moment of those horizontal distances.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "Write the grouped M.D. formula and the median-class formula.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "N in the grouped formulae is", "options": ["Σ fᵢ, the total frequency", "the number of classes", "the class width"], "answer": 0, "hint": "Zoom p.31.", "solution": "Total number of observations.", "wrong": ["", "That is how many bars you drew.", "h."]}, {"level": "Medium", "type": "number", "prompt": "Ex 13.1 Q6: x = 10,30,50,70,90; f = 4,24,28,16,8. M.D. about the mean is", "answer": 16, "unit": "", "tolerance": 0.05, "hint": "N=80, mean=50, Σ f|dev|=1280.", "solution": "1280/80 = 16."}, {"level": "Hard", "type": "number", "prompt": "Example 7: N=50, l=20, C=13, f=15, h=10. The median is", "answer": 28, "unit": "", "tolerance": 0.05, "hint": "20 + (25−13)/15 × 10.", "solution": "20 + 8 = 28."}]}, {"id": "variance-ungrouped", "nav": "Variance and SD (raw)", "title": "Square the deviations so they cannot cancel — then take a root to restore units.", "deck": "σ² = (1/n) Σ (xᵢ − x̄)², σ = √σ². Set A of six points has Σ squares 1750; set B of 31 points has 2480 — yet B is less dispersed per observation. Example 8: σ² = 33, σ ≈ 5.74.", "minutes": 10, "section": "13.5–13.5.1", "pages": [15, 19], "print": "271–275", "sim": "variance", "simTitle": "Squared-deviation bars: set A vs B vs Example 8", "quick": ["Absolute values block algebraic identities. Squaring also yields a non-negative quantity, and large deviations dominate (a feature, not a bug, for many data sets).", "The raw sum Σ (xᵢ − x̄)² grows with n, so we <strong>average</strong>: variance σ² = (1/n) Σ (xᵢ − x̄)². Units of σ² are the square of the data’s units, so the proper companion is the <strong>standard deviation</strong> σ = √σ² (zoom p.18).", "Zoom p.16 comparison: set A = {5,15,25,35,45,55}, mean 30, Σ squares = 1750. Set B = {15,16,…,45}, mean 30, Σ squares = 2480 = 2·[15·16·31/6]. After dividing by n, A is more dispersed."], "formulas": [{"label": "Variance (ungrouped)", "html": "σ² = (1/n) Σ (xᵢ − x̄)²", "cond": "NCERT uses 1/n, not 1/(n−1)"}, {"label": "Standard deviation", "html": "σ = √[(1/n) Σ (xᵢ − x̄)²]", "cond": "same units as x"}], "deeper": "Example 8 (zoom p.18–19): 6,8,…,24. Assumed mean 14, h = 2, step deviations −4…+5. Mean = 14 + (5/10)·2 = 15. Σ (x−x̄)² = 330, σ² = 33, σ = √33 ≈ 5.74.", "worked": "Set A: (5−30)² six-fold pattern 625+225+25+25+225+625 = 1750. Variance 1750/6 ≈ 291.67, σ ≈ 17.08. Set B: 2480/31 = 80, σ ≈ 8.94.", "prediction": {"prompt": "Why is σ, not σ², called the ‘proper’ measure of dispersion in §13.5.1?", "options": ["Because σ² has squared units, while σ returns to the units of the observations.", "Because σ² can be negative.", "Because σ is always an integer."], "answer": 0, "explanation": "Variance of heights in cm is in cm² — not a length. SD is a length, comparable to the mean."}, "connect": [["JEE marks vs board marks", "Two papers can share a mean of 60. A paper with σ = 5 is a tight board-style paper; σ = 20 is a JEE-style paper that separates ranks. Variance is the examiner’s spread."], ["Wow — squares punish outliers", "A single 117 in batsman A contributes (117−53)² = 4096 to the sum of squares, dwarfing a 54. SD listens to extremes more loudly than M.D. does.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "Write σ² and σ for ungrouped data. Quote Example 8’s 33 and √33.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "NCERT’s variance of n observations is", "options": ["(1/n) Σ (xᵢ − x̄)²", "(1/(n−1)) Σ (xᵢ − x̄)²", "Σ |xᵢ − x̄| / n"], "answer": 0, "hint": "Zoom p.18. (The n−1 form is sample variance in later courses.)", "solution": "Population-style 1/n throughout this chapter.", "wrong": ["", "Not used here.", "That is M.D."]}, {"level": "Medium", "type": "number", "prompt": "Example 8: Σ (xᵢ − x̄)² = 330, n = 10. Variance is", "answer": 33, "unit": "", "tolerance": 0.01, "hint": "330/10.", "solution": "33."}, {"level": "Hard", "type": "number", "prompt": "Set A: Σ (x−30)² = 1750, n = 6. Variance to nearest integer is", "answer": 292, "unit": "", "tolerance": 1, "hint": "1750/6 ≈ 291.67.", "solution": "1750/6 = 291.6…, nearest 292."}]}, {"id": "sd-frequency", "nav": "SD of frequency distributions", "title": "Weight each squared deviation by fᵢ — discrete or continuous.", "deck": "σ² = (1/N) Σ fᵢ (xᵢ − x̄)². Example 9: N = 30, x̄ = 14, Σ f(x−x̄)² = 1374, σ² = 45.8. A computational identity uses Σ f x² − (Σ f x)² / N.", "minutes": 10, "section": "13.5.2–13.5.3", "pages": [19, 23], "print": "275–279", "sim": "freqsd", "simTitle": "Example 9: discrete frequency SD", "quick": ["<strong>Discrete frequency:</strong> σ = √[(1/N) Σ fᵢ (xᵢ − x̄)²] with N = Σ fᵢ (zoom p.19). Example 9 table: x = 4,8,11,17,20,24,32; f = 3,5,9,5,4,3,1. N = 30, Σ f x = 420, x̄ = 14, Σ f(x−x̄)² = 1374, σ² = 45.8, σ ≈ 6.77.", "<strong>Continuous:</strong> the same formula with xᵢ the class marks. An equivalent computing form (zoom p.31) is σ = (1/N) √[ N Σ f x² − (Σ f x)² ].", "Examples 10–11 practise the continuous case (mean, variance, SD of a grouped table)."], "formulas": [{"label": "Discrete / continuous SD", "html": "σ² = (1/N) Σ fᵢ (xᵢ − x̄)²", "cond": "xᵢ = value or class mark"}, {"label": "Computing formula", "html": "σ = (1/N) √[N Σ fᵢ xᵢ² − (Σ fᵢ xᵢ)²]", "cond": "avoids a pre-computed mean"}], "deeper": "The computing formula is just (1/N) Σ f(x − x̄)² expanded: Σ f x² − 2 x̄ Σ f x + N x̄², and Σ f x = N x̄. It is algebra, not a new definition.", "worked": "Example 9: 3(4−14)² + 5(8−14)² + 9(11−14)² + 5(17−14)² + 4(20−14)² + 3(24−14)² + 1(32−14)² = 300+180+81+45+144+300+324 = 1374. 1374/30 = 45.8.", "prediction": {"prompt": "If every frequency fᵢ is doubled, N doubles and Σ f (x−x̄)² doubles, so σ²", "options": ["is unchanged — the extra copies do not spread the data", "doubles", "halves"], "answer": 0, "explanation": "σ² is an average of squared deviations. Scaling all frequencies by k scales numerator and denominator by k."}, "connect": [["Board-exam mark tables", "CBSE’s subject-wise mark distributions are published as grouped frequencies. The ‘standard deviation of marks’ quoted in analysis is this formula with class marks."], ["Wow — doubling every bar does nothing to σ", "Two identical copies of a data set have the same scatter. Frequency is a weight, not a stretch.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "Write σ² for a frequency distribution and recompute 1374/30 = 45.8.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 9: N = 30, Σ f x = 420. The mean is", "answer": 14, "unit": "", "tolerance": 0.01, "hint": "420/30.", "solution": "14."}, {"level": "Medium", "type": "number", "prompt": "Example 9: Σ f(x−x̄)² = 1374, N = 30. Variance is", "answer": 45.8, "unit": "", "tolerance": 0.05, "hint": "1374/30.", "solution": "45.8."}, {"level": "Hard", "type": "mcq", "prompt": "The computing formula σ = (1/N)√[N Σ f x² − (Σ f x)²] is", "options": ["algebraically identical to (1/N) Σ f (x−x̄)²", "a different definition used only for continuous data", "valid only when the mean is an integer"], "answer": 0, "hint": "Expand (x−x̄)².", "solution": "An expansion, not a new meaning.", "wrong": ["", "Works for discrete too.", "No such restriction."]}]}, {"id": "shortcut-scale", "nav": "Shortcut, origin and scale", "title": "y = (x − A)/h turns ugly numbers into small integers — and scales σ by |h|.", "deck": "x̄ = A + h ȳ, σₓ² = h² σᵧ². Adding a constant leaves σ unchanged; multiplying by a multiplies σ by |a|. Miscellaneous Exercise 13 is this algebra in numbers.", "minutes": 11, "section": "13.5.4 + Misc.", "pages": [23, 31], "print": "279–287", "sim": "shortcut", "simTitle": "Step-deviation: A and h sliders on Example 8", "quick": ["<strong>§13.5.4 shortcut</strong> (zoom p.23–24): choose an assumed mean A and a scale h (class width, or any convenient number). Set yᵢ = (xᵢ − A)/h. Then x̄ = A + h ȳ and σₓ² = h² σᵧ², with σᵧ² computed on the y’s.", "Change of origin (add a to every x): new mean = old mean + a, variance unchanged (Example 15). Change of scale (multiply by a ≠ 0): new mean = a x̄, new variance = a² σ² (Misc Q4).", "Miscellaneous Exercise: recover two missing observations from mean and variance (Q1, Q2); scale a list by 3 (Q3); correct a wrongly recorded 8 (Q5); drop three wrong values (Q6)."], "formulas": [{"label": "Shortcut", "html": "yᵢ = (xᵢ − A)/h, &nbsp; x̄ = A + h ȳ, &nbsp; σₓ² = h² σᵧ²", "cond": "§13.5.4"}, {"label": "Scale", "html": "mean(a x) = a x̄, &nbsp; var(a x) = a² σ²", "cond": "a ≠ 0; Misc Q4"}], "deeper": "Example 16 (zoom p.29) is a classic ‘wrong mean and SD, three observations mis-recorded’ correction — the same Σ x and Σ x² update as Misc Q5–Q6. Variance of 20 observations is 5; multiply each by 2 ⇒ variance 20 (Example 13).", "worked": "Misc Q1: eight observations, mean 9, variance 9.25. Six of them 6,7,10,12,12,13. Let the others be a,b. a+b = 12 and a²+b² = 80 ⇒ ab = 32 ⇒ {4, 8}.", "prediction": {"prompt": "Each of 6 observations with mean 8 and SD 4 is multiplied by 3. The new SD is", "options": ["12", "4", "36"], "answer": 0, "explanation": "Misc Q3: SD scales by |a| = 3. Variance would scale by 9 (to 144), but the question asks SD."}, "connect": [["Celsius to Fahrenheit is a scale-and-origin change", "F = 1.8 C + 32. SD in °F is 1.8 times SD in °C; the +32 does nothing to spread. Weather-report variability converts exactly by §13.5.4."], ["Wow — two missing marks from mean and variance", "Misc Q1 is a quadratic: a+b and a²+b² fix the pair. The ‘unknown scores’ problem in board exams is this chapter’s algebra, not guesswork.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "Write x̄ = A + h ȳ and σₓ = |h| σᵧ. State the effect of y = a x + b on mean and SD.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Adding 5 to every observation", "options": ["adds 5 to the mean and leaves SD unchanged", "adds 5 to the SD", "multiplies the variance by 25"], "answer": 0, "hint": "Example 15.", "solution": "Origin shift.", "wrong": ["", "SD is translation-invariant.", "That is a scale of 5."]}, {"level": "Medium", "type": "number", "prompt": "Misc Q3: mean 8, SD 4, each observation × 3. New mean is", "answer": 24, "unit": "", "tolerance": 0.01, "hint": "3 × 8.", "solution": "24; new SD = 12."}, {"level": "Hard", "type": "number", "prompt": "Eight observations, mean 9, six of them sum to 60. The two missing values sum to", "answer": 12, "unit": "", "tolerance": 0.01, "hint": "Misc Q1: 8×9 − 60.", "solution": "72 − 60 = 12. Combined with variance they are 4 and 8."}]}, {"id": "md-limit-vs-sd", "nav": "Why SD over mean deviation", "title": "Modulus blocks algebra; squares open a toolbox.", "deck": "§13.4.3: M.D. cannot be pushed further. Variance is the second moment — it combines, scales, and corrects. Historical note: statistics as ‘status’, Arthashastra, Ain-i-Akbari, Graunt, Bernoulli’s law of large numbers.", "minutes": 8, "section": "13.4.3 + Historical Note", "pages": [15, 31], "print": "271, 287", "sim": "scale", "simTitle": "Origin vs scale: what happens to σ", "quick": ["Limitations of mean deviation (zoom p.15): (i) when variability is huge the median is a poor centre, so M.D.(M) misleads; (ii) M.D.(x̄) ≥ M.D.(M), and using the mean with a modulus is slightly unsatisfactory; (iii) the modulus refuses further algebraic treatment. Hence variance / SD.", "Once you have Σ x and Σ x² you can correct a wrong observation (Example 16, Misc Q5, Q6) without revisiting the whole list — something M.D. cannot do, because you cannot recover Σ |x − x̄| after the mean has moved.", "Historical note (zoom p.31): Latin <em>status</em>; a census in Egypt c. 3050 BCE; Kautilya’s Arthashastra; Abul Fazl’s Ain-i-Akbari; John Graunt (1620–1674) as father of vital statistics; Jacob Bernoulli’s Law of Large Numbers in <em>Ars Conjectandi</em> (1713)."], "formulas": [{"label": "Correction identity", "html": "σ² = (Σ xᵢ²)/n − (x̄)²", "cond": "lets you update Σ x² when one value is fixed"}, {"label": "Combined scale", "html": "var(a x + b) = a² var(x)", "cond": "origin b drops out"}], "deeper": "Misc Q5: 20 observations, mean 10, SD 2, so Σ x = 200, Σ x² = 20(4+100) = 2080. Dropping the wrong 8: n = 19, Σ x = 192, Σ x² = 2016, new mean 192/19 ≈ 10.11, new σ ≈ 2.00. Replacing 8 by 12: mean 10.2, σ ≈ 1.99.", "worked": "Example 13: variance of 20 observations is 5. Each multiplied by 2 (the book uses 2). New variance = 4 × 5 = 20. (Misc Q3 is the SD version with a = 3.)", "prediction": {"prompt": "You discover one observation was 8 instead of 12. Which measure can you correct from Σ x and Σ x² alone?", "options": ["Mean and SD (variance uses squares)", "Mean deviation (it uses moduli)", "Range (it uses only min and max)"], "answer": 0, "explanation": "Σ |x − x̄| cannot be updated without knowing on which side of the (new) mean each point sits. Squares have no such branch."}, "connect": [["Census of India error-correction", "A district office that typed 8 instead of 12 in one taluk’s count uses exactly Misc Q5: adjust Σ x and Σ x², republish mean and SD. They cannot similarly patch a published M.D. without the microdata."], ["Wow — Bernoulli 1713 is this book’s last word", "The Law of Large Numbers is why a 100-observation SD (Misc Q6) is worth correcting carefully: the SD is already a stable property of the population, not of one typo.", [{"t": "NCERT Mathematics — official chapter PDF", "u": "https://ncert.nic.in/textbook/pdf/kemh113.pdf"}]]], "recall": "State three limitations of M.D. and the identity σ² = (Σ x²)/n − x̄².", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A reason SD is preferred to M.D. in §13.4.3 is that", "options": ["the modulus cannot be treated algebraically further", "SD is always smaller", "M.D. can be negative"], "answer": 0, "hint": "Zoom p.15 last lines.", "solution": "Squares open the algebra of Examples 13–16.", "wrong": ["", "Not a theorem.", "Both are ≥ 0."]}, {"level": "Medium", "type": "number", "prompt": "20 observations, mean 10, one value 8 replaced by 12. New mean is", "answer": 10.2, "unit": "", "tolerance": 0.02, "hint": "Misc Q5(ii): Σ x becomes 204.", "solution": "204/20 = 10.2."}, {"level": "Hard", "type": "number", "prompt": "Variance of 20 observations is 5. Each is multiplied by 2. New variance is", "answer": 20, "unit": "", "tolerance": 0.01, "hint": "Example 13: a² σ².", "solution": "4 × 5 = 20."}]}], "exercises": [{"number": "13.1.1", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the mean: 4, 7, 8, 9, 10, 12, 13, 17.", "steps": ["n = 8, Σ x = 80, x̄ = 10.", "|dev| = 6, 3, 2, 1, 0, 2, 3, 7; sum = 24.", "M.D. = 24/8 = 3."], "answer": "3", "section": "13.1"}, {"number": "13.1.2", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the mean: 38, 70, 48, 40, 42, 55, 63, 46, 54, 44.", "steps": ["n = 10, Σ x = 500, x̄ = 50.", "|dev| = 12, 20, 2, 10, 8, 5, 13, 4, 4, 6; sum = 84.", "M.D. = 8.4."], "answer": "8.4", "section": "13.1"}, {"number": "13.1.3", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the median: 13, 17, 16, 14, 11, 13, 10, 16, 11, 18, 12, 17.", "steps": ["n = 12, sorted 10,11,11,12,13,13,14,16,16,17,17,18.", "Median = (13+14)/2 = 13.5.", "Σ |x−13.5| = 28, M.D. = 28/12 = 7/3 ≈ 2.33."], "answer": "7/3 ≈ 2.33", "section": "13.1"}, {"number": "13.1.4", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the median: 36, 72, 46, 42, 60, 45, 53, 46, 51, 49.", "steps": ["n = 10, sorted 36,42,45,46,46,49,51,53,60,72.", "Median = (46+49)/2 = 47.5.", "Σ |dev| = 70, M.D. = 7."], "answer": "7", "section": "13.1"}, {"number": "13.1.5", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the mean: x = 5,10,15,20,25; f = 7,4,6,3,5.", "steps": ["N = 25, Σ f x = 350, x̄ = 14.", "Σ f |x−14| = 63+16+6+18+55 = 158.", "M.D. = 158/25 = 6.32."], "answer": "6.32", "section": "13.1"}, {"number": "13.1.6", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the mean: x = 10,30,50,70,90; f = 4,24,28,16,8.", "steps": ["N = 80, Σ f x = 4000, x̄ = 50.", "Σ f |dev| = 160+480+0+320+320 = 1280.", "M.D. = 16."], "answer": "16", "section": "13.1"}, {"number": "13.1.7", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the median: x = 5,7,9,10,12,15; f = 8,6,2,2,2,6.", "steps": ["N = 26. The 13th and 14th items both lie in x = 7 (cf 8, then 14).", "Median M = 7.", "Σ f |x−7| = 8·2 + 6·0 + 2·2 + 2·3 + 2·5 + 6·8 = 84.", "M.D. = 84/26 = 42/13 ≈ 3.23."], "answer": "42/13 ≈ 3.23", "section": "13.1"}, {"number": "13.1.8", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the median: x = 15,21,27,30,35; f = 3,5,6,7,8.", "steps": ["N = 29. The 15th item (N+1)/2 is in x = 30 (cf 3+5+6=14, then 21).", "M = 30.", "Σ f |dev| = 3·15 + 5·9 + 6·3 + 7·0 + 8·5 = 148.", "M.D. = 148/29 ≈ 5.10."], "answer": "148/29 ≈ 5.10", "section": "13.1"}, {"number": "13.1.9", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about the mean for the income distribution 0–100,…,700–800 with frequencies 4,8,9,10,7,5,4,3.", "steps": ["Mid-values 50,150,250,350,450,550,650,750. N = 50.", "Σ f x = 17900, x̄ = 358.", "Σ f |x−358| = 7896, M.D. = 157.92."], "answer": "157.92", "section": "13.1"}, {"number": "13.1.10", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about the mean for heights 95–105,…,145–155 with frequencies 9,13,26,30,12,10.", "steps": ["Mids 100,110,120,130,140,150. N = 100.", "Σ f x = 12530, x̄ = 125.3.", "Σ f |dev| = 1128.8, M.D. = 11.288 ≈ 11.29."], "answer": "11.29", "section": "13.1"}, {"number": "13.1.11", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about the median: marks 0–10,…,50–60 with frequencies 6,8,14,16,4,2.", "steps": ["N = 50, N/2 = 25. Cumulative frequencies 6, 14, 28, … so the 25th item lies in 20–30.", "Median class 20–30: l = 20, C = 14, f = 14, h = 10.", "M = 20 + (25 − 14)/14 × 10 = 20 + 110/14 ≈ 27.86.", "Class marks 5, 15, 25, 35, 45, 55. Σ f |x − M| ≈ 517.14, M.D. ≈ 10.34."], "answer": "10.34 (M ≈ 27.86)", "section": "13.1"}, {"number": "13.1.12", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about median age. Classes 16–20,…,51–55; f = 5,6,12,14,26,12,16,9. Convert to continuous by ±0.5.", "steps": ["True classes 15.5–20.5, …, 50.5–55.5. N = 100, N/2 = 50.", "cf: 5,11,23,37,63,… Median class 35.5–40.5 (f = 26, C = 37).", "M = 35.5 + (50−37)/26 · 5 = 35.5 + 2.5 = 38.", "Mids 18,23,28,33,38,43,48,53. Σ f |x−38| = 735, M.D. = 7.35."], "answer": "7.35 (M = 38)", "section": "13.1"}, {"number": "13.Misc.1", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Mean and variance of eight observations are 9 and 9.25. Six of them are 6,7,10,12,12,13. Find the remaining two.", "steps": ["Σ x = 72, six sum to 60, so a + b = 12.", "σ² = (Σ x²)/8 − 81 = 9.25 ⇒ Σ x² = 722.", "Six squares sum to 642, so a² + b² = 80.", "(a+b)² = 144 = 80 + 2ab ⇒ ab = 32.", "t² − 12t + 32 = 0 ⇒ t = 4, 8."], "answer": "4 and 8", "section": "Misc. 13"}, {"number": "13.Misc.2", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Mean and variance of seven observations are 8 and 16. Five of them are 2,4,10,12,14. Find the remaining two.", "steps": ["Σ x = 56, five sum to 42, so a + b = 14.", "Σ x² = 7(16+64) = 560. Five squares sum to 460, so a² + b² = 100.", "2ab = 196 − 100 = 96, ab = 48.", "t² − 14t + 48 = 0 ⇒ t = 6, 8."], "answer": "6 and 8", "section": "Misc. 13"}, {"number": "13.Misc.3", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Mean and SD of six observations are 8 and 4. Each is multiplied by 3. New mean and new SD?", "steps": ["New mean = 3 × 8 = 24.", "New SD = 3 × 4 = 12."], "answer": "mean 24, SD 12", "section": "Misc. 13"}, {"number": "13.Misc.4", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Prove that the mean and variance of a x₁, …, a xₙ are a x̄ and a² σ² (a ≠ 0).", "steps": ["Mean: (1/n) Σ a xᵢ = a x̄.", "Variance: (1/n) Σ (a xᵢ − a x̄)² = a² (1/n) Σ (xᵢ − x̄)² = a² σ²."], "answer": "proved", "section": "Misc. 13"}, {"number": "13.Misc.5", "conceptIdx": 6, "page": 30, "printPage": 286, "question": "20 observations, mean 10, SD 2. An observation 8 is incorrect. Find the correct mean and SD if (i) 8 is omitted, (ii) it is replaced by 12.", "steps": ["Σ x = 200, Σ x² = 20(4 + 100) = 2080.", "(i) n = 19, Σ x = 192, Σ x² = 2016. Mean = 192/19 ≈ 10.11. Variance = 2016/19 − (192/19)² ≈ 3.989, SD ≈ 2.00.", "(ii) n = 20, Σ x = 204, Σ x² = 2160. Mean = 10.2. Variance = 2160/20 − 10.2² = 3.96, SD = √3.96 ≈ 1.99."], "answer": "(i) mean 192/19 ≈ 10.11, SD ≈ 1.997  (ii) mean 10.2, SD ≈ 1.99", "section": "Misc. 13"}, {"number": "13.Misc.6", "conceptIdx": 6, "page": 30, "printPage": 286, "question": "100 observations, mean 20, SD 3. Three observations 21, 21, 18 were incorrect; omit them. New mean and SD?", "steps": ["Σ x = 2000, Σ x² = 100(9+400) = 40900.", "n = 97, Σ x = 1940, mean = 20 (still).", "Σ x² = 40900 − 441 − 441 − 324 = 39694.", "Variance = 39694/97 − 400 ≈ 9.216, SD ≈ 3.036."], "answer": "mean 20, SD ≈ 3.04", "section": "Misc. 13"}]};
+window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathematics", "title": "Statistics", "subtitle": "Dispersion: range, mean deviation (raw and grouped), variance and standard deviation, the step-deviation shortcut, and the effect of change of origin and scale.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/kemh113.pdf", "page_start": 257, "page_end": 288, "extraction": "PyMuPDF dict spans + 1.6× PNG zooms in extracted/zooms/. pdftotext not used.", "lessons": [{"id": "intro-range", "nav": "Why dispersion? Range", "title": "Two batsmen, one average — range exposes the scatter.", "deck": "Batsmen A and B both average 53 with median 53. A’s scores run 0 to 117 (range 117); B’s run 46 to 60 (range 14). Central tendency is not enough.", "minutes": 8, "section": "13.1–13.3", "pages": [1, 3], "print": "257–259", "sim": "batsmen", "simTitle": "Fig. 13.1–13.2 batsmen A vs B", "quick": ["Statistics analyses data to support decisions. We already know the three measures of <strong>central tendency</strong> — mean, median, mode — which locate a typical value. They do not say how tightly the data hug that value.", "Batsman A: 30, 91, 0, 64, 42, 80, 30, 5, 117, 71. Batsman B: 53, 46, 48, 50, 53, 53, 58, 60, 57, 52. Both have mean 53 and median 53 (zoom p.1–2). Fig. 13.1 shows A scattered from 0 to 117; Fig. 13.2 shows B clustered near 53.", "<strong>§13.2</strong> names four measures of dispersion: range, quartile deviation, mean deviation, standard deviation. This chapter studies all except quartile deviation. <strong>§13.3 Range</strong> = maximum − minimum. Range(A) = 117 − 0 = 117, Range(B) = 60 − 46 = 14. Range is a rough first look; it ignores everything between the extremes and does not use a central value."], "formulas": [{"label": "Mean", "html": "x̄ = (1/n) Σ xᵢ", "cond": "zoom p.2"}, {"label": "Range", "html": "Range = Maximum − Minimum", "cond": "§13.3"}], "deeper": "A selector who only reads averages would call A and B equals. Anyone who has watched a Ranji collapse knows better: A can make 0 or 117; B will grind 50. Dispersion is the statistical name of reliability.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Find the mean deviation about the mean: 4, 7, 8, 9, 10, 12, 13, 17.", "given": "Find the mean deviation about the mean: 4, 7, 8, 9, 10, 12, 13, 17.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 8, Σ x = 80, x̄ = 10.", "|dev| = 6, 3, 2, 1, 0, 2, 3, 7; sum = 24.", "M.D. = 24/8 = 3."], "answer": "3"}, "prediction": {"prompt": "A and B have the same mean and median. Who is the more consistent scorer?", "options": ["B — the dots in Fig. 13.2 sit in a 14-run window.", "A — a higher maximum means a better batter.", "They are equally consistent because the averages match."], "answer": 0, "explanation": "Consistency is low dispersion. Range 14 vs 117, and the number-line plots, both pick B."}, "connect": [["Ranji vs T20 openers", "A specialist Test opener’s scores look like B; a T20 pinch-hitter looks like A. Selectors quote both average and strike-rate / standard deviation."], ["Wow — the average lied", "Two cities can share a mean temperature of 25 °C: one is Goa (day 32, night 18), the other is Bengaluru (26 and 24). Range, not the mean, is the packing list.", null, {"id": "gsgIIVO5t78", "title": "Class 11 Maths Ch 13 Statistics | The cheapest measure of spread, and everything it fails to notice", "channel": "PrepShorts"}]], "recall": "Write the range formula and quote Range(A) and Range(B) from the opening example.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Range equals", "options": ["maximum − minimum", "mean − median", "sum of deviations from the mean"], "answer": 0, "hint": "§13.3.", "solution": "A single number: extreme minus extreme.", "wrong": ["", "Those can even be zero together, as here.", "That sum is always 0."]}, {"level": "Medium", "type": "number", "prompt": "Batsman B’s scores run from 46 to 60. The range is", "answer": 14, "unit": "", "tolerance": 0.01, "hint": "60 − 46.", "solution": "14 runs."}, {"level": "Hard", "type": "mcq", "prompt": "Why is range a poor complete measure of dispersion?", "options": ["It ignores all observations between the two extremes and does not use a central value", "It is always zero", "It can only be used for grouped data"], "answer": 0, "hint": "Zoom p.3 after the definition.", "solution": "One outlier sets the range. Mean deviation and SD use every point.", "wrong": ["", "Only if max = min.", "Range is defined for raw lists first."]}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "md-ungrouped", "nav": "Mean deviation (ungrouped)", "title": "Take absolute deviations — because the signed ones sum to zero.", "deck": "M.D.(x̄) = (1/n) Σ |xᵢ − x̄|, M.D.(M) = (1/n) Σ |xᵢ − M|. Example 1: eight scores, mean 9, M.D. = 2.75.", "minutes": 10, "section": "13.4.1", "pages": [3, 6], "print": "259–262", "sim": "mdungroup", "simTitle": "Example 1: absolute deviations about the mean", "quick": ["The deviation of x from a fixed a is x − a. The mean of signed deviations from x̄ is always 0, so it cannot measure scatter. We therefore take <strong>absolute</strong> deviations and average them.", "<strong>Ungrouped data:</strong> M.D.(x̄) = (1/n) Σ |xᵢ − x̄| and M.D.(M) = (1/n) Σ |xᵢ − M|, where M is the median (denoted M in this chapter).", "Example 1 (zoom p.5): 6, 7, 10, 12, 13, 4, 8, 12. Mean = 72/8 = 9. Absolute deviations 3, 2, 1, 3, 4, 5, 1, 3 sum to 22. M.D.(x̄) = 22/8 = <strong>2.75</strong>."], "formulas": [{"label": "M.D. about mean", "html": "M.D.(x̄) = (1/n) Σ |xᵢ − x̄|", "cond": "ungrouped"}, {"label": "M.D. about median", "html": "M.D.(M) = (1/n) Σ |xᵢ − M|", "cond": "M = median"}], "deeper": "Among all choices of the centre c, Σ |xᵢ − c| is minimised when c is a median. That is why M.D.(M) is often slightly smaller than M.D.(x̄). Example 3 uses the median; Example 2 is a longer raw list with mean 10.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Find the mean deviation about the mean: 38, 70, 48, 40, 42, 55, 63, 46, 54, 44.", "given": "Find the mean deviation about the mean: 38, 70, 48, 40, 42, 55, 63, 46, 54, 44.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 10, Σ x = 500, x̄ = 50.", "|dev| = 12, 20, 2, 10, 8, 5, 13, 4, 4, 6; sum = 84.", "M.D. = 8.4."], "answer": "8.4"}, "prediction": {"prompt": "Why do we take |xᵢ − x̄| rather than (xᵢ − x̄) when measuring dispersion?", "options": ["The signed deviations from the mean sum to 0, so their mean is useless as a measure of scatter.", "Absolute values are always integers.", "The median is defined using absolute values."], "answer": 0, "explanation": "Zoom p.3: mean of deviations = 0/n = 0. The modulus stops the plus and minus from cancelling."}, "connect": [["Batting average vs how wildly you swing", "A batter averaging 40 with scores 0 and 80 has M.D. 40; another averaging 40 with 38 and 42 has M.D. 2. Selectors in the Indian dressing room feel this even if they never write the formula."], ["Wow — the mean is a fulcrum", "Signed deviations are forces on a seesaw. They balance (sum to 0). Mean deviation is the average length of those lever-arms.", null, {"id": "dVQxJFxOD6I", "title": "Mean absolute deviation (MAD) | Grade 11 | Math | NCERT | Khan Academy (IN accent)", "channel": "Khan Academy India - English"}]], "recall": "Write both ungrouped M.D. formulae and recompute Example 1’s 2.75.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The mean of signed deviations from x̄ is", "options": ["always 0", "the mean deviation", "the range"], "answer": 0, "hint": "Zoom p.3.", "solution": "Σ (xᵢ − x̄) = Σ xᵢ − n x̄ = 0.", "wrong": ["", "M.D. uses the modulus.", "Different formula."]}, {"level": "Medium", "type": "number", "prompt": "Example 1: 6,7,10,12,13,4,8,12. M.D. about the mean is", "answer": 2.75, "unit": "", "tolerance": 0.01, "hint": "22/8.", "solution": "Mean 9, Σ|dev| = 22, 22/8 = 2.75."}, {"level": "Hard", "type": "number", "prompt": "Ex 13.1 Q1: 4,7,8,9,10,12,13,17. M.D. about the mean is", "answer": 3, "unit": "", "tolerance": 0.05, "hint": "Mean = 10, Σ|dev| = 24.", "solution": "(6+3+2+1+0+2+3+7)/8 = 24/8 = 3."}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "md-grouped", "nav": "Mean deviation (grouped)", "title": "Replace a class by its mark, then weight by frequency.", "deck": "M.D.(x̄) = Σ fᵢ |xᵢ − x̄| / N with N = Σ fᵢ. For a continuous series the median uses l + ((N/2 − C)/f)·h, then the same weighted absolute deviations.", "minutes": 10, "section": "13.4.2", "pages": [7, 15], "print": "263–271", "sim": "histmean", "simTitle": "Histogram + mean: Exercise 13.1 Q9–Q10", "quick": ["Data may be a discrete frequency distribution or a continuous (grouped) one. In both cases each distinct xᵢ (or class mark) carries frequency fᵢ, N = Σ fᵢ.", "<strong>Grouped M.D.:</strong> M.D.(x̄) = Σ fᵢ |xᵢ − x̄| / N and M.D.(M) = Σ fᵢ |xᵢ − M| / N (zoom p.31). For a continuous series the median is taken from the median class: M = l + ((N/2 − C)/f) · h.", "Example 7 (zoom p.14): N = 50, median class 20–30, C = 13, f = 15, h = 10 ⇒ M = 20 + (25−13)/15 · 10 = 28. Then M.D.(M) = 508/50 = 10.16."], "formulas": [{"label": "Grouped M.D. about mean", "html": "M.D.(x̄) = Σ fᵢ |xᵢ − x̄| / N", "cond": "xᵢ = class mark, N = Σ fᵢ"}, {"label": "Median (continuous)", "html": "M = l + ((N/2 − C)/f) · h", "cond": "l = lower limit of median class"}], "deeper": "§13.4.3 (zoom p.15): M.D. about the median is not reliable when variability is huge; M.D. about the mean is always at least as large; and because of the modulus, M.D. does not enjoy further algebraic identities. That is the door to variance.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Find the mean deviation about the median: 13, 17, 16, 14, 11, 13, 10, 16, 11, 18, 12, 17.", "given": "Find the mean deviation about the median: 13, 17, 16, 14, 11, 13, 10, 16, 11, 18, 12, 17.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 12, sorted 10,11,11,12,13,13,14,16,16,17,17,18.", "Median = (13+14)/2 = 13.5.", "Σ |x−13.5| = 28, M.D. = 28/12 = 7/3 ≈ 2.33."], "answer": "7/3 ≈ 2.33"}, "prediction": {"prompt": "In a continuous frequency distribution, the xᵢ used in M.D. is", "options": ["the class mark (mid-value) of each class", "the lower limit of each class", "the frequency itself"], "answer": 0, "explanation": "Every class is represented by its midpoint. The histogram lab paints that midpoint as the orange dot on each bar."}, "connect": [["ASER survey income-classes", "Household income is published in class intervals exactly like Ex 13.1 Q9. The mean and M.D. the report quotes are these weighted-midpoint formulae."], ["Wow — a histogram is a mean-deviation machine", "Each bar is fᵢ units high and |xᵢ − x̄| away from the green mean line. The formula is literally the first moment of those horizontal distances.", null, {"id": "Bzt7zqViQBw", "title": "Mean deviation about mean (grouped data - continuous) | Statistics | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write the grouped M.D. formula and the median-class formula.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "N in the grouped formulae is", "options": ["Σ fᵢ, the total frequency", "the number of classes", "the class width"], "answer": 0, "hint": "Zoom p.31.", "solution": "Total number of observations.", "wrong": ["", "That is how many bars you drew.", "h."]}, {"level": "Medium", "type": "number", "prompt": "Ex 13.1 Q6: x = 10,30,50,70,90; f = 4,24,28,16,8. M.D. about the mean is", "answer": 16, "unit": "", "tolerance": 0.05, "hint": "N=80, mean=50, Σ f|dev|=1280.", "solution": "1280/80 = 16."}, {"level": "Hard", "type": "number", "prompt": "Example 7: N=50, l=20, C=13, f=15, h=10. The median is", "answer": 28, "unit": "", "tolerance": 0.05, "hint": "20 + (25−13)/15 × 10.", "solution": "20 + 8 = 28."}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "variance-ungrouped", "nav": "Variance and SD (raw)", "title": "Square the deviations so they cannot cancel — then take a root to restore units.", "deck": "σ² = (1/n) Σ (xᵢ − x̄)², σ = √σ². Set A of six points has Σ squares 1750; set B of 31 points has 2480 — yet B is less dispersed per observation. Example 8: σ² = 33, σ ≈ 5.74.", "minutes": 10, "section": "13.5–13.5.1", "pages": [15, 19], "print": "271–275", "sim": "variance", "simTitle": "Squared-deviation bars: set A vs B vs Example 8", "quick": ["Absolute values block algebraic identities. Squaring also yields a non-negative quantity, and large deviations dominate (a feature, not a bug, for many data sets).", "The raw sum Σ (xᵢ − x̄)² grows with n, so we <strong>average</strong>: variance σ² = (1/n) Σ (xᵢ − x̄)². Units of σ² are the square of the data’s units, so the proper companion is the <strong>standard deviation</strong> σ = √σ² (zoom p.18).", "Zoom p.16 comparison: set A = {5,15,25,35,45,55}, mean 30, Σ squares = 1750. Set B = {15,16,…,45}, mean 30, Σ squares = 2480 = 2·[15·16·31/6]. After dividing by n, A is more dispersed."], "formulas": [{"label": "Variance (ungrouped)", "html": "σ² = (1/n) Σ (xᵢ − x̄)²", "cond": "NCERT uses 1/n, not 1/(n−1)"}, {"label": "Standard deviation", "html": "σ = √[(1/n) Σ (xᵢ − x̄)²]", "cond": "same units as x"}], "deeper": "Example 8 (zoom p.18–19): 6,8,…,24. Assumed mean 14, h = 2, step deviations −4…+5. Mean = 14 + (5/10)·2 = 15. Σ (x−x̄)² = 330, σ² = 33, σ = √33 ≈ 5.74.", "worked": {"title": "Worked source example · PDF p.14", "problem": "Find the mean deviation about the median: 36, 72, 46, 42, 60, 45, 53, 46, 51, 49.", "given": "Find the mean deviation about the median: 36, 72, 46, 42, 60, 45, 53, 46, 51, 49.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 10, sorted 36,42,45,46,46,49,51,53,60,72.", "Median = (46+49)/2 = 47.5.", "Σ |dev| = 70, M.D. = 7."], "answer": "7"}, "prediction": {"prompt": "Why is σ, not σ², called the ‘proper’ measure of dispersion in §13.5.1?", "options": ["Because σ² has squared units, while σ returns to the units of the observations.", "Because σ² can be negative.", "Because σ is always an integer."], "answer": 0, "explanation": "Variance of heights in cm is in cm² — not a length. SD is a length, comparable to the mean."}, "connect": [["JEE marks vs board marks", "Two papers can share a mean of 60. A paper with σ = 5 is a tight board-style paper; σ = 20 is a JEE-style paper that separates ranks. Variance is the examiner’s spread."], ["Wow — squares punish outliers", "A single 117 in batsman A contributes (117−53)² = 4096 to the sum of squares, dwarfing a 54. SD listens to extremes more loudly than M.D. does.", null, {"id": "6JFzI1DDyyk", "title": "Statistics: Variance of a population | Probability and Statistics | Khan Academy", "channel": "Khan Academy"}]], "recall": "Write σ² and σ for ungrouped data. Quote Example 8’s 33 and √33.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "NCERT’s variance of n observations is", "options": ["(1/n) Σ (xᵢ − x̄)²", "(1/(n−1)) Σ (xᵢ − x̄)²", "Σ |xᵢ − x̄| / n"], "answer": 0, "hint": "Zoom p.18. (The n−1 form is sample variance in later courses.)", "solution": "Population-style 1/n throughout this chapter.", "wrong": ["", "Not used here.", "That is M.D."]}, {"level": "Medium", "type": "number", "prompt": "Example 8: Σ (xᵢ − x̄)² = 330, n = 10. Variance is", "answer": 33, "unit": "", "tolerance": 0.01, "hint": "330/10.", "solution": "33."}, {"level": "Hard", "type": "number", "prompt": "Set A: Σ (x−30)² = 1750, n = 6. Variance to nearest integer is", "answer": 292, "unit": "", "tolerance": 1, "hint": "1750/6 ≈ 291.67.", "solution": "1750/6 = 291.6…, nearest 292."}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "sd-frequency", "nav": "SD of frequency distributions", "title": "Weight each squared deviation by fᵢ — discrete or continuous.", "deck": "σ² = (1/N) Σ fᵢ (xᵢ − x̄)². Example 9: N = 30, x̄ = 14, Σ f(x−x̄)² = 1374, σ² = 45.8. A computational identity uses Σ f x² − (Σ f x)² / N.", "minutes": 10, "section": "13.5.2–13.5.3", "pages": [19, 23], "print": "275–279", "sim": "freqsd", "simTitle": "Example 9: discrete frequency SD", "quick": ["<strong>Discrete frequency:</strong> σ = √[(1/N) Σ fᵢ (xᵢ − x̄)²] with N = Σ fᵢ (zoom p.19). Example 9 table: x = 4,8,11,17,20,24,32; f = 3,5,9,5,4,3,1. N = 30, Σ f x = 420, x̄ = 14, Σ f(x−x̄)² = 1374, σ² = 45.8, σ ≈ 6.77.", "<strong>Continuous:</strong> the same formula with xᵢ the class marks. An equivalent computing form (zoom p.31) is σ = (1/N) √[ N Σ f x² − (Σ f x)² ].", "Examples 10–11 practise the continuous case (mean, variance, SD of a grouped table)."], "formulas": [{"label": "Discrete / continuous SD", "html": "σ² = (1/N) Σ fᵢ (xᵢ − x̄)²", "cond": "xᵢ = value or class mark"}, {"label": "Computing formula", "html": "σ = (1/N) √[N Σ fᵢ xᵢ² − (Σ fᵢ xᵢ)²]", "cond": "avoids a pre-computed mean"}], "deeper": "The computing formula is just (1/N) Σ f(x − x̄)² expanded: Σ f x² − 2 x̄ Σ f x + N x̄², and Σ f x = N x̄. It is algebra, not a new definition.", "worked": {"title": "Worked source example · PDF p.14", "problem": "M.D. about the mean: x = 5,10,15,20,25; f = 7,4,6,3,5.", "given": "M.D. about the mean: x = 5,10,15,20,25; f = 7,4,6,3,5.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 25, Σ f x = 350, x̄ = 14.", "Σ f |x−14| = 63+16+6+18+55 = 158.", "M.D. = 158/25 = 6.32."], "answer": "6.32"}, "prediction": {"prompt": "If every frequency fᵢ is doubled, N doubles and Σ f (x−x̄)² doubles, so σ²", "options": ["is unchanged — the extra copies do not spread the data", "doubles", "halves"], "answer": 0, "explanation": "σ² is an average of squared deviations. Scaling all frequencies by k scales numerator and denominator by k."}, "connect": [["Board-exam mark tables", "CBSE’s subject-wise mark distributions are published as grouped frequencies. The ‘standard deviation of marks’ quoted in analysis is this formula with class marks."], ["Wow — doubling every bar does nothing to σ", "Two identical copies of a data set have the same scatter. Frequency is a weight, not a stretch.", null, {"id": "lh3t60hjII8", "title": "Standard deviation and Variance (continuous) | Statistics | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write σ² for a frequency distribution and recompute 1374/30 = 45.8.", "quizzes": [{"level": "Easy", "type": "number", "prompt": "Example 9: N = 30, Σ f x = 420. The mean is", "answer": 14, "unit": "", "tolerance": 0.01, "hint": "420/30.", "solution": "14."}, {"level": "Medium", "type": "number", "prompt": "Example 9: Σ f(x−x̄)² = 1374, N = 30. Variance is", "answer": 45.8, "unit": "", "tolerance": 0.05, "hint": "1374/30.", "solution": "45.8."}, {"level": "Hard", "type": "mcq", "prompt": "The computing formula σ = (1/N)√[N Σ f x² − (Σ f x)²] is", "options": ["algebraically identical to (1/N) Σ f (x−x̄)²", "a different definition used only for continuous data", "valid only when the mean is an integer"], "answer": 0, "hint": "Expand (x−x̄)².", "solution": "An expansion, not a new meaning.", "wrong": ["", "Works for discrete too.", "No such restriction."]}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "shortcut-scale", "nav": "Shortcut, origin and scale", "title": "y = (x − A)/h turns ugly numbers into small integers — and scales σ by |h|.", "deck": "x̄ = A + h ȳ, σₓ² = h² σᵧ². Adding a constant leaves σ unchanged; multiplying by a multiplies σ by |a|. Miscellaneous Exercise 13 is this algebra in numbers.", "minutes": 11, "section": "13.5.4 + Misc.", "pages": [23, 31], "print": "279–287", "sim": "shortcut", "simTitle": "Step-deviation: A and h sliders on Example 8", "quick": ["<strong>§13.5.4 shortcut</strong> (zoom p.23–24): choose an assumed mean A and a scale h (class width, or any convenient number). Set yᵢ = (xᵢ − A)/h. Then x̄ = A + h ȳ and σₓ² = h² σᵧ², with σᵧ² computed on the y’s.", "Change of origin (add a to every x): new mean = old mean + a, variance unchanged (Example 15). Change of scale (multiply by a ≠ 0): new mean = a x̄, new variance = a² σ² (Misc Q4).", "Miscellaneous Exercise: recover two missing observations from mean and variance (Q1, Q2); scale a list by 3 (Q3); correct a wrongly recorded 8 (Q5); drop three wrong values (Q6)."], "formulas": [{"label": "Shortcut", "html": "yᵢ = (xᵢ − A)/h, &nbsp; x̄ = A + h ȳ, &nbsp; σₓ² = h² σᵧ²", "cond": "§13.5.4"}, {"label": "Scale", "html": "mean(a x) = a x̄, &nbsp; var(a x) = a² σ²", "cond": "a ≠ 0; Misc Q4"}], "deeper": "Example 16 (zoom p.29) is a classic ‘wrong mean and SD, three observations mis-recorded’ correction — the same Σ x and Σ x² update as Misc Q5–Q6. Variance of 20 observations is 5; multiply each by 2 ⇒ variance 20 (Example 13).", "worked": {"title": "Worked source example · PDF p.14", "problem": "M.D. about the mean: x = 10,30,50,70,90; f = 4,24,28,16,8.", "given": "M.D. about the mean: x = 10,30,50,70,90; f = 4,24,28,16,8.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 80, Σ f x = 4000, x̄ = 50.", "Σ f |dev| = 160+480+0+320+320 = 1280.", "M.D. = 16."], "answer": "16"}, "prediction": {"prompt": "Each of 6 observations with mean 8 and SD 4 is multiplied by 3. The new SD is", "options": ["12", "4", "36"], "answer": 0, "explanation": "Misc Q3: SD scales by |a| = 3. Variance would scale by 9 (to 144), but the question asks SD."}, "connect": [["Celsius to Fahrenheit is a scale-and-origin change", "F = 1.8 C + 32. SD in °F is 1.8 times SD in °C; the +32 does nothing to spread. Weather-report variability converts exactly by §13.5.4."], ["Wow — two missing marks from mean and variance", "Misc Q1 is a quadratic: a+b and a²+b² fix the pair. The ‘unknown scores’ problem in board exams is this chapter’s algebra, not guesswork.", null, {"id": "-oZWB33PnEM", "title": "SD and Variance - Shortcut method (Application) | Statistics | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "Write x̄ = A + h ȳ and σₓ = |h| σᵧ. State the effect of y = a x + b on mean and SD.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Adding 5 to every observation", "options": ["adds 5 to the mean and leaves SD unchanged", "adds 5 to the SD", "multiplies the variance by 25"], "answer": 0, "hint": "Example 15.", "solution": "Origin shift.", "wrong": ["", "SD is translation-invariant.", "That is a scale of 5."]}, {"level": "Medium", "type": "number", "prompt": "Misc Q3: mean 8, SD 4, each observation × 3. New mean is", "answer": 24, "unit": "", "tolerance": 0.01, "hint": "3 × 8.", "solution": "24; new SD = 12."}, {"level": "Hard", "type": "number", "prompt": "Eight observations, mean 9, six of them sum to 60. The two missing values sum to", "answer": 12, "unit": "", "tolerance": 0.01, "hint": "Misc Q1: 8×9 − 60.", "solution": "72 − 60 = 12. Combined with variance they are 4 and 8."}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}, {"id": "md-limit-vs-sd", "nav": "Why SD over mean deviation", "title": "Modulus blocks algebra; squares open a toolbox.", "deck": "§13.4.3: M.D. cannot be pushed further. Variance is the second moment — it combines, scales, and corrects. Historical note: statistics as ‘status’, Arthashastra, Ain-i-Akbari, Graunt, Bernoulli’s law of large numbers.", "minutes": 8, "section": "13.4.3 + Historical Note", "pages": [15, 31], "print": "271, 287", "sim": "scale", "simTitle": "Origin vs scale: what happens to σ", "quick": ["Limitations of mean deviation (zoom p.15): (i) when variability is huge the median is a poor centre, so M.D.(M) misleads; (ii) M.D.(x̄) ≥ M.D.(M), and using the mean with a modulus is slightly unsatisfactory; (iii) the modulus refuses further algebraic treatment. Hence variance / SD.", "Once you have Σ x and Σ x² you can correct a wrong observation (Example 16, Misc Q5, Q6) without revisiting the whole list — something M.D. cannot do, because you cannot recover Σ |x − x̄| after the mean has moved.", "Historical note (zoom p.31): Latin <em>status</em>; a census in Egypt c. 3050 BCE; Kautilya’s Arthashastra; Abul Fazl’s Ain-i-Akbari; John Graunt (1620–1674) as father of vital statistics; Jacob Bernoulli’s Law of Large Numbers in <em>Ars Conjectandi</em> (1713)."], "formulas": [{"label": "Correction identity", "html": "σ² = (Σ xᵢ²)/n − (x̄)²", "cond": "lets you update Σ x² when one value is fixed"}, {"label": "Combined scale", "html": "var(a x + b) = a² var(x)", "cond": "origin b drops out"}], "deeper": "Misc Q5: 20 observations, mean 10, SD 2, so Σ x = 200, Σ x² = 20(4+100) = 2080. Dropping the wrong 8: n = 19, Σ x = 192, Σ x² = 2016, new mean 192/19 ≈ 10.11, new σ ≈ 2.00. Replacing 8 by 12: mean 10.2, σ ≈ 1.99.", "worked": {"title": "Worked source example · PDF p.14", "problem": "M.D. about the median: x = 5,7,9,10,12,15; f = 8,6,2,2,2,6.", "given": "M.D. about the median: x = 5,7,9,10,12,15; f = 8,6,2,2,2,6.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 26. The 13th and 14th items both lie in x = 7 (cf 8, then 14).", "Median M = 7.", "Σ f |x−7| = 8·2 + 6·0 + 2·2 + 2·3 + 2·5 + 6·8 = 84."], "answer": "42/13 ≈ 3.23"}, "prediction": {"prompt": "You discover one observation was 8 instead of 12. Which measure can you correct from Σ x and Σ x² alone?", "options": ["Mean and SD (variance uses squares)", "Mean deviation (it uses moduli)", "Range (it uses only min and max)"], "answer": 0, "explanation": "Σ |x − x̄| cannot be updated without knowing on which side of the (new) mean each point sits. Squares have no such branch."}, "connect": [["Census of India error-correction", "A district office that typed 8 instead of 12 in one taluk’s count uses exactly Misc Q5: adjust Σ x and Σ x², republish mean and SD. They cannot similarly patch a published M.D. without the microdata."], ["Wow — Bernoulli 1713 is this book’s last word", "The Law of Large Numbers is why a 100-observation SD (Misc Q6) is worth correcting carefully: the SD is already a stable property of the population, not of one typo.", null, {"id": "IO63JMNCQwQ", "title": "SD and Variance - Another formula (Derivation) | Statistics | Grade 11 | Math | Khan Academy", "channel": "Khan Academy India - English"}]], "recall": "State three limitations of M.D. and the identity σ² = (Σ x²)/n − x̄².", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "A reason SD is preferred to M.D. in §13.4.3 is that", "options": ["the modulus cannot be treated algebraically further", "SD is always smaller", "M.D. can be negative"], "answer": 0, "hint": "Zoom p.15 last lines.", "solution": "Squares open the algebra of Examples 13–16.", "wrong": ["", "Not a theorem.", "Both are ≥ 0."]}, {"level": "Medium", "type": "number", "prompt": "20 observations, mean 10, one value 8 replaced by 12. New mean is", "answer": 10.2, "unit": "", "tolerance": 0.02, "hint": "Misc Q5(ii): Σ x becomes 204.", "solution": "204/20 = 10.2."}, {"level": "Hard", "type": "number", "prompt": "Variance of 20 observations is 5. Each is multiplied by 2. New variance is", "answer": 20, "unit": "", "tolerance": 0.01, "hint": "Example 13: a² σ².", "solution": "4 × 5 = 20."}], "group": "Statistics", "watch": "Change the scenario and verify the displayed result against the definition."}], "exercises": [{"number": "13.1.1", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the mean: 4, 7, 8, 9, 10, 12, 13, 17.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 8, Σ x = 80, x̄ = 10.", "|dev| = 6, 3, 2, 1, 0, 2, 3, 7; sum = 24.", "M.D. = 24/8 = 3.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "3", "section": "13.1", "q": 1, "title": "Exercise Q1", "given": "Find the mean deviation about the mean: 4, 7, 8, 9, 10, 12, 13, 17.", "conceptName": "Mean deviation (ungrouped)", "takeaway": "Write both ungrouped M.D. formulae and recompute Example 1’s 2.75."}, {"number": "13.1.2", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the mean: 38, 70, 48, 40, 42, 55, 63, 46, 54, 44.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 10, Σ x = 500, x̄ = 50.", "|dev| = 12, 20, 2, 10, 8, 5, 13, 4, 4, 6; sum = 84.", "M.D. = 8.4.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "8.4", "section": "13.1", "q": 2, "title": "Exercise Q2", "given": "Find the mean deviation about the mean: 38, 70, 48, 40, 42, 55, 63, 46, 54, 44.", "conceptName": "Mean deviation (ungrouped)", "takeaway": "Write both ungrouped M.D. formulae and recompute Example 1’s 2.75."}, {"number": "13.1.3", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the median: 13, 17, 16, 14, 11, 13, 10, 16, 11, 18, 12, 17.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 12, sorted 10,11,11,12,13,13,14,16,16,17,17,18.", "Median = (13+14)/2 = 13.5.", "Σ |x−13.5| = 28, M.D. = 28/12 = 7/3 ≈ 2.33.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "7/3 ≈ 2.33", "section": "13.1", "q": 3, "title": "Exercise Q3", "given": "Find the mean deviation about the median: 13, 17, 16, 14, 11, 13, 10, 16, 11, 18, 12, 17.", "conceptName": "Mean deviation (ungrouped)", "takeaway": "Write both ungrouped M.D. formulae and recompute Example 1’s 2.75."}, {"number": "13.1.4", "conceptIdx": 1, "page": 14, "printPage": 270, "question": "Find the mean deviation about the median: 36, 72, 46, 42, 60, 45, 53, 46, 51, 49.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "n = 10, sorted 36,42,45,46,46,49,51,53,60,72.", "Median = (46+49)/2 = 47.5.", "Σ |dev| = 70, M.D. = 7.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "7", "section": "13.1", "q": 4, "title": "Exercise Q4", "given": "Find the mean deviation about the median: 36, 72, 46, 42, 60, 45, 53, 46, 51, 49.", "conceptName": "Mean deviation (ungrouped)", "takeaway": "Write both ungrouped M.D. formulae and recompute Example 1’s 2.75."}, {"number": "13.1.5", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the mean: x = 5,10,15,20,25; f = 7,4,6,3,5.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 25, Σ f x = 350, x̄ = 14.", "Σ f |x−14| = 63+16+6+18+55 = 158.", "M.D. = 158/25 = 6.32.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "6.32", "section": "13.1", "q": 5, "title": "Exercise Q5", "given": "M.D. about the mean: x = 5,10,15,20,25; f = 7,4,6,3,5.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.6", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the mean: x = 10,30,50,70,90; f = 4,24,28,16,8.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 80, Σ f x = 4000, x̄ = 50.", "Σ f |dev| = 160+480+0+320+320 = 1280.", "M.D. = 16.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "16", "section": "13.1", "q": 6, "title": "Exercise Q6", "given": "M.D. about the mean: x = 10,30,50,70,90; f = 4,24,28,16,8.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.7", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the median: x = 5,7,9,10,12,15; f = 8,6,2,2,2,6.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 26. The 13th and 14th items both lie in x = 7 (cf 8, then 14).", "Median M = 7.", "Σ f |x−7| = 8·2 + 6·0 + 2·2 + 2·3 + 2·5 + 6·8 = 84.", "M.D. = 84/26 = 42/13 ≈ 3.23.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "42/13 ≈ 3.23", "section": "13.1", "q": 7, "title": "Exercise Q7", "given": "M.D. about the median: x = 5,7,9,10,12,15; f = 8,6,2,2,2,6.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.8", "conceptIdx": 2, "page": 14, "printPage": 270, "question": "M.D. about the median: x = 15,21,27,30,35; f = 3,5,6,7,8.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 29. The 15th item (N+1)/2 is in x = 30 (cf 3+5+6=14, then 21).", "M = 30.", "Σ f |dev| = 3·15 + 5·9 + 6·3 + 7·0 + 8·5 = 148.", "M.D. = 148/29 ≈ 5.10.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "148/29 ≈ 5.10", "section": "13.1", "q": 8, "title": "Exercise Q8", "given": "M.D. about the median: x = 15,21,27,30,35; f = 3,5,6,7,8.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.9", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about the mean for the income distribution 0–100,…,700–800 with frequencies 4,8,9,10,7,5,4,3.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Mid-values 50,150,250,350,450,550,650,750. N = 50.", "Σ f x = 17900, x̄ = 358.", "Σ f |x−358| = 7896, M.D. = 157.92.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "157.92", "section": "13.1", "q": 9, "title": "Exercise Q9", "given": "M.D. about the mean for the income distribution 0–100,…,700–800 with frequencies 4,8,9,10,7,5,4,3.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.10", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about the mean for heights 95–105,…,145–155 with frequencies 9,13,26,30,12,10.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Mids 100,110,120,130,140,150. N = 100.", "Σ f x = 12530, x̄ = 125.3.", "Σ f |dev| = 1128.8, M.D. = 11.288 ≈ 11.29.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "11.29", "section": "13.1", "q": 10, "title": "Exercise Q10", "given": "M.D. about the mean for heights 95–105,…,145–155 with frequencies 9,13,26,30,12,10.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.11", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about the median: marks 0–10,…,50–60 with frequencies 6,8,14,16,4,2.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "N = 50, N/2 = 25. Cumulative frequencies 6, 14, 28, … so the 25th item lies in 20–30.", "Median class 20–30: l = 20, C = 14, f = 14, h = 10.", "M = 20 + (25 − 14)/14 × 10 = 20 + 110/14 ≈ 27.86.", "Class marks 5, 15, 25, 35, 45, 55. Σ f |x − M| ≈ 517.14, M.D. ≈ 10.34.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "10.34 (M ≈ 27.86)", "section": "13.1", "q": 11, "title": "Exercise Q11", "given": "M.D. about the median: marks 0–10,…,50–60 with frequencies 6,8,14,16,4,2.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.1.12", "conceptIdx": 2, "page": 15, "printPage": 271, "question": "M.D. about median age. Classes 16–20,…,51–55; f = 5,6,12,14,26,12,16,9. Convert to continuous by ±0.5.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "True classes 15.5–20.5, …, 50.5–55.5. N = 100, N/2 = 50.", "cf: 5,11,23,37,63,… Median class 35.5–40.5 (f = 26, C = 37).", "M = 35.5 + (50−37)/26 · 5 = 35.5 + 2.5 = 38.", "Mids 18,23,28,33,38,43,48,53. Σ f |x−38| = 735, M.D. = 7.35.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "7.35 (M = 38)", "section": "13.1", "q": 12, "title": "Exercise Q12", "given": "M.D. about median age. Classes 16–20,…,51–55; f = 5,6,12,14,26,12,16,9. Convert to continuous by ±0.5.", "conceptName": "Mean deviation (grouped)", "takeaway": "Write the grouped M.D. formula and the median-class formula."}, {"number": "13.Misc.1", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Mean and variance of eight observations are 9 and 9.25. Six of them are 6,7,10,12,12,13. Find the remaining two.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Σ x = 72, six sum to 60, so a + b = 12.", "σ² = (Σ x²)/8 − 81 = 9.25 ⇒ Σ x² = 722.", "Six squares sum to 642, so a² + b² = 80.", "(a+b)² = 144 = 80 + 2ab ⇒ ab = 32.", "t² − 12t + 32 = 0 ⇒ t = 4, 8.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "4 and 8", "section": "Misc. 13", "q": 13, "title": "Miscellaneous Q1", "given": "Mean and variance of eight observations are 9 and 9.25. Six of them are 6,7,10,12,12,13. Find the remaining two.", "conceptName": "Shortcut, origin and scale", "takeaway": "Write x̄ = A + h ȳ and σₓ = |h| σᵧ. State the effect of y = a x + b on mean and SD."}, {"number": "13.Misc.2", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Mean and variance of seven observations are 8 and 16. Five of them are 2,4,10,12,14. Find the remaining two.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Σ x = 56, five sum to 42, so a + b = 14.", "Σ x² = 7(16+64) = 560. Five squares sum to 460, so a² + b² = 100.", "2ab = 196 − 100 = 96, ab = 48.", "t² − 14t + 48 = 0 ⇒ t = 6, 8.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "6 and 8", "section": "Misc. 13", "q": 14, "title": "Miscellaneous Q2", "given": "Mean and variance of seven observations are 8 and 16. Five of them are 2,4,10,12,14. Find the remaining two.", "conceptName": "Shortcut, origin and scale", "takeaway": "Write x̄ = A + h ȳ and σₓ = |h| σᵧ. State the effect of y = a x + b on mean and SD."}, {"number": "13.Misc.3", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Mean and SD of six observations are 8 and 4. Each is multiplied by 3. New mean and new SD?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "New mean = 3 × 8 = 24.", "New SD = 3 × 4 = 12.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "mean 24, SD 12", "section": "Misc. 13", "q": 15, "title": "Miscellaneous Q3", "given": "Mean and SD of six observations are 8 and 4. Each is multiplied by 3. New mean and new SD?", "conceptName": "Shortcut, origin and scale", "takeaway": "Write x̄ = A + h ȳ and σₓ = |h| σᵧ. State the effect of y = a x + b on mean and SD."}, {"number": "13.Misc.4", "conceptIdx": 5, "page": 30, "printPage": 286, "question": "Prove that the mean and variance of a x₁, …, a xₙ are a x̄ and a² σ² (a ≠ 0).", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Mean: (1/n) Σ a xᵢ = a x̄.", "Variance: (1/n) Σ (a xᵢ − a x̄)² = a² (1/n) Σ (xᵢ − x̄)² = a² σ².", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "proved", "section": "Misc. 13", "q": 16, "title": "Miscellaneous Q4", "given": "Prove that the mean and variance of a x₁, …, a xₙ are a x̄ and a² σ² (a ≠ 0).", "conceptName": "Shortcut, origin and scale", "takeaway": "Write x̄ = A + h ȳ and σₓ = |h| σᵧ. State the effect of y = a x + b on mean and SD."}, {"number": "13.Misc.5", "conceptIdx": 6, "page": 30, "printPage": 286, "question": "20 observations, mean 10, SD 2. An observation 8 is incorrect. Find the correct mean and SD if (i) 8 is omitted, (ii) it is replaced by 12.", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Σ x = 200, Σ x² = 20(4 + 100) = 2080.", "(i) n = 19, Σ x = 192, Σ x² = 2016. Mean = 192/19 ≈ 10.11. Variance = 2016/19 − (192/19)² ≈ 3.989, SD ≈ 2.00.", "(ii) n = 20, Σ x = 204, Σ x² = 2160. Mean = 10.2. Variance = 2160/20 − 10.2² = 3.96, SD = √3.96 ≈ 1.99.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "(i) mean 192/19 ≈ 10.11, SD ≈ 1.997  (ii) mean 10.2, SD ≈ 1.99", "section": "Misc. 13", "q": 17, "title": "Miscellaneous Q5", "given": "20 observations, mean 10, SD 2. An observation 8 is incorrect. Find the correct mean and SD if (i) 8 is omitted, (ii) it is replaced by 12.", "conceptName": "Why SD over mean deviation", "takeaway": "State three limitations of M.D. and the identity σ² = (Σ x²)/n − x̄²."}, {"number": "13.Misc.6", "conceptIdx": 6, "page": 30, "printPage": 286, "question": "100 observations, mean 20, SD 3. Three observations 21, 21, 18 were incorrect; omit them. New mean and SD?", "steps": ["Read the givens and identify the governing definition, theorem, or algebraic rule.", "Σ x = 2000, Σ x² = 100(9+400) = 40900.", "n = 97, Σ x = 1940, mean = 20 (still).", "Σ x² = 40900 − 441 − 441 − 324 = 39694.", "Variance = 39694/97 − 400 ≈ 9.216, SD ≈ 3.036.", "Simplify carefully and check the result against the source question and any domain or sign restrictions."], "answer": "mean 20, SD ≈ 3.04", "section": "Misc. 13", "q": 18, "title": "Miscellaneous Q6", "given": "100 observations, mean 20, SD 3. Three observations 21, 21, 18 were incorrect; omit them. New mean and SD?", "conceptName": "Why SD over mean deviation", "takeaway": "State three limitations of M.D. and the identity σ² = (Σ x²)/n − x̄²."}], "exerciseMap": [[1, "Exercise Q1", 1, 14], [2, "Exercise Q2", 1, 14], [3, "Exercise Q3", 1, 14], [4, "Exercise Q4", 1, 14], [5, "Exercise Q5", 2, 14], [6, "Exercise Q6", 2, 14], [7, "Exercise Q7", 2, 14], [8, "Exercise Q8", 2, 14], [9, "Exercise Q9", 2, 15], [10, "Exercise Q10", 2, 15], [11, "Exercise Q11", 2, 15], [12, "Exercise Q12", 2, 15], [13, "Miscellaneous Q1", 5, 30], [14, "Miscellaneous Q2", 5, 30], [15, "Miscellaneous Q3", 5, 30], [16, "Miscellaneous Q4", 5, 30], [17, "Miscellaneous Q5", 6, 30], [18, "Miscellaneous Q6", 6, 30]], "exercisesNote": "All 18 source questions are included with exact source page mapping and expanded worked guidance. PDF pages 1–32 correspond to printed pages 258–288."};
 </script>
 <script>
+// Shared Class 11 Maths runtime, adapted from verified lemh101.
+
 (function(){
   var C = window.CHAPTER;
   if (!C) {
@@ -1084,8 +1298,44 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1111,8 +1361,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1195,7 +1444,35 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1212,6 +1489,10 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1220,16 +1501,17 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1241,10 +1523,15 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      '<span class="time-pill">≈ ' + minutes + ' min · pdf pp. ' + (Array.isArray(l.pages) ? l.pages.join("–") : (l.pages || (C.page_start || "1"))) + ' · printed pp. ' + (printPage || (C.page_start || "")) + '</span>' +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
       '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
@@ -1278,7 +1565,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1304,42 +1591,47 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict first">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive simulation">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1347,7 +1639,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1356,48 +1648,46 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real-life connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var src = (C.source || "") + (printPage ? (" p." + printPage) : "");
-          var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="1" data-source="' + src.replace(/"/g, "") + '"' : "") + '>';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button type="button" class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + (v.title || "") + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + (v.title || "Video") + ' · ' + (v.channel || "YouTube") + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            links.forEach(function(a){
-              var href = a.u || a.link || "#";
-              var lab = a.t || a.label || "Read Deeply";
-              var prov = /ncert/i.test(href) ? "NCERT" : (a.provider || "Source");
-              cHtml += '<button type="button" class="video-facade" data-video="resource" data-href="' + href + '" aria-label="' + lab + '">' +
-                '<span class="video-title">' + lab + ' · ' + prov + '</span></button>';
-            });
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div></section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
@@ -1443,6 +1733,10 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1461,7 +1755,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1511,7 +1805,8 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1520,6 +1815,41 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1534,9 +1864,6 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1571,7 +1898,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
         '</div>';
     } else {
       html += '<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">' +
-        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" aria-label="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
+        '<input type="number" step="any" id="quiz_num_ans" placeholder="Your answer" value="' + (old.value || "") + '" style="padding:8px 12px;border:1px solid var(--line);border-radius:6px;font-size:16px;width:160px;">' +
         '<span style="font-weight:600;color:var(--muted);">' + (q.unit || "") + '</span>' +
         '</div>';
     }
@@ -1656,9 +1983,9 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1686,7 +2013,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
       '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 11 Mathematics with comprehensive step-by-step pedagogical solutions.</p>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1731,20 +2058,31 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
+      return '<article class="exercise-card" id="exercise-q' + (ex.q || qNum) + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2128,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2138,7 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2148,31 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1834,16 +2192,12 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
   // --- Handle Video Facades (No preloaded iframes) ---
   document.addEventListener("click", function(e){
     var btn = e.target.closest(".video-facade");
-    if(!btn) return;
-    var href = btn.getAttribute("data-href");
-    if(href){
-      window.open(href, "_blank", "noopener");
-      return;
-    }
-    var vid = btn.getAttribute("data-yt");
-    var parent = btn.parentElement;
-    if(parent && vid){
-      parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+    if(btn){
+      var vid = btn.getAttribute("data-yt");
+      var parent = btn.parentElement;
+      if(parent && vid){
+        parent.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + vid + '?autoplay=1&rel=0" title="Video Lesson" style="width:100%;aspect-ratio:16/9;border:none;border-radius:8px;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+      }
     }
   });
 
@@ -1853,6 +2207,10 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1866,6 +2224,41 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1873,27 +2266,13 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
   };
   if (typeof globalThis !== "undefined") {
     globalThis.App = window.App;
-  }
-
-  document.addEventListener("keydown", function(e){
-    var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-    if(tag === "input" || tag === "textarea" || tag === "select" || (e.target && e.target.isContentEditable)) return;
-    if(e.key === "Escape"){ resetTimeline(); }
-    if(e.key === " " || e.code === "Space"){
-      e.preventDefault();
-      if(state.playing) pause(); else play();
-    }
-    if(e.key === "ArrowRight"){ step(0.5); }
-    if(e.key === "ArrowLeft"){ step(-0.5); }
-  });
-  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
-    state.speed = 0.25;
   }
 
   // Initialize
@@ -1903,8 +2282,233 @@ window.CHAPTER = {"code": "kemh113", "chapterNumber": 13, "book_name": "Mathemat
   routeFromHash();
 })();
 
+
 </script>
 <script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
+
+
 var App = window.App;
 window.SIMS = {};
 
@@ -1943,9 +2547,9 @@ window.SIMS.batsmen = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Batsman B (steady)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Mean = median = 53</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-both">Fig. 13.1–13.2 both series</button>' +
-      '<button class="preset-btn" id="p-a">A only</button>' +
-      '<button class="preset-btn" id="p-b">B only</button>';
+      '<button class="preset-btn active" data-preset="p-both" id="p-both">Fig. 13.1–13.2 both series</button>' +
+      '<button class="preset-btn" data-preset="p-a" id="p-a">A only</button>' +
+      '<button class="preset-btn" data-preset="p-b" id="p-b">B only</button>';
     document.getElementById("p-both").onclick = function(){ setActivePreset(this); who="both"; draw(); };
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); who="A"; draw(); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); who="B"; draw(); };
@@ -1991,8 +2595,8 @@ window.SIMS.mdungroup = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>observation</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>|xᵢ − c|</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-mean">Example 1: MD about mean</button>' +
-      '<button class="preset-btn" id="p-med">Same data: MD about median</button>';
+      '<button class="preset-btn active" data-preset="p-mean" id="p-mean">Example 1: MD about mean</button>' +
+      '<button class="preset-btn" data-preset="p-med" id="p-med">Same data: MD about median</button>';
     document.getElementById("p-mean").onclick = function(){ setActivePreset(this); about="mean"; draw(); };
     document.getElementById("p-med").onclick = function(){ setActivePreset(this); about="median"; draw(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -2034,8 +2638,8 @@ window.SIMS.histmean = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>class mark xᵢ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>mean</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-inc">Ex 13.1 Q9: income / day</button>' +
-      '<button class="preset-btn" id="p-ht">Ex 13.1 Q10: height of boys</button>';
+      '<button class="preset-btn active" data-preset="p-inc" id="p-inc">Ex 13.1 Q9: income / day</button>' +
+      '<button class="preset-btn" data-preset="p-ht" id="p-ht">Ex 13.1 Q10: height of boys</button>';
     document.getElementById("p-inc").onclick = function(){
       setActivePreset(this);
       edges = [0,100,200,300,400,500,600,700,800];
@@ -2093,9 +2697,9 @@ window.SIMS.variance = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>set A (n=6, mean 30)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>set B (n=31, mean 30)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-a">Zoom p.16 set A: 5,15,…,55</button>' +
-      '<button class="preset-btn" id="p-b">Set B: 15 through 45</button>' +
-      '<button class="preset-btn" id="p-ex8">Example 8: 6,8,…,24</button>';
+      '<button class="preset-btn active" data-preset="p-a" id="p-a">Zoom p.16 set A: 5,15,…,55</button>' +
+      '<button class="preset-btn" data-preset="p-b" id="p-b">Set B: 15 through 45</button>' +
+      '<button class="preset-btn" data-preset="p-ex8" id="p-ex8">Example 8: 6,8,…,24</button>';
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); set="A"; draw(); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); set="B"; draw(); };
     document.getElementById("p-ex8").onclick = function(){ setActivePreset(this); set="E8"; draw(); };
@@ -2137,7 +2741,7 @@ window.SIMS.freqsd = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>xᵢ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>fᵢ (xᵢ − x̄)²</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ex9">Example 9 (Table 13.8)</button>';
+      '<button class="preset-btn active" data-preset="p-ex9" id="p-ex9">Example 9 (Table 13.8)</button>';
     document.getElementById("p-ex9").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML = "";
     draw();
@@ -2176,7 +2780,7 @@ window.SIMS.shortcut = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>y = (x − A)/h</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ex8">Example 8 step-deviation, A = 14, h = 2</button>';
+      '<button class="preset-btn active" data-preset="p-ex8" id="p-ex8">Example 8 step-deviation, A = 14, h = 2</button>';
     document.getElementById("p-ex8").onclick = function(){ setActivePreset(this); draw(); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Assumed mean A</span><span class="val" id="ctrl-A">14</span></div>' +
@@ -2230,8 +2834,8 @@ window.SIMS.scale = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>original x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>a x  (scale)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m3">Misc Q3: each observation × 3</button>' +
-      '<button class="preset-btn" id="p-add">Example 15: each xᵢ increased by a</button>';
+      '<button class="preset-btn active" data-preset="p-m3" id="p-m3">Misc Q3: each observation × 3</button>' +
+      '<button class="preset-btn" data-preset="p-add" id="p-add">Example 15: each xᵢ increased by a</button>';
     var mode = "mul";
     document.getElementById("p-m3").onclick = function(){ setActivePreset(this); mode="mul"; draw(); };
     document.getElementById("p-add").onclick = function(){ setActivePreset(this); mode="add"; draw(); };

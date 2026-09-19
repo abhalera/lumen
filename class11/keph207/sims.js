@@ -21,7 +21,7 @@ window.SIMS.coupled = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Oscillator</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Disturbance</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c1">Fig 14.1 coupled springs / buffers</button>';
+      '<button class="preset-btn active" data-preset="c1" id="c1">Fig 14.1 coupled springs / buffers</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -52,8 +52,8 @@ window.SIMS.wavepulse = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Pulse</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>A tagged element</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="w-t">Fig 14.2 transverse pulse</button>' +
-      '<button class="preset-btn" id="w-l">Fig 14.4 longitudinal pulse</button>';
+      '<button class="preset-btn active" data-preset="w-t" id="w-t">Fig 14.2 transverse pulse</button>' +
+      '<button class="preset-btn" data-preset="w-l" id="w-l">Fig 14.4 longitudinal pulse</button>';
     document.getElementById("w-t").onclick = function(){ setActivePreset(this); kind="trans"; App.resetTimeline(); App.play(); };
     document.getElementById("w-l").onclick = function(){ setActivePreset(this); kind="long"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -97,8 +97,8 @@ window.SIMS.progressive = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = a sin(kx − ωt)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pr">+x  (kx − ωt)  Example 14.2</button>' +
-      '<button class="preset-btn" id="pl">−x  (kx + ωt)  Ex 14.8</button>';
+      '<button class="preset-btn active" data-preset="pr" id="pr">+x  (kx − ωt)  Example 14.2</button>' +
+      '<button class="preset-btn" data-preset="pl" id="pl">−x  (kx + ωt)  Ex 14.8</button>';
     document.getElementById("pr").onclick = function(){ setActivePreset(this); dir=1; App.resetTimeline(); App.play(); };
     document.getElementById("pl").onclick = function(){ setActivePreset(this); dir=-1; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -134,8 +134,8 @@ window.SIMS.wavespeed = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Wavefront</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="vs">Example 14.3 string 93 m/s</button>' +
-      '<button class="preset-btn" id="vn">Newton 280 vs Laplace 331</button>';
+      '<button class="preset-btn active" data-preset="vs" id="vs">Example 14.3 string 93 m/s</button>' +
+      '<button class="preset-btn" data-preset="vn" id="vn">Newton 280 vs Laplace 331</button>';
     document.getElementById("vs").onclick = function(){ setActivePreset(this); mode="string"; App.resetTimeline(); App.play(); };
     document.getElementById("vn").onclick = function(){ setActivePreset(this); mode="sound"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -174,9 +174,9 @@ window.SIMS.superposition = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Wave 2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Sum</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="su1">Fig 14.9 opposite pulses</button>' +
-      '<button class="preset-btn" id="su2">Fig 14.10 φ = 0 constructive</button>' +
-      '<button class="preset-btn" id="su3">φ = π destructive</button>';
+      '<button class="preset-btn active" data-preset="su1" id="su1">Fig 14.9 opposite pulses</button>' +
+      '<button class="preset-btn" data-preset="su2" id="su2">Fig 14.10 φ = 0 constructive</button>' +
+      '<button class="preset-btn" data-preset="su3" id="su3">φ = π destructive</button>';
     document.getElementById("su1").onclick = function(){ setActivePreset(this); mode="pulses"; App.resetTimeline(); App.play(); };
     document.getElementById("su2").onclick = function(){ setActivePreset(this); mode="con"; App.resetTimeline(); App.play(); };
     document.getElementById("su3").onclick = function(){ setActivePreset(this); mode="des"; App.resetTimeline(); App.play(); };
@@ -227,10 +227,10 @@ window.SIMS.standing = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Standing wave</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Node</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="st1">String n = 1</button>' +
-      '<button class="preset-btn" id="st2">String n = 2</button>' +
-      '<button class="preset-btn" id="st3">Closed pipe (odd only)</button>' +
-      '<button class="preset-btn" id="st4">Open pipe n = 2 (Ex 14.5)</button>';
+      '<button class="preset-btn active" data-preset="st1" id="st1">String n = 1</button>' +
+      '<button class="preset-btn" data-preset="st2" id="st2">String n = 2</button>' +
+      '<button class="preset-btn" data-preset="st3" id="st3">Closed pipe (odd only)</button>' +
+      '<button class="preset-btn" data-preset="st4" id="st4">Open pipe n = 2 (Ex 14.5)</button>';
     document.getElementById("st1").onclick = function(){ setActivePreset(this); pipe="string"; n=1; App.resetTimeline(); App.play(); };
     document.getElementById("st2").onclick = function(){ setActivePreset(this); pipe="string"; n=2; App.resetTimeline(); App.play(); };
     document.getElementById("st3").onclick = function(){ setActivePreset(this); pipe="closed"; n=1; App.resetTimeline(); App.play(); };
@@ -280,8 +280,8 @@ window.SIMS.beats = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>ν₂</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>sum / envelope</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="b1">Fig 14.16 · 11 Hz + 9 Hz</button>' +
-      '<button class="preset-btn" id="b2">Example 14.6 · 427 and 422</button>';
+      '<button class="preset-btn active" data-preset="b1" id="b1">Fig 14.16 · 11 Hz + 9 Hz</button>' +
+      '<button class="preset-btn" data-preset="b2" id="b2">Example 14.6 · 427 and 422</button>';
     document.getElementById("b1").onclick = function(){ setActivePreset(this); f1=11; f2=9; App.resetTimeline(); App.play(); };
     document.getElementById("b2").onclick = function(){ setActivePreset(this); f1=12; f2=10; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";

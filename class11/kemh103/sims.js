@@ -20,10 +20,10 @@ window.SIMS.degrad = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Degree</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Radian (arc)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-30">30° = π/6</button>' +
-      '<button class="preset-btn" id="p-90">90° = π/2</button>' +
-      '<button class="preset-btn" id="p-240">240° = 4π/3</button>' +
-      '<button class="preset-btn" id="p-m47">−47°30′ = −19π/72</button>';
+      '<button class="preset-btn active" id="p-30" data-preset="p-30">30° = π/6</button>' +
+      '<button class="preset-btn" id="p-90" data-preset="p-90">90° = π/2</button>' +
+      '<button class="preset-btn" id="p-240" data-preset="p-240">240° = 4π/3</button>' +
+      '<button class="preset-btn" id="p-m47" data-preset="p-m47">−47°30′ = −19π/72</button>';
     document.getElementById("p-30").onclick=function(){setActivePreset(this);deg=30;App.resetTimeline();};
     document.getElementById("p-90").onclick=function(){setActivePreset(this);deg=90;App.resetTimeline();};
     document.getElementById("p-240").onclick=function(){setActivePreset(this);deg=240;App.resetTimeline();};
@@ -58,9 +58,9 @@ window.SIMS.arclen = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>radius r</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>arc l</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-p">Pendulum Ex 3.1.7</button>' +
-      '<button class="preset-btn" id="p-c">Chord Ex 3.1.5</button>' +
-      '<button class="preset-btn" id="p-w">Minute hand Ex 4</button>';
+      '<button class="preset-btn active" id="p-p" data-preset="p-p">Pendulum Ex 3.1.7</button>' +
+      '<button class="preset-btn" id="p-c" data-preset="p-c">Chord Ex 3.1.5</button>' +
+      '<button class="preset-btn" id="p-w" data-preset="p-w">Minute hand Ex 4</button>';
     document.getElementById("p-p").onclick=function(){setActivePreset(this);mode="pend";App.resetTimeline();App.play();};
     document.getElementById("p-c").onclick=function(){setActivePreset(this);mode="chord";App.resetTimeline();App.play();};
     document.getElementById("p-w").onclick=function(){setActivePreset(this);mode="watch";App.resetTimeline();App.play();};
@@ -94,8 +94,8 @@ window.SIMS.unitcircle = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>cos x (adjacent)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>sin x (opposite)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-go">Sweep 0 → 2π</button>' +
-      '<button class="preset-btn" id="p-q">Quadrantals</button>';
+      '<button class="preset-btn active" id="p-go" data-preset="p-go">Sweep 0 → 2π</button>' +
+      '<button class="preset-btn" id="p-q" data-preset="p-q">Quadrantals</button>';
     document.getElementById("p-go").onclick=function(){setActivePreset(this);App.resetTimeline();App.play();};
     document.getElementById("p-q").onclick=function(){setActivePreset(this);App.state.t=0;App.resetTimeline();};
     document.getElementById("lab-controls").innerHTML="";
@@ -132,9 +132,9 @@ window.SIMS.astc = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Positive</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Negative</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-1">Ex 3.2.1 QIII cos=−1/2</button>' +
-      '<button class="preset-btn" id="p-2">Ex 3.2.2 QII sin=3/5</button>' +
-      '<button class="preset-btn active" id="p-3">Ex 3.2.4 QIV sec=13/5</button>';
+      '<button class="preset-btn" id="p-1" data-preset="p-1">Ex 3.2.1 QIII cos=−1/2</button>' +
+      '<button class="preset-btn" id="p-2" data-preset="p-2">Ex 3.2.2 QII sin=3/5</button>' +
+      '<button class="preset-btn active" id="p-3" data-preset="p-3">Ex 3.2.4 QIV sec=13/5</button>';
     document.getElementById("p-1").onclick=function(){setActivePreset(this);mode="q3";App.resetTimeline();};
     document.getElementById("p-2").onclick=function(){setActivePreset(this);mode="q2";App.resetTimeline();};
     document.getElementById("p-3").onclick=function(){setActivePreset(this);mode="q4";App.resetTimeline();};
@@ -170,8 +170,8 @@ window.SIMS.sumdiff = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>y</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>x+y</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-75">75° = 45°+30°</button>' +
-      '<button class="preset-btn" id="p-15">15° = 45°−30°</button>';
+      '<button class="preset-btn active" id="p-75" data-preset="p-75">75° = 45°+30°</button>' +
+      '<button class="preset-btn" id="p-15" data-preset="p-15">15° = 45°−30°</button>';
     var self=this;
     document.getElementById("p-75").onclick=function(){setActivePreset(this); window._sd = "plus"; App.resetTimeline();};
     document.getElementById("p-15").onclick=function(){setActivePreset(this); window._sd = "minus"; App.resetTimeline();};
@@ -206,7 +206,7 @@ window.SIMS.double = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sin x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>sin 2x = 2 sin x cos x</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-d">Sweep x, watch 2x</button>';
+      '<button class="preset-btn active" id="p-d" data-preset="p-d">Sweep x, watch 2x</button>';
     document.getElementById("p-d").onclick=function(){setActivePreset(this);App.resetTimeline();App.play();};
     document.getElementById("lab-controls").innerHTML="";
     draw(0);
@@ -243,9 +243,9 @@ window.SIMS.halfang = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>x</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>x/2</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-8">Misc 8: QII → QI</button>' +
-      '<button class="preset-btn" id="p-9">Misc 9: QIII → QII</button>' +
-      '<button class="preset-btn" id="p-10">Misc 10: QII → QI</button>';
+      '<button class="preset-btn active" id="p-8" data-preset="p-8">Misc 8: QII → QI</button>' +
+      '<button class="preset-btn" id="p-9" data-preset="p-9">Misc 9: QIII → QII</button>' +
+      '<button class="preset-btn" id="p-10" data-preset="p-10">Misc 10: QII → QI</button>';
     document.getElementById("p-8").onclick=function(){setActivePreset(this);mode="q2";App.resetTimeline();};
     document.getElementById("p-9").onclick=function(){setActivePreset(this);mode="q3";App.resetTimeline();};
     document.getElementById("p-10").onclick=function(){setActivePreset(this);mode="q2b";App.resetTimeline();};

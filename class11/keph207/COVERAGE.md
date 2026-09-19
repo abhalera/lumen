@@ -40,3 +40,7 @@ TOC of this reprint: **14.1–14.7 Beats**, then Summary / Points to ponder / Ex
 - Older additional-exercise blocks beyond 14.19 are not in this PDF.
 
 Labs: wave pulse, progressive sine, superposition, standing wave, beats. No Doppler lab was added.
+
+## Standard audit (keph207)
+
+Audited all 22 source PDF pages (printed 278–299), froze 19 exercise fixtures, normalized lesson worked examples and verified video metadata. `tests/verify.cjs` PASS 52 checks. Browser QA PASS 75 checks, 0 failures, 0 console errors.

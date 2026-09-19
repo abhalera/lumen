@@ -39,3 +39,7 @@ All 10 mapped with steps in `chapter.json`. This reprint’s exercise list **end
 Maxwell–Boltzmann speed distribution is **mentioned** (a distribution in velocities; ⟨v²⟩) but is **not** written as a numbered f(v) law. The Maxwell-speeds lab visualises v_rms = √(3RT/M) and the qualitative shape; it does not restore a deleted distribution section.
 
 Van der Waals equation, viscosity derivation, and extra mean-free-path applications beyond §12.7 are not in this reprint — not invented.
+
+## Standard audit (keph205)
+
+Audited all 15 source PDF pages (printed 244–258), froze 10 exercise fixtures, normalized lesson worked examples and verified video metadata. `tests/verify.cjs` PASS 42 checks. Browser QA PASS 75 checks, 0 failures, 0 console errors.

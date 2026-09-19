@@ -1,11 +1,13 @@
 # COVERAGE — lebo109 Biotechnology: Principles and Processes
 
-**Source:** `books/originals/Class12-Biology_lebo109.pdf` (16 pdf pages, printed folio absent in source, Reprint 2026-27).
+**Source:** `books/originals/Class12-Biology_lebo109.pdf` (16 pdf pages, printed folios 161–176, Reprint 2026-27).
+
+**Correction (2026-09-19):** an earlier pass wrongly recorded this chapter as folio-absent. Verified: even 0-based PDF pages carry the printed folio as their first extracted text line (idx3="164", idx5="166", ... idx15="176"); odd pages carry the running head first but the same folio appears inline (idx14: "...PROCESSES 175 SUMMARY..."). Seven independent anchor points confirm printed = 1-based PDF page + 160 with zero deviation. `printPage` on every exercise and `print` on every lesson now hold the real printed folio, not the PDF page number.
 **SHA-256:** `c30b908dca8e7166e9830ca48c376a4f0b21d63a8e05bf601a150da031c13122` (in `/tmp/opencode/bio_maps.json`, key `lebo109`).
 **Extraction:** PyMuPDF text layer (`/tmp/opencode/bio_text/lebo109.txt`) + section/exercise page maps in `/tmp/opencode/bio_maps.json`. **pdftotext was not used.** No PNG zooms (prose-quantitative chapter).
 **NCERT:** https://ncert.nic.in/textbook/pdf/lebo109.pdf
 
-Honest note: §9.3.4's heading (“Insertion of Recombinant DNA into the Host Cell/Organism”) is split across two lines on pdf p. 13, so a line-start section survey misses it — but the full passage (competent uptake, ampicillin selection, micro-injection, gene gun, disarmed vectors) is present in the text layer and is covered in lesson 5. Second note: the pBR322 size “4361 bp” is not printed in the extracted text layer (it lives in the Figure 9.4 artwork / standard vector data); it is stated as textbook-map fact in lesson 3 and the verify fixture, consistent with the chapter spec.
+Honest note: §9.3.4's heading (“Insertion of Recombinant DNA into the Host Cell/Organism”) is split across two lines on pdf p. 13 (printed p. 173), so a line-start section survey misses it — but the full passage (competent uptake, ampicillin selection, micro-injection, gene gun, disarmed vectors) is present in the text layer and is covered in lesson 5. Second note: the pBR322 size “4361 bp” is not printed in the extracted text layer (it lives in the Figure 9.4 artwork / standard vector data); it is stated as textbook-map fact in lesson 3 and the verify fixture, consistent with the chapter spec.
 
 ## Concepts
 

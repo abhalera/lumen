@@ -1,45 +1,38 @@
-# Curriculum & NCERT Coverage Audit: kebo113
-**Chapter Title:** Plant Growth and Development  
-**NCERT Reference:** Class 11 Biology, Chapter 13 (Reprint 2026-27, pp. 166–180)  
-**Extraction Source:** PyMuPDF (`fitz` span dictionary, blocks, and 2x PNG zoom proofs)  
+# kebo113 Coverage — Plant Growth and Development (Ch. 13, print pp. 166–180)
 
----
-
-## 1. Chapter Architecture & Core Concepts
-- **Total Pedagogical Concepts:** 7
-- **Total Multi-tier Quizzes:** 21 (3 per concept: Foundation, Application, NEET-Challenger)
-- **Total Custom Simulations:** 7 (100% interactive native SVG/Canvas, zero external CDN dependencies)
-
-| Concept # | Title | Pages | Key Simulation |
+## Lessons (7)
+| # | Lesson | Sections | Sims |
 |---|---|---|---|
-| 01 | Characteristics of Plant Growth & Mathematical Growth Kinetics | 166–170 | `growthphasesim` |
-| 02 | Cellular Differentiation, Dedifferentiation, Redifferentiation & Plasticity | 170–172 | `plasticityheterophyllysim` |
-| 03 | Auxins: Discovery, Apical Dominance & Rooting Dynamics | 173–175 | `auxinphototropismsim` |
-| 04 | Gibberellins: Internodal Elongation, Malting & Bolting Lab | 174–176 | `gibberellinboltinglab` |
-| 05 | Cytokinins & Tissue Morphogenesis | 175–176 | `cytokinincellculturelab` |
-| 06 | Ethylene & Abscisic Acid (ABA): Ripening & The Stress Hormone | 176–177 | `abastomataclosuresim` |
-| 07 | Photoperiodism, Vernalisation & Floral Induction | 177–179 | `photoperiodismsim` |
+| 1 | Growth and Indeterminate Meristems | 13.1–13.1.1 | growthlab |
+| 2 | Measuring Growth and Its Phases | 13.1.2–13.1.3 | measurelab |
+| 3 | Growth Rates and Conditions | 13.1.4–13.1.5 | ratelab |
+| 4 | Differentiation and Development | 13.2–13.3 | difflab |
+| 5 | PGR Kinds and Accidental Discoveries | 13.4–13.4.2 | discoverlab |
+| 6 | Auxins, Gibberellins, Cytokinins | 13.4.3.1–13.4.3.3 | promoterlab |
+| 7 | Ethylene, ABA and Summary | 13.4.3.4–13.4.3.5, Summary | stresslab |
 
----
+## Exercises (10, all solved)
+| **13.1** | Define eight terms | 100% Fully solved all eight definitions |
+| **13.2** | No single parameter | 100% Fully solved (organ-matched proxies) |
+| **13.3** | Growth patterns (a–d) | 100% Fully solved all four subparts |
+| **13.4** | Five PGR groups + auxin note | 100% Fully solved (discovery/functions/applications) |
+| **13.5** | ABA stress hormone | 100% Fully solved |
+| **13.6** | Open growth and differentiation | 100% Fully solved comment |
+| **13.7** | SDP and LDP flower together | 100% Answered with beyond-print flag (rationalized topic) |
+| **13.8** | Choose the PGR (a–f) | 100% Fully solved all six subparts |
+| **13.9** | Defoliated photoperiod response | 100% Answered with beyond-print flag (rationalized topic) |
+| **13.10** | Predict four outcomes (a–d) | 100% Fully solved all four subparts |
 
-## 2. 100% Rationalized NCERT End-of-Chapter Exercises Coverage (10/10)
-All 10 exercises from the official 2026-27 reprint have been completely mapped, authored with exhaustive step-by-step reasoning, and integrated into the offline interactive viewer:
+## Print-fidelity notes
+- Print spellings kept verbatim: mersitem, aplical, arithematic, geometrical (body) alongside Geometric (Q3), promotory, complimentary, climactic, NA A, 2, 4-D, alongwith, principle phases, stationary (body) vs senescent (Summary).
+- Rationalization artifacts flagged: the promised light/temperature flowering discussion is missing; Q7/Q9 test absent photoperiodism (solutions flagged beyond-print standard material).
+- No beyond-chapter insertions: no florigen/phytochrome/vernalisation lessons, no hormone signalling cascades, no BR/jasmonate/SA/strigolactones.
 
-1. **Ex 1:** Define growth, differentiation, development, dedifferentiation, redifferentiation, determinate growth, meristem and growth rate.
-2. **Ex 2:** Why is not any one parameter good enough to demonstrate growth throughout the life of a flowering plant?
-3. **Ex 3:** Describe briefly: (a) Arithmetic growth, (b) Geometric growth, (c) Sigmoid growth curve, (d) Absolute and relative growth rates.
-4. **Ex 4:** List five main groups of natural plant growth regulators. Write a note on discovery, physiological functions and agricultural/horticultural applications of any one of them (detailed note on Auxins).
-5. **Ex 5:** Why is abscisic acid also known as stress hormone?
-6. **Ex 6:** ‘Both growth and differentiation in higher plants are open’. Comment.
-7. **Ex 7:** ‘Both a short day plant and a long day plant can produce / flower simultaneously in a given place’. Explain with critical photoperiod thresholds.
-8. **Ex 8:** Targeted PGR selection for 6 practical scenarios (rooting, ripening, senescence delay, axillary bud growth, bolting, stomatal closure).
-9. **Ex 9:** Would a defoliated plant respond to photoperiodic cycle? Why? (Leaves as perception site & florigen synthesis).
-10. **Ex 10:** Predicted physiological outcomes for 4 experimental situations (GA3 on rice seedlings, cells stopping differentiation, rotten fruit with unripe fruits, missing cytokinin in culture medium).
-
----
-
-## 3. Offline Budget & Security Constraints
-- Strict single-file offline HTML compiled under 2.0 MB budget.
-- Zero external CDN dependencies (fonts, styles, scripts).
-- Zero eager iframes.
-- Validated with headless browser rendering and assertion test suite.
+## Verification Criteria
+- [x] Strict offline bundle (< 2.0 MB target).
+- [x] Zero external CDN fonts, stylesheets, or scripts.
+- [x] Zero eager iframes in static markup.
+- [x] 7 custom native interactive simulations.
+- [x] 21 multi-tier practice quizzes with instant feedback.
+- [x] 100% solved rationalized NCERT exercises (all 10 exercises).
+- [x] Validated by Node test harness (`tests/verify.cjs`).

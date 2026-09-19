@@ -39,8 +39,8 @@ window.SIMS.amineclass = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>sp³ N + lone pair</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>1° / 2° / 3°</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pyr">Fig. 9.1 pyramid (108°)</button>' +
-      '<button class="preset-btn" id="p-cls">Intext 9.1 classifier</button>';
+      '<button class="preset-btn active" data-preset="pyramid" id="p-pyr">Fig. 9.1 pyramid (108°)</button>' +
+      '<button class="preset-btn" data-preset="classifier" id="p-cls">Intext 9.1 classifier</button>';
     document.getElementById("p-pyr").onclick = function(){ setActivePreset(this); mode="pyramid"; draw(App.state.t); };
     document.getElementById("p-cls").onclick = function(){ setActivePreset(this); mode="class"; draw(App.state.t); };
     var ctr = '<div class="control-item"><div class="control-label"><span>Example</span><span class="val" id="ctrl-ex">1</span></div>' +
@@ -84,10 +84,10 @@ window.SIMS.preplab = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>1° amine product</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Blocked for Ar–X</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="r-h">Hoffmann (one C less)</button>' +
-      '<button class="preset-btn" id="r-g">Gabriel (aliphatic 1° only)</button>' +
-      '<button class="preset-btn" id="r-n">Nitrile ascent (Example 9.2)</button>' +
-      '<button class="preset-btn" id="r-a">Ammonolysis ladder</button>';
+      '<button class="preset-btn active" data-preset="hoffmann" id="r-h">Hoffmann (one C less)</button>' +
+      '<button class="preset-btn" data-preset="gabriel" id="r-g">Gabriel (aliphatic 1° only)</button>' +
+      '<button class="preset-btn" data-preset="nitrile" id="r-n">Nitrile ascent (Example 9.2)</button>' +
+      '<button class="preset-btn" data-preset="ammonia" id="r-a">Ammonolysis ladder</button>';
     document.getElementById("r-h").onclick = function(){ setActivePreset(this); route="hoffmann"; App.resetTimeline(); };
     document.getElementById("r-g").onclick = function(){ setActivePreset(this); route="gabriel"; App.resetTimeline(); };
     document.getElementById("r-n").onclick = function(){ setActivePreset(this); route="nitrile"; App.resetTimeline(); };
@@ -175,8 +175,8 @@ window.SIMS.hbondbp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>3°</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>alcohol</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-tab">Table 9.2 bars</button>' +
-      '<button class="preset-btn" id="h-fig">Fig. 9.2 H-bonds in 1°</button>';
+      '<button class="preset-btn active" data-preset="table" id="h-tab">Table 9.2 bars</button>' +
+      '<button class="preset-btn" data-preset="figure" id="h-fig">Fig. 9.2 H-bonds in 1°</button>';
     document.getElementById("h-tab").onclick = function(){ setActivePreset(this); highlight=0; draw(App.state.t); };
     document.getElementById("h-fig").onclick = function(){ setActivePreset(this); highlight=1; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -241,10 +241,10 @@ window.SIMS.aminebasicity = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>smaller pK_b = stronger base</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>aniline (conjugated)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="b-me">Aqueous methyl order</button>' +
-      '<button class="preset-btn" id="b-et">Aqueous ethyl order</button>' +
-      '<button class="preset-btn" id="b-gas">Gas phase 3°>2°>1°</button>' +
-      '<button class="preset-btn" id="b-an">Aniline resonance (5 vs 2)</button>';
+      '<button class="preset-btn active" data-preset="aqueous-methyl" id="b-me">Aqueous methyl order</button>' +
+      '<button class="preset-btn" data-preset="aqueous-ethyl" id="b-et">Aqueous ethyl order</button>' +
+      '<button class="preset-btn" data-preset="gas-phase" id="b-gas">Gas phase 3°>2°>1°</button>' +
+      '<button class="preset-btn" data-preset="aniline" id="b-an">Aniline resonance (5 vs 2)</button>';
     document.getElementById("b-me").onclick = function(){ setActivePreset(this); phase="aq-me"; draw(0); };
     document.getElementById("b-et").onclick = function(){ setActivePreset(this); phase="aq-et"; draw(0); };
     document.getElementById("b-gas").onclick = function(){ setActivePreset(this); phase="gas"; draw(0); };
@@ -320,10 +320,10 @@ window.SIMS.hinsberg = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>insoluble sulphonamide</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span><span>no reaction</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="h-1">1° ethanamine</button>' +
-      '<button class="preset-btn" id="h-2">2° diethylamine</button>' +
-      '<button class="preset-btn" id="h-3">3° triethylamine</button>' +
-      '<button class="preset-btn" id="h-c">Carbylamine (1° only)</button>';
+      '<button class="preset-btn active" data-preset="primary" id="h-1">1° ethanamine</button>' +
+      '<button class="preset-btn" data-preset="secondary" id="h-2">2° diethylamine</button>' +
+      '<button class="preset-btn" data-preset="tertiary" id="h-3">3° triethylamine</button>' +
+      '<button class="preset-btn" data-preset="carbylamine" id="h-c">Carbylamine (1° only)</button>';
     document.getElementById("h-1").onclick = function(){ setActivePreset(this); kind="pri"; App.resetTimeline(); App.play(); };
     document.getElementById("h-2").onclick = function(){ setActivePreset(this); kind="sec"; App.resetTimeline(); App.play(); };
     document.getElementById("h-3").onclick = function(){ setActivePreset(this); kind="ter"; App.resetTimeline(); App.play(); };
@@ -383,10 +383,10 @@ window.SIMS.anilineeas = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#e2e8f0;"></span><span>2,4,6-tribromo (white)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>meta from anilinium</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-br">Br₂ water → tribromo</button>' +
-      '<button class="preset-btn" id="e-no">Direct nitration 51/47/2</button>' +
-      '<button class="preset-btn" id="e-ac">Protect: acetanilide → p-nitro</button>' +
-      '<button class="preset-btn" id="e-fc">No Friedel–Crafts</button>';
+      '<button class="preset-btn active" data-preset="bromination" id="e-br">Br₂ water → tribromo</button>' +
+      '<button class="preset-btn" data-preset="nitration" id="e-no">Direct nitration 51/47/2</button>' +
+      '<button class="preset-btn" data-preset="protected" id="e-ac">Protect: acetanilide → p-nitro</button>' +
+      '<button class="preset-btn" data-preset="friedel-crafts" id="e-fc">No Friedel–Crafts</button>';
     document.getElementById("e-br").onclick = function(){ setActivePreset(this); mode="br"; App.resetTimeline(); };
     document.getElementById("e-no").onclick = function(){ setActivePreset(this); mode="no"; App.resetTimeline(); };
     document.getElementById("e-ac").onclick = function(){ setActivePreset(this); mode="ac"; App.resetTimeline(); };
@@ -464,9 +464,9 @@ window.SIMS.diazocoupling = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f97316;"></span><span>p-hydroxyazobenzene (orange)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>p-aminoazobenzene (yellow)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="d-s">Sandmeyer / Gatterman</button>' +
-      '<button class="preset-btn" id="d-r">Replace by I, F, H, OH, NO₂</button>' +
-      '<button class="preset-btn" id="d-c">Coupling dyes</button>';
+      '<button class="preset-btn active" data-preset="sandmeyer" id="d-s">Sandmeyer / Gatterman</button>' +
+      '<button class="preset-btn" data-preset="replace" id="d-r">Replace by I, F, H, OH, NO₂</button>' +
+      '<button class="preset-btn" data-preset="coupling" id="d-c">Coupling dyes</button>';
     document.getElementById("d-s").onclick = function(){ setActivePreset(this); mode="sand"; draw(0); };
     document.getElementById("d-r").onclick = function(){ setActivePreset(this); mode="rep"; draw(0); };
     document.getElementById("d-c").onclick = function(){ setActivePreset(this); mode="coup"; App.resetTimeline(); App.play(); };

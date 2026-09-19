@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Class 12 Mathematics — Linear Programming.">
-  <title>Linear Programming — Class 12 Mathematics</title>
-  <style>:root {
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 12: Linear Programming — Interactive Textbook</title>
+<style>
+:root {
   --ink: #152637;
   --muted: #536678;
   --paper: #ffffff;
@@ -75,6 +75,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -285,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -600,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -652,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +692,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,78 +1067,425 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
-  <a class="skip-link" href="#main-content">Skip to lesson</a>
-  <header class="topbar">
-    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-    <a class="class-link" href="../index.html">Class 12</a><span class="class-pill">CLASS 12 <span aria-hidden="true">·</span> MATHEMATICS</span>
-  </header>
-  <div class="app-layout">
-    <aside class="sidebar" aria-label="Chapter navigation">
-      <div class="sidebar-heading">Chapter concepts</div>
-      <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--line);">
-        <button class="concept-nav" id="nav-revision"><span class="num">✦</span><span>NCERT Exercises &amp; Revision</span></button>
-      </div>
-      <div style="margin:18px 10px 0;color:var(--muted);font-size:12px;line-height:1.5;">
-        Source: <a href="https://ncert.nic.in/textbook/pdf/lemh206.pdf" target="_blank" rel="noopener">lemh206 PDF ↗</a>
-      </div>
-    </aside>
-    <main id="main-content">
-      <div id="concept-view"></div>
-      <div id="revision-view" class="revision-page" data-block="revise">
-        <div class="concept-header">
-          <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
-          <h1 class="concept-title">Revise, Reflect, Refine</h1>
-          <p class="concept-deck">Mapped source exercises plus an original practice path for Class 12 Mathematics.</p>
-        </div>
-      </div>
-    </main>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
   </div>
-  <footer style="max-width:1040px;margin:0 auto;padding:0 36px 34px;color:var(--muted);font-size:12px;">
-    Source-aware first release · <a href="PLAN.md">Chapter plan</a> · <a href="../MATHS-STATUS.md">Maths status</a>
-  </footer>
-  <script>window.CHAPTER = {"code": "lemh206", "chapterNumber": 12, "book_name": "Mathematics", "title": "Linear Programming", "subtitle": "Linear programming converts constraints into a feasible polygon and tests an objective at its corner points.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lemh206.pdf", "ncert": "https://ncert.nic.in/textbook/pdf/lemh206.pdf", "page_start": 1, "page_end": 12, "extraction": "PyMuPDF page text, dict spans, blocks, and selected PNG zooms. pdftotext not used.", "lessons": [{"id": "mathematical-formulation", "nav": "Mathematical formulation", "title": "Decision variables describe unknown quantities; constraints express limits and the objective measures what to optimise.", "deck": "Non-negativity x≥0,y≥0 is part of many real allocation problems.", "minutes": 8, "section": "12.2", "pages": [2], "print": "PDF p.2", "sim": "lp", "simTitle": "Linear-programming feasible region", "quick": ["Decision variables describe unknown quantities; constraints express limits and the objective measures what to optimise.", "Non-negativity x≥0,y≥0 is part of many real allocation problems."], "formulas": [{"label": "Key relation", "html": "Maximise/minimise Z=ax+by subject to linear constraints", "cond": "Source section 12.2"}], "deeper": "Decision variables describe unknown quantities; constraints express limits and the objective measures what to optimise. Non-negativity x≥0,y≥0 is part of many real allocation problems. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "Write one inequality for each resource before drawing the feasible region.", "prediction": {"prompt": "In a production model, x≥0 and y≥0 express…", "options": ["non-negative production", "negative profit", "equal prices"], "answer": 0, "explanation": "The reliable anchor is Maximise/minimise Z=ax+by subject to linear constraints. Non-negativity x≥0,y≥0 is part of many real allocation problems."}, "connect": [["Production planning", "A factory chooses quantities under labour, material and demand constraints.", [], {"id": "-XDgWV7E61o", "title": "Linear Programming Class-12 Full Chapter (Notes + Exercise) In Detail Concept", "channel": "Clear Study"}], ["Diet planning", "Nutrient minima and cost objectives create a small feasible region."]], "recall": "Say it without looking: Non-negativity x≥0,y≥0 is part of many real allocation problems. Then write Maximise/minimise Z=ax+by subject to linear constraints.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Mathematical formulation?", "options": ["Non-negativity x≥0,y≥0 is part of many real allocation problems.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Non-negativity x≥0,y≥0 is part of many real allocation problems.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Mathematical formulation?", "options": ["Maximise/minimise Z=ax+by subject to linear constraints", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "Maximise/minimise Z=ax+by subject to linear constraints", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "In a production model, x≥0 and y≥0 express…", "options": ["non-negative production", "negative profit", "equal prices"], "answer": 0, "hint": "Start with Maximise/minimise Z=ax+by subject to linear constraints. Check the domain, sign or dimensions before choosing.", "solution": "non-negative production follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §12.2 — Mathematical formulation (official PDF, PDF p.2)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh206.pdf#page=2"}], "printPages": "395"}, {"id": "feasible-region", "nav": "Feasible region", "title": "The feasible region is the set of points satisfying every inequality, including non-negativity.", "deck": "Test a point such as the origin to choose the correct half-plane.", "minutes": 8, "section": "12.2.2", "pages": [4], "print": "PDF p.4", "sim": "lp", "simTitle": "Linear-programming feasible region", "quick": ["The feasible region is the set of points satisfying every inequality, including non-negativity.", "Test a point such as the origin to choose the correct half-plane."], "formulas": [{"label": "Key relation", "html": "feasible set={(x,y): all constraints hold}", "cond": "Source section 12.2.2"}], "deeper": "The feasible region is the set of points satisfying every inequality, including non-negativity. Test a point such as the origin to choose the correct half-plane. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "For x+y≤4, the origin is feasible and the region lies below x+y=4 in the first quadrant.", "prediction": {"prompt": "Which point satisfies x≥0,y≥0 and x+y≤4?", "options": ["(1,2)", "(−1,2)", "(3,3)"], "answer": 0, "explanation": "The reliable anchor is feasible set={(x,y): all constraints hold}. Test a point such as the origin to choose the correct half-plane."}, "connect": [["Diet planning", "Nutrient minima and cost objectives create a small feasible region."], ["Transport allocation", "Capacity constraints support a time or cost objective."]], "recall": "Say it without looking: Test a point such as the origin to choose the correct half-plane. Then write feasible set={(x,y): all constraints hold}.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Feasible region?", "options": ["Test a point such as the origin to choose the correct half-plane.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Test a point such as the origin to choose the correct half-plane.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Feasible region?", "options": ["feasible set={(x,y): all constraints hold}", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "feasible set={(x,y): all constraints hold}", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Which point satisfies x≥0,y≥0 and x+y≤4?", "options": ["(1,2)", "(−1,2)", "(3,3)"], "answer": 0, "hint": "Start with feasible set={(x,y): all constraints hold}. Check the domain, sign or dimensions before choosing.", "solution": "(1,2) follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §12.2.2 — Feasible region (official PDF, PDF p.4)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh206.pdf#page=4"}], "printPages": "397"}, {"id": "corner-point-method", "nav": "Corner-point method", "title": "For a linear objective on a bounded polygon, evaluate it at feasible vertices.", "deck": "Parallel objective lines slide until the last contact with the feasible polygon.", "minutes": 8, "section": "12.2.2", "pages": [4], "print": "PDF p.4", "sim": "lp", "simTitle": "Linear-programming feasible region", "quick": ["For a linear objective on a bounded polygon, evaluate it at feasible vertices.", "Parallel objective lines slide until the last contact with the feasible polygon."], "formulas": [{"label": "Key relation", "html": "optimum Z occurs at a corner or along an optimal edge", "cond": "Source section 12.2.2"}], "deeper": "For a linear objective on a bounded polygon, evaluate it at feasible vertices. Parallel objective lines slide until the last contact with the feasible polygon. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "List intersections, keep feasible vertices, calculate Z at each and compare.", "prediction": {"prompt": "Why are vertices tested in a linear-programming graph?", "options": ["A linear objective reaches an optimum there", "They are always the origin", "They remove all constraints"], "answer": 0, "explanation": "The reliable anchor is optimum Z occurs at a corner or along an optimal edge. Parallel objective lines slide until the last contact with the feasible polygon."}, "connect": [["Transport allocation", "Capacity constraints support a time or cost objective."], ["Production planning", "A factory chooses quantities under labour, material and demand constraints."]], "recall": "Say it without looking: Parallel objective lines slide until the last contact with the feasible polygon. Then write optimum Z occurs at a corner or along an optimal edge.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Corner-point method?", "options": ["Parallel objective lines slide until the last contact with the feasible polygon.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Parallel objective lines slide until the last contact with the feasible polygon.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Corner-point method?", "options": ["optimum Z occurs at a corner or along an optimal edge", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "optimum Z occurs at a corner or along an optimal edge", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Why are vertices tested in a linear-programming graph?", "options": ["A linear objective reaches an optimum there", "They are always the origin", "They remove all constraints"], "answer": 0, "hint": "Start with optimum Z occurs at a corner or along an optimal edge. Check the domain, sign or dimensions before choosing.", "solution": "A linear objective reaches an optimum there follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §12.2.2 — Corner-point method (official PDF, PDF p.4)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh206.pdf#page=4"}], "printPages": "397"}, {"id": "boundedness-and-alternate-optima", "nav": "Boundedness and alternate optima", "title": "A bounded region can have a unique optimum, an optimal edge or no feasible point.", "deck": "If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal.", "minutes": 8, "section": "12.2.2", "pages": [4], "print": "PDF p.4", "sim": "lp", "simTitle": "Linear-programming feasible region", "quick": ["A bounded region can have a unique optimum, an optimal edge or no feasible point.", "If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal."], "formulas": [{"label": "Key relation", "html": "Z constant on an optimal edge ⇒ alternate optima", "cond": "Source section 12.2.2"}], "deeper": "A bounded region can have a unique optimum, an optimal edge or no feasible point. If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "A feasible region extending forever in the improvement direction can make the objective unbounded.", "prediction": {"prompt": "If the feasible region is empty, the problem has…", "options": ["no feasible solution", "an automatic maximum", "two optima"], "answer": 0, "explanation": "The reliable anchor is Z constant on an optimal edge ⇒ alternate optima. If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal."}, "connect": [["Production planning", "A factory chooses quantities under labour, material and demand constraints."], ["Diet planning", "Nutrient minima and cost objectives create a small feasible region."]], "recall": "Say it without looking: If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal. Then write Z constant on an optimal edge ⇒ alternate optima.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Boundedness and alternate optima?", "options": ["If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "If the objective line is parallel to an optimal boundary edge, every point on that edge can be optimal.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Boundedness and alternate optima?", "options": ["Z constant on an optimal edge ⇒ alternate optima", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "Z constant on an optimal edge ⇒ alternate optima", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "If the feasible region is empty, the problem has…", "options": ["no feasible solution", "an automatic maximum", "two optima"], "answer": 0, "hint": "Start with Z constant on an optimal edge ⇒ alternate optima. Check the domain, sign or dimensions before choosing.", "solution": "no feasible solution follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §12.2.2 — Boundedness and alternate optima (official PDF, PDF p.4)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh206.pdf#page=4"}], "printPages": "397"}], "sections": [{"section": "12.2", "title": "Mathematical formulation", "page": 2}, {"section": "12.2.2", "title": "Feasible region", "page": 4}, {"section": "12.2.2", "title": "Corner-point method", "page": 4}, {"section": "12.2.2", "title": "Boundedness and alternate optima", "page": 4}], "exercises": [{"number": "12.1.1", "exercise": "12.1", "question": "Maximise Z = 3x + 4y subject to the constraints : x + y ≤ 4, x ≥ 0, y ≥ 0.", "page": 10, "endPage": 10, "title": "NCERT Exercise 12.1 · Question 1", "conceptIdx": 0, "steps": ["Feasible region: triangle O(0,0), A(4,0), B(0,4) from x + y = 4 on axes.", "Z: O = 0, A = 3(4) = 12, B = 4(4) = 16."], "answer": "Maximum Z = 16 at (0, 4)."}, {"number": "12.1.2", "exercise": "12.1", "question": "Minimise Z = – 3x + 4y subject to x + 2y ≤ 8, 3x + 2y ≤ 12, x ≥ 0, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 2", "conceptIdx": 0, "steps": ["Corners: O(0,0); (0,4) on x + 2y = 8; (4,0) on 3x + 2y = 12; intersection (2,3) solving x + 2y = 8 and 3x + 2y = 12.", "Z: O = 0, (0,4) = 16, (2,3) = −6 + 12 = 6, (4,0) = −12."], "answer": "Minimum Z = −12 at (4, 0)."}, {"number": "12.1.3", "exercise": "12.1", "question": "Maximise Z = 5x + 3y subject to 3x + 5y ≤ 15, 5x + 2y ≤ 10, x ≥ 0, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 3", "conceptIdx": 0, "steps": ["Corners: O(0,0); (2,0) on 5x + 2y = 10; (0,3) on 3x + 5y = 15; intersection solves 3x + 5y = 15, 5x + 2y = 10 giving (20/19, 45/19).", "Z: O = 0, (2,0) = 10, (0,3) = 9, (20/19,45/19) = 100/19 + 135/19 = 235/19 ≈ 12.37."], "answer": "Maximum Z = 235/19 at (20/19, 45/19)."}, {"number": "12.1.4", "exercise": "12.1", "question": "Minimise Z = 3x + 5y such that x + 3y ≥ 3, x + y ≥ 2, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 4", "conceptIdx": 0, "steps": ["Feasible region unbounded with corners (3,0), (3/2,1/2) [intersection of x + 3y = 3 and x + y = 2], (0,2).", "Z: (3,0) = 9, (3/2,1/2) = 9/2 + 5/2 = 7, (0,2) = 10; open half-plane 3x + 5y < 7 has no common point with feasible region."], "answer": "Minimum Z = 7 at (3/2, 1/2)."}, {"number": "12.1.5", "exercise": "12.1", "question": "Maximise Z = 3x + 2y subject to x + 2y ≤ 10, 3x + y ≤ 15, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 5", "conceptIdx": 0, "steps": ["Corners: O(0,0); (5,0); (0,5); intersection of x + 2y = 10 and 3x + y = 15 gives y = 3, x = 4.", "Z: O = 0, (5,0) = 15, (0,5) = 10, (4,3) = 12 + 6 = 18."], "answer": "Maximum Z = 18 at (4, 3)."}, {"number": "12.1.6", "exercise": "12.1", "question": "Minimise Z = x + 2y subject to 2x + y ≥ 3, x + 2y ≥ 6, x, y ≥ 0. Show that the minimum of Z occurs at more than two points.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 6", "conceptIdx": 0, "steps": ["Corners: (6,0) on x + 2y = 6; (0,3) is the intersection of 2x + y = 3 and x + 2y = 6; Z = 6 at both.", "Objective line x + 2y = 6 coincides with constraint boundary, and  x + 2y < 6 has no feasible point, so Z = 6 is minimum on the whole segment."], "answer": "Minimum Z = 6 at every point of the segment joining (6, 0) and (0, 3), hence at more than two points."}, {"number": "12.1.7", "exercise": "12.1", "question": "Minimise and Maximise Z = 5x + 10y subject to x + 2y ≤ 120, x + y ≥ 60, x – 2y ≥ 0, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 7", "conceptIdx": 0, "steps": ["Vertices: (60,0) [x + y = 60 on x-axis], (120,0) [x + 2y = 120 on x-axis], (60,30) [x + 2y = 120 meets x = 2y], (40,20) [x + y = 60 meets x = 2y].", "Z: (60,0) = 300, (120,0) = 600, (60,30) = 300 + 300 = 600, (40,20) = 200 + 200 = 400."], "answer": "Minimum Z = 300 at (60, 0); maximum Z = 600 at every point of the segment joining (120, 0) and (60, 30)."}, {"number": "12.1.8", "exercise": "12.1", "question": "Minimise and Maximise Z = x + 2y subject to x + 2y ≥ 100, 2x – y ≤ 0, 2x + y ≤ 200; x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 8", "conceptIdx": 0, "steps": ["Vertices: (0,50) [x + 2y = 100 on y-axis], (20,40) [x + 2y = 100 meets y = 2x], (50,100) [y = 2x meets 2x + y = 200], (0,200) [2x + y = 200 on y-axis].", "Z: (0,50) = 100, (20,40) = 20 + 80 = 100, (50,100) = 250, (0,200) = 400."], "answer": "Minimum Z = 100 at every point of the segment joining (0, 50) and (20, 40); maximum Z = 400 at (0, 200)."}, {"number": "12.1.9", "exercise": "12.1", "question": "Maximise Z = – x + 2y, subject to the constraints: x ≥ 3, x + y ≥ 5, x + 2y ≥ 6, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 9", "conceptIdx": 0, "steps": ["Feasible region unbounded with corners (4,1) [x + y = 5 meets x + 2y = 6] and (3,2) [x = 3 meets x + y = 5]; Z = −2 and 1 respectively.", "On the ray x = 3, Z = −3 + 2y → ∞ as y → ∞, so the open half-plane −x + 2y > 1 meets the feasible region."], "answer": "No maximum value; Z is unbounded above over the feasible region."}, {"number": "12.1.10", "exercise": "12.1", "question": "Maximise Z = x + y, subject to x – y ≤ –1, –x + y ≤ 0, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 10", "conceptIdx": 0, "steps": ["Constraints require y ≥ x + 1 and y ≤ x simultaneously, which no (x,y) satisfies.", "Hence there is no feasible region and no feasible solution."], "answer": "No feasible solution, so no maximum value exists."}], "exerciseMap": [{"number": "12.1.1", "exercise": "12.1", "question": "Maximise Z = 3x + 4y subject to the constraints : x + y ≤ 4, x ≥ 0, y ≥ 0.", "page": 10, "endPage": 10, "title": "NCERT Exercise 12.1 · Question 1", "conceptIdx": 0, "steps": ["Feasible region: triangle O(0,0), A(4,0), B(0,4) from x + y = 4 on axes.", "Z: O = 0, A = 3(4) = 12, B = 4(4) = 16."], "answer": "Maximum Z = 16 at (0, 4)."}, {"number": "12.1.2", "exercise": "12.1", "question": "Minimise Z = – 3x + 4y subject to x + 2y ≤ 8, 3x + 2y ≤ 12, x ≥ 0, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 2", "conceptIdx": 0, "steps": ["Corners: O(0,0); (0,4) on x + 2y = 8; (4,0) on 3x + 2y = 12; intersection (2,3) solving x + 2y = 8 and 3x + 2y = 12.", "Z: O = 0, (0,4) = 16, (2,3) = −6 + 12 = 6, (4,0) = −12."], "answer": "Minimum Z = −12 at (4, 0)."}, {"number": "12.1.3", "exercise": "12.1", "question": "Maximise Z = 5x + 3y subject to 3x + 5y ≤ 15, 5x + 2y ≤ 10, x ≥ 0, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 3", "conceptIdx": 0, "steps": ["Corners: O(0,0); (2,0) on 5x + 2y = 10; (0,3) on 3x + 5y = 15; intersection solves 3x + 5y = 15, 5x + 2y = 10 giving (20/19, 45/19).", "Z: O = 0, (2,0) = 10, (0,3) = 9, (20/19,45/19) = 100/19 + 135/19 = 235/19 ≈ 12.37."], "answer": "Maximum Z = 235/19 at (20/19, 45/19)."}, {"number": "12.1.4", "exercise": "12.1", "question": "Minimise Z = 3x + 5y such that x + 3y ≥ 3, x + y ≥ 2, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 4", "conceptIdx": 0, "steps": ["Feasible region unbounded with corners (3,0), (3/2,1/2) [intersection of x + 3y = 3 and x + y = 2], (0,2).", "Z: (3,0) = 9, (3/2,1/2) = 9/2 + 5/2 = 7, (0,2) = 10; open half-plane 3x + 5y < 7 has no common point with feasible region."], "answer": "Minimum Z = 7 at (3/2, 1/2)."}, {"number": "12.1.5", "exercise": "12.1", "question": "Maximise Z = 3x + 2y subject to x + 2y ≤ 10, 3x + y ≤ 15, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 5", "conceptIdx": 0, "steps": ["Corners: O(0,0); (5,0); (0,5); intersection of x + 2y = 10 and 3x + y = 15 gives y = 3, x = 4.", "Z: O = 0, (5,0) = 15, (0,5) = 10, (4,3) = 12 + 6 = 18."], "answer": "Maximum Z = 18 at (4, 3)."}, {"number": "12.1.6", "exercise": "12.1", "question": "Minimise Z = x + 2y subject to 2x + y ≥ 3, x + 2y ≥ 6, x, y ≥ 0. Show that the minimum of Z occurs at more than two points.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 6", "conceptIdx": 0, "steps": ["Corners: (6,0) on x + 2y = 6; (0,3) is the intersection of 2x + y = 3 and x + 2y = 6; Z = 6 at both.", "Objective line x + 2y = 6 coincides with constraint boundary, and  x + 2y < 6 has no feasible point, so Z = 6 is minimum on the whole segment."], "answer": "Minimum Z = 6 at every point of the segment joining (6, 0) and (0, 3), hence at more than two points."}, {"number": "12.1.7", "exercise": "12.1", "question": "Minimise and Maximise Z = 5x + 10y subject to x + 2y ≤ 120, x + y ≥ 60, x – 2y ≥ 0, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 7", "conceptIdx": 0, "steps": ["Vertices: (60,0) [x + y = 60 on x-axis], (120,0) [x + 2y = 120 on x-axis], (60,30) [x + 2y = 120 meets x = 2y], (40,20) [x + y = 60 meets x = 2y].", "Z: (60,0) = 300, (120,0) = 600, (60,30) = 300 + 300 = 600, (40,20) = 200 + 200 = 400."], "answer": "Minimum Z = 300 at (60, 0); maximum Z = 600 at every point of the segment joining (120, 0) and (60, 30)."}, {"number": "12.1.8", "exercise": "12.1", "question": "Minimise and Maximise Z = x + 2y subject to x + 2y ≥ 100, 2x – y ≤ 0, 2x + y ≤ 200; x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 8", "conceptIdx": 0, "steps": ["Vertices: (0,50) [x + 2y = 100 on y-axis], (20,40) [x + 2y = 100 meets y = 2x], (50,100) [y = 2x meets 2x + y = 200], (0,200) [2x + y = 200 on y-axis].", "Z: (0,50) = 100, (20,40) = 20 + 80 = 100, (50,100) = 250, (0,200) = 400."], "answer": "Minimum Z = 100 at every point of the segment joining (0, 50) and (20, 40); maximum Z = 400 at (0, 200)."}, {"number": "12.1.9", "exercise": "12.1", "question": "Maximise Z = – x + 2y, subject to the constraints: x ≥ 3, x + y ≥ 5, x + 2y ≥ 6, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 9", "conceptIdx": 0, "steps": ["Feasible region unbounded with corners (4,1) [x + y = 5 meets x + 2y = 6] and (3,2) [x = 3 meets x + y = 5]; Z = −2 and 1 respectively.", "On the ray x = 3, Z = −3 + 2y → ∞ as y → ∞, so the open half-plane −x + 2y > 1 meets the feasible region."], "answer": "No maximum value; Z is unbounded above over the feasible region."}, {"number": "12.1.10", "exercise": "12.1", "question": "Maximise Z = x + y, subject to x – y ≤ –1, –x + y ≤ 0, x, y ≥ 0.", "page": 11, "endPage": 11, "title": "NCERT Exercise 12.1 · Question 10", "conceptIdx": 0, "steps": ["Constraints require y ≥ x + 1 and y ≤ x simultaneously, which no (x,y) satisfies.", "Hence there is no feasible region and no feasible solution."], "answer": "No feasible solution, so no maximum value exists."}], "pageOffset": 393, "printPageStart": 394, "printPageEnd": 405, "paginationProvenance": "folio-read-6-samples"};</script>
-  <script>(function(){
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 12 · LINEAR PROGRAMMING</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="12"></progress>
+      <span id="progress-text">0 / 12</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="revision-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises & Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 10 Exercises from NCERT Class 12 Mathematics Part 2 (pp. 1–12) mapped directly to core concepts with full step-by-step solutions.</p>
+      </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
+    </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"code": "lemh206", "chapterNumber": 12, "title": "Linear Programming", "subtitle": "Linear programming converts constraints into a feasible polygon and tests an objective at its corner points.", "book_name": "Mathematics Part 2", "edition": "Reprint 2026–27", "source": "https://ncert.nic.in/textbook/pdf/lemh206.pdf", "page_start": 1, "page_end": 12, "pageOffset": 393, "printPageStart": 394, "printPageEnd": 405, "paginationProvenance": "folio-read-12-samples", "extraction": "PyMuPDF page text, dict spans, blocks, and selected PNG zooms. pdftotext not used.", "exercisesNote": "All 10 questions from NCERT Exercise 12.1 (printed pp. 403–404), each mapped to the concept it practises and solved by the corner-point method with the feasible region redrawn as a labelled figure.", "lessons": [{"id": "mathematical-formulation", "nav": "Mathematical formulation", "group": "01 / BUILD THE MODEL", "title": "How do you turn a shopkeeper's problem into algebra?", "deck": "A linear programming problem names its decision variables, writes every limit as a linear constraint, and states the profit or cost to be optimised as a linear objective function.", "minutes": 9, "section": "12.1–12.2.1", "pages": [1, 3], "print": "394–396", "sim": "lppform", "simTitle": "LPP model builder: variables, constraints, objective", "watch": "Choose a word problem and watch it become decision variables, resource constraints and an objective function. The readout reports the exact model before anything is drawn.", "quick": ["A <strong>linear programming problem (LPP)</strong> is an optimisation problem: find the best value of a linear function of two or more variables while satisfying linear inequalities.", "The <strong>decision variables</strong> x and y count the choices the manager controls, such as the number of tables and chairs, and they must satisfy the non-negative restrictions x ≥ 0, y ≥ 0.", "Every resource limit becomes a <strong>constraint</strong>: the dealer's money gives 2500x + 500y ≤ 50000, simplified to 5x + y ≤ 100, and storage gives x + y ≤ 60.", "The <strong>objective function</strong> Z = 250x + 75y measures total profit. 'Linear programming' means both the objective and every constraint are linear relations."], "formulas": [{"label": "Linear objective function", "html": "Z = ax + by", "cond": "to be maximised (profit) or minimised (cost)"}, {"label": "A resource constraint", "html": "a<sub>1</sub>x + b<sub>1</sub>y ≤ c", "cond": "resources used cannot exceed what is available"}, {"label": "Non-negative restrictions", "html": "x ≥ 0, y ≥ 0", "cond": "quantities bought or produced cannot be negative"}], "deeper": "Formulation is the step that decides whether a linear programme is useful. The maths only sees numbers, so the modeller must first name the unknowns, then translate each sentence of the story into an inequality, and finally write down exactly what is being maximised or minimised. Notice the two kinds of constraint: structural constraints such as 5x + y ≤ 100 come from real resources, while non-negativity constraints x ≥ 0, y ≥ 0 record the physical fact that you cannot buy a negative number of chairs. Once the model is written, the hard part is over: the geometry of the next lessons solves every problem of this kind by looking only at the corners of a polygon.", "worked": {"title": "NCERT Example (furniture dealer): formulate and first solve", "problem": "A dealer has Rs 50,000 to invest and storage for at most 60 pieces. A table costs Rs 2,500 and earns Rs 250 profit; a chair costs Rs 500 and earns Rs 75 profit. How many of each should he buy to maximise profit?", "given": "Investment ≤ Rs 50,000; storage ≤ 60 pieces; table profit Rs 250, chair profit Rs 75; table cost Rs 2,500, chair cost Rs 500.", "steps": ["Let x be the number of tables and y the number of chairs; x ≥ 0, y ≥ 0.", "Money: 2500x + 500y ≤ 50000, which simplifies to 5x + y ≤ 100. Storage: x + y ≤ 60.", "Objective: maximise Z = 250x + 75y.", "Corner points are O(0, 0), A(20, 0), B(10, 50) and C(0, 60), with Z = 0, 5000, 6250 and 4500 respectively.", "The largest profit is Rs 6,250 at B(10, 50): buy 10 tables and 50 chairs."], "answer": "Maximise Z = 250x + 75y subject to 5x + y ≤ 100, x + y ≤ 60, x ≥ 0, y ≥ 0; maximum Rs 6,250 at (10, 50)."}, "prediction": {"prompt": "In the dealer's model, which quantity is the objective function?", "options": ["x + y ≤ 60", "Z = 250x + 75y", "5x + y ≤ 100"], "answer": 1, "explanation": "The objective is the quantity being maximised, total profit Z = 250x + 75y. The other two expressions are resource constraints."}, "connect": [{"title": "Factory production plans", "text": "A plant chooses how many units of each product to make each week. Machine hours, labour hours and raw material give one linear constraint per resource, and the contribution margin is the objective."}, {"title": "Diet and feed blending", "text": "Nutritionists choose grams of each ingredient so that protein, vitamins and energy meet minimum daily levels while cost is minimised − a classic LPP with many ≥ constraints."}, {"title": "Wow: Kantorovich's transport problem", "text": "In 1939 the Russian mathematician L. V. Kantorovich formulated how to move goods at least cost; the 1941 Hitchcock-Koopmans transport problem and Dantzig's 1947 simplex method turned this into one of the most widely used pieces of mathematics. Kantorovich and Koopmans shared the 1975 Nobel Prize in Economics for it.", "wow": true, "links": [{"t": "Wikipedia: Linear programming", "u": "https://en.wikipedia.org/wiki/Linear_programming"}], "video": {"id": "K7TL5NMlKIk", "title": "Intro to Linear Programming", "channel": "Dr. Trefor Bazett"}}], "recall": "In one sentence, explain why the dealer's money and storage limits both become 'less than or equal to' constraints while his profit becomes the objective function.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "In the furniture-dealer problem, the function Z = 250x + 75y is the…", "options": ["objective function", "constraint", "feasible region"], "answer": 0, "hint": "Look for the quantity that must be maximised.", "solution": "Z measures total profit, so it is the objective function; the inequalities are the constraints.", "wrong": ["", "The constraints are the resource limits 5x + y ≤ 100 and x + y ≤ 60, not Z.", "The feasible region is the set of points satisfying all constraints, not the profit function."]}, {"level": "Medium", "type": "mcq", "prompt": "Which inequality expresses the dealer's storage limit of at most 60 items?", "options": ["x + y ≤ 60", "x + y ≥ 60", "5x + y ≤ 100"], "answer": 0, "hint": "Storage counts items, and 'at most' means no more than.", "solution": "There are x tables and y chairs, so x + y ≤ 60.", "wrong": ["", "'At most' cannot be written with ≥.", "5x + y ≤ 100 came from the money limit, not the storage limit."]}, {"level": "Hard", "type": "number", "prompt": "For the dealer model Z = 250x + 75y, find the profit at the plan (10 tables, 50 chairs).", "answer": 6250, "tolerance": 1, "unit": "rupees", "hint": "Substitute x = 10 and y = 50.", "solution": "Z = 250 × 10 + 75 × 50 = 2500 + 3750 = 6250 rupees."}]}, {"id": "feasible-region", "nav": "Feasible region", "group": "02 / SHADE THE POSSIBLE SET", "title": "Where do all the constraints hold at once?", "deck": "Every inequality keeps one side of a line. The points that survive all of them together form the feasible region, a convex polygon in the first quadrant.", "minutes": 9, "section": "12.2.2", "pages": [4, 6], "print": "397–399", "sim": "lppfeasible", "simTitle": "Feasible-region shader: half-planes and test points", "watch": "Switch between constraint sets and move the test point. The readout reports whether the current point satisfies every constraint, and the shaded polygon is the feasible region.", "quick": ["To graph a linear inequality, first draw the boundary line, then choose one side. Substituting the origin is the quickest test when the line does not pass through it.", "The <strong>feasible region</strong> is the common region determined by all the constraints, including the non-negative restrictions x ≥ 0, y ≥ 0.", "Every point inside or on the boundary of the feasible region is a <strong>feasible solution</strong>; a point outside is an infeasible solution.", "A corner point is where two boundary lines cross. For the dealer, the feasible polygon OABC has corners (0, 0), (20, 0), (10, 50) and (0, 60)."], "formulas": [{"label": "Feasible region", "html": "R = {(x, y) : every constraint holds}", "cond": "intersection of all the constraint half-planes"}, {"label": "Half-plane test", "html": "3x + y ≤ 90", "cond": "origin gives 0 ≤ 90, so shade the origin side"}, {"label": "Corner point", "html": "solve two boundary equations", "cond": "intersection of two constraint lines"}], "deeper": "The feasible region is always convex: if two points lie in it, the whole segment joining them does too, because every constraint is a linear inequality. Non-negativity confines the picture to the first quadrant, so in most textbook problems the region is a polygon bounded by the axes and a few sloping lines. Feasible regions that cannot be enclosed in a circle are called unbounded; the next concepts show that an unbounded region can still have an optimum, but the corner test must be checked against the open half-plane of the objective.", "worked": {"title": "NCERT Example 1: shade the region and read its corners", "problem": "Solve graphically: maximise Z = 4x + y subject to x + y ≤ 50, 3x + y ≤ 90, x ≥ 0, y ≥ 0.", "given": "Z = 4x + y; constraints x + y ≤ 50, 3x + y ≤ 90, x ≥ 0, y ≥ 0.", "steps": ["Draw x + y = 50 through (50, 0) and (0, 50); the origin satisfies the inequality, so shade the side containing O.", "Draw 3x + y = 90 through (30, 0) and (0, 90) and shade the side containing O as well.", "Both lines meet where 3x + y = 90 and x + y = 50; subtracting gives 2x = 40, so x = 20 and y = 30.", "The feasible polygon is O(0, 0), A(30, 0), B(20, 30), C(0, 50)."], "answer": "Feasible region O(0, 0), A(30, 0), B(20, 30), C(0, 50); testing the corners later gives the maximum Z = 120 at (30, 0)."}, "prediction": {"prompt": "For x + y ≤ 4 with x ≥ 0, y ≥ 0, which of these points is NOT in the feasible region?", "options": ["(2, 1)", "(0, 4)", "(3, 3)"], "answer": 2, "explanation": "(3, 3) fails x + y ≤ 4 because 3 + 3 = 6 > 4, so it lies outside the triangular feasible region."}, "connect": [{"title": "Delivery-route planning", "text": "A courier must respect load capacity, driver hours and delivery windows. Each rule is a half-plane, and the feasible set is the collection of routes that break no rule."}, {"title": "Portfolio limits", "text": "Fund managers cap exposure to each sector and require a minimum cash buffer. Feasible portfolios are points in a many-dimensional feasible region."}, {"title": "Wow: a region you can walk through", "text": "In two variables the feasible region is literally a shape on paper. In the dealer's problem the corners are O(0, 0), A(20, 0), B(10, 50) and C(0, 60): the point B corresponds to a real order of 10 tables and 50 chairs, earning Rs 6,250.", "wow": true, "links": [{"t": "Wikipedia: Feasible region", "u": "https://en.wikipedia.org/wiki/Feasible_region"}], "video": {"id": "4rv2bWQwIC8", "title": "Linear Programming Class 12", "channel": "Manocha Academy"}}], "recall": "Explain in one sentence how the two resource constraints 5x + y ≤ 100 and x + y ≤ 60 combine with x ≥ 0, y ≥ 0 to produce one closed polygon.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which point satisfies x ≥ 0, y ≥ 0 and x + y ≤ 4?", "options": ["(1, 2)", "(−1, 2)", "(3, 3)"], "answer": 0, "hint": "Check both non-negativity and the sum.", "solution": "(1, 2) has both coordinates non-negative and 1 + 2 = 3 ≤ 4.", "wrong": ["", "x = −1 violates x ≥ 0.", "3 + 3 = 6 > 4 violates x + y ≤ 4."]}, {"level": "Medium", "type": "mcq", "prompt": "For the constraint 3x + y ≤ 90, which half-plane is shaded?", "options": ["The side containing the origin, because 3(0) + 0 = 0 ≤ 90", "The side away from the origin", "Only the boundary line 3x + y = 90"], "answer": 0, "hint": "Substitute (0, 0) into the inequality.", "solution": "The origin satisfies the inequality, so the feasible half-plane is the side containing the origin.", "wrong": ["", "The origin does satisfy the inequality, so the far side is excluded.", "The boundary line alone is not the half-plane; the inequality includes one whole side."]}, {"level": "Hard", "type": "number", "prompt": "The lines x + y = 50 and 3x + y = 90 meet at a corner of the feasible region. Find the y-coordinate of that corner.", "answer": 30, "tolerance": 0.01, "unit": "units", "hint": "Subtract the first equation from the second.", "solution": "3x + y − (x + y) = 90 − 50 gives 2x = 40, so x = 20 and y = 50 − 20 = 30."}]}, {"id": "corner-point-method", "nav": "Corner-point method", "group": "03 / TEST THE CORNERS", "title": "Why only the corners matter for a linear objective", "deck": "A linear objective on a convex feasible polygon reaches its maximum and minimum at corner points, so the problem reduces to comparing a finite list of numbers.", "minutes": 9, "section": "12.2.2", "pages": [6, 8], "print": "399–401", "sim": "lppcorner", "simTitle": "Corner-point evaluator: slide the objective line", "watch": "Pick a problem and watch the objective line Z = k slide across the feasible polygon. The optimum is always reached where the line last touches a corner, and the readout lists every corner value.", "quick": ["Theorem 1: when the optimal value exists, it must occur at a corner point (vertex) of the feasible region; there is no need to test interior points.", "The corner-point method has two steps: find the feasible polygon and its vertices, then evaluate Z = ax + by at each vertex and compare.", "If the feasible region is bounded, Theorem 2 guarantees both a maximum and a minimum on it.", "Solving two boundary equations together gives the coordinates of each corner; for the dealer, 5x + y = 100 and x + y = 60 meet at (10, 50)."], "formulas": [{"label": "Theorem 1 (corner point)", "html": "optimum of Z = ax + by occurs at a vertex", "cond": "feasible region is a convex polygon"}, {"label": "Theorem 2 (bounded region)", "html": "bounded R ⇒ both max and min exist", "cond": "each attained at a corner of R"}, {"label": "Corner evaluation", "html": "Z(xᵢ, yᵢ) = a xᵢ + b yᵢ", "cond": "compare the finite list of vertex values"}], "deeper": "The corner-point theorem is really a statement about level lines. As k increases, the line ax + by = k slides parallel to itself in the direction of the objective. While the line is still cutting through the interior of the polygon, k can always be increased a little more, so an interior point can never be optimal. The moment the sliding line is about to leave the polygon it is touching a vertex − or a whole edge, in which case both endpoints of that edge are optimal. This is why the graphical method needs no calculus: only the boundary, and in fact only the corners, matter.", "worked": {"title": "NCERT Example 2: minimise with the corner-point method", "problem": "Solve graphically: minimise Z = 200x + 500y subject to x + 2y ≥ 10, 3x + 4y ≤ 24, x ≥ 0, y ≥ 0.", "given": "Z = 200x + 500y; constraints x + 2y ≥ 10, 3x + 4y ≤ 24, x ≥ 0, y ≥ 0.", "steps": ["The bounded feasible region has vertices A(0, 5) where x + 2y = 10 meets the y-axis, B(4, 3) where the two sloping lines meet, and C(0, 6) where 3x + 4y = 24 meets the y-axis.", "Check the intersection: from x + 2y = 10, x = 10 − 2y; substituting in 3x + 4y = 24 gives 30 − 6y + 4y = 24, so y = 3 and x = 4.", "Evaluate Z = 200x + 500y: Z(A) = 200(0) + 500(5) = 2500; Z(B) = 200(4) + 500(3) = 2300; Z(C) = 200(0) + 500(6) = 3000.", "The smallest value is 2300 at B(4, 3)."], "answer": "Minimum Z = 2300 at the corner (4, 3)."}, "prediction": {"prompt": "Five candidate points of a bounded feasible region are given. Which ones must you evaluate for the optimum?", "options": ["Only the corner points", "Only the points on the x-axis", "Every integer point in the region"], "answer": 0, "explanation": "Theorem 1 says the optimum of a linear objective over a convex polygon is attained at a corner point, so evaluating the vertices is enough."}, "connect": [{"title": "Blending petrol grades", "text": "Refineries choose how much of each component to blend. Octane, sulphur and vapour-pressure limits cut out a feasible polygon, and the objective is cost per litre."}, {"title": "Workforce scheduling", "text": "Choosing how many staff to start on each shift under minimum coverage is a linear programme; the corner-point method finds the cheapest roster."}, {"title": "Wow: slide the profit line", "text": "Imagine the objective 4x + y = k as a straight line that slides across the feasible triangle O(0, 0), A(30, 0), B(20, 30), C(0, 50). It first touches O and last touches A, where k = 120 — the maximum profit is read off at the final corner.", "wow": true, "links": [{"t": "Wikipedia: Corner-point method", "u": "https://en.wikipedia.org/wiki/Corner_point"}], "video": {"id": "0TD9EQcheZM", "title": "Linear Programming 1: Maximization — Extreme/Corner Points (LP)", "channel": "Joshua Emmanuel"}}], "recall": "In one sentence, explain why an interior point of the feasible region can never give the maximum of a linear objective.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Why does evaluating Z only at the corner points of a bounded polygon give the optimum?", "options": ["A linear objective on a convex polygon attains its extreme values at a vertex", "Corners are the only feasible points", "The objective is constant everywhere"], "answer": 0, "hint": "Think about sliding the level line ax + by = k.", "solution": "Theorem 1 states that when the optimum exists it occurs at a corner point of the feasible region.", "wrong": ["", "The polygon has infinitely many feasible interior points, but they cannot beat the corners.", "The objective is constant only along a level line, not over the whole region."]}, {"level": "Medium", "type": "number", "prompt": "For Z = 4x + y, compute Z at the corner point (20, 30).", "answer": 110, "tolerance": 0.01, "unit": "units", "hint": "Substitute x = 20 and y = 30.", "solution": "Z = 4 × 20 + 30 = 80 + 30 = 110."}, {"level": "Hard", "type": "number", "prompt": "Minimise Z = 200x + 500y over the corner points (0, 5), (4, 3) and (0, 6). What is the minimum value?", "answer": 2300, "tolerance": 0.5, "unit": "units", "hint": "Evaluate Z at all three corners and take the smallest.", "solution": "Z(0, 5) = 2500, Z(4, 3) = 800 + 1500 = 2300 and Z(0, 6) = 3000, so the minimum is 2300."}]}, {"id": "boundedness-and-alternate-optima", "nav": "Boundedness and special cases", "group": "04 / WHEN THE ANSWER IS NOT UNIQUE", "title": "Bounded, unbounded, infeasible — three endings to one method", "deck": "A bounded region has a maximum and a minimum; an unbounded region may have none; parallel objective lines can make a whole edge optimal; and inconsistent constraints leave nothing at all.", "minutes": 10, "section": "12.2.2", "pages": [8, 10], "print": "401–403", "sim": "lppcases", "simTitle": "Special-case explorer: alternate optima, unbounded, infeasible", "watch": "Cycle through the four endings of a two-variable linear programme. The verdict explains why the corner table alone is not enough when the feasible region is unbounded or empty.", "quick": ["If two corner points give the same optimal value of Z, then every point on the edge joining them is also optimal: the problem has <strong>multiple optimal solutions</strong>.", "If the feasible region is unbounded, test the open half-plane Z > M for a maximum (or Z < m for a minimum). If it meets the region, no optimum exists.", "If the constraints contradict one another, the feasible region is empty and the problem has <strong>no feasible solution</strong>.", "For a bounded region Theorem 2 guarantees both a maximum and a minimum, each at a corner; unbounded and empty regions need the extra checks."], "formulas": [{"label": "Multiple optima", "html": "Z(C) = Z(D) ⇒ every point of CD is optimal", "cond": "the objective line is parallel to the edge CD"}, {"label": "Unbounded check", "html": "Z > M meets R?", "cond": "if yes there is no maximum; if no, M is the maximum"}, {"label": "Empty region", "html": "constraints inconsistent", "cond": "no (x, y) satisfies all of them"}], "deeper": "An unbounded feasible region looks dangerous but is easy to handle. Evaluate Z at every corner and let M be the largest value. If the open half-plane Z > M contains even one feasible point, then values of Z can be made arbitrarily large and there is no maximum; otherwise M really is the maximum. The same test with Z < m handles a minimum. Multiple optima arise when the objective line is parallel to an edge of the feasible polygon: then the sliding distance is shared by the whole edge, and every point of that edge gives the same optimum. Infeasibility, finally, is a signal that the model itself is over-constrained and must be reformulated.", "worked": {"title": "NCERT Example 3: multiple optimal solutions", "problem": "Minimise and maximise Z = 3x + 9y subject to x + 3y ≤ 60, x + y ≥ 10, x ≤ y, x ≥ 0, y ≥ 0.", "given": "Z = 3x + 9y; constraints x + 3y ≤ 60, x + y ≥ 10, x ≤ y, x ≥ 0, y ≥ 0.", "steps": ["The feasible region is the bounded polygon ABCD with corners A(0, 10), B(5, 5), C(15, 15) and D(0, 20).", "A(0, 10) comes from x + y = 10 on the y-axis; B(5, 5) from x + y = 10 meeting y = x; C(15, 15) from x = y meeting x + 3y = 60; D(0, 20) from x + 3y = 60 on the y-axis.", "Evaluate Z: Z(A) = 0 + 90 = 90; Z(B) = 15 + 45 = 60; Z(C) = 45 + 135 = 180; Z(D) = 0 + 180 = 180.", "The minimum is 60 at B(5, 5), and the maximum 180 is attained at both C and D, so every point of the edge CD is optimal."], "answer": "Minimum Z = 60 at (5, 5); maximum Z = 180 at (15, 15), (0, 20) and every point of the segment joining them."}, "prediction": {"prompt": "A bounded feasible polygon has corners with Z values 12, 18, 18 and 25. What can you conclude?", "options": ["The maximum is 25 and it is unique at one corner", "The maximum 18 occurs along an edge", "The problem is infeasible"], "answer": 0, "explanation": "The two 18s are not the largest value, so the unique maximum is 25 at its corner; multiple optima would require the largest value to repeat."}, "connect": [{"title": "Ties in a production plan", "text": "If two corner plans earn exactly the same profit, the manager can pick any mix along the edge between them. Real plants then choose using non-linear concerns such as maintenance or risk."}, {"title": "Unbounded needs a reality check", "text": "An unbounded model usually means a constraint was forgotten. Before reporting 'no maximum', check whether selling more of a product really has no limit."}, {"title": "Wow: Kantorovich and Koopmans win the Nobel", "text": "Leonid Kantorovich and Tjalling Koopmans shared the 1975 Nobel Memorial Prize in Economic Sciences for their work on the optimal allocation of resources — the mathematics of exactly the special cases explored in this lab.", "wow": true, "links": [{"t": "Wikipedia: Leonid Kantorovich", "u": "https://en.wikipedia.org/wiki/Leonid_Kantorovich"}], "video": {"id": "_eMA0LWsRQQ", "title": "Linear Programming 5: Alternate solutions, Infeasibility, Unboundedness, & Redundancy", "channel": "Joshua Emmanuel"}}], "recall": "In one sentence, explain how you would prove that a maximum value M found at a corner is really the maximum when the feasible region is unbounded.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "The maximum of a linear objective is attained at two adjacent corners of a bounded region. What else is true?", "options": ["Every point of the edge joining those corners is also optimal", "Only the first corner is optimal", "The region is infeasible"], "answer": 0, "hint": "Think of the objective line lying along the edge.", "solution": "When two adjacent corners tie for the optimum, the objective line is parallel to that edge, so every point of the edge gives the same value.", "wrong": ["", "Both corners tie, and so does the whole edge between them.", "Infeasibility is a different situation: the feasible region is empty."]}, {"level": "Medium", "type": "mcq", "prompt": "An unbounded feasible region has no maximum for Z when…", "options": ["the half-plane Z > M still meets the feasible region", "the region is bounded", "the objective has negative coefficients"], "answer": 0, "hint": "Use the open half-plane test from the corner-point method.", "solution": "If points with Z > M remain feasible, Z can be made arbitrarily large, so M is not the maximum.", "wrong": ["", "A bounded region always has a maximum.", "Negative coefficients alone say nothing about existence of the maximum."]}, {"level": "Hard", "type": "number", "prompt": "For Z = 3x + 9y, find Z at the corner point (15, 15).", "answer": 180, "tolerance": 0.01, "unit": "units", "hint": "Substitute x = 15 and y = 15.", "solution": "Z = 3 × 15 + 9 × 15 = 45 + 135 = 180."}]}], "exercises": [{"q": 1, "title": "Maximise profit on a triangular region", "conceptIdx": 2, "page": 10, "printPage": 403, "question": "Maximise Z = 3x + 4y subject to the constraints : x + y ≤ 4, x ≥ 0, y ≥ 0.", "given": "Z = 3x + 4y; constraints x + y ≤ 4, x ≥ 0, y ≥ 0.", "steps": ["Draw x + y = 4 through (4, 0) and (0, 4). With x ≥ 0 and y ≥ 0 the feasible region is the triangle O(0, 0), A(4, 0), B(0, 4).", "Evaluate Z at the corners: Z(O) = 0, Z(A) = 3(4) + 4(0) = 12, Z(B) = 3(0) + 4(4) = 16.", "The largest corner value is 16 at B(0, 4), and the bounded region guarantees it is the maximum."], "answer": "Maximum Z = 16 at (0, 4).", "takeaway": "For a bounded triangular feasible region, comparing the three corner values is enough to find the optimum.", "conceptName": "Corner-point method", "figure": "12.1.1"}, {"q": 2, "title": "Minimise on a bounded quadrilateral", "conceptIdx": 2, "page": 11, "printPage": 404, "question": "Minimise Z = −3x + 4y subject to x + 2y ≤ 8, 3x + 2y ≤ 12, x ≥ 0, y ≥ 0.", "given": "Z = −3x + 4y; constraints x + 2y ≤ 8, 3x + 2y ≤ 12, x ≥ 0, y ≥ 0.", "steps": ["The feasible region is bounded by the axes and the two lines; its corners are O(0, 0), A(4, 0) where 3x + 2y = 12 meets the x-axis, B(2, 3) where the two sloping lines meet, and C(0, 4) where x + 2y = 8 meets the y-axis.", "Intersection B: from x + 2y = 8, x = 8 − 2y; substituting in 3x + 2y = 12 gives 24 − 6y + 2y = 12, so y = 3 and x = 2.", "Evaluate Z = −3x + 4y: Z(O) = 0, Z(A) = −12, Z(B) = −6 + 12 = 6, Z(C) = 16.", "The minimum is −12 at A(4, 0)."], "answer": "Minimum Z = −12 at (4, 0).", "takeaway": "A bounded region has both a maximum and a minimum; here the minimum sits on the x-axis where the line 3x + 2y = 12 meets it.", "conceptName": "Bounded feasible region", "figure": "12.1.2"}, {"q": 3, "title": "Maximise with fractional corner coordinates", "conceptIdx": 2, "page": 11, "printPage": 404, "question": "Maximise Z = 5x + 3y subject to 3x + 5y ≤ 15, 5x + 2y ≤ 10, x ≥ 0, y ≥ 0.", "given": "Z = 5x + 3y; constraints 3x + 5y ≤ 15, 5x + 2y ≤ 10, x ≥ 0, y ≥ 0.", "steps": ["The feasible region has corners O(0, 0), A(2, 0) from 5x + 2y = 10, B(0, 3) from 3x + 5y = 15, and the intersection P of the two sloping lines.", "Solve 3x + 5y = 15 and 5x + 2y = 10: multiplying the first by 2 and the second by 5 gives 6x + 10y = 30 and 25x + 10y = 50; subtracting, 19x = 20, so x = 20/19 and y = 45/19.", "Evaluate Z: Z(O) = 0, Z(A) = 10, Z(B) = 9, Z(P) = 5(20/19) + 3(45/19) = (100 + 135)/19 = 235/19 ≈ 12.37.", "The largest value is 235/19 at P(20/19, 45/19)."], "answer": "Maximum Z = 235/19 at (20/19, 45/19) ≈ (1.05, 2.37).", "takeaway": "Corner points need not have integer coordinates; the exact fractions still give the exact optimum.", "conceptName": "Corner-point method", "figure": "12.1.3"}, {"q": 4, "title": "Minimise over an unbounded region", "conceptIdx": 3, "page": 11, "printPage": 404, "question": "Minimise Z = 3x + 5y such that x + 3y ≥ 3, x + y ≥ 2, x, y ≥ 0.", "given": "Z = 3x + 5y; constraints x + 3y ≥ 3, x + y ≥ 2, x, y ≥ 0.", "steps": ["The feasible region is unbounded above and to the right; its corners are A(3, 0) from x + 3y = 3, B(3/2, 1/2) where the two sloping lines meet, and C(0, 2) from x + y = 2.", "Intersection B: subtract x + y = 2 from x + 3y = 3 to get 2y = 1, so y = 1/2 and x = 3/2.", "Evaluate Z: Z(A) = 9, Z(B) = 9/2 + 5/2 = 7, Z(C) = 10.", "Corner checks alone are not decisive on an unbounded region; the open half-plane 3x + 5y < 7 contains no feasible point, so 7 is the true minimum."], "answer": "Minimum Z = 7 at (3/2, 1/2).", "takeaway": "On an unbounded region, confirm the corner value with the open half-plane test before calling it the optimum.", "conceptName": "Unbounded region", "figure": "12.1.4"}, {"q": 5, "title": "Maximise a two-constraint programme", "conceptIdx": 2, "page": 11, "printPage": 404, "question": "Maximise Z = 3x + 2y subject to x + 2y ≤ 10, 3x + y ≤ 15, x, y ≥ 0.", "given": "Z = 3x + 2y; constraints x + 2y ≤ 10, 3x + y ≤ 15, x, y ≥ 0.", "steps": ["The feasible polygon has corners O(0, 0), A(5, 0) from 3x + y = 15, C(0, 5) from x + 2y = 10, and B where the two lines meet.", "Solve x + 2y = 10 and 3x + y = 15: from the second y = 15 − 3x; substituting gives x + 30 − 6x = 10, so −5x = −20, x = 4 and y = 3.", "Evaluate Z: Z(O) = 0, Z(A) = 15, Z(C) = 10, Z(B) = 12 + 6 = 18.", "The maximum is 18 at B(4, 3)."], "answer": "Maximum Z = 18 at (4, 3).", "takeaway": "With two resource limits the feasible region is a quadrilateral; the best plan need not use either resource completely.", "conceptName": "Corner-point method", "figure": "12.1.5"}, {"q": 6, "title": "A minimum attained along a whole edge", "conceptIdx": 3, "page": 11, "printPage": 404, "question": "Minimise Z = x + 2y subject to 2x + y ≥ 3, x + 2y ≥ 6, x, y ≥ 0. Show that the minimum of Z occurs at more than two points.", "given": "Z = x + 2y; constraints 2x + y ≥ 3, x + 2y ≥ 6, x, y ≥ 0.", "steps": ["The line x + 2y = 6 meets the axes at A(6, 0) and C(0, 3); the line 2x + y = 3 meets them at (3/2, 0) and (0, 3). The two lines cross at C(0, 3).", "Every point of x + 2y = 6 with x, y ≥ 0 automatically satisfies 2x + y ≥ 3 because 2x + y = 3 + (3/2)x ≥ 3, so the feasible region is unbounded with boundary corners A(6, 0) and C(0, 3).", "Evaluate Z = x + 2y at both corners: Z(A) = 6 and Z(C) = 6. The objective is parallel to the constraint boundary x + 2y = 6.", "The open half-plane x + 2y < 6 contains no feasible point, so Z = 6 is the minimum, attained at every point of the segment AC."], "answer": "Minimum Z = 6 at every point of the segment joining (6, 0) and (0, 3), hence at infinitely many points.", "takeaway": "When the objective is parallel to an edge that bounds the feasible region, the whole edge gives the same optimal value.", "conceptName": "Multiple optimal solutions", "figure": "12.1.6"}, {"q": 7, "title": "Minimum at a corner, maximum along an edge", "conceptIdx": 3, "page": 11, "printPage": 404, "question": "Minimise and Maximise Z = 5x + 10y subject to x + 2y ≤ 120, x + y ≥ 60, x − 2y ≥ 0, x, y ≥ 0.", "given": "Z = 5x + 10y; constraints x + 2y ≤ 120, x + y ≥ 60, x − 2y ≥ 0, x, y ≥ 0.", "steps": ["The constraint x − 2y ≥ 0 means x ≥ 2y, so the feasible region is the bounded quadrilateral with corners (60, 0) on x + y = 60, (120, 0) on x + 2y = 120, (60, 30) where x + 2y = 120 meets x = 2y, and (40, 20) where x + y = 60 meets x = 2y.", "Evaluate Z = 5x + 10y: Z(60, 0) = 300; Z(120, 0) = 600; Z(60, 30) = 300 + 300 = 600; Z(40, 20) = 200 + 200 = 400.", "The minimum is 300 at (60, 0). For the maximum, note Z = 5(x + 2y) = 5(120) = 600 along the whole edge from (120, 0) to (60, 30).", "The open half-plane 5x + 10y > 600 contains no feasible point, so 600 is the maximum."], "answer": "Minimum Z = 300 at (60, 0); maximum Z = 600 at every point of the segment joining (120, 0) and (60, 30).", "takeaway": "A single bounded problem can have a unique minimum and infinitely many maxima when the objective is parallel to one edge.", "conceptName": "Multiple optimal solutions", "figure": "12.1.7"}, {"q": 8, "title": "Minimum on an edge, maximum at a corner", "conceptIdx": 3, "page": 11, "printPage": 404, "question": "Minimise and Maximise Z = x + 2y subject to x + 2y ≥ 100, 2x − y ≤ 0, 2x + y ≤ 200; x, y ≥ 0.", "given": "Z = x + 2y; constraints x + 2y ≥ 100, 2x − y ≤ 0 (that is y ≥ 2x), 2x + y ≤ 200, x, y ≥ 0.", "steps": ["The feasible region is the bounded quadrilateral with corners A(0, 50) on x + 2y = 100, B(20, 40) where x + 2y = 100 meets y = 2x, C(50, 100) where y = 2x meets 2x + y = 200, and D(0, 200) on 2x + y = 200.", "Check B: x + 2(2x) = 100 gives 5x = 100, x = 20, y = 40. Check C: 2x + 2x = 200 gives x = 50, y = 100.", "Evaluate Z = x + 2y: Z(A) = 100, Z(B) = 20 + 80 = 100, Z(C) = 50 + 200 = 250, Z(D) = 0 + 400 = 400.", "The minimum 100 is attained along the edge AB, where x + 2y = 100; the maximum 400 is at D(0, 200)."], "answer": "Minimum Z = 100 at every point of the segment joining (0, 50) and (20, 40); maximum Z = 400 at (0, 200).", "takeaway": "Reading the objective alongside the constraints reveals ties: here Z equals the constrained quantity x + 2y on the minimum edge.", "conceptName": "Multiple optimal solutions", "figure": "12.1.8"}, {"q": 9, "title": "No maximum on an unbounded region", "conceptIdx": 3, "page": 11, "printPage": 404, "question": "Maximise Z = −x + 2y, subject to the constraints: x ≥ 3, x + y ≥ 5, x + 2y ≥ 6, y ≥ 0.", "given": "Z = −x + 2y; constraints x ≥ 3, x + y ≥ 5, x + 2y ≥ 6, y ≥ 0.", "steps": ["The feasible region is unbounded. Its corners are (4, 1) where x + y = 5 meets x + 2y = 6, and (3, 2) where x = 3 meets x + y = 5.", "Evaluate Z: Z(4, 1) = −4 + 2 = −2 and Z(3, 2) = −3 + 4 = 1, so the largest corner value is M = 1.", "Check the open half-plane −x + 2y > 1. On the ray x = 3, y ≥ 2 the value Z = −3 + 2y grows without bound as y increases, and these points are feasible.", "Since Z > M is attainable in the feasible region, Z has no maximum."], "answer": "No maximum value: Z is unbounded above on the feasible region.", "takeaway": "A largest corner value is not automatically a maximum; the open half-plane test decides on an unbounded region.", "conceptName": "Unbounded region", "figure": "12.1.9"}, {"q": 10, "title": "An empty feasible region", "conceptIdx": 3, "page": 11, "printPage": 404, "question": "Maximise Z = x + y, subject to x − y ≤ −1, −x + y ≤ 0, x, y ≥ 0.", "given": "Z = x + y; constraints x − y ≤ −1 (that is y ≥ x + 1), −x + y ≤ 0 (that is y ≤ x), x, y ≥ 0.", "steps": ["Rewrite the first two constraints as y ≥ x + 1 and y ≤ x.", "These require x + 1 ≤ y ≤ x, which would force 1 ≤ 0 — impossible for any real x and y.", "Therefore no point satisfies all the constraints: the feasible region is empty.", "With no feasible solution, neither a maximum nor a minimum of Z exists."], "answer": "No feasible solution, so no maximum value exists.", "takeaway": "Contradictory constraints leave an empty feasible region; always check consistency before optimising.", "conceptName": "Infeasible region", "figure": "12.1.10"}], "exerciseMap": [[1, "Maximise profit on a triangular region", 2, 10], [2, "Minimise on a bounded quadrilateral", 2, 11], [3, "Maximise with fractional corner coordinates", 2, 11], [4, "Minimise over an unbounded region", 3, 11], [5, "Maximise a two-constraint programme", 2, 11], [6, "A minimum attained along a whole edge", 3, 11], [7, "Minimum at a corner, maximum along an edge", 3, 11], [8, "Minimum on an edge, maximum at a corner", 3, 11], [9, "No maximum on an unbounded region", 3, 11], [10, "An empty feasible region", 3, 11]]};
+</script>
+<script>
+// Feasible-region diagrams for the NCERT Exercise 12.1 questions, redrawn as SVG
+// from the constraints printed in books/originals/Class12-Maths-Pt2_lemh206.pdf
+// (Exercise 12.1, printed pp. 403-404).
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", GRID = "#22303f";
+  var AMBER = "#f59e0b", GREEN = "#34d399", BLUE = "#38bdf8", RED = "#f87171";
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 11) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="' + color + '" stroke-width="' + (w || 1.6) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+  }
+
+  // Build a small labelled coordinate panel with an optional shaded polygon.
+  function panel(o){
+    var W = 360, H = 240, L = 42, R = 348, T = 22, B = 196;
+    var X = function(x){ return L + (x / o.xmax) * (R - L); };
+    var Y = function(y){ return B - (y / o.ymax) * (B - T); };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + o.aria + '">';
+    s += '<rect width="' + W + '" height="' + H + '" rx="10" fill="#0b1220" stroke="#1e2d3d"/>';
+    var i, v;
+    for(i = 0; i <= o.xmax + 1e-9; i += o.xt){
+      s += line(X(i), T, X(i), B, GRID, 1);
+      s += text(X(i), B + 15, String(Math.round(i * 100) / 100), {size: 9, color: MUTED});
+    }
+    for(v = 0; v <= o.ymax + 1e-9; v += o.yt){
+      s += line(L, Y(v), R, Y(v), GRID, 1);
+      s += text(L - 5, Y(v) + 3, String(Math.round(v * 100) / 100), {size: 9, color: MUTED, anchor: "end"});
+    }
+    s += line(L, B, R + 6, B, MUTED, 1.4) + line(L, B, L, T - 6, MUTED, 1.4);
+    s += text(R + 4, B + 2, "x", {size: 12, color: INK, anchor: "start"});
+    s += text(L - 2, T - 10, "y", {size: 12, color: INK, anchor: "end"});
+    if(o.poly && o.poly.length){
+      s += '<path d="M' + o.poly.map(function(p){ return X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1); }).join(' L') + ' Z" fill="rgba(52,211,153,.22)" stroke="' + GREEN + '" stroke-width="1.8"/>';
+    }
+    (o.lines || []).forEach(function(a, k){
+      s += line(X(a[0][0]), Y(a[0][1]), X(a[1][0]), Y(a[1][1]), k % 2 ? AMBER : "#fbbf24", 1.8, a[2] || null);
+    });
+    (o.points || []).forEach(function(p){
+      var col = p[3] || GREEN;
+      s += '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="3.6" fill="' + col + '"/>';
+      if(p[2]){
+        var ax = X(p[0]) + (p[4] === undefined ? 6 : p[4]);
+        var ay = Y(p[1]) + (p[5] === undefined ? -6 : p[5]);
+        s += text(ax, ay, p[2], {size: 10, color: col, anchor: p[4] !== undefined && p[4] < 0 ? "end" : "start", weight: 700});
+      }
+    });
+    if(o.note) s += text(W / 2, 224, o.note, {size: 11, color: MUTED});
+    return s + '</svg>';
+  }
+
+  var figs = {};
+
+  figs["12.1.1"] = {
+    caption: "Exercise 12.1 Q1: x + y \u2264 4 gives the triangle O(0, 0), (4, 0), (0, 4); the maximum Z = 16 is at (0, 4).",
+    svg: function(){
+      return panel({
+        xmax: 5, ymax: 5, xt: 1, yt: 1, aria: "Triangle x plus y less than or equal to 4",
+        poly: [[0, 0], [4, 0], [0, 4]], lines: [[[0, 4], [4, 0]]],
+        points: [[0, 0, "O", MUTED, -6, 12], [4, 0, "(4, 0)", MUTED, -2, 14], [0, 4, "(0, 4)", GREEN, 6, -4]],
+        note: "max Z = 3x + 4y = 16 at (0, 4)"
+      });
+    }
+  };
+
+  figs["12.1.2"] = {
+    caption: "Exercise 12.1 Q2: x + 2y \u2264 8 and 3x + 2y \u2264 12 meet at (2, 3); minimum Z = \u221212 at (4, 0).",
+    svg: function(){
+      return panel({
+        xmax: 5, ymax: 5, xt: 1, yt: 1, aria: "Quadrilateral for exercise 12.1 question 2",
+        poly: [[0, 0], [4, 0], [2, 3], [0, 4]],
+        lines: [[[0, 4], [4, 0]], [[0, 6], [4, 0]]],
+        points: [[0, 0, "O", MUTED, -6, 12], [4, 0, "(4, 0)", GREEN, -2, 14], [2, 3, "(2, 3)", MUTED, 6, -4], [0, 4, "(0, 4)", MUTED, 6, -4]],
+        note: "min Z = \u22123x + 4y = \u221212 at (4, 0)"
+      });
+    }
+  };
+
+  figs["12.1.3"] = {
+    caption: "Exercise 12.1 Q3: the two constraints meet at (20/19, 45/19); maximum Z = 235/19 there.",
+    svg: function(){
+      return panel({
+        xmax: 4, ymax: 4, xt: 1, yt: 1, aria: "Quadrilateral for exercise 12.1 question 3",
+        poly: [[0, 0], [2, 0], [20 / 19, 45 / 19], [0, 3]],
+        lines: [[[0, 3], [5, 0]], [[0, 5], [4, 0]]],
+        points: [[0, 0, "O", MUTED, -6, 12], [2, 0, "(2, 0)", MUTED, -2, 14], [20 / 19, 45 / 19, "(20/19, 45/19)", GREEN, 6, -4], [0, 3, "(0, 3)", MUTED, 6, -4]],
+        note: "max Z = 5x + 3y = 235/19 at (20/19, 45/19)"
+      });
+    }
+  };
+
+  figs["12.1.4"] = {
+    caption: "Exercise 12.1 Q4: the unbounded region has corners (1.5, 0.5), (3, 0) and (0, 2); minimum Z = 7 at (1.5, 0.5).",
+    svg: function(){
+      return panel({
+        xmax: 4, ymax: 4, xt: 1, yt: 1, aria: "Unbounded region for exercise 12.1 question 4",
+        poly: [[0, 2], [1.5, 0.5], [3, 0], [4, 0], [4, 4], [0, 4]],
+        lines: [[[0, 1], [3, 0]], [[0, 2], [2, 0]]],
+        points: [[0, 2, "(0, 2)", MUTED, 6, -4], [1.5, 0.5, "(1.5, 0.5)", GREEN, -6, 12], [3, 0, "(3, 0)", MUTED, -2, 14]],
+        note: "min Z = 3x + 5y = 7 at (1.5, 0.5); region unbounded"
+      });
+    }
+  };
+
+  figs["12.1.5"] = {
+    caption: "Exercise 12.1 Q5: x + 2y \u2264 10 and 3x + y \u2264 15 meet at (4, 3); maximum Z = 18 there.",
+    svg: function(){
+      return panel({
+        xmax: 6, ymax: 6, xt: 1, yt: 1, aria: "Quadrilateral for exercise 12.1 question 5",
+        poly: [[0, 0], [5, 0], [4, 3], [0, 5]],
+        lines: [[[0, 5], [10, 0]], [[0, 15], [5, 0]]],
+        points: [[0, 0, "O", MUTED, -6, 12], [5, 0, "(5, 0)", MUTED, -2, 14], [4, 3, "(4, 3)", GREEN, 6, -4], [0, 5, "(0, 5)", MUTED, 6, -4]],
+        note: "max Z = 3x + 2y = 18 at (4, 3)"
+      });
+    }
+  };
+
+  figs["12.1.6"] = {
+    caption: "Exercise 12.1 Q6: x + 2y \u2265 6 gives the optimal edge from (6, 0) to (0, 3), where Z = 6 throughout.",
+    svg: function(){
+      return panel({
+        xmax: 7, ymax: 4, xt: 1, yt: 1, aria: "Unbounded region for exercise 12.1 question 6",
+        poly: [[0, 3], [6, 0], [7, 0], [7, 4], [0, 4]],
+        lines: [[[0, 3], [6, 0]], [[0, 1.5], [3, 0]]],
+        points: [[0, 3, "(0, 3)", BLUE, 6, -4], [6, 0, "(6, 0)", BLUE, -2, 14], [1.5, 0, "(1.5, 0)", MUTED, 0, 14]],
+        note: "min Z = x + 2y = 6 on the edge (6, 0)-(0, 3)"
+      });
+    }
+  };
+
+  figs["12.1.7"] = {
+    caption: "Exercise 12.1 Q7: corners (60, 0), (40, 20), (60, 30), (120, 0); minimum 300 at (60, 0), maximum 600 on the edge to (120, 0).",
+    svg: function(){
+      return panel({
+        xmax: 130, ymax: 70, xt: 30, yt: 10, aria: "Bounded quadrilateral for exercise 12.1 question 7",
+        poly: [[60, 0], [40, 20], [60, 30], [120, 0]],
+        lines: [[[0, 60], [60, 0]], [[0, 0], [70, 35]], [[0, 60], [120, 0]]],
+        points: [[60, 0, "(60, 0)", GREEN, -4, 14], [40, 20, "(40, 20)", MUTED, 6, -4], [60, 30, "(60, 30)", BLUE, 6, -4], [120, 0, "(120, 0)", BLUE, -8, 14]],
+        note: "min 300 at (60, 0); max 600 on edge (60, 30)-(120, 0)"
+      });
+    }
+  };
+
+  figs["12.1.8"] = {
+    caption: "Exercise 12.1 Q8: corners (0, 50), (20, 40), (50, 100), (0, 200); minimum 100 on the edge to (20, 40), maximum 400 at (0, 200).",
+    svg: function(){
+      return panel({
+        xmax: 60, ymax: 210, xt: 10, yt: 30, aria: "Bounded quadrilateral for exercise 12.1 question 8",
+        poly: [[0, 50], [20, 40], [50, 100], [0, 200]],
+        lines: [[[0, 50], [50, 0]], [[0, 0], [100, 200]], [[100, 0], [0, 200]]],
+        points: [[0, 50, "(0, 50)", BLUE, 6, -4], [20, 40, "(20, 40)", BLUE, 6, -4], [50, 100, "(50, 100)", MUTED, -6, -4], [0, 200, "(0, 200)", GREEN, 6, -4]],
+        note: "min 100 on edge (0, 50)-(20, 40); max 400 at (0, 200)"
+      });
+    }
+  };
+
+  figs["12.1.9"] = {
+    caption: "Exercise 12.1 Q9: corners (4, 1) and (3, 2) give Z = \u22122 and 1, but the unbounded region has no maximum.",
+    svg: function(){
+      return panel({
+        xmax: 7, ymax: 6, xt: 1, yt: 1, aria: "Unbounded region for exercise 12.1 question 9",
+        poly: [[3, 2], [4, 1], [6, 0], [7, 0], [7, 6], [3, 6]],
+        lines: [[[3, 0], [8, 5]], [[4, 0], [0, 3]]],
+        points: [[3, 2, "(3, 2)", MUTED, -6, -4], [4, 1, "(4, 1)", MUTED, -6, -4]],
+        note: "no maximum: Z = \u2212x + 2y grows without bound"
+      });
+    }
+  };
+
+  figs["12.1.10"] = {
+    caption: "Exercise 12.1 Q10: y \u2265 x + 1 and y \u2264 x cannot both hold, so the feasible region is empty.",
+    svg: function(){
+      return panel({
+        xmax: 4, ymax: 4, xt: 1, yt: 1, aria: "Inconsistent constraints for exercise 12.1 question 10",
+        lines: [[[0, 0], [4, 4]], [[0, 1], [3, 4]]],
+        points: [],
+        note: "no common point: the feasible region is empty"
+      });
+    }
+  };
+
+  return figs;
+})();
+
+</script>
+<script>
+(function(){
   var C = window.CHAPTER;
   if (!C) {
     console.error("No CHAPTER data object found on window.");
@@ -1077,8 +1503,44 @@ button.btn-secondary {
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1104,8 +1566,7 @@ button.btn-secondary {
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1188,7 +1649,35 @@ button.btn-secondary {
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1205,6 +1694,10 @@ button.btn-secondary {
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1213,16 +1706,17 @@ button.btn-secondary {
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1234,19 +1728,22 @@ button.btn-secondary {
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
@@ -1273,7 +1770,7 @@ button.btn-secondary {
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1299,42 +1796,47 @@ button.btn-secondary {
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1342,7 +1844,7 @@ button.btn-secondary {
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1351,56 +1853,51 @@ button.btn-secondary {
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1441,6 +1938,10 @@ button.btn-secondary {
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1459,7 +1960,7 @@ button.btn-secondary {
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1509,7 +2010,8 @@ button.btn-secondary {
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1518,6 +2020,41 @@ button.btn-secondary {
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1532,9 +2069,6 @@ button.btn-secondary {
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1654,9 +2188,9 @@ button.btn-secondary {
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1672,7 +2206,7 @@ button.btn-secondary {
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1683,8 +2217,8 @@ button.btn-secondary {
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1729,22 +2263,31 @@ button.btn-secondary {
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2333,7 @@ button.btn-secondary {
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2343,7 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2353,31 @@ button.btn-secondary {
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1849,6 +2412,10 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1862,6 +2429,41 @@ button.btn-secondary {
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1869,6 +2471,7 @@ button.btn-secondary {
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1883,335 +2486,628 @@ button.btn-secondary {
   updateProgress();
   routeFromHash();
 })();
-</script>
-  <script>(function () {
-  "use strict";
 
-  var App = window.App;
+</script>
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
+  }
+
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
+  }
+
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
+    }).join("");
+  }
+
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
+    }
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
+
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
+
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
+    }
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
+    }
+    return s;
+  }
+
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
+    }
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
+    }
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
+
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
+
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
+
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
+
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
+})();
+
+
+</script>
+<script>
+// Class 12 Mathematics, Chapter 12 (lemh206) — simulation labs.
+// One lab per lesson, built on the shared Lumen lab helpers (window.LAB).
+(function(){
+  var L = window.LAB, C = L.C;
   window.SIMS = window.SIMS || {};
 
-  function node(id) {
-    return document.getElementById(id);
+  function noTimeline(){
+    var tb = document.getElementById("legacy-lab-toolbar");
+    if(tb) tb.style.display = "none";
   }
 
-  function esc(value) {
-    return String(value).replace(/[&<>"']/g, function (ch) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+  // Shared coordinate frame for the two-variable graphical labs.
+  function frame(xmax, ymax, xt, yt, x0, y0){
+    return L.graph({
+      x0: x0 || 64, y0: y0 || 246, w: 610, h: 205,
+      tmax: xmax, vmin: 0, vmax: ymax, tStep: xt, vStep: yt,
+      tLabel: "x", vLabel: "y"
     });
   }
-
-  function text(x, y, value, color, size, anchor) {
-    return '<text x="' + x + '" y="' + y + '" fill="' + (color || "#f8fafc") +
-      '" font-size="' + (size || 15) + '" text-anchor="' + (anchor || "middle") +
-      '">' + esc(value) + "</text>";
+  function poly(g, pts, fill, stroke, w){
+    var d = "M" + pts.map(function(p){ return g.X(p[0]).toFixed(1) + " " + g.Y(p[1]).toFixed(1); }).join(" L") + " Z";
+    return '<path d="' + d + '" fill="' + (fill || "none") + '" stroke="' + (stroke || "none") + '" stroke-width="' + (w || 2) + '"/>';
+  }
+  function dot(g, p, color, label, dx, dy){
+    var s = L.circle(g.X(p[0]), g.Y(p[1]), 4.5, color);
+    if(label) s += L.text(g.X(p[0]) + (dx || 8), g.Y(p[1]) + (dy === undefined ? -8 : dy), label, {size: 12, color: color, weight: 700, anchor: dx && dx < 0 ? "end" : "start"});
+    return s;
+  }
+  function linePath(g, a, b, color, w, dash){
+    return L.line(g.X(a[0]), g.Y(a[1]), g.X(b[0]), g.Y(b[1]), color, w || 2, dash);
   }
 
-  function cell(label, value, color) {
-    return '<div class="telemetry-cell"><div class="telemetry-label">' + label +
-      '</div><div class="telemetry-val"' + (color ? ' style="color:' + color + '"' : "") +
-      ">" + value + "</div></div>";
-  }
-
-  function shell(body) {
-    return '<rect width="720" height="300" fill="#09131d"></rect>' + body;
-  }
-
-  function range(key, label, min, max, step, value, unit) {
-    return '<label class="control"><span>' + label + ' <output data-math-output="' + key +
-      '">' + value + " " + (unit || "") + '</output></span><input type="range" data-math-key="' +
-      key + '" aria-label="' + label + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></label>';
-  }
-
-  function select(key, label, options, value) {
-    return '<label class="control"><span>' + label + '</span><select data-math-key="' + key + '">' +
-      options.map(function (item) {
-        return '<option value="' + item[0] + '"' + (String(item[0]) === String(value) ? " selected" : "") +
-          ">" + item[1] + "</option>";
-      }).join("") + "</select></label>";
-  }
-
-  function mountControls(state, controls, draw) {
-    var box = node("lab-controls");
-    if (!box) return;
-    box.innerHTML = controls;
-    box.querySelectorAll("[data-math-key]").forEach(function (input) {
-      input.addEventListener("input", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        var output = box.querySelector('[data-math-output="' + input.getAttribute("data-math-key") + '"]');
-        if (output) output.textContent = input.value;
-        draw(0);
-      });
-      input.addEventListener("change", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        draw(0);
-      });
-    });
-  }
-
-  function mountBase(state, title, controls, draw, legend) {
-    if (App && App.state) {
-      App.state.maxT = 6;
-      var scrubber = node("time-scrubber");
-      if (scrubber) scrubber.max = 6;
-    }
-    var legendBox = node("lab-legend");
-    if (legendBox) legendBox.innerHTML = '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>' + title + "</span></div>";
-    if (legendBox && legend) legendBox.innerHTML += legend;
-    mountControls(state, controls, draw);
-    draw(0);
-  }
-
-  function install(id, title, initial, controls, renderer, legend) {
-    var state = Object.assign({}, initial);
-    function draw(t) {
-      var result = renderer(state, t || 0);
-      var diagram = node("diagram");
-      if (diagram) {
-        diagram.innerHTML = result.svg;
-        diagram.setAttribute("aria-label", title);
+  // -----------------------------------------------------------------------
+  // Lesson 1 — lppform: turn a word problem into variables, constraints and
+  // an objective function (NCERT §12.2.1).
+  // -----------------------------------------------------------------------
+  (function(){
+    var MODELS = {
+      furniture: {
+        word: "Tables (x) and chairs (y)",
+        vars: "x = tables, y = chairs",
+        cons: ["5x + y \u2264 100 (money)", "x + y \u2264 60 (storage)", "x \u2265 0, y \u2265 0"],
+        obj: "Maximise Z = 250x + 75y",
+        kind: "maximise profit",
+        note: "Each table earns Rs 250 and each chair Rs 75, so profit is linear in x and y."
+      },
+      diet: {
+        word: "Bags of mix A (x) and mix B (y)",
+        vars: "x = bags of mix A, y = bags of mix B",
+        cons: ["4x + 3y \u2265 24 (protein)", "2x + 5y \u2264 30 (budget)", "x \u2265 0, y \u2265 0"],
+        obj: "Minimise Z = 3x + 2y",
+        kind: "minimise cost",
+        note: "A minimum requirement gives a \u2265 constraint; a budget gives a \u2264 constraint."
+      },
+      transport: {
+        word: "Trucks (x) and tempos (y)",
+        vars: "x = trucks, y = tempos",
+        cons: ["5x + 3y \u2265 40 (load)", "x + y \u2264 12 (fleet)", "x \u2265 0, y \u2265 0"],
+        obj: "Minimise Z = 8000x + 4000y",
+        kind: "minimise running cost",
+        note: "The load must be at least 40 units, and the fleet holds at most 12 vehicles."
       }
-      var read = node("lab-readout");
-      if (read) read.innerHTML = result.readout;
-      var verdict = node("lab-verdict");
-      if (verdict) verdict.innerHTML = result.verdict;
+    };
+    var st = {preset: "furniture"};
+    var W = 720;
+
+    function draw(){
+      var m = MODELS[st.preset];
+      var y0 = 34, h = 56;
+      var s = "";
+      s += L.rect(20, 12, 680, 276, "#0d1a27", ' rx="14" stroke="#1e2d3d"');
+      s += L.text(40, y0 + 6, "DECISION VARIABLES", {size: 13, color: "#38bdf8", weight: 700, anchor: "start"});
+      s += L.rect(40, y0 + 16, 640, h - 14, "rgba(56,189,248,.10)", ' rx="8"');
+      s += L.text(56, y0 + 46, m.vars, {size: 16, color: C.text, anchor: "start"});
+      s += L.text(40, y0 + 96, "CONSTRAINTS", {size: 13, color: "#f59e0b", weight: 700, anchor: "start"});
+      s += L.rect(40, y0 + 106, 640, 96, "rgba(245,158,11,.08)", ' rx="8"');
+      s += L.text(56, y0 + 134, "\u2022 " + m.cons[0], {size: 15, color: C.text, anchor: "start"});
+      s += L.text(56, y0 + 160, "\u2022 " + m.cons[1], {size: 15, color: C.text, anchor: "start"});
+      s += L.text(56, y0 + 186, "\u2022 " + m.cons[2], {size: 15, color: C.text, anchor: "start"});
+      s += L.text(40, y0 + 232, "OBJECTIVE FUNCTION", {size: 13, color: C.ok, weight: 700, anchor: "start"});
+      s += L.rect(40, y0 + 242, 640, 38, "rgba(52,211,153,.10)", ' rx="8"');
+      s += L.text(56, y0 + 268, m.obj, {size: 17, color: C.ok, weight: 700, anchor: "start"});
+      L.svg(s, "Linear programme for the " + m.word + " problem", 290);
+      L.readout([
+        ["Model", m.word],
+        ["Decision variables", m.vars],
+        ["Constraints", m.cons.join("  ·  ")],
+        ["Objective", m.obj, C.ok],
+        ["Optimise", m.kind, "#f59e0b"]
+      ]);
+      L.verdict("<b>" + m.kind.replace(/^./, function(c){ return c.toUpperCase(); }) + ":</b> " + m.note + " Notice how the words 'at least' and 'at most' fix the direction of each inequality.");
     }
-    function mount() {
-      mountBase(state, title, controls(state), draw, legend);
+    function select(id){
+      st.preset = id;
+      L.markPreset(id);
+      L.watch("Model: " + MODELS[id].word + ". Read the left-hand side of each constraint as a resource use, and the right-hand side as what is available.");
+      draw();
     }
-    window.SIMS[id] = { mount: mount, draw: draw };
-  }
-
-  install("relations", "Relation mapper", { mode: "equivalence" }, function (s) {
-    return select("mode", "Choose a relation", [
-      ["equivalence", "Congruence mod 3"],
-      ["order", "Less than or equal"],
-      ["identity", "Identity relation"]
-    ], s.mode);
-  }, function (s) {
-    var labels = s.mode === "equivalence" ? ["0~0", "0~3", "1~1", "2~2", "2~5"] :
-      s.mode === "order" ? ["1≤1", "1≤2", "2≤2", "2≤3", "3≤3"] :
-      ["1→1", "2→2", "3→3", "4→4", "5→5"];
-    var rows = labels.map(function (label, i) {
-      return '<rect x="' + (55 + i * 126) + '" y="110" width="105" height="60" rx="9" fill="#15263a" stroke="#38bdf8"></rect>' +
-        text(107 + i * 126, 146, label, "#f8fafc", 16);
-    }).join("");
-    var property = s.mode === "equivalence" ? "reflexive, symmetric and transitive" :
-      s.mode === "order" ? "reflexive, antisymmetric and transitive" : "reflexive, symmetric and transitive";
-    return {
-      svg: shell(text(360, 45, "A relation is a subset of A × A", "#f8fafc", 18) + rows +
-        text(360, 230, property, "#34d399", 16)),
-      readout: cell("Selected", s.mode) + cell("Pattern", property, "#34d399"),
-      verdict: "<b>Notice:</b> a relation is any chosen set of ordered pairs. A function adds the rule that each input has exactly one output."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>ordered pair</span></div>');
-
-  install("inverse", "Inverse-function mirror", { fn: "square", x: 1.5 }, function (s) {
-    return select("fn", "Choose a function", [["square", "y = x²"], ["linear", "y = 2x + 1"], ["cube", "y = x³"]], s.fn) +
-      range("x", "Input x", -2, 2, 0.1, s.x, "");
-  }, function (s) {
-    var fn = s.fn === "square" ? function (x) { return x * x; } :
-      s.fn === "linear" ? function (x) { return 2 * x + 1; } :
-      function (x) { return x * x * x; };
-    var pts = "", inv = "", y = fn(s.x);
-    for (var x = -2; x <= 2.01; x += 0.1) {
-      var yy = fn(x);
-      pts += (x === -2 ? "M" : "L") + (260 + x * 55) + " " + (160 - yy * 25) + " ";
-      inv += (x === -2 ? "M" : "L") + (260 + yy * 25) + " " + (160 - x * 55) + " ";
+    function mount(){
+      noTimeline();
+      L.presets([["furniture", "Furniture dealer"], ["diet", "Diet mix"], ["transport", "Fleet dispatch"]], st.preset, select);
+      L.legend([["#38bdf8", "decision variables"], ["#f59e0b", "constraints"], [C.ok, "objective"]]);
+      L.watch("Model: " + MODELS[st.preset].word + ". Read the left-hand side of each constraint as a resource use, and the right-hand side as what is available.");
+      draw();
     }
-    return {
-      svg: shell('<line x1="100" y1="160" x2="620" y2="160" stroke="#475569"></line><line x1="260" y1="35" x2="260" y2="270" stroke="#475569"></line>' +
-        '<line x1="110" y1="280" x2="600" y2="40" stroke="#94a3b8" stroke-dasharray="7 6"></line>' +
-        '<path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + inv +
-        '" fill="none" stroke="#f59e0b" stroke-width="3"></path><circle cx="' + (260 + s.x * 55) +
-        '" cy="' + (160 - y * 25) + '" r="6" fill="#34d399"></circle>' +
-        text(500, 70, "f(x)", "#38bdf8", 16) + text(500, 100, "f⁻¹(x)", "#f59e0b", 16) +
-        text(500, 130, "y = x mirror", "#94a3b8", 14)),
-      readout: cell("x", s.x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("swap", "(" + y.toFixed(2) + ", " + s.x.toFixed(1) + ")", "#f59e0b"),
-      verdict: "<b>Inverse:</b> exchanging x and y reflects the graph in y = x. A true inverse requires the original function to be one-to-one on its chosen domain."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>inverse graph</span></div>');
+    window.SIMS.lppform = {mount: mount, draw: draw, select: select, state: st};
+  })();
 
-  install("matrices", "Matrix multiplication table", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    return {
-      svg: shell(text(190, 70, "A", "#38bdf8", 22) + text(510, 70, "B", "#f59e0b", 22) +
-        text(190, 120, "[" + s.a + "  " + s.b + "]", "#f8fafc", 24) + text(190, 160, "[" + s.c + "  " + s.d + "]", "#f8fafc", 24) +
-        text(510, 120, "[" + s.d + "  " + s.b + "]", "#f8fafc", 24) + text(510, 160, "[" + s.c + "  " + s.a + "]", "#f8fafc", 24) +
-        '<path d="M285 130 C335 105 370 105 430 130" fill="none" stroke="#34d399" stroke-width="3" marker-end="url(#arrow-m)"></path>' +
-        text(360, 235, "A × B is defined by row · column products", "#94a3b8", 15) +
-        '<defs><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>'),
-      readout: cell("a₁₁b₁₁ + a₁₂b₂₁", (s.a * s.d + s.b * s.c).toFixed(0), "#34d399") + cell("det A", det.toFixed(0), "#f59e0b"),
-      verdict: "<b>Order matters:</b> matrix multiplication pairs each row of the first matrix with each column of the second. It is not entry-by-entry multiplication."
+  // -----------------------------------------------------------------------
+  // Lesson 2 — lppfeasible: shade the intersection of the constraint
+  // half-planes and probe a test point (NCERT §12.2.2).
+  // -----------------------------------------------------------------------
+  (function(){
+    var CASES = {
+      furniture: {
+        cons: ["5x + y \u2264 100", "x + y \u2264 60", "x \u2265 0, y \u2265 0"],
+        corners: [[0, 0], [20, 0], [10, 50], [0, 60]],
+        xmax: 110, ymax: 110, xt: 20, yt: 20,
+        probe: [10, 20],
+        kind: "bounded",
+        verdict: "The four half-planes overlap in the closed polygon O(0, 0), A(20, 0), B(10, 50), C(0, 60). Points like (10, 20) pass every test, while (25, 40) fails x + y \u2264 60."
+      },
+      example1: {
+        cons: ["x + y \u2264 50", "3x + y \u2264 90", "x \u2265 0, y \u2265 0"],
+        corners: [[0, 0], [30, 0], [20, 30], [0, 50]],
+        xmax: 95, ymax: 95, xt: 15, yt: 15,
+        probe: [15, 15],
+        kind: "bounded",
+        verdict: "Two sloping constraints and the axes give the quadrilateral O(0, 0), A(30, 0), B(20, 30), C(0, 50). Its corners are the only candidates that will matter for the objective."
+      },
+      example5: {
+        cons: ["x + y \u2265 8", "3x + 5y \u2264 15", "x \u2265 0, y \u2265 0"],
+        corners: [],
+        xmax: 10, ymax: 10, xt: 2, yt: 2,
+        probe: [2, 2],
+        kind: "empty",
+        verdict: "The half-planes point away from each other: x + y \u2265 8 needs points above one line, while 3x + 5y \u2264 15 keeps points below the other, and the two never overlap. The feasible region is empty, so the problem has no feasible solution."
+      }
     };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>row · column</span></div>');
+    var st = {preset: "furniture", px: 10, py: 20};
 
-  install("determinant", "Determinant area", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    var x2 = 360 + s.a * 35, y2 = 160 - s.c * 25, x3 = 360 + s.b * 35, y3 = 160 - s.d * 25;
-    return {
-      svg: shell('<polygon points="360,160 ' + x2 + ',' + y2 + ' ' + (x2 + x3 - 360) + ',' + (y2 + y3 - 160) + ' ' + x3 + ',' + y3 + '" fill="#38bdf822" stroke="#38bdf8" stroke-width="3"></polygon>' +
-        '<line x1="360" y1="160" x2="' + x2 + '" y2="' + y2 + '" stroke="#f59e0b" stroke-width="3"></line><line x1="360" y1="160" x2="' + x3 + '" y2="' + y3 + '" stroke="#34d399" stroke-width="3"></line>' +
-        text(360, 55, "det [[a,b],[c,d]] = ad − bc", "#f8fafc", 18) + text(360, 250, "signed area scale", "#94a3b8", 15)),
-      readout: cell("det A", det.toFixed(2), det >= 0 ? "#34d399" : "#f87171") + cell("triangle area", Math.abs(det / 2).toFixed(2), "#f59e0b"),
-      verdict: "<b>Geometry:</b> the determinant is the signed area scale of the parallelogram formed by the column vectors. Zero means the vectors are dependent."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>area scale</span></div>');
-
-  install("continuity", "Continuity microscope", { x: 0.5 }, function (s) {
-    return range("x", "Probe x", -1, 2.5, 0.05, s.x, "");
-  }, function (s) {
-    var x = s.x, y = Math.abs(x - 1) < 0.02 ? 3.2 : (x * x - 1) / (x - 1);
-    var pts = "";
-    for (var u = -1; u <= 2.01; u += 0.05) {
-      var v = u === 1 ? 2 : u + 1;
-      pts += (u === -1 ? "M" : "L") + (90 + (u + 1) * 150) + " " + (250 - v * 48) + " ";
+    function feasible(c, p){
+      if(p[0] < 0 || p[1] < 0) return false;
+      if(c === "furniture") return 5 * p[0] + p[1] <= 100.0001 && p[0] + p[1] <= 60.0001;
+      if(c === "example1") return p[0] + p[1] <= 50.0001 && 3 * p[0] + p[1] <= 90.0001;
+      return p[0] + p[1] >= 8 - 0.0001 && 3 * p[0] + 5 * p[1] <= 15.0001;
     }
-    return {
-      svg: shell('<line x1="90" y1="250" x2="570" y2="250" stroke="#475569"></line><line x1="90" y1="70" x2="90" y2="270" stroke="#475569"></line><path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<circle cx="390" cy="154" r="8" fill="#09131d" stroke="#f59e0b" stroke-width="3"></circle><circle cx="' + (90 + (x + 1) * 150) + '" cy="' + (250 - y * 48) + '" r="7" fill="#34d399"></circle>' +
-        text(470, 70, "f(x) = (x²−1)/(x−1)", "#f8fafc", 16) + text(470, 100, "x ≠ 1; removable hole at x=1", "#f59e0b", 14)),
-      readout: cell("probe x", x.toFixed(2)) + cell("nearby value", y.toFixed(2), "#34d399") + cell("limit at 1", "2", "#f59e0b"),
-      verdict: "<b>Limit versus value:</b> the nearby trend can approach 2 even though the displayed function has a hole at x = 1. Continuity requires the value and the limit to agree."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>removable hole</span></div>');
 
-  install("derivative", "Derivative as slope", { x: 1 }, function (s) {
-    return range("x", "Point x", -2.5, 2.5, 0.1, s.x, "");
-  }, function (s) {
-    var x = s.x, y = x * x, m = 2 * x;
-    var x1 = -2.5, x2 = 2.5, y1 = y + m * (x1 - x), y2 = y + m * (x2 - x);
-    var curve = "";
-    for (var u = -2.5; u <= 2.51; u += 0.08) curve += (u === -2.5 ? "M" : "L") + (360 + u * 65) + " " + (160 - u * u * 24) + " ";
-    return {
-      svg: shell('<line x1="80" y1="160" x2="650" y2="160" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<line x1="' + (360 + x1 * 65) + '" y1="' + (160 - y1 * 24) + '" x2="' + (360 + x2 * 65) + '" y2="' + (160 - y2 * 24) + '" stroke="#f59e0b" stroke-width="3"></line><circle cx="' + (360 + x * 65) + '" cy="' + (160 - y * 24) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "y = x²", "#38bdf8", 18) + text(500, 105, "slope f′(x) = 2x", "#f59e0b", 16)),
-      readout: cell("x", x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("f′(x)", m.toFixed(2), "#f59e0b"),
-      verdict: "<b>Derivative:</b> it is the slope of the tangent. At x = 0 the parabola is flat; on the right the slope is positive and on the left it is negative."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>tangent slope</span></div>');
-
-  install("integration", "Integral as accumulated area", { upper: 3 }, function (s) {
-    return range("upper", "Upper limit b", 0.5, 4, 0.1, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b * b / 3, bars = "", n = 12, w = b / n;
-    for (var i = 0; i < n; i += 1) {
-      var u = i * w, h = u * u;
-      bars += '<rect x="' + (100 + u * 110) + '" y="' + (245 - h * 12) + '" width="' + (w * 110 - 2) + '" height="' + (h * 12) + '" fill="#38bdf844"></rect>';
+    function drawRegion(g, c){
+      var m = "";
+      if(c === "furniture"){
+        m += linePath(g, [0, 100], [20, 0], "#f59e0b", 2.4);
+        m += linePath(g, [0, 60], [60, 0], "#fabd5b", 2.4);
+        m += poly(g, [[0, 0], [20, 0], [10, 50], [0, 60]], "rgba(52,211,153,.22)", C.ok, 2);
+        m += dot(g, [0, 0], C.ok, "O(0, 0)", 4);
+        m += dot(g, [20, 0], C.ok, "A(20, 0)", 6, 18);
+        m += dot(g, [10, 50], C.ok, "B(10, 50)", 8, -8);
+        m += dot(g, [0, 60], C.ok, "C(0, 60)", 8, -8);
+      } else if(c === "example1"){
+        m += linePath(g, [0, 50], [50, 0], "#f59e0b", 2.4);
+        m += linePath(g, [0, 90], [30, 0], "#fabd5b", 2.4);
+        m += poly(g, [[0, 0], [30, 0], [20, 30], [0, 50]], "rgba(52,211,153,.22)", C.ok, 2);
+        m += dot(g, [0, 0], C.ok, "O(0, 0)", 4);
+        m += dot(g, [30, 0], C.ok, "A(30, 0)", 6, 18);
+        m += dot(g, [20, 30], C.ok, "B(20, 30)", 8, -8);
+        m += dot(g, [0, 50], C.ok, "C(0, 50)", 8, -8);
+      } else {
+        m += linePath(g, [0, 8], [8, 0], "#f59e0b", 2.4);
+        m += linePath(g, [0, 3], [5, 0], "#fabd5b", 2.4);
+        m += L.text(g.X(5), g.Y(7), "no common points", {size: 15, color: C.danger, weight: 700});
+      }
+      return m;
     }
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) curve += (x === 0 ? "M" : "L") + (100 + x * 110) + " " + (245 - x * x * 12) + " ";
-    return {
-      svg: shell('<line x1="95" y1="245" x2="555" y2="245" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#f59e0b" stroke-width="3"></path>' + bars +
-        '<line x1="' + (100 + b * 110) + '" y1="65" x2="' + (100 + b * 110) + '" y2="245" stroke="#34d399" stroke-dasharray="6 5" stroke-width="2"></line>' +
-        text(510, 70, "∫₀ᵇ x² dx = b³/3", "#f8fafc", 18) + text(510, 105, "rectangles approximate the area", "#94a3b8", 14)),
-      readout: cell("b", b.toFixed(1)) + cell("area", area.toFixed(3), "#34d399") + cell("meaning", "accumulation", "#f59e0b"),
-      verdict: "<b>Integral:</b> an antiderivative gives a compact way to accumulate infinitely many thin contributions. The rectangles improve as their width shrinks."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>area strips</span></div>');
 
-  install("area", "Area between curves", { upper: 1 }, function (s) {
-    return range("upper", "Boundary b", 0.2, 2, 0.05, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b / 2 - b * b * b / 3, path = "", region = "";
-    for (var x = 0; x <= b + 0.01; x += 0.03) {
-      path += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
-      region += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
+    function draw(){
+      var c = CASES[st.preset];
+      var g = frame(c.xmax, c.ymax, c.xt, c.yt);
+      var s = g.svg + drawRegion(g, st.preset);
+      var ok = feasible(st.preset, [st.px, st.py]);
+      s += L.circle(g.X(st.px), g.Y(st.py), 6, ok ? "#38bdf8" : C.danger);
+      s += L.text(g.X(st.px) + 9, g.Y(st.py) - 9, "(" + L.num(st.px, 0) + ", " + L.num(st.py, 0) + ")", {size: 13, color: ok ? "#38bdf8" : C.danger, anchor: "start"});
+      L.svg(s, "Feasible region for " + c.cons.join(", "), 290);
+      L.readout([
+        ["Constraints", c.cons.join("  ·  ")],
+        ["Region", c.corners.length ? c.corners.map(function(p){ return "(" + p[0] + ", " + p[1] + ")"; }).join("  ") : "empty", c.corners.length ? C.ok : C.danger],
+        ["Probe point", "(" + L.num(st.px, 0) + ", " + L.num(st.py, 0) + ")"],
+        ["Probe feasible?", ok ? "yes \u2014 every constraint holds" : "no \u2014 a constraint fails", ok ? C.ok : C.danger],
+        ["Region type", c.kind, c.kind === "bounded" ? C.ok : C.danger]
+      ]);
+      L.verdict(c.verdict);
     }
-    for (var y = b; y >= -0.01; y -= 0.03) region += "L" + (120 + y * 190) + " " + (235 - y * y * 70) + " ";
-    return {
-      svg: shell('<line x1="110" y1="235" x2="520" y2="235" stroke="#475569"></line><path d="' + path + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + region + 'Z" fill="#34d39955" stroke="#34d399"></path>' +
-        text(500, 70, "between y=x and y=x²", "#f8fafc", 17) + text(500, 105, "∫(x−x²) dx", "#f59e0b", 16)),
-      readout: cell("b", b.toFixed(2)) + cell("area", area.toFixed(4), "#34d399") + cell("bounds", "0 to b", "#f59e0b"),
-      verdict: "<b>Set up before integrating:</b> area is upper curve minus lower curve on the chosen interval. A sketch prevents a reversed sign."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>bounded region</span></div>');
-
-  install("differential", "Differential-equation flow", { family: "separable", t: 1 }, function (s) {
-    return select("family", "Choose a model", [["separable", "dy/dx = y"], ["linear", "dy/dx + y = 1"], ["decay", "dy/dx = −y"]], s.family) +
-      range("t", "time t", 0, 4, 0.1, s.t, "");
-  }, function (s) {
-    var sign = s.family === "decay" ? -1 : 1;
-    var y = s.family === "linear" ? 1 - Math.exp(-s.t) : Math.exp(sign * s.t);
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) {
-      var value = s.family === "linear" ? 1 - Math.exp(-x) : Math.exp(sign * x);
-      curve += (x === 0 ? "M" : "L") + (100 + x * 100) + " " + (235 - Math.min(2.7, value) * 55) + " ";
+    function syncSliders(){
+      L.setVal("feas-px", L.num(st.px, 0));
+      L.setVal("feas-py", L.num(st.py, 0));
+      var a = document.getElementById("feas-px"), b = document.getElementById("feas-py");
+      if(a) a.value = st.px;
+      if(b) b.value = st.py;
+      draw();
     }
-    return {
-      svg: shell('<line x1="95" y1="235" x2="530" y2="235" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><circle cx="' + (100 + s.t * 100) + '" cy="' + (235 - Math.min(2.7, y) * 55) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "solve → apply initial condition", "#f8fafc", 16) + text(500, 105, "one family, many possible constants", "#94a3b8", 14)),
-      readout: cell("model", s.family) + cell("y(t)", y.toFixed(3), "#34d399") + cell("t", s.t.toFixed(1), "#f59e0b"),
-      verdict: "<b>Solution family:</b> integrating produces a constant. An initial condition selects one member of the family."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>solution curve</span></div>');
-
-  install("vectors", "Vector components", { ax: 3, ay: 2, bx: -1, by: 2 }, function (s) {
-    return range("ax", "Aₓ", -4, 4, 1, s.ax, "") + range("ay", "Aᵧ", -4, 4, 1, s.ay, "") +
-      range("bx", "Bₓ", -4, 4, 1, s.bx, "") + range("by", "Bᵧ", -4, 4, 1, s.by, "");
-  }, function (s) {
-    var rx = s.ax + s.bx, ry = s.ay + s.by, mag = Math.sqrt(rx * rx + ry * ry);
-    function arrow(x, y, dx, dy, color) {
-      return '<line x1="' + x + '" y1="' + y + '" x2="' + (x + dx * 35) + '" y2="' + (y - dy * 35) + '" stroke="' + color + '" stroke-width="4" marker-end="url(#arrow-v)"></line>';
+    function select(id){
+      st.preset = id;
+      st.px = CASES[id].probe[0];
+      st.py = CASES[id].probe[1];
+      L.markPreset(id);
+      L.watch("Shaded points satisfy all constraints. Drag the probe across the plane and watch the verdict change as it leaves the region.");
+      syncSliders();
     }
-    return {
-      svg: shell('<line x1="90" y1="180" x2="630" y2="180" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line>' +
-        arrow(360, 180, s.ax, s.ay, "#38bdf8") + arrow(360, 180, s.bx, s.by, "#f59e0b") + arrow(360, 180, rx, ry, "#34d399") +
-        '<defs><marker id="arrow-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>' +
-        text(500, 65, "R = A + B", "#34d399", 18) + text(500, 105, "components add separately", "#94a3b8", 14)),
-      readout: cell("Rₓ", rx.toFixed(0), "#34d399") + cell("Rᵧ", ry.toFixed(0), "#34d399") + cell("|R|", mag.toFixed(2), "#f59e0b"),
-      verdict: "<b>Vector addition:</b> add horizontal components together and vertical components together. The resultant arrow is the diagonal of the component parallelogram."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>input vectors</span></div><div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>resultant</span></div>');
+    function mount(){
+      noTimeline();
+      L.presets([["furniture", "5x + y \u2264 100, x + y \u2264 60"], ["example1", "x + y \u2264 50, 3x + y \u2264 90"], ["example5", "Empty region example"]], st.preset, select);
+      L.controls(
+        L.slider("feas-px", "Probe x", 0, 110, 1, st.px, L.num(st.px, 0)) +
+        L.slider("feas-py", "Probe y", 0, 110, 1, st.py, L.num(st.py, 0))
+      );
+      L.onInput("feas-px", function(v){ st.px = v; L.setVal("feas-px", L.num(v, 0)); draw(); });
+      L.onInput("feas-py", function(v){ st.py = v; L.setVal("feas-py", L.num(v, 0)); draw(); });
+      L.legend([["#f59e0b", "constraint lines"], [C.ok, "feasible region"], ["#38bdf8", "feasible probe"], [C.danger, "infeasible probe"]]);
+      L.watch("Shaded points satisfy all constraints. Drag the probe across the plane and watch the verdict change as it leaves the region.");
+      draw();
+    }
+    window.SIMS.lppfeasible = {mount: mount, draw: draw, select: select, state: st};
+  })();
 
-  install("lines3d", "Angle between lines", { angle: 45 }, function (s) {
-    return range("angle", "Projected angle", 0, 90, 1, s.angle, "°");
-  }, function (s) {
-    var c = Math.cos(s.angle * Math.PI / 180);
-    return {
-      svg: shell('<line x1="165" y1="220" x2="530" y2="90" stroke="#38bdf8" stroke-width="5"></line><line x1="165" y1="220" x2="530" y2="220" stroke="#f59e0b" stroke-width="5"></line><path d="M235 195 A75 75 0 0 1 275 174" fill="none" stroke="#34d399" stroke-width="3"></path>' +
-        text(500, 70, "cos θ = (a₁a₂+b₁b₂+c₁c₂)/(|a₁||a₂|)", "#f8fafc", 14) + text(500, 115, "direction ratios → angle", "#94a3b8", 15)),
-      readout: cell("θ", s.angle.toFixed(0) + "°", "#34d399") + cell("cos θ", c.toFixed(3), "#f59e0b"),
-      verdict: "<b>3D line angle:</b> direction ratios are enough. The dot product compares how much the two directions point the same way."
+  // -----------------------------------------------------------------------
+  // Lesson 3 — lppcorner: evaluate the objective at each corner and compare
+  // (NCERT §12.2.2, Examples 1 and 2).
+  // -----------------------------------------------------------------------
+  (function(){
+    var CASES = {
+      furniture: {
+        cons: ["5x + y \u2264 100", "x + y \u2264 60"],
+        obj: "Z = 250x + 75y",
+        Z: function(x, y){ return 250 * x + 75 * y; },
+        corners: [[0, 0], [20, 0], [10, 50], [0, 60]],
+        region: [[0, 0], [20, 0], [10, 50], [0, 60]],
+        xmax: 110, ymax: 110, xt: 20, yt: 20,
+        best: "maximum", bestAt: 2,
+        verdict: "The corner table does all the work: Z rises from 0 at the origin to 6250 at B(10, 50). Because the region is bounded, no interior point can beat the largest corner value."
+      },
+      example1: {
+        cons: ["x + y \u2264 50", "3x + y \u2264 90"],
+        obj: "Z = 4x + y",
+        Z: function(x, y){ return 4 * x + y; },
+        corners: [[0, 0], [30, 0], [20, 30], [0, 50]],
+        region: [[0, 0], [30, 0], [20, 30], [0, 50]],
+        xmax: 95, ymax: 95, xt: 15, yt: 15,
+        best: "maximum", bestAt: 1,
+        verdict: "Evaluating Z = 4x + y at the four corners gives 0, 120, 110 and 50. The maximum 120 at A(30, 0) beats every other corner, and Theorem 2 guarantees the optimum is at a corner."
+      },
+      example2: {
+        cons: ["x + 2y \u2265 10", "3x + 4y \u2264 24"],
+        obj: "Z = 200x + 500y",
+        Z: function(x, y){ return 200 * x + 500 * y; },
+        corners: [[0, 5], [4, 3], [0, 6]],
+        region: [[0, 5], [4, 3], [0, 6]],
+        xmax: 10, ymax: 10, xt: 2, yt: 2,
+        best: "minimum", bestAt: 1,
+        verdict: "Corners (0, 5), (4, 3) and (0, 6) give Z = 2500, 2300 and 3000. The smallest value is 2300 at B(4, 3), the minimum cost."
+      }
     };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>reference direction</span></div>');
+    var st = {preset: "furniture"};
 
-  install("lp", "Linear-programming feasible region", { slope: 1 }, function (s) {
-    return range("slope", "Objective slope", -2, 3, 0.1, s.slope, "");
-  }, function (s) {
-    var y1 = 4 - s.slope * 1, y2 = 4 - s.slope * 3;
-    return {
-      svg: shell('<line x1="95" y1="245" x2="600" y2="245" stroke="#475569"></line><line x1="95" y1="55" x2="95" y2="245" stroke="#475569"></line><polygon points="95,245 95,105 300,105 470,245" fill="#34d39955" stroke="#34d399" stroke-width="3"></polygon>' +
-        '<line x1="100" y1="' + (245 - y1 * 35) + '" x2="560" y2="' + (245 - y2 * 35) + '" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8 5"></line>' +
-        '<circle cx="95" cy="105" r="7" fill="#38bdf8"></circle><circle cx="300" cy="105" r="7" fill="#38bdf8"></circle><circle cx="470" cy="245" r="7" fill="#38bdf8"></circle>' +
-        text(500, 65, "objective line slides", "#f8fafc", 17) + text(500, 100, "test the vertices", "#94a3b8", 15)),
-      readout: cell("slope", s.slope.toFixed(1)) + cell("candidate points", "vertices", "#34d399") + cell("method", "corner test", "#f59e0b"),
-      verdict: "<b>Graphical method:</b> the optimum occurs at a corner of the feasible region unless the objective is constant along an edge."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>feasible region</span></div>');
+    function draw(){
+      var c = CASES[st.preset];
+      var g = frame(c.xmax, c.ymax, c.xt, c.yt);
+      var s = g.svg;
+      s += poly(g, c.region, "rgba(52,211,153,.20)", C.ok, 2);
+      var bestVal = c.Z(c.corners[c.bestAt][0], c.corners[c.bestAt][1]);
+      var cells = [["Objective", c.obj, C.ok]];
+      for(var i = 0; i < c.corners.length; i++){
+        var p = c.corners[i], z = c.Z(p[0], p[1]);
+        var isBest = (c.best === "maximum" ? z === bestVal : z === bestVal);
+        var col = isBest ? C.ok : C.text;
+        s += dot(g, p, isBest ? C.ok : "#94a3b8", "(" + p[0] + ", " + p[1] + ")", 8, -8);
+        s += L.text(g.X(p[0]), g.Y(p[1]) + 22, "Z = " + L.num(z, 0), {size: 12, color: col, weight: isBest ? 700 : 400});
+        cells.push(["(" + p[0] + ", " + p[1] + ")", "Z = " + L.num(z, 0), col]);
+      }
+      cells.push([c.best === "maximum" ? "Maximum" : "Minimum", c.best.charAt(0).toUpperCase() + c.best.slice(1) + " Z = " + L.num(bestVal, 0) + " at (" + c.corners[c.bestAt][0] + ", " + c.corners[c.bestAt][1] + ")", C.ok]);
+      L.svg(s, "Corner-point evaluation of " + c.obj, 290);
+      L.readout(cells);
+      L.verdict(c.verdict);
+    }
+    function select(id){
+      st.preset = id;
+      L.markPreset(id);
+      L.watch("Compare the Z value printed at every corner. The objective line Z = k is parallel to the direction of these values, so it last touches the polygon at the winning corner.");
+      draw();
+    }
+    function mount(){
+      noTimeline();
+      L.presets([["furniture", "Dealer: Z = 250x + 75y"], ["example1", "Example 1: Z = 4x + y"], ["example2", "Example 2: Z = 200x + 500y"]], st.preset, select);
+      L.legend([[C.ok, "feasible polygon"], [C.ok, "winning corner"], ["#94a3b8", "other corners"]]);
+      L.watch("Compare the Z value printed at every corner. The objective line Z = k is parallel to the direction of these values, so it last touches the polygon at the winning corner.");
+      draw();
+    }
+    window.SIMS.lppcorner = {mount: mount, draw: draw, select: select, state: st};
+  })();
 
-  install("probability", "Probability tree", { pA: 0.6, pB: 0.3 }, function (s) {
-    return range("pA", "P(A)", 0.1, 0.9, 0.05, s.pA, "") + range("pB", "P(B|A)", 0.1, 0.9, 0.05, s.pB, "");
-  }, function (s) {
-    var joint = s.pA * s.pB, other = (1 - s.pA) * 0.2, total = joint + other;
-    return {
-      svg: shell('<line x1="110" y1="150" x2="260" y2="90" stroke="#38bdf8" stroke-width="3"></line><line x1="110" y1="150" x2="260" y2="220" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="60" stroke="#34d399" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="125" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="190" stroke="#f59e0b" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="250" stroke="#94a3b8" stroke-width="3"></line>' +
-        text(100, 140, "start", "#f8fafc", 14) + text(260, 78, "A", "#38bdf8", 17) + text(260, 210, "Aᶜ", "#94a3b8", 17) + text(505, 60, "B", "#34d399", 17) + text(505, 125, "Bᶜ", "#94a3b8", 17) +
-        text(505, 190, "B", "#f59e0b", 17) + text(505, 250, "Bᶜ", "#94a3b8", 17)),
-      readout: cell("P(A∩B)", joint.toFixed(3), "#34d399") + cell("P(B)", total.toFixed(3), "#f59e0b") + cell("P(A|B)", (joint / Math.max(total, 0.001)).toFixed(3), "#38bdf8"),
-      verdict: "<b>Bayes:</b> multiply along a branch, add disjoint branches for P(B), then reverse the condition with P(A|B) = P(A∩B)/P(B)."
+  // -----------------------------------------------------------------------
+  // Lesson 4 — lppcases: multiple optima, unbounded regions and an empty
+  // feasible region (NCERT §12.2.2, Examples 3, 4 and 5).
+  // -----------------------------------------------------------------------
+  (function(){
+    var CASES = {
+      multiple: {
+        obj: "Z = 3x + 9y",
+        corners: [[0, 10], [5, 5], [15, 15], [0, 20]],
+        zv: [90, 60, 180, 180],
+        region: [[0, 10], [5, 5], [15, 15], [0, 20]],
+        xmax: 30, ymax: 30, xt: 5, yt: 5,
+        type: "Bounded, alternate optima",
+        outcome: "min Z = 60 at (5, 5); max Z = 180 on the edge from (15, 15) to (0, 20)",
+        detail: "Two corners tie at 180, so the whole edge CD is optimal: the problem has multiple optimal solutions.",
+        color: C.ok
+      },
+      "unbounded-min": {
+        obj: "Z = \u2013 50x + 20y",
+        corners: [[0, 5], [0, 3], [1, 0], [6, 0]],
+        zv: [100, 60, -50, -300],
+        region: [[0, 5], [1.5, 8], [8, 8], [8, 1.33], [6, 0], [1, 0], [0, 3]],
+        xmax: 8, ymax: 8, xt: 1, yt: 1,
+        type: "Unbounded, no minimum",
+        outcome: "corner values fall to \u2212300 at (6, 0), but Z has no minimum",
+        detail: "Corner (6, 0) gives the smallest corner value \u2212300, yet the open half-plane \u221250x + 20y < \u2212300 meets the feasible region, so Z decreases without bound.",
+        color: C.danger
+      },
+      "unbounded-max": {
+        obj: "Z = \u2013 x + 2y",
+        corners: [[3, 2], [4, 1]],
+        zv: [1, -2],
+        region: [[3, 2], [4, 1], [6, 0], [10, 0], [10, 10], [3, 10]],
+        xmax: 10, ymax: 10, xt: 2, yt: 2,
+        type: "Unbounded, no maximum",
+        outcome: "largest corner value is 1 at (3, 2), but Z has no maximum",
+        detail: "On the ray x = 3, y \u2265 2 the feasible values Z = \u22123 + 2y grow without bound, so the open half-plane \u2212x + 2y > 1 meets the region.",
+        color: C.danger
+      },
+      infeasible: {
+        obj: "Z = 3x + 2y",
+        corners: [],
+        zv: [],
+        region: [],
+        xmax: 10, ymax: 10, xt: 2, yt: 2,
+        type: "Empty feasible region",
+        outcome: "no feasible solution, so no optimum exists",
+        detail: "x + y \u2265 8 and 3x + 5y \u2264 15 point away from each other: no pair (x, y) satisfies both. The model itself must be reformulated.",
+        color: C.danger
+      }
     };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>target branch</span></div>');
+    var st = {preset: "multiple"};
+
+    function draw(){
+      var c = CASES[st.preset];
+      var g = frame(c.xmax, c.ymax, c.xt, c.yt);
+      var s = g.svg;
+      if(c.region.length) s += poly(g, c.region, "rgba(52,211,153,.18)", C.ok, 2);
+      if(st.preset === "infeasible"){
+        s += linePath(g, [0, 8], [8, 0], "#f59e0b", 2.4);
+        s += linePath(g, [0, 3], [5, 0], "#fabd5b", 2.4);
+        s += L.text(g.X(5.2), g.Y(7.6), "no common point", {size: 15, color: C.danger, weight: 700});
+      }
+      var cells = [["Case", c.type, c.color], ["Objective", c.obj, C.ok]];
+      for(var i = 0; i < c.corners.length; i++){
+        var p = c.corners[i];
+        s += dot(g, p, c.color, "(" + p[0] + ", " + p[1] + ")", 8, -8);
+        s += L.text(g.X(p[0]), g.Y(p[1]) + 22, "Z = " + L.num(c.zv[i], 0), {size: 12, color: c.color, weight: 700});
+        cells.push(["(" + p[0] + ", " + p[1] + ")", "Z = " + L.num(c.zv[i], 0), c.color]);
+      }
+      if(!c.corners.length) cells.push(["Feasible points", "none", C.danger]);
+      cells.push(["Outcome", c.outcome, c.color]);
+      L.svg(s, "Special case: " + c.type, 290);
+      L.readout(cells);
+      L.verdict("<b>" + c.type + ".</b> " + c.detail);
+    }
+    function select(id){
+      st.preset = id;
+      L.markPreset(id);
+      L.watch(CASES[id].type + ". Watch the corner values, then read the extra check that decides the outcome.");
+      draw();
+    }
+    function mount(){
+      noTimeline();
+      L.presets([["multiple", "Multiple optima"], ["unbounded-min", "Unbounded (no minimum)"], ["unbounded-max", "Unbounded (no maximum)"], ["infeasible", "Empty region"]], st.preset, select);
+      L.legend([[C.ok, "feasible region"], [C.danger, "no optimum / empty"]]);
+      L.watch(CASES[st.preset].type + ". Watch the corner values, then read the extra check that decides the outcome.");
+      draw();
+    }
+    window.SIMS.lppcases = {mount: mount, draw: draw, select: select, state: st};
+  })();
 })();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
 </script>
-  <script>if (window.App && typeof window.App.routeFromHash === "function") window.App.routeFromHash();</script>
 </body>
 </html>

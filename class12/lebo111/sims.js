@@ -1,381 +1,463 @@
+// Class 12 Biology, Chapter 11 (lebo111) — simulation labs.
+// One lab per lesson, in the Lumen lab framework (window.SIMS + window.LAB).
 var App = window.App;
+var LAB = window.LAB;
 window.SIMS = {};
 
-function setActivePreset(btn){
-  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
-  if(btn) btn.classList.add("active");
-}
-function svgEl(){ return document.getElementById("diagram"); }
-function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
-function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
-function cell(label, val, color){
-  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
-    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
-}
-function numEl(id, fallback){
-  var n = document.getElementById(id);
-  return n ? Number(n.value) : fallback;
+function labNoTimeline(){
+  var tb = document.getElementById("legacy-lab-toolbar");
+  if(tb) tb.style.display = "none";
 }
 
-window.SIMS["population-attributes"] = (function(){
-  var shape = "expanding";
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Pre-reproductive (young)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Reproductive</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Post-reproductive (old)</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-exp">Expanding (broad base)</button>' +
-      '<button class="preset-btn" id="p-sta">Stable (even sides)</button>' +
-      '<button class="preset-btn" id="p-dec">Declining (narrow base)</button>';
-    document.getElementById("p-exp").onclick = function(){ setActivePreset(this); shape="expanding"; draw(App.state.t); };
-    document.getElementById("p-sta").onclick = function(){ setActivePreset(this); shape="stable"; draw(App.state.t); };
-    document.getElementById("p-dec").onclick = function(){ setActivePreset(this); shape="declining"; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Young proportion / %</span><span class="val" id="ctrl-y">55</span></div>' +
-      '<input type="range" id="ctrl-y-range" min="20" max="70" step="1" value="55"></div>';
-    document.getElementById("ctrl-y-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var y = numEl("ctrl-y-range", 55);
-    var el = document.getElementById("ctrl-y"); if(el) el.textContent = y;
-    var young, mid, old;
-    if(shape === "expanding"){ young = y; mid = 100 - y - 18; old = 18; }
-    else if(shape === "stable"){ young = 40; mid = 38; old = 22; }
-    else { young = 26; mid = 40; old = 34; }
-    var w0 = 200;
-    function barW(p){ return Math.max(24, p / 70 * w0); }
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Figure 11.1 age pyramids: shape diagnoses growing / stable / declining</text>';
-    var rows = [[young, "#38bdf8", "young"], [mid, "#f59e0b", "adult"], [old, "#94a3b8", "old"]];
-    for(var i=0;i<3;i++){
-      var ry = 60 + i * 56;
-      var hw = barW(rows[i][0]);
-      var wob = Math.sin(t * 2 + i) * 2;
-      m += '<rect x="' + (360 - hw + wob) + '" y="' + ry + '" width="' + hw.toFixed(0) + '" height="40" fill="' + rows[i][1] + '" opacity="0.85"/>';
-      m += '<rect x="360" y="' + ry + '" width="' + hw.toFixed(0) + '" height="40" fill="' + rows[i][1] + '" opacity="0.55"/>';
-      m += '<text x="360" y="' + (ry + 26) + '" fill="#09131d" font-size="11" text-anchor="middle">' + rows[i][0].toFixed(0) + '%</text>';
-      m += '<text x="120" y="' + (ry + 26) + '" fill="#94a3b8" font-size="11">' + rows[i][2] + '</text>';
+// -------------------------------------------------------------------------
+// Lab 1 — Age-pyramid builder (NCERT §11.1.1, Figure 11.1)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var DATA = {
+    expanding: {young: 55, mid: 32, old: 13, shape: "expanding", note: "broad base, many young"},
+    stable: {young: 35, mid: 38, old: 27, shape: "stable", note: "even sides"},
+    declining: {young: 22, mid: 38, old: 40, shape: "declining", note: "narrow base, few young"}
+  };
+  var st = {preset: "expanding"};
+
+  function draw(){
+    var d = DATA[st.preset];
+    var m = "";
+    m += L.text(360, 24, "Figure 11.1 age pyramid (per cent of the population)", {size: 14, color: C.muted});
+    m += L.rect(172, 42, 376, 202, "#0b1a28", ' rx="12" stroke="#334155" stroke-width="1.5"');
+    var rows = [
+      {p: d.young, color: "#38bdf8", label: "pre-reproductive (young)"},
+      {p: d.mid, color: "#f59e0b", label: "reproductive"},
+      {p: d.old, color: "#94a3b8", label: "post-reproductive (old)"}
+    ];
+    m += L.line(360, 50, 360, 246, C.faint, 1.5);
+    for(var i = 0; i < rows.length; i++){
+      var r = rows[i];
+      var y = 58 + i * 62;
+      var w = Math.max(26, r.p / 70 * 150);
+      m += L.rect(360 - w, y, 2 * w, 46, r.color, ' opacity="0.85"');
+      m += L.text(360, y + 28, L.num(r.p, 0) + "%", {size: 13, color: "#08131d", weight: 700});
+      m += L.text(200, y + 28, r.label, {size: 11, color: C.muted, anchor: "end"});
     }
-    m += '<line x1="360" y1="50" x2="360" y2="230" stroke="#475569"/>';
-    m += '<text x="360" y="252" fill="#e2e8f0" font-size="13" text-anchor="middle">' + shape + ' pyramid</text>';
-    m += '<text x="360" y="272" fill="#64748b" font-size="11" text-anchor="middle">Lotus birth 8/20 = 0.4/yr; fruitfly death 4/40 = 0.1/wk; Nt+1 = Nt + [(B+I)-(D+E)]</text>';
-    svg.innerHTML = m;
-    readout(cell("birth rate", "0.4 /lotus/yr", "#38bdf8") + cell("death rate", "0.1 /fly/wk", "#f59e0b") + cell("shape", shape, "#34d399") + cell("young", young.toFixed(0) + "%"));
-    if(shape === "expanding") verdict("<b>Figure 11.1(a) / Exercise 1 (Section 11.1.1):</b> broad base, many young = <b>expanding</b>. Rates are per-capita population attributes — an individual lotus has a birth, only the pond has a birth <b>rate</b> (8/20 = 0.4).");
-    else if(shape === "stable") verdict("<b>Figure 11.1(b) / Exercise 1:</b> even sides = <b>stable</b>. Density N spans &lt;10 Bharatpur cranes to millions of Chlamydomonas — count, weigh (biomass/cover) or trap (pug marks, catch per trap).");
-    else verdict("<b>Figure 11.1(c) / Exercise 1:</b> narrow base, few young = <b>declining</b>. Sex ratio (60% female etc.) and pyramids belong to populations, never to one plant or fly.");
-  }
-  return { mount: mount, draw: draw };
-})();
-window.SIMS["agepyramid"] = window.SIMS["population-attributes"];
+    m += L.text(360, 268, "same population attributes: birth rate 8/20 = 0.4/yr, death rate 4/40 = 0.1/wk", {size: 12, color: C.muted});
+    L.svg(m, "Age pyramid for a " + d.shape + " population.", 300);
 
-window.SIMS["exponential-growth"] = (function(){
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Nt = N0 e^rt (J-curve)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Time marker (scrubber)</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-rat">Norway rat r=0.015</button>' +
-      '<button class="preset-btn" id="p-bee">Flour beetle r=0.12</button>' +
-      '<button class="preset-btn" id="p-ind">India 1981 r=0.0205</button>' +
-      '<button class="preset-btn active" id="p-ex2">Exercise 2: r=0.231</button>';
-    document.getElementById("p-rat").onclick = function(){ setActivePreset(this); var n=document.getElementById("ctrl-r-range"); if(n) n.value=0.015; draw(App.state.t); };
-    document.getElementById("p-bee").onclick = function(){ setActivePreset(this); var n=document.getElementById("ctrl-r-range"); if(n) n.value=0.12; draw(App.state.t); };
-    document.getElementById("p-ind").onclick = function(){ setActivePreset(this); var n=document.getElementById("ctrl-r-range"); if(n) n.value=0.0205; draw(App.state.t); };
-    document.getElementById("p-ex2").onclick = function(){ setActivePreset(this); var n=document.getElementById("ctrl-r-range"); if(n) n.value=0.231; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>r (intrinsic rate) / yr</span><span class="val" id="ctrl-r">0.231</span></div>' +
-      '<input type="range" id="ctrl-r-range" min="0" max="0.5" step="0.001" value="0.231"></div>' +
-      '<div class="control-item"><div class="control-label"><span>N0</span><span class="val" id="ctrl-n0">100</span></div>' +
-      '<input type="range" id="ctrl-n0-range" min="10" max="500" step="10" value="100"></div>';
-    document.getElementById("ctrl-r-range").oninput = function(){ draw(App.state.t); };
-    document.getElementById("ctrl-n0-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var r = numEl("ctrl-r-range", 0.231);
-    var n0 = numEl("ctrl-n0-range", 100);
-    var a = document.getElementById("ctrl-r"); if(a) a.textContent = r.toFixed(3);
-    var b = document.getElementById("ctrl-n0"); if(b) b.textContent = n0;
-    var T = 10;
-    function X(tt){ return 80 + tt / T * 520; }
-    var nmax = n0 * Math.exp(r * T);
-    function Y(n){ return 250 - (n / nmax) * 190; }
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<line x1="80" y1="250" x2="620" y2="250" stroke="#475569"/><line x1="80" y1="250" x2="80" y2="50" stroke="#475569"/>';
-    m += '<text x="350" y="30" fill="#94a3b8" font-size="13" text-anchor="middle">dN/dt = rN, Nt = N0 e^rt, e = 2.71828 (Fig 11.3a J-curve)</text>';
-    var d = "";
-    for(var i=0;i<=60;i++){
-      var tt = i / 60 * T;
-      var nn = n0 * Math.exp(r * tt);
-      d += (i === 0 ? "M " : "L ") + X(tt).toFixed(1) + " " + Y(nn).toFixed(1) + " ";
-    }
-    m += '<path d="' + d + '" fill="none" stroke="#34d399" stroke-width="3"/>';
-    var tm = Math.min(T, t);
-    var nm = n0 * Math.exp(r * tm);
-    m += '<circle cx="' + X(tm).toFixed(1) + '" cy="' + Y(nm).toFixed(1) + '" r="6" fill="#38bdf8"/>';
-    var n6 = n0 * Math.exp(r * 6);
-    m += '<text x="450" y="80" fill="#e2e8f0" font-size="13">r = ' + r.toFixed(3) + ' /yr (b - d)</text>';
-    m += '<text x="450" y="104" fill="#34d399" font-size="13">N(6 yr) = ' + n6.toFixed(0) + '</text>';
-    m += '<text x="450" y="128" fill="#94a3b8" font-size="12">double in ' + (r > 0 ? (0.6931 / r).toFixed(1) + ' yr' : '--') + '</text>';
-    svg.innerHTML = m;
-    readout(cell("r", r.toFixed(3) + " /yr", "#34d399") + cell("N0", String(n0)) + cell("N(t=6)", n6.toFixed(0)) + cell("doubling", r > 0 ? (0.6931 / r).toFixed(1) + " yr" : "--", "#38bdf8"));
-    verdict("<b>Section 11.1.2 / Exercise 2:</b> 2 = e^(3r) gives <b>r = ln2/3 = 0.231/yr</b> (doubling in 3 yr); at r = 0.231, N0 = 100 reaches <b>400 in 6 yr</b> (two doublings). Norway rat 0.015, flour beetle 0.12, India 1981 0.0205 — drag r to feel the J.");
-  }
-  return { mount: mount, draw: draw };
-})();
-window.SIMS["exponential"] = window.SIMS["exponential-growth"];
+    L.readout([
+      ["shape", d.shape, C.ok],
+      ["young share", L.num(d.young, 0) + "%", "#38bdf8"],
+      ["lotus birth rate", "0.4 per lotus per yr", "#f59e0b"],
+      ["fruitfly death rate", "0.1 per fruitfly per wk", "#f59e0b"]
+    ]);
 
-window.SIMS["logistic-lifehistory"] = (function(){
-  var strat = "many";
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Sigmoid N-t (lag-accel-decel-K)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Carrying capacity K</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-mny">Many small (oysters)</button>' +
-      '<button class="preset-btn" id="p-few">Few large (birds)</button>' +
-      '<button class="preset-btn" id="p-once">Breed once (salmon/bamboo)</button>';
-    document.getElementById("p-mny").onclick = function(){ setActivePreset(this); strat="many"; draw(App.state.t); };
-    document.getElementById("p-few").onclick = function(){ setActivePreset(this); strat="few"; draw(App.state.t); };
-    document.getElementById("p-once").onclick = function(){ setActivePreset(this); strat="once"; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>K (carrying capacity)</span><span class="val" id="ctrl-k">200</span></div>' +
-      '<input type="range" id="ctrl-k-range" min="50" max="400" step="10" value="200"></div>' +
-      '<div class="control-item"><div class="control-label"><span>r / yr</span><span class="val" id="ctrl-r2">0.20</span></div>' +
-      '<input type="range" id="ctrl-r2-range" min="0.05" max="0.5" step="0.01" value="0.2"></div>';
-    document.getElementById("ctrl-k-range").oninput = function(){ draw(App.state.t); };
-    document.getElementById("ctrl-r2-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var K = numEl("ctrl-k-range", 200);
-    var r = numEl("ctrl-r2-range", 0.2);
-    var a = document.getElementById("ctrl-k"); if(a) a.textContent = K;
-    var c = document.getElementById("ctrl-r2"); if(c) c.textContent = r.toFixed(2);
-    var N0 = 10, T = 30;
-    function N(tt){ return K / (1 + ((K - N0) / N0) * Math.exp(-r * tt)); }
-    function X(tt){ return 80 + tt / T * 420; }
-    function Y(n){ return 250 - (n / 420) * 190; }
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<line x1="80" y1="250" x2="520" y2="250" stroke="#475569"/><line x1="80" y1="250" x2="80" y2="50" stroke="#475569"/>';
-    m += '<text x="300" y="30" fill="#94a3b8" font-size="13" text-anchor="middle">Verhulst-Pearl: dN/dt = rN(K-N)/K (Fig 11.3b)</text>';
-    var d = "";
-    for(var i=0;i<=80;i++){ var tt = i / 80 * T; d += (i === 0 ? "M " : "L ") + X(tt).toFixed(1) + " " + Y(N(tt)).toFixed(1) + " "; }
-    m += '<path d="' + d + '" fill="none" stroke="#34d399" stroke-width="3"/>';
-    m += '<line x1="80" y1="' + Y(K).toFixed(1) + '" x2="520" y2="' + Y(K).toFixed(1) + '" stroke="#f87171" stroke-width="2" stroke-dasharray="6 4"/>';
-    m += '<text x="528" y="' + (Y(K) + 4).toFixed(0) + '" fill="#f87171" font-size="12">K=' + K + '</text>';
-    var tm = Math.min(T, t * 5);
-    m += '<circle cx="' + X(tm).toFixed(1) + '" cy="' + Y(N(tm)).toFixed(1) + '" r="6" fill="#38bdf8"/>';
-    var half = K / 2;
-    m += '<text x="560" y="110" fill="#e2e8f0" font-size="12">fastest at</text>';
-    m += '<text x="560" y="130" fill="#34d399" font-size="13">N=K/2=' + half.toFixed(0) + '</text>';
-    var sname = strat === "many" ? "many small: oysters" : (strat === "few" ? "few large: birds" : "once: salmon/bamboo");
-    m += '<text x="560" y="170" fill="#94a3b8" font-size="12">' + sname + '</text>';
-    m += '<text x="560" y="190" fill="#64748b" font-size="11">fitness = high r</text>';
-    svg.innerHTML = m;
-    var dndt = r * 50 * (K - 50) / K;
-    readout(cell("K", String(K), "#f87171") + cell("max at", "K/2=" + half.toFixed(0)) + cell("dN/dt N=50", dndt.toFixed(1) + "/yr", "#34d399") + cell("strategy", sname));
-    verdict("<b>Section 11.1.2-11.1.3 / Exercise 8:</b> sigmoid <b>lag-acceleration-deceleration-asymptote (N=K, dN/dt=0)</b>; N&lt;&lt;K grows ~exponentially; fastest at <b>K/2</b>. Life history maximises r: breed <b>once (salmon, bamboo)</b> vs many times; <b>many small (oysters)</b> vs <b>few large (birds, mammals)</b>.");
-  }
-  return { mount: mount, draw: draw };
-})();
-window.SIMS["logistic"] = window.SIMS["logistic-lifehistory"];
-
-window.SIMS["mutualism-competition"] = (function(){
-  var idx = 0;
-  var cases = [
-    { name: "Lichen (fungus + alga)", a: 1, b: 1, note: "both gain: +/+" },
-    { name: "Mycorrhiza (fungus + root)", a: 1, b: 1, note: "nutrients for carbohydrates" },
-    { name: "Fig + wasp (Fig 11.4)", a: 1, b: 1, note: "pollination for seeds/oviposition" },
-    { name: "Flamingo vs fish (zooplankton)", a: -1, b: -1, note: "both lose: -/-" },
-    { name: "Balanus vs Chathamalus", a: -1, b: -1, note: "superior excludes intertidal" },
-    { name: "Warblers partitioned (MacArthur)", a: -1, b: -1, note: "co-exist by foraging time" }
-  ];
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>+ benefit</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>- harm</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>0 neutral</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m0">Lichen</button>' +
-      '<button class="preset-btn" id="p-m2">Fig-wasp</button>' +
-      '<button class="preset-btn" id="p-m3">Flamingo-fish</button>' +
-      '<button class="preset-btn" id="p-m5">Warblers</button>';
-    document.getElementById("p-m0").onclick = function(){ setActivePreset(this); idx=0; draw(App.state.t); };
-    document.getElementById("p-m2").onclick = function(){ setActivePreset(this); idx=2; draw(App.state.t); };
-    document.getElementById("p-m3").onclick = function(){ setActivePreset(this); idx=3; draw(App.state.t); };
-    document.getElementById("p-m5").onclick = function(){ setActivePreset(this); idx=5; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Your sign: species A</span><span class="val" id="ctrl-a">+</span></div>' +
-      '<input type="range" id="ctrl-a-range" min="-1" max="1" step="1" value="1"></div>' +
-      '<div class="control-item"><div class="control-label"><span>Your sign: species B</span><span class="val" id="ctrl-b">+</span></div>' +
-      '<input type="range" id="ctrl-b-range" min="-1" max="1" step="1" value="1"></div>';
-    document.getElementById("ctrl-a-range").oninput = function(){ draw(App.state.t); };
-    document.getElementById("ctrl-b-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function sign(x){ return x > 0 ? "+" : (x < 0 ? "-" : "0"); }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var ga = Math.round(numEl("ctrl-a-range", 1));
-    var gb = Math.round(numEl("ctrl-b-range", 1));
-    var ea = document.getElementById("ctrl-a"); if(ea) ea.textContent = sign(ga);
-    var eb = document.getElementById("ctrl-b"); if(eb) eb.textContent = sign(gb);
-    var c = cases[idx];
-    var right = (ga === c.a && gb === c.b);
-    var col = right ? "#34d399" : "#f87171";
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Table 11.1 sorter: mutualism +/+ vs competition -/- (Ophrys-bee co-evolves too)</text>';
-    m += '<rect x="60" y="60" width="300" height="130" rx="8" fill="#0f1f2e" stroke="#334155"/>';
-    m += '<text x="210" y="90" fill="#e2e8f0" font-size="14" text-anchor="middle">' + c.name + '</text>';
-    m += '<text x="210" y="116" fill="#94a3b8" font-size="12" text-anchor="middle">' + c.note + '</text>';
-    m += '<text x="210" y="150" fill="' + col + '" font-size="16" text-anchor="middle">key: ' + sign(c.a) + " / " + sign(c.b) + '</text>';
-    m += '<rect x="400" y="60" width="260" height="130" rx="8" fill="#0f1f2e" stroke="' + col + '"/>';
-    m += '<text x="530" y="90" fill="#e2e8f0" font-size="13" text-anchor="middle">your sort: ' + sign(ga) + " / " + sign(gb) + '</text>';
-    m += '<text x="530" y="130" fill="' + col + '" font-size="16" text-anchor="middle">' + (right ? "CORRECT" : "TRY AGAIN") + '</text>';
-    m += '<circle cx="530" cy="160" r="' + (12 + 4 * Math.sin(t * 3)).toFixed(1) + '" fill="' + col + '"/>';
-    m += '<text x="360" y="230" fill="#94a3b8" font-size="12" text-anchor="middle">Gause exclusion when resources limit; release on removal (Abingdon goat-tortoise); warblers partition.</text>';
-    m += '<text x="360" y="252" fill="#64748b" font-size="11" text-anchor="middle">Slider -1 = harm, 0 = neutral, +1 = benefit. Interference cuts feeding even when food is plenty.</text>';
-    svg.innerHTML = m;
-    readout(cell("case", c.name.split(" (")[0]) + cell("your A/B", sign(ga) + "/" + sign(gb)) + cell("key", sign(c.a) + "/" + sign(c.b), col) + cell("score", right ? "1/1" : "0/1", col));
-    verdict("<b>Table 11.1 / Exercise 7(d)-(e) (Section 11.1.4):</b> <b>mutualism +/+</b> (lichen, mycorrhiza, fig-wasp: wasp lays in fruit, feeds larvae on seeds) vs <b>competition -/-</b> (fitness r falls for both). <b>Gause</b>: same limiting resources -&gt; inferior eliminated; <b>MacArthur warblers</b> co-exist by different foraging time/pattern.");
-  }
-  return { mount: mount, draw: draw };
-})();
-window.SIMS["interactions"] = window.SIMS["mutualism-competition"];
-
-window.SIMS["predation-parasitism"] = (function(){
-  var mode = "pisaster";
-  function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Predator / parasite (+)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Prey / host (-)</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-pi">Pisaster keystone</button>' +
-      '<button class="preset-btn" id="p-op">Opuntia biocontrol</button>' +
-      '<button class="preset-btn" id="p-pa">Cuscuta / koel parasites</button>';
-    document.getElementById("p-pi").onclick = function(){ setActivePreset(this); mode="pisaster"; draw(App.state.t); };
-    document.getElementById("p-op").onclick = function(){ setActivePreset(this); mode="opuntia"; draw(App.state.t); };
-    document.getElementById("p-pa").onclick = function(){ setActivePreset(this); mode="parasite"; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Timeline step</span><span class="val" id="ctrl-ps">4</span></div>' +
-      '<input type="range" id="ctrl-ps-range" min="0" max="4" step="1" value="4"></div>';
-    document.getElementById("ctrl-ps-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
-  }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var st = Math.round(numEl("ctrl-ps-range", 4));
-    var el = document.getElementById("ctrl-ps"); if(el) el.textContent = st;
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    if(mode === "pisaster"){
-      m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Pisaster removal: predators hold prey in check and keep diversity (+/-)</text>';
-      for(var i=0;i<10;i++){
-        var alive = (st < 3) || (i < 10 - (st - 2) * 4);
-        var px = 100 + (i % 5) * 90, py = 90 + Math.floor(i / 5) * 60;
-        m += '<circle cx="' + px + '" cy="' + (py + Math.sin(t * 2 + i) * 2).toFixed(1) + '" r="18" fill="' + (alive ? '#164e63' : '#1f2937') + '" stroke="' + (alive ? '#38bdf8' : '#475569') + '"/>';
-        if(!alive) m += '<line x1="' + (px - 12) + '" y1="' + (py - 12) + '" x2="' + (px + 12) + '" y2="' + (py + 12) + '" stroke="#f87171" stroke-width="3"/>';
-      }
-      m += '<text x="540" y="110" fill="#f87171" font-size="14">starfish removed</text>';
-      m += '<text x="540" y="134" fill="#e2e8f0" font-size="13">' + (st >= 3 ? '10+ species extinct/yr' : 'diversity held') + '</text>';
-      m += '<text x="540" y="158" fill="#94a3b8" font-size="12">step ' + st + '/4</text>';
-    } else if(mode === "opuntia"){
-      m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Opuntia 1920s Australia: millions of ha -&gt; cactus moth saves rangeland</text>';
-      var cover = Math.max(8, 200 - st * 46);
-      m += '<rect x="80" y="80" width="' + cover.toFixed(0) + '" height="120" fill="#166534" opacity="0.8"/>';
-      var mx = 420 + Math.sin(t * 2) * 8;
-      m += '<ellipse cx="' + mx.toFixed(0) + '" cy="140" rx="30" ry="18" fill="#f59e0b"/>';
-      m += '<text x="420" y="230" fill="#e2e8f0" font-size="13" text-anchor="middle">cactus area shrinks as moth step rises (' + st + '/4)</text>';
+    if(st.preset === "expanding"){
+      L.verdict("<b>Figure 11.1(a) / Section 11.1.1:</b> a broad base with many young is an <b>expanding</b> population. Rates are per-capita population attributes: 8/20 = <b>0.4</b> offspring per lotus per year and 4/40 = <b>0.1</b> deaths per fruitfly per week.");
+    } else if(st.preset === "stable"){
+      L.verdict("<b>Figure 11.1(b) / Section 11.1.1:</b> even sides give a <b>stable</b> population. Density N may be counted (fewer than 10 Siberian cranes at Bharatpur) or measured as biomass or per cent cover (banyan versus Parthenium, millions of Chlamydomonas).");
     } else {
-      m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Parasites (+/-): ecto lice/Cuscuta, endo liver fluke, brood koel-crow</text>';
-      m += '<rect x="80" y="70" width="160" height="90" rx="8" fill="#0f1f2e" stroke="#38bdf8"/><text x="160" y="100" fill="#38bdf8" font-size="12" text-anchor="middle">Cuscuta on hedge</text><text x="160" y="122" fill="#94a3b8" font-size="11" text-anchor="middle">ecto: sucks host</text>';
-      m += '<rect x="280" y="70" width="160" height="90" rx="8" fill="#0f1f2e" stroke="#f87171"/><text x="360" y="100" fill="#f87171" font-size="12" text-anchor="middle">liver fluke</text><text x="360" y="122" fill="#94a3b8" font-size="11" text-anchor="middle">endo: snail+fish</text>';
-      m += '<rect x="480" y="70" width="160" height="90" rx="8" fill="#0f1f2e" stroke="#f59e0b"/><text x="560" y="100" fill="#f59e0b" font-size="12" text-anchor="middle">koel in crow nest</text><text x="560" y="122" fill="#94a3b8" font-size="11" text-anchor="middle">brood: egg mimic</text>';
-      m += '<text x="360" y="200" fill="#94a3b8" font-size="12" text-anchor="middle">Female mosquito (blood for eggs) is NOT a parasite — no lodging. Lice/ticks/copepods are.</text>';
+      L.verdict("<b>Figure 11.1(c) / Section 11.1.1:</b> a narrow base with few young means a <b>declining</b> population. Sex ratio (for example 60 per cent females) and age pyramids belong to populations, never to one lotus or one fruitfly.");
     }
-    m += '<text x="360" y="266" fill="#64748b" font-size="11" text-anchor="middle">Sparrow = predator on seeds AND insects; herbivores are predators ecologically. Prudent predators persist.</text>';
-    svg.innerHTML = m;
-    readout(cell("system", mode) + cell("step", st + "/4") + cell("sign", "+/-", "#f87171") + cell("result", mode === "pisaster" ? (st >= 3 ? "10+ extinct" : "diverse") : (mode === "opuntia" ? "biocontrol" : "host harmed")));
-    if(mode === "pisaster") verdict("<b>Section 11.1.4(i) (+/-):</b> removing <b>Pisaster</b> let <b>10+ invertebrate species vanish within a year</b> — predators maintain diversity by cutting prey competition. Without them, dominants exclude the rest.");
-    else if(mode === "opuntia") verdict("<b>Section 11.1.4 / Exercise 5:</b> <b>Opuntia</b> covered <b>millions of hectares</b> (1920s Australia) until its <b>cactus-feeding moth</b> controlled it — the template for <b>biological control: predators regulate prey</b>.");
-    else verdict("<b>Table 11.1 / Exercise 9(d):</b> parasitism = <b>one benefits, other is affected (+/-)</b>. <b>Cuscuta</b> (no chlorophyll) on hedge = ecto; liver fluke/malaria = endo with vectors; <b>koel-crow eggs match in size/colour</b> = brood parasitism.");
   }
-  return { mount: mount, draw: draw };
-})();
-window.SIMS["predation"] = window.SIMS["predation-parasitism"];
 
-window.SIMS["commensalism-defenses"] = (function(){
-  var idx = 0;
-  var cases = [
-    { name: "Orchid on mango (Ex 4)", cat: "commensal +/0", opts: ["commensal +/0", "parasite +/-", "mutual +/+"] },
-    { name: "Barnacles on whale", cat: "commensal +/0", opts: ["commensal +/0", "competition -/-", "parasite +/-"] },
-    { name: "Egret + cattle / clownfish + anemone", cat: "commensal +/0", opts: ["commensal +/0", "mutual +/+", "amensal -/0"] },
-    { name: "Penicillium vs Staphylococcus", cat: "amensal -/0", opts: ["amensal -/0", "commensal +/0", "parasite +/-"] },
-    { name: "Acacia thorns / Calotropis glycosides", cat: "plant defense", opts: ["plant defense", "camouflage", "mutual +/+"] },
-    { name: "Monarch distasteful / frog camouflage", cat: "animal defense", opts: ["animal defense", "amensal -/0", "competition -/-"] }
-  ];
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
   function mount(){
-    App.state.maxT = 6;
-    var s = document.getElementById("time-scrubber"); if(s) s.max = 6;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Commensal +/0</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Amensal -/0</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Defense (thorns/poison/camo)</span></div>';
-    document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-d0">Orchid/mango</button>' +
-      '<button class="preset-btn" id="p-d3">Penicillium</button>' +
-      '<button class="preset-btn" id="p-d4">Calotropis</button>' +
-      '<button class="preset-btn" id="p-d5">Monarch</button>';
-    document.getElementById("p-d0").onclick = function(){ setActivePreset(this); idx=0; draw(App.state.t); };
-    document.getElementById("p-d3").onclick = function(){ setActivePreset(this); idx=3; draw(App.state.t); };
-    document.getElementById("p-d4").onclick = function(){ setActivePreset(this); idx=4; draw(App.state.t); };
-    document.getElementById("p-d5").onclick = function(){ setActivePreset(this); idx=5; draw(App.state.t); };
-    document.getElementById("lab-controls").innerHTML =
-      '<div class="control-item"><div class="control-label"><span>Your match (option #)</span><span class="val" id="ctrl-g">0</span></div>' +
-      '<input type="range" id="ctrl-g-range" min="0" max="2" step="1" value="0"></div>';
-    document.getElementById("ctrl-g-range").oninput = function(){ draw(App.state.t); };
-    draw(0);
+    labNoTimeline();
+    L.presets([["expanding", "Expanding (broad base)"], ["stable", "Stable (even sides)"], ["declining", "Declining (narrow base)"]], st.preset, select);
+    L.legend([[C.ok, "shape diagnoses growth status"], ["#38bdf8", "young"], ["#f59e0b", "reproductive"], ["#94a3b8", "old"]]);
+    draw();
   }
-  function draw(t){
-    var svg = svgEl(); if(!svg) return;
-    var g = Math.round(numEl("ctrl-g-range", 0));
-    var el = document.getElementById("ctrl-g"); if(el) el.textContent = g;
-    var c = cases[idx];
-    var right = (c.opts[g] === c.cat);
-    var col = right ? "#34d399" : "#f87171";
-    var m = '<rect width="720" height="300" fill="#09131d"/>';
-    m += '<text x="360" y="24" fill="#94a3b8" font-size="13" text-anchor="middle">Defense matcher: orchid (no feeding) is NOT Cuscuta (feeds); 25% insects phytophagous</text>';
-    m += '<rect x="60" y="50" width="320" height="120" rx="8" fill="#0f1f2e" stroke="#334155"/>';
-    m += '<text x="220" y="82" fill="#e2e8f0" font-size="14" text-anchor="middle">' + c.name + '</text>';
-    for(var i=0;i<3;i++){
-      m += '<text x="100" y="' + (110 + i * 22) + '" fill="' + (i === g ? '#fff' : '#94a3b8') + '" font-size="12">' + i + ': ' + c.opts[i] + (i === g ? '  &lt; yours' : '') + '</text>';
-    }
-    m += '<rect x="410" y="50" width="250" height="120" rx="8" fill="#0f1f2e" stroke="' + col + '"/>';
-    m += '<text x="535" y="95" fill="' + col + '" font-size="15" text-anchor="middle">' + (right ? "CORRECT" : "TRY AGAIN") + '</text>';
-    m += '<text x="535" y="120" fill="#94a3b8" font-size="11" text-anchor="middle">key: ' + c.cat + '</text>';
-    m += '<circle cx="535" cy="145" r="' + (11 + 3 * Math.sin(t * 3)).toFixed(1) + '" fill="' + col + '"/>';
-    m += '<text x="360" y="205" fill="#94a3b8" font-size="12" text-anchor="middle">Thorns (Acacia, Cactus); cardiac glycosides (Calotropis); nicotine, caffeine, quinine, strychnine, opium.</text>';
-    m += '<text x="360" y="229" fill="#94a3b8" font-size="12" text-anchor="middle">Monarch: poisonous-weed caterpillar -&gt; distasteful adult. Camouflage: insects, frogs hide.</text>';
-    svg.innerHTML = m;
-    readout(cell("case", c.name.split(" (")[0]) + cell("yours", c.opts[g]) + cell("key", c.cat, col) + cell("score", right ? "1/1" : "0/1", col));
-    verdict("<b>Table 11.1 / Exercises 3, 4, 7 (Section 11.1.4):</b> orchid-on-mango = <b>commensalism (+/0)</b> — support only, mango unmoved (not Cuscuta +/- feeding, not mycorrhiza +/+). <b>Amensalism (-/0): Penicillium/Staphylococcus.</b> Defenses: <b>thorns + cardiac glycosides + alkaloids + camouflage</b>.");
-  }
-  return { mount: mount, draw: draw };
+
+  window.SIMS.agepyramid = {mount: mount, draw: draw, select: select, state: st};
 })();
-window.SIMS["defenses"] = window.SIMS["commensalism-defenses"];
+
+// -------------------------------------------------------------------------
+// Lab 2 — Exponential growth: the J-curve (NCERT §11.1.2, Figure 11.3a)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PRESET = {
+    rat: {r: 0.015, label: "Norway rat"},
+    beetle: {r: 0.12, label: "flour beetle"},
+    india: {r: 0.0205, label: "India 1981"},
+    ex2: {r: 0.231, label: "Exercise 2 doubling"}
+  };
+  var st = {preset: "ex2", r: 0.231, n0: 100};
+  var T = 10;
+
+  function curve(){
+    var pts = [];
+    for(var i = 0; i <= 80; i++){
+      var t = T * i / 80;
+      pts.push([t, st.n0 * Math.exp(st.r * t)]);
+    }
+    return pts;
+  }
+
+  function draw(){
+    var pts = curve();
+    var vmax = Math.max(120, st.n0 * Math.exp(st.r * T) * 1.05);
+    var g = L.graph({x0: 80, y0: 252, w: 500, h: 192, tmax: T, vmin: 0, vmax: vmax, tStep: 2, vStep: vmax / 4, tLabel: "time (years)", vLabel: "N"});
+    var m = g.svg;
+    m += L.polyline(g, pts, C.ok, 3);
+    var n3 = st.n0 * Math.exp(st.r * 3), n6 = st.n0 * Math.exp(st.r * 6);
+    m += L.circle(g.X(3), g.Y(n3), 5, "#38bdf8");
+    m += L.circle(g.X(6), g.Y(n6), 5, "#38bdf8");
+    m += L.text(g.X(3), g.Y(n3) - 10, "N(3) = " + L.num(n3, 0), {size: 12, color: "#38bdf8"});
+    m += L.text(g.X(6), g.Y(n6) - 10, "N(6) = " + L.num(n6, 0), {size: 12, color: "#38bdf8"});
+    m += L.text(600, 70, PRESET[st.preset].label, {size: 14, color: C.text, anchor: "start"});
+    m += L.text(600, 92, "r = " + L.num(st.r, 3) + " /yr", {size: 14, color: C.ok, anchor: "start"});
+    m += L.text(600, 114, "dN/dt = rN", {size: 13, color: C.muted, anchor: "start"});
+    L.svg(m, "Exponential J-curve for r = " + L.num(st.r, 3) + " per year.", 300);
+
+    L.readout([
+      ["r (per year)", L.num(st.r, 3), C.ok],
+      ["N(3 yr)", L.num(n3, 0), "#38bdf8"],
+      ["N(6 yr)", L.num(n6, 0), "#38bdf8"],
+      ["doubling time", L.num(Math.log(2) / st.r, 1) + " yr", "#f59e0b"]
+    ]);
+    L.verdict("<b>Section 11.1.2 / Exercise 2:</b> with unlimited resources dN/dt = rN and Nt = N0 e^(rt), the J-curve. A population doubling in 3 years has 2 = e^(3r), so r = ln 2 / 3 = <b>0.231</b> per year. Textbook r values: Norway rat 0.015, flour beetle 0.12, India 1981 0.0205.");
+  }
+
+  function select(id){
+    st.preset = id;
+    st.r = PRESET[id].r;
+    var el = document.getElementById("exp-r");
+    if(el) el.value = st.r;
+    L.setVal("exp-r", L.num(st.r, 3));
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["rat", "Norway rat r = 0.015"], ["beetle", "Flour beetle r = 0.12"], ["india", "India 1981 r = 0.0205"], ["ex2", "Exercise 2: r = 0.231"]], st.preset, select);
+    L.controls(L.slider("exp-r", "Intrinsic rate r (per year)", 0.005, 0.35, 0.001, st.r, L.num(st.r, 3)));
+    L.onInput("exp-r", function(v){ st.r = v; L.setVal("exp-r", L.num(v, 3)); draw(); });
+    L.legend([[C.ok, "Nt = N0 e^(rt)"], ["#38bdf8", "N(3), N(6) markers"], [C.muted, "J-shaped growth"]]);
+    draw();
+  }
+
+  window.SIMS.exponential = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 3 — Logistic growth and life history (NCERT §11.1.2–11.1.3, Figure 11.3b)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var PRESET = {
+    k100: {K: 100, strategy: "repeated breeding, many young", label: "K = 100"},
+    k200: {K: 200, strategy: "repeated breeding, many young", label: "K = 200"},
+    k400: {K: 400, strategy: "repeated breeding, many young", label: "K = 400"},
+    salmon: {K: 200, strategy: "breeds once: Pacific salmon, bamboo", label: "breed once (salmon, bamboo)"},
+    oysters: {K: 200, strategy: "many small offspring: oysters, pelagic fishes", label: "many small offspring (oysters)"}
+  };
+  var st = {preset: "k200", K: 200, r: 0.2};
+
+  function draw(){
+    var N0 = 10, T = 30;
+    var vmax = st.K * 1.18;
+    var g = L.graph({x0: 80, y0: 252, w: 460, h: 192, tmax: T, vmin: 0, vmax: vmax, tStep: 5, vStep: vmax / 4, tLabel: "time (years)", vLabel: "N"});
+    var pts = [];
+    for(var i = 0; i <= 90; i++){
+      var t = T * i / 90;
+      pts.push([t, st.K / (1 + ((st.K - N0) / N0) * Math.exp(-st.r * t))]);
+    }
+    var m = g.svg;
+    m += L.polyline(g, pts, C.ok, 3);
+    m += L.line(g.X(0), g.Y(st.K), g.X(T), g.Y(st.K), C.danger, 2, "6 4");
+    m += L.text(g.X(T) + 6, g.Y(st.K) + 4, "K = " + L.num(st.K, 0), {size: 13, color: C.danger, anchor: "start"});
+    m += L.text(g.X(T * 0.55), g.Y(st.K / 2) - 8, "fastest at N = K/2 = " + L.num(st.K / 2, 0), {size: 12, color: C.muted});
+    m += L.text(560, 80, PRESET[st.preset].label, {size: 13, color: C.text, anchor: "start"});
+    m += L.text(560, 102, "r = " + L.num(st.r, 2) + " /yr", {size: 13, color: C.ok, anchor: "start"});
+    m += L.text(560, 124, "sigmoid: lag, acceleration,", {size: 10, color: C.muted, anchor: "start"});
+    m += L.text(560, 140, "deceleration, asymptote", {size: 10, color: C.muted, anchor: "start"});
+    L.svg(m, "Logistic sigmoid with carrying capacity " + L.num(st.K, 0) + ".", 300);
+
+    var d50 = st.r * 50 * (st.K - 50) / st.K;
+    L.readout([
+      ["carrying capacity K", L.num(st.K, 0), C.danger],
+      ["r (per year)", L.num(st.r, 2), C.ok],
+      ["dN/dt at N = 50", L.num(d50, 1) + " /yr", "#38bdf8"],
+      ["max growth at", "N = K/2 = " + L.num(st.K / 2, 0), "#38bdf8"]
+    ]);
+    L.verdict("<b>Section 11.1.2–11.1.3 / Exercise 8:</b> dN/dt = rN(K \u2212 N)/K gives the sigmoid \u2014 lag, acceleration, deceleration and an asymptote at N = K where dN/dt = 0; growth is fastest at <b>K/2</b>. Life history maximises Darwinian fitness (high r): " + PRESET[st.preset].strategy + ".");
+  }
+
+  function select(id){
+    st.preset = id;
+    st.K = PRESET[id].K;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["k100", "K = 100"], ["k200", "K = 200"], ["k400", "K = 400"], ["salmon", "Breed once (salmon)"], ["oysters", "Many small (oysters)"]], st.preset, select);
+    L.controls(L.slider("log-r", "Intrinsic rate r (per year)", 0.05, 0.5, 0.01, st.r, L.num(st.r, 2)));
+    L.onInput("log-r", function(v){ st.r = v; L.setVal("log-r", L.num(v, 2)); draw(); });
+    L.legend([[C.ok, "sigmoid N(t)"], [C.danger, "carrying capacity K"], [C.muted, "N = K/2 is the steepest point"]]);
+    draw();
+  }
+
+  window.SIMS.logistic = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 4 — Interaction matrix: mutualism and competition (NCERT §11.1.4, Table 11.1)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var ROWS = [
+    ["mutualism", "+", "+"],
+    ["competition", "\u2212", "\u2212"],
+    ["predation", "+", "\u2212"],
+    ["parasitism", "+", "\u2212"],
+    ["commensalism", "+", "0"],
+    ["amensalism", "\u2212", "0"]
+  ];
+  var CASES = {
+    lichen: {title: "Lichen", a: "+", b: "+", row: "mutualism", text: "fungus + photosynthesising algae or cyanobacteria; mycorrhiza works the same way"},
+    figwasp: {title: "Fig tree + wasp", a: "+", b: "+", row: "mutualism", text: "one-to-one: the wasp pollinates and uses the fruit for oviposition; seeds feed its larvae (Fig 11.4)"},
+    flamingo: {title: "Flamingoes vs fishes", a: "\u2212", b: "\u2212", row: "competition", text: "unrelated species competing for zooplankton in shallow South American lakes"},
+    balanus: {title: "Balanus vs Chathamalus", a: "\u2212", b: "\u2212", row: "competition", text: "the superior barnacle excludes the smaller one from the intertidal zone in Scotland (Connell)"},
+    warblers: {title: "MacArthur's five warblers", a: "\u2212", b: "\u2212", row: "competition", text: "co-exist on one tree by different feeding times and foraging patterns: resource partitioning"}
+  };
+  var st = {preset: "lichen"};
+
+  function draw(){
+    var c = CASES[st.preset];
+    var m = "";
+    m += L.text(360, 22, "Table 11.1 interaction matrix: assign + (benefit), \u2212 (harm), 0 (neutral)", {size: 13, color: C.muted});
+    for(var i = 0; i < ROWS.length; i++){
+      var y = 42 + i * 30;
+      var on = ROWS[i][0] === c.row;
+      m += L.rect(60, y, 300, 26, on ? "#164e63" : "#0f1f2e", ' rx="6" stroke="' + (on ? "#38bdf8" : "#334155") + '"');
+      m += L.text(74, y + 18, ROWS[i][0], {size: 13, color: on ? C.text : C.muted, anchor: "start", weight: on ? 700 : 400});
+      m += L.text(300, y + 18, ROWS[i][1] + " / " + ROWS[i][2], {size: 13, color: on ? "#38bdf8" : C.muted, anchor: "end"});
+    }
+    m += L.rect(400, 48, 270, 170, "#0f1f2e", ' rx="10" stroke="#334155"');
+    m += L.text(535, 78, c.title, {size: 15, color: C.text, weight: 700});
+    m += L.text(535, 112, c.a + " / " + c.b, {size: 26, color: c.a === "+" ? C.ok : C.danger, weight: 700});
+    m += L.text(535, 146, c.row, {size: 14, color: c.a === "+" ? C.ok : C.danger});
+    // wrapped note
+    var words = c.text.split(" "), line = "", lines = [];
+    for(var w = 0; w < words.length; w++){
+      var test = line ? line + " " + words[w] : words[w];
+      if(test.length > 36){ lines.push(line); line = words[w]; } else line = test;
+    }
+    if(line) lines.push(line);
+    for(var li = 0; li < lines.length; li++){
+      m += L.text(535, 178 + li * 16, lines[li], {size: 11, color: C.muted});
+    }
+    L.svg(m, "Interaction matrix with " + c.title + " highlighted.", 300);
+
+    L.readout([
+      ["case", c.title],
+      ["species A", c.a, c.a === "+" ? C.ok : C.danger],
+      ["species B", c.b, c.b === "+" ? C.ok : C.danger],
+      ["interaction", c.row, c.a === "+" ? C.ok : C.danger]
+    ]);
+    if(c.row === "mutualism"){
+      L.verdict("<b>Table 11.1 mutualism (+/+), Section 11.1.4:</b> both species benefit. " + c.text + ". Plants pay pollinators and seed dispersers in pollen, nectar and juicy fruits, and co-evolve with them; <b>Ophrys</b> even uses sexual deceit, mimicking the female bee.");
+    } else {
+      L.verdict("<b>Table 11.1 competition (\u2212/\u2212), Section 11.1.4:</b> the fitness (r) of both species falls. " + c.text + ". <b>Gause:</b> two closely related species competing for the same limiting resource cannot co-exist indefinitely \u2014 but resource partitioning can let them co-exist (MacArthur's warblers).");
+    }
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["lichen", "Lichen (+/+)"], ["figwasp", "Fig-wasp (+/+)"], ["flamingo", "Flamingo-fish (\u2212/\u2212)"], ["balanus", "Balanus (\u2212/\u2212)"], ["warblers", "Warblers (\u2212/\u2212)"]], st.preset, select);
+    L.legend([[C.ok, "benefit +"], [C.danger, "harm \u2212"], [C.muted, "neutral 0"]]);
+    draw();
+  }
+
+  window.SIMS.interactions = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 5 — Predation and parasitism stepper (NCERT §11.1.4(i)–(iii))
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var CASES = {
+    pisaster: {title: "Pisaster keystone removal", key: "more than 10 invertebrate species extinct within a year", kind: "predation"},
+    opuntia: {title: "Opuntia and the cactus moth", key: "millions of hectares of rangeland invaded in the 1920s", kind: "predation"},
+    cuscuta: {title: "Cuscuta: ectoparasitic plant", key: "lost chlorophyll and leaves; draws nutrition from the host", kind: "ecto"},
+    liverfluke: {title: "Liver fluke: endoparasite", key: "two intermediate hosts, a snail and a fish", kind: "endo"},
+    brood: {title: "Koel and crow: brood parasitism", key: "koel eggs match the host's in size and colour", kind: "brood"}
+  };
+  var st = {preset: "pisaster"};
+
+  function draw(){
+    var c = CASES[st.preset];
+    var m = "";
+    m += L.text(360, 22, "Predation and parasitism both score +/\u2212 on Table 11.1", {size: 13, color: C.muted});
+    if(c.kind === "predation" && st.preset === "pisaster"){
+      m += L.text(360, 52, "Enclosed intertidal area: all starfish removed", {size: 13, color: C.text});
+      for(var i = 0; i < 12; i++){
+        var px = 130 + (i % 6) * 92, py = 96 + Math.floor(i / 6) * 74;
+        var dead = i >= 2;
+        m += L.circle(px, py, 22, dead ? "#1f2937" : "#164e63", ' stroke="' + (dead ? "#475569" : "#38bdf8") + '" stroke-width="2"');
+        if(dead) m += L.line(px - 12, py - 12, px + 12, py + 12, C.danger, 3);
+      }
+      m += L.text(360, 236, "more than 10 species become extinct within a year", {size: 13, color: C.danger});
+    } else if(c.kind === "predation"){
+      m += L.text(360, 54, "Prickly pear (Opuntia) cover versus the introduced moth", {size: 13, color: C.text});
+      m += L.rect(110, 90, 240, 90, "#166534", ' opacity="0.85"');
+      m += L.text(230, 205, "1920s: millions of hectares invaded", {size: 12, color: C.muted});
+      m += L.arrow(370, 135, 440, 135, C.danger, 4);
+      m += L.circle(490, 135, 34, "#f59e0b", ' opacity="0.9"');
+      m += L.text(490, 141, "moth", {size: 12, color: "#08131d", weight: 700});
+      m += L.text(535, 210, "cactus-feeding moth from its native range", {size: 12, color: C.muted});
+    } else if(c.kind === "ecto"){
+      m += L.rect(110, 80, 220, 150, "#14532d", ' rx="8"');
+      m += L.text(220, 70, "hedge plant (host)", {size: 12, color: C.muted});
+      m += L.line(290, 90, 420, 130, "#f59e0b", 3);
+      m += L.line(300, 150, 430, 170, "#f59e0b", 3);
+      m += L.circle(455, 150, 26, "#b45309");
+      m += L.text(455, 155, "Cuscuta", {size: 11, color: "#fff", weight: 700});
+      m += L.text(360, 256, "ectoparasite: feeds on the external surface (lice, ticks, copepods also)", {size: 12, color: C.muted});
+    } else if(c.kind === "endo"){
+      m += L.circle(200, 150, 42, "#7f1d1d");
+      m += L.text(200, 154, "host", {size: 13, color: "#fff", weight: 700});
+      m += L.arrow(248, 150, 300, 150, C.muted, 3);
+      m += L.circle(340, 150, 30, "#0f766e");
+      m += L.text(340, 154, "snail", {size: 11, color: "#fff"});
+      m += L.arrow(376, 150, 428, 150, C.muted, 3);
+      m += L.circle(470, 150, 30, "#1e40af");
+      m += L.text(470, 154, "fish", {size: 11, color: "#fff"});
+      m += L.text(360, 256, "endoparasite: lives inside the host; two intermediate hosts (snail, fish)", {size: 12, color: C.muted});
+    } else {
+      m += L.rect(150, 80, 180, 110, "#3f2d1c", ' rx="40"');
+      m += L.circle(205, 130, 18, "#e2e8f0");
+      m += L.circle(250, 125, 18, "#e2e8f0");
+      m += L.circle(288, 138, 15, "#f59e0b");
+      m += L.text(360, 230, "crow nest: the koel egg mimics the host's in size and colour", {size: 12, color: C.muted});
+      m += L.text(360, 252, "the host incubates the foreign egg, reducing detection and ejection", {size: 12, color: C.muted});
+    }
+    L.svg(m, "Predation and parasitism lab: " + c.title + ".", 300);
+
+    L.readout([
+      ["interaction", "+ / \u2212", C.danger],
+      ["case", c.title],
+      ["key fact", c.key],
+      ["section", "11.1.4"]
+    ]);
+    if(st.preset === "pisaster"){
+      L.verdict("<b>Section 11.1.4(i), predation (+/\u2212):</b> removing the starfish <b>Pisaster</b> from an enclosed American Pacific intertidal area let <b>more than 10 species of invertebrates become extinct within a year</b> \u2014 predators maintain diversity by reducing competition among prey.");
+    } else if(st.preset === "opuntia"){
+      L.verdict("<b>Section 11.1.4(i) and Exercise 5:</b> prickly pear (<b>Opuntia</b>) spread into <b>millions of hectares</b> of Australian rangeland in the early 1920s until a <b>cactus-feeding moth</b> from its native range was introduced. Biological control rests on the predator's ability to regulate the prey population.");
+    } else if(st.preset === "cuscuta"){
+      L.verdict("<b>Section 11.1.4(iii), parasitism (+/\u2212):</b> <b>Cuscuta</b> has lost chlorophyll and leaves and draws nutrition from the host \u2014 an ectoparasite like lice on humans and ticks on dogs. The female mosquito is not a parasite: she takes blood for reproduction but does not live on the host.");
+    } else if(st.preset === "liverfluke"){
+      L.verdict("<b>Section 11.1.4(iii):</b> the human <b>liver fluke</b> is an endoparasite with two intermediate hosts (<b>a snail and a fish</b>); the malarial parasite uses a mosquito vector. Parasites reduce host survival, growth and reproduction and may make the host easier prey.");
+    } else {
+      L.verdict("<b>Section 11.1.4(iii):</b> in <b>brood parasitism</b> the parasitic bird lays eggs in the host's nest; koel eggs evolved to resemble the crow's eggs in <b>size and colour</b>, so the host incubates them. Watch the cuckoo (koel) and crow in spring\u2013summer.");
+    }
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["pisaster", "Pisaster keystone"], ["opuntia", "Opuntia biocontrol"], ["cuscuta", "Cuscuta (ecto)"], ["liverfluke", "Liver fluke (endo)"], ["brood", "Koel (brood)"]], st.preset, select);
+    L.legend([[C.danger, "predator / parasite +"], ["#38bdf8", "prey / host \u2212"], ["#f59e0b", "biocontrol agent"]]);
+    draw();
+  }
+
+  window.SIMS.predation = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 6 — Commensals, amensals and defences (NCERT §11.1.4(iv)–(v) + defence)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var CASES = {
+    orchid: {title: "Orchid on mango (Exercise 4)", cat: "commensalism + / 0", color: C.ok, note: "support and light for the orchid; the mango is neither helped nor harmed."},
+    barnacles: {title: "Barnacles on a whale", cat: "commensalism + / 0", color: C.ok, note: "the barnacle gains a moving substrate; the whale shows no apparent benefit or harm."},
+    penicillium: {title: "Penicillium vs Staphylococcus", cat: "amensalism \u2212 / 0", color: C.danger, note: "the fungus secretes a chemical that harms the bacterium while the fungus is unaffected."},
+    calotropis: {title: "Calotropis chemical defence", cat: "chemical defence", color: "#f59e0b", note: "highly poisonous cardiac glycosides keep cattle and goats from browsing the weed of abandoned fields."},
+    thorns: {title: "Thorns (Acacia, Cactus)", cat: "morphological defence", color: "#38bdf8", note: "the most common morphological defence: spines and thorns make herbivory costly."},
+    monarch: {title: "Monarch butterfly", cat: "animal chemical defence", color: "#a78bfa", note: "distasteful to birds because of a chemical gained as a caterpillar feeding on a poisonous weed."}
+  };
+  var st = {preset: "orchid"};
+
+  function draw(){
+    var c = CASES[st.preset];
+    var m = "";
+    m += L.text(360, 22, "Commensalism (+/0), amensalism (\u2212/0) and the defences prey and plants evolved", {size: 13, color: C.muted});
+    m += L.rect(70, 46, 340, 160, "#0f1f2e", ' rx="10" stroke="' + c.color + '" stroke-width="2"');
+    m += L.text(240, 82, c.title, {size: 15, color: C.text, weight: 700});
+    m += L.text(240, 118, c.cat, {size: 17, color: c.color, weight: 700});
+    var words = c.note.split(" "), line = "", lines = [];
+    for(var w = 0; w < words.length; w++){
+      var test = line ? line + " " + words[w] : words[w];
+      if(test.length > 42){ lines.push(line); line = words[w]; } else line = test;
+    }
+    if(line) lines.push(line);
+    for(var li = 0; li < lines.length; li++){
+      m += L.text(240, 150 + li * 17, lines[li], {size: 11, color: C.muted});
+    }
+    m += L.rect(440, 46, 230, 160, "#0f1f2e", ' rx="10" stroke="#334155"');
+    m += L.text(555, 76, "Defence classes", {size: 13, color: C.text, weight: 700});
+    m += L.text(555, 104, "morphological: thorns", {size: 12, color: "#38bdf8"});
+    m += L.text(555, 126, "chemical: glycosides,", {size: 12, color: "#f59e0b"});
+    m += L.text(555, 144, "nicotine, quinine, opium", {size: 12, color: "#f59e0b"});
+    m += L.text(555, 166, "concealment: camouflage", {size: 12, color: C.muted});
+    m += L.text(555, 188, "warning: Monarch poisons", {size: 12, color: "#a78bfa"});
+    m += L.text(360, 246, "Nearly 25 per cent of all insects are phytophagous; plants cannot run, so defences are varied.", {size: 12, color: C.muted});
+    L.svg(m, "Defence and interaction matcher: " + c.title + ".", 290);
+
+    L.readout([
+      ["case", c.title],
+      ["classification", c.cat, c.color],
+      ["sign", c.cat.indexOf("+ / 0") >= 0 ? "+ / 0" : (c.cat.indexOf("\u2212 / 0") >= 0 ? "\u2212 / 0" : "defence"), c.color],
+      ["section", "11.1.4"]
+    ]);
+    if(st.preset === "orchid"){
+      L.verdict("<b>Table 11.1 and Exercise 4:</b> the orchid is an epiphyte that gains support and light, while the mango is neither benefited nor harmed \u2014 <b>commensalism (+/0)</b>. It is not parasitism (nothing is drawn from the mango, unlike Cuscuta) and not mutualism (the mango gains nothing).");
+    } else if(st.preset === "barnacles"){
+      L.verdict("<b>Table 11.1, Section 11.1.4(iv):</b> barnacles on the back of a whale benefit while the whale derives no apparent benefit or harm \u2014 <b>commensalism (+/0)</b>. Cattle egrets with grazing cattle and clown fish with sea anemones are the other textbook cases.");
+    } else if(st.preset === "penicillium"){
+      L.verdict("<b>Table 11.1, amensalism (\u2212/0):</b> <b>Penicillium</b> releases a substance that harms <b>Staphylococcus</b> while the fungus is unaffected in the scored interaction \u2014 one species is harmed, the other is not.");
+    } else if(st.preset === "calotropis"){
+      L.verdict("<b>Section 11.1.4(i), chemical defence (Exercise 3):</b> <b>Calotropis</b> produces highly poisonous <b>cardiac glycosides</b>, so cattle and goats never browse it. Nicotine, caffeine, quinine, strychnine and opium are commercial chemicals the plants make as defences against grazers and browsers.");
+    } else if(st.preset === "thorns"){
+      L.verdict("<b>Section 11.1.4(i), morphological defence (Exercise 3):</b> <b>thorns</b> on <b>Acacia</b> and <b>Cactus</b> are the most common morphological defence against herbivores. Plants also make chemicals that sicken, block digestion or reproduction, or kill the herbivore.");
+    } else {
+      L.verdict("<b>Section 11.1.4(i), animal defence:</b> the <b>Monarch butterfly</b> is highly distasteful to birds because of a chemical acquired as a caterpillar feeding on a poisonous weed. Other prey use <b>camouflage</b>: insects and frogs are cryptically coloured to escape detection.");
+    }
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["orchid", "Orchid on mango (+/0)"], ["barnacles", "Barnacles (+/0)"], ["penicillium", "Penicillium (\u2212/0)"], ["calotropis", "Calotropis (chemical)"], ["thorns", "Thorns (morphological)"], ["monarch", "Monarch (animal)"]], st.preset, select);
+    L.legend([[C.ok, "commensal +/0"], [C.danger, "amensal \u2212/0"], ["#f59e0b", "chemical"], ["#38bdf8", "morphological"], ["#a78bfa", "animal defence"]]);
+    draw();
+  }
+
+  window.SIMS.defenses = {mount: mount, draw: draw, select: select, state: st};
+})();

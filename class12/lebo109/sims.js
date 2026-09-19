@@ -27,9 +27,9 @@ window.SIMS["principles-first-rdna"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Resistance gene</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>E. coli clones</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-s0">Step 0: bare fragment</button>' +
-      '<button class="preset-btn" id="p-s2">Step 2: cut + ligate</button>' +
-      '<button class="preset-btn active" id="p-s4">Step 4: 1972 clone</button>';
+      '<button class="preset-btn" id="p-s0" data-preset="p-s0">Step 0: bare fragment</button>' +
+      '<button class="preset-btn" id="p-s2" data-preset="p-s2">Step 2: cut + ligate</button>' +
+      '<button class="preset-btn active" id="p-s4" data-preset="p-s4">Step 4: 1972 clone</button>';
     document.getElementById("p-s0").onclick = function(){ setActivePreset(this); step=0; draw(App.state.t); };
     document.getElementById("p-s2").onclick = function(){ setActivePreset(this); step=2; draw(App.state.t); };
     document.getElementById("p-s4").onclick = function(){ setActivePreset(this); step=4; draw(App.state.t); };
@@ -97,11 +97,11 @@ window.SIMS["restriction-enzymes"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>EcoRI cut G|AATTC</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Sticky ends</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-eco">EcoRI GAATTC</button>' +
-      '<button class="preset-btn" id="p-bam">BamHI GGATCC</button>' +
-      '<button class="preset-btn" id="p-hind">HindIII AAGCTT</button>' +
-      '<button class="preset-btn" id="p-lin">Linear</button>' +
-      '<button class="preset-btn" id="p-cir">Circular</button>';
+      '<button class="preset-btn active" id="p-eco" data-preset="p-eco">EcoRI GAATTC</button>' +
+      '<button class="preset-btn" id="p-bam" data-preset="p-bam">BamHI GGATCC</button>' +
+      '<button class="preset-btn" id="p-hind" data-preset="p-hind">HindIII AAGCTT</button>' +
+      '<button class="preset-btn" id="p-lin" data-preset="p-lin">Linear</button>' +
+      '<button class="preset-btn" id="p-cir" data-preset="p-cir">Circular</button>';
     document.getElementById("p-eco").onclick = function(){ setActivePreset(this); seq="GAATTC"; draw(App.state.t); };
     document.getElementById("p-bam").onclick = function(){ setActivePreset(this); seq="GGATCC"; draw(App.state.t); };
     document.getElementById("p-hind").onclick = function(){ setActivePreset(this); seq="AAGCTT"; draw(App.state.t); };
@@ -180,9 +180,9 @@ window.SIMS["vectors-pbr322"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>tetR</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Insert</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-int">Intact pBR322</button>' +
-      '<button class="preset-btn" id="p-bam">BamHI insert in tetR</button>' +
-      '<button class="preset-btn" id="p-pst">PstI insert in ampR</button>';
+      '<button class="preset-btn active" id="p-int" data-preset="p-int">Intact pBR322</button>' +
+      '<button class="preset-btn" id="p-bam" data-preset="p-bam">BamHI insert in tetR</button>' +
+      '<button class="preset-btn" id="p-pst" data-preset="p-pst">PstI insert in ampR</button>';
     document.getElementById("p-int").onclick = function(){ setActivePreset(this); mode="intact"; draw(App.state.t); };
     document.getElementById("p-bam").onclick = function(){ setActivePreset(this); mode="bam"; draw(App.state.t); };
     document.getElementById("p-pst").onclick = function(){ setActivePreset(this); mode="pst"; draw(App.state.t); };
@@ -246,8 +246,8 @@ window.SIMS["isolation-cutting-gel"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Wells (cathode, -)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Anode (+) — DNA runs here</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-und">Lane 1: undigested</button>' +
-      '<button class="preset-btn active" id="p-dig">Lanes 2-4: digested</button>';
+      '<button class="preset-btn" id="p-und" data-preset="p-und">Lane 1: undigested</button>' +
+      '<button class="preset-btn active" id="p-dig" data-preset="p-dig">Lanes 2-4: digested</button>';
     document.getElementById("p-und").onclick = function(){ setActivePreset(this); lanes="undigested"; draw(App.state.t); };
     document.getElementById("p-dig").onclick = function(){ setActivePreset(this); lanes="digest"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -302,9 +302,9 @@ window.SIMS["pcr-host-insertion"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Primer annealing</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Extension (Taq)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-n1">N0 = 1 molecule</button>' +
-      '<button class="preset-btn" id="p-n10">N0 = 10 molecules</button>' +
-      '<button class="preset-btn" id="p-ca">Ca2+ heat-shock route</button>';
+      '<button class="preset-btn active" id="p-n1" data-preset="p-n1">N0 = 1 molecule</button>' +
+      '<button class="preset-btn" id="p-n10" data-preset="p-n10">N0 = 10 molecules</button>' +
+      '<button class="preset-btn" id="p-ca" data-preset="p-ca">Ca2+ heat-shock route</button>';
     document.getElementById("p-n1").onclick = function(){ setActivePreset(this); n0=1; draw(App.state.t); };
     document.getElementById("p-n10").onclick = function(){ setActivePreset(this); n0=10; draw(App.state.t); };
     document.getElementById("p-ca").onclick = function(){ setActivePreset(this); draw(App.state.t); };
@@ -366,8 +366,8 @@ window.SIMS["bioreactor-downstream"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Stirrer / agitator + O2</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Sterile-air sparge</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-stir">Simple stirred-tank (Fig 9.7a)</button>' +
-      '<button class="preset-btn" id="p-spar">Sparged stirred-tank (Fig 9.7b)</button>';
+      '<button class="preset-btn active" id="p-stir" data-preset="p-stir">Simple stirred-tank (Fig 9.7a)</button>' +
+      '<button class="preset-btn" id="p-spar" data-preset="p-spar">Sparged stirred-tank (Fig 9.7b)</button>';
     document.getElementById("p-stir").onclick = function(){ setActivePreset(this); sparged=false; draw(App.state.t); };
     document.getElementById("p-spar").onclick = function(){ setActivePreset(this); sparged=true; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =

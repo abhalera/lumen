@@ -23,8 +23,8 @@ window.SIMS.avgrate = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>chord Δ[R]/Δt</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>tangent</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-1">Intext 3.1: 0.03 → 0.02 M / 25 min</button>' +
-      '<button class="preset-btn" id="p-2">Intext 3.2: 2A → products</button>';
+      '<button class="preset-btn active" id="p-1" data-preset="intext31">Intext 3.1: 0.03 → 0.02 M / 25 min</button>' +
+      '<button class="preset-btn" id="p-2" data-preset="intext32">Intext 3.2: 2A → products</button>';
     document.getElementById("p-1").onclick = function(){ setActivePreset(this); kind=1; draw(App.state.t); };
     document.getElementById("p-2").onclick = function(){ setActivePreset(this); kind=2; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -68,10 +68,10 @@ window.SIMS.ratelaw = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>rate vs [A]</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p0">order 0</button>' +
-      '<button class="preset-btn" id="p1">order 1</button>' +
-      '<button class="preset-btn" id="p2">order 2</button>' +
-      '<button class="preset-btn" id="p25">Intext 3.3 order 2.5</button>';
+      '<button class="preset-btn active" id="p0" data-preset="order0">order 0</button>' +
+      '<button class="preset-btn" id="p1" data-preset="order1">order 1</button>' +
+      '<button class="preset-btn" id="p2" data-preset="order2">order 2</button>' +
+      '<button class="preset-btn" id="p25" data-preset="order25">Intext 3.3 order 2.5</button>';
     ["0","1","2","25"].forEach(function(k){
       document.getElementById("p"+k).onclick = function(){ setActivePreset(this); order = k==="25"?2.5:Number(k); draw(); };
     });
@@ -115,7 +115,7 @@ window.SIMS.zeroorder = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>[R] = [R]₀ − k t</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-nh">Ex 3.3 NH₃ on Pt</button>';
+      '<button class="preset-btn active" id="p-nh" data-preset="ex33">Ex 3.3 NH₃ on Pt</button>';
     document.getElementById("p-nh").onclick = function(){ setActivePreset(this); draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>[R]₀ / M</span><span class="val" id="ctrl-r">0.10</span></div>' +
@@ -151,9 +151,9 @@ window.SIMS.halflife = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>[A] = [A]₀ e^{−kt}</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c">¹⁴C dating Ex 3.14</button>' +
-      '<button class="preset-btn" id="p-5">Intext 3.5: 5 g → 3 g</button>' +
-      '<button class="preset-btn" id="p-16">Ex 3.16: to 1/16</button>';
+      '<button class="preset-btn active" id="p-c" data-preset="c14">¹⁴C dating Ex 3.14</button>' +
+      '<button class="preset-btn" id="p-5" data-preset="intext35">Intext 3.5: 5 g → 3 g</button>' +
+      '<button class="preset-btn" id="p-16" data-preset="ex316">Ex 3.16: to 1/16</button>';
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); kind="c"; App.resetTimeline(); App.play(); };
     document.getElementById("p-5").onclick = function(){ setActivePreset(this); kind="g"; App.resetTimeline(); App.play(); };
     document.getElementById("p-16").onclick = function(){ setActivePreset(this); kind="s"; App.resetTimeline(); App.play(); };
@@ -198,8 +198,8 @@ window.SIMS.pseudo = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>sucrose</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>water (excess)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-s">Ex 3.25 t₁/₂ = 3 h</button>' +
-      '<button class="preset-btn" id="p-8">Ex 3.8 30–60 s average</button>';
+      '<button class="preset-btn active" id="p-s" data-preset="ex325">Ex 3.25 t₁/₂ = 3 h</button>' +
+      '<button class="preset-btn" id="p-8" data-preset="ex38">Ex 3.8 30–60 s average</button>';
     document.getElementById("p-s").onclick = function(){ setActivePreset(this); kind="s"; draw(App.state.t); };
     document.getElementById("p-8").onclick = function(){ setActivePreset(this); kind="e"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -236,8 +236,8 @@ window.SIMS.arrhenius = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>ln k vs 1/T</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-30">Ex 3.30: rate ×4, 293→313 K</button>' +
-      '<button class="preset-btn" id="p-26">Ex 3.26: Ea from 28000 K</button>';
+      '<button class="preset-btn active" id="p-30" data-preset="ex330">Ex 3.30: rate ×4, 293→313 K</button>' +
+      '<button class="preset-btn" id="p-26" data-preset="ex326">Ex 3.26: Ea from 28000 K</button>';
     document.getElementById("p-30").onclick = function(){ setActivePreset(this); kind="30"; draw(); };
     document.getElementById("p-26").onclick = function(){ setActivePreset(this); kind="26"; draw(); };
     document.getElementById("lab-controls").innerHTML =

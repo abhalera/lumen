@@ -23,8 +23,8 @@ window.SIMS.atoms = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Atom / molecule</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="a-s">Solid ~2 Å packing</button>' +
-      '<button class="preset-btn" id="a-g">Gas: swarm + large free path</button>';
+      '<button class="preset-btn active" data-preset="a-s" id="a-s">Solid ~2 Å packing</button>' +
+      '<button class="preset-btn" data-preset="a-g" id="a-g">Gas: swarm + large free path</button>';
     document.getElementById("a-s").onclick = function(){ setActivePreset(this); mode="solid"; App.resetTimeline(); App.play(); };
     document.getElementById("a-g").onclick = function(){ setActivePreset(this); mode="gas"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -64,9 +64,9 @@ window.SIMS.idealgas = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Ideal PV = μRT</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Real-gas peel-off</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="g-b">Boyle: P vs 1/V</button>' +
-      '<button class="preset-btn" id="g-c">Charles: V vs T</button>' +
-      '<button class="preset-btn" id="g-s">STP molar volume 22.4 L</button>';
+      '<button class="preset-btn active" data-preset="g-b" id="g-b">Boyle: P vs 1/V</button>' +
+      '<button class="preset-btn" data-preset="g-c" id="g-c">Charles: V vs T</button>' +
+      '<button class="preset-btn" data-preset="g-s" id="g-s">STP molar volume 22.4 L</button>';
     document.getElementById("g-b").onclick = function(){ setActivePreset(this); law="boyle"; App.resetTimeline(); App.play(); };
     document.getElementById("g-c").onclick = function(){ setActivePreset(this); law="charles"; App.resetTimeline(); App.play(); };
     document.getElementById("g-s").onclick = function(){ setActivePreset(this); law="stp"; App.resetTimeline(); App.play(); };
@@ -113,7 +113,7 @@ window.SIMS.pressure = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Inbound molecule</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Wall</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="pr1">Fig 12.4 elastic bounce</button>';
+      '<button class="preset-btn active" data-preset="pr1" id="pr1">Fig 12.4 elastic bounce</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }
@@ -125,7 +125,6 @@ window.SIMS.pressure = (function(){
     m += '<rect x="540" y="40" width="28" height="220" fill="#38bdf8"/>';
     m += '<text x="554" y="30" fill="#94a3b8" font-size="12" text-anchor="middle">wall</text>';
     m += '<circle cx="'+x+'" cy="150" r="12" fill="#f59e0b"/>';
-    m += '<text x="x" y="0"></text>';
     var vx = cycle < 0.8 ? "+v_x" : "−v_x";
     m += '<text x="360" y="40" fill="#94a3b8" font-size="14" text-anchor="middle">Δp on wall = 2 m v_x per hit</text>';
     svg.innerHTML = m;
@@ -155,10 +154,10 @@ window.SIMS.maxwell = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Speed distribution (shape)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>v_rms</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="m-n2">N₂ 300 K · 516 m/s</button>' +
-      '<button class="preset-btn" id="m-he">He 300 K (lighter, faster)</button>' +
-      '<button class="preset-btn" id="m-ar">Ar 300 K (heavier, slower)</button>' +
-      '<button class="preset-btn" id="m-hot">N₂ 600 K (hotter, faster)</button>';
+      '<button class="preset-btn active" data-preset="m-n2" id="m-n2">N₂ 300 K · 516 m/s</button>' +
+      '<button class="preset-btn" data-preset="m-he" id="m-he">He 300 K (lighter, faster)</button>' +
+      '<button class="preset-btn" data-preset="m-ar" id="m-ar">Ar 300 K (heavier, slower)</button>' +
+      '<button class="preset-btn" data-preset="m-hot" id="m-hot">N₂ 600 K (hotter, faster)</button>';
     document.getElementById("m-n2").onclick = function(){ setActivePreset(this); gas="n2"; App.resetTimeline(); };
     document.getElementById("m-he").onclick = function(){ setActivePreset(this); gas="he"; App.resetTimeline(); };
     document.getElementById("m-ar").onclick = function(){ setActivePreset(this); gas="ar"; App.resetTimeline(); };
@@ -207,9 +206,9 @@ window.SIMS.equipart = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Rotation</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Vibration (often frozen)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="e-m">Monatomic f = 3</button>' +
-      '<button class="preset-btn" id="e-d">Diatomic room T f = 5</button>' +
-      '<button class="preset-btn" id="e-v">Diatomic hot f = 7</button>';
+      '<button class="preset-btn active" data-preset="e-m" id="e-m">Monatomic f = 3</button>' +
+      '<button class="preset-btn" data-preset="e-d" id="e-d">Diatomic room T f = 5</button>' +
+      '<button class="preset-btn" data-preset="e-v" id="e-v">Diatomic hot f = 7</button>';
     document.getElementById("e-m").onclick = function(){ setActivePreset(this); kind="mono"; App.resetTimeline(); };
     document.getElementById("e-d").onclick = function(){ setActivePreset(this); kind="di"; App.resetTimeline(); };
     document.getElementById("e-v").onclick = function(){ setActivePreset(this); kind="vib"; App.resetTimeline(); };
@@ -245,8 +244,8 @@ window.SIMS.cvgas = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Heat in at fixed V</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="c-he">Ex 12.8 helium 374 J</button>' +
-      '<button class="preset-btn" id="c-n2">Same flask of N₂ (diatomic)</button>';
+      '<button class="preset-btn active" data-preset="c-he" id="c-he">Ex 12.8 helium 374 J</button>' +
+      '<button class="preset-btn" data-preset="c-n2" id="c-n2">Same flask of N₂ (diatomic)</button>';
     document.getElementById("c-he").onclick = function(){ setActivePreset(this); gas="he"; App.resetTimeline(); App.play(); };
     document.getElementById("c-n2").onclick = function(){ setActivePreset(this); gas="n2"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -278,7 +277,7 @@ window.SIMS.mfp = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Tagged molecule</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Collision cylinder</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="mf1">STP air ℓ ≈ 2.9×10⁻⁷ m</button>';
+      '<button class="preset-btn active" data-preset="mf1" id="mf1">STP air ℓ ≈ 2.9×10⁻⁷ m</button>';
     document.getElementById("lab-controls").innerHTML = "";
     draw(0);
   }

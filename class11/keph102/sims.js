@@ -292,3 +292,72 @@ window.SIMS.relvel = (function(){
   }
   return { mount: mount, draw: draw };
 })();
+
+// Source-faithful redraws of the exercise figures on NCERT PDF pp. 12–14.
+window.FIGURES = {
+  "2.9": '<svg viewBox="0 0 560 260" role="img" aria-label="Figure 2.9: position-time graphs for children A and B"><defs><marker id="a29" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#334155"/></marker></defs><path d="M90 220V28M90 220H500" stroke="#334155" stroke-width="2" marker-end="url(#a29)"/><path d="M90 220L450 80" stroke="#2563eb" stroke-width="4"/><path d="M235 220L355 42" stroke="#111827" stroke-width="4"/><path d="M80 150H100M80 95H100" stroke="#64748b" stroke-width="2"/><text x="62" y="154">P</text><text x="62" y="99">Q</text><text x="505" y="228">t</text><text x="76" y="25">x</text><text x="214" y="165" fill="#2563eb">A</text><text x="258" y="184">B</text><text x="84" y="239">O</text></svg>',
+  "2.10": '<svg viewBox="0 0 700 360" role="img" aria-label="Figure 2.10: four impossible motion graphs"><g transform="translate(20 10)"><path d="M100 145V20M40 85H185" stroke="#334155" stroke-width="2"/><path d="M65 118C40 145 40 73 85 72C130 72 142 32 118 32C80 32 76 105 55 105" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="92" y="18">x</text><text x="188" y="90">t</text><text x="105" y="170">(a)</text></g><g transform="translate(340 10)"><path d="M100 145V20M40 85H185" stroke="#334155" stroke-width="2"/><circle cx="100" cy="85" r="44" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="90" y="18">v</text><text x="188" y="90">t</text><text x="105" y="170">(b)</text></g><g transform="translate(20 190)"><path d="M100 145V20M40 85H185" stroke="#334155" stroke-width="2"/><path d="M42 60C70 18 93 150 120 120S155 38 182 84" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="72" y="18">Speed</text><text x="188" y="90">t</text><text x="105" y="170">(c)</text></g><g transform="translate(340 190)"><path d="M100 145V20M40 145H185" stroke="#334155" stroke-width="2"/><path d="M42 145L95 55L145 145L185 95" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="67" y="18">Total path length</text><text x="188" y="150">t</text><text x="105" y="170">(d)</text></g></svg>',
+  "2.11": '<svg viewBox="0 0 560 260" role="img" aria-label="Figure 2.11: rest for negative time followed by parabolic x-t motion"><path d="M255 225V30M80 185H500" stroke="#334155" stroke-width="2"/><path d="M80 185H255C330 185 405 142 438 55" fill="none" stroke="#0ea5e9" stroke-width="5"/><text x="240" y="250">0</text><text x="505" y="192">t</text><text x="240" y="28">x</text></svg>',
+  "2.12": '<svg viewBox="0 0 780 270" role="img" aria-label="Figure 2.12: example position, velocity and acceleration graphs"><g transform="translate(10 5)"><path d="M125 220V30M20 150H240" stroke="#334155" stroke-width="2"/><path d="M22 150H92L125 120L180 165H235" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="102" y="114">A</text><text x="132" y="145">B</text><text x="112" y="28">x</text><text x="243" y="155">t</text><text x="125" y="250">(a)</text></g><g transform="translate(270 5)"><path d="M125 220V30M20 150H240" stroke="#334155" stroke-width="2"/><path d="M92 55L142 172M130 75L170 168M165 102L194 165M194 132L208 160" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="112" y="28">v</text><text x="243" y="155">t</text><text x="125" y="250">(b)</text></g><g transform="translate(530 5)"><path d="M125 220V30M20 150H240" stroke="#334155" stroke-width="2"/><path d="M22 150H86C101 150 104 55 125 55S149 150 165 150H235" fill="none" stroke="#0ea5e9" stroke-width="4"/><text x="112" y="28">a</text><text x="243" y="155">t</text><text x="125" y="250">(c)</text></g></svg>',
+  "2.13": '<svg viewBox="0 0 640 260" role="img" aria-label="Figure 2.13: sinusoidal position-time graph"><path d="M282 225V25M55 130H590" stroke="#334155" stroke-width="2"/><path d="M90 130C105 164 118 185 138 185S171 151 186 130S215 75 234 75S267 109 282 130S311 185 330 185S363 151 378 130S407 75 426 75S459 109 474 130S503 185 522 185S555 151 570 130" fill="none" stroke="#0ea5e9" stroke-width="4"/><g fill="#475569"><text x="79" y="151">−2</text><text x="175" y="151">−1</text><text x="273" y="151">0</text><text x="371" y="151">1</text><text x="467" y="151">2</text><text x="563" y="151">3</text><text x="596" y="136">t</text><text x="267" y="23">x</text></g></svg>',
+  "2.14": '<svg viewBox="0 0 560 300" role="img" aria-label="Figure 2.14: position-time curve across three equal intervals"><path d="M95 245V25M95 185H500" stroke="#334155" stroke-width="2"/><path d="M95 105C170 85 245 48 300 30C335 40 315 170 350 238C385 285 425 215 450 180" fill="none" stroke="#0ea5e9" stroke-width="5"/><path d="M185 88V185M280 37V185M375 248V185" stroke="#64748b" stroke-dasharray="5 5"/><text x="178" y="205">1</text><text x="273" y="205">2</text><text x="368" y="205">3</text><text x="505" y="192">t</text><text x="80" y="24">x</text></svg>',
+  "2.15": '<svg viewBox="0 0 600 300" role="img" aria-label="Figure 2.15: smooth speed-time curve with points A B C and D"><path d="M85 250V25M85 250H545" stroke="#334155" stroke-width="2"/><path d="M88 225C170 225 220 190 260 95C285 45 315 65 335 150C350 215 390 220 420 125C450 28 485 38 505 95" fill="none" stroke="#0ea5e9" stroke-width="5"/><path d="M220 250V185M330 250V145M465 250V48" stroke="#64748b" stroke-dasharray="5 5"/><g fill="#334155"><text x="95" y="217">A</text><text x="272" y="72">B</text><text x="370" y="220">C</text><text x="466" y="35">D</text><text x="212" y="270">1</text><text x="322" y="270">2</text><text x="457" y="270">3</text><text x="550" y="258">t</text><text x="45" y="145" transform="rotate(-90 45 145)">Speed</text></g></svg>'
+};
+
+// Stable browser-fixture identifiers for every visible lab scenario.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// Semantic prediction aliases expected by the shared browser QA.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+function normalizeChapterPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var watch = document.getElementById("what-to-watch");
+  if(lesson && watch && lesson.watch){
+    var text = "What to watch: " + lesson.watch;
+    if(watch.textContent !== text) watch.textContent = text;
+  }
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){ var h = card.querySelector("h3"); return h && /^Wow/i.test(h.textContent.trim()); });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow"); card.removeAttribute("data-wow"); card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge"); if(badge) badge.remove();
+    });
+  });
+  window.CHAPTER.exercises.filter(function(ex){ return ex.figure; }).forEach(function(ex){
+    var card = document.getElementById("exercise-q" + ex.number);
+    if(!card || card.querySelector(".ex-figure") || !window.FIGURES[ex.figure]) return;
+    if(ex.q !== undefined) card.id = "exercise-q" + ex.q;
+    var question = card.querySelector(".exercise-question-text");
+    var figure = document.createElement("div"); figure.className = "ex-figure";
+    figure.innerHTML = window.FIGURES[ex.figure] + '<div style="font-size:12px;color:#64748b;text-align:center">Redrawn from NCERT Fig. ' + ex.figure + ' · PDF p.' + ex.page + '</div>';
+    question.insertAdjacentElement("afterend", figure);
+  });
+}
+var conceptView = document.getElementById("concept-view");
+var revisionView = document.getElementById("revision-view");
+if(conceptView) new MutationObserver(normalizeChapterPresentation).observe(conceptView, {childList:true, subtree:true});
+if(revisionView) new MutationObserver(normalizeChapterPresentation).observe(revisionView, {childList:true, subtree:true});
+normalizeChapterPresentation();

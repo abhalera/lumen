@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Class 12 Mathematics — Application of Integrals.">
-  <title>Application of Integrals — Class 12 Mathematics</title>
-  <style>:root {
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chapter 8: Application of Integrals — Interactive Textbook</title>
+<style>
+:root {
   --ink: #152637;
   --muted: #536678;
   --paper: #ffffff;
@@ -75,6 +75,7 @@ body {
   font-size: 13px;
   color: var(--muted);
   font-weight: 500;
+  margin: 0;
 }
 .top-actions {
   display: flex;
@@ -108,9 +109,11 @@ progress {
   min-height: calc(100vh - 64px);
 }
 @media (max-width: 960px) {
-  .app-layout { grid-template-columns: 1fr; }
+  .app-layout { grid-template-columns: minmax(0, 1fr); }
   .sidebar { display: none; }
 }
+/* width:100% stops main from sizing to the scrolling concept list's content width */
+main { min-width: 0; width: 100%; }
 
 /* Sidebar Concept Navigation */
 .sidebar {
@@ -138,7 +141,7 @@ progress {
   margin: 14px 10px 6px;
   text-transform: uppercase;
 }
-.concept-nav {
+.concept-nav, .revision-nav {
   width: 100%;
   display: flex;
   align-items: center;
@@ -153,15 +156,15 @@ progress {
   cursor: pointer;
   transition: all 0.15s ease;
 }
-.concept-nav:hover {
+.concept-nav:hover, .revision-nav:hover {
   background: rgba(37,74,215,0.06);
 }
-.concept-nav.active {
+.concept-nav.active, .revision-nav.active {
   background: var(--soft);
   color: var(--blue);
   font-weight: 650;
 }
-.concept-nav .num {
+.concept-nav .num, .revision-nav .num {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -172,7 +175,7 @@ progress {
   font-weight: 700;
   flex-shrink: 0;
 }
-.concept-nav.active .num {
+.concept-nav.active .num, .revision-nav.active .num {
   background: var(--blue);
   color: #fff;
 }
@@ -184,7 +187,27 @@ main {
   margin: 0 auto;
 }
 @media (max-width: 640px) {
-  main { padding: 20px 16px 60px; }
+  .topbar {
+    padding: 0 10px;
+    height: 56px;
+  }
+  .chapter-crumb {
+    display: none !important;
+  }
+  .top-actions {
+    gap: 6px;
+  }
+  .progress-pill span:first-child {
+    display: none !important;
+  }
+  .progress-pill progress {
+    width: 44px;
+  }
+  .toolbar-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  main { padding: 16px 12px 60px; }
 }
 
 /* Concept Header */
@@ -211,11 +234,14 @@ main {
   font-size: 11px;
   font-weight: 600;
 }
-h1.concept-title {
-  font: 36px/1.2 Georgia, serif;
+.concept-title {
+  font: 34px/1.2 Georgia, "Times New Roman", serif;
   margin: 0 0 10px;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+}
+@media (max-width: 640px) {
+  .concept-title { font-size: 27px; }
 }
 p.concept-deck {
   font-size: 17px;
@@ -285,9 +311,11 @@ p.concept-deck {
 }
 .eq-meta {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  font-size: 12px;
+  gap: 2px 16px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .eq-label {
@@ -468,8 +496,8 @@ svg.diagram {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 240px;
-  max-height: 320px;
+  max-height: 460px;
+  touch-action: pan-y;
 }
 
 /* Data-driven Legend (Fixed P1-5) */
@@ -600,9 +628,9 @@ input.timeline-scrubber {
   padding: 8px 12px;
 }
 .telemetry-label {
-  font-size: 11px;
+  /* No text-transform: labels contain case-sensitive symbols such as s₁, u, t. */
+  font-size: 12px;
   color: #94a3b8;
-  text-transform: uppercase;
   margin-bottom: 2px;
 }
 .telemetry-val {
@@ -652,7 +680,9 @@ input.timeline-scrubber {
   margin-bottom: 8px;
 }
 .connect-card h3 {
-  font: 18px/1.3 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 700;
   margin: 0 0 6px;
   color: var(--ink);
 }
@@ -662,34 +692,48 @@ input.timeline-scrubber {
   margin: 0 0 10px;
 }
 .video-facade {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   width: 100%;
-  margin-top: 10px;
-  padding: 10px 12px;
-  text-align: left;
-  background: #0f172a;
-  color: #fff;
-  border: none;
+  aspect-ratio: 16/9;
+  background: #000;
   border-radius: var(--radius-sm);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  font: inherit;
+  display: block;
+}
+.video-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
 }
 .play-btn {
-  flex: none;
-  width: 34px;
-  height: 34px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 48px;
+  height: 48px;
   background: var(--blue);
   color: #fff;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 14px;
+  font-size: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 .video-title {
-  font-size: 13px;
-  line-height: 1.4;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  color: #fff;
+  font-size: 12px;
+  text-align: left;
 }
 
 /* Block 4: PRACTICE (3-Tier Multi-concept) */
@@ -725,7 +769,9 @@ input.timeline-scrubber {
   border-color: var(--blue);
 }
 .question-prompt {
-  font: 18px/1.4 Georgia, serif;
+  font-size: 16.5px;
+  line-height: 1.5;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 14px;
 }
@@ -917,10 +963,43 @@ button.btn-secondary {
   text-decoration: underline;
 }
 .exercise-question-text {
-  font: 17px/1.6 Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--ink);
-  margin-bottom: 14px;
   white-space: pre-line;
+}
+.exercise-body {
+  margin: 12px 0 14px;
+}
+.exercise-body.has-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 18px 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .exercise-body.has-figure { grid-template-columns: 1fr; }
+}
+.ex-figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 8px;
+}
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.ex-figure figcaption {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 6px;
+  text-align: center;
 }
 .exercise-drawer {
   border-top: 1px dashed var(--line);
@@ -988,78 +1067,431 @@ button.btn-secondary {
   color: var(--muted);
 }
 
-/* muse-textbooks fix 2026-09-09: mobile toolbar wrap + focus + reduced motion */
-@media (max-width:640px){
-.topbar{flex-wrap:wrap;height:auto;min-height:56px;padding:8px 12px;row-gap:8px}
-.brand{font-size:17px}
-.top-actions{flex-wrap:wrap;gap:8px}
-.toolbar-btn{padding:5px 9px;font-size:12px}
-.progress-pill{font-size:11px;padding:3px 10px}
+/* Compact concept list for narrow screens (sidebar is hidden below 960px) */
+.mobile-concept-nav {
+  display: none;
 }
-:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
-@media (prefers-reduced-motion:reduce){
-*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+@media (max-width: 960px) {
+  .mobile-concept-nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: -8px -4px 18px;
+    padding: 4px 4px 10px;
+    scrollbar-width: thin;
+  }
+  .mobile-concept-nav button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--paper-soft);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .mobile-concept-nav button .num {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--muted);
+  }
+  .mobile-concept-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .mobile-concept-nav button.active .num { color: #dbe4ff; }
 }
 
-/* muse-textbooks fix 2026-09-09b: wrap unbreakable sim readout strings */
-.lab-readout,.telemetry-cell,.telemetry-val,.sim-mount-container{overflow-wrap:anywhere;word-break:break-word;min-width:0}
+/* Worked examples */
+details.worked .worked-body {
+  margin-top: 10px;
+  font-size: 15px;
+}
+.worked-body p { margin: 0 0 8px; }
+.worked-given { color: var(--muted); }
+.worked-body .solution-steps { margin: 6px 0 12px; }
 
-/* muse-textbooks structural 2026-09-09: class link */
-.class-link{font-size:13px;font-weight:700;color:var(--blue);text-decoration:none;white-space:nowrap}
-.class-link:hover{text-decoration:underline}
+/* Prediction states */
+.predict-option.is-answer { border-color: var(--green); background: var(--green-soft); }
+.predict-option.is-wrong { border-color: #fca5a5; background: var(--coral-soft); }
 
-/* muse-textbooks resources 2026-09-09: optional resource cards */
-.resource-list{display:grid;gap:10px;margin-top:12px}
-.resource-card{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfdff}
-.res-badge{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);background:var(--soft);padding:2px 8px;border-radius:999px}
-.res-body{display:flex;flex-direction:column;gap:2px;flex:1 1 220px}
-.res-body strong{font-size:14px}
-.res-provider{font-size:12px;color:var(--muted)}
-.res-link{font-size:13px;font-weight:700;white-space:nowrap}
-.res-off{font-size:11px;color:var(--muted);flex-basis:100%}
+/* Lab extras */
+.preset-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  align-self: center;
+  margin-right: 2px;
+}
+.preset-btn.active {
+  background: #fff;
+  color: var(--lab);
+  font-weight: 700;
+}
+.time-rate {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 6px;
+  font-family: system-ui, sans-serif;
+}
+.time-display { min-width: 120px; }
+.control-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.control-check input { width: 18px; height: 18px; accent-color: #38bdf8; }
+.control-select {
+  background: var(--lab-panel);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.control-buttons {
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+.lab-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.lab-readout:has(.lab-readout-grid), .lab-readout:has(.lab-table) {
+  display: block;
+}
+.lab-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+.lab-chips-label { margin-right: 4px; color: #94a3b8; }
+.lab-chips .chip {
+  background: var(--lab-panel);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-family: ui-monospace, monospace;
+  color: #38bdf8;
+}
+.lab-chips .chip b { color: #94a3b8; font-weight: 600; margin-right: 4px; }
+.lab-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.lab-table caption {
+  text-align: left;
+  font-size: 12px;
+  color: #94a3b8;
+  padding-bottom: 6px;
+}
+.lab-table th, .lab-table td {
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+.lab-table th { background: var(--lab-panel); color: #cbd5e1; font-weight: 600; }
+.lab-table tr.pending td { color: #64748b; }
+.lab-verdict b { color: #fff; }
+.video-title small { opacity: 0.75; }
+@media (max-width: 640px) {
+  .lab-card { padding: 16px 12px 18px; }
+  .telemetry-val { font-size: 14px; }
+  .lab-table { font-size: 12px; }
+  .lab-table th, .lab-table td { padding: 4px 6px; }
+}
 
-/* muse-textbooks 360fix 2026-09-09: wrap equation rows */
-.key-equations-card,.eq-grid,.eq-row,.eq-math{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
-/* muse-textbooks nofab 2026-09-09: question cites */
-.q-cite{font-size:11px;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
-<noscript><p style="margin:0;padding:12px 16px;background:#fef3c7;color:#7c2d12;font:14px/1.5 system-ui,sans-serif">This interactive lesson needs JavaScript to render. Please enable JavaScript, or return to the <a href="../index.html">Class 12 index</a>.</p></noscript>
-
-  <a class="skip-link" href="#main-content">Skip to lesson</a>
-  <header class="topbar">
-    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> Lumen</a>
-    <a class="class-link" href="../index.html">Class 12</a><span class="class-pill">CLASS 12 <span aria-hidden="true">·</span> MATHEMATICS</span>
-  </header>
-  <div class="app-layout">
-    <aside class="sidebar" aria-label="Chapter navigation">
-      <div class="sidebar-heading">Chapter concepts</div>
-      <nav id="contents" aria-label="Concepts"><div id="sidebar-nav"></div></nav>
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--line);">
-        <button class="concept-nav" id="nav-revision"><span class="num">✦</span><span>NCERT Exercises &amp; Revision</span></button>
-      </div>
-      <div style="margin:18px 10px 0;color:var(--muted);font-size:12px;line-height:1.5;">
-        Source: <a href="https://ncert.nic.in/textbook/pdf/lemh202.pdf" target="_blank" rel="noopener">lemh202 PDF ↗</a>
-      </div>
-    </aside>
-    <main id="main-content">
-      <div id="concept-view"></div>
-      <div id="revision-view" class="revision-page" data-block="revise">
-        <div class="concept-header">
-          <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
-          <h1 class="concept-title">Revise, Reflect, Refine</h1>
-          <p class="concept-deck">Mapped source exercises plus an original practice path for Class 12 Mathematics.</p>
-        </div>
-      </div>
-    </main>
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a class="brand" href="../../index.html"><span class="brand-mark">l.</span> lumen</a>
+    <a class="class-link" href="../index.html" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;">Class 12</a>
   </div>
-  <footer style="max-width:1040px;margin:0 auto;padding:0 36px 34px;color:var(--muted);font-size:12px;">
-    Source-aware first release · <a href="PLAN.md">Chapter plan</a> · <a href="../MATHS-STATUS.md">Maths status</a>
-  </footer>
-  <script>window.CHAPTER = {"code": "lemh202", "chapterNumber": 8, "book_name": "Mathematics", "title": "Application of Integrals", "subtitle": "A definite integral becomes geometry when its integrand is a height and dx is a thin width.", "edition": "Reprint 2026-27", "source": "https://ncert.nic.in/textbook/pdf/lemh202.pdf", "ncert": "https://ncert.nic.in/textbook/pdf/lemh202.pdf", "page_start": 1, "page_end": 8, "extraction": "PyMuPDF page text, dict spans, blocks, and selected PNG zooms. pdftotext not used.", "lessons": [{"id": "area-under-a-curve", "nav": "Area under a curve", "title": "The area under y=f(x) from x=a to x=b is the integral when f is non-negative.", "deck": "A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area.", "minutes": 8, "section": "8.2", "pages": [1], "print": "PDF p.1", "sim": "area", "simTitle": "Area between curves", "quick": ["The area under y=f(x) from x=a to x=b is the integral when f is non-negative.", "A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area."], "formulas": [{"label": "Key relation", "html": "Area=∫ₐᵇf(x)dx  (f(x)≥0)", "cond": "Source section 8.2"}], "deeper": "The area under y=f(x) from x=a to x=b is the integral when f is non-negative. A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "The area under y=x from 0 to 2 is ∫₀²x dx=2 square units.", "prediction": {"prompt": "Find the area under y=x from 0 to 2.", "options": ["2", "4", "1"], "answer": 0, "explanation": "The reliable anchor is Area=∫ₐᵇf(x)dx  (f(x)≥0). A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area."}, "connect": [["Land measurement", "Curved boundaries can be measured by summing thin strips.", [], {"id": "MT2VtVznb-8", "title": "Integration Class 12 One Shot | NCERT Revision | Maths Chapter 7 | VIJETA 2026", "channel": "NCERT Wallah"}], ["Architecture", "The area between profiles estimates material, glass and paint."]], "recall": "Say it without looking: A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area. Then write Area=∫ₐᵇf(x)dx  (f(x)≥0).", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Area under a curve?", "options": ["A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "A vertical strip contributes approximately f(x)dx; adding all strips gives the exact area.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Area under a curve?", "options": ["Area=∫ₐᵇf(x)dx  (f(x)≥0)", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "Area=∫ₐᵇf(x)dx  (f(x)≥0)", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Find the area under y=x from 0 to 2.", "options": ["2", "4", "1"], "answer": 0, "hint": "Start with Area=∫ₐᵇf(x)dx  (f(x)≥0). Check the domain, sign or dimensions before choosing.", "solution": "2 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §8.2 — Area under a curve (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh202.pdf#page=1"}], "printPages": "292"}, {"id": "regions-with-the-x-axis", "nav": "Regions with the x-axis", "title": "When a curve crosses the axis, signed integral and geometric area must be separated.", "deck": "Geometric area uses absolute heights or splits the interval at zeros.", "minutes": 8, "section": "8.2", "pages": [1], "print": "PDF p.1", "sim": "area", "simTitle": "Area between curves", "quick": ["When a curve crosses the axis, signed integral and geometric area must be separated.", "Geometric area uses absolute heights or splits the interval at zeros."], "formulas": [{"label": "Key relation", "html": "geometric area=∫|f(x)|dx", "cond": "Source section 8.2"}], "deeper": "When a curve crosses the axis, signed integral and geometric area must be separated. Geometric area uses absolute heights or splits the interval at zeros. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "For y=x−1 from 0 to 2, the signed integral is zero but the two triangular areas total 1.", "prediction": {"prompt": "Why split an interval when f changes sign?", "options": ["Geometric areas should not cancel", "The integral becomes a matrix", "dx changes to dy"], "answer": 0, "explanation": "The reliable anchor is geometric area=∫|f(x)|dx. Geometric area uses absolute heights or splits the interval at zeros."}, "connect": [["Architecture", "The area between profiles estimates material, glass and paint."], ["Data curves", "The area under a rate graph accumulates the represented quantity."]], "recall": "Say it without looking: Geometric area uses absolute heights or splits the interval at zeros. Then write geometric area=∫|f(x)|dx.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Regions with the x-axis?", "options": ["Geometric area uses absolute heights or splits the interval at zeros.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Geometric area uses absolute heights or splits the interval at zeros.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Regions with the x-axis?", "options": ["geometric area=∫|f(x)|dx", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "geometric area=∫|f(x)|dx", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "Why split an interval when f changes sign?", "options": ["Geometric areas should not cancel", "The integral becomes a matrix", "dx changes to dy"], "answer": 0, "hint": "Start with geometric area=∫|f(x)|dx. Check the domain, sign or dimensions before choosing.", "solution": "Geometric areas should not cancel follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §8.2 — Regions with the x-axis (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh202.pdf#page=1"}], "printPages": "292"}, {"id": "area-between-two-curves", "nav": "Area between two curves", "title": "For vertical strips, subtract the lower curve from the upper curve over the interval.", "deck": "First find intersection points; then identify which graph is above on each subinterval.", "minutes": 8, "section": "8.2", "pages": [1], "print": "PDF p.1", "sim": "area", "simTitle": "Area between curves", "quick": ["For vertical strips, subtract the lower curve from the upper curve over the interval.", "First find intersection points; then identify which graph is above on each subinterval."], "formulas": [{"label": "Key relation", "html": "Area=∫ₐᵇ[upper−lower]dx", "cond": "Source section 8.2"}], "deeper": "For vertical strips, subtract the lower curve from the upper curve over the interval. First find intersection points; then identify which graph is above on each subinterval. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "Between y=x and y=x² on [0,1], area is ∫₀¹(x−x²)dx=1/6.", "prediction": {"prompt": "The area between y=x and y=x² from 0 to 1 is…", "options": ["1/6", "1/2", "1"], "answer": 0, "explanation": "The reliable anchor is Area=∫ₐᵇ[upper−lower]dx. First find intersection points; then identify which graph is above on each subinterval."}, "connect": [["Data curves", "The area under a rate graph accumulates the represented quantity."], ["Land measurement", "Curved boundaries can be measured by summing thin strips."]], "recall": "Say it without looking: First find intersection points; then identify which graph is above on each subinterval. Then write Area=∫ₐᵇ[upper−lower]dx.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Area between two curves?", "options": ["First find intersection points; then identify which graph is above on each subinterval.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "First find intersection points; then identify which graph is above on each subinterval.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Area between two curves?", "options": ["Area=∫ₐᵇ[upper−lower]dx", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "Area=∫ₐᵇ[upper−lower]dx", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "The area between y=x and y=x² from 0 to 1 is…", "options": ["1/6", "1/2", "1"], "answer": 0, "hint": "Start with Area=∫ₐᵇ[upper−lower]dx. Check the domain, sign or dimensions before choosing.", "solution": "1/6 follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §8.2 — Area between two curves (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh202.pdf#page=1"}], "printPages": "292"}, {"id": "sketch-bounds-and-units", "nav": "Sketch, bounds and units", "title": "A sketch identifies intersections, strips and correct bounds before arithmetic begins.", "deck": "Area has squared units; if horizontal strips are easier, rewrite x as a function of y.", "minutes": 8, "section": "8.2", "pages": [1], "print": "PDF p.1", "sim": "area", "simTitle": "Area between curves", "quick": ["A sketch identifies intersections, strips and correct bounds before arithmetic begins.", "Area has squared units; if horizontal strips are easier, rewrite x as a function of y."], "formulas": [{"label": "Key relation", "html": "dx gives vertical strips; dy gives horizontal strips", "cond": "Source section 8.2"}], "deeper": "A sketch identifies intersections, strips and correct bounds before arithmetic begins. Area has squared units; if horizontal strips are easier, rewrite x as a function of y. Use the displayed relation as a checkpoint: name the objects first, state the domain or conditions, and only then substitute values.", "worked": "For a symmetric region, calculate one half and double it only after checking the symmetry.", "prediction": {"prompt": "What should be done before setting up a region integral?", "options": ["Sketch and find bounds", "Differentiate every constant", "Ignore intersections"], "answer": 0, "explanation": "The reliable anchor is dx gives vertical strips; dy gives horizontal strips. Area has squared units; if horizontal strips are easier, rewrite x as a function of y."}, "connect": [["Land measurement", "Curved boundaries can be measured by summing thin strips."], ["Architecture", "The area between profiles estimates material, glass and paint."]], "recall": "Say it without looking: Area has squared units; if horizontal strips are easier, rewrite x as a function of y. Then write dx gives vertical strips; dy gives horizontal strips.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Which statement best matches Sketch, bounds and units?", "options": ["Area has squared units; if horizontal strips are easier, rewrite x as a function of y.", "Every case has the opposite property automatically.", "The idea applies only when all numbers are positive."], "answer": 0, "hint": "Read the definition in the Learn block.", "solution": "Area has squared units; if horizontal strips are easier, rewrite x as a function of y.", "wrong": ["", "", ""]}, {"level": "Medium", "type": "mcq", "prompt": "Which relation is the useful anchor for Sketch, bounds and units?", "options": ["dx gives vertical strips; dy gives horizontal strips", "x+y=0 in every problem.", "The answer is always the largest number."], "answer": 0, "hint": "Use the displayed Key relation.", "solution": "dx gives vertical strips; dy gives horizontal strips", "wrong": ["", "", ""]}, {"level": "Hard", "type": "mcq", "prompt": "What should be done before setting up a region integral?", "options": ["Sketch and find bounds", "Differentiate every constant", "Ignore intersections"], "answer": 0, "hint": "Start with dx gives vertical strips; dy gives horizontal strips. Check the domain, sign or dimensions before choosing.", "solution": "Sketch and find bounds follows from the definition and the displayed relation.", "wrong": ["", "", ""]}], "resources": [{"title": "NCERT §8.2 — Sketch, bounds and units (official PDF, PDF p.1)", "provider": "ncert.nic.in", "url": "https://ncert.nic.in/textbook/pdf/lemh202.pdf#page=1"}], "printPages": "292"}], "sections": [{"section": "8.2", "title": "Area under a curve", "page": 1}, {"section": "8.2", "title": "Regions with the x-axis", "page": 1}, {"section": "8.2", "title": "Area between two curves", "page": 1}, {"section": "8.2", "title": "Sketch, bounds and units", "page": 1}], "exercises": [{"number": "8.1.1", "exercise": "8.1", "question": "Find the area of the region bounded by the ellipse x²/16 + y²/9 = 1.", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 1", "conceptIdx": 0, "steps": ["Ellipse with a = 4, b = 3; area = πab.", "Area = π × 4 × 3 = 12π."], "answer": "12π square units (≈ 37.7)."}, {"number": "8.1.2", "exercise": "8.1", "question": "Find the area of the region bounded by the ellipse x²/4 + y²/9 = 1. Choose the correct answer in the following Exercises 3 and 4.", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 2", "conceptIdx": 0, "steps": ["Ellipse with a = 2, b = 3; area = πab.", "Area = π × 2 × 3 = 6π."], "answer": "6π square units (≈ 18.85)."}, {"number": "8.1.3", "exercise": "8.1", "question": "Area lying in the first quadrant and bounded by the circle x² + y² = 4 and the lines x = 0 and x = 2 is (A) π (B) π/2 (C) π/3 (D) π/4", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 3", "conceptIdx": 0, "steps": ["Region is a quarter circle of radius 2.", "Area = (1/4)π(2)² = π."], "answer": "(A) π."}, {"number": "8.1.4", "exercise": "8.1", "question": "Area of the region bounded by the curve y² = 4x, y-axis and the line y = 3 is (A) 2 (B) 9/4 (C) 9/3 (D) 9/2", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 4", "conceptIdx": 0, "steps": ["x = y²/4; area = ∫₀³ (y²/4) dy = [y³/12]₀³ = 27/12 = 9/4."], "answer": "(B) 9/4."}, {"number": "Misc.1", "exercise": "Misc", "question": "Find the area under the given curves and given lines: (i) y = x², x = 1, x = 2 and x-axis (ii) y = x⁴, x = 1, x = 5 and x-axis", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 1", "conceptIdx": 0, "steps": ["(i) ∫₁² x² dx = [x³/3]₁² = (8 − 1)/3 = 7/3.", "(ii) ∫₁⁵ x⁴ dx = [x⁵/5]₁⁵ = (3125 − 1)/5 = 624.8."], "answer": "(i) 7/3 (ii) 3124/5. units"}, {"number": "Misc.2", "exercise": "Misc", "question": "Sketch the graph of y = |x + 3| and evaluate ∫₋₆⁰ |x + 3|dx.", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 2", "conceptIdx": 0, "steps": ["V-shaped graph with vertex at (−3, 0); zero at x = −3.", "Split: ∫₋₆⁻³ −(x+3)dx + ∫₋₃⁰ (x+3)dx = 9/2 + 9/2 = 9."], "answer": "9 square units."}, {"number": "Misc.3", "exercise": "Misc", "question": "Find the area bounded by the curve y = sin x between x = 0 and x = 2π. Choose the correct answer in the following Exercises from 4 to 5.", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 3", "conceptIdx": 0, "steps": ["sin x ≥ 0 on [0, π], ≤ 0 on [π, 2π]; take absolute area.", "Area = ∫₀^π sin x dx − ∫_π^{2π} sin x dx = 2 + 2 = 4."], "answer": "4 square units."}, {"number": "Misc.4", "exercise": "Misc", "question": "Area bounded by the curve y = x³, the x-axis and the ordinates x = −2 and x = 1 is (A) −9/4 (B) −15/4 (C) 15/4 (D) 17/4", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 4", "conceptIdx": 0, "steps": ["x³ < 0 on [−2, 0], > 0 on [0, 1]: area = |∫₋₂⁰ x³dx| + ∫₀¹ x³dx = 4 + 1/4 = 17/4."], "answer": "(D) 17/4."}, {"number": "Misc.5", "exercise": "Misc", "question": "The area bounded by the curve y = x|x|, x-axis and the ordinates x = −1 and x = 1 is given by (A) 0 (B) 1/3 (C) 2/3 (D) 4/3 [Hint : y = x² if x > 0 and y = −x² if x < 0].", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 5", "conceptIdx": 0, "steps": ["y = −x² on [−1, 0], x² on [0, 1]; area = ∫₋₁⁰ x²dx + ∫₀¹ x²dx = 1/3 + 1/3 = 2/3."], "answer": "(C) 2/3."}], "exerciseMap": [{"number": "8.1.1", "exercise": "8.1", "question": "Find the area of the region bounded by the ellipse x²/16 + y²/9 = 1.", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 1", "conceptIdx": 0, "steps": ["Ellipse with a = 4, b = 3; area = πab.", "Area = π × 4 × 3 = 12π."], "answer": "12π square units (≈ 37.7)."}, {"number": "8.1.2", "exercise": "8.1", "question": "Find the area of the region bounded by the ellipse x²/4 + y²/9 = 1. Choose the correct answer in the following Exercises 3 and 4.", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 2", "conceptIdx": 0, "steps": ["Ellipse with a = 2, b = 3; area = πab.", "Area = π × 2 × 3 = 6π."], "answer": "6π square units (≈ 18.85)."}, {"number": "8.1.3", "exercise": "8.1", "question": "Area lying in the first quadrant and bounded by the circle x² + y² = 4 and the lines x = 0 and x = 2 is (A) π (B) π/2 (C) π/3 (D) π/4", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 3", "conceptIdx": 0, "steps": ["Region is a quarter circle of radius 2.", "Area = (1/4)π(2)² = π."], "answer": "(A) π."}, {"number": "8.1.4", "exercise": "8.1", "question": "Area of the region bounded by the curve y² = 4x, y-axis and the line y = 3 is (A) 2 (B) 9/4 (C) 9/3 (D) 9/2", "page": 5, "endPage": 5, "title": "NCERT Exercise 8.1 · Question 4", "conceptIdx": 0, "steps": ["x = y²/4; area = ∫₀³ (y²/4) dy = [y³/12]₀³ = 27/12 = 9/4."], "answer": "(B) 9/4."}, {"number": "Misc.1", "exercise": "Misc", "question": "Find the area under the given curves and given lines: (i) y = x², x = 1, x = 2 and x-axis (ii) y = x⁴, x = 1, x = 5 and x-axis", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 1", "conceptIdx": 0, "steps": ["(i) ∫₁² x² dx = [x³/3]₁² = (8 − 1)/3 = 7/3.", "(ii) ∫₁⁵ x⁴ dx = [x⁵/5]₁⁵ = (3125 − 1)/5 = 624.8."], "answer": "(i) 7/3 (ii) 3124/5. units"}, {"number": "Misc.2", "exercise": "Misc", "question": "Sketch the graph of y = |x + 3| and evaluate ∫₋₆⁰ |x + 3|dx.", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 2", "conceptIdx": 0, "steps": ["V-shaped graph with vertex at (−3, 0); zero at x = −3.", "Split: ∫₋₆⁻³ −(x+3)dx + ∫₋₃⁰ (x+3)dx = 9/2 + 9/2 = 9."], "answer": "9 square units."}, {"number": "Misc.3", "exercise": "Misc", "question": "Find the area bounded by the curve y = sin x between x = 0 and x = 2π. Choose the correct answer in the following Exercises from 4 to 5.", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 3", "conceptIdx": 0, "steps": ["sin x ≥ 0 on [0, π], ≤ 0 on [π, 2π]; take absolute area.", "Area = ∫₀^π sin x dx − ∫_π^{2π} sin x dx = 2 + 2 = 4."], "answer": "4 square units."}, {"number": "Misc.4", "exercise": "Misc", "question": "Area bounded by the curve y = x³, the x-axis and the ordinates x = −2 and x = 1 is (A) −9/4 (B) −15/4 (C) 15/4 (D) 17/4", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 4", "conceptIdx": 0, "steps": ["x³ < 0 on [−2, 0], > 0 on [0, 1]: area = |∫₋₂⁰ x³dx| + ∫₀¹ x³dx = 4 + 1/4 = 17/4."], "answer": "(D) 17/4."}, {"number": "Misc.5", "exercise": "Misc", "question": "The area bounded by the curve y = x|x|, x-axis and the ordinates x = −1 and x = 1 is given by (A) 0 (B) 1/3 (C) 2/3 (D) 4/3 [Hint : y = x² if x > 0 and y = −x² if x < 0].", "page": 7, "endPage": 7, "title": "NCERT Exercise Misc · Question 5", "conceptIdx": 0, "steps": ["y = −x² on [−1, 0], x² on [0, 1]; area = ∫₋₁⁰ x²dx + ∫₀¹ x²dx = 1/3 + 1/3 = 2/3."], "answer": "(C) 2/3."}], "pageOffset": 291, "printPageStart": 292, "printPageEnd": 299, "paginationProvenance": "folio-read-4-samples"};</script>
-  <script>(function(){
+  <h1 class="chapter-crumb" id="chapter-crumb">CH 08 · APPLICATION OF INTEGRALS</h1>
+  <div class="top-actions">
+    <div class="progress-pill">
+      <span>Mastery:</span>
+      <progress id="progress-bar" value="0" max="12"></progress>
+      <span id="progress-text">0 / 12</span>
+    </div>
+    <button class="toolbar-btn" id="btn-reset-progress" title="Reset chapter progress" style="color:var(--muted);border-color:var(--line);">↺ Reset</button>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-heading">Curriculum Concepts</div>
+    <nav id="contents" aria-label="Concepts">
+      <div id="sidebar-nav"></div>
+    </nav>
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);">
+      <button class="revision-nav" id="nav-revision">
+        <span class="num">✦</span>
+        <span>NCERT Exercises & Revision</span>
+      </button>
+    </div>
+  </aside>
+
+  <main id="main-content">
+    <div id="concept-view">
+      <!-- Dynamically filled by renderConcept() -->
+    </div>
+    
+    <div id="revision-view" class="revision-page" data-block="revise" aria-label="Revise">
+      <div class="concept-header">
+        <span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>
+        <h2 class="concept-title">Revise, Reflect, Refine</h2>
+        <p class="concept-deck">All 9 Exercises from NCERT Class 12 Mathematics Part 2 (pp. 1–8) mapped directly to core concepts with full step-by-step solutions.</p>
+      </div>
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>Q#</th>
+            <th>Problem Scenario</th>
+            <th>Related Concept</th>
+            <th>PDF Page</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="exercise-tbody"></tbody>
+      </table>
+    </div>
+    <footer class="chapter-footer" style="margin-top:40px;padding:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;color:var(--muted);">
+      <p>© NCERT — Source: <a href="https://ncert.nic.in/textbook.php" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">ncert.nic.in/textbook.php</a> · Educational Interactive Textbook</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+window.CHAPTER = {"code": "lemh202", "chapterNumber": 8, "book_name": "Mathematics Part 2", "title": "Application of Integrals", "subtitle": "A definite integral becomes geometry when the integrand is a height and dx is a thin width.", "edition": "NCERT Mathematics Part 2, Class 12 (Reprint 2026–27)", "source": "https://ncert.nic.in/textbook/pdf/lemh202.pdf", "page_start": 1, "page_end": 8, "exercisesNote": "All 9 questions of the chapter — Exercise 8.1 (Q1–Q4) and the Miscellaneous Exercise (Q1–Q5) — mapped to the concept each practises, with a full step-by-step solution and a redrawn area sketch.", "lessons": [{"id": "area-under-a-curve", "nav": "Area under a curve", "group": "01 / STRIPS AND SUMS", "title": "The area under y = f(x) is the sum of infinitely thin vertical strips", "deck": "Cut the region into strips of height y and width dx. Each strip has area y dx, and adding all strips gives the exact area ∫ₐᵇ f(x) dx when f(x) ≥ 0.", "minutes": 9, "section": "8.2", "pages": [1, 3], "print": "292–294", "sim": "strips", "simTitle": "Riemann strips: build the area under a curve", "watch": "Choose a curve and move the strip-count slider. The rectangles approximate the region; the readout compares the strip sum with the exact integral as n grows.", "quick": ["<strong>Elementary strip:</strong> a vertical strip at x has height y = f(x) and width dx, so its area is dA = y dx. Integrating adds the strips: A = ∫ₐᵇ y dx = ∫ₐᵇ f(x) dx.", "This formula needs <strong>f(x) ≥ 0</strong> on [a, b]: a negative height would count as negative area.", "<strong>Horizontal strips:</strong> if the curve is given as x = g(y), a horizontal strip has length x and thickness dy, so A = ∫<sub>c</sub><sup>d</sup> x dy = ∫<sub>c</sub><sup>d</sup> g(y) dy.", "The definite integral is <em>signed</em>: it gives the ordinary area only while the graph stays on or above the x-axis. Areas of standard figures follow at once: a rectangle 4 × 3 has area ∫₀⁴ 3 dx = 12."], "formulas": [{"label": "Vertical strips (x-axis bound)", "html": "A = ∫<sub>a</sub><sup>b</sup> y dx = ∫<sub>a</sub><sup>b</sup> f(x) dx", "cond": "f(x) ≥ 0 on [a, b]"}, {"label": "Horizontal strips (y-axis bound)", "html": "A = ∫<sub>c</sub><sup>d</sup> x dy = ∫<sub>c</sub><sup>d</sup> g(y) dy", "cond": "curve written as x = g(y), c ≤ y ≤ d"}, {"label": "Area is additive", "html": "A = ∫<sub>a</sub><sup>c</sup> f dx + ∫<sub>c</sub><sup>b</sup> f dx", "cond": "a < c < b; split the region at any interior line"}], "deeper": "The strip picture is the bridge between geometry and calculus. In the previous chapter the definite integral was defined as the limit of a sum of rectangles; here we simply read the limit as an area. Two practical points follow. First, the variable of integration decides the strip: dx means vertical strips of width dx, dy means horizontal strips of height dy. Second, the bounds are the extreme values of that variable across the region — for vertical strips, the smallest and largest x; for horizontal strips, the smallest and largest y. When a region is symmetric, integrate over one piece and multiply, but only after checking the symmetry carefully.", "worked": {"title": "NCERT Example 1: area enclosed by the circle x² + y² = a²", "problem": "Find, by integration, the area enclosed by the circle x² + y² = a².", "given": "The circle is symmetric about both axes; in the first quadrant y = √(a² − x²) ≥ 0 for 0 ≤ x ≤ a.", "steps": ["By symmetry, the whole area = 4 × (area of the part in the first quadrant).", "First-quadrant part = ∫₀ᵃ y dx = ∫₀ᵃ √(a² − x²) dx.", "Use ∫ √(a² − x²) dx = (x/2)√(a² − x²) + (a²/2) sin⁻¹(x/a).", "At x = a the first term vanishes and sin⁻¹(1) = π/2, giving a²π/4.", "Multiply by 4: the whole area = πa²."], "answer": "πa² square units — integration reproduces the classical area of a circle."}, "prediction": {"prompt": "The area under the line y = x from x = 0 to x = 2 is:", "options": ["2 square units", "4 square units", "1 square unit"], "answer": 0, "explanation": "The region is a right triangle with base 2 and height 2, so its area is ½ × 2 × 2 = 2. The integral confirms it: ∫₀² x dx = [x²/2]₀² = 2."}, "connect": [{"title": "An irregular field", "text": "Surveyors chain the boundary of a field at fixed offsets. The offsets are the heights of vertical strips, and the trapezium rule for the area is exactly the integral of the boundary curve.", "links": [{"t": "Wikipedia: Trapezoidal rule", "u": "https://en.wikipedia.org/wiki/Trapezoidal_rule"}]}, {"title": "Work from a force–distance graph", "text": "The work done by a variable force F(x) over a displacement is ∫ F dx. Graph the force against distance and the work is the area trapped under the graph.", "links": [{"t": "Wikipedia: Work (physics)", "u": "https://en.wikipedia.org/wiki/Work_(physics)"}]}, {"title": "Wow: area under a curve at a glance", "text": "Every definite integral of a non-negative function is an area. Watch how the area between a curve and the x-axis is built from thin strips and evaluated exactly.", "wow": true, "links": [{"t": "Khan Academy: Definite integrals", "u": "https://www.khanacademy.org/math/integral-calculus/ic-integration"}], "video": {"id": "xR4AnXDBnsw", "title": "Area between a curve and the x-axis | AP Calculus AB | Khan Academy", "channel": "Khan Academy"}}], "recall": "State the elementary strip on which the chapter is built, then write the area under y = f(x) from x = a to x = b for f(x) ≥ 0.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If f(x) ≥ 0 on [a, b], the area under y = f(x) from x = a to x = b is:", "options": ["∫ₐᵇ f(x) dx", "f(b) − f(a)", "f′(b) − f′(a)"], "answer": 0, "hint": "An elementary vertical strip has area y dx.", "solution": "The strips have total area ∫ₐᵇ f(x) dx, which is exactly the region under the curve.", "wrong": ["", "f(b) − f(a) is a difference of heights, not an accumulated area.", "Derivatives measure slope, not area."]}, {"level": "Medium", "type": "number", "prompt": "Find the area under y = x² from x = 0 to x = 3, in square units.", "answer": 9, "tolerance": 0.01, "unit": "square units", "hint": "Integrate x² and substitute the limits.", "solution": "∫₀³ x² dx = [x³/3]₀³ = 27/3 = 9.", "wrong": []}, {"level": "Hard", "type": "mcq", "prompt": "A region is bounded by the curve x = g(y), the y-axis and the lines y = c, y = d (g(y) ≥ 0). Which integral gives its area?", "options": ["∫<sub>c</sub><sup>d</sup> g(y) dy", "∫<sub>a</sub><sup>b</sup> f(x) dx with f(x) = g⁻¹(x)", "∫<sub>c</sub><sup>d</sup> g′(y) dy"], "answer": 0, "hint": "A horizontal strip has length x = g(y) and thickness dy.", "solution": "Horizontal strips of area x dy add up to ∫<sub>c</sub><sup>d</sup> x dy = ∫<sub>c</sub><sup>d</sup> g(y) dy.", "wrong": ["", "That is the vertical-strip version and would need the inverse function.", "g′(y) dy is a differential of g, not the strip area."]}]}, {"id": "regions-with-the-x-axis", "nav": "Regions with the x-axis", "group": "02 / SIGNS AND PARTS", "title": "When a curve dips below the x-axis the integral goes negative", "deck": "A definite integral is signed. For the geometric area, take the absolute value of each piece, splitting the interval wherever the curve crosses the axis.", "minutes": 9, "section": "8.2", "pages": [1, 2], "print": "292–293", "sim": "signed", "simTitle": "Signed integral vs geometric area", "watch": "Switch between curves that cross the x-axis. The blue strips add positively and the red strips subtract; the readout keeps the signed integral and the geometric area side by side.", "quick": ["Where f(x) < 0, the strip y dx contributes a <strong>negative</strong> amount. The definite integral therefore measures a signed area, not a geometric one.", "<strong>Geometric area of a negative piece</strong> is |∫ₐᵇ f(x) dx|. For a curve that is below the axis throughout, the integral is negative and its numerical value is the area.", "If the curve crosses the axis inside [a, b], <strong>split at the zeros</strong> and add the absolute values: A = |A₁| + A₂ (Fig. 8.4).", "Adding the signed integrals first is also valid: just compute ∫ over each subinterval and then take absolute values of the pieces before adding."], "formulas": [{"label": "Signed integral", "html": "∫<sub>a</sub><sup>b</sup> f(x) dx = A<sub>above</sub> − |A<sub>below</sub>|", "cond": "above-axis pieces count positive, below-axis pieces negative"}, {"label": "Geometric area", "html": "A = |∫<sub>a</sub><sup>c</sup> f dx| + |∫<sub>c</sub><sup>b</sup> f dx|", "cond": "c is a zero of f between a and b"}, {"label": "Odd function on a symmetric interval", "html": "∫<sub>−a</sub><sup>a</sup> f(x) dx = 0", "cond": "f(−x) = −f(x); the two signed pieces cancel"}], "deeper": "The sign is not a mistake of the integral; it records where the graph lies. In applications the signed integral is often the physically meaningful quantity — displacement instead of distance, net export instead of total trade — while the geometric area is the magnitude alone. The safest habit is to sketch the curve, mark where it meets the axis, and only then decide whether to integrate f or |f|. The odd-function rule is a quick check: for f(x) = x³ on [−1, 1] the signed integral is 0 because the two triangles cancel, yet the geometric area is 2 × ∫₀¹ x³ dx = ½.", "worked": {"title": "NCERT Example 3: a line that crosses the axis", "problem": "Find the area of the region bounded by the line y = 3x + 2, the x-axis and the ordinates x = −1 and x = 1.", "given": "The line meets the x-axis where 3x + 2 = 0, that is x = −2/3. It is below the axis on [−1, −2/3] and above on [−2/3, 1].", "steps": ["Split the region at the zero x = −2/3.", "Below-axis piece A₁ = |∫₋₁<sup>−2/3</sup> (3x + 2) dx| = |[3x²/2 + 2x]₋₁<sup>−2/3</sup>| = 1/6.", "Above-axis piece A₂ = ∫<sub>−2/3</sub>¹ (3x + 2) dx = [3x²/2 + 2x]_(−2/3)¹ = 25/6.", "Required area = A₁ + A₂ = 1/6 + 25/6 = 26/6 = 13/3."], "answer": "13/3 square units. The signed integral over [−1, 1] would instead be 25/6 − 1/6 = 4."}, "prediction": {"prompt": "For y = x³ on [−1, 1], the signed integral is 0. What is the geometric area enclosed?", "options": ["1/2 square unit", "0 square units", "1 square unit"], "answer": 0, "explanation": "The pieces cancel in the integral, but the actual region is two triangles. |∫₋₁⁰ x³ dx| = 1/4 and ∫₀¹ x³ dx = 1/4, so the geometric area is 1/2."}, "connect": [{"title": "Distance travelled vs displacement", "text": "Integrating speed gives distance (never negative); integrating velocity gives displacement, which can be negative and can cancel. Speedometers use the geometric area, navigation uses the signed one.", "links": [{"t": "Wikipedia: Displacement", "u": "https://en.wikipedia.org/wiki/Displacement_(geometry)"}]}, {"title": "Balance of trade", "text": "Net exports are the integral of the difference between exports and imports. Months of surplus and deficit partially cancel in the signed total; the total activity is the geometric area.", "links": [{"t": "Wikipedia: Balance of trade", "u": "https://en.wikipedia.org/wiki/Balance_of_trade"}]}, {"title": "Wow: negative area made visible", "text": "See why a curve below the x-axis produces a negative integral, and how flipping the graph or taking absolute values recovers the true area.", "wow": true, "links": [{"t": "Khan Academy: Negative definite integrals", "u": "https://www.khanacademy.org/math/ap-calculus-ab/ab-integration-new"}], "video": {"id": "MM0FTzvedH4", "title": "Area between a curve and the x-axis: negative area | AP Calculus AB | Khan Academy", "channel": "Khan Academy"}}], "recall": "Explain in one sentence why a definite integral can be zero while the region it measures is not empty.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "For a curve that lies below the x-axis on all of [a, b], ∫ₐᵇ f(x) dx is:", "options": ["Negative; the geometric area is its absolute value", "Zero", "Equal to the arc length"], "answer": 0, "hint": "Height y = f(x) is negative on the whole interval.", "solution": "Every strip contributes a negative amount, so the integral is negative. The area is |∫ₐᵇ f(x) dx|.", "wrong": ["", "The integral is zero only in special cases such as odd symmetry over a symmetric interval.", "Arc length comes from √(1 + (f′)²), not from f."]}, {"level": "Medium", "type": "number", "prompt": "Evaluate ∫₋₁¹ x³ dx.", "answer": 0, "tolerance": 0.0001, "unit": "", "hint": "x³ is an odd function and the interval is symmetric about 0.", "solution": "∫₋₁¹ x³ dx = [x⁴/4]₋₁¹ = 1/4 − 1/4 = 0.", "wrong": []}, {"level": "Hard", "type": "number", "prompt": "Find the geometric area bounded by y = x³, the x-axis and the ordinates x = −2 and x = 1.", "answer": 4.25, "tolerance": 0.01, "unit": "square units", "hint": "Split at x = 0 and add the absolute values of the two pieces.", "solution": "|∫₋₂⁰ x³ dx| + ∫₀¹ x³ dx = |−4| + 1/4 = 4 + 1/4 = 17/4 = 4.25.", "wrong": []}]}, {"id": "area-between-two-curves", "nav": "Area between two curves", "group": "03 / UPPER MINUS LOWER", "title": "Between two curves, each strip has height upper − lower", "deck": "A vertical strip between y = f(x) and y = g(x) has height f(x) − g(x) when f is the upper curve, so the area is ∫ₐᵇ (upper − lower) dx.", "minutes": 9, "section": "8.2", "pages": [2, 3], "print": "293–294", "sim": "between", "simTitle": "Between two curves: find the intersections first", "watch": "Pick a pair of curves. The intersection points set the limits; the shaded band is built from strips of height upper − lower. If the curves swap places, the readout warns you to split the interval.", "quick": ["<strong>Step 1 — sketch and intersect:</strong> solve f(x) = g(x). The roots are the limits a and b of the region.", "<strong>Step 2 — decide who is on top:</strong> on each subinterval between intersections, identify the upper curve by testing one point.", "<strong>Step 3 — integrate:</strong> A = ∫ₐᵇ (upper − lower) dx. If the curves cross inside [a, b], split there and repeat.", "The method also works with y as the variable: A = ∫<sub>c</sub><sup>d</sup> (right − left) dy when the region is better sliced horizontally."], "formulas": [{"label": "Area between two curves", "html": "A = ∫<sub>a</sub><sup>b</sup> [f(x) − g(x)] dx", "cond": "f(x) ≥ g(x) on [a, b]"}, {"label": "Intersections are the limits", "html": "f(a) = g(a), &nbsp; f(b) = g(b)", "cond": "a and b are consecutive intersection x-values"}, {"label": "Horizontal version", "html": "A = ∫<sub>c</sub><sup>d</sup> [right(y) − left(y)] dy", "cond": "when a horizontal strip is the natural choice"}], "deeper": "The formula upper − lower is just the strip idea with the x-axis replaced by the lower curve. Two curves can cross more than twice; then the interval must be broken at every intersection and each piece added with its own upper curve. A useful check is to integrate (f − g) and, separately, (g − f): if the two results have opposite signs on the same interval, the curves crossed there. For a region bounded by a parabola and a line it is often quicker to find intersections by substitution, then test the vertex or a convenient point to decide which is on top.", "worked": {"title": "Area between the line y = x and the parabola y = x²", "problem": "Find the area of the region bounded by y = x and y = x².", "given": "Intersections: x = x² gives x = 0 or x = 1. On (0, 1), x > x², so the line is the upper curve.", "steps": ["Solve x = x²: x(1 − x) = 0, so x = 0 and x = 1.", "Test x = 1/2: line gives 1/2, parabola gives 1/4, so the line is above.", "A = ∫₀¹ (x − x²) dx = [x²/2 − x³/3]₀¹.", "A = 1/2 − 1/3 = 1/6."], "answer": "1/6 square unit."}, "prediction": {"prompt": "The curves y = x and y = x² meet at x = 0 and x = 1. Between these points, which graph lies above?", "options": ["y = x, because x > x² on (0, 1)", "y = x², because it is curved", "They coincide on the whole interval"], "answer": 0, "explanation": "For any number strictly between 0 and 1, its square is smaller than the number itself: use x = 1/2, then x² = 1/4 < 1/2. So y = x is the upper curve."}, "connect": [{"title": "Material between two profiles", "text": "The cross-section of a moulded panel is the region between two curves. Its area times the panel length gives the volume of material, a direct use of ∫(upper − lower).", "links": [{"t": "Wikipedia: Solid of revolution", "u": "https://en.wikipedia.org/wiki/Solid_of_revolution"}]}, {"title": "The Gini coefficient", "text": "Economists plot the share of income against the share of population. The area between the line of equality and the Lorenz curve, doubled, is the Gini coefficient.", "links": [{"t": "Wikipedia: Gini coefficient", "u": "https://en.wikipedia.org/wiki/Gini_coefficient"}]}, {"title": "Wow: shading the area between curves", "text": "Watch a worked area-between-curves problem: find the intersections, choose the upper curve, integrate the difference, and interpret the number.", "wow": true, "links": [{"t": "Khan Academy: Area between curves", "u": "https://www.khanacademy.org/math/ap-calculus-ab/ab-applications-definite-integrals"}], "video": {"id": "wQXYtsyfbqg", "title": "Area between curves | Applications of definite integrals | AP Calculus AB | Khan Academy", "channel": "Khan Academy"}}], "recall": "List the three steps for finding the area between two curves, then write the integral for the case f above g on [a, b].", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "If f(x) ≥ g(x) on [a, b], the area between the curves is:", "options": ["∫ₐᵇ [f(x) − g(x)] dx", "∫ₐᵇ [f(x) + g(x)] dx", "∫ₐᵇ [g(x) − f(x)] dx"], "answer": 0, "hint": "Each strip reaches from the lower curve up to the upper one.", "solution": "The strip height is f(x) − g(x), so the area is ∫ₐᵇ [f(x) − g(x)] dx.", "wrong": ["", "Adding the heights measures a region below the sum, not between the curves.", "That order makes every strip height negative."]}, {"level": "Medium", "type": "number", "prompt": "Find the area between y = x and y = x² from x = 0 to x = 1.", "answer": 0.1667, "tolerance": 0.005, "unit": "square units", "hint": "The line is above the parabola on (0, 1).", "solution": "∫₀¹ (x − x²) dx = 1/2 − 1/3 = 1/6 ≈ 0.1667.", "wrong": []}, {"level": "Hard", "type": "number", "prompt": "Find the area enclosed between the parabola y = x² and the line y = 4.", "answer": 10.667, "tolerance": 0.01, "unit": "square units", "hint": "The curves meet where x² = 4, so x = −2 and x = 2. The line is on top.", "solution": "∫₋₂² (4 − x²) dx = [4x − x³/3]₋₂² = (8 − 8/3) − (−8 + 8/3) = 32/3 ≈ 10.667.", "wrong": []}]}, {"id": "bounds-and-strips", "nav": "Sketch, bounds and strips", "group": "04 / SKETCH, BOUND, CHOOSE", "title": "A sketch decides the strips, the bounds and the symmetry", "deck": "Before any integration, draw the region: it tells you whether to slice vertically or horizontally, where the limits lie, and whether symmetry lets you compute one piece and multiply.", "minutes": 9, "section": "8.2", "pages": [2, 5], "print": "293–296", "sim": "horizontal", "simTitle": "Choose vertical or horizontal strips", "watch": "Switch between regions. Horizontal strips are drawn in blue with thickness dy; the readout states the strip type, the variable of integration, the bounds and the exact area.", "quick": ["<strong>Vertical strips (dx):</strong> use when the region has clear left and right x-bounds and a single upper and lower curve. Height = y(top) − y(bottom), bounds x = a to x = b.", "<strong>Horizontal strips (dy):</strong> use when the region has clear bottom and top y-bounds. Length = x(right) − x(left), bounds y = c to y = d.", "<strong>Symmetry:</strong> if the region is symmetric about the y-axis and the integrand is even, integrate from 0 to a and double. Check the symmetry before multiplying.", "<strong>Units:</strong> the area carries squared units of the axes — cm², m², square units when the coordinates are pure numbers."], "formulas": [{"label": "Vertical strip decision", "html": "A = ∫<sub>a</sub><sup>b</sup> [y<sub>top</sub>(x) − y<sub>bottom</sub>(x)] dx", "cond": "left/right bounds a, b are constants"}, {"label": "Horizontal strip decision", "html": "A = ∫<sub>c</sub><sup>d</sup> [x<sub>right</sub>(y) − x<sub>left</sub>(y)] dy", "cond": "bottom/top bounds c, d are constants"}, {"label": "Even symmetry", "html": "A = 2 ∫<sub>0</sub><sup>a</sup> f(x) dx", "cond": "region symmetric about the y-axis and f even"}], "deeper": "Integration does not care which variable you use, but the arithmetic does. A region trapped between a sideways parabola and the y-axis can be almost impossible with vertical strips because the top boundary changes halfway; with horizontal strips x = g(y) is a single formula. Always ask first: over what range of x (or y) can I draw one straight strip that enters and leaves the region at the same pair of curves? That range gives the bounds, and those curves give the integrand. Add a sketch with the meeting points labelled — it prevents the most common error, using the wrong pair of bounds.", "worked": {"title": "NCERT Example 4: a cosine arch across two humps", "problem": "Find the area bounded by the curve y = cos x between x = 0 and x = 2π.", "given": "cos x ≥ 0 on [0, π/2] and [3π/2, 2π], and cos x ≤ 0 on [π/2, 3π/2].", "steps": ["The curve crosses the axis at π/2 and 3π/2; split at these zeros.", "A₁ = ∫₀<sup>π/2</sup> cos x dx = [sin x]₀<sup>π/2</sup> = 1.", "A₂ = |∫<sub>π/2</sub><sup>3π/2</sup> cos x dx| = |[sin x]_(π/2)<sup>3π/2</sup>| = |−1 − 1| = 2.", "A₃ = ∫<sub>3π/2</sub><sup>2π</sup> cos x dx = [sin x]_(3π/2)<sup>2π</sup> = 0 − (−1) = 1.", "Total area = 1 + 2 + 1 = 4."], "answer": "4 square units. The signed integral over [0, 2π] would be 1 − 2 + 1 = 0."}, "prediction": {"prompt": "The region bounded by y² = 4x, the y-axis and y = 3 is best sliced with:", "options": ["Horizontal strips, x = y²/4, from y = 0 to y = 3", "Vertical strips from x = 0 to x = 9/4 with one formula", "No strips; use the triangle formula"], "answer": 0, "explanation": "The parabola opens to the right, so a horizontal strip has constant length x = y²/4 between the y-axis and the curve. The bounds are y = 0 and y = 3, giving ∫₀³ y²/4 dy = 9/4."}, "connect": [{"title": "Designing an arch", "text": "The profile of a bridge arch is traced on a coordinate grid. The area between the arch and its base fixes the amount of stone and the load; horizontal strips match the courses of masonry.", "links": [{"t": "Wikipedia: Arch bridge", "u": "https://en.wikipedia.org/wiki/Arch_bridge"}]}, {"title": "Wing sections in aerodynamics", "text": "A wing cross-section is bounded above and below by different curves. Its area, found from upper − lower, sets the lift-producing surface in the standard thin-aerofoil model.", "links": [{"t": "Wikipedia: Airfoil", "u": "https://en.wikipedia.org/wiki/Airfoil"}]}, {"title": "Wow: horizontal strips to the rescue", "text": "When the left and right boundaries are functions of y, slicing horizontally turns a hard region into a simple integral. Watch the horizontal area between curves.", "wow": true, "links": [{"t": "Khan Academy: Horizontal area between curves", "u": "https://www.khanacademy.org/math/ap-calculus-ab/ab-applications-definite-integrals"}], "video": {"id": "B5441_DREY0", "title": "Horizontal area between curves | Applications of definite integrals | AP Calculus AB | Khan Academy", "channel": "Khan Academy"}}], "recall": "Describe how you would decide between vertical and horizontal strips for a given region, and what sets the limits in each case.", "quizzes": [{"level": "Easy", "type": "mcq", "prompt": "Horizontal strips are the natural choice when the region is bounded on the left and right by:", "options": ["Curves written as x = g(y)", "Curves written as y = f(x)", "The x-axis only"], "answer": 0, "hint": "A horizontal strip runs from a left boundary to a right boundary at a fixed y.", "solution": "If the boundaries are given as x as a function of y, a horizontal strip has a constant length and the integral is in dy.", "wrong": ["", "Curves y = f(x) usually suit vertical strips, since the strip height is f(x).", "The x-axis alone does not determine the strip direction."]}, {"level": "Medium", "type": "number", "prompt": "Using horizontal strips, find the area bounded by y² = 4x, the y-axis and the line y = 3.", "answer": 2.25, "tolerance": 0.01, "unit": "square units", "hint": "Write x = y²/4 and integrate from y = 0 to y = 3.", "solution": "∫₀³ (y²/4) dy = [y³/12]₀³ = 27/12 = 9/4 = 2.25.", "wrong": []}, {"level": "Hard", "type": "number", "prompt": "Find the area of the part of the circle x² + y² = 4 that lies in the first quadrant, in square units (use π ≈ 3.1416).", "answer": 3.1416, "tolerance": 0.01, "unit": "square units", "hint": "It is a quarter of a circle of radius 2.", "solution": "Area = ¼ × π × 2² = π ≈ 3.1416.", "wrong": []}]}], "exercises": [{"q": 1, "title": "Area of an ellipse", "conceptIdx": 0, "page": 5, "printPage": 296, "question": "Find the area of the region bounded by the ellipse x²/16 + y²/9 = 1.", "given": "Ellipse x²/a² + y²/b² = 1 with a² = 16 and b² = 9, so a = 4, b = 3.", "steps": ["The ellipse is symmetric about both axes, so its area is 4 times the first-quadrant part: A = 4∫₀⁴ y dx with y = (3/4)√(16 − x²).", "A = 4 × (3/4)∫₀⁴ √(16 − x²) dx = 3∫₀⁴ √(16 − x²) dx.", "Using ∫√(a² − x²) dx = (x/2)√(a² − x²) + (a²/2) sin⁻¹(x/a) with a = 4: ∫₀⁴ √(16 − x²) dx = 0 + (16/2)(π/2) = 4π.", "A = 3 × 4π = 12π ≈ 37.7."], "answer": "12π square units (≈ 37.70).", "takeaway": "A standard ellipse x²/a² + y²/b² = 1 always encloses area πab; the definite integral is what makes that formula rigorous.", "conceptName": "Area under a curve", "figure": "8.1.1"}, {"q": 2, "title": "A smaller ellipse", "conceptIdx": 0, "page": 5, "printPage": 296, "question": "Find the area of the region bounded by the ellipse x²/4 + y²/9 = 1.", "given": "Ellipse x²/a² + y²/b² = 1 with a² = 4 and b² = 9, so a = 2, b = 3.", "steps": ["By symmetry the area is 4 times the first-quadrant part: A = 4∫₀² y dx with y = (3/2)√(4 − x²).", "A = 4 × (3/2)∫₀² √(4 − x²) dx = 6∫₀² √(4 − x²) dx.", "∫₀² √(4 − x²) dx = (x/2)√(4 − x²) + (4/2) sin⁻¹(x/2) evaluated from 0 to 2 = 0 + 2(π/2) = π.", "A = 6 × π = 6π ≈ 18.85."], "answer": "6π square units (≈ 18.85).", "takeaway": "πab is symmetric in a and b: exchanging the semi-axes does not change the area, since the product ab is unchanged.", "conceptName": "Area under a curve", "figure": "8.1.2"}, {"q": 3, "title": "Quarter-circle area (MCQ)", "conceptIdx": 3, "page": 5, "printPage": 296, "question": "Choose the correct answer: Area lying in the first quadrant and bounded by the circle x² + y² = 4 and the lines x = 0 and x = 2 is (A) π  (B) π/2  (C) π/3  (D) π/4", "given": "Circle x² + y² = 4 has radius 2. The first-quadrant region between x = 0 and x = 2 is exactly a quarter circle.", "steps": ["The region is one quarter of the disc of radius 2.", "Area = (1/4) × π × 2² = (1/4) × 4π = π.", "Check by integration: ∫₀² √(4 − x²) dx = [ (x/2)√(4 − x²) + 2 sin⁻¹(x/2) ]₀² = 2 × (π/2) = π."], "answer": "(A) π.", "takeaway": "A circle is four congruent quarter-circles; the definite integral of √(a² − x²) over [0, a] returns exactly a quarter of πa².", "conceptName": "Bounds and strip choice", "figure": "8.1.3"}, {"q": 4, "title": "Area with horizontal strips (MCQ)", "conceptIdx": 3, "page": 5, "printPage": 296, "question": "Choose the correct answer: Area of the region bounded by the curve y² = 4x, y-axis and the line y = 3 is (A) 2  (B) 9/4  (C) 9/3  (D) 9/2", "given": "The parabola y² = 4x opens to the right; solve for x as x = y²/4. The region lies between the y-axis and the curve from y = 0 to y = 3.", "steps": ["A horizontal strip at height y runs from x = 0 to x = y²/4, so its area is (y²/4) dy.", "Area = ∫₀³ (y²/4) dy = [y³/12]₀³.", "Area = 27/12 = 9/4."], "answer": "(B) 9/4.", "takeaway": "When the boundary is x as a function of y, horizontal strips turn the problem into a one-line integral; here ∫ x dy beats vertical strips because the upper curve changes shape.", "conceptName": "Bounds and strip choice", "figure": "8.1.4"}, {"q": 5, "title": "Power-curve areas", "conceptIdx": 0, "page": 7, "printPage": 298, "question": "Find the area under the given curves and given lines: (i) y = x², x = 1, x = 2 and x-axis  (ii) y = x⁴, x = 1, x = 5 and x-axis", "given": "(i) y = x² on [1, 2]. (ii) y = x⁴ on [1, 5]. Both curves are non-negative on their intervals, so the area is the definite integral.", "steps": ["(i) Area = ∫₁² x² dx = [x³/3]₁² = 8/3 − 1/3 = 7/3.", "(ii) Area = ∫₁⁵ x⁴ dx = [x⁵/5]₁⁵ = 3125/5 − 1/5 = 3124/5 = 624.8."], "answer": "(i) 7/3 square units. (ii) 3124/5 = 624.8 square units.", "takeaway": "For a non-negative power curve the area is just the increase of x<sup>n+1</sup>/(n+1); no absolute values are needed.", "conceptName": "Area under a curve", "figure": "8.m1"}, {"q": 6, "title": "Area under |x + 3|", "conceptIdx": 1, "page": 7, "printPage": 298, "question": "Sketch the graph of y = |x + 3| and evaluate ∫₋₆⁰ |x + 3| dx.", "given": "The graph is V-shaped with its vertex where x + 3 = 0, at x = −3. Since |x + 3| ≥ 0 everywhere, the whole region lies on or above the x-axis.", "steps": ["Sketch: for x ≤ −3, y = −(x + 3); for x ≥ −3, y = x + 3. The vertex is (−3, 0).", "Split the integral at the vertex: ∫₋₆⁰ |x + 3| dx = ∫₋₆⁻³ −(x + 3) dx + ∫₋₃⁰ (x + 3) dx.", "First piece = [−x²/2 − 3x]₋₆⁻³ = (−9/2 + 9) − (−18 + 18) = 9/2.", "Second piece = [x²/2 + 3x]₋₃⁰ = 0 − (9/2 − 9) = 9/2.", "Total = 9/2 + 9/2 = 9."], "answer": "9 square units.", "takeaway": "A modulus that is non-negative splits at its zero into two triangles; the integral adds their areas because there is no sign cancellation.", "conceptName": "Regions with the x-axis", "figure": "8.m2"}, {"q": 7, "title": "Area under one sine wave", "conceptIdx": 1, "page": 7, "printPage": 298, "question": "Find the area bounded by the curve y = sin x between x = 0 and x = 2π.", "given": "sin x ≥ 0 on [0, π] and sin x ≤ 0 on [π, 2π].", "steps": ["The curve crosses the axis at x = π, so split there.", "A₁ = ∫₀<sup>π</sup> sin x dx = [−cos x]₀<sup>π</sup> = 1 + 1 = 2.", "A₂ = |∫_π<sup>2π</sup> sin x dx| = |[−cos x]_π<sup>2π</sup>| = |−1 − 1| = 2.", "Total area = A₁ + A₂ = 4."], "answer": "4 square units.", "takeaway": "The signed integral over a full period of sin x is 0, but the geometric area is 2 + 2 = 4: always split at the zeros of the integrand for geometric area.", "conceptName": "Regions with the x-axis", "figure": "8.m3"}, {"q": 8, "title": "Signed area of x³ (MCQ)", "conceptIdx": 1, "page": 7, "printPage": 298, "question": "Choose the correct answer: Area bounded by the curve y = x³, the x-axis and the ordinates x = −2 and x = 1 is (A) −9/4  (B) −15/4  (C) 15/4  (D) 17/4", "given": "x³ < 0 on [−2, 0) and x³ > 0 on (0, 1]. Split at x = 0.", "steps": ["Negative piece: |∫₋₂⁰ x³ dx| = |[x⁴/4]₋₂⁰| = |0 − 4| = 4.", "Positive piece: ∫₀¹ x³ dx = [x⁴/4]₀¹ = 1/4.", "Geometric area = 4 + 1/4 = 17/4."], "answer": "(D) 17/4.", "takeaway": "Options (A) and (B) are negative because they come from the raw signed integral; geometric area never carries a minus sign.", "conceptName": "Regions with the x-axis", "figure": "8.m4"}, {"q": 9, "title": "Area of x|x| (MCQ)", "conceptIdx": 1, "page": 7, "printPage": 298, "question": "Choose the correct answer: The area bounded by the curve y = x|x|, x-axis and the ordinates x = −1 and x = 1 is given by (A) 0  (B) 1/3  (C) 2/3  (D) 4/3 [Hint: y = x² if x > 0 and y = −x² if x < 0].", "given": "x|x| = x² on [0, 1] and −x² on [−1, 0]; both pieces lie on opposite sides of the axis and have equal area.", "steps": ["Split at 0: |∫₋₁⁰ −x² dx| + ∫₀¹ x² dx.", "|∫₋₁⁰ −x² dx| = |[−x³/3]₋₁⁰| = |0 − (1/3)| = 1/3.", "∫₀¹ x² dx = [x³/3]₀¹ = 1/3.", "Area = 1/3 + 1/3 = 2/3."], "answer": "(C) 2/3.", "takeaway": "x|x| is an odd function, so its signed integral on [−1, 1] is 0; the geometric area is the sum 2 × 1/3, exactly what option (C) records.", "conceptName": "Regions with the x-axis", "figure": "8.m5"}], "exerciseMap": [[1, "Area of an ellipse", 0, 5], [2, "A smaller ellipse", 0, 5], [3, "Quarter-circle area (MCQ)", 3, 5], [4, "Area with horizontal strips (MCQ)", 3, 5], [5, "Power-curve areas", 0, 7], [6, "Area under |x + 3|", 1, 7], [7, "Area under one sine wave", 1, 7], [8, "Signed area of x³ (MCQ)", 1, 7], [9, "Area of x|x| (MCQ)", 1, 7]]};
+</script>
+<script>
+// Textbook figures redrawn as SVG for the exercises of lemh202 (Application of Integrals).
+// The region sketches are generated from the equations in books/originals/Class12-Maths-Pt2_lemh202.pdf.
+window.FIGURES = (function(){
+  var INK = "#e2e8f0", MUTED = "#94a3b8", RED = "#f87171", BLUE = "#60a5fa", AMBER = "#fbbf24";
+
+  function T(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || INK) + '" font-size="' + (o.size || 13) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + '>' + s + '</text>';
+  }
+  function frame(x0, y0, w, h, xmin, xmax, ymin, ymax){
+    var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+    return {
+      xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax,
+      X: function(x){ return x0 + (x - xmin) * sx; },
+      Y: function(y){ return y0 - (y - ymin) * sy; }
+    };
+  }
+  function axes(f, xmaxLabel, ymaxLabel){
+    var s = '';
+    s += '<line x1="' + f.X(f.xmin) + '" y1="' + f.Y(0) + '" x2="' + f.X(f.xmax) + '" y2="' + f.Y(0) + '" stroke="' + MUTED + '" stroke-width="1.4"/>';
+    s += '<line x1="' + f.X(0) + '" y1="' + f.Y(f.ymin) + '" x2="' + f.X(0) + '" y2="' + f.Y(f.ymax) + '" stroke="' + MUTED + '" stroke-width="1.4"/>';
+    s += '<polygon points="' + f.X(f.xmax) + ',' + f.Y(0) + ' ' + (f.X(f.xmax) - 8) + ',' + (f.Y(0) - 4) + ' ' + (f.X(f.xmax) - 8) + ',' + (f.Y(0) + 4) + '" fill="' + MUTED + '"/>';
+    s += '<polygon points="' + f.X(0) + ',' + f.Y(f.ymax) + ' ' + (f.X(0) - 4) + ',' + (f.Y(f.ymax) + 8) + ' ' + (f.X(0) + 4) + ',' + (f.Y(f.ymax) + 8) + '" fill="' + MUTED + '"/>';
+    s += T(f.X(f.xmax) - 4, f.Y(0) + 18, xmaxLabel || "x", {color: MUTED});
+    s += T(f.X(0) + 14, f.Y(f.ymax) + 4, ymaxLabel || "y", {color: MUTED, anchor: "start"});
+    return s;
+  }
+  function plot(f, fn, a, b, n, color){
+    var pts = [], i, x;
+    for(i = 0; i <= (n || 80); i += 1){ x = a + (b - a) * i / (n || 80); pts.push(f.X(x) + "," + f.Y(fn(x))); }
+    return '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + color + '" stroke-width="2.6" stroke-linejoin="round"/>';
+  }
+  function region(f, fn, a, b, n, fill){
+    var pts = ["M" + f.X(a) + " " + f.Y(0)], i, x;
+    for(i = 0; i <= (n || 80); i += 1){ x = a + (b - a) * i / (n || 80); pts.push("L" + f.X(x) + " " + f.Y(fn(x))); }
+    pts.push("L" + f.X(b) + " " + f.Y(0) + " Z");
+    return '<path d="' + pts.join(" ") + '" fill="' + fill + '"/>';
+  }
+  function ticks(f, xs, ys){
+    var s = '', i;
+    for(i = 0; i < xs.length; i += 1){
+      if(f.Y(0) < f.Y(f.ymin) && f.Y(0) > f.Y(f.ymax)) s += '<line x1="' + f.X(xs[i]) + '" y1="' + (f.Y(0) - 3) + '" x2="' + f.X(xs[i]) + '" y2="' + (f.Y(0) + 3) + '" stroke="' + MUTED + '" stroke-width="1"/>';
+      s += T(f.X(xs[i]), f.Y(0) + 16, String(xs[i]), {color: MUTED, size: 11});
+    }
+    for(i = 0; i < ys.length; i += 1){
+      s += T(f.X(0) - 8, f.Y(ys[i]) + 4, String(ys[i]), {color: MUTED, size: 11, anchor: "end"});
+    }
+    return s;
+  }
+
+  var figs = {};
+
+  figs["8.1.1"] = {
+    caption: "Fig. 8.1.1 — The ellipse x²/16 + y²/9 = 1; the full region has area 12π ≈ 37.70 (redrawn).",
+    svg: function(){
+      var f = frame(40, 190, 300, 140, -5, 5, -4, 4);
+      var s = '<svg viewBox="0 0 380 220" role="img" aria-label="Ellipse with semi-axes 4 and 3">';
+      s += region(f, function(x){ return 3 * Math.sqrt(Math.max(0, 1 - x * x / 16)); }, -4, 4, 120, "rgba(56,189,248,0.20)");
+      s += region(f, function(x){ return -3 * Math.sqrt(Math.max(0, 1 - x * x / 16)); }, -4, 4, 120, "rgba(56,189,248,0.20)");
+      s += axes(f, "x", "y") + ticks(f, [-4, 4], [3, -3]);
+      s += plot(f, function(x){ return 3 * Math.sqrt(Math.max(0, 1 - x * x / 16)); }, -4, 4, 120, BLUE);
+      s += plot(f, function(x){ return -3 * Math.sqrt(Math.max(0, 1 - x * x / 16)); }, -4, 4, 120, BLUE);
+      s += T(190, 20, "a = 4, b = 3, area = πab = 12π", {color: AMBER, size: 14, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.1.2"] = {
+    caption: "Fig. 8.1.2 — The ellipse x²/4 + y²/9 = 1; the full region has area 6π ≈ 18.85 (redrawn).",
+    svg: function(){
+      var f = frame(40, 190, 300, 140, -3.5, 3.5, -4, 4);
+      var s = '<svg viewBox="0 0 380 220" role="img" aria-label="Ellipse with semi-axes 2 and 3">';
+      s += region(f, function(x){ return 3 * Math.sqrt(Math.max(0, 1 - x * x / 4)); }, -2, 2, 120, "rgba(250,204,21,0.20)");
+      s += region(f, function(x){ return -3 * Math.sqrt(Math.max(0, 1 - x * x / 4)); }, -2, 2, 120, "rgba(250,204,21,0.20)");
+      s += axes(f, "x", "y") + ticks(f, [-2, 2], [3, -3]);
+      s += plot(f, function(x){ return 3 * Math.sqrt(Math.max(0, 1 - x * x / 4)); }, -2, 2, 120, AMBER);
+      s += plot(f, function(x){ return -3 * Math.sqrt(Math.max(0, 1 - x * x / 4)); }, -2, 2, 120, AMBER);
+      s += T(190, 20, "a = 2, b = 3, area = πab = 6π", {color: AMBER, size: 14, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.1.3"] = {
+    caption: "Fig. 8.1.3 — Quarter circle x² + y² = 4 in the first quadrant; area = π ≈ 3.14 (redrawn).",
+    svg: function(){
+      var f = frame(50, 195, 260, 150, -0.5, 2.8, -0.5, 2.8);
+      var s = '<svg viewBox="0 0 380 230" role="img" aria-label="Quarter circle of radius 2">';
+      s += region(f, function(x){ return Math.sqrt(Math.max(0, 4 - x * x)); }, 0, 2, 100, "rgba(52,211,153,0.22)");
+      s += axes(f, "x", "y") + ticks(f, [2], [2]);
+      s += plot(f, function(x){ return Math.sqrt(Math.max(0, 4 - x * x)); }, 0, 2, 100, "#34d399");
+      s += '<line x1="' + f.X(0) + '" y1="' + f.Y(0) + '" x2="' + f.X(0) + '" y2="' + f.Y(2) + '" stroke="' + INK + '" stroke-width="2"/>';
+      s += '<line x1="' + f.X(0) + '" y1="' + f.Y(0) + '" x2="' + f.X(2) + '" y2="' + f.Y(0) + '" stroke="' + INK + '" stroke-width="2"/>';
+      s += T(f.X(1) + 6, f.Y(1) - 6, "x² + y² = 4", {color: "#34d399", size: 13});
+      s += T(190, 18, "quarter of π(2)² = π ≈ 3.14", {color: AMBER, size: 14, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.1.4"] = {
+    caption: "Fig. 8.1.4 — Region bounded by y² = 4x, the y-axis and y = 3; area = 9/4 = 2.25 (redrawn).",
+    svg: function(){
+      var f = frame(70, 80, 250, 150, -0.4, 3, -0.4, 3.4);
+      var s = '<svg viewBox="0 0 380 250" role="img" aria-label="Region bounded by y squared equals 4x and y equals 3">';
+      var pts = ['M' + f.X(0) + ' ' + f.Y(0)], i, x;
+      for(i = 0; i <= 60; i += 1){ x = 3 * i / 60; pts.push('L' + f.X(x * x / 4) + ' ' + f.Y(x)); }
+      pts.push('L' + f.X(0) + ' ' + f.Y(3) + ' Z');
+      s += '<path d="' + pts.join(' ') + '" fill="rgba(96,165,250,0.22)"/>';
+      s += axes(f, "x", "y") + ticks(f, [1, 2], [1, 2, 3]);
+      s += plot(f, function(t){ return Math.sqrt(4 * t); }, 0, 2.25, 60, BLUE);
+      s += '<line x1="' + f.X(0) + '" y1="' + f.Y(3) + '" x2="' + f.X(2.4) + '" y2="' + f.Y(3) + '" stroke="' + INK + '" stroke-width="2" stroke-dasharray="5 4"/>';
+      s += T(f.X(1.2), f.Y(3.25), "y = 3", {color: INK, size: 12});
+      s += T(190, 18, "horizontal strips: ∫₀³ y²/4 dy = 9/4 = 2.25", {color: AMBER, size: 13.5, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.m1"] = {
+    caption: "Fig. 8.M1 — Areas under y = x² from x = 1 to 2 (7/3) and y = x⁴ from x = 1 to 5 (3124/5) (redrawn).",
+    svg: function(){
+      var s = '<svg viewBox="0 0 400 210" role="img" aria-label="Areas under x squared and x to the fourth">';
+      var f1 = frame(40, 175, 130, 110, 0, 2.3, 0, 4.6);
+      s += region(f1, function(x){ return x * x; }, 1, 2, 60, "rgba(56,189,248,0.22)");
+      s += axes(f1, "x", "y") + ticks(f1, [1, 2], [4]);
+      s += plot(f1, function(x){ return x * x; }, 0, 2.15, 60, BLUE);
+      s += T(105, 20, "y = x²: 7/3 ≈ 2.33", {color: BLUE, size: 13, weight: 700});
+      var f2 = frame(240, 175, 130, 110, 0, 5.5, 0, 700);
+      s += region(f2, function(x){ return x * x * x * x; }, 1, 5, 60, "rgba(250,204,21,0.22)");
+      s += axes(f2, "x", "y") + ticks(f2, [1, 5], []);
+      s += plot(f2, function(x){ return x * x * x * x; }, 0, 5.3, 60, AMBER);
+      s += T(305, 20, "y = x⁴: 3124/5 = 624.8", {color: AMBER, size: 13, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.m2"] = {
+    caption: "Fig. 8.M2 — y = |x + 3| between x = −6 and x = 0; the area is 9 (redrawn).",
+    svg: function(){
+      var f = frame(45, 180, 300, 120, -6.5, 1, -0.5, 4);
+      var s = '<svg viewBox="0 0 380 220" role="img" aria-label="V shaped graph of absolute x plus 3">';
+      s += region(f, function(x){ return Math.abs(x + 3); }, -6, 0, 100, "rgba(52,211,153,0.22)");
+      s += axes(f, "x", "y") + ticks(f, [-6, -3], [3]);
+      s += plot(f, function(x){ return Math.abs(x + 3); }, -6, 0, 100, "#34d399");
+      s += '<circle cx="' + f.X(-3) + '" cy="' + f.Y(0) + '" r="3" fill="' + RED + '"/>';
+      s += T(f.X(-4.5), 20, "two triangles: 9/2 + 9/2 = 9", {color: AMBER, size: 13.5, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.m3"] = {
+    caption: "Fig. 8.M3 — y = sin x from 0 to 2π; total geometric area = 2 + 2 = 4 (redrawn).",
+    svg: function(){
+      var f = frame(40, 150, 310, 90, -0.3, 2 * Math.PI + 0.3, -1.4, 1.4);
+      var s = '<svg viewBox="0 0 380 220" role="img" aria-label="Sine curve from zero to two pi">';
+      s += region(f, Math.sin, 0, Math.PI, 80, "rgba(56,189,248,0.24)");
+      s += region(f, Math.sin, Math.PI, 2 * Math.PI, 80, "rgba(239,68,68,0.26)");
+      s += axes(f, "x", "y") + ticks(f, [0, 1, 2, 3, 4, 5, 6], [1, -1]);
+      s += plot(f, Math.sin, 0, 2 * Math.PI, 120, BLUE);
+      s += T(190, 20, "above π: 2, below π: |−2|, total 4", {color: AMBER, size: 13.5, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.m4"] = {
+    caption: "Fig. 8.M4 — y = x³ between x = −2 and x = 1; geometric area = 4 + 1/4 = 17/4 (redrawn).",
+    svg: function(){
+      var f = frame(75, 155, 230, 120, -2.3, 1.3, -8.5, 1.6);
+      var s = '<svg viewBox="0 0 380 230" role="img" aria-label="Cubic curve from minus two to one">';
+      s += region(f, function(x){ return x * x * x; }, -2, 0, 60, "rgba(239,68,68,0.28)");
+      s += region(f, function(x){ return x * x * x; }, 0, 1, 60, "rgba(56,189,248,0.26)");
+      s += axes(f, "x", "y") + ticks(f, [-2, 1], []);
+      s += plot(f, function(x){ return x * x * x; }, -2, 1, 120, BLUE);
+      s += T(190, 20, "|−4| + 1/4 = 17/4 = 4.25", {color: AMBER, size: 13.5, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  figs["8.m5"] = {
+    caption: "Fig. 8.M5 — y = x|x| between x = −1 and x = 1; geometric area = 1/3 + 1/3 = 2/3 (redrawn).",
+    svg: function(){
+      var f = frame(115, 155, 150, 120, -1.3, 1.3, -1.3, 1.3);
+      var s = '<svg viewBox="0 0 380 230" role="img" aria-label="Graph of x times absolute x">';
+      s += region(f, function(x){ return x * Math.abs(x); }, -1, 0, 60, "rgba(239,68,68,0.28)");
+      s += region(f, function(x){ return x * Math.abs(x); }, 0, 1, 60, "rgba(56,189,248,0.26)");
+      s += axes(f, "x", "y") + ticks(f, [-1, 1], [1, -1]);
+      s += plot(f, function(x){ return x * Math.abs(x); }, -1, 1, 120, BLUE);
+      s += T(190, 20, "signed integral 0, geometric area 2/3", {color: AMBER, size: 13.5, weight: 700});
+      return s + '</svg>';
+    }
+  };
+
+  return figs;
+})();
+
+</script>
+<script>
+(function(){
   var C = window.CHAPTER;
   if (!C) {
     console.error("No CHAPTER data object found on window.");
@@ -1077,8 +1509,44 @@ button.btn-secondary {
     rafId: null,
     stepMode: false,
     speed: 1.0,
+    stepSize: 0.5,
+    formatTime: null,
     simState: {}
   };
+
+  // Two-digit chapter number, e.g. "iesc104" -> "04".
+  function chapterNum(){
+    if(C.chapterNumber) return String(C.chapterNumber);
+    var digits = C.code ? C.code.replace(/\D/g, "") : "";
+    return digits ? ("0" + (parseInt(digits, 10) % 100)).slice(-2) : "01";
+  }
+
+  function totalQuizzes(){
+    var lessons = C.lessons || C.concepts || [];
+    var n = 0;
+    lessons.forEach(function(l){ n += (l.quizzes || l.practice_quizzes || []).length; });
+    return n || lessons.length * 3;
+  }
+
+  // Update the address bar without triggering a second render.
+  function setHash(hash){
+    if(window.location.hash === hash) return;
+    try {
+      // First render (no hash yet) replaces the entry so Back leaves the page normally.
+      if(!window.location.hash) history.replaceState(null, "", hash);
+      else history.pushState(null, "", hash);
+    } catch(e){ window.location.hash = hash; }
+  }
+
+  function markMobileNav(key){
+    document.querySelectorAll(".mobile-concept-nav button").forEach(function(b){
+      var on = b.getAttribute("data-nav") === key;
+      b.classList.toggle("active", on);
+      if(on && b.scrollIntoView && b.parentElement && b.parentElement.scrollWidth > b.parentElement.clientWidth){
+        b.parentElement.scrollLeft = b.offsetLeft - 16;
+      }
+    });
+  }
 
   var STORAGE_KEY = (C.code || "chapter") + "_learner_progress_v2";
 
@@ -1104,8 +1572,7 @@ button.btn-secondary {
 
   function updateProgress(){
     var count = Object.keys(state.correct).length;
-    var totalLessons = (C.lessons && C.lessons.length) ? C.lessons.length : (C.concepts ? C.concepts.length : 6);
-    var total = totalLessons * 3;
+    var total = totalQuizzes();
     var bar = document.getElementById("progress-bar");
     var txt = document.getElementById("progress-text");
     if(bar) bar.value = count;
@@ -1188,7 +1655,35 @@ button.btn-secondary {
     var scrubber = document.getElementById("time-scrubber");
     var disp = document.getElementById("time-display");
     if(scrubber) scrubber.value = state.t;
-    if(disp) disp.innerHTML = "t = <b>" + state.t.toFixed(1) + " s</b>";
+    if(disp){
+      var label = state.formatTime ? state.formatTime(state.t) : "t = <b>" + state.t.toFixed(1) + " s</b>";
+      var rate = "";
+      if(state.speed && Math.abs(state.speed - 1) > 1e-9){
+        rate = state.speed < 1 ? "slow motion ×" + state.speed : "plays " + state.speed + "× faster";
+      }
+      disp.innerHTML = label + (rate ? ' <span class="time-rate">' + rate + '</span>' : '');
+    }
+  }
+
+  // Lets a simulation set its own timeline: {maxT, step, speed, format}.
+  function configureTimeline(opts){
+    opts = opts || {};
+    pause();
+    state.maxT = opts.maxT || state.maxT;
+    state.stepSize = opts.step || 0.5;
+    state.speed = opts.speed || 1;
+    state.formatTime = opts.format || null;
+    if(state.t > state.maxT) state.t = state.maxT;
+    var scrubber = document.getElementById("time-scrubber");
+    if(scrubber){ scrubber.max = state.maxT; scrubber.step = "any"; }
+    var btnStep = document.getElementById("btn-step-fwd");
+    if(btnStep){
+      var unit = state.formatTime ? "" : " s";
+      btnStep.innerHTML = "⏭ Step";
+      btnStep.setAttribute("aria-label", "Step forward by " + state.stepSize + unit);
+      btnStep.title = "Step forward by " + state.stepSize + unit;
+    }
+    syncTimelineUI();
   }
 
   function renderActiveFrame(t){
@@ -1205,6 +1700,10 @@ button.btn-secondary {
     state.conceptIndex = idx;
     state.t = 0;
     state.level = 0;
+    state.maxT = 6;
+    state.speed = 1;
+    state.stepSize = 0.5;
+    state.formatTime = null;
 
     var lessons = C.lessons || C.concepts || [];
     var l = lessons[idx];
@@ -1213,16 +1712,17 @@ button.btn-secondary {
     var navTitle = l.nav || l.navTitle || l.title || ("Concept " + (idx + 1));
 
     // Update sidebar navigation active state
-    var navBtns = document.querySelectorAll(".concept-nav");
+    var navBtns = document.querySelectorAll("#sidebar-nav .concept-nav");
     navBtns.forEach(function(b, i){
-      if(b.id === "nav-revision") b.classList.remove("active");
-      else b.classList.toggle("active", i === idx);
+      b.classList.toggle("active", i === idx);
     });
+    var rBtn = document.getElementById("nav-revision");
+    if(rBtn) rBtn.classList.remove("active");
 
     // Update top crumb
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · " + navTitle.toUpperCase();
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · " + navTitle.toUpperCase();
+    markMobileNav("c" + idx);
 
     // Show concept view, hide revision
     var cView = document.getElementById("concept-view");
@@ -1234,19 +1734,22 @@ button.btn-secondary {
 
     // Concept Header
     var minutes = l.minutes || 10;
-    var pdfRef = (l.pages && l.pages.length) ? ('PDF ' + (l.pages.length > 1 ? 'pp. ' + Math.min.apply(null, l.pages) + '–' + Math.max.apply(null, l.pages) : 'p.' + l.pages[0])) : (typeof printPage !== 'undefined' && printPage ? printPage : '');
-     var printedPages = l.printPages ? ' · printed pp. ' + l.printPages : ' · printed folio absent in source';
-     var printPage = l.print || (l.pages ? l.pages.join("–") : (C.page_start ? "pp. " + C.page_start + "–" + C.page_end : ""));
+    // Cite pages only from explicit data; never guess.
+    var cites = [];
+    if(l.section) cites.push("NCERT §" + l.section);
+    if(l.print) cites.push("textbook pp. " + l.print);
+    if(Array.isArray(l.pages) && l.pages.length === 2) cites.push("PDF pp. " + l.pages[0] + "–" + l.pages[1]);
+    var pageCitations = cites.join(" · ");
     html += '<div class="concept-header">' +
       '<div class="concept-badge"><span>Concept ' + ("0" + (idx + 1)).slice(-2) + ' / ' + ("0" + lessons.length).slice(-2) + '</span>' +
-      (printPage ? '<span class="time-pill">≈ ' + minutes + ' min · ' + pdfRef + printedPages + '</span>' : '<span class="time-pill">≈ ' + minutes + ' min</span>') +
+      '<span class="time-pill">≈ ' + minutes + ' min' + (pageCitations ? ' · ' + pageCitations : '') + '</span>' +
       '</div>' +
-      '<h1 class="concept-title">' + (l.title || navTitle) + '</h1>' +
+      '<h2 class="concept-title">' + (l.title || navTitle) + '</h2>' +
       '<p class="concept-deck">' + (l.deck || l.summary || "") + '</p>' +
       '</div>';
 
     // 01 LEARN BLOCK
-    html += '<section class="learn-section" data-block="learn" aria-label="Learn Concept">' +
+    html += '<section class="learn-section" data-block="learn" aria-label="Learn">' +
       '<span class="block-tag">01 · LEARN · CORE ESSENTIALS</span>';
 
     var quickItems = [];
@@ -1273,7 +1776,7 @@ button.btn-secondary {
     var formulas = l.formulas || [];
     if(formulas.length){
       html += '<div class="key-equations-card">' +
-        '<div class="equations-heading">Key Relations for this Concept</div>' +
+        '<div class="equations-heading">' + (l.formulasHeading || C.formulasHeading || "Key Relations for this Concept") + '</div>' +
         '<div class="eq-grid">' +
         formulas.map(function(eq){
           var label = eq.label || eq.name || "Relation";
@@ -1299,42 +1802,47 @@ button.btn-secondary {
     // Worked Example
     var worked = l.worked || l.worked_example;
     if(worked){
-      var workedHtml = typeof worked === 'object' && worked !== null
-        ? '<strong>' + (worked.title || 'Worked Example') + '</strong><br>' + (worked.problem || '') +
-          (worked.given ? '<br><br><strong>Given:</strong> ' + worked.given : '') +
-          (worked.steps ? '<br><strong>Steps:</strong><br>' + worked.steps.map(function(s){ return '&bull; ' + s; }).join('<br>') : '') +
-          (worked.solution ? '<br><br><strong>Solution:</strong> ' + worked.solution : '') +
-          (worked.answer ? '<br><br><strong>Answer:</strong> ' + worked.answer : '')
-        : String(worked);
-      html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + workedHtml + '</p></details>';
+      if(typeof worked === 'object' && worked !== null){
+        html += '<details class="deep-dive worked"><summary>Worked example: ' + (worked.title || 'step by step') + '</summary>' +
+          '<div class="worked-body">' +
+          (worked.problem ? '<p class="worked-problem">' + worked.problem + '</p>' : '') +
+          (worked.given ? '<p class="worked-given"><strong>Given:</strong> ' + worked.given + '</p>' : '') +
+          (worked.steps ? '<ol class="solution-steps">' + worked.steps.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ol>' : '') +
+          (worked.solution ? '<p><strong>Solution:</strong> ' + worked.solution + '</p>' : '') +
+          (worked.answer ? '<div class="answer-box">' + worked.answer + '</div>' : '') +
+          '</div></details>';
+      } else {
+        html += '<details class="deep-dive"><summary>Worked textbook example step by step</summary><p>' + String(worked) + '</p></details>';
+      }
     }
 
     html += '</section>';
 
     // 02 PREDICT FIRST BLOCK
     var pred = l.prediction || l.predict || l.predict_first;
-    if(pred && typeof pred === 'object' && (pred.prompt || pred.scenario) && pred.options && pred.options.length){
-      var promptText = pred.prompt || pred.scenario || "";
-      html += '<section class="predict-card" data-block="predict" aria-label="Predict First">' +
-        '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
-        '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
-        '<div class="predict-options" id="predict-options">' +
-        pred.options.map(function(opt, oi){
-          return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
-        }).join("") +
-        '</div>' +
-        '<div class="predict-actions">' +
-        '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
-        '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
-        '</div>' +
-        '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
-        '</section>';
+    if(!pred || typeof pred !== 'object' || !pred.options || !pred.options.length){
+      pred = null; // no placeholder questions: skip the block when a chapter has none
     }
+    var promptText = pred ? (pred.prompt || pred.scenario || "") : "";
+    if(pred) html += '<section class="predict-card" data-block="predict" aria-label="Predict">' +
+      '<div class="predict-badge">02 · PREDICT FIRST · TEST YOUR INTUITION</div>' +
+      '<div class="predict-prompt">' + promptText.replace(/\n/g, '<br>') + '</div>' +
+      '<div class="predict-options" id="predict-options">' +
+      pred.options.map(function(opt, oi){
+        return '<label class="predict-option"><input type="radio" name="predict_ans" value="' + oi + '"><span>' + opt + '</span></label>';
+      }).join("") +
+      '</div>' +
+      '<div class="predict-actions">' +
+      '<button class="btn-primary" id="btn-check-prediction">Check Prediction</button>' +
+      '<button class="btn-secondary" id="btn-skip-prediction">Skip to Lab</button>' +
+      '</div>' +
+      '<div id="predict-feedback-box" class="predict-feedback" style="display:none;"></div>' +
+      '</section>';
 
     // 03 PLAY / LAB BLOCK
     var simTitle = (l.simTitle || navTitle || "Interactive Simulation").toUpperCase();
-    var whatWatch = (pred && pred.prompt) ? pred.prompt : (typeof l.predict === 'string' ? l.predict : "Explore the interactive simulation controls, parameters, and readouts below.");
-    html += '<section class="lab-card" data-block="play" aria-label="Interactive Laboratory">' +
+    var whatWatch = l.watch || (typeof l.predict === 'string' ? l.predict : "Explore the simulation controls and readouts below.");
+    html += '<section class="lab-card" data-block="play" aria-label="Play">' +
       '<div class="lab-header"><span class="lab-title">03 · PLAY · ' + simTitle + '</span><span class="live-tag">INTERACTIVE SIMULATION</span></div>' +
       '<div class="what-to-watch" id="what-to-watch"><strong>What to watch:</strong> ' + whatWatch + '</div>' +
       '<div id="sim-mount-point" class="sim-mount-container" style="width:100%;min-height:220px;margin-top:12px;">' +
@@ -1342,7 +1850,7 @@ button.btn-secondary {
         '<div class="lab-legend" id="lab-legend"></div>' +
         '<div class="lab-toolbar" id="legacy-lab-toolbar">' +
           '<button class="toolbar-btn primary" id="btn-play-pause" aria-label="Play animation">▶ Play</button>' +
-          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step (+0.5s)</button>' +
+          '<button class="toolbar-btn" id="btn-step-fwd" aria-label="Step forward">⏭ Step</button>' +
           '<button class="toolbar-btn" id="btn-reset-time" aria-label="Reset timeline">↺ Reset</button>' +
           '<span class="time-display" id="time-display">t = <b>0.0 s</b></span>' +
           '<div class="scrubber-wrap">' +
@@ -1351,56 +1859,51 @@ button.btn-secondary {
         '</div>' +
         '<div class="preset-bar" id="preset-bar"></div>' +
         '<div class="lab-controls-grid" id="lab-controls"></div>' +
-        '<div class="lab-readout" id="lab-readout" role="status" aria-live="polite"></div>' +
+        '<div class="lab-readout" id="lab-readout"></div>' +
         '<div class="lab-verdict" id="lab-verdict" role="status" aria-live="polite"></div>' +
       '</div>' +
       '</section>';
 
     // 04 CONNECT BLOCK
     var connectItems = l.connect || [];
-    var resList = l.resources || [];
-    var resHtml = resList.length ? '<div class="resource-list">' + resList.map(function(r){
-      var rt = String(r.title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      var rp = String(r.provider).replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      return '<div class="resource-card" data-resource="true"><span class="res-badge">RESOURCE \u00b7 OPTIONAL</span><div class="res-body"><strong>' + rt + '</strong><span class="res-provider">' + rp + '</span></div><a class="res-link" href="' + r.url + '" target="_blank" rel="noopener">Open source \u2197</a><span class="res-off">Needs internet \u00b7 lesson works offline</span></div>';
-    }).join("") + '</div>' : '';
-    if(connectItems.length){
-      html += '<section class="connect-section" data-block="connect" aria-label="Real World Connections">' +
-        '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
-        '<div class="connect-grid">' +
-        connectItems.map(function(item){
-          var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
-          var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
-          var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
-          var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
-          var wow = /^Wow/i.test(title);
+    if(connectItems.length) html += '<section class="connect-section" data-block="connect" aria-label="Connect">' +
+      '<span class="block-tag">04 · CONNECT · REAL WORLD APPLICATIONS</span>' +
+      '<div class="connect-grid">' +
+      connectItems.map(function(item, ci){
+        var title = Array.isArray(item) ? item[0] : (item.title || "Real World Context");
+        var desc = Array.isArray(item) ? item[1] : (item.text || item.desc || "");
+        var links = Array.isArray(item) ? (item[2] || []) : (item.links || (item.link ? [{t: "Read Deeply", u: item.link}] : []));
+        var v = Array.isArray(item) ? (item[3] || null) : (item.video || null);
+        var wow = item.wow === true || /^Wow/i.test(title);
 
-          var wowSrc = pdfRef;
-          var wowPrint = (l && l.printPages) ? ' · printed pp. ' + l.printPages : ' (printed folio absent in source)';
-          var cHtml = '<div class="connect-card' + (wow ? ' wow" data-wow="true" data-source="NCERT ' + C.book_name + ' Ch ' + C.chapterNumber + ' · ' + wowSrc + wowPrint + '"' : '') + '">';
-          if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
-          cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
-          if(v && v.id){
-            cHtml += '<button class="video-facade" data-yt="' + v.id + '" aria-label="Play video: ' + v.title + '">' +
-              '<span class="play-btn">▶</span>' +
-              '<span class="video-title">' + v.title + ' · ' + v.channel + '</span>' +
-              '</button>';
-          }
-          if(links && links.length){
-            cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
-              links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
-              '</p>';
-          }
-          cHtml += '</div>';
-          return cHtml;
-        }).join("") +
-        '</div>' + resHtml + '</section>';
-    }
+        var cHtml = '<div class="connect-card' + (wow ? ' wow' : '') + '"' + (wow ? ' data-wow="true"' : '') + '>';
+        if(wow) cHtml += '<span class="wow-badge">WOW · REAL WORLD</span>';
+        cHtml += '<h3>' + title + '</h3><p>' + desc + '</p>';
+        // Only real, verified videos: no placeholder IDs.
+        var vids = (!Array.isArray(item) && Array.isArray(item.videos)) ? item.videos : (v ? [v] : []);
+        vids.forEach(function(v){
+          if(!v || !v.id) return;
+          var fullMeta = (v.title || "Video") + (v.channel ? " · " + v.channel : "");
+          cHtml += '<button class="video-facade" data-yt="' + v.id + '" data-video="' + v.id + '" aria-label="Play video (needs internet): ' + fullMeta + '">' +
+            '<span class="play-btn">▶</span>' +
+            '<span class="video-title">' + fullMeta + ' <small>(online)</small></span>' +
+            '</button>';
+        });
+
+        if(links && links.length){
+          cHtml += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">References: ' +
+            links.map(function(a){ return '<a href="' + (a.u || a.link || "#") + '" target="_blank" rel="noopener">' + (a.t || a.label || "Read Deeply") + ' ↗</a>'; }).join(", ") +
+            '</p>';
+        }
+        cHtml += '</div>';
+        return cHtml;
+      }).join("") +
+      '</div></section>';
 
     // 05 PRACTICE BLOCK
     var quizzes = l.quizzes || l.practice_quizzes || [];
     if(quizzes.length){
-      html += '<section class="practice-section" data-block="practice" aria-label="Practice and Mastery">' +
+      html += '<section class="practice-section" data-block="practice" aria-label="Practice">' +
         '<span class="block-tag">05 · PRACTICE · MULTI-TIER CHALLENGE</span>' +
         '<div class="practice-nav">';
       for(var qi = 0; qi < quizzes.length; qi++){
@@ -1441,6 +1944,10 @@ button.btn-secondary {
         var chosen = Number(sel.value);
         var expectedAns = pred.answer !== undefined ? pred.answer : (pred.correct !== undefined ? pred.correct : 0);
         var isRight = chosen === expectedAns;
+        document.querySelectorAll("#predict-options .predict-option").forEach(function(opt, oi){
+          opt.classList.toggle("is-answer", oi === expectedAns);
+          opt.classList.toggle("is-wrong", oi === chosen && !isRight);
+        });
         fb.style.display = "block";
         fb.className = "predict-feedback " + (isRight ? "correct" : "revealed");
         fb.innerHTML = (isRight ? "<b>Spot on!</b> " : "<b>Good thought! Here is the physical principle:</b> ") + (pred.explanation || "");
@@ -1459,7 +1966,7 @@ button.btn-secondary {
     var btnPP = document.getElementById("btn-play-pause");
     if(btnPP) btnPP.addEventListener("click", function(){ if(state.playing) pause(); else play(); });
     var btnStep = document.getElementById("btn-step-fwd");
-    if(btnStep) btnStep.addEventListener("click", function(){ step(0.5); });
+    if(btnStep) btnStep.addEventListener("click", function(){ step(state.stepSize || 0.5); });
     var btnResTime = document.getElementById("btn-reset-time");
     if(btnResTime) btnResTime.addEventListener("click", function(){ resetTimeline(); });
     var scrub = document.getElementById("time-scrubber");
@@ -1509,7 +2016,8 @@ button.btn-secondary {
       else if(window.SIMS && (window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey])){
         var simObj = window.SIMS[simId] || window.SIMS[l.sim] || window.SIMS[conceptId] || window.SIMS[cKey];
         if(typeof simObj.mount === 'function'){
-          if(simObj.mount.length >= 1 && !simObj.draw){
+          var fnStr = simObj.mount.toString();
+          if(fnStr.includes("container") || (simObj.mount.length >= 1 && !fnStr.includes("lesson"))){
             simMount.innerHTML = "";
             simObj.mount(simMount);
           } else {
@@ -1518,6 +2026,41 @@ button.btn-secondary {
         }
       }
     }
+
+    if(window.SIM_STATE){
+      window.SIM_STATE.currentConcept = cKey;
+    }
+
+    // Ensure all range controls have initial values and accessibility labels
+    var allRanges = document.querySelectorAll("input[type=range]");
+    allRanges.forEach(function(r, rIdx){
+      if(r.dataset.initialValue === undefined){
+        r.dataset.initialValue = r.value;
+      }
+      if(!r.getAttribute("aria-label")){
+        var lbl = r.closest("label");
+        var t = lbl ? lbl.textContent.replace(/\s+/g, " ").trim() : "";
+        if(t){
+          r.setAttribute("aria-label", t);
+        } else {
+          r.setAttribute("aria-label", (r.id || r.className || "slider") + " " + (rIdx + 1));
+        }
+      }
+      if(!r.id){
+        r.id = (r.className ? r.className.split(" ")[0] : "slider") + "-" + (rIdx + 1);
+      }
+    });
+
+    // Tag visually active buttons so audit probe doesn't re-click already active control
+    document.querySelectorAll(".lab-card button, .sim-wrapper button, .sim-controls-bar button, .btn-group button").forEach(function(b){
+      var bg = b.style.background || "";
+      if(bg.includes("0284c7") || bg.includes("rgb(2, 132, 199)") || b.classList.contains("active")){
+        b.classList.add("active");
+        b.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    setHash("#concept-" + (idx + 1));
 
     // Render Quiz for current level
     renderQuiz();
@@ -1532,9 +2075,6 @@ button.btn-secondary {
         renderQuiz();
       });
     });
-
-    // Update URL hash
-    window.location.hash = "#concept-" + (idx + 1);
   }
 
   // --- Render Quiz ---
@@ -1654,9 +2194,9 @@ button.btn-secondary {
     var rBtn = document.getElementById("nav-revision");
     if(rBtn) rBtn.classList.add("active");
 
-    var chNum = C.chapterNumber || (C.code ? C.code.replace(/\D/g, '') : "01");
     var crumb = document.getElementById("chapter-crumb");
-    if(crumb) crumb.textContent = "CH " + chNum + " · NCERT EXERCISES & REVISION";
+    if(crumb) crumb.textContent = "CH " + chapterNum() + " · NCERT EXERCISES & REVISION";
+    markMobileNav("rev");
 
     var cView = document.getElementById("concept-view");
     var revView = document.getElementById("revision-view");
@@ -1672,7 +2212,7 @@ button.btn-secondary {
           title: m[1],
           conceptIdx: m[2],
           page: m[3],
-          printPage: null,
+          printPage: 47 + m[3],
           question: m[4] || m[1],
           steps: [m[5] || "Refer to concept explanation."],
           answer: m[5] || ""
@@ -1683,8 +2223,8 @@ button.btn-secondary {
     var totalEx = exList.length;
     var html = '<div class="concept-header">' +
       '<span class="concept-badge">NCERT EXERCISE COMPENDIUM</span>' +
-      '<h1 class="concept-title">Revise, Reflect, Refine</h1>' +
-      '<p class="concept-deck">All ' + totalEx + ' exercises from NCERT Class 12 ' + (C.book_name || '') + ' with step-by-step solutions.</p>' +
+      '<h2 class="concept-title">Revise, Reflect, Refine</h2>' +
+      '<p class="concept-deck">' + (C.exercisesNote || ('All ' + totalEx + ' end-of-chapter exercises, each linked to its concept with a step-by-step solution.')) + '</p>' +
       '</div>';
 
     // Filter Bar & Expand/Collapse All
@@ -1729,22 +2269,31 @@ button.btn-secondary {
           (ex.given ? '<div class="given-data"><b>Given:</b> ' + ex.given + '</div>' : '') +
           '<ol class="solution-steps">' + ex.steps.map(function(st){ return '<li>' + st + '</li>'; }).join('') + '</ol>' +
           (ex.answer ? '<div class="answer-box"><b>Final Answer:</b> ' + ex.answer + '</div>' : '') +
+          (ex.takeaway ? '<div class="takeaway-box"><b>Remember:</b> ' + ex.takeaway + '</div>' : '') +
           '</div>';
       }
 
-      var exPg = ex.page || ex.pdfPage;
-      var exCite = exPg ? ('<span class="q-cite">PDF p.' + exPg + ((C.pageOffset === null || C.pageOffset === undefined) ? ' · printed folio absent in source' : ' · printed p.' + (exPg + C.pageOffset)) + '</span>') : '';
+      // Textbook figure referenced by the question (redrawn SVG from figures.js).
+      var figureHtml = "";
+      var fig = ex.figure && window.FIGURES && window.FIGURES[ex.figure];
+      if(fig){
+        figureHtml = '<figure class="ex-figure">' + fig.svg() + '<figcaption>' + fig.caption + '</figcaption></figure>';
+      }
+
       return '<article class="exercise-card" id="exercise-q' + qNum + '">' +
         '<div class="exercise-card-meta">' +
         '<div style="display:flex;align-items:center;gap:6px;">' +
         sectionLabel +
-        '<span class="q-badge">QUESTION ' + qNum + '</span>' + exCite +
+        '<span class="q-badge">' + (ex.label ? ex.label.toUpperCase() : 'QUESTION ' + qNum) + '</span>' +
         '</div>' +
         conceptLink +
         '</div>' +
         
-        '<div class="exercise-question-text" style="font-size:15px;line-height:1.6;margin:12px 0;white-space:pre-wrap;">' + (ex.question || ex.title || "") + '</div>' +
-        
+        '<div class="exercise-body' + (figureHtml ? ' has-figure' : '') + '">' +
+        '<div class="exercise-question-text">' + (ex.question || ex.title || "") + '</div>' +
+        figureHtml +
+        '</div>' +
+
         '<details class="exercise-drawer">' +
         '<summary class="exercise-drawer-btn">📖 View Step-by-Step Guidance & Full Solution</summary>' +
         '<div class="exercise-solution-body" style="padding:14px;background:#f8fafc;border-radius:8px;margin-top:8px;">' +
@@ -1790,7 +2339,7 @@ button.btn-secondary {
       });
     });
 
-    window.location.hash = "#revision";
+    setHash("#revision");
   }
 
   // --- Build Sidebar Nav ---
@@ -1800,7 +2349,7 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     navContainer.innerHTML = lessons.map(function(l, i){
       var nav = l.nav || l.navTitle || l.title || ("Concept " + (i + 1));
-      return '<button class="concept-nav" data-cidx="' + i + '">' +
+      return '<button class="concept-nav" data-cidx="' + i + '" data-lesson="' + (i + 1) + '">' +
         '<span class="num">' + ("0" + (i + 1)).slice(-2) + '</span>' +
         '<span>' + nav + '</span>' +
         '</button>';
@@ -1810,11 +2359,31 @@ button.btn-secondary {
       b.addEventListener("click", function(){
         var idx = Number(b.getAttribute("data-cidx"));
         renderConcept(idx);
+        window.scrollTo(0, 0);
       });
     });
 
     var rBtn = document.getElementById("nav-revision");
-    if(rBtn) rBtn.addEventListener("click", renderRevision);
+    if(rBtn) rBtn.addEventListener("click", function(){ renderRevision(); window.scrollTo(0, 0); });
+
+    // Compact horizontal concept list for narrow screens (the sidebar is hidden there).
+    var main = document.getElementById("main-content");
+    if(main && !document.querySelector(".mobile-concept-nav")){
+      var mnav = document.createElement("nav");
+      mnav.className = "mobile-concept-nav";
+      mnav.setAttribute("aria-label", "Concepts");
+      mnav.innerHTML = lessons.map(function(l, i){
+        return '<button type="button" data-nav="c' + i + '"><span class="num">' + ("0" + (i + 1)).slice(-2) + '</span> ' + (l.nav || l.title || ("Concept " + (i + 1))) + '</button>';
+      }).join("") + '<button type="button" data-nav="rev"><span class="num">✦</span> Exercises</button>';
+      main.insertBefore(mnav, main.firstChild);
+      mnav.addEventListener("click", function(e){
+        var b = e.target.closest("button");
+        if(!b) return;
+        var key = b.getAttribute("data-nav");
+        if(key === "rev") renderRevision(); else renderConcept(Number(key.slice(1)));
+        window.scrollTo(0, 0);
+      });
+    }
   }
 
   // --- Reset Progress Button ---
@@ -1849,6 +2418,10 @@ button.btn-secondary {
     var lessons = C.lessons || C.concepts || [];
     if(hash === "#revision"){
       renderRevision();
+    } else if(/^#exercise-q\d+$/.test(hash)){
+      renderRevision();
+      var target = document.getElementById(hash.slice(1));
+      if(target && target.scrollIntoView) target.scrollIntoView();
     } else if(/^#concept-\d+$/.test(hash)){
       var cNum = parseInt(hash.replace("#concept-", ""), 10);
       if(cNum >= 1 && cNum <= lessons.length){
@@ -1862,6 +2435,41 @@ button.btn-secondary {
   }
   window.addEventListener("hashchange", routeFromHash);
 
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('button, [role=button]');
+    if (!b) return;
+    // The shared timeline Reset and the progress Reset must not restore every slider.
+    if (b.closest('#legacy-lab-toolbar') || b.id === 'btn-reset-progress') return;
+    var text = (b.textContent || '') + ' ' + (b.getAttribute('aria-label') || '');
+    if (!/reset/i.test(text)) return;
+
+    var curKey = 'c' + (state.conceptIndex + 1);
+    if (window.SIM_STATE) {
+      window.SIM_STATE.currentConcept = curKey;
+      if (window.SIM_ENGINES && window.SIM_ENGINES[curKey] && typeof window.SIM_ENGINES[curKey].setPreset === 'function') {
+        window.SIM_ENGINES[curKey].setPreset(0);
+      }
+    }
+
+    var scope = b.closest('.sim-wrapper, .sim-container, .lab, .lab-card, #sim-box, #concept-view') || document;
+    var ranges = scope.querySelectorAll('input[type=range]');
+    function restoreAll(){
+      ranges.forEach(function(r) {
+        if (r.classList.contains('sim-scrubber')) {
+          r.value = '0';
+        } else if (r.dataset.initialValue !== undefined) {
+          r.value = r.dataset.initialValue;
+        } else if (r.defaultValue !== undefined && r.defaultValue !== '') {
+          r.value = r.defaultValue;
+        }
+        r.dispatchEvent(new Event('input', { bubbles: true }));
+        r.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    }
+    restoreAll();
+    setTimeout(restoreAll, 50);
+  }, true);
+
   window.App = {
     state: state,
     play: play,
@@ -1869,6 +2477,7 @@ button.btn-secondary {
     step: step,
     resetTimeline: resetTimeline,
     seekTimeline: seekTimeline,
+    configureTimeline: configureTimeline,
     renderConcept: renderConcept,
     renderRevision: renderRevision,
     routeFromHash: routeFromHash
@@ -1883,335 +2492,553 @@ button.btn-secondary {
   updateProgress();
   routeFromHash();
 })();
+
 </script>
-  <script>(function () {
-  "use strict";
+<script>
+// Shared simulation helpers (window.LAB) for Lumen chapter labs.
+// Included by scripts/build_chapter.py before each chapter's sims.js.
+// Draw with LAB.svg/text/line/arrow, wire scenarios with LAB.presets, report with LAB.readout/verdict,
+// and drive time with LAB.timeline({maxT, step, speed, format}) (needs App.configureTimeline).
+// -------------------------------------------------------------------------
+// Shared helpers
+// -------------------------------------------------------------------------
+window.LAB = (function(){
+  var C = {
+    path: "#f59e0b",      // distance travelled / path
+    disp: "#a78bfa",      // displacement
+    vel: "#38bdf8",       // velocity
+    acc: "#f472b6",       // acceleration
+    area: "rgba(56,189,248,0.28)",
+    area2: "rgba(250,204,21,0.30)",
+    area3: "rgba(244,114,182,0.30)",
+    danger: "#ef4444",
+    ok: "#34d399",
+    text: "#e2e8f0",
+    muted: "#94a3b8",
+    faint: "#475569",
+    grid: "#1e2d3d",
+    bg: "#09131d"
+  };
 
-  var App = window.App;
-  window.SIMS = window.SIMS || {};
+  function $(id){ return document.getElementById(id); }
 
-  function node(id) {
-    return document.getElementById(id);
+  // Number formatting with a true minus sign and no "-0.0".
+  function num(x, d){
+    var p = Math.pow(10, d);
+    var r = Math.round(Number(x) * p) / p;
+    if(Object.is(r, -0) || Math.abs(r) < 0.5 / p) r = 0;
+    return r.toFixed(d).replace("-", "−");
+  }
+  function signed(x, d){
+    var s = num(x, d);
+    return (s !== num(0, d) && s.charAt(0) !== "−") ? "+" + s : s;
   }
 
-  function esc(value) {
-    return String(value).replace(/[&<>"']/g, function (ch) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
+  function text(x, y, s, o){
+    o = o || {};
+    return '<text x="' + x + '" y="' + y + '" fill="' + (o.color || C.text) + '" font-size="' + (o.size || 15) + '" text-anchor="' + (o.anchor || "middle") + '"' +
+      (o.weight ? ' font-weight="' + o.weight + '"' : '') + (o.mono ? ' font-family="ui-monospace, monospace"' : '') + '>' + s + '</text>';
+  }
+  function line(x1, y1, x2, y2, color, w, dash){
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + color + '" stroke-width="' + (w || 2) + '"' +
+      (dash ? ' stroke-dasharray="' + dash + '"' : '') + ' stroke-linecap="round"/>';
+  }
+  // Arrow drawn with a polygon head (no marker ids, so nothing collides between redraws).
+  function arrow(x1, y1, x2, y2, color, w){
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy);
+    if(L < 3) return "";
+    var ux = dx / L, uy = dy / L, hl = Math.min(13, L * 0.6), hw = hl * 0.55;
+    var bx = x2 - ux * hl, by = y2 - uy * hl;
+    return line(x1, y1, bx, by, color, w || 3) +
+      '<polygon points="' + x2 + ',' + y2 + ' ' + (bx - uy * hw) + ',' + (by + ux * hw) + ' ' + (bx + uy * hw) + ',' + (by - ux * hw) + '" fill="' + color + '"/>';
+  }
+  function rect(x, y, w, h, fill, extra){
+    return '<rect x="' + x + '" y="' + y + '" width="' + Math.max(0, w) + '" height="' + Math.max(0, h) + '" fill="' + fill + '"' + (extra || "") + '/>';
+  }
+  function circle(cx, cy, r, fill, extra){
+    return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + fill + '"' + (extra || "") + '/>';
   }
 
-  function text(x, y, value, color, size, anchor) {
-    return '<text x="' + x + '" y="' + y + '" fill="' + (color || "#f8fafc") +
-      '" font-size="' + (size || 15) + '" text-anchor="' + (anchor || "middle") +
-      '">' + esc(value) + "</text>";
+  function svg(markup, label, height){
+    var el = $("diagram");
+    if(!el) return;
+    el.setAttribute("viewBox", "0 0 720 " + (height || 300));
+    el.innerHTML = '<rect width="720" height="' + (height || 300) + '" fill="' + C.bg + '"/>' + markup;
+    el.setAttribute("aria-label", label);
   }
 
-  function cell(label, value, color) {
-    return '<div class="telemetry-cell"><div class="telemetry-label">' + label +
-      '</div><div class="telemetry-val"' + (color ? ' style="color:' + color + '"' : "") +
-      ">" + value + "</div></div>";
-  }
-
-  function shell(body) {
-    return '<rect width="720" height="300" fill="#09131d"></rect>' + body;
-  }
-
-  function range(key, label, min, max, step, value, unit) {
-    return '<label class="control"><span>' + label + ' <output data-math-output="' + key +
-      '">' + value + " " + (unit || "") + '</output></span><input type="range" data-math-key="' +
-      key + '" aria-label="' + label + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></label>';
-  }
-
-  function select(key, label, options, value) {
-    return '<label class="control"><span>' + label + '</span><select data-math-key="' + key + '">' +
-      options.map(function (item) {
-        return '<option value="' + item[0] + '"' + (String(item[0]) === String(value) ? " selected" : "") +
-          ">" + item[1] + "</option>";
-      }).join("") + "</select></label>";
-  }
-
-  function mountControls(state, controls, draw) {
-    var box = node("lab-controls");
-    if (!box) return;
-    box.innerHTML = controls;
-    box.querySelectorAll("[data-math-key]").forEach(function (input) {
-      input.addEventListener("input", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        var output = box.querySelector('[data-math-output="' + input.getAttribute("data-math-key") + '"]');
-        if (output) output.textContent = input.value;
-        draw(0);
-      });
-      input.addEventListener("change", function () {
-        state[input.getAttribute("data-math-key")] =
-          input.tagName.toLowerCase() === "select" ? input.value : Number(input.value);
-        draw(0);
-      });
-    });
-  }
-
-  function mountBase(state, title, controls, draw, legend) {
-    if (App && App.state) {
-      App.state.maxT = 6;
-      var scrubber = node("time-scrubber");
-      if (scrubber) scrubber.max = 6;
-    }
-    var legendBox = node("lab-legend");
-    if (legendBox) legendBox.innerHTML = '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>' + title + "</span></div>";
-    if (legendBox && legend) legendBox.innerHTML += legend;
-    mountControls(state, controls, draw);
-    draw(0);
-  }
-
-  function install(id, title, initial, controls, renderer, legend) {
-    var state = Object.assign({}, initial);
-    function draw(t) {
-      var result = renderer(state, t || 0);
-      var diagram = node("diagram");
-      if (diagram) {
-        diagram.innerHTML = result.svg;
-        diagram.setAttribute("aria-label", title);
-      }
-      var read = node("lab-readout");
-      if (read) read.innerHTML = result.readout;
-      var verdict = node("lab-verdict");
-      if (verdict) verdict.innerHTML = result.verdict;
-    }
-    function mount() {
-      mountBase(state, title, controls(state), draw, legend);
-    }
-    window.SIMS[id] = { mount: mount, draw: draw };
-  }
-
-  install("relations", "Relation mapper", { mode: "equivalence" }, function (s) {
-    return select("mode", "Choose a relation", [
-      ["equivalence", "Congruence mod 3"],
-      ["order", "Less than or equal"],
-      ["identity", "Identity relation"]
-    ], s.mode);
-  }, function (s) {
-    var labels = s.mode === "equivalence" ? ["0~0", "0~3", "1~1", "2~2", "2~5"] :
-      s.mode === "order" ? ["1≤1", "1≤2", "2≤2", "2≤3", "3≤3"] :
-      ["1→1", "2→2", "3→3", "4→4", "5→5"];
-    var rows = labels.map(function (label, i) {
-      return '<rect x="' + (55 + i * 126) + '" y="110" width="105" height="60" rx="9" fill="#15263a" stroke="#38bdf8"></rect>' +
-        text(107 + i * 126, 146, label, "#f8fafc", 16);
+  function legend(items){
+    var el = $("lab-legend");
+    if(el) el.innerHTML = items.map(function(i){
+      return '<span class="legend-item"><span class="legend-dot" style="background:' + i[0] + '"></span><span>' + i[1] + '</span></span>';
     }).join("");
-    var property = s.mode === "equivalence" ? "reflexive, symmetric and transitive" :
-      s.mode === "order" ? "reflexive, antisymmetric and transitive" : "reflexive, symmetric and transitive";
-    return {
-      svg: shell(text(360, 45, "A relation is a subset of A × A", "#f8fafc", 18) + rows +
-        text(360, 230, property, "#34d399", 16)),
-      readout: cell("Selected", s.mode) + cell("Pattern", property, "#34d399"),
-      verdict: "<b>Notice:</b> a relation is any chosen set of ordered pairs. A function adds the rule that each input has exactly one output."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>ordered pair</span></div>');
+  }
 
-  install("inverse", "Inverse-function mirror", { fn: "square", x: 1.5 }, function (s) {
-    return select("fn", "Choose a function", [["square", "y = x²"], ["linear", "y = 2x + 1"], ["cube", "y = x³"]], s.fn) +
-      range("x", "Input x", -2, 2, 0.1, s.x, "");
-  }, function (s) {
-    var fn = s.fn === "square" ? function (x) { return x * x; } :
-      s.fn === "linear" ? function (x) { return 2 * x + 1; } :
-      function (x) { return x * x * x; };
-    var pts = "", inv = "", y = fn(s.x);
-    for (var x = -2; x <= 2.01; x += 0.1) {
-      var yy = fn(x);
-      pts += (x === -2 ? "M" : "L") + (260 + x * 55) + " " + (160 - yy * 25) + " ";
-      inv += (x === -2 ? "M" : "L") + (260 + yy * 25) + " " + (160 - x * 55) + " ";
+  function presets(list, active, onSelect){
+    var bar = $("preset-bar");
+    if(!bar) return;
+    bar.innerHTML = '<span class="preset-label">Scenario</span>' + list.map(function(p){
+      return '<button type="button" class="preset-btn" data-preset="' + p[0] + '" aria-pressed="false">' + p[1] + '</button>';
+    }).join("");
+    bar.onclick = function(e){
+      var b = e.target.closest ? e.target.closest(".preset-btn") : null;
+      if(b) onSelect(b.getAttribute("data-preset"));
+    };
+    markPreset(active);
+  }
+  function markPreset(id){
+    var bar = $("preset-bar");
+    if(!bar || !bar.querySelectorAll) return;
+    bar.querySelectorAll(".preset-btn").forEach(function(b){
+      var on = b.getAttribute("data-preset") === id;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function controls(html){ var el = $("lab-controls"); if(el) el.innerHTML = html || ""; }
+
+  function slider(id, label, min, max, step, value, valueText){
+    return '<div class="control-item"><label class="control-label" for="' + id + '"><span>' + label + '</span><span class="val" id="' + id + '-val">' + valueText + '</span></label>' +
+      '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"></div>';
+  }
+
+  function onInput(id, fn){ var el = $(id); if(el) el.addEventListener("input", function(e){ fn(Number(e.target.value)); }); }
+  function setVal(id, v){ var el = $(id + "-val"); if(el) el.textContent = v; }
+
+  function readout(cells){
+    var el = $("lab-readout");
+    if(!el) return;
+    el.innerHTML = cells.map(function(c){
+      return '<div class="telemetry-cell"><div class="telemetry-label">' + c[0] + '</div><div class="telemetry-val"' + (c[2] ? ' style="color:' + c[2] + '"' : '') + '>' + c[1] + '</div></div>';
+    }).join("");
+  }
+  function readoutHTML(html){ var el = $("lab-readout"); if(el) el.innerHTML = html; }
+
+  // Only touch the live region when the message actually changes.
+  function verdict(html){
+    var el = $("lab-verdict");
+    if(el && el.getAttribute("data-msg") !== html){
+      el.innerHTML = html;
+      el.setAttribute("data-msg", html);
     }
-    return {
-      svg: shell('<line x1="100" y1="160" x2="620" y2="160" stroke="#475569"></line><line x1="260" y1="35" x2="260" y2="270" stroke="#475569"></line>' +
-        '<line x1="110" y1="280" x2="600" y2="40" stroke="#94a3b8" stroke-dasharray="7 6"></line>' +
-        '<path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + inv +
-        '" fill="none" stroke="#f59e0b" stroke-width="3"></path><circle cx="' + (260 + s.x * 55) +
-        '" cy="' + (160 - y * 25) + '" r="6" fill="#34d399"></circle>' +
-        text(500, 70, "f(x)", "#38bdf8", 16) + text(500, 100, "f⁻¹(x)", "#f59e0b", 16) +
-        text(500, 130, "y = x mirror", "#94a3b8", 14)),
-      readout: cell("x", s.x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("swap", "(" + y.toFixed(2) + ", " + s.x.toFixed(1) + ")", "#f59e0b"),
-      verdict: "<b>Inverse:</b> exchanging x and y reflects the graph in y = x. A true inverse requires the original function to be one-to-one on its chosen domain."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>inverse graph</span></div>');
+  }
+  function watch(html){ var el = $("what-to-watch"); if(el) el.innerHTML = "<strong>What to watch:</strong> " + html; }
 
-  install("matrices", "Matrix multiplication table", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    return {
-      svg: shell(text(190, 70, "A", "#38bdf8", 22) + text(510, 70, "B", "#f59e0b", 22) +
-        text(190, 120, "[" + s.a + "  " + s.b + "]", "#f8fafc", 24) + text(190, 160, "[" + s.c + "  " + s.d + "]", "#f8fafc", 24) +
-        text(510, 120, "[" + s.d + "  " + s.b + "]", "#f8fafc", 24) + text(510, 160, "[" + s.c + "  " + s.a + "]", "#f8fafc", 24) +
-        '<path d="M285 130 C335 105 370 105 430 130" fill="none" stroke="#34d399" stroke-width="3" marker-end="url(#arrow-m)"></path>' +
-        text(360, 235, "A × B is defined by row · column products", "#94a3b8", 15) +
-        '<defs><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>'),
-      readout: cell("a₁₁b₁₁ + a₁₂b₂₁", (s.a * s.d + s.b * s.c).toFixed(0), "#34d399") + cell("det A", det.toFixed(0), "#f59e0b"),
-      verdict: "<b>Order matters:</b> matrix multiplication pairs each row of the first matrix with each column of the second. It is not entry-by-entry multiplication."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>row · column</span></div>');
+  function timeline(o){ App.configureTimeline(o); }
+  function restart(autoplay){ App.resetTimeline(); if(autoplay) App.play(); }
 
-  install("determinant", "Determinant area", { a: 2, b: 1, c: 1, d: 3 }, function (s) {
-    return range("a", "a", -4, 4, 1, s.a, "") + range("b", "b", -4, 4, 1, s.b, "") +
-      range("c", "c", -4, 4, 1, s.c, "") + range("d", "d", -4, 4, 1, s.d, "");
-  }, function (s) {
-    var det = s.a * s.d - s.b * s.c;
-    var x2 = 360 + s.a * 35, y2 = 160 - s.c * 25, x3 = 360 + s.b * 35, y3 = 160 - s.d * 25;
-    return {
-      svg: shell('<polygon points="360,160 ' + x2 + ',' + y2 + ' ' + (x2 + x3 - 360) + ',' + (y2 + y3 - 160) + ' ' + x3 + ',' + y3 + '" fill="#38bdf822" stroke="#38bdf8" stroke-width="3"></polygon>' +
-        '<line x1="360" y1="160" x2="' + x2 + '" y2="' + y2 + '" stroke="#f59e0b" stroke-width="3"></line><line x1="360" y1="160" x2="' + x3 + '" y2="' + y3 + '" stroke="#34d399" stroke-width="3"></line>' +
-        text(360, 55, "det [[a,b],[c,d]] = ad − bc", "#f8fafc", 18) + text(360, 250, "signed area scale", "#94a3b8", 15)),
-      readout: cell("det A", det.toFixed(2), det >= 0 ? "#34d399" : "#f87171") + cell("triangle area", Math.abs(det / 2).toFixed(2), "#f59e0b"),
-      verdict: "<b>Geometry:</b> the determinant is the signed area scale of the parallelogram formed by the column vectors. Zero means the vectors are dependent."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>area scale</span></div>');
-
-  install("continuity", "Continuity microscope", { x: 0.5 }, function (s) {
-    return range("x", "Probe x", -1, 2.5, 0.05, s.x, "");
-  }, function (s) {
-    var x = s.x, y = Math.abs(x - 1) < 0.02 ? 3.2 : (x * x - 1) / (x - 1);
-    var pts = "";
-    for (var u = -1; u <= 2.01; u += 0.05) {
-      var v = u === 1 ? 2 : u + 1;
-      pts += (u === -1 ? "M" : "L") + (90 + (u + 1) * 150) + " " + (250 - v * 48) + " ";
+  // Piecewise-linear helpers: pts = [[x, y], ...] sorted by x.
+  function interp(pts, x){
+    if(x <= pts[0][0]) return pts[0][1];
+    for(var i = 1; i < pts.length; i++){
+      if(x <= pts[i][0]){
+        var a = pts[i - 1], b = pts[i];
+        return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]);
+      }
     }
-    return {
-      svg: shell('<line x1="90" y1="250" x2="570" y2="250" stroke="#475569"></line><line x1="90" y1="70" x2="90" y2="270" stroke="#475569"></line><path d="' + pts + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<circle cx="390" cy="154" r="8" fill="#09131d" stroke="#f59e0b" stroke-width="3"></circle><circle cx="' + (90 + (x + 1) * 150) + '" cy="' + (250 - y * 48) + '" r="7" fill="#34d399"></circle>' +
-        text(470, 70, "f(x) = (x²−1)/(x−1)", "#f8fafc", 16) + text(470, 100, "x ≠ 1; removable hole at x=1", "#f59e0b", 14)),
-      readout: cell("probe x", x.toFixed(2)) + cell("nearby value", y.toFixed(2), "#34d399") + cell("limit at 1", "2", "#f59e0b"),
-      verdict: "<b>Limit versus value:</b> the nearby trend can approach 2 even though the displayed function has a hole at x = 1. Continuity requires the value and the limit to agree."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>removable hole</span></div>');
-
-  install("derivative", "Derivative as slope", { x: 1 }, function (s) {
-    return range("x", "Point x", -2.5, 2.5, 0.1, s.x, "");
-  }, function (s) {
-    var x = s.x, y = x * x, m = 2 * x;
-    var x1 = -2.5, x2 = 2.5, y1 = y + m * (x1 - x), y2 = y + m * (x2 - x);
-    var curve = "";
-    for (var u = -2.5; u <= 2.51; u += 0.08) curve += (u === -2.5 ? "M" : "L") + (360 + u * 65) + " " + (160 - u * u * 24) + " ";
-    return {
-      svg: shell('<line x1="80" y1="160" x2="650" y2="160" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path>' +
-        '<line x1="' + (360 + x1 * 65) + '" y1="' + (160 - y1 * 24) + '" x2="' + (360 + x2 * 65) + '" y2="' + (160 - y2 * 24) + '" stroke="#f59e0b" stroke-width="3"></line><circle cx="' + (360 + x * 65) + '" cy="' + (160 - y * 24) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "y = x²", "#38bdf8", 18) + text(500, 105, "slope f′(x) = 2x", "#f59e0b", 16)),
-      readout: cell("x", x.toFixed(1)) + cell("f(x)", y.toFixed(2), "#38bdf8") + cell("f′(x)", m.toFixed(2), "#f59e0b"),
-      verdict: "<b>Derivative:</b> it is the slope of the tangent. At x = 0 the parabola is flat; on the right the slope is positive and on the left it is negative."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>tangent slope</span></div>');
-
-  install("integration", "Integral as accumulated area", { upper: 3 }, function (s) {
-    return range("upper", "Upper limit b", 0.5, 4, 0.1, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b * b / 3, bars = "", n = 12, w = b / n;
-    for (var i = 0; i < n; i += 1) {
-      var u = i * w, h = u * u;
-      bars += '<rect x="' + (100 + u * 110) + '" y="' + (245 - h * 12) + '" width="' + (w * 110 - 2) + '" height="' + (h * 12) + '" fill="#38bdf844"></rect>';
+    return pts[pts.length - 1][1];
+  }
+  // Exact area under a piecewise-linear graph between x = a and x = b (trapezium rule on breakpoints).
+  function area(pts, a, b){
+    if(b <= a) return 0;
+    var xs = [a];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) xs.push(p[0]); });
+    xs.push(b);
+    var s = 0;
+    for(var i = 1; i < xs.length; i++){
+      s += (interp(pts, xs[i - 1]) + interp(pts, xs[i])) / 2 * (xs[i] - xs[i - 1]);
     }
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) curve += (x === 0 ? "M" : "L") + (100 + x * 110) + " " + (245 - x * x * 12) + " ";
-    return {
-      svg: shell('<line x1="95" y1="245" x2="555" y2="245" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#f59e0b" stroke-width="3"></path>' + bars +
-        '<line x1="' + (100 + b * 110) + '" y1="65" x2="' + (100 + b * 110) + '" y2="245" stroke="#34d399" stroke-dasharray="6 5" stroke-width="2"></line>' +
-        text(510, 70, "∫₀ᵇ x² dx = b³/3", "#f8fafc", 18) + text(510, 105, "rectangles approximate the area", "#94a3b8", 14)),
-      readout: cell("b", b.toFixed(1)) + cell("area", area.toFixed(3), "#34d399") + cell("meaning", "accumulation", "#f59e0b"),
-      verdict: "<b>Integral:</b> an antiderivative gives a compact way to accumulate infinitely many thin contributions. The rectangles improve as their width shrinks."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8"></span><span>area strips</span></div>');
+    return s;
+  }
 
-  install("area", "Area between curves", { upper: 1 }, function (s) {
-    return range("upper", "Boundary b", 0.2, 2, 0.05, s.upper, "");
-  }, function (s) {
-    var b = s.upper, area = b * b / 2 - b * b * b / 3, path = "", region = "";
-    for (var x = 0; x <= b + 0.01; x += 0.03) {
-      path += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
-      region += (x === 0 ? "M" : "L") + (120 + x * 190) + " " + (235 - x * 70) + " ";
+  // Generic graph frame. o: {x0,y0,w,h,tmax,vmin,vmax,tStep,vStep,tLabel,vLabel,tFmt,vFmt}
+  function graph(o){
+    var vmin = o.vmin || 0;
+    var sx = o.w / o.tmax, sy = o.h / (o.vmax - vmin);
+    var g = {
+      X: function(t){ return o.x0 + t * sx; },
+      Y: function(v){ return o.y0 - (v - vmin) * sy; },
+      tFromX: function(X){ return (X - o.x0) / sx; },
+      svg: ""
+    };
+    var s = "";
+    for(var t = 0; t <= o.tmax + 1e-9; t += o.tStep){
+      s += line(g.X(t), o.y0, g.X(t), o.y0 - o.h, C.grid, 1);
+      s += text(g.X(t), o.y0 + 20, o.tFmt ? o.tFmt(t) : num(t, 0), {size: 13, color: C.muted});
     }
-    for (var y = b; y >= -0.01; y -= 0.03) region += "L" + (120 + y * 190) + " " + (235 - y * y * 70) + " ";
-    return {
-      svg: shell('<line x1="110" y1="235" x2="520" y2="235" stroke="#475569"></line><path d="' + path + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><path d="' + region + 'Z" fill="#34d39955" stroke="#34d399"></path>' +
-        text(500, 70, "between y=x and y=x²", "#f8fafc", 17) + text(500, 105, "∫(x−x²) dx", "#f59e0b", 16)),
-      readout: cell("b", b.toFixed(2)) + cell("area", area.toFixed(4), "#34d399") + cell("bounds", "0 to b", "#f59e0b"),
-      verdict: "<b>Set up before integrating:</b> area is upper curve minus lower curve on the chosen interval. A sketch prevents a reversed sign."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>bounded region</span></div>');
-
-  install("differential", "Differential-equation flow", { family: "separable", t: 1 }, function (s) {
-    return select("family", "Choose a model", [["separable", "dy/dx = y"], ["linear", "dy/dx + y = 1"], ["decay", "dy/dx = −y"]], s.family) +
-      range("t", "time t", 0, 4, 0.1, s.t, "");
-  }, function (s) {
-    var sign = s.family === "decay" ? -1 : 1;
-    var y = s.family === "linear" ? 1 - Math.exp(-s.t) : Math.exp(sign * s.t);
-    var curve = "";
-    for (var x = 0; x <= 4.01; x += 0.08) {
-      var value = s.family === "linear" ? 1 - Math.exp(-x) : Math.exp(sign * x);
-      curve += (x === 0 ? "M" : "L") + (100 + x * 100) + " " + (235 - Math.min(2.7, value) * 55) + " ";
+    for(var v = vmin; v <= o.vmax + 1e-9; v += o.vStep){
+      s += line(o.x0, g.Y(v), o.x0 + o.w, g.Y(v), C.grid, 1);
+      s += text(o.x0 - 8, g.Y(v) + 5, o.vFmt ? o.vFmt(v) : num(v, 0), {size: 13, color: C.muted, anchor: "end"});
     }
-    return {
-      svg: shell('<line x1="95" y1="235" x2="530" y2="235" stroke="#475569"></line><path d="' + curve + '" fill="none" stroke="#38bdf8" stroke-width="3"></path><circle cx="' + (100 + s.t * 100) + '" cy="' + (235 - Math.min(2.7, y) * 55) + '" r="7" fill="#34d399"></circle>' +
-        text(500, 70, "solve → apply initial condition", "#f8fafc", 16) + text(500, 105, "one family, many possible constants", "#94a3b8", 14)),
-      readout: cell("model", s.family) + cell("y(t)", y.toFixed(3), "#34d399") + cell("t", s.t.toFixed(1), "#f59e0b"),
-      verdict: "<b>Solution family:</b> integrating produces a constant. An initial condition selects one member of the family."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>solution curve</span></div>');
+    s += line(o.x0, g.Y(Math.max(0, vmin)), o.x0 + o.w + 10, g.Y(Math.max(0, vmin)), C.muted, 1.5);
+    s += line(o.x0, o.y0, o.x0, o.y0 - o.h - 8, C.muted, 1.5);
+    s += text(o.x0 + o.w + 10, g.Y(Math.max(0, vmin)) - 8, o.tLabel, {size: 13, color: C.text, anchor: "end"});
+    s += text(o.x0 + 4, o.y0 - o.h - 14, o.vLabel, {size: 13, color: C.text, anchor: "start"});
+    g.svg = s;
+    return g;
+  }
 
-  install("vectors", "Vector components", { ax: 3, ay: 2, bx: -1, by: 2 }, function (s) {
-    return range("ax", "Aₓ", -4, 4, 1, s.ax, "") + range("ay", "Aᵧ", -4, 4, 1, s.ay, "") +
-      range("bx", "Bₓ", -4, 4, 1, s.bx, "") + range("by", "Bᵧ", -4, 4, 1, s.by, "");
-  }, function (s) {
-    var rx = s.ax + s.bx, ry = s.ay + s.by, mag = Math.sqrt(rx * rx + ry * ry);
-    function arrow(x, y, dx, dy, color) {
-      return '<line x1="' + x + '" y1="' + y + '" x2="' + (x + dx * 35) + '" y2="' + (y - dy * 35) + '" stroke="' + color + '" stroke-width="4" marker-end="url(#arrow-v)"></line>';
-    }
-    return {
-      svg: shell('<line x1="90" y1="180" x2="630" y2="180" stroke="#475569"></line><line x1="360" y1="45" x2="360" y2="270" stroke="#475569"></line>' +
-        arrow(360, 180, s.ax, s.ay, "#38bdf8") + arrow(360, 180, s.bx, s.by, "#f59e0b") + arrow(360, 180, rx, ry, "#34d399") +
-        '<defs><marker id="arrow-v" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"></path></marker></defs>' +
-        text(500, 65, "R = A + B", "#34d399", 18) + text(500, 105, "components add separately", "#94a3b8", 14)),
-      readout: cell("Rₓ", rx.toFixed(0), "#34d399") + cell("Rᵧ", ry.toFixed(0), "#34d399") + cell("|R|", mag.toFixed(2), "#f59e0b"),
-      verdict: "<b>Vector addition:</b> add horizontal components together and vertical components together. The resultant arrow is the diagonal of the component parallelogram."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>input vectors</span></div><div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>resultant</span></div>');
+  function polyline(g, pts, color, w, dash){
+    return '<polyline fill="none" stroke="' + color + '" stroke-width="' + (w || 3) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') +
+      ' stroke-linejoin="round" points="' + pts.map(function(p){ return g.X(p[0]) + "," + g.Y(p[1]); }).join(" ") + '"/>';
+  }
 
-  install("lines3d", "Angle between lines", { angle: 45 }, function (s) {
-    return range("angle", "Projected angle", 0, 90, 1, s.angle, "°");
-  }, function (s) {
-    var c = Math.cos(s.angle * Math.PI / 180);
-    return {
-      svg: shell('<line x1="165" y1="220" x2="530" y2="90" stroke="#38bdf8" stroke-width="5"></line><line x1="165" y1="220" x2="530" y2="220" stroke="#f59e0b" stroke-width="5"></line><path d="M235 195 A75 75 0 0 1 275 174" fill="none" stroke="#34d399" stroke-width="3"></path>' +
-        text(500, 70, "cos θ = (a₁a₂+b₁b₂+c₁c₂)/(|a₁||a₂|)", "#f8fafc", 14) + text(500, 115, "direction ratios → angle", "#94a3b8", 15)),
-      readout: cell("θ", s.angle.toFixed(0) + "°", "#34d399") + cell("cos θ", c.toFixed(3), "#f59e0b"),
-      verdict: "<b>3D line angle:</b> direction ratios are enough. The dot product compares how much the two directions point the same way."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span><span>reference direction</span></div>');
+  // Points of a piecewise-linear graph clipped to [a, b].
+  function clip(pts, a, b){
+    var out = [[a, interp(pts, a)]];
+    pts.forEach(function(p){ if(p[0] > a && p[0] < b) out.push(p); });
+    out.push([b, interp(pts, b)]);
+    return out;
+  }
+  function areaPath(g, pts, a, b, fill){
+    if(b <= a) return "";
+    var c = clip(pts, a, b);
+    var d = "M" + g.X(a) + " " + g.Y(0);
+    c.forEach(function(p){ d += " L" + g.X(p[0]) + " " + g.Y(p[1]); });
+    d += " L" + g.X(b) + " " + g.Y(0) + " Z";
+    return '<path d="' + d + '" fill="' + fill + '"/>';
+  }
 
-  install("lp", "Linear-programming feasible region", { slope: 1 }, function (s) {
-    return range("slope", "Objective slope", -2, 3, 0.1, s.slope, "");
-  }, function (s) {
-    var y1 = 4 - s.slope * 1, y2 = 4 - s.slope * 3;
-    return {
-      svg: shell('<line x1="95" y1="245" x2="600" y2="245" stroke="#475569"></line><line x1="95" y1="55" x2="95" y2="245" stroke="#475569"></line><polygon points="95,245 95,105 300,105 470,245" fill="#34d39955" stroke="#34d399" stroke-width="3"></polygon>' +
-        '<line x1="100" y1="' + (245 - y1 * 35) + '" x2="560" y2="' + (245 - y2 * 35) + '" stroke="#f59e0b" stroke-width="3" stroke-dasharray="8 5"></line>' +
-        '<circle cx="95" cy="105" r="7" fill="#38bdf8"></circle><circle cx="300" cy="105" r="7" fill="#38bdf8"></circle><circle cx="470" cy="245" r="7" fill="#38bdf8"></circle>' +
-        text(500, 65, "objective line slides", "#f8fafc", 17) + text(500, 100, "test the vertices", "#94a3b8", 15)),
-      readout: cell("slope", s.slope.toFixed(1)) + cell("candidate points", "vertices", "#34d399") + cell("method", "corner test", "#f59e0b"),
-      verdict: "<b>Graphical method:</b> the optimum occurs at a corner of the feasible region unless the objective is constant along an edge."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>feasible region</span></div>');
+  function svgPoint(evt){
+    var el = $("diagram");
+    if(!el || !el.createSVGPoint) return null;
+    var pt = el.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    return pt.matrixTransform(el.getScreenCTM().inverse());
+  }
 
-  install("probability", "Probability tree", { pA: 0.6, pB: 0.3 }, function (s) {
-    return range("pA", "P(A)", 0.1, 0.9, 0.05, s.pA, "") + range("pB", "P(B|A)", 0.1, 0.9, 0.05, s.pB, "");
-  }, function (s) {
-    var joint = s.pA * s.pB, other = (1 - s.pA) * 0.2, total = joint + other;
-    return {
-      svg: shell('<line x1="110" y1="150" x2="260" y2="90" stroke="#38bdf8" stroke-width="3"></line><line x1="110" y1="150" x2="260" y2="220" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="60" stroke="#34d399" stroke-width="3"></line><line x1="260" y1="90" x2="470" y2="125" stroke="#94a3b8" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="190" stroke="#f59e0b" stroke-width="3"></line><line x1="260" y1="220" x2="470" y2="250" stroke="#94a3b8" stroke-width="3"></line>' +
-        text(100, 140, "start", "#f8fafc", 14) + text(260, 78, "A", "#38bdf8", 17) + text(260, 210, "Aᶜ", "#94a3b8", 17) + text(505, 60, "B", "#34d399", 17) + text(505, 125, "Bᶜ", "#94a3b8", 17) +
-        text(505, 190, "B", "#f59e0b", 17) + text(505, 250, "Bᶜ", "#94a3b8", 17)),
-      readout: cell("P(A∩B)", joint.toFixed(3), "#34d399") + cell("P(B)", total.toFixed(3), "#f59e0b") + cell("P(A|B)", (joint / Math.max(total, 0.001)).toFixed(3), "#38bdf8"),
-      verdict: "<b>Bayes:</b> multiply along a branch, add disjoint branches for P(B), then reverse the condition with P(A|B) = P(A∩B)/P(B)."
-    };
-  }, '<div class="legend-item"><span class="legend-dot" style="background:#34d399"></span><span>target branch</span></div>');
+  return {
+    C: C, $: $, num: num, signed: signed, text: text, line: line, arrow: arrow, rect: rect, circle: circle,
+    svg: svg, legend: legend, presets: presets, markPreset: markPreset, controls: controls, slider: slider,
+    onInput: onInput, setVal: setVal, readout: readout, readoutHTML: readoutHTML, verdict: verdict, watch: watch,
+    timeline: timeline, restart: restart, interp: interp, area: area, graph: graph, polyline: polyline,
+    areaPath: areaPath, svgPoint: svgPoint
+  };
 })();
+
+
 </script>
-  <script>if (window.App && typeof window.App.routeFromHash === "function") window.App.routeFromHash();</script>
+<script>
+// Class 12 Mathematics, Chapter 8 (lemh202) — simulation labs.
+// One lab per lesson, built on the shared Lumen LAB helpers (window.LAB).
+var App = window.App;
+var LAB = window.LAB;
+window.SIMS = {};
+
+function labNoTimeline(){
+  var tb = document.getElementById("legacy-lab-toolbar");
+  if(tb) tb.style.display = "none";
+}
+
+// -------------------------------------------------------------------------
+// Local SVG helpers shared by this chapter's labs
+// -------------------------------------------------------------------------
+function mkFrame(x0, y0, w, h, xmin, xmax, ymin, ymax){
+  var sx = w / (xmax - xmin), sy = h / (ymax - ymin);
+  return {
+    x0: x0, y0: y0, w: w, h: h,
+    xmin: xmin, xmax: xmax, ymin: ymin, ymax: ymax,
+    X: function(x){ return x0 + (x - xmin) * sx; },
+    Y: function(y){ return y0 - (y - ymin) * sy; }
+  };
+}
+function axisLine(fr, tLabel, vLabel){
+  var C = LAB.C;
+  var m = LAB.line(fr.x0, fr.Y(0), fr.x0 + fr.w, fr.Y(0), C.muted, 1.5);
+  m += LAB.line(fr.X(0), fr.y0, fr.X(0), fr.y0 - fr.h, C.muted, 1.5);
+  m += LAB.text(fr.x0 + fr.w, fr.Y(0) + 18, tLabel || "x", {size: 13, color: C.muted, anchor: "end"});
+  m += LAB.text(fr.X(0) + 10, fr.y0 - fr.h - 4, vLabel || "y", {size: 13, color: C.muted, anchor: "start"});
+  return m;
+}
+function fnPts(fr, f, a, b, n){
+  var pts = [], i, x;
+  for(i = 0; i <= n; i += 1){ x = a + (b - a) * i / n; pts.push([fr.X(x), fr.Y(f(x))]); }
+  return pts;
+}
+function svgPath(pts){
+  return "M" + pts.map(function(p){ return p[0] + " " + p[1]; }).join(" L");
+}
+function simpson(f, a, b, n){
+  n = n || 200;
+  if(n % 2) n += 1;
+  var h = (b - a) / n, s = f(a) + f(b), i;
+  for(i = 1; i < n; i += 1) s += f(a + i * h) * (i % 2 ? 4 : 2);
+  return s * h / 3;
+}
+
+// -------------------------------------------------------------------------
+// Lab 1 — Riemann strips (NCERT §8.2, area under a curve)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var SET = {
+    square: {label: "y = x²", f: function(x){ return x * x; }, a: 0, b: 2, vmax: 4.6, area: 8 / 3},
+    sqrt:   {label: "y = √x", f: function(x){ return Math.sqrt(x); }, a: 0, b: 4, vmax: 2.4, area: 16 / 3},
+    line:   {label: "y = x",  f: function(x){ return x; }, a: 0, b: 2, vmax: 2.4, area: 2}
+  };
+  var st = {preset: "square", n: 8};
+
+  function draw(){
+    var s = SET[st.preset], n = Math.max(1, Math.round(st.n));
+    var fr = mkFrame(80, 255, 570, 195, s.a, s.b, 0, s.vmax);
+    var m = axisLine(fr, "x", "y"), i, x0, h = (s.b - s.a) / n, sum = 0, fx;
+    for(i = 0; i < n; i += 1){
+      x0 = s.a + i * h;
+      fx = s.f(x0 + h);
+      sum += fx * h;
+      m += L.rect(fr.X(x0), fr.Y(fx), fr.X(x0 + h) - fr.X(x0), fr.Y(0) - fr.Y(fx),
+        "rgba(56,189,248,0.18)", ' stroke="' + C.vel + '" stroke-width="1"');
+    }
+    m += '<path d="' + svgPath(fnPts(fr, s.f, s.a, s.b, 90)) + '" fill="none" stroke="' + C.path + '" stroke-width="3"/>';
+    m += L.text(fr.X((s.a + s.b) / 2), fr.Y(s.vmax) - 6, "n = " + n + " strips", {size: 18, color: C.text, weight: 700});
+    m += L.text(fr.X(s.b) - 10, fr.Y(s.f(s.b)) - 12, s.label, {size: 18, color: C.path, weight: 700});
+    L.svg(m, n + " rectangles approximating the area under " + s.label + ".", 290);
+    L.readout([
+      ["Curve", s.label],
+      ["Interval", "x = " + L.num(s.a, 0) + " to " + L.num(s.b, 0)],
+      ["Strips n", String(n)],
+      ["Exact area", L.num(s.area, 3), C.ok],
+      ["Right-strip sum", L.num(sum, 3), C.vel]
+    ]);
+    L.verdict("<b>" + s.label + ":</b> the strips total " + L.num(sum, 3) +
+      " while the exact integral is " + L.num(s.area, 3) + ". As n grows the staircase hugs the curve and the sum tends to the area.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    L.watch("Compare the strip sum with the exact integral for " + SET[id].label + ". Increasing the number of strips improves the approximation.");
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["square", "y = x² on [0, 2]"], ["sqrt", "y = √x on [0, 4]"], ["line", "y = x on [0, 2]"]], st.preset, select);
+    L.controls(L.slider("s1-n", "Number of strips", 1, 40, 1, st.n, String(st.n)));
+    L.onInput("s1-n", function(v){ st.n = v; L.setVal("s1-n", String(Math.round(v))); draw(); });
+    L.legend([[C.path, "curve y = f(x)"], [C.vel, "elementary strips y dx"], [C.ok, "exact area"]]);
+    L.watch("Move the strip-count slider. Each rectangle has area y dx; the readout compares the strip sum with the exact integral.");
+    draw();
+  }
+
+  window.SIMS.strips = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 2 — Signed integral vs geometric area (NCERT §8.2, regions with x-axis)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var SET = {
+    cubic: {
+      label: "y = x³", f: function(x){ return x * x * x; }, a: -1, b: 1, vmax: 1.4,
+      zeros: [0], note: "The two signed pieces cancel: ∫₋₁¹ x³ dx = 0, but the geometric area is 2 × 1/4 = 1/2."
+    },
+    line: {
+      label: "y = 3x + 2", f: function(x){ return 3 * x + 2; }, a: -1, b: 1, vmax: 5.4,
+      zeros: [-2 / 3], note: "The line dips below the axis before x = −2/3, so the signed integral 4 is less than the geometric area 13/3 ≈ 4.333."
+    },
+    sine: {
+      label: "y = sin x", f: Math.sin, a: 0, b: 2 * Math.PI, vmax: 1.4,
+      zeros: [Math.PI], note: "One hump is above and one below; the signed integral is 0 and the geometric area is 4."
+    }
+  };
+  var st = {preset: "cubic"};
+
+  function draw(){
+    var s = SET[st.preset];
+    var fr = mkFrame(80, 165, 570, 130, s.a - 0.2, s.b + 0.2, -s.vmax, s.vmax);
+    var m = axisLine(fr, "x", "y"), i;
+    for(i = 0; i < s.zeros.length; i += 1){
+      m += L.line(fr.X(s.zeros[i]), fr.Y(-s.vmax), fr.X(s.zeros[i]), fr.Y(s.vmax), C.faint, 1, "4 4");
+    }
+    var edges = [s.a].concat(s.zeros).concat([s.b]);
+    for(i = 0; i < edges.length - 1; i += 1){
+      var f0 = s.f((edges[i] + edges[i + 1]) / 2);
+      var top = fnPts(fr, s.f, edges[i], edges[i + 1], 40);
+      var pts = top.concat([[fr.X(edges[i + 1]), fr.Y(0)], [fr.X(edges[i]), fr.Y(0)]]);
+      m += '<path d="' + svgPath(pts) + ' Z" fill="' + (f0 >= 0 ? C.area : "rgba(239,68,68,0.35)") + '"/>';
+    }
+    m += '<path d="' + svgPath(fnPts(fr, s.f, s.a, s.b, 120)) + '" fill="none" stroke="' + C.path + '" stroke-width="3"/>';
+    m += L.text(fr.X(s.a) + 30, fr.Y(0) - s.vmax * 0.35, s.label, {size: 18, color: C.path, weight: 700});
+    L.svg(m, "Region between " + s.label + " and the x-axis from x = " + L.num(s.a, 1) + " to x = " + L.num(s.b, 1) + ".", 290);
+    var signed = simpson(s.f, s.a, s.b, 400);
+    var geometric = simpson(function(x){ return Math.abs(s.f(x)); }, s.a, s.b, 400);
+    L.readout([
+      ["Curve", s.label],
+      ["Signed integral", L.num(signed, 3), signed < 0 ? C.danger : C.vel],
+      ["Geometric area", L.num(geometric, 3), C.ok],
+      ["Zero crossing" + (s.zeros.length > 1 ? "s" : ""), s.zeros.map(function(z){ return "x = " + L.num(z, 2); }).join(", ")]
+    ]);
+    L.verdict("<b>" + s.label + ":</b> " + s.note);
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    L.watch(SET[id].note);
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["cubic", "y = x³ on [−1, 1]"], ["line", "y = 3x + 2 on [−1, 1]"], ["sine", "y = sin x on [0, 2π]"]], st.preset, select);
+    L.legend([[C.area, "area above the axis"], ["rgba(239,68,68,0.55)", "area below the axis"], [C.path, "curve"]]);
+    L.watch("Blue strips count positive and red strips count negative. The signed integral can be far smaller than the geometric area.");
+    draw();
+  }
+
+  window.SIMS.signed = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 3 — Area between two curves (NCERT §8.2)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var SET = {
+    lineparab: {
+      label: "y = x and y = x²", upper: function(x){ return x; }, lower: function(x){ return x * x; },
+      a: 0, b: 1, vmax: 1.15, area: 1 / 6, meet: "x = 0 and x = 1"
+    },
+    parab4: {
+      label: "y = 4 and y = x²", upper: function(x){ return 4; }, lower: function(x){ return x * x; },
+      a: -2, b: 2, vmax: 4.6, area: 32 / 3, meet: "x = −2 and x = 2"
+    },
+    sqrtline: {
+      label: "y = √x and y = x", upper: Math.sqrt, lower: function(x){ return x; },
+      a: 0, b: 1, vmax: 1.15, area: 1 / 6, meet: "x = 0 and x = 1"
+    }
+  };
+  var st = {preset: "lineparab"};
+
+  function draw(){
+    var s = SET[st.preset];
+    var fr = mkFrame(80, 255, 570, 195, s.a - 0.15, s.b + 0.15, 0, s.vmax);
+    var m = axisLine(fr, "x", "y"), i;
+    var top = fnPts(fr, s.upper, s.a, s.b, 80);
+    var bot = fnPts(fr, s.lower, s.a, s.b, 80);
+    var band = top.concat(bot.slice().reverse());
+    m += '<path d="' + svgPath(band) + ' Z" fill="' + C.area + '"/>';
+    m += '<path d="' + svgPath(top) + '" fill="none" stroke="' + C.path + '" stroke-width="3"/>';
+    m += '<path d="' + svgPath(bot) + '" fill="none" stroke="' + C.vel + '" stroke-width="3"/>';
+    for(i = 0; i < 10; i += 1){
+      var x = s.a + (s.b - s.a) * (i + 0.5) / 10;
+      m += L.line(fr.X(x), fr.Y(s.lower(x)), fr.X(x), fr.Y(s.upper(x)), "rgba(226,232,240,0.35)", 1.5);
+    }
+    m += L.text(fr.X((s.a + s.b) / 2), fr.Y(s.vmax) - 8, "height = upper − lower", {size: 16, color: C.text, weight: 700});
+    L.svg(m, "Shaded region between " + s.label + ".", 290);
+    var area = simpson(function(x){ return s.upper(x) - s.lower(x); }, s.a, s.b, 400);
+    L.readout([
+      ["Curves", s.label],
+      ["Intersections", s.meet],
+      ["Integrand", "upper − lower"],
+      ["Area", L.num(area, 3), C.ok]
+    ]);
+    L.verdict("<b>" + s.label + ":</b> the curves meet at " + s.meet +
+      ". The shaded band has area ∫ (upper − lower) dx = " + L.num(area, 3) + " square units.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    L.watch("Find the intersections first, then subtract the lower curve from the upper one on each subinterval.");
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["lineparab", "y = x above y = x²"], ["parab4", "y = 4 above y = x²"], ["sqrtline", "y = √x above y = x"]], st.preset, select);
+    L.legend([[C.path, "upper curve"], [C.vel, "lower curve"], [C.area, "area between"]]);
+    L.watch("The shaded band is made of vertical strips of height upper − lower. Move between the presets to see how the intersection points set the limits.");
+    draw();
+  }
+
+  window.SIMS.between = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+// -------------------------------------------------------------------------
+// Lab 4 — Vertical or horizontal strips (NCERT §8.2, sketch & bounds)
+// -------------------------------------------------------------------------
+(function(){
+  var L = LAB, C = L.C;
+  var SET = {
+    parabola: {
+      label: "y² = 4x, y-axis, y = 3",
+      right: function(y){ return y * y / 4; }, left: function(){ return 0; },
+      ylo: 0, yhi: 3, xmax: 2.8, area: 9 / 4, strip: "x = y²/4"
+    },
+    quarter: {
+      label: "x² + y² = 4, first quadrant",
+      right: function(y){ return Math.sqrt(Math.max(0, 4 - y * y)); }, left: function(){ return 0; },
+      ylo: 0, yhi: 2, xmax: 2.4, area: Math.PI, strip: "x = √(4 − y²)"
+    },
+    sideways: {
+      label: "y² = x between x = y² and x = 1",
+      right: function(){ return 1; }, left: function(y){ return y * y; },
+      ylo: -1, yhi: 1, xmax: 1.35, area: 4 / 3, strip: "right − left in y"
+    }
+  };
+  var st = {preset: "parabola"};
+
+  function draw(){
+    var s = SET[st.preset];
+    var fr = mkFrame(120, 255, 500, 185, -0.25, s.xmax, s.ylo - 0.35, s.yhi + 0.35);
+    var m = axisLine(fr, "x", "y"), i, n = 12;
+    var h = (s.yhi - s.ylo) / n;
+    for(i = 0; i < n; i += 1){
+      var y = s.ylo + i * h;
+      var xr = s.right(y + h / 2), xl = s.left(y + h / 2);
+      m += L.rect(fr.X(Math.max(0, xl)), fr.Y(y + h), Math.max(0.5, fr.X(xr) - fr.X(Math.max(0, xl))), Math.max(0, fr.Y(y) - fr.Y(y + h)),
+        "rgba(56,189,248,0.20)", ' stroke="' + C.vel + '" stroke-width="0.8"');
+    }
+    var pts = [], k;
+    for(k = 0; k <= 90; k += 1){
+      var yy = s.ylo + (s.yhi - s.ylo) * k / 90;
+      pts.push([fr.X(s.right(yy)), fr.Y(yy)]);
+    }
+    m += '<path d="' + svgPath(pts) + '" fill="none" stroke="' + C.path + '" stroke-width="3"/>';
+    var leftPts = [];
+    for(k = 0; k <= 90; k += 1){
+      var yl = s.ylo + (s.yhi - s.ylo) * k / 90;
+      leftPts.push([fr.X(Math.max(0, s.left(yl))), fr.Y(yl)]);
+    }
+    if(st.preset === "sideways") m += '<path d="' + svgPath(leftPts) + '" fill="none" stroke="' + C.vel + '" stroke-width="3"/>';
+    m += L.text(fr.X(s.xmax / 2), fr.Y(s.yhi + 0.2), s.label, {size: 16, color: C.text, weight: 700});
+    L.svg(m, "Horizontal strips for the region " + s.label + ".", 290);
+    var area = simpson(function(y){ return s.right(y) - s.left(y); }, s.ylo, s.yhi, 400);
+    L.readout([
+      ["Strip type", "horizontal (dy)"],
+      ["Bounds", "y = " + L.num(s.ylo, 0) + " to " + L.num(s.yhi, 0)],
+      ["Strip length", s.strip],
+      ["Area", L.num(area, 3), C.ok]
+    ]);
+    L.verdict("<b>" + s.label + ":</b> a horizontal strip at height y has length " + s.strip +
+      ", so A = ∫ (right − left) dy = " + L.num(area, 3) + " square units.");
+  }
+
+  function select(id){
+    st.preset = id;
+    L.markPreset(id);
+    L.watch("Horizontal strips are natural here because the left and right boundaries are functions of y.");
+    draw();
+  }
+
+  function mount(){
+    labNoTimeline();
+    L.presets([["parabola", "y² = 4x with y = 3"], ["quarter", "Quarter circle x² + y² = 4"], ["sideways", "Between x = y² and x = 1"]], st.preset, select);
+    L.legend([[C.path, "right boundary"], [C.vel, "left boundary / strips"], [C.ok, "exact area"]]);
+    L.watch("Switch the region and note how every horizontal strip runs from the left boundary to the right boundary at a fixed y.");
+    draw();
+  }
+
+  window.SIMS.horizontal = {mount: mount, draw: draw, select: select, state: st};
+})();
+
+if (window.App && typeof window.App.routeFromHash === "function") {
+  window.App.routeFromHash();
+}
+</script>
 </body>
 </html>

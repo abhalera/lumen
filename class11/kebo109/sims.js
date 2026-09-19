@@ -1,892 +1,879 @@
-// kebo109 interactive simulations: Biomolecules
-window.SIMS = window.SIMS || {};
+// kebo109 interactive simulations: Biomolecules (Ch. 9, print pp. 104-119)
+var App = window.App;
+window.SIMS = {};
 
-function cell(title, val, color) {
-  return '<div class="readout-cell">' +
-    '<div class="readout-label">' + title + '</div>' +
-    '<div class="readout-val" style="color:' + (color || 'var(--primary)') + ';">' + val + '</div>' +
-    '</div>';
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
 }
-
-function readout(html) {
-  var r = document.getElementById("lab-readouts");
-  if (r) r.innerHTML = html;
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
 }
-
-function verdict(html) {
-  var n = document.getElementById("lab-verdict");
-  if (n) n.innerHTML = html;
-}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 
 // -------------------------------------------------------------------------
-// 1. SIMULATION 1: Chemical Fractionation & Metabolites (metaboliteseparator - Ex 9.1)
+// 1. Tissue Fractionation & Ash Analysis Bench (fractionlab) - L1, 9.1
 // -------------------------------------------------------------------------
-window.SIMS.metaboliteseparator = (function(){
-  var step = "retentate"; // "grinding", "filtration", "filtrate", "retentate", "secondary"
+window.SIMS.fractionlab = (function(){
+  var view = "grind"; // "grind", "ash", "elements"
+  var stage = 0, ashStage = 0, elIdx = 0;
+  var ELEMENTS = [
+    ["Carbon (C)", "0.03", "18.5"],
+    ["Hydrogen (H)", "0.14", "9.5"],
+    ["Oxygen (O)", "46.6", "65.0"],
+    ["Nitrogen (N)", "very little", "3.3"],
+    ["Silicon (Si)", "27.7", "negligible"]
+  ];
+
+  function setV(v){ view = v; stage = 0; ashStage = 0; mountControls(); draw(0); }
+  function bar(h){ return Math.max(2, Math.min(150, h)); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Acid-Soluble Filtrate (<800 Da)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Acid-Insoluble Retentate (>=10,000 Da)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Membrane Lipid Vesicles</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Secondary Metabolites</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.metaboliteseparator.setStep(\'grinding\')">1. Mortar Grinding</button>' +
-      '<button class="preset-btn" onclick="SIMS.metaboliteseparator.setStep(\'filtration\')">2. Cheesecloth</button>' +
-      '<button class="preset-btn" onclick="SIMS.metaboliteseparator.setStep(\'filtrate\')">3. Acid-Soluble Pool</button>' +
-      '<button class="preset-btn" onclick="SIMS.metaboliteseparator.setStep(\'retentate\')">4. Macromolecules</button>' +
-      '<button class="preset-btn" onclick="SIMS.metaboliteseparator.setStep(\'secondary\')">5. Secondary Metabolites</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Acid-soluble pool (filtrate)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Acid-insoluble fraction (retentate)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Ash (inorganic residue)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-grind">Grind &amp; Strain</button>' +
+      '<button class="preset-btn" id="p-ash">Wet-Dry-Ash</button>' +
+      '<button class="preset-btn" id="p-elements">Table 9.1 Bars</button>';
+    document.getElementById("p-grind").onclick = function(){ setActivePreset(this); setV("grind"); };
+    document.getElementById("p-ash").onclick = function(){ setActivePreset(this); setV("ash"); };
+    document.getElementById("p-elements").onclick = function(){ setActivePreset(this); setV("elements"); };
+    mountControls();
+    draw(0);
   }
 
-  function setStep(s){
-    step = s;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 9.1: CHEMICAL ANALYSIS & BIOMACROMOLECULE FRACTIONATION</text>';
-
-    var cx = W / 2 - 40;
-    var cy = H / 2 + 10;
-
-    if (step === "grinding" || step === "filtration") {
-      // Mortar and Pestle
-      m += '<path d="M ' + (cx - 80) + ' ' + (cy + 20) + ' Q ' + cx + ' ' + (cy + 100) + ' ' + (cx + 80) + ' ' + (cy + 20) + ' Z" fill="#1e293b" stroke="#475569" stroke-width="3"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 60) + '" fill="#cbd5e1" font-size="12" text-anchor="middle">Mortar & Slurry</text>';
-      // Pestle
-      m += '<rect x="' + (cx - 10) + '" y="' + (cy - 70) + '" width="20" height="95" rx="8" fill="#64748b" stroke="#94a3b8" stroke-width="2" transform="rotate(15 ' + cx + ' ' + (cy - 20) + ')"/>';
-      m += '<text x="' + (cx - 110) + '" y="' + (cy - 30) + '" fill="#fcd34d" font-size="12">Living Tissue (Liver/Spinach)</text>';
-      m += '<text x="' + (cx - 110) + '" y="' + (cy - 12) + '" fill="#38bdf8" font-size="11">+ Trichloroacetic Acid (Cl3CCOOH)</text>';
-
-      if (step === "filtration") {
-        // Cheesecloth funnel
-        m += '<polygon points="' + (cx + 120) + ',' + (cy - 20) + ' ' + (cx + 200) + ',' + (cy - 20) + ' ' + (cx + 160) + ',' + (cy + 30) + '" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="4,2"/>';
-        m += '<line x1="' + (cx + 160) + '" y1="' + (cy + 30) + '" x2="' + (cx + 160) + '" y2="' + (cy + 60) + '" stroke="#e2e8f0" stroke-width="4"/>';
-        m += '<text x="' + (cx + 160) + '" y="' + (cy - 30) + '" fill="#e2e8f0" font-size="11" text-anchor="middle">Cheesecloth / Cotton</text>';
-        // Beaker below
-        m += '<rect x="' + (cx + 130) + '" y="' + (cy + 60) + '" width="60" height="70" rx="4" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/>';
-        m += '<text x="' + (cx + 160) + '" y="' + (cy + 100) + '" fill="#7dd3fc" font-size="10" text-anchor="middle">Filtrate Pool</text>';
-      }
-    } else if (step === "filtrate") {
-      // Acid-soluble pool
-      m += '<rect x="80" y="80" width="340" height="230" rx="10" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<text x="250" y="110" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">ACID-SOLUBLE POOL (Filtrate)</text>';
-      m += '<text x="100" y="145" fill="#fcd34d" font-size="12" font-weight="bold">• Molecular Weight: 18 to 800 Daltons (Da)</text>';
-      m += '<text x="100" y="170" fill="#cbd5e1" font-size="12">• Represents the Cytoplasmic Pool</text>';
-      m += '<text x="100" y="195" fill="#cbd5e1" font-size="12">• Thousands of small organic compounds:</text>';
-      m += '<text x="120" y="220" fill="#a5f3fc" font-size="11">- Monosaccharides (Glucose, Ribose)</text>';
-      m += '<text x="120" y="240" fill="#a5f3fc" font-size="11">- Amino acids (Glycine, Alanine, Serine)</text>';
-      m += '<text x="120" y="260" fill="#a5f3fc" font-size="11">- Nucleotides (Adenylic acid, ATP) & Nucleosides</text>';
-      m += '<text x="120" y="280" fill="#a5f3fc" font-size="11">- Inorganic mineral ions (SO4 2-, PO4 3-)</text>';
-    } else if (step === "retentate") {
-      // Acid-insoluble pool
-      m += '<rect x="80" y="80" width="340" height="230" rx="10" fill="rgba(245,158,11,0.1)" stroke="#f59e0b" stroke-width="2"/>';
-      m += '<text x="250" y="110" fill="#f59e0b" font-size="15" font-weight="bold" text-anchor="middle">ACID-INSOLUBLE FRACTION (Retentate)</text>';
-      m += '<text x="100" y="145" fill="#fcd34d" font-size="12" font-weight="bold">• Molecular Weight: >= 10,000 Daltons (Da)</text>';
-      m += '<text x="100" y="170" fill="#cbd5e1" font-size="12">• True Biomacromolecules (Polymers):</text>';
-      m += '<text x="120" y="195" fill="#fed7aa" font-size="11">1. Proteins (Polypeptides of amino acids)</text>';
-      m += '<text x="120" y="215" fill="#fed7aa" font-size="11">2. Polysaccharides (Cellulose, Starch, Glycogen)</text>';
-      m += '<text x="120" y="235" fill="#fed7aa" font-size="11">3. Nucleic Acids (DNA & RNA polymers)</text>';
-      m += '<text x="100" y="265" fill="#ec4899" font-size="11" font-weight="bold">• Lipids Paradox: MW < 800 Da (Not polymers!)</text>';
-      m += '<text x="120" y="285" fill="#f472b6" font-size="10">Retained as water-insoluble membrane vesicles!</text>';
-    } else { // secondary
-      // Secondary metabolites table
-      m += '<rect x="60" y="70" width="380" height="250" rx="8" fill="rgba(16,185,129,0.1)" stroke="#10b981" stroke-width="1.5"/>';
-      m += '<text x="250" y="95" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">SECONDARY METABOLITES (Ecological & Commercial)</text>';
-      m += '<text x="75" y="125" fill="#fcd34d" font-size="11">Pigments: Carotenoids, Anthocyanins</text>';
-      m += '<text x="75" y="150" fill="#fcd34d" font-size="11">Alkaloids: Morphine, Codeine</text>';
-      m += '<text x="75" y="175" fill="#fcd34d" font-size="11">Terpenoids: Monoterpenes, Diterpenes</text>';
-      m += '<text x="75" y="200" fill="#fcd34d" font-size="11">Toxins: Abrin, Ricin</text>';
-      m += '<text x="75" y="225" fill="#fcd34d" font-size="11">Lectins: Concanavalin A</text>';
-      m += '<text x="75" y="250" fill="#fcd34d" font-size="11">Drugs: Vinblastine, Curcumin</text>';
-      m += '<text x="75" y="275" fill="#fcd34d" font-size="11">Polymeric: Rubber, Gums, Cellulose</text>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "grind"){
+      c.innerHTML =
+        '<div class="control-group"><label>Protocol step:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-g0">1 Tissue</button>' +
+        '<button class="preset-btn" id="c-g1">2 Grind in TCA</button>' +
+        '<button class="preset-btn" id="c-g2">3 Strain</button></div></div>' +
+        '<div class="control-group"><label>Acid:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Trichloroacetic acid (Cl3CCOOH), mortar &amp; pestle, cheesecloth.</div></div>';
+      document.getElementById("c-g0").onclick = function(){ stage = 0; draw(0); };
+      document.getElementById("c-g1").onclick = function(){ stage = 1; draw(0); };
+      document.getElementById("c-g2").onclick = function(){ stage = 2; draw(0); };
+    } else if(view === "ash"){
+      c.innerHTML =
+        '<div class="control-group"><label>Ash sequence:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-a0">1 Wet weight</button>' +
+        '<button class="preset-btn" id="c-a1">2 Dry</button>' +
+        '<button class="preset-btn" id="c-a2">3 Burn to ash</button></div></div>' +
+        '<div class="control-group"><label>Leaves as gas:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">CO2 + water vapour; ash keeps Ca, Mg, ...</div></div>';
+      document.getElementById("c-a0").onclick = function(){ ashStage = 0; draw(0); };
+      document.getElementById("c-a1").onclick = function(){ ashStage = 1; draw(0); };
+      document.getElementById("c-a2").onclick = function(){ ashStage = 2; draw(0); };
+    } else {
+      var btns = ELEMENTS.map(function(e, i){
+        return '<button class="preset-btn' + (i === elIdx ? " active" : "") + '" data-el="' + i + '">' + esc(e[0]) + "</button>";
+      }).join("");
+      c.innerHTML =
+        '<div class="control-group"><label>Element (% weight):</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' + btns + "</div></div>" +
+        '<div class="control-group"><label>Reading:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Same elements both lists; abundance differs.</div></div>';
+      c.querySelectorAll("[data-el]").forEach(function(b){
+        b.onclick = function(){ elIdx = Number(b.dataset.el); mountControls(); draw(0); };
+      });
     }
-
-    // Side Balance Panel
-    m += '<rect x="' + (W - 220) + '" y="80" width="200" height="230" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 120) + '" y="105" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">TISSUE ANALYSIS</text>';
-    m += '<text x="' + (W - 205) + '" y="135" fill="#fcd34d" font-size="11">Extracting Acid:</text>';
-    m += '<text x="' + (W - 205) + '" y="155" fill="#cbd5e1" font-size="11">Cl3CCOOH (Trichloroacetic)</text>';
-    m += '<text x="' + (W - 205) + '" y="185" fill="#fcd34d" font-size="11">Filtrate (Acid-Soluble):</text>';
-    m += '<text x="' + (W - 205) + '" y="205" fill="#38bdf8" font-size="11">18 to 800 Da (Micromolecules)</text>';
-    m += '<text x="' + (W - 205) + '" y="235" fill="#fcd34d" font-size="11">Retentate (Insoluble):</text>';
-    m += '<text x="' + (W - 205) + '" y="255" fill="#f59e0b" font-size="11">>= 10,000 Da (Macromolecules)</text>';
-    m += '<text x="' + (W - 205) + '" y="285" fill="#ec4899" font-size="10">Lipids < 800 Da (Membranes)</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Inspected Stage", step.toUpperCase(), "#38bdf8") +
-      cell("Acid Reagent", "Trichloroacetic Acid (Cl3CCOOH)", "#10b981") +
-      cell("Macromolecule MW", ">= 10,000 Daltons", "#f59e0b") +
-      cell("Lipid Status", "Non-polymeric (<800 Da) in Retentate", "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Exercise 9.1 Solution:</span> ' +
-      "Biomacromolecules are large polymers found in the acid-insoluble retentate with molecular weights >= 10,000 Da (proteins, polysaccharides, nucleic acids). Lipids separate with them as disrupted membrane vesicles despite low molecular weights (<800 Da)."
-    );
   }
 
-  return { mount: mount, setStep: setStep, draw: draw };
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Chemical Analysis (\u00A79.1)</text>';
+    if(view === "grind"){
+      var boxes = [
+        ["Tissue", "vegetable / liver", "#22c55e"],
+        ["Slurry", "TCA + mortar", "#eab308"],
+        ["Filtrate", "acid-soluble pool", "#38bdf8"],
+        ["Retentate", "acid-insoluble", "#f59e0b"]
+      ];
+      var upto = [1, 2, 4][stage];
+      for(var i = 0; i < 4; i++){
+        var x = 40 + i * 160;
+        var on = i < upto;
+        m += '<rect x="' + x + '" y="110" width="140" height="110" rx="8" fill="#0f172a" stroke="' + (on ? boxes[i][2] : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 70) + '" y="145" fill="' + (on ? boxes[i][2] : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">' + boxes[i][0] + "</text>";
+        m += '<text x="' + (x + 70) + '" y="168" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="10" text-anchor="middle">' + boxes[i][1] + "</text>";
+        if(i < 3) m += '<text x="' + (x + 150) + '" y="170" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Strain through cheesecloth / cotton \u2192 two fractions</text>';
+      readout(cell("Stage", ["TISSUE", "SLURRY", "STRAINED"][stage], "#38bdf8") +
+        cell("Filtrate", stage === 2 ? "soluble pool" : "\u2014", "#38bdf8") +
+        cell("Retentate", stage === 2 ? "insoluble" : "\u2014", "#f59e0b"));
+      verdict(stage === 2 ? "Filtrate = acid-soluble pool; retentate = acid-insoluble fraction." : "Grind the tissue in trichloroacetic acid first.");
+    } else if(view === "ash"){
+      var masses = [150, 60, 14];
+      var labels = ["Wet weight", "Dry weight", "Ash"];
+      var notes = ["living tissue", "water evaporated", "Ca, Mg, ... remain"];
+      for(var j = 0; j < 3; j++){
+        var jx = 90 + j * 190;
+        var h = masses[j];
+        var lit = j <= ashStage;
+        m += '<rect x="' + jx + '" y="' + (250 - h) + '" width="110" height="' + h + '" rx="6" fill="' + (lit ? "#0f172a" : "#0b1726") + '" stroke="' + (lit ? "#94a3b8" : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (jx + 55) + '" y="272" fill="' + (lit ? "#cbd5e1" : "#475569") + '" font-size="11" font-weight="700" text-anchor="middle">' + labels[j] + "</text>";
+        m += '<text x="' + (jx + 55) + '" y="288" fill="#64748b" font-size="10" text-anchor="middle">' + notes[j] + "</text>";
+      }
+      m += '<text x="350" y="80" fill="#94a3b8" font-size="11" text-anchor="middle">Burning: organics \u2192 CO2 + vapour (leave); inorganics stay</text>';
+      readout(cell("Step", ["WET", "DRY", "ASH"][ashStage], "#94a3b8") +
+        cell("Lost", ["\u2014", "water", "CO2 + vapour"][ashStage], "#38bdf8") +
+        cell("Kept", ashStage === 2 ? "ash: Ca, Mg..." : "\u2014", "#f59e0b"));
+      verdict(ashStage === 2 ? "Ash = inorganic elements (calcium, magnesium, ...)." : "Dry it, then burn it fully.");
+    } else {
+      var e = ELEMENTS[elIdx];
+      var cv = parseFloat(e[1]), bv = parseFloat(e[2]);
+      var ch = isNaN(cv) ? 4 : bar(cv * 2.2), bh = isNaN(bv) ? 4 : bar(bv * 2.2);
+      m += '<text x="350" y="80" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">' + esc(e[0]) + " \u2014 % weight</text>";
+      m += '<rect x="200" y="' + (250 - ch) + '" width="110" height="' + ch + '" rx="6" fill="#0f172a" stroke="#a16207" stroke-width="2"/>';
+      m += '<text x="255" y="' + (240 - ch) + '" fill="#fbbf24" font-size="12" font-weight="700" text-anchor="middle">' + esc(e[1]) + "</text>";
+      m += '<text x="255" y="272" fill="#94a3b8" font-size="11" text-anchor="middle">Earth\u2019s crust</text>';
+      m += '<rect x="390" y="' + (250 - bh) + '" width="110" height="' + bh + '" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+      m += '<text x="445" y="' + (240 - bh) + '" fill="#4ade80" font-size="12" font-weight="700" text-anchor="middle">' + esc(e[2]) + "</text>";
+      m += '<text x="445" y="272" fill="#94a3b8" font-size="11" text-anchor="middle">Human body</text>';
+      readout(cell("Element", esc(e[0]), "#38bdf8") + cell("Crust %", esc(e[1]), "#fbbf24") + cell("Body %", esc(e[2]), "#4ade80"));
+      verdict("Table 9.1: same elements, different relative abundance.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 2. SIMULATION 2: Protein 4-Tier Hierarchy & Alanine (proteinfoldinglab - Ex 9.2 & 9.7)
+// 2. Small-Molecule Builder (moleculelab) - L2, 9.1 + Fig. 9.1
 // -------------------------------------------------------------------------
-window.SIMS.proteinfoldinglab = (function(){
-  var tier = "tertiary"; // "primary", "secondary", "tertiary", "quaternary", "alanine"
+window.SIMS.moleculelab = (function(){
+  var view = "amino"; // "amino", "fatty", "nuc"
+  var rIdx = 1, fatIdx = 0, phos = false;
+  var RS = [
+    ["Glycine", "R = hydrogen (\u2013H)"],
+    ["Alanine", "R = methyl (\u2013CH3)"],
+    ["Serine", "R = hydroxy methyl"]
+  ];
+  var FATS = [
+    ["Palmitic acid", "16 carbons", "saturated"],
+    ["Arachidonic acid", "20 carbons", "unsaturated (C=C)"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Primary (Sequence & Peptide)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Secondary (Alpha-helix / Beta-sheet)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Tertiary (3D Active Pocket)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Quaternary (Hb Tetramer)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.proteinfoldinglab.setTier(\'tertiary\')">Tertiary (Exercise 9.2)</button>' +
-      '<button class="preset-btn" onclick="SIMS.proteinfoldinglab.setTier(\'alanine\')">Alanine (Exercise 9.7)</button>' +
-      '<button class="preset-btn" onclick="SIMS.proteinfoldinglab.setTier(\'primary\')">Primary Sequence</button>' +
-      '<button class="preset-btn" onclick="SIMS.proteinfoldinglab.setTier(\'secondary\')">Secondary Structure</button>' +
-      '<button class="preset-btn" onclick="SIMS.proteinfoldinglab.setTier(\'quaternary\')">Quaternary Tetramer</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Fixed frame</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Variable part (R / chain / phosphate)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Named molecule</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-amino">R-Group Picker</button>' +
+      '<button class="preset-btn" id="p-fatty">Fatty Acids</button>' +
+      '<button class="preset-btn" id="p-nucleoside">Nucleoside Builder</button>';
+    document.getElementById("p-amino").onclick = function(){ setActivePreset(this); setV("amino"); };
+    document.getElementById("p-fatty").onclick = function(){ setActivePreset(this); setV("fatty"); };
+    document.getElementById("p-nucleoside").onclick = function(){ setActivePreset(this); setV("nuc"); };
+    mountControls();
+    draw(0);
   }
 
-  function setTier(t){
-    tier = t;
-    draw();
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "amino"){
+      c.innerHTML =
+        '<div class="control-group"><label>R group:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" data-r="0">H (glycine)</button>' +
+        '<button class="preset-btn" data-r="1">CH3 (alanine)</button>' +
+        '<button class="preset-btn" data-r="2">CH2OH (serine)</button></div></div>' +
+        '<div class="control-group"><label>Frame:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">\u03B1-carbon + \u2013NH2 + \u2013COOH + \u2013H; only R changes.</div></div>';
+      c.querySelectorAll("[data-r]").forEach(function(b){ b.onclick = function(){ rIdx = Number(b.dataset.r); draw(0); }; });
+    } else if(view === "fatty"){
+      c.innerHTML =
+        '<div class="control-group"><label>Fatty acid:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" data-f="0">Palmitic (16 C)</button>' +
+        '<button class="preset-btn" data-f="1">Arachidonic (20 C)</button></div></div>' +
+        '<div class="control-group"><label>Counts:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Carbons include the carboxyl carbon (PDF p. 3).</div></div>';
+      c.querySelectorAll("[data-f]").forEach(function(b){ b.onclick = function(){ fatIdx = Number(b.dataset.f); draw(0); }; });
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Phosphate:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-n0">Base + sugar</button>' +
+        '<button class="preset-btn" id="c-n1">+ phosphate</button></div></div>' +
+        '<div class="control-group"><label>Rule:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Base+sugar = nucleoside; +phosphate ester = nucleotide.</div></div>';
+      document.getElementById("c-n0").onclick = function(){ phos = false; draw(0); };
+      document.getElementById("c-n1").onclick = function(){ phos = true; draw(0); };
+    }
   }
 
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Small Biomolecules (Fig. 9.1)</text>';
+    if(view === "amino"){
+      m += '<circle cx="350" cy="170" r="34" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+      m += '<text x="350" y="178" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">\u03B1-C</text>';
+      m += '<line x1="350" y1="136" x2="350" y2="100" stroke="#cbd5e1" stroke-width="2.5"/>';
+      m += '<line x1="350" y1="204" x2="350" y2="240" stroke="#f59e0b" stroke-width="2.5"/>';
+      m += '<line x1="316" y1="170" x2="262" y2="170" stroke="#cbd5e1" stroke-width="2.5"/>';
+      m += '<line x1="384" y1="170" x2="438" y2="170" stroke="#cbd5e1" stroke-width="2.5"/>';
+      m += '<text x="350" y="90" fill="#cbd5e1" font-size="13" font-weight="700" text-anchor="middle">\u2013H</text>';
+      m += '<text x="350" y="262" fill="#f59e0b" font-size="13" font-weight="700" text-anchor="middle">' + ["\u2013H", "\u2013CH3", "\u2013CH2OH"][rIdx] + "</text>";
+      m += '<text x="222" y="175" fill="#cbd5e1" font-size="13" font-weight="700" text-anchor="middle">\u2013NH2</text>';
+      m += '<text x="478" y="175" fill="#cbd5e1" font-size="13" font-weight="700" text-anchor="middle">\u2013COOH</text>';
+      m += '<text x="350" y="292" fill="#22c55e" font-size="13" font-weight="700" text-anchor="middle">' + RS[rIdx][0] + " \u2014 " + RS[rIdx][1] + "</text>";
+      readout(cell("Amino acid", RS[rIdx][0], "#22c55e") + cell("R group", RS[rIdx][1], "#f59e0b") + cell("Frame", "substituted methane", "#38bdf8"));
+      verdict("Same \u03B1-carbon frame; only R changes the amino acid.");
+    } else if(view === "fatty"){
+      var f = FATS[fatIdx];
+      var n = fatIdx === 0 ? 16 : 20;
+      m += '<text x="350" y="80" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">' + f[0] + " \u2014 " + f[1] + " (" + f[2] + ")</text>";
+      for(var i = 0; i < n; i++){
+        var cx = 60 + i * 30;
+        var isCooh = i === n - 1;
+        m += '<circle cx="' + cx + '" cy="170" r="12" fill="#0f172a" stroke="' + (isCooh ? "#38bdf8" : "#f59e0b") + '" stroke-width="2"/>';
+        if(isCooh) m += '<text x="' + cx + '" y="174" fill="#38bdf8" font-size="8" font-weight="700" text-anchor="middle">COOH</text>';
+        if(i < n - 1) m += '<line x1="' + (cx + 12) + '" y1="170" x2="' + (cx + 18) + '" y2="170" stroke="#64748b" stroke-width="2"/>';
+      }
+      if(fatIdx === 1) m += '<text x="350" y="230" fill="#f59e0b" font-size="11" text-anchor="middle">One or more C=C double bonds along the chain</text>';
+      else m += '<text x="350" y="230" fill="#94a3b8" font-size="11" text-anchor="middle">No double bonds (saturated)</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Carboxyl carbon counted (blue dot, right end)</text>';
+      readout(cell("Fatty acid", f[0], "#22c55e") + cell("Carbons", f[1], "#f59e0b") + cell("Type", f[2], "#38bdf8"));
+      verdict("Saturated = no C=C; unsaturated = one or more C=C.");
+    } else {
+      m += '<rect x="90" y="140" width="150" height="70" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="165" y="170" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Uracil</text>';
+      m += '<text x="165" y="190" fill="#94a3b8" font-size="10" text-anchor="middle">nitrogen base</text>';
+      m += '<text x="260" y="180" fill="#64748b" font-size="16" text-anchor="middle">+</text>';
+      m += '<rect x="280" y="140" width="150" height="70" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="355" y="170" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Sugar</text>';
+      m += '<text x="355" y="190" fill="#94a3b8" font-size="10" text-anchor="middle">ribose</text>';
+      if(phos){
+        m += '<text x="450" y="180" fill="#64748b" font-size="16" text-anchor="middle">+</text>';
+        m += '<rect x="470" y="140" width="150" height="70" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>';
+        m += '<text x="545" y="170" fill="#f59e0b" font-size="12" font-weight="700" text-anchor="middle">Phosphate</text>';
+        m += '<text x="545" y="190" fill="#94a3b8" font-size="10" text-anchor="middle">esterified</text>';
+      }
+      m += '<text x="350" y="262" fill="#22c55e" font-size="14" font-weight="700" text-anchor="middle">' + (phos ? "Uridylic acid (nucleotide)" : "Uridine (nucleoside)") + "</text>";
+      readout(cell("Base", "uracil", "#38bdf8") + cell("Sugar", "ribose", "#38bdf8") + cell("Phosphate", phos ? "added" : "absent", phos ? "#f59e0b" : "#475569"));
+      verdict(phos ? "Nucleotide: base + sugar + esterified phosphate." : "Nucleoside: base + sugar, no phosphate.");
+    }
+    svg.innerHTML = m;
+  }
 
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 9.2 & 9.7: PROTEIN STRUCTURAL HIERARCHY & AMINO ACID ARCHITECTURE</text>';
+  return {mount: mount, draw: draw};
+})();
 
-    var cx = W / 2 - 50;
-    var cy = H / 2 + 10;
+// -------------------------------------------------------------------------
+// 3. Metabolite Sorter & Macromolecule Scales (metabolab) - L3, 9.2-9.3
+// -------------------------------------------------------------------------
+window.SIMS.metabolab = (function(){
+  var view = "primary"; // "primary", "table93", "lipid"
+  var pick = 0, catIdx = 0, ves = false;
+  var ITEMS = [
+    ["Amino acids", "primary"], ["Sugars", "primary"], ["Morphine", "secondary"],
+    ["Concanavalin A", "secondary"], ["Nucleotides", "primary"], ["Rubber", "secondary"]
+  ];
+  var CATS = [
+    ["Pigments", "Carotenoids, Anthocyanins"],
+    ["Alkaloids", "Morphine, Codeine"],
+    ["Terpenoides", "Monoterpenes, Diterpenes"],
+    ["Essential oils", "Lemon grass oil"],
+    ["Toxins", "Abrin, Ricin"],
+    ["Lectins", "Concanavalin A"],
+    ["Drugs", "Vinblastin, curcumin"],
+    ["Polymeric substances", "Rubber, gums, cellulose"]
+  ];
 
-    if (tier === "tertiary") {
-      // Tertiary 3D folded conformation (Exercise 9.2 core)
-      m += '<text x="' + cx + '" y="' + (cy - 125) + '" fill="#f59e0b" font-size="15" font-weight="bold" text-anchor="middle">TERTIARY STRUCTURE (Hollow Woollen Ball 3D Fold)</text>';
-      // Globular looping woollen ball path
-      m += '<path d="M ' + (cx - 120) + ' ' + (cy + 40) + ' C ' + (cx - 140) + ' ' + (cy - 80) + ' ' + (cx - 40) + ' ' + (cy - 110) + ' ' + cx + ' ' + (cy - 60) + ' ' +
-           'C ' + (cx + 40) + ' ' + (cy - 10) + ' ' + (cx + 120) + ' ' + (cy - 90) + ' ' + (cx + 130) + ' ' + cy + ' ' +
-           'C ' + (cx + 140) + ' ' + (cy + 80) + ' ' + (cx + 40) + ' ' + (cy + 110) + ' ' + (cx - 20) + ' ' + (cy + 70) + ' ' +
-           'C ' + (cx - 80) + ' ' + (cy + 30) + ' ' + (cx - 30) + ' ' + (cy - 20) + ' ' + (cx + 30) + ' ' + cy + ' ' +
-           'C ' + (cx + 80) + ' ' + (cy + 20) + ' ' + (cx + 40) + ' ' + (cy - 50) + ' ' + (cx - 40) + ' ' + (cy - 30) + ' Z" ' +
-           'fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="12" stroke-linejoin="round"/>';
+  function setV(v){ view = v; mountControls(); draw(0); }
 
-      // Active site cleft
-      m += '<circle cx="' + (cx + 35) + '" cy="' + (cy - 5) + '" r="22" fill="rgba(239,68,68,0.3)" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2"/>';
-      m += '<text x="' + (cx + 35) + '" y="' + cy + '" fill="#fca5a5" font-size="10" font-weight="bold" text-anchor="middle">ACTIVE SITE</text>';
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Primary metabolites</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#a855f7;"></span><span>Secondary metabolites</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Lipids (\u2264800 Da, ride vesicles)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-primary">Primary vs Secondary</button>' +
+      '<button class="preset-btn" id="p-table93">Table 9.3 Match</button>' +
+      '<button class="preset-btn" id="p-lipid">Lipid Paradox</button>';
+    document.getElementById("p-primary").onclick = function(){ setActivePreset(this); setV("primary"); };
+    document.getElementById("p-table93").onclick = function(){ setActivePreset(this); setV("table93"); };
+    document.getElementById("p-lipid").onclick = function(){ setActivePreset(this); setV("lipid"); };
+    mountControls();
+    draw(0);
+  }
 
-      // Disulfide bridge
-      m += '<line x1="' + (cx - 70) + '" y1="' + (cy - 30) + '" x2="' + (cx - 30) + '" y2="' + (cy + 30) + '" stroke="#eab308" stroke-width="4"/>';
-      m += '<text x="' + (cx - 60) + '" y="' + (cy + 5) + '" fill="#eab308" font-size="10">Disulfide Bond (-S-S-)</text>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "primary"){
+      c.innerHTML =
+        '<div class="control-group"><label>Compound:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        ITEMS.map(function(it, i){ return '<button class="preset-btn" data-it="' + i + '">' + it[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Rule:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Fig. 9.1 categories in animals = primary; plant/fungal/microbial extras = secondary.</div></div>';
+      c.querySelectorAll("[data-it]").forEach(function(b){ b.onclick = function(){ pick = Number(b.dataset.it); draw(0); }; });
+    } else if(view === "table93"){
+      c.innerHTML =
+        '<div class="control-group"><label>Category:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        CATS.map(function(ct, i){ return '<button class="preset-btn" data-ct="' + i + '">' + ct[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Spelling:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Print spellings kept: Terpenoides, Vinblastin.</div></div>';
+      c.querySelectorAll("[data-ct]").forEach(function(b){ b.onclick = function(){ catIdx = Number(b.dataset.ct); draw(0); }; });
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Membranes:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-v0">Intact</button>' +
+        '<button class="preset-btn" id="c-v1">Ground \u2192 vesicles</button></div></div>' +
+        '<div class="control-group"><label>Mass scale:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Soluble 18\u2013800 Da; insoluble \u226510,000 Da.</div></div>';
+      document.getElementById("c-v0").onclick = function(){ ves = false; draw(0); };
+      document.getElementById("c-v1").onclick = function(){ ves = true; draw(0); };
+    }
+  }
 
-      // Hydrogen bonds / Hydrophobic
-      m += '<text x="' + cx + '" y="' + (cy + 130) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Stabilized by Disulfide, Hydrogen, Ionic & Hydrophobic interactions</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 148) + '" fill="#fcd34d" font-size="11" font-weight="bold" text-anchor="middle">ABSOLUTELY ESSENTIAL FOR ENZYMATIC ACTIVITY</text>';
-    } else if (tier === "alanine") {
-      // Alanine structure (Exercise 9.7)
-      m += '<text x="' + cx + '" y="' + (cy - 120) + '" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">EXERCISE 9.7: ALANINE CHEMICAL STRUCTURE</text>';
-      // Central alpha carbon
-      m += '<circle cx="' + cx + '" cy="' + cy + '" r="24" fill="#0284c7" stroke="#38bdf8" stroke-width="3"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 6) + '" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">C-alpha</text>';
-
-      // Top: Hydrogen (-H)
-      m += '<line x1="' + cx + '" y1="' + (cy - 24) + '" x2="' + cx + '" y2="' + (cy - 75) + '" stroke="#94a3b8" stroke-width="4"/>';
-      m += '<circle cx="' + cx + '" cy="' + (cy - 85) + '" r="16" fill="#475569"/>';
-      m += '<text x="' + cx + '" y="' + (cy - 80) + '" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">H</text>';
-
-      // Bottom: Methyl group (-CH3) - Variable R-group
-      m += '<line x1="' + cx + '" y1="' + (cy + 24) + '" x2="' + cx + '" y2="' + (cy + 75) + '" stroke="#f59e0b" stroke-width="4"/>';
-      m += '<rect x="' + (cx - 35) + '" y="' + (cy + 75) + '" width="70" height="34" rx="8" fill="#d97706" stroke="#f59e0b" stroke-width="2"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 97) + '" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">CH3 (R-Group)</text>';
-
-      // Left: Amino group (-NH2)
-      m += '<line x1="' + (cx - 24) + '" y1="' + cy + '" x2="' + (cx - 85) + '" y2="' + cy + '" stroke="#10b981" stroke-width="4"/>';
-      m += '<rect x="' + (cx - 145) + '" y="' + (cy - 17) + '" width="60" height="34" rx="8" fill="#047857" stroke="#10b981" stroke-width="2"/>';
-      m += '<text x="' + (cx - 115) + '" y="' + (cy + 5) + '" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">H2N</text>';
-
-      // Right: Carboxyl group (-COOH)
-      m += '<line x1="' + (cx + 24) + '" y1="' + cy + '" x2="' + (cx + 85) + '" y2="' + cy + '" stroke="#ef4444" stroke-width="4"/>';
-      m += '<rect x="' + (cx + 85) + '" y="' + (cy - 17) + '" width="70" height="34" rx="8" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>';
-      m += '<text x="' + (cx + 120) + '" y="' + (cy + 5) + '" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">COOH</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 135) + '" fill="#cbd5e1" font-size="12" text-anchor="middle">Substituted Methane with Methyl (R = -CH3) Side Chain</text>';
-    } else if (tier === "primary") {
-      // Primary linear sequence
-      m += '<text x="' + cx + '" y="' + (cy - 80) + '" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">PRIMARY STRUCTURE: Linear Sequence & Peptide Bonds</text>';
-      var aas = ["N-Term (Gly)", "Ala", "Val", "Leu", "Ile", "C-Term (Ser)"];
-      for (var a = 0; a < aas.length; a++) {
-        var ax = cx - 180 + a * 72;
-        m += '<circle cx="' + ax + '" cy="' + cy + '" r="22" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>';
-        m += '<text x="' + ax + '" y="' + (cy + 4) + '" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">' + aas[a] + '</text>';
-        if (a < aas.length - 1) {
-          m += '<line x1="' + (ax + 22) + '" y1="' + cy + '" x2="' + (ax + 50) + '" y2="' + cy + '" stroke="#f59e0b" stroke-width="5"/>';
-          m += '<text x="' + (ax + 36) + '" y="' + (cy - 8) + '" fill="#fcd34d" font-size="8" text-anchor="middle">-CO-NH-</text>';
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Metabolites &amp; Macromolecules (\u00A79.2\u2013\u00A79.3)</text>';
+    if(view === "primary"){
+      var it = ITEMS[pick];
+      var isPrim = it[1] === "primary";
+      m += '<rect x="60" y="120" width="270" height="110" rx="8" fill="#0f172a" stroke="' + (isPrim ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="195" y="160" fill="' + (isPrim ? "#22c55e" : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">Primary</text>';
+      m += '<text x="195" y="182" fill="#64748b" font-size="10" text-anchor="middle">known physiologial roles</text>';
+      m += '<rect x="370" y="120" width="270" height="110" rx="8" fill="#0f172a" stroke="' + (!isPrim ? "#a855f7" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="505" y="160" fill="' + (!isPrim ? "#a855f7" : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">Secondary</text>';
+      m += '<text x="505" y="182" fill="#64748b" font-size="10" text-anchor="middle">welfare + ecological value</text>';
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + it[0] + " \u2192 " + it[1] + "</text>";
+      readout(cell("Compound", it[0], "#38bdf8") + cell("Class", it[1], isPrim ? "#22c55e" : "#a855f7"));
+      verdict(isPrim ? "Primary: Fig. 9.1 categories in animal tissues." : "Secondary: plant/fungal/microbial extras (Table 9.3).");
+    } else if(view === "table93"){
+      var ct = CATS[catIdx];
+      m += '<rect x="60" y="110" width="280" height="90" rx="8" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>';
+      m += '<text x="200" y="150" fill="#a855f7" font-size="13" font-weight="700" text-anchor="middle">' + ct[0] + "</text>";
+      m += '<text x="200" y="172" fill="#64748b" font-size="10" text-anchor="middle">Table 9.3 category</text>';
+      m += '<text x="360" y="160" fill="#64748b" font-size="18" text-anchor="middle">\u2192</text>';
+      m += '<rect x="380" y="110" width="260" height="90" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+      m += '<text x="510" y="150" fill="#22c55e" font-size="11" font-weight="700" text-anchor="middle">' + ct[1] + "</text>";
+      m += '<text x="510" y="172" fill="#64748b" font-size="10" text-anchor="middle">printed examples</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Roles in hosts not fully understood; many serve human welfare</text>';
+      readout(cell("Category", ct[0], "#a855f7") + cell("Examples", ct[1], "#22c55e"));
+      verdict("Table 9.3, PDF p. 5 \u2014 print spellings kept verbatim.");
+    } else {
+      m += '<text x="350" y="80" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">Lipids: \u2264800 Da monomers \u2192 ' + (ves ? "insoluble vesicles (retained!)" : "intact membranes") + "</text>";
+      if(!ves){
+        m += '<rect x="150" y="120" width="400" height="60" rx="30" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+        m += '<text x="350" y="155" fill="#38bdf8" font-size="12" text-anchor="middle">cell membrane (lipids arranged in structure)</text>';
+      } else {
+        var xs = [150, 260, 370, 480];
+        for(var i = 0; i < 4; i++){
+          m += '<circle cx="' + xs[i] + '" cy="150" r="34" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>';
+          m += '<text x="' + xs[i] + '" y="155" fill="#f59e0b" font-size="10" text-anchor="middle">vesicle</text>';
         }
+        m += '<text x="350" y="215" fill="#f59e0b" font-size="11" text-anchor="middle">not water soluble \u2192 separate with acid-insoluble pool</text>';
       }
-      m += '<text x="' + cx + '" y="' + (cy + 60) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">First amino acid is N-terminal; last amino acid is C-terminal</text>';
-    } else if (tier === "secondary") {
-      // Secondary alpha-helix
-      m += '<text x="' + cx + '" y="' + (cy - 90) + '" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">SECONDARY STRUCTURE: Right-Handed Alpha-Helix</text>';
-      m += '<path d="M ' + (cx - 150) + ' ' + cy + ' Q ' + (cx - 100) + ' ' + (cy - 60) + ' ' + (cx - 50) + ' ' + cy + ' Q ' + cx + ' ' + (cy + 60) + ' ' + (cx + 50) + ' ' + cy + ' Q ' + (cx + 100) + ' ' + (cy - 60) + ' ' + (cx + 150) + ' ' + cy + '" fill="none" stroke="#10b981" stroke-width="8"/>';
-      // Hydrogen bonds across turns
-      m += '<line x1="' + (cx - 100) + '" y1="' + (cy - 20) + '" x2="' + (cx - 50) + '" y2="' + (cy + 20) + '" stroke="#ec4899" stroke-width="2" stroke-dasharray="3,3"/>';
-      m += '<line x1="' + cx + '" y1="' + (cy - 20) + '" x2="' + (cx + 50) + '" y2="' + (cy + 20) + '" stroke="#ec4899" stroke-width="2" stroke-dasharray="3,3"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 85) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Intra-chain hydrogen bonds between C=O and N-H stabilize right-handed spiral</text>';
-    } else { // quaternary
-      // Quaternary hemoglobin tetramer (2 alpha + 2 beta)
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#ec4899" font-size="15" font-weight="bold" text-anchor="middle">QUATERNARY STRUCTURE: Adult Hemoglobin Tetramer (alpha2 beta2)</text>';
-      // 4 subunits
-      m += '<circle cx="' + (cx - 45) + '" cy="' + (cy - 30) + '" r="38" fill="rgba(56,189,248,0.4)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<text x="' + (cx - 45) + '" y="' + (cy - 25) + '" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">alpha 1</text>';
-      m += '<circle cx="' + (cx + 45) + '" cy="' + (cy - 30) + '" r="38" fill="rgba(56,189,248,0.4)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<text x="' + (cx + 45) + '" y="' + (cy - 25) + '" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">alpha 2</text>';
-      m += '<circle cx="' + (cx - 45) + '" cy="' + (cy + 50) + '" r="38" fill="rgba(236,72,153,0.4)" stroke="#ec4899" stroke-width="2"/>';
-      m += '<text x="' + (cx - 45) + '" y="' + (cy + 55) + '" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">beta 1</text>';
-      m += '<circle cx="' + (cx + 45) + '" cy="' + (cy + 50) + '" r="38" fill="rgba(236,72,153,0.4)" stroke="#ec4899" stroke-width="2"/>';
-      m += '<text x="' + (cx + 45) + '" y="' + (cy + 55) + '" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">beta 2</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 115) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Assembly of 4 independent polypeptide chains into functional allosteric complex</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Soluble pool 18\u2013800 Da \u00B7 insoluble \u226510,000 Da \u00B7 lipids not strictly macromolecules</text>';
+      readout(cell("Lipid mass", "\u2264800 Da", "#38bdf8") + cell("State", ves ? "vesicles" : "membranes", "#f59e0b") + cell("Fraction", ves ? "insoluble" : "\u2014", "#f59e0b"));
+      verdict(ves ? "Grinding breaks membranes into retained vesicles." : "Grind the tissue to shatter membranes.");
     }
-
-    // Side Info Panel
-    m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 110) + '" y="105" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">' + tier.toUpperCase() + '</text>';
-    m += '<text x="' + (W - 190) + '" y="135" fill="#fcd34d" font-size="11">Bond Types:</text>';
-    m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">' + (tier === "primary" ? "Peptide (-CO-NH-)" : (tier === "secondary" ? "Hydrogen bonds" : (tier === "tertiary" ? "-S-S-, Ionic, Hydrophobic" : (tier === "alanine" ? "Covalent C-C, C-N" : "Non-covalent subunit")))) + '</text>';
-    m += '<text x="' + (W - 190) + '" y="185" fill="#fcd34d" font-size="11">Enzymatic Power:</text>';
-    m += '<text x="' + (W - 190) + '" y="205" fill="#10b981" font-size="11">' + (tier === "tertiary" ? "ACTIVE (Active Sites)" : "Inactive in isolation") + '</text>';
-    m += '<text x="' + (W - 190) + '" y="235" fill="#fcd34d" font-size="11">Key Example:</text>';
-    m += '<text x="' + (W - 190) + '" y="255" fill="#ec4899" font-size="11">' + (tier === "alanine" ? "Alanine (R=-CH3)" : (tier === "quaternary" ? "Hb (alpha2 beta2)" : (tier === "tertiary" ? "Myoglobin/Enzymes" : "Keratin/Silk"))) + '</text>';
-
     svg.innerHTML = m;
-
-    readout(
-      cell("Focused Architecture", tier.toUpperCase(), "#38bdf8") +
-      cell("3D Active Site", tier === "tertiary" ? "FORMED (Hollow Woollen Fold)" : (tier === "alanine" ? "Substituted Methane" : "Backbone conformation"), "#10b981") +
-      cell("Alanine R-Group", "-CH3 (Methyl Group)", "#f59e0b") +
-      cell("Biospheric Champion", "RuBisCO (Plants) / Collagen (Animals)", "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Exercise 9.2 & 9.7 Solution:</span> ' +
-      (tier === "alanine" ? "Alanine is a substituted methane consisting of central alpha-carbon bonded to -NH2, -COOH, -H, and a methyl group (-CH3)." :
-       "Tertiary structure is the 3D folding of a polypeptide upon itself like a hollow woollen ball; it forms the catalytic active sites essential for biological enzymatic function.")
-    );
   }
 
-  return { mount: mount, setTier: setTier, draw: draw };
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 3. SIMULATION 3: Triglyceride Assembler & Lipids (lipidtriglyceridelab - Ex 9.5)
+// 4. Protein Hierarchy Lab (proteinlab) - L4, 9.4 + 9.7 + Fig. 9.3
 // -------------------------------------------------------------------------
-window.SIMS.lipidtriglyceridelab = (function(){
-  var lipidType = "triglyceride"; // "triglyceride", "palmitic", "phospholipid"
-
-  function mount(){
-    App.state.maxT = 3;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Glycerol Backbone</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fatty Acid Hydrocarbon Tails</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Ester Linkages (-O-CO-)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Polar Phosphorylated Head</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.lipidtriglyceridelab.setLipid(\'triglyceride\')">Triglyceride (Exercise 9.5)</button>' +
-      '<button class="preset-btn" onclick="SIMS.lipidtriglyceridelab.setLipid(\'palmitic\')">Palmitic Acid (16C)</button>' +
-      '<button class="preset-btn" onclick="SIMS.lipidtriglyceridelab.setLipid(\'phospholipid\')">Lecithin Phospholipid</button>';
-  }
-
-  function setLipid(l){
-    lipidType = l;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 9.5: TRIGLYCERIDE COMPOSITION & LIPID BIOCHEMISTRY</text>';
-
-    var cx = W / 2 - 50;
-    var cy = H / 2 + 10;
-
-    if (lipidType === "triglyceride") {
-      // Glycerol vertical backbone (CH2 - CH - CH2)
-      m += '<text x="' + cx + '" y="' + (cy - 120) + '" fill="#f59e0b" font-size="15" font-weight="bold" text-anchor="middle">TRIGLYCERIDE: 1 Glycerol + 3 Fatty Acids via 3 Ester Bonds</text>';
-      m += '<rect x="' + (cx - 140) + '" y="' + (cy - 70) + '" width="75" height="150" rx="8" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/>';
-      m += '<text x="' + (cx - 102) + '" y="' + (cy - 40) + '" fill="#7dd3fc" font-size="12" font-weight="bold" text-anchor="middle">CH2</text>';
-      m += '<text x="' + (cx - 102) + '" y="' + cy + '" fill="#7dd3fc" font-size="12" font-weight="bold" text-anchor="middle">CH</text>';
-      m += '<text x="' + (cx - 102) + '" y="' + (cy + 45) + '" fill="#7dd3fc" font-size="12" font-weight="bold" text-anchor="middle">CH2</text>';
-      m += '<text x="' + (cx - 102) + '" y="' + (cy + 100) + '" fill="#38bdf8" font-size="11" text-anchor="middle">Glycerol</text>';
-
-      // 3 Ester bonds (-O-CO-) and fatty acid tails
-      var offsets = [-40, 0, 45];
-      for (var f = 0; f < 3; f++) {
-        var fy = cy + offsets[f];
-        // Ester bond
-        m += '<rect x="' + (cx - 55) + '" y="' + (fy - 12) + '" width="60" height="24" rx="4" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>';
-        m += '<text x="' + (cx - 25) + '" y="' + (fy + 4) + '" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">O-CO-</text>';
-        // Hydrocarbon zigzag tail
-        m += '<path d="M ' + (cx + 5) + ' ' + fy + ' L ' + (cx + 35) + ' ' + (fy - 8) + ' L ' + (cx + 65) + ' ' + (fy + 8) + ' L ' + (cx + 95) + ' ' + (fy - 8) + ' L ' + (cx + 125) + ' ' + (fy + 8) + ' L ' + (cx + 155) + ' ' + fy + '" fill="none" stroke="#f59e0b" stroke-width="4"/>';
-        m += '<text x="' + (cx + 180) + '" y="' + (fy + 4) + '" fill="#fcd34d" font-size="11">R' + (f + 1) + ' Tail</text>';
-      }
-      m += '<text x="' + cx + '" y="' + (cy + 130) + '" fill="#cbd5e1" font-size="12" text-anchor="middle">Elimination of 3 H2O molecules yields triacylglycerol neutral storage fat</text>';
-    } else if (lipidType === "palmitic") {
-      // Palmitic acid: 16 carbons
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">PALMITIC ACID: 16-Carbon Saturated Fatty Acid</text>';
-      m += '<text x="' + cx + '" y="' + (cy - 60) + '" fill="#fcd34d" font-size="13" font-weight="bold" text-anchor="middle">CH3-(CH2)14-COOH (16 Carbons Total)</text>';
-      // Carboxyl head
-      m += '<rect x="' + (cx - 180) + '" y="' + (cy - 20) + '" width="60" height="40" rx="8" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>';
-      m += '<text x="' + (cx - 150) + '" y="' + (cy + 5) + '" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">COOH</text>';
-      // Long hydrocarbon chain
-      var px = cx - 120;
-      var py = cy;
-      var dStr = 'M ' + px + ' ' + py;
-      for (var c = 1; c <= 15; c++) {
-        var npx = px + c * 18;
-        var npy = py + ((c % 2 === 1) ? -16 : 16);
-        dStr += ' L ' + npx + ' ' + npy;
-      }
-      m += '<path d="' + dStr + '" fill="none" stroke="#f59e0b" stroke-width="4"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 60) + '" fill="#cbd5e1" font-size="12" text-anchor="middle">Zero double bonds (Saturated) -> Solid fat at room temperature</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 85) + '" fill="#a5f3fc" font-size="11" text-anchor="middle">Compare with Arachidonic Acid: 20 Carbons & 4 Double Bonds (Polyunsaturated)</text>';
-    } else { // phospholipid
-      // Lecithin
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#ec4899" font-size="15" font-weight="bold" text-anchor="middle">LECITHIN (Phosphatidylcholine): Membrane Phospholipid</text>';
-      // Polar head
-      m += '<circle cx="' + (cx - 100) + '" cy="' + cy + '" r="35" fill="rgba(56,189,248,0.4)" stroke="#38bdf8" stroke-width="3"/>';
-      m += '<text x="' + (cx - 100) + '" y="' + (cy - 5) + '" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">Choline +</text>';
-      m += '<text x="' + (cx - 100) + '" y="' + (cy + 12) + '" fill="#fcd34d" font-size="10" font-weight="bold" text-anchor="middle">Phosphate</text>';
-      m += '<text x="' + (cx - 100) + '" y="' + (cy + 55) + '" fill="#38bdf8" font-size="11" text-anchor="middle">Hydrophilic Head</text>';
-
-      // Two fatty acid tails
-      m += '<path d="M ' + (cx - 65) + ' ' + (cy - 12) + ' Q ' + cx + ' ' + (cy - 30) + ' ' + (cx + 80) + ' ' + (cy - 15) + ' T ' + (cx + 160) + ' ' + (cy - 20) + '" fill="none" stroke="#f59e0b" stroke-width="5"/>';
-      m += '<path d="M ' + (cx - 65) + ' ' + (cy + 12) + ' Q ' + cx + ' ' + (cy + 30) + ' ' + (cx + 80) + ' ' + (cy + 15) + ' T ' + (cx + 160) + ' ' + (cy + 35) + '" fill="none" stroke="#f59e0b" stroke-width="5"/>';
-      m += '<text x="' + (cx + 100) + '" y="' + (cy + 75) + '" fill="#f59e0b" font-size="11">Two Hydrophobic Fatty Acid Tails</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 125) + '" fill="#cbd5e1" font-size="12" text-anchor="middle">Amphipathic nature drives spontaneous assembly into lipid bilayers</text>';
-    }
-
-    // Side Info Panel
-    m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#f59e0b" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 110) + '" y="105" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">LIPID METRICS</text>';
-    m += '<text x="' + (W - 190) + '" y="135" fill="#fcd34d" font-size="11">Glycerol Type:</text>';
-    m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">Trihydroxy propane</text>';
-    m += '<text x="' + (W - 190) + '" y="180" fill="#fcd34d" font-size="11">Linkage:</text>';
-    m += '<text x="' + (W - 190) + '" y="200" fill="#ef4444" font-size="11">Ester Bond (-O-CO-)</text>';
-    m += '<text x="' + (W - 190) + '" y="225" fill="#fcd34d" font-size="11">Carbon Rules:</text>';
-    m += '<text x="' + (W - 190) + '" y="245" fill="#38bdf8" font-size="10">Palmitic = 16 Carbons</text>';
-    m += '<text x="' + (W - 190) + '" y="265" fill="#ec4899" font-size="10">Arachidonic = 20 Carbons</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Lipid Molecule", lipidType.toUpperCase(), "#38bdf8") +
-      cell("Ester Bonds", lipidType === "triglyceride" ? "3 Ester Linkages" : (lipidType === "phospholipid" ? "2 Ester + 1 Phosphoester" : "Carboxyl Group"), "#10b981") +
-      cell("Water Solubility", "INSOLUBLE (Non-polar)", "#ef4444") +
-      cell("Cellular Role", lipidType === "triglyceride" ? "Storage Fat (Adipose)" : (lipidType === "phospholipid" ? "Membrane Bilayer" : "Fatty Acid Precursor"), "#fcd34d")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Exercise 9.5 Solution:</span> ' +
-      "A triglyceride is composed of one molecule of glycerol (trihydroxy propane) esterified with three fatty acid molecules through three ester linkages, releasing three water molecules."
-    );
-  }
-
-  return { mount: mount, setLipid: setLipid, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 4. SIMULATION 4: Polysaccharide Architecture (polysaccharidelab - Ex 9.8)
-// -------------------------------------------------------------------------
-window.SIMS.polysaccharidelab = (function(){
-  var pType = "starch"; // "starch", "cellulose", "glycogen", "gum_fevicol"
-
-  function mount(){
-    App.state.maxT = 4;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Starch (Helical Iodine Trap)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Cellulose (Linear Ribbon)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Glycogen (Branched Reserve)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Gum vs Fevicol (Ex 9.8)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.polysaccharidelab.setPType(\'starch\')">Starch (Iodine Blue)</button>' +
-      '<button class="preset-btn" onclick="SIMS.polysaccharidelab.setPType(\'cellulose\')">Cellulose (Linear)</button>' +
-      '<button class="preset-btn" onclick="SIMS.polysaccharidelab.setPType(\'glycogen\')">Glycogen (Branched)</button>' +
-      '<button class="preset-btn" onclick="SIMS.polysaccharidelab.setPType(\'gum_fevicol\')">Gum vs Fevicol (Ex 9.8)</button>';
-  }
-
-  function setPType(p){
-    pType = p;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 9.8: POLYSACCHARIDE CONFORMATION & GUM VS FEVICOL</text>';
-
-    var cx = W / 2 - 50;
-    var cy = H / 2 + 10;
-
-    if (pType === "starch") {
-      // Starch: Helical secondary coil with trapped Iodine
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#38bdf8" font-size="15" font-weight="bold" text-anchor="middle">STARCH: Helical Secondary Structure Trapping Iodine (I2)</text>';
-      // Helical spring path
-      m += '<path d="M ' + (cx - 160) + ' ' + (cy + 20) + ' ' +
-           'C ' + (cx - 140) + ' ' + (cy - 60) + ' ' + (cx - 100) + ' ' + (cy - 60) + ' ' + (cx - 80) + ' ' + (cy + 20) + ' ' +
-           'C ' + (cx - 60) + ' ' + (cy + 80) + ' ' + (cx - 20) + ' ' + (cy + 80) + ' ' + cx + ' ' + (cy + 20) + ' ' +
-           'C ' + (cx + 20) + ' ' + (cy - 60) + ' ' + (cx + 60) + ' ' + (cy - 60) + ' ' + (cx + 80) + ' ' + (cy + 20) + ' ' +
-           'C ' + (cx + 100) + ' ' + (cy + 80) + ' ' + (cx + 140) + ' ' + (cy + 80) + ' ' + (cx + 160) + ' ' + (cy + 20) + '" ' +
-           'fill="none" stroke="#2563eb" stroke-width="14"/>';
-
-      // Trapped Iodine molecules inside the helical coil
-      m += '<circle cx="' + (cx - 90) + '" cy="' + cy + '" r="12" fill="#1e1b4b" stroke="#60a5fa" stroke-width="3"/>';
-      m += '<text x="' + (cx - 90) + '" y="' + (cy + 4) + '" fill="#93c5fd" font-size="10" font-weight="bold" text-anchor="middle">I2</text>';
-      m += '<circle cx="' + (cx + 70) + '" cy="' + cy + '" r="12" fill="#1e1b4b" stroke="#60a5fa" stroke-width="3"/>';
-      m += '<text x="' + (cx + 70) + '" y="' + (cy + 4) + '" fill="#93c5fd" font-size="10" font-weight="bold" text-anchor="middle">I2</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 115) + '" fill="#60a5fa" font-size="13" font-weight="bold" text-anchor="middle">DEEP BLUE COMPLEX FORMED</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 135) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">alpha-1,4 glycosidic linkages coil into helical tunnels that accommodate polyiodide</text>';
-    } else if (pType === "cellulose") {
-      // Cellulose: Linear straight ribbon, no helices
-      m += '<text x="' + cx + '" y="' + (cy - 100) + '" fill="#10b981" font-size="15" font-weight="bold" text-anchor="middle">CELLULOSE: Linear Rigid Ribbon (beta-1,4 Glucan)</text>';
-      for (var b = 0; b < 3; b++) {
-        var by = cy - 35 + b * 35;
-        m += '<line x1="' + (cx - 160) + '" y1="' + by + '" x2="' + (cx + 160) + '" y2="' + by + '" stroke="#10b981" stroke-width="8"/>';
-      }
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#ef4444" font-size="13" font-weight="bold" text-anchor="middle">NO COLOR WITH IODINE</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 120) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Linear beta-1,4 ribbons lack helical coils; cannot physically trap I2 molecules</text>';
-    } else if (pType === "glycogen") {
-      // Glycogen: Highly branched tree
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#f59e0b" font-size="15" font-weight="bold" text-anchor="middle">GLYCOGEN: Branched Animal Storage Polysaccharide</text>';
-      // Main trunk
-      m += '<line x1="' + (cx - 160) + '" y1="' + cy + '" x2="' + (cx + 160) + '" y2="' + cy + '" stroke="#f59e0b" stroke-width="8"/>';
-      m += '<text x="' + (cx - 175) + '" y="' + (cy + 4) + '" fill="#fcd34d" font-size="10">Non-reducing</text>';
-      m += '<text x="' + (cx + 175) + '" y="' + (cy + 4) + '" fill="#fcd34d" font-size="10">Reducing</text>';
-      // Branches (alpha-1,6)
-      m += '<line x1="' + (cx - 60) + '" y1="' + cy + '" x2="' + (cx - 20) + '" y2="' + (cy - 50) + '" stroke="#d97706" stroke-width="6"/>';
-      m += '<line x1="' + (cx + 40) + '" y1="' + cy + '" x2="' + (cx + 80) + '" y2="' + (cy - 50) + '" stroke="#d97706" stroke-width="6"/>';
-      m += '<line x1="' + (cx - 20) + '" y1="' + cy + '" x2="' + (cx + 20) + '" y2="' + (cy + 50) + '" stroke="#d97706" stroke-width="6"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 115) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">alpha-1,4 linear chains + alpha-1,6 branch points every 8–12 residues; stains red-brown with iodine</text>';
-    } else { // gum_fevicol (Exercise 9.8)
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#ec4899" font-size="15" font-weight="bold" text-anchor="middle">EXERCISE 9.8: NATURAL GUM VS SYNTHETIC FEVICOL</text>';
-      // Left box: Natural Gum
-      m += '<rect x="' + (cx - 170) + '" y="' + (cy - 70) + '" width="150" height="150" rx="8" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="2"/>';
-      m += '<text x="' + (cx - 95) + '" y="' + (cy - 40) + '" fill="#10b981" font-size="13" font-weight="bold" text-anchor="middle">NATURAL GUM</text>';
-      m += '<text x="' + (cx - 160) + '" y="' + (cy - 10) + '" fill="#a7f3d0" font-size="11">• Complex heteropolysaccharide</text>';
-      m += '<text x="' + (cx - 160) + '" y="' + (cy + 10) + '" fill="#a7f3d0" font-size="11">• Plant origin (Wound exudate)</text>';
-      m += '<text x="' + (cx - 160) + '" y="' + (cy + 30) + '" fill="#a7f3d0" font-size="11">• Galactose, Arabinose, Uronic</text>';
-      m += '<text x="' + (cx - 160) + '" y="' + (cy + 55) + '" fill="#fcd34d" font-size="10">Biodegradable carbohydrate</text>';
-
-      // Right box: Fevicol
-      m += '<rect x="' + (cx + 20) + '" y="' + (cy - 70) + '" width="150" height="150" rx="8" fill="rgba(236,72,153,0.15)" stroke="#ec4899" stroke-width="2"/>';
-      m += '<text x="' + (cx + 95) + '" y="' + (cy - 40) + '" fill="#ec4899" font-size="13" font-weight="bold" text-anchor="middle">FEVICOL</text>';
-      m += '<text x="' + (cx + 30) + '" y="' + (cy - 10) + '" fill="#fbcfe8" font-size="11">• Synthetic polyvinyl resin</text>';
-      m += '<text x="' + (cx + 30) + '" y="' + (cy + 10) + '" fill="#fbcfe8" font-size="11">• Petrochemical synthetic polymer</text>';
-      m += '<text x="' + (cx + 30) + '" y="' + (cy + 30) + '" fill="#fbcfe8" font-size="11">• Polyvinyl Alcohol / Acetate</text>';
-      m += '<text x="' + (cx + 30) + '" y="' + (cy + 55) + '" fill="#fcd34d" font-size="10">Zero carbohydrate content</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 120) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Fevicol is completely different: synthetic petroleum resin vs natural carbohydrate gum</text>';
-    }
-
-    // Side Info Panel
-    m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 110) + '" y="105" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">CARBOHYDRATE</text>';
-    m += '<text x="' + (W - 190) + '" y="135" fill="#fcd34d" font-size="11">Bond Linkage:</text>';
-    m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">Glycosidic Linkage</text>';
-    m += '<text x="' + (W - 190) + '" y="180" fill="#fcd34d" font-size="11">Iodine Reaction:</text>';
-    m += '<text x="' + (W - 190) + '" y="200" fill="#38bdf8" font-size="11">' + (pType === "starch" ? "DEEP BLUE (Helical)" : "NO COLOR (Linear)") + '</text>';
-    m += '<text x="' + (W - 190) + '" y="225" fill="#fcd34d" font-size="11">Arthropod Exoskeleton:</text>';
-    m += '<text x="' + (W - 190) + '" y="245" fill="#10b981" font-size="11">Chitin (NAG Polymer)</text>';
-    m += '<text x="' + (W - 190) + '" y="270" fill="#ec4899" font-size="10">Inulin = Fructose Polymer</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Polysaccharide", pType.toUpperCase(), "#38bdf8") +
-      cell("Iodine Coloration", pType === "starch" ? "DEEP BLUE (Helical Trap)" : "NEGATIVE (No color)", pType === "starch" ? "#38bdf8" : "#94a3b8") +
-      cell("Gums Nature", "Plant Heteropolysaccharide", "#10b981") +
-      cell("Fevicol Nature", "Synthetic Polyvinyl Resin (PVAc)", "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Exercise 9.8 Solution:</span> ' +
-      (pType === "gum_fevicol" ? "Natural plant gums are complex bio-organic heteropolysaccharides of galactose/arabinose; Fevicol is a synthetic petrochemical adhesive based on polyvinyl alcohol/acetate with zero carbohydrate units." :
-       (pType === "starch" ? "Starch forms helical secondary coils trapping iodine molecules into a deep blue complex." :
-        "Cellulose forms rigid linear ribbons that lack helical coils and cannot trap iodine molecules."))
-    );
-  }
-
-  return { mount: mount, setPType: setPType, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 5. SIMULATION 5: Watson-Crick B-DNA Double Helix (dnadoublehelixsim)
-// -------------------------------------------------------------------------
-window.SIMS.dnadoublehelixsim = (function(){
-  var pairFocus = "both"; // "both", "at", "gc"
-
-  function mount(){
-    App.state.maxT = 3;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Sugar-Phosphate Antiparallel Backbone</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Adenine = Thymine (2 H-Bonds)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Guanine ≡ Cytosine (3 H-Bonds)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Pitch = 3.4 nm (10 bp/turn)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.dnadoublehelixsim.setFocus(\'both\')">Complete B-DNA Turn</button>' +
-      '<button class="preset-btn" onclick="SIMS.dnadoublehelixsim.setFocus(\'at\')">A = T (2 H-Bonds)</button>' +
-      '<button class="preset-btn" onclick="SIMS.dnadoublehelixsim.setFocus(\'gc\')">G ≡ C (3 H-Bonds)</button>';
-  }
-
-  function setFocus(f){
-    pairFocus = f;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">WATSON-CRICK B-DNA DOUBLE HELIX & BASE-PAIRING ARCHITECTURE</text>';
-
-    var cx = W / 2 - 50;
-    var startY = 75;
-    var endY = 325;
-    var pitchHeight = endY - startY; // 250 px = 1 complete 3.4 nm turn
-
-    // Draw the 10 Base Pairs of 1 Helical Turn
-    var basePairs = [
-      { type: "AT", label: "A = T" },
-      { type: "GC", label: "G ≡ C" },
-      { type: "AT", label: "T = A" },
-      { type: "GC", label: "C ≡ G" },
-      { type: "GC", label: "G ≡ C" },
-      { type: "AT", label: "A = T" },
-      { type: "GC", label: "C ≡ G" },
-      { type: "AT", label: "T = A" },
-      { type: "AT", label: "A = T" },
-      { type: "GC", label: "G ≡ C" }
-    ];
-
-    var n = basePairs.length; // 10 bp
-    for (var i = 0; i < n; i++) {
-      var angle = (i / n) * 2 * Math.PI;
-      var y = startY + (i / (n - 1)) * pitchHeight;
-      var span = 100 * Math.sin(angle);
-      var x1 = cx - span;
-      var x2 = cx + span;
-
-      var bp = basePairs[i];
-      var isAT = bp.type === "AT";
-      var color = isAT ? "#ec4899" : "#10b981";
-      var strokeW = (pairFocus === "both" || (pairFocus === "at" && isAT) || (pairFocus === "gc" && !isAT)) ? 4 : 1.5;
-      var opacity = (pairFocus === "both" || (pairFocus === "at" && isAT) || (pairFocus === "gc" && !isAT)) ? 1.0 : 0.25;
-
-      // Base pair rung
-      m += '<line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '" stroke="' + color + '" stroke-width="' + strokeW + '" opacity="' + opacity + '"/>';
-
-      // Hydrogen bonds markers
-      if (Math.abs(span) > 25) {
-        var hCount = isAT ? 2 : 3;
-        m += '<text x="' + cx + '" y="' + (y - 4) + '" fill="' + color + '" font-size="9" opacity="' + opacity + '" text-anchor="middle">' + bp.label + '</text>';
-      }
-
-      // Sugar-phosphate backbone nodes
-      m += '<circle cx="' + x1 + '" cy="' + y + '" r="5" fill="#38bdf8" opacity="' + opacity + '"/>';
-      m += '<circle cx="' + x2 + '" cy="' + y + '" r="5" fill="#0284c7" opacity="' + opacity + '"/>';
-    }
-
-    // Antiparallel Strand Polarity Labels
-    m += '<text x="' + (cx - 120) + '" y="' + (startY - 10) + '" fill="#38bdf8" font-size="12" font-weight="bold">5\' End</text>';
-    m += '<text x="' + (cx + 110) + '" y="' + (startY - 10) + '" fill="#0284c7" font-size="12" font-weight="bold">3\' End</text>';
-    m += '<text x="' + (cx - 120) + '" y="' + (endY + 20) + '" fill="#38bdf8" font-size="12" font-weight="bold">3\' End</text>';
-    m += '<text x="' + (cx + 110) + '" y="' + (endY + 20) + '" fill="#0284c7" font-size="12" font-weight="bold">5\' End</text>';
-
-    // Metric brackets
-    m += '<line x1="' + (cx - 150) + '" y1="' + startY + '" x2="' + (cx - 150) + '" y2="' + endY + '" stroke="#fcd34d" stroke-width="2"/>';
-    m += '<text x="' + (cx - 165) + '" y="' + (cy - 10) + '" fill="#fcd34d" font-size="12" font-weight="bold" transform="rotate(-90 ' + (cx - 165) + ' ' + (cy - 10) + ')" text-anchor="middle">1 Turn = 3.4 nm (Pitch)</text>';
-
-    // Side Info Panel
-    m += '<rect x="' + (W - 200) + '" y="80" width="180" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 110) + '" y="105" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">B-DNA METRICS</text>';
-    m += '<text x="' + (W - 190) + '" y="135" fill="#fcd34d" font-size="11">Helical Pitch:</text>';
-    m += '<text x="' + (W - 190) + '" y="155" fill="#cbd5e1" font-size="11">3.4 nm (34 Å) per turn</text>';
-    m += '<text x="' + (W - 190) + '" y="180" fill="#fcd34d" font-size="11">Base Pairs / Turn:</text>';
-    m += '<text x="' + (W - 190) + '" y="200" fill="#cbd5e1" font-size="11">10 base pairs</text>';
-    m += '<text x="' + (W - 190) + '" y="225" fill="#fcd34d" font-size="11">Rise per Pair:</text>';
-    m += '<text x="' + (W - 190) + '" y="245" fill="#10b981" font-size="11">0.34 nm (3.4 Å)</text>';
-    m += '<text x="' + (W - 190) + '" y="270" fill="#ec4899" font-size="10">A=T (2 H) | G≡C (3 H)</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("B-DNA Pitch", "3.4 nm (34 Å)", "#38bdf8") +
-      cell("Base Pairs per Turn", "10 Base Pairs", "#10b981") +
-      cell("Rise per Base Pair", "0.34 nm (3.4 Å)", "#f59e0b") +
-      cell("Strand Polarity", "Antiparallel (5'->3' / 3'->5')", "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Watson-Crick B-DNA Axiom:</span> ' +
-      "B-DNA is a right-handed antiparallel double helix with pitch of 3.4 nm, 10 bp per turn (0.34 nm rise), stabilized by complementary base pairs (A=T via 2 H-bonds, G≡C via 3 H-bonds) and hydrophobic base-stacking."
-    );
-  }
-
-  return { mount: mount, setFocus: setFocus, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 6. SIMULATION 6: Activation Energy & Transition State (activationenergylab - Ex 9.11)
-// -------------------------------------------------------------------------
-window.SIMS.activationenergylab = (function(){
-  var cat = "with_enzyme"; // "without_enzyme", "with_enzyme"
-
-  function mount(){
-    App.state.maxT = 2;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Uncatalyzed Activation Energy (High Barrier)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Enzyme-Catalyzed Activation Energy (Low Barrier)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Substrate (S) & Product (P) Levels</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.activationenergylab.setCat(\'with_enzyme\')">With Enzyme (Low Ea)</button>' +
-      '<button class="preset-btn" onclick="SIMS.activationenergylab.setCat(\'without_enzyme\')">Without Enzyme (High Ea)</button>';
-  }
-
-  function setCat(c){
-    cat = c;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 9.11: ENZYME CATALYSIS & ACTIVATION ENERGY REDUCTION</text>';
-
-    var ox = 100;
-    var oy = 310;
-
-    // Axes
-    m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + (W - 180) + '" y2="' + oy + '" stroke="#64748b" stroke-width="2"/>';
-    m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="70" stroke="#64748b" stroke-width="2"/>';
-    m += '<text x="' + (W - 200) + '" y="' + (oy + 25) + '" fill="#cbd5e1" font-size="11">Progress of Reaction</text>';
-    m += '<text x="' + (ox - 40) + '" y="85" fill="#cbd5e1" font-size="11" transform="rotate(-90 ' + (ox - 40) + ' 85)" text-anchor="middle">Potential Energy</text>';
-
-    // Substrate level (S)
-    var sY = 220;
-    m += '<line x1="' + ox + '" y1="' + sY + '" x2="' + (ox + 60) + '" y2="' + sY + '" stroke="#38bdf8" stroke-width="4"/>';
-    m += '<text x="' + (ox + 30) + '" y="' + (sY - 8) + '" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Substrate (S)</text>';
-
-    // Product level (P)
-    var pY = 270;
-    m += '<line x1="' + (W - 250) + '" y1="' + pY + '" x2="' + (W - 190) + '" y2="' + pY + '" stroke="#38bdf8" stroke-width="4"/>';
-    m += '<text x="' + (W - 220) + '" y="' + (pY - 8) + '" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Product (P)</text>';
-
-    // Net Delta G (Exothermic)
-    m += '<line x1="' + (W - 220) + '" y1="' + sY + '" x2="' + (W - 220) + '" y2="' + pY + '" stroke="#fcd34d" stroke-width="2" stroke-dasharray="3,3"/>';
-    m += '<text x="' + (W - 210) + '" y="' + (sY + 25) + '" fill="#fcd34d" font-size="10">Delta G (Constant)</text>';
-
-    // Uncatalyzed curve (High peak)
-    var uncathY = 90;
-    m += '<path d="M ' + (ox + 60) + ' ' + sY + ' Q ' + (ox + 160) + ' ' + uncathY + ' ' + (W - 250) + ' ' + pY + '" fill="none" stroke="#ef4444" stroke-width="' + (cat === "without_enzyme" ? 4 : 2) + '" stroke-dasharray="' + (cat === "with_enzyme" ? "4,4" : "none") + '"/>';
-    m += '<text x="' + (ox + 170) + '" y="' + (uncathY - 10) + '" fill="#f87171" font-size="11" font-weight="bold">Transition State (Without Enzyme)</text>';
-
-    // Catalyzed curve (Low peak)
-    var cathY = 150;
-    m += '<path d="M ' + (ox + 60) + ' ' + sY + ' Q ' + (ox + 160) + ' ' + cathY + ' ' + (W - 250) + ' ' + pY + '" fill="none" stroke="#10b981" stroke-width="' + (cat === "with_enzyme" ? 4 : 2) + '"/>';
-    m += '<text x="' + (ox + 170) + '" y="' + (cathY - 8) + '" fill="#34d399" font-size="11" font-weight="bold">Transition State (With Enzyme)</text>';
-
-    // Arrow showing reduction in Ea
-    m += '<line x1="' + (ox + 160) + '" y1="' + uncathY + '" x2="' + (ox + 160) + '" y2="' + cathY + '" stroke="#fcd34d" stroke-width="3"/><polygon points="' + (ox + 155) + ',' + cathY + ' ' + (ox + 165) + ',' + cathY + ' ' + (ox + 160) + ',' + (cathY + 8) + '" fill="#fcd34d"/>';
-    m += '<text x="' + (ox + 165) + '" y="' + (cathY - 25) + '" fill="#fcd34d" font-size="10">Ea Reduced!</text>';
-
-    // Side Info Panel
-    m += '<rect x="' + (W - 170) + '" y="80" width="160" height="220" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 90) + '" y="105" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">CATALYTIC POWER</text>';
-    m += '<text x="' + (W - 160) + '" y="135" fill="#fcd34d" font-size="10">Carbonic Anhydrase:</text>';
-    m += '<text x="' + (W - 160) + '" y="155" fill="#f87171" font-size="10">Uncat: 200 molec/hr</text>';
-    m += '<text x="' + (W - 160) + '" y="175" fill="#10b981" font-size="10">Cat: 600,000 / sec!</text>';
-    m += '<text x="' + (W - 160) + '" y="200" fill="#fcd34d" font-size="10">Acceleration:</text>';
-    m += '<text x="' + (W - 160) + '" y="220" fill="#38bdf8" font-size="11" font-weight="bold">10 Million Times</text>';
-    m += '<text x="' + (W - 160) + '" y="250" fill="#cbd5e1" font-size="10">Delta G: Unchanged</text>';
-    m += '<text x="' + (W - 160) + '" y="270" fill="#cbd5e1" font-size="10">Keq: Unchanged</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Catalyst State", cat === "with_enzyme" ? "WITH ENZYME" : "WITHOUT ENZYME", cat === "with_enzyme" ? "#10b981" : "#ef4444") +
-      cell("Activation Energy (Ea)", cat === "with_enzyme" ? "DRAMATICALLY LOWERED" : "HIGH BARRIER", cat === "with_enzyme" ? "#10b981" : "#ef4444") +
-      cell("Net Reaction Delta G", "UNCHANGED (Thermodynamic Invariant)", "#fcd34d") +
-      cell("Rate Enhancement", cat === "with_enzyme" ? "10^6 to 10^12 fold" : "Basal / Slow", "#38bdf8")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Exercise 9.11 Activation Energy Axiom:</span> ' +
-      (cat === "with_enzyme" ? "Enzymes do not alter overall delta G or equilibrium constant; they bind substrates to stabilize the transition state, drastically lowering the activation energy barrier." :
-       "Without enzymes, high activation energy limits the number of reactant molecules possessing sufficient kinetic energy to react at physiological temperatures.")
-    );
-  }
-
-  return { mount: mount, setCat: setCat, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 7. SIMULATION 7: Michaelis-Menten Kinetics & Malonate (enzymekineticslab - Ex 9.11)
-// -------------------------------------------------------------------------
-window.SIMS.enzymekineticslab = (function(){
-  var inhibitor = "none"; // "none", "malonate"
-  var sConc = 5; // 1..10
+window.SIMS.proteinlab = (function(){
+  var view = "levels"; // "levels", "globin", "functions"
+  var lvl = 0, aswap = false, jobIdx = 0;
+  var LEVELS = [
+    ["Primary", "sequence N\u2192C (Fig. 9.3 a)"],
+    ["Secondary", "right-handed helices (Fig. 9.3 b)"],
+    ["Tertiary", "woolen ball 3D (Fig. 9.3 c)"],
+    ["Quaternary", "subunit architecture (Fig. 9.3 d)"]
+  ];
+  var JOBS = [
+    ["Collagen", "Intercellular ground substance"],
+    ["Trypsin", "Enzyme"],
+    ["Insulin", "Hormone"],
+    ["Antibody", "Fights infectious agents"],
+    ["Receptor", "Sensory reception (smell, taste, hormone, etc.)"],
+    ["GLUT-4", "Enables glucose transport into cells"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Normal Velocity Curve (No Inhibitor)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Competitive Inhibition (Malonate)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Vmax (Max Velocity)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Km (Michaelis Constant)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.enzymekineticslab.setInhibitor(\'none\')">Normal Kinetics</button>' +
-      '<button class="preset-btn" onclick="SIMS.enzymekineticslab.setInhibitor(\'malonate\')">Add Malonate (Competitive)</button>' +
-      '<button class="preset-btn" onclick="SIMS.enzymekineticslab.adjustS(2)">Low [S]</button>' +
-      '<button class="preset-btn" onclick="SIMS.enzymekineticslab.adjustS(9)">Saturating [S]</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Chain / subunit A</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fold / subunit B</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Functional level</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-levels">Four Levels</button>' +
+      '<button class="preset-btn" id="p-globin">Haemoglobin 2+2</button>' +
+      '<button class="preset-btn" id="p-functions">Table 9.5 Jobs</button>';
+    document.getElementById("p-levels").onclick = function(){ setActivePreset(this); setV("levels"); };
+    document.getElementById("p-globin").onclick = function(){ setActivePreset(this); setV("globin"); };
+    document.getElementById("p-functions").onclick = function(){ setActivePreset(this); setV("functions"); };
+    mountControls();
+    draw(0);
   }
 
-  function setInhibitor(i){
-    inhibitor = i;
-    draw();
-  }
-
-  function adjustS(s){
-    sConc = s;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="32" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EXERCISE 9.11: MICHAELIS-MENTEN KINETICS & COMPETITIVE MALONATE INHIBITION</text>';
-
-    var ox = 90;
-    var oy = 300;
-
-    // Axes
-    m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + (W - 180) + '" y2="' + oy + '" stroke="#64748b" stroke-width="2"/>';
-    m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="70" stroke="#64748b" stroke-width="2"/>';
-    m += '<text x="' + (W - 200) + '" y="' + (oy + 25) + '" fill="#cbd5e1" font-size="11">Substrate Concentration [S]</text>';
-    m += '<text x="' + (ox - 35) + '" y="90" fill="#cbd5e1" font-size="11" transform="rotate(-90 ' + (ox - 35) + ' 90)" text-anchor="middle">Velocity (v)</text>';
-
-    // Vmax dashed line
-    var vmaxY = 110;
-    m += '<line x1="' + ox + '" y1="' + vmaxY + '" x2="' + (W - 180) + '" y2="' + vmaxY + '" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,4"/>';
-    m += '<text x="' + (W - 170) + '" y="' + (vmaxY + 4) + '" fill="#f59e0b" font-size="11" font-weight="bold">Vmax</text>';
-
-    // Vmax / 2 line
-    var halfVmaxY = oy - (oy - vmaxY) / 2; // 205
-    m += '<line x1="' + ox + '" y1="' + halfVmaxY + '" x2="' + (W - 180) + '" y2="' + halfVmaxY + '" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>';
-    m += '<text x="' + (ox - 10) + '" y="' + (halfVmaxY + 4) + '" fill="#94a3b8" font-size="10" text-anchor="end">Vmax/2</text>';
-
-    // Kinetic hyperbola curve
-    // Normal curve (Km = 2.0)
-    var normalD = 'M ' + ox + ' ' + oy;
-    for (var s = 0; s <= 20; s += 0.5) {
-      var x = ox + s * 20;
-      var v = (190 * s) / (2.5 + s);
-      var y = oy - v;
-      normalD += ' L ' + x + ' ' + y;
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "levels"){
+      c.innerHTML =
+        '<div class="control-group"><label>Level:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        LEVELS.map(function(l, i){ return '<button class="preset-btn" data-lv="' + i + '">' + l[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Note:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Tertiary is absolutely necessary for biological activity.</div></div>';
+      c.querySelectorAll("[data-lv]").forEach(function(b){ b.onclick = function(){ lvl = Number(b.dataset.lv); draw(0); }; });
+    } else if(view === "globin"){
+      c.innerHTML =
+        '<div class="control-group"><label>Assembly:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-s0">2\u03B1 + 2\u03B2 (normal)</button>' +
+        '<button class="preset-btn" id="c-s1">4\u03B2 (mutant)</button></div></div>' +
+        '<div class="control-group"><label>Level:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Subunit composition = quaternary structure.</div></div>';
+      document.getElementById("c-s0").onclick = function(){ aswap = false; draw(0); };
+      document.getElementById("c-s1").onclick = function(){ aswap = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Protein:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        JOBS.map(function(j, i){ return '<button class="preset-btn" data-jb="' + i + '">' + j[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Source:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Table 9.5, PDF p. 6.</div></div>';
+      c.querySelectorAll("[data-jb]").forEach(function(b){ b.onclick = function(){ jobIdx = Number(b.dataset.jb); draw(0); }; });
     }
-    m += '<path d="' + normalD + '" fill="none" stroke="#10b981" stroke-width="3.5"/>';
+  }
 
-    // Competitive inhibitor curve (Malonate: apparent Km = 6.0, Vmax identical!)
-    if (inhibitor === "malonate") {
-      var malD = 'M ' + ox + ' ' + oy;
-      for (var s2 = 0; s2 <= 20; s2 += 0.5) {
-        var x2 = ox + s2 * 20;
-        var v2 = (190 * s2) / (7.0 + s2);
-        var y2 = oy - v2;
-        malD += ' L ' + x2 + ' ' + y2;
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Proteins (\u00A79.4, \u00A79.7)</text>';
+    if(view === "levels"){
+      var L = LEVELS[lvl];
+      for(var i = 0; i < 4; i++){
+        var x = 45 + i * 160;
+        var on = i <= lvl;
+        m += '<rect x="' + x + '" y="120" width="140" height="90" rx="8" fill="#0f172a" stroke="' + (on ? (i === 2 ? "#22c55e" : "#38bdf8") : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 70) + '" y="155" fill="' + (on ? "#f8fafc" : "#475569") + '" font-size="11" font-weight="700" text-anchor="middle">' + LEVELS[i][0] + "</text>";
+        m += '<text x="' + (x + 70) + '" y="175" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + LEVELS[i][1] + "</text>";
+        if(i < 3) m += '<text x="' + (x + 150) + '" y="168" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
       }
-      m += '<path d="' + malD + '" fill="none" stroke="#ef4444" stroke-width="3.5"/>';
-      m += '<text x="' + (ox + 180) + '" y="235" fill="#f87171" font-size="11" font-weight="bold">+ MALONATE (Km Increased)</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Now viewing: ' + L[0] + " \u2014 " + L[1] + "</text>";
+      readout(cell("Level", L[0], lvl === 2 ? "#22c55e" : "#38bdf8") + cell("Detail", L[1], "#94a3b8"));
+      verdict(lvl === 2 ? "Tertiary: absolutely necessary for biological activity." : "Fold the same chain one level at a time.");
+    } else if(view === "globin"){
+      var subs = aswap ? ["\u03B2", "\u03B2", "\u03B2", "\u03B2"] : ["\u03B1", "\u03B1", "\u03B2", "\u03B2"];
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">Adult human haemoglobin \u2014 ' + (aswap ? "4 identical \u03B2 subunits (mutant)" : "2\u03B1 + 2\u03B2 subunits") + "</text>";
+      for(var j = 0; j < 4; j++){
+        var jx = 150 + j * 100;
+        var isA = subs[j] === "\u03B1";
+        m += '<circle cx="' + jx + '" cy="170" r="36" fill="#0f172a" stroke="' + (isA ? "#38bdf8" : "#f59e0b") + '" stroke-width="2.5"/>';
+        m += '<text x="' + jx + '" y="180" fill="' + (isA ? "#38bdf8" : "#f59e0b") + '" font-size="20" font-weight="700" text-anchor="middle">' + subs[j] + "</text>";
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Two \u03B1 identical to each other; two \u03B2 identical to each other (PDF p. 9)</text>';
+      readout(cell("Subunits", aswap ? "4\u03B2" : "2\u03B1+2\u03B2", aswap ? "#f59e0b" : "#22c55e") + cell("Level", "quaternary", "#38bdf8"));
+      verdict(aswap ? "Mutant: quaternary composition changed." : "Normal: quaternary architecture 2\u03B1 + 2\u03B2.");
+    } else {
+      var jb = JOBS[jobIdx];
+      m += '<rect x="60" y="120" width="250" height="90" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="185" y="160" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">' + jb[0] + "</text>";
+      m += '<text x="360" y="168" fill="#64748b" font-size="18" text-anchor="middle">\u2192</text>';
+      m += '<rect x="390" y="120" width="250" height="90" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+      m += '<text x="515" y="160" fill="#22c55e" font-size="10" font-weight="700" text-anchor="middle">' + jb[1] + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Collagen most abundant in animals \u00B7 RuBisCO most abundant in biosphere</text>';
+      readout(cell("Protein", jb[0], "#38bdf8") + cell("Function", jb[1], "#22c55e"));
+      verdict("Table 9.5: one protein, one job.");
     }
-
-    // Operating point based on sConc
-    var curKm = (inhibitor === "malonate") ? 7.0 : 2.5;
-    var curV = (190 * sConc) / (curKm + sConc);
-    var curX = ox + sConc * 20;
-    var curY = oy - curV;
-
-    m += '<circle cx="' + curX + '" cy="' + curY + '" r="7" fill="#fcd34d" stroke="#fff" stroke-width="2"/>';
-    m += '<line x1="' + curX + '" y1="' + oy + '" x2="' + curX + '" y2="' + curY + '" stroke="#fcd34d" stroke-width="1.5" stroke-dasharray="4,2"/>';
-    m += '<text x="' + curX + '" y="' + (oy + 16) + '" fill="#fcd34d" font-size="10" text-anchor="middle">[S]=' + sConc + '</text>';
-
-    // Side Info Panel
-    m += '<rect x="' + (W - 170) + '" y="80" width="160" height="230" rx="8" fill="rgba(30,41,59,0.85)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (W - 90) + '" y="105" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">INHIBITION METRICS</text>';
-    m += '<text x="' + (W - 160) + '" y="130" fill="#fcd34d" font-size="10">Target Enzyme:</text>';
-    m += '<text x="' + (W - 160) + '" y="145" fill="#cbd5e1" font-size="10">Succinate Dehydrogenase</text>';
-    m += '<text x="' + (W - 160) + '" y="170" fill="#fcd34d" font-size="10">Competitive Inhibitor:</text>';
-    m += '<text x="' + (W - 160) + '" y="185" fill="#f87171" font-size="10">Malonate (Mimics succinate)</text>';
-    m += '<text x="' + (W - 160) + '" y="210" fill="#fcd34d" font-size="10">Vmax Behavior:</text>';
-    m += '<text x="' + (W - 160) + '" y="225" fill="#10b981" font-size="10">UNCHANGED at high [S]</text>';
-    m += '<text x="' + (W - 160) + '" y="250" fill="#fcd34d" font-size="10">Km Behavior:</text>';
-    m += '<text x="' + (W - 160) + '" y="265" fill="#ef4444" font-size="10">Apparent Km INCREASES</text>';
-    m += '<text x="' + (W - 160) + '" y="290" fill="#38bdf8" font-size="9">Cofactor: NAD (Niacin) / Zn2+</text>';
-
     svg.innerHTML = m;
-
-    readout(
-      cell("Inhibitor Status", inhibitor === "malonate" ? "MALONATE PRESENT" : "NONE (Standard)", inhibitor === "malonate" ? "#ef4444" : "#10b981") +
-      cell("Vmax Velocity", "CONSTANT (Can be reached at high [S])", "#10b981") +
-      cell("Apparent Km", inhibitor === "malonate" ? "INCREASED (Lower Affinity)" : "Normal Km", inhibitor === "malonate" ? "#ef4444" : "#38bdf8") +
-      cell("Operating Velocity", Math.round(curV) + " / 190 max", "#fcd34d")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">Exercise 9.11 Competitive Inhibition Rule:</span> ' +
-      (inhibitor === "malonate" ? "Malonate closely resembles succinate and competes for the active site of succinate dehydrogenase. Vmax remains unchanged because excess substrate outcompetes the inhibitor, but the apparent Km increases." :
-       "In Michaelis-Menten kinetics, velocity increases hyperbolically with substrate concentration until active sites become saturated at Vmax; Km reflects the substrate concentration at half Vmax.")
-    );
   }
 
-  return { mount: mount, setInhibitor: setInhibitor, adjustS: adjustS, draw: draw };
+  return {mount: mount, draw: draw};
 })();
+
+// -------------------------------------------------------------------------
+// 5. Polysaccharide & Nucleotide Bench (sugarlab) - L5, 9.5-9.6
+// -------------------------------------------------------------------------
+window.SIMS.sugarlab = (function(){
+  var view = "glyco"; // "glyco", "iodine", "bases"
+  var polyIdx = 0, iod = 0, baseIdx = 0;
+  var POLYS = [
+    ["Cellulose", "glucose homopolymer \u00B7 walls/paper/cotton"],
+    ["Starch", "plant store \u00B7 helical \u00B7 I2 blue"],
+    ["Glycogen", "animal store \u00B7 branched (Fig. 9.2)"],
+    ["Inulin", "polymer of fructose"],
+    ["Chitin", "arthropod exoskeletons"]
+  ];
+  var BASES = [
+    ["Adenine", "substituted purine"],
+    ["Guanine", "substituted purine"],
+    ["Cytosine", "substituted pyrimidine"],
+    ["Uracil", "substituted pyrimidine"],
+    ["Thymine", "substituted pyrimidine"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Glucose polymers</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#1d4ed8;"></span><span>Starch\u2013I2 blue</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Purines vs pyrimidines</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-glyco">Polymer Match</button>' +
+      '<button class="preset-btn" id="p-iodine">Iodine Test</button>' +
+      '<button class="preset-btn" id="p-bases">Base Sort</button>';
+    document.getElementById("p-glyco").onclick = function(){ setActivePreset(this); setV("glyco"); };
+    document.getElementById("p-iodine").onclick = function(){ setActivePreset(this); setV("iodine"); };
+    document.getElementById("p-bases").onclick = function(){ setActivePreset(this); setV("bases"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "glyco"){
+      c.innerHTML =
+        '<div class="control-group"><label>Polysaccharide:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        POLYS.map(function(p, i){ return '<button class="preset-btn" data-pl="' + i + '">' + p[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Ends:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Right end reducing, left end non-reducing (glycogen).</div></div>';
+      c.querySelectorAll("[data-pl]").forEach(function(b){ b.onclick = function(){ polyIdx = Number(b.dataset.pl); draw(0); }; });
+    } else if(view === "iodine"){
+      c.innerHTML =
+        '<div class="control-group"><label>Powder + I2:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-i0">Starch</button>' +
+        '<button class="preset-btn" id="c-i1">Cellulose</button></div></div>' +
+        '<div class="control-group"><label>Rule:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Helices hold I2 (blue); no helices, no colour.</div></div>';
+      document.getElementById("c-i0").onclick = function(){ iod = 0; draw(0); };
+      document.getElementById("c-i1").onclick = function(){ iod = 1; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Nitrogen base:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        BASES.map(function(b, i){ return '<button class="preset-btn" data-bs="' + i + '">' + b[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Sugars:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Ribose \u2192 RNA; 2\u2019 deoxyribose \u2192 DNA.</div></div>';
+      c.querySelectorAll("[data-bs]").forEach(function(b){ b.onclick = function(){ baseIdx = Number(b.dataset.bs); draw(0); }; });
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Polysaccharides &amp; Nucleotides (\u00A79.5\u2013\u00A79.6)</text>';
+    if(view === "glyco"){
+      var p = POLYS[polyIdx];
+      m += '<rect x="60" y="120" width="250" height="90" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="185" y="160" fill="#38bdf8" font-size="14" font-weight="700" text-anchor="middle">' + p[0] + "</text>";
+      m += '<text x="360" y="168" fill="#64748b" font-size="18" text-anchor="middle">\u2192</text>';
+      m += '<rect x="390" y="120" width="250" height="90" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+      m += '<text x="515" y="160" fill="#22c55e" font-size="10" font-weight="700" text-anchor="middle">' + p[1] + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Threads of sugars \u00B7 complex ones mostly homopolymers</text>';
+      readout(cell("Polymer", p[0], "#38bdf8") + cell("Identity", p[1], "#22c55e"));
+      verdict("\u00A79.5: same glucose, different architecture, different job.");
+    } else if(view === "iodine"){
+      var isStarch = iod === 0;
+      m += '<rect x="150" y="120" width="160" height="90" rx="8" fill="' + (isStarch ? "#1e3a8a" : "#0f172a") + '" stroke="' + (isStarch ? "#60a5fa" : "#94a3b8") + '" stroke-width="2"/>';
+      m += '<text x="230" y="160" fill="' + (isStarch ? "#bfdbfe" : "#cbd5e1") + '" font-size="13" font-weight="700" text-anchor="middle">' + (isStarch ? "BLUE" : "no colour") + "</text>";
+      m += '<text x="230" y="182" fill="#64748b" font-size="10" text-anchor="middle">' + (isStarch ? "starch\u2013I2" : "cellulose + I2") + "</text>";
+      m += '<rect x="390" y="120" width="160" height="90" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2"/>';
+      m += '<text x="470" y="155" fill="#94a3b8" font-size="11" text-anchor="middle">' + (isStarch ? "helical coils" : "no complex") + "</text>";
+      m += '<text x="470" y="172" fill="#94a3b8" font-size="11" text-anchor="middle">' + (isStarch ? "hold I2" : "helices") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Starch forms helical secondary structures; cellulose does not (PDF p. 7)</text>';
+      readout(cell("Powder", isStarch ? "starch" : "cellulose", "#38bdf8") + cell("Result", isStarch ? "blue" : "no colour", isStarch ? "#60a5fa" : "#94a3b8"));
+      verdict(isStarch ? "Starch\u2013I2 is blue: helices trap iodine." : "Cellulose cannot hold I2: no helices.");
+    } else {
+      var b = BASES[baseIdx];
+      var isPur = baseIdx < 2;
+      m += '<rect x="60" y="120" width="270" height="100" rx="8" fill="#0f172a" stroke="' + (isPur ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="195" y="160" fill="' + (isPur ? "#22c55e" : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">Purines</text>';
+      m += '<text x="195" y="182" fill="#64748b" font-size="10" text-anchor="middle">adenine, guanine</text>';
+      m += '<rect x="370" y="120" width="270" height="100" rx="8" fill="#0f172a" stroke="' + (!isPur ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="505" y="160" fill="' + (!isPur ? "#38bdf8" : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">Pyrimidines</text>';
+      m += '<text x="505" y="182" fill="#64748b" font-size="10" text-anchor="middle">cytosine, uracil, thymine</text>';
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + b[0] + " \u2014 " + b[1] + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Nucleotide = base + monosaccharide + phosphate (\u00A79.6)</text>';
+      readout(cell("Base", b[0], "#f8fafc") + cell("Ring", isPur ? "purine" : "pyrimidine", isPur ? "#22c55e" : "#38bdf8"));
+      verdict(isPur ? "Adenine/guanine: substituted purines." : "The rest: substituted pyrimidines.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 6. Catalytic Cycle & Activation Energy Lab (enzymelab) - L6, 9.8-9.8.3
+// -------------------------------------------------------------------------
+window.SIMS.enzymelab = (function(){
+  var view = "cycle"; // "cycle", "energy", "anhydrase"
+  var step = 0, enz = true, cat = true;
+  var STEPS = [
+    ["E + S", "substrate binds into the active site"],
+    ["ES", "binding induces tighter fit"],
+    ["EP", "bonds break; product complex forms"],
+    ["E + P", "products release; enzyme free again"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Enzyme / ES complex</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Product released</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Transition state (high energy)</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-cycle">Catalytic Cycle</button>' +
+      '<button class="preset-btn" id="p-energy">Activation Energy</button>' +
+      '<button class="preset-btn" id="p-anhydrase">Rate Showpiece</button>';
+    document.getElementById("p-cycle").onclick = function(){ setActivePreset(this); setV("cycle"); };
+    document.getElementById("p-energy").onclick = function(){ setActivePreset(this); setV("energy"); };
+    document.getElementById("p-anhydrase").onclick = function(){ setActivePreset(this); setV("anhydrase"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "cycle"){
+      c.innerHTML =
+        '<div class="control-group"><label>Cycle step:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" data-st="0">1 Bind</button>' +
+        '<button class="preset-btn" data-st="1">2 Tighten</button>' +
+        '<button class="preset-btn" data-st="2">3 Convert</button>' +
+        '<button class="preset-btn" data-st="3">4 Release</button></div></div>' +
+        '<div class="control-group"><label>Scheme:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">E + S \u2192 ES \u2192 EP \u2192 E + P.</div></div>';
+      c.querySelectorAll("[data-st]").forEach(function(b){ b.onclick = function(){ step = Number(b.dataset.st); draw(0); }; });
+    } else if(view === "energy"){
+      c.innerHTML =
+        '<div class="control-group"><label>Curve:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-e0">Without enzyme</button>' +
+        '<button class="preset-btn" id="c-e1">With enzyme</button></div></div>' +
+        '<div class="control-group"><label>Axes:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Y = potential energy; X = progress of reaction (Fig. 9.4).</div></div>';
+      document.getElementById("c-e0").onclick = function(){ enz = false; draw(0); };
+      document.getElementById("c-e1").onclick = function(){ enz = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Reaction:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-r0">Uncatalysed</button>' +
+        '<button class="preset-btn" id="c-r1">+ carbonic anhydrase</button></div></div>' +
+        '<div class="control-group"><label>Reaction:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">CO2 + H2O \u2192 H2CO3.</div></div>';
+      document.getElementById("c-r0").onclick = function(){ cat = false; draw(0); };
+      document.getElementById("c-r1").onclick = function(){ cat = true; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Enzyme Action (\u00A79.8\u2013\u00A79.8.3)</text>';
+    if(view === "cycle"){
+      for(var i = 0; i < 4; i++){
+        var x = 45 + i * 160;
+        var on = i <= step;
+        var col = i === 3 ? "#22c55e" : "#38bdf8";
+        m += '<rect x="' + x + '" y="120" width="140" height="100" rx="8" fill="#0f172a" stroke="' + (on ? col : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 70) + '" y="152" fill="' + (on ? col : "#475569") + '" font-size="13" font-weight="700" text-anchor="middle">' + STEPS[i][0] + "</text>";
+        m += '<text x="' + (x + 70) + '" y="176" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + STEPS[i][1] + "</text>";
+        if(i < 3) m += '<text x="' + (x + 150) + '" y="172" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">ES is obligatory, highly reactive and short-lived (\u00A79.8.3)</text>';
+      readout(cell("Step", (step + 1) + "/4", "#38bdf8") + cell("State", STEPS[step][0], step === 3 ? "#22c55e" : "#38bdf8"));
+      verdict(step === 3 ? "Free enzyme runs the cycle once again." : "The catalytic cycle, step " + (step + 1) + " of 4.");
+    } else if(view === "energy"){
+      m += '<line x1="120" y1="250" x2="600" y2="250" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<line x1="120" y1="250" x2="120" y2="70" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<text x="600" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">progress of reaction</text>';
+      m += '<text x="60" y="160" fill="#94a3b8" font-size="10" text-anchor="middle">potential</text>';
+      m += '<text x="60" y="174" fill="#94a3b8" font-size="10" text-anchor="middle">energy</text>';
+      var peak = enz ? 120 : 70;
+      m += '<path d="M140,220 Q260,220 330,' + peak + ' Q400,' + peak + ' 470,235 L560,235" fill="none" stroke="' + (enz ? "#22c55e" : "#f59e0b") + '" stroke-width="3"/>';
+      m += '<text x="140" y="240" fill="#38bdf8" font-size="12" font-weight="700">S</text>';
+      m += '<text x="560" y="228" fill="#38bdf8" font-size="12" font-weight="700">P</text>';
+      m += '<text x="330" y="' + (peak - 12) + '" fill="#f59e0b" font-size="11" font-weight="700" text-anchor="middle">transition state</text>';
+      m += '<text x="350" y="290" fill="#94a3b8" font-size="11" text-anchor="middle">' + (enz ? "With enzyme: lower hill (Fig. 9.4)" : "Without enzyme: high hill") + " \u00B7 P below S = exothermic</text>";
+      readout(cell("Barrier", enz ? "lowered" : "high", enz ? "#22c55e" : "#f59e0b") + cell("S/P levels", "unchanged", "#38bdf8"));
+      verdict(enz ? "Enzymes bring down the activation-energy barrier." : "S must still climb through the transition state.");
+    } else {
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">CO2 + H2O \u2192 H2CO3 ' + (cat ? "with carbonic anhydrase" : "without enzyme") + "</text>";
+      m += '<rect x="120" y="130" width="200" height="90" rx="8" fill="#0f172a" stroke="' + (!cat ? "#f59e0b" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="220" y="165" fill="' + (!cat ? "#f59e0b" : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">~200 molecules</text>';
+      m += '<text x="220" y="185" fill="#64748b" font-size="11" text-anchor="middle">per HOUR</text>';
+      m += '<rect x="380" y="130" width="200" height="90" rx="8" fill="#0f172a" stroke="' + (cat ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="480" y="165" fill="' + (cat ? "#22c55e" : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">~600,000 molecules</text>';
+      m += '<text x="480" y="185" fill="#64748b" font-size="11" text-anchor="middle">per SECOND</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Speed-up: about 10 million times (PDF p. 11)</text>';
+      readout(cell("Rate", cat ? "600,000/s" : "200/hr", cat ? "#22c55e" : "#f59e0b") + cell("Speed-up", "~10 million \u00D7", "#38bdf8"));
+      verdict("The chapter\u2019s own measure of enzyme power.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 7. Enzyme Factors, Inhibition & Classes Lab (factorlab) - L7, 9.8.4-9.8.6
+// -------------------------------------------------------------------------
+window.SIMS.factorlab = (function(){
+  var view = "optimum"; // "optimum", "vmax", "inhibit"
+  var curve = 0, sat = 50, mal = false;
+  var CURVES = [["(a) pH", "optimum pH"], ["(b) Temperature", "optimum temperature"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Optimum / Vmax</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Activity curve</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Denatured / inhibited</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-optimum">Optimum Curves</button>' +
+      '<button class="preset-btn" id="p-vmax">Vmax Saturation</button>' +
+      '<button class="preset-btn" id="p-inhibit">Malonate Block</button>';
+    document.getElementById("p-optimum").onclick = function(){ setActivePreset(this); setV("optimum"); };
+    document.getElementById("p-vmax").onclick = function(){ setActivePreset(this); setV("vmax"); };
+    document.getElementById("p-inhibit").onclick = function(){ setActivePreset(this); setV("inhibit"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "optimum"){
+      c.innerHTML =
+        '<div class="control-group"><label>Curve (Fig. 9.5):</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-f0">(a) pH</button>' +
+        '<button class="preset-btn" id="c-f1">(b) Temperature</button></div></div>' +
+        '<div class="control-group"><label>Edges:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Low T preserves (inactive); high T denatures.</div></div>';
+      document.getElementById("c-f0").onclick = function(){ curve = 0; draw(0); };
+      document.getElementById("c-f1").onclick = function(){ curve = 1; draw(0); };
+    } else if(view === "vmax"){
+      c.innerHTML =
+        '<div class="control-group"><label>Substrate [S]:</label><input id="c-sat" type="range" min="5" max="100" value="' + sat + '" style="width:100%;margin-top:4px;"></div>' +
+        '<div class="control-group"><label>Why it plateaus:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Enzymes fewer than substrates; saturation leaves no free enzyme.</div></div>';
+      document.getElementById("c-sat").oninput = function(){ sat = Number(this.value); draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Binding site:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-m0">Succinate binds</button>' +
+        '<button class="preset-btn" id="c-m1">+ malonate</button></div></div>' +
+        '<div class="control-group"><label>Type:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Competitive: lookalike competes for the site (succinic dehydrogenase).</div></div>';
+      document.getElementById("c-m0").onclick = function(){ mal = false; draw(0); };
+      document.getElementById("c-m1").onclick = function(){ mal = true; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Factors &amp; Inhibition (\u00A79.8.4\u2013\u00A79.8.6)</text>';
+    if(view === "optimum"){
+      m += '<line x1="120" y1="250" x2="600" y2="250" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<line x1="120" y1="250" x2="120" y2="70" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<text x="600" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">' + (curve === 0 ? "pH" : "temperature") + "</text>";
+      m += '<text x="60" y="160" fill="#94a3b8" font-size="10" text-anchor="middle">enzyme</text>';
+      m += '<text x="60" y="174" fill="#94a3b8" font-size="10" text-anchor="middle">activity</text>';
+      m += '<path d="M140,235 Q240,235 350,110 Q460,235 580,235" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+      m += '<line x1="350" y1="110" x2="350" y2="250" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,4"/>';
+      m += '<text x="350" y="95" fill="#22c55e" font-size="11" font-weight="700" text-anchor="middle">' + CURVES[curve][1] + "</text>";
+      m += '<text x="180" y="215" fill="#94a3b8" font-size="10" text-anchor="middle">' + (curve === 0 ? "low pH" : "low T: preserved") + "</text>";
+      m += '<text x="520" y="215" fill="#ef4444" font-size="10" text-anchor="middle">' + (curve === 0 ? "high pH" : "high T: denatured") + "</text>";
+      m += '<text x="350" y="290" fill="#94a3b8" font-size="11" text-anchor="middle">Figure 9.5 ' + CURVES[curve][0] + " \u2014 activity declines both sides of optimum</text>";
+      readout(cell("Curve", CURVES[curve][0], "#38bdf8") + cell("Peak", CURVES[curve][1], "#22c55e"));
+      verdict("Narrow range; optimum in the middle.");
+    } else if(view === "vmax"){
+      m += '<line x1="120" y1="250" x2="600" y2="250" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<line x1="120" y1="250" x2="120" y2="70" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<text x="600" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">[S]</text>';
+      m += '<text x="60" y="160" fill="#94a3b8" font-size="10" text-anchor="middle">velocity</text>';
+      m += '<path d="M130,245 Q200,120 330,105 L560,100" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+      m += '<line x1="120" y1="100" x2="600" y2="100" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="5,4"/>';
+      m += '<text x="590" y="90" fill="#22c55e" font-size="11" font-weight="700">Vmax</text>';
+      var px = 130 + sat * 4.3, py = sat < 45 ? 245 - sat * 3.1 : 105;
+      m += '<circle cx="' + px + '" cy="' + py + '" r="7" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>';
+      m += '<text x="350" y="290" fill="#94a3b8" font-size="11" text-anchor="middle">Figure 9.5 (c) \u00B7 Vmax, Vmax/2, Km, [S] labelled in print</text>';
+      readout(cell("[S]", String(sat), "#f59e0b") + cell("Velocity", py <= 110 ? "Vmax (saturated)" : "rising", py <= 110 ? "#22c55e" : "#38bdf8"));
+      verdict(py <= 110 ? "Saturated: no free enzyme left for extra substrate." : "Rising: free enzyme still available.");
+    } else {
+      m += '<rect x="220" y="110" width="260" height="100" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>';
+      m += '<text x="350" y="140" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">succinic dehydrogenase</text>';
+      m += '<rect x="290" y="155" width="120" height="34" rx="8" fill="#020617" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<text x="350" y="177" fill="' + (mal ? "#ef4444" : "#22c55e") + '" font-size="12" font-weight="700" text-anchor="middle">' + (mal ? "malonate" : "succinate") + "</text>";
+      if(mal) m += '<text x="350" y="230" fill="#ef4444" font-size="11" text-anchor="middle">substrate cannot bind \u2192 action declines</text>';
+      else m += '<text x="350" y="230" fill="#22c55e" font-size="11" text-anchor="middle">substrate binds \u2192 reaction proceeds</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Malonate resembles succinate; competes for the same site (PDF p. 14)</text>';
+      readout(cell("Site holds", mal ? "malonate" : "succinate", mal ? "#ef4444" : "#22c55e") + cell("Type", "competitive", "#f59e0b"));
+      verdict(mal ? "Competitive inhibition: lookalike blocks the site." : "No inhibitor: site free for substrate.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// Browser-QA compatibility shims (same pattern as kebo101-108 -
+// per-chapter only, no shared-script changes).
+// -------------------------------------------------------------------------
+
+// Stable browser-fixture identifiers for every visible lab scenario.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// Semantic prediction aliases expected by the shared browser QA.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data.
+function normalizeChapterPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var watch = document.getElementById("what-to-watch");
+  if(lesson && watch && lesson.watch){
+    var text = "What to watch: " + lesson.watch;
+    if(watch.textContent !== text) watch.textContent = text;
+  }
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){ var h = card.querySelector("h3"); return h && /^Wow/i.test(h.textContent.trim()); });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow"); card.removeAttribute("data-wow"); card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge"); if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+var revisionView = document.getElementById("revision-view");
+if(conceptView) new MutationObserver(normalizeChapterPresentation).observe(conceptView, {childList:true, subtree:true});
+if(revisionView) new MutationObserver(normalizeChapterPresentation).observe(revisionView, {childList:true, subtree:true});
+normalizeChapterPresentation();

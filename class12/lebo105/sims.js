@@ -28,9 +28,9 @@ window.SIMS["dna-structure-packaging"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>G-triple-C (3 H-bonds)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Sugar-phosphate backbone</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-chg">Ex 2: Chargaff check</button>' +
-      '<button class="preset-btn" id="p-ex3">Ex 3: 28-nt complement</button>' +
-      '<button class="preset-btn" id="p-pack">Packaging: 2.2 m -&gt; nucleus</button>';
+      '<button class="preset-btn active" id="p-chg" data-preset="p-chg">Ex 2: Chargaff check</button>' +
+      '<button class="preset-btn" id="p-ex3" data-preset="p-ex3">Ex 3: 28-nt complement</button>' +
+      '<button class="preset-btn" id="p-pack" data-preset="p-pack">Packaging: 2.2 m -&gt; nucleus</button>';
     document.getElementById("p-chg").onclick = function(){ setActivePreset(this); mode = "chargaff"; draw(App.state.t); };
     document.getElementById("p-ex3").onclick = function(){ setActivePreset(this); mode = "complement"; draw(App.state.t); };
     document.getElementById("p-pack").onclick = function(){ setActivePreset(this); mode = "pack"; draw(App.state.t); };
@@ -38,9 +38,9 @@ window.SIMS["dna-structure-packaging"] = (function(){
       '<div class="control-item"><div class="control-label"><span>%C in dsDNA</span><span class="val" id="ctrl-c">20</span></div>' +
       '<input type="range" id="ctrl-c-range" min="0" max="50" step="1" value="20"></div>' +
       '<div class="control-item"><div class="control-label"><span>Builder pairs</span><span class="val">AT / GC</span></div>' +
-      '<div><button class="preset-btn" id="b-at">+ A=T</button> ' +
-      '<button class="preset-btn" id="b-gc">+ G-triple-C</button> ' +
-      '<button class="preset-btn" id="b-rs">Reset</button></div></div>';
+      '<div><button class="preset-btn" id="b-at" data-preset="b-at">+ A=T</button> ' +
+      '<button class="preset-btn" id="b-gc" data-preset="b-gc">+ G-triple-C</button> ' +
+      '<button class="preset-btn" id="b-rs" data-preset="b-rs">Reset</button></div></div>';
     document.getElementById("ctrl-c-range").oninput = function(){ draw(App.state.t); };
     document.getElementById("b-at").onclick = function(){ if(pairs.length < 10) pairs.push("AT"); draw(App.state.t); };
     document.getElementById("b-gc").onclick = function(){ if(pairs.length < 10) pairs.push("GC"); draw(App.state.t); };
@@ -118,15 +118,15 @@ window.SIMS["genetic-material-search"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Survives / pellet</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Coat / supernatant</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-gr">Griffith 1928</button>' +
-      '<button class="preset-btn" id="p-av">Avery 1944: DNase test</button>' +
-      '<button class="preset-btn" id="p-hc">Hershey-Chase 1952</button>';
+      '<button class="preset-btn active" id="p-gr" data-preset="p-gr">Griffith 1928</button>' +
+      '<button class="preset-btn" id="p-av" data-preset="p-av">Avery 1944: DNase test</button>' +
+      '<button class="preset-btn" id="p-hc" data-preset="p-hc">Hershey-Chase 1952</button>';
     document.getElementById("p-gr").onclick = function(){ setActivePreset(this); exp = "griffith"; App.state.maxT = 4; var sc = document.getElementById("time-scrubber"); if(sc) sc.max = 4; draw(App.state.t); };
     document.getElementById("p-av").onclick = function(){ setActivePreset(this); exp = "avery"; App.state.maxT = 3; var sc = document.getElementById("time-scrubber"); if(sc) sc.max = 3; draw(App.state.t); };
     document.getElementById("p-hc").onclick = function(){ setActivePreset(this); exp = "hershey"; App.state.maxT = 3; var sc = document.getElementById("time-scrubber"); if(sc) sc.max = 3; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
       '<div class="control-item"><div class="control-label"><span>Step (scrub time or step)</span><span class="val" id="ctrl-st">0</span></div>' +
-      '<div><button class="preset-btn" id="b-prev">Prev</button> <button class="preset-btn" id="b-next">Next</button></div></div>';
+      '<div><button class="preset-btn" id="b-prev" data-preset="b-prev">Prev</button> <button class="preset-btn" id="b-next" data-preset="b-next">Next</button></div></div>';
     document.getElementById("b-prev").onclick = function(){ App.state.t = Math.max(0, App.state.t - 1); var sc = document.getElementById("time-scrubber"); if(sc) sc.value = App.state.t; draw(App.state.t); };
     document.getElementById("b-next").onclick = function(){ App.state.t = Math.min(App.state.maxT, App.state.t + 1); var sc = document.getElementById("time-scrubber"); if(sc) sc.value = App.state.t; draw(App.state.t); };
     draw(0);
@@ -213,8 +213,8 @@ window.SIMS["dna-replication"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#a78bfa;"></span><span>Hybrid 15N/14N</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Light 14N</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-b">CsCl bands</button>' +
-      '<button class="preset-btn" id="p-f">Fork + ligase</button>';
+      '<button class="preset-btn active" id="p-b" data-preset="p-b">CsCl bands</button>' +
+      '<button class="preset-btn" id="p-f" data-preset="p-f">Fork + ligase</button>';
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); view = "bands"; draw(App.state.t); };
     document.getElementById("p-f").onclick = function(){ setActivePreset(this); view = "fork"; draw(App.state.t); };
     document.getElementById("lab-controls").innerHTML =
@@ -286,9 +286,9 @@ window.SIMS["transcription-unit"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Coding 5-3 (RNA-like)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>RNA 5-3 (U for A)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-w">Ex 4 walker</button>' +
-      '<button class="preset-btn" id="p-map">Unit map p-gene-t</button>' +
-      '<button class="preset-btn" id="p-proc">hnRNA processing</button>';
+      '<button class="preset-btn active" id="p-w" data-preset="p-w">Ex 4 walker</button>' +
+      '<button class="preset-btn" id="p-map" data-preset="p-map">Unit map p-gene-t</button>' +
+      '<button class="preset-btn" id="p-proc" data-preset="p-proc">hnRNA processing</button>';
     document.getElementById("p-w").onclick = function(){ setActivePreset(this); show = "walker"; draw(App.state.t); };
     document.getElementById("p-map").onclick = function(){ setActivePreset(this); show = "map"; draw(App.state.t); };
     document.getElementById("p-proc").onclick = function(){ setActivePreset(this); show = "proc"; draw(App.state.t); };
@@ -372,10 +372,10 @@ window.SIMS["genetic-code-trna-mutation"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>Stop / shifted frame</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Start AUG</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-no">In-text: 7 codons</button>' +
-      '<button class="preset-btn" id="p-fs">Frameshift +1 (RAM demo)</button>' +
-      '<button class="preset-btn" id="p-3">Insert 3 (frame kept)</button>' +
-      '<button class="preset-btn" id="p-sc">Sickle GAG-&gt;GUG</button>';
+      '<button class="preset-btn active" id="p-no" data-preset="p-no">In-text: 7 codons</button>' +
+      '<button class="preset-btn" id="p-fs" data-preset="p-fs">Frameshift +1 (RAM demo)</button>' +
+      '<button class="preset-btn" id="p-3" data-preset="p-3">Insert 3 (frame kept)</button>' +
+      '<button class="preset-btn" id="p-sc" data-preset="p-sc">Sickle GAG-&gt;GUG</button>';
     document.getElementById("p-no").onclick = function(){ setActivePreset(this); mut = "none"; draw(App.state.t); };
     document.getElementById("p-fs").onclick = function(){ setActivePreset(this); mut = "fs"; draw(App.state.t); };
     document.getElementById("p-3").onclick = function(){ setActivePreset(this); mut = "ins3"; draw(App.state.t); };
@@ -450,9 +450,9 @@ window.SIMS["translation-synthesis"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>tRNA + chain</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Ribosome (23S ribozyme)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-i">Initiation (AUG)</button>' +
-      '<button class="preset-btn" id="p-e">Elongation</button>' +
-      '<button class="preset-btn" id="p-t">Termination (release factor)</button>';
+      '<button class="preset-btn active" id="p-i" data-preset="p-i">Initiation (AUG)</button>' +
+      '<button class="preset-btn" id="p-e" data-preset="p-e">Elongation</button>' +
+      '<button class="preset-btn" id="p-t" data-preset="p-t">Termination (release factor)</button>';
     document.getElementById("p-i").onclick = function(){ setActivePreset(this); App.state.t = 0; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 0; draw(0); };
     document.getElementById("p-e").onclick = function(){ setActivePreset(this); App.state.t = 1.5; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 1.5; draw(1.5); };
     document.getElementById("p-t").onclick = function(){ setActivePreset(this); App.state.t = 3; var sc = document.getElementById("time-scrubber"); if(sc) sc.value = 3; draw(3); };
@@ -519,9 +519,9 @@ window.SIMS["lac-operon-regulation"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>RNA polymerase + mRNA</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>z / y / a enzymes</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-off">No lactose: OFF</button>' +
-      '<button class="preset-btn" id="p-on">+ lactose: ON</button>' +
-      '<button class="preset-btn" id="p-done">Ex 10: inducer eaten: OFF</button>';
+      '<button class="preset-btn active" id="p-off" data-preset="p-off">No lactose: OFF</button>' +
+      '<button class="preset-btn" id="p-on" data-preset="p-on">+ lactose: ON</button>' +
+      '<button class="preset-btn" id="p-done" data-preset="p-done">Ex 10: inducer eaten: OFF</button>';
     document.getElementById("p-off").onclick = function(){ setActivePreset(this); lactose = false; draw(App.state.t); };
     document.getElementById("p-on").onclick = function(){ setActivePreset(this); lactose = true; draw(App.state.t); };
     document.getElementById("p-done").onclick = function(){ setActivePreset(this); lactose = false; draw(App.state.t); };
@@ -591,9 +591,9 @@ window.SIMS["hgp-fingerprinting"] = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>VNTR bands (0.1-20 kb)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>Scene match</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn" id="p-a">Suspect A</button>' +
-      '<button class="preset-btn active" id="p-b">Suspect B (scene match)</button>' +
-      '<button class="preset-btn" id="p-c">Suspect C</button>';
+      '<button class="preset-btn" id="p-a" data-preset="p-a">Suspect A</button>' +
+      '<button class="preset-btn active" id="p-b" data-preset="p-b">Suspect B (scene match)</button>' +
+      '<button class="preset-btn" id="p-c" data-preset="p-c">Suspect C</button>';
     document.getElementById("p-a").onclick = function(){ setActivePreset(this); suspect = "A"; draw(App.state.t); };
     document.getElementById("p-b").onclick = function(){ setActivePreset(this); suspect = "B"; draw(App.state.t); };
     document.getElementById("p-c").onclick = function(){ setActivePreset(this); suspect = "C"; draw(App.state.t); };

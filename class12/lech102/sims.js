@@ -22,8 +22,8 @@ window.SIMS.daniell = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#94a3b8;"></span><span>Zn anode (−)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Cu cathode (+)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-dan">Daniell E° = 1.1 V</button>' +
-      '<button class="preset-btn" id="p-znag">Ex 2.3: Zn | Ag⁺</button>';
+      '<button class="preset-btn active" data-preset="dan" id="p-dan">Daniell E° = 1.1 V</button>' +
+      '<button class="preset-btn" data-preset="znag" id="p-znag">Ex 2.3: Zn | Ag⁺</button>';
     document.getElementById("p-dan").onclick = function(){ setActivePreset(this); mode="dan"; App.resetTimeline(); App.play(); };
     document.getElementById("p-znag").onclick = function(){ setActivePreset(this); mode="znag"; App.resetTimeline(); App.play(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -59,9 +59,9 @@ window.SIMS.nernst = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>E vs log Q</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ex">Example 2.1 Mg–Ag</button>' +
-      '<button class="preset-btn" id="p-in">Intext 2.5 Ni–Ag</button>' +
-      '<button class="preset-btn" id="p-ph">Intext 2.4 SHE pH</button>';
+      '<button class="preset-btn active" data-preset="ex" id="p-ex">Example 2.1 Mg–Ag</button>' +
+      '<button class="preset-btn" data-preset="in" id="p-in">Intext 2.5 Ni–Ag</button>' +
+      '<button class="preset-btn" data-preset="ph" id="p-ph">Intext 2.4 SHE pH</button>';
     document.getElementById("p-ex").onclick = function(){ setActivePreset(this); kind="ex"; draw(App.state.t); };
     document.getElementById("p-in").onclick = function(){ setActivePreset(this); kind="in"; draw(App.state.t); };
     document.getElementById("p-ph").onclick = function(){ setActivePreset(this); kind="ph"; draw(App.state.t); };
@@ -106,8 +106,8 @@ window.SIMS.gibbsk = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>spontaneous E° > 0</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-dan">Example 2.3 Daniell</button>' +
-      '<button class="preset-btn" id="p-fe">Intext 2.6 Fe³⁺/I⁻</button>';
+      '<button class="preset-btn active" data-preset="dan" id="p-dan">Example 2.3 Daniell</button>' +
+      '<button class="preset-btn" data-preset="fe" id="p-fe">Intext 2.6 Fe³⁺/I⁻</button>';
     document.getElementById("p-dan").onclick = function(){ setActivePreset(this); kind="dan"; draw(); };
     document.getElementById("p-fe").onclick = function(){ setActivePreset(this); kind="fe"; draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -147,8 +147,8 @@ window.SIMS.conduct = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>κ</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Λ_m</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-kcl">Ex 2.8: 0.20 M KCl</button>' +
-      '<button class="preset-btn" id="p-cell">Ex 2.9: cell constant</button>';
+      '<button class="preset-btn active" data-preset="kcl" id="p-kcl">Ex 2.8: 0.20 M KCl</button>' +
+      '<button class="preset-btn" data-preset="cell" id="p-cell">Ex 2.9: cell constant</button>';
     document.getElementById("p-kcl").onclick = function(){ setActivePreset(this); kind="kcl"; draw(); };
     document.getElementById("p-cell").onclick = function(){ setActivePreset(this); kind="cell"; draw(); };
     document.getElementById("lab-controls").innerHTML =
@@ -192,8 +192,8 @@ window.SIMS.kohlrausch = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>strong (Kohlrausch line)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>weak acid (Ostwald rise)</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-f">Intext 2.9 HCOOH</button>' +
-      '<button class="preset-btn" id="p-ac">Ex 2.11 acetic acid</button>';
+      '<button class="preset-btn active" data-preset="f" id="p-f">Intext 2.9 HCOOH</button>' +
+      '<button class="preset-btn" data-preset="ac" id="p-ac">Ex 2.11 acetic acid</button>';
     document.getElementById("p-f").onclick = function(){ setActivePreset(this); kind="f"; draw(); };
     document.getElementById("p-ac").onclick = function(){ setActivePreset(this); kind="ac"; draw(); };
     document.getElementById("lab-controls").innerHTML = "";
@@ -229,9 +229,9 @@ window.SIMS.faraday = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>metal deposit</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-ni">Ex 2.15 Ni 5 A, 20 min</button>' +
-      '<button class="preset-btn" id="p-ser">Ex 2.16 series Ag/Cu/Zn</button>' +
-      '<button class="preset-btn" id="p-cr">Intext 2.12 Cr₂O₇²⁻</button>';
+      '<button class="preset-btn active" data-preset="ni" id="p-ni">Ex 2.15 Ni 5 A, 20 min</button>' +
+      '<button class="preset-btn" data-preset="ser" id="p-ser">Ex 2.16 series Ag/Cu/Zn</button>' +
+      '<button class="preset-btn" data-preset="cr" id="p-cr">Intext 2.12 Cr₂O₇²⁻</button>';
     document.getElementById("p-ni").onclick = function(){ setActivePreset(this); kind="ni"; App.resetTimeline(); App.play(); };
     document.getElementById("p-ser").onclick = function(){ setActivePreset(this); kind="ser"; App.resetTimeline(); App.play(); };
     document.getElementById("p-cr").onclick = function(){ setActivePreset(this); kind="cr"; draw(App.state.t); };
@@ -280,9 +280,9 @@ window.SIMS.corrosion = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f87171;"></span><span>anodic pit (Fe → Fe²⁺)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>cathodic O₂ reduction</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-r">Rust cell E° = 1.67 V</button>' +
-      '<button class="preset-btn" id="p-z">Sacrificial zinc</button>' +
-      '<button class="preset-btn" id="p-pb">Lead–acid discharge</button>';
+      '<button class="preset-btn active" data-preset="r" id="p-r">Rust cell E° = 1.67 V</button>' +
+      '<button class="preset-btn" data-preset="z" id="p-z">Sacrificial zinc</button>' +
+      '<button class="preset-btn" data-preset="pb" id="p-pb">Lead–acid discharge</button>';
     document.getElementById("p-r").onclick = function(){ setActivePreset(this); mode="rust"; App.resetTimeline(); App.play(); };
     document.getElementById("p-z").onclick = function(){ setActivePreset(this); mode="zn"; App.resetTimeline(); App.play(); };
     document.getElementById("p-pb").onclick = function(){ setActivePreset(this); mode="pb"; draw(App.state.t); };

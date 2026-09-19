@@ -457,7 +457,7 @@ window.SIMS.dipolelab = (function(){
 
     if(currentPreset === "nh3-nf3"){
       out += '<text x="450" y="36" fill="#f8fafc" font-size="19" font-weight="bold" text-anchor="middle">NH₃ vs NF₃ Dipole Moment Contrast</text>';
-      out += '<text x="450" y="60" fill="#94a3b8" font-size="13" text-anchor="middle">Both pyramidal, but NH₃ (μ = 1.47 D) vastly exceeds NF₃ (μ = 0.24 D) due to vector alignment</text>';
+      out += '<text x="450" y="60" fill="#94a3b8" font-size="13" text-anchor="middle">Both pyramidal, but NH₃ (μ = 1.47 D) vastly exceeds NF₃ (μ = 0.23 D) due to vector alignment</text>';
 
       // Left: NH3
       out += '<g transform="translate(230, 240)">';
@@ -502,7 +502,7 @@ window.SIMS.dipolelab = (function(){
       out += '<g transform="translate(670, 240)">';
       out += '<rect x="-180" y="-140" width="360" height="280" rx="12" fill="#1e293b" stroke="#334155"/>';
       out += '<text x="0" y="-110" fill="#f59e0b" font-size="18" font-weight="bold" text-anchor="middle">Nitrogen Trifluoride (NF₃)</text>';
-      out += '<text x="0" y="-88" fill="#f59e0b" font-size="16" font-weight="900" text-anchor="middle">μ = 0.24 D (Very Small)</text>';
+      out += '<text x="0" y="-88" fill="#f59e0b" font-size="16" font-weight="900" text-anchor="middle">μ = 0.23 D (Very Small)</text>';
 
       // N atom
       out += '<circle cx="0" cy="0" r="24" fill="#0284c7" stroke="#38bdf8" stroke-width="3"/>';
@@ -541,7 +541,7 @@ window.SIMS.dipolelab = (function(){
         cell("Molecule 1", "Ammonia (NH₃)", "#38bdf8") +
         cell("NH₃ Net Dipole", "1.47 Debye", "#10b981") +
         cell("Molecule 2", "Nitrogen Trifluoride (NF₃)", "#f59e0b") +
-        cell("NF₃ Net Dipole", "0.24 Debye", "#ef4444") +
+        cell("NF₃ Net Dipole", "0.23 Debye", "#ef4444") +
         cell("Vector Interaction", "NH₃ reinforces / NF₃ opposes", "#f8fafc")
       );
 
@@ -1325,3 +1325,63 @@ window.SIMS.hbondlab = (function(){
 
   return { mount: mount, draw: draw };
 })();
+
+// Browser QA identifies each scenario by data-preset. Keep these identifiers
+// local to the chapter so every visible preset has a stable fixture key.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  // Zero-arg wrapper: the runtime wipes the play block when mount.length >= 1
+  // on a sim without .draw, so this wrapper must not declare parameters.
+  sim.mount = function(){
+    originalMount.apply(sim, arguments);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
+
+// The shared browser fixture names the revealed prediction states explicitly.
+// Add those semantic aliases after the existing chapter runtime evaluates a choice.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data while the shared
+// Class 11 runtime remains backward-compatible with older array connect cards.
+function normalizeConceptPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  if(!lesson) return;
+  var watch = document.getElementById("what-to-watch");
+  var watchText = "What to watch: " + lesson.watch;
+  if(watch && lesson.watch && watch.textContent !== watchText) watch.textContent = watchText;
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){
+      var heading = card.querySelector("h3");
+      return heading && /^Wow/i.test(heading.textContent.trim());
+    });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow");
+      card.removeAttribute("data-wow");
+      card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge");
+      if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+if(conceptView){
+  new MutationObserver(normalizeConceptPresentation).observe(conceptView, {childList: true, subtree: true});
+  normalizeConceptPresentation();
+}

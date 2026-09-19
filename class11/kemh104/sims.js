@@ -27,8 +27,8 @@ window.SIMS.introi = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>y = x²+1 (never zero)</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>±i on the imaginary axis</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-r">Real graph of x²+1</button>' +
-      '<button class="preset-btn" id="p-i">Place ±i</button>';
+      '<button class="preset-btn active" data-preset="p-r" id="p-r">Real graph of x²+1</button>' +
+      '<button class="preset-btn" data-preset="p-i" id="p-i">Place ±i</button>';
     document.getElementById("p-r").onclick=function(){setActivePreset(this); window._ii="real"; App.resetTimeline();};
     document.getElementById("p-i").onclick=function(){setActivePreset(this); window._ii="cpx"; App.resetTimeline();};
     window._ii="real";
@@ -73,9 +73,9 @@ window.SIMS.cpxarith = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>z₂</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>result</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-a">Add (parallelogram)</button>' +
-      '<button class="preset-btn" id="p-m">Multiply (1−i)² = −2i</button>' +
-      '<button class="preset-btn" id="p-v">Inverse of 2−3i</button>';
+      '<button class="preset-btn active" data-preset="p-a" id="p-a">Add (parallelogram)</button>' +
+      '<button class="preset-btn" data-preset="p-m" id="p-m">Multiply (1−i)² = −2i</button>' +
+      '<button class="preset-btn" data-preset="p-v" id="p-v">Inverse of 2−3i</button>';
     document.getElementById("p-a").onclick=function(){setActivePreset(this);mode="add";App.resetTimeline();};
     document.getElementById("p-m").onclick=function(){setActivePreset(this);mode="mul";App.resetTimeline();};
     document.getElementById("p-v").onclick=function(){setActivePreset(this);mode="inv";App.resetTimeline();};
@@ -120,8 +120,8 @@ window.SIMS.poweri = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#34d399;"></span><span>iⁿ on the unit square</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-c">Cycle n = 0,1,2,3,4,…</button>' +
-      '<button class="preset-btn" id="p-39">Jump to n = −39</button>';
+      '<button class="preset-btn active" data-preset="p-c" id="p-c">Cycle n = 0,1,2,3,4,…</button>' +
+      '<button class="preset-btn" data-preset="p-39" id="p-39">Jump to n = −39</button>';
     document.getElementById("p-c").onclick=function(){setActivePreset(this); window._pw="cyc"; App.resetTimeline(); App.play();};
     document.getElementById("p-39").onclick=function(){setActivePreset(this); window._pw="neg"; App.resetTimeline();};
     window._pw="cyc";
@@ -155,9 +155,9 @@ window.SIMS.modulus = (function(){
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>z</span></div>' +
       '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>conjugate</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-m">|3+i|=√10</button>' +
-      '<button class="preset-btn" id="p-c">Conjugate mirror</button>' +
-      '<button class="preset-btn" id="p-i">Inverse of 4−3i</button>';
+      '<button class="preset-btn active" data-preset="p-m" id="p-m">|3+i|=√10</button>' +
+      '<button class="preset-btn" data-preset="p-c" id="p-c">Conjugate mirror</button>' +
+      '<button class="preset-btn" data-preset="p-i" id="p-i">Inverse of 4−3i</button>';
     document.getElementById("p-m").onclick=function(){setActivePreset(this);mode="mod";App.resetTimeline();};
     document.getElementById("p-c").onclick=function(){setActivePreset(this);mode="conj";App.resetTimeline();};
     document.getElementById("p-i").onclick=function(){setActivePreset(this);mode="inv";App.resetTimeline();};
@@ -200,9 +200,9 @@ window.SIMS.argand = (function(){
     document.getElementById("lab-legend").innerHTML =
       '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Fig 4.1 points</span></div>';
     document.getElementById("preset-bar").innerHTML =
-      '<button class="preset-btn active" id="p-f">Fig 4.1 A–F</button>' +
-      '<button class="preset-btn" id="p-14">Misc 14: (1+i)/(1−i)=i</button>' +
-      '<button class="preset-btn" id="p-12">Misc 12: |1−i|^x=2^x</button>';
+      '<button class="preset-btn active" data-preset="p-f" id="p-f">Fig 4.1 A–F</button>' +
+      '<button class="preset-btn" data-preset="p-14" id="p-14">Misc 14: (1+i)/(1−i)=i</button>' +
+      '<button class="preset-btn" data-preset="p-12" id="p-12">Misc 12: |1−i|^x=2^x</button>';
     document.getElementById("p-f").onclick=function(){setActivePreset(this);mode="fig";App.resetTimeline();};
     document.getElementById("p-14").onclick=function(){setActivePreset(this);mode="m14";App.resetTimeline();};
     document.getElementById("p-12").onclick=function(){setActivePreset(this);mode="m12";App.resetTimeline();};

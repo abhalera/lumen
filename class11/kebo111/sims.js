@@ -1,1202 +1,782 @@
-// kebo111 interactive simulations: Photosynthesis in Higher Plants
-window.SIMS = window.SIMS || {};
+// kebo111 interactive simulations: Photosynthesis in Higher Plants (Ch. 11, print pp. 131-152)
+var App = window.App;
+window.SIMS = {};
 
-function cell(title, val, color) {
-  return '<div class="readout-cell">' +
-    '<div class="readout-label">' + title + '</div>' +
-    '<div class="readout-val" style="color:' + (color || 'var(--primary)') + ';">' + val + '</div>' +
-    '</div>';
+function setActivePreset(btn){
+  document.querySelectorAll(".preset-btn").forEach(function(b){ b.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
 }
-
-function readout(html) {
-  var r = document.getElementById("lab-readouts");
-  if (r) r.innerHTML = html;
+function svgEl(){ return document.getElementById("diagram"); }
+function readout(html){ var n = document.getElementById("lab-readout"); if(n) n.innerHTML = html; }
+function verdict(html){ var n = document.getElementById("lab-verdict"); if(n) n.innerHTML = html; }
+function cell(label, val, color){
+  return '<div class="telemetry-cell"><div class="telemetry-label">' + label + '</div><div class="telemetry-val"' +
+    (color ? ' style="color:' + color + '"' : '') + '>' + val + '</div></div>';
 }
-
-function verdict(html) {
-  var n = document.getElementById("lab-verdict");
-  if (n) n.innerHTML = html;
-}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
 
 // -------------------------------------------------------------------------
-// 1. SIMULATION 1: Early Discovery & Engelmann Spectrum (earlyexpsim)
+// 1. Starch Tests & CO2 Requirement Bench (knowlab) - L1, 11.1
 // -------------------------------------------------------------------------
-window.SIMS.earlyexpsim = (function(){
-  var exp = "priestley_mint"; // "priestley_dead", "priestley_mint", "ingenhousz", "engelmann", "vanniel"
+window.SIMS.knowlab = (function(){
+  var view = "starch"; // "starch", "koh", "troph"
+  var patch = 0, air = false, who = 0;
+  var PATCHES = [["Green + light", "starch positive"], ["White + light", "starch negative"], ["Green + covered", "starch negative"]];
+  var WHOS = [["Green plants", "autotrophs: synthesise food"], ["Animals", "heterotrophs: depend on plants"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Fouled Air (CO2 / Hypoxia)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Restored Air (O2 Evolved)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Engelmann Blue/Red Bacteria Clusters</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Sulfur vs Oxygen (van Niel)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.earlyexpsim.setExp(\'priestley_dead\')">1. Priestley (No Plant: Suffocation)</button>' +
-      '<button class="preset-btn" onclick="SIMS.earlyexpsim.setExp(\'priestley_mint\')">2. Priestley (Mint Sprig: Air Restored)</button>' +
-      '<button class="preset-btn" onclick="SIMS.earlyexpsim.setExp(\'ingenhousz\')">3. Ingenhousz (Hydrilla O2 Bubbles)</button>' +
-      '<button class="preset-btn" onclick="SIMS.earlyexpsim.setExp(\'engelmann\')">4. Engelmann (Split Prism Spectrum)</button>' +
-      '<button class="preset-btn" onclick="SIMS.earlyexpsim.setExp(\'vanniel\')">5. van Niel (H2S Sulfur Bacteria)</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Starch positive</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#64748b;"></span><span>Starch negative</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>CO2 present</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-starch">Leaf Patches</button>' +
+      '<button class="preset-btn" id="p-koh">KOH Tube</button>' +
+      '<button class="preset-btn" id="p-troph">Who Feeds Whom</button>';
+    document.getElementById("p-starch").onclick = function(){ setActivePreset(this); setV("starch"); };
+    document.getElementById("p-koh").onclick = function(){ setActivePreset(this); setV("koh"); };
+    document.getElementById("p-troph").onclick = function(){ setActivePreset(this); setV("troph"); };
+    mountControls();
+    draw(0);
   }
 
-  function setExp(e){
-    exp = e;
-    draw();
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "starch"){
+      c.innerHTML =
+        '<div class="control-group"><label>Patch:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        PATCHES.map(function(p, i){ return '<button class="preset-btn" data-pc="' + i + '">' + p[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Needs:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Chlorophyll + light + CO2.</div></div>';
+      c.querySelectorAll("[data-pc]").forEach(function(b){ b.onclick = function(){ patch = Number(b.dataset.pc); draw(0); }; });
+    } else if(view === "koh"){
+      c.innerHTML =
+        '<div class="control-group"><label>Half:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-k0">In tube (KOH)</button>' +
+        '<button class="preset-btn" id="c-k1">In air</button></div></div>' +
+        '<div class="control-group"><label>KOH:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Soaked cotton absorbs CO2.</div></div>';
+      document.getElementById("c-k0").onclick = function(){ air = false; draw(0); };
+      document.getElementById("c-k1").onclick = function(){ air = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Organism:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-w0">Green plants</button>' +
+        '<button class="preset-btn" id="c-w1">Animals</button></div></div>' +
+        '<div class="control-group"><label>Base:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">All life depends on sunlight.</div></div>';
+      document.getElementById("c-w0").onclick = function(){ who = 0; draw(0); };
+      document.getElementById("c-w1").onclick = function(){ who = 1; draw(0); };
+    }
   }
 
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">First Tests (\u00A711.1)</text>';
+    if(view === "starch"){
+      var p = PATCHES[patch];
+      var pos = patch === 0;
+      m += '<rect x="200" y="110" width="300" height="110" rx="40" fill="' + (patch === 1 ? "#0f172a" : "#14532d") + '" stroke="' + (pos ? "#22c55e" : "#64748b") + '" stroke-width="2.5"/>';
+      if(patch === 2){
+        m += '<rect x="200" y="110" width="300" height="110" rx="40" fill="#020617" opacity="0.75"/>';
+        m += '<text x="350" y="168" fill="#94a3b8" font-size="12" text-anchor="middle">black paper cover</text>';
+      }
+      m += '<text x="350" y="90" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">' + p[0] + " \u2192 " + p[1] + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Starch only in green parts in the presence of light (PDF p. 3)</text>';
+      readout(cell("Patch", p[0], "#38bdf8") + cell("Starch", pos ? "positive" : "negative", pos ? "#22c55e" : "#94a3b8"));
+      verdict(pos ? "Green + light: photosynthesis confirmed." : "Missing chlorophyll or light: no starch.");
+    } else if(view === "koh"){
+      m += '<rect x="140" y="110" width="180" height="110" rx="8" fill="#0f172a" stroke="' + (!air ? "#f59e0b" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="230" y="150" fill="' + (!air ? "#f59e0b" : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">Tube half</text>';
+      m += '<text x="230" y="172" fill="#64748b" font-size="10" text-anchor="middle">KOH: no CO2</text>';
+      m += '<text x="230" y="190" fill="' + (!air ? "#94a3b8" : "#475569") + '" font-size="11" font-weight="700" text-anchor="middle">' + (!air ? "starch negative" : "") + "</text>";
+      m += '<rect x="380" y="110" width="180" height="110" rx="8" fill="#0f172a" stroke="' + (air ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="470" y="150" fill="' + (air ? "#38bdf8" : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">Air half</text>';
+      m += '<text x="470" y="172" fill="#64748b" font-size="10" text-anchor="middle">CO2 present</text>';
+      m += '<text x="470" y="190" fill="' + (air ? "#22c55e" : "#475569") + '" font-size="11" font-weight="700" text-anchor="middle">' + (air ? "starch positive" : "") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Single variable CO2 \u2192 required for photosynthesis (PDF p. 4)</text>';
+      readout(cell("Half", air ? "air" : "tube", air ? "#38bdf8" : "#f59e0b") + cell("Starch", air ? "positive" : "negative", air ? "#22c55e" : "#94a3b8"));
+      verdict(air ? "CO2 present: starch forms." : "CO2 absorbed by KOH: no starch.");
+    } else {
+      var w = WHOS[who];
+      m += '<text x="350" y="130" fill="#f8fafc" font-size="15" font-weight="700" text-anchor="middle">' + w[0] + "</text>";
+      m += '<text x="350" y="170" fill="' + (who === 0 ? "#22c55e" : "#f59e0b") + '" font-size="13" font-weight="700" text-anchor="middle">' + w[1] + "</text>";
+      m += '<text x="350" y="215" fill="#94a3b8" font-size="11" text-anchor="middle">' + (who === 0 ? "Primary source of all food + oxygen" : "Depend on green plants for food") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Photosynthesis: physico-chemical use of light for organics</text>';
+      readout(cell("Group", w[0], "#38bdf8") + cell("Role", w[1], who === 0 ? "#22c55e" : "#f59e0b"));
+      verdict(who === 0 ? "Autotrophs: food makers." : "Heterotrophs: food takers.");
+    }
+    svg.innerHTML = m;
+  }
 
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">EARLY MILESTONES: PRIESTLEY, INGENHOUSZ, ENGELMANN & VAN NIEL</text>';
+  return {mount: mount, draw: draw};
+})();
 
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
+// -------------------------------------------------------------------------
+// 2. Bell Jar, Prism & Bacteria History Lab (historylab) - L2, 11.2
+// -------------------------------------------------------------------------
+window.SIMS.historylab = (function(){
+  var view = "priestley"; // "priestley", "engelmann", "vanniel"
+  var mint = false, band = 1, donor = 0;
+  var BANDS = [["Blue", "bacteria crowd"], ["Red", "bacteria crowd"], ["Green", "few bacteria"]];
+  var DONORS = [["H2O (plants)", "O2 released"], ["H2S (sulphur bacteria)", "sulphur/sulphate, no O2"]];
 
-    if (exp === "priestley_dead" || exp === "priestley_mint") {
-      // Bell Jar experiment
-      var hasPlant = (exp === "priestley_mint");
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="' + (hasPlant ? '#10b981' : '#ef4444') + '" font-size="14" font-weight="bold" text-anchor="middle">' +
-           (hasPlant ? "JOSEPH PRIESTLEY (1774): MINT SPRIG RESTORES AIR" : "JOSEPH PRIESTLEY (1770): CLOSED BELL JAR SUFFOCATION") + '</text>';
+  function setV(v){ view = v; mountControls(); draw(0); }
 
-      // Bell jar glass dome
-      m += '<path d="M ' + (cx - 120) + ' ' + (cy + 85) + ' L ' + (cx - 120) + ' ' + (cy - 20) + ' A 120 95 0 0 1 ' + (cx + 120) + ' ' + (cy - 20) + ' L ' + (cx + 120) + ' ' + (cy + 85) + ' Z" fill="' + (hasPlant ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)') + '" stroke="#64748b" stroke-width="3"/>';
-      m += '<line x1="' + (cx - 140) + '" y1="' + (cy + 85) + '" x2="' + (cx + 140) + '" y2="' + (cy + 85) + '" stroke="#475569" stroke-width="5"/>';
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Fouled air</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Restored / O2 sites</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Hydrogen donor</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-priestley">Bell Jar</button>' +
+      '<button class="preset-btn" id="p-engelmann">Prism + Bacteria</button>' +
+      '<button class="preset-btn" id="p-vanniel">Donor Rule</button>';
+    document.getElementById("p-priestley").onclick = function(){ setActivePreset(this); setV("priestley"); };
+    document.getElementById("p-engelmann").onclick = function(){ setActivePreset(this); setV("engelmann"); };
+    document.getElementById("p-vanniel").onclick = function(){ setActivePreset(this); setV("vanniel"); };
+    mountControls();
+    draw(0);
+  }
 
-      // Candle
-      m += '<rect x="' + (cx - 70) + '" y="' + (cy + 30) + '" width="22" height="55" rx="3" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>';
-      if (hasPlant) {
-        // Burning flame
-        m += '<ellipse cx="' + (cx - 59) + '" cy="' + (cy + 20) + '" rx="6" ry="12" fill="#fbbf24"/>';
-        m += '<ellipse cx="' + (cx - 59) + '" cy="' + (cy + 22) + '" rx="3" ry="7" fill="#ef4444"/>';
-        m += '<text x="' + (cx - 59) + '" y="' + (cy + 10) + '" fill="#fbbf24" font-size="10" text-anchor="middle">Burning Candle</text>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "priestley"){
+      c.innerHTML =
+        '<div class="control-group"><label>Jar holds:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-j0">Mouse + candle</button>' +
+        '<button class="preset-btn" id="c-j1">+ mint plant</button></div></div>' +
+        '<div class="control-group"><label>1770:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Priestley; oxygen found 1774.</div></div>';
+      document.getElementById("c-j0").onclick = function(){ mint = false; draw(0); };
+      document.getElementById("c-j1").onclick = function(){ mint = true; draw(0); };
+    } else if(view === "engelmann"){
+      c.innerHTML =
+        '<div class="control-group"><label>Spectrum band:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        BANDS.map(function(b, i){ return '<button class="preset-btn" data-bd="' + i + '">' + b[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Setup:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Cladophora + aerobic bacteria.</div></div>';
+      c.querySelectorAll("[data-bd]").forEach(function(b){ b.onclick = function(){ band = Number(b.dataset.bd); draw(0); }; });
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Donor H2A:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-n0">H2O</button>' +
+        '<button class="preset-btn" id="c-n1">H2S</button></div></div>' +
+        '<div class="control-group"><label>Equation:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">2H2A + CO2 \u2192 2A + CH2O + H2O.</div></div>';
+      document.getElementById("c-n0").onclick = function(){ donor = 0; draw(0); };
+      document.getElementById("c-n1").onclick = function(){ donor = 1; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Early Experiments (\u00A711.2)</text>';
+    if(view === "priestley"){
+      m += '<rect x="220" y="90" width="260" height="140" rx="40" fill="#0f172a" stroke="' + (mint ? "#22c55e" : "#f59e0b") + '" stroke-width="2.5"/>';
+      m += '<text x="350" y="140" fill="#94a3b8" font-size="11" text-anchor="middle">mouse + candle</text>';
+      if(mint) m += '<text x="350" y="165" fill="#22c55e" font-size="12" font-weight="700" text-anchor="middle">+ mint plant (sunlight)</text>';
+      else m += '<text x="350" y="165" fill="#f59e0b" font-size="12" font-weight="700" text-anchor="middle">air fouled: out + suffocated</text>';
+      m += '<text x="350" y="195" fill="#94a3b8" font-size="11" text-anchor="middle">' + (mint ? "mouse lives, candle burns" : "candle dies, mouse suffocates") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Fig. 11.1 \u00B7 Ingenhousz adds: sunlight essential</text>';
+      readout(cell("Jar", mint ? "restored" : "fouled", mint ? "#22c55e" : "#f59e0b"));
+      verdict(mint ? "Plants restore what breathers/burners remove." : "Burning and breathing damage the air.");
+    } else if(view === "engelmann"){
+      var b = BANDS[band];
+      var cols = ["#3b82f6", "#ef4444", "#22c55e"];
+      for(var i = 0; i < 3; i++){
+        var x = 130 + i * 150;
+        var on = i === band;
+        m += '<rect x="' + x + '" y="120" width="130" height="90" rx="8" fill="#0f172a" stroke="' + (on ? cols[i] : "#334155") + '" stroke-width="2.5"/>';
+        m += '<text x="' + (x + 65) + '" y="158" fill="' + (on ? cols[i] : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">' + BANDS[i][0] + "</text>";
+        m += '<text x="' + (x + 65) + '" y="180" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + BANDS[i][1] + "</text>";
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">First action spectrum \u2248 chl a/b absorption (PDF p. 5)</text>';
+      readout(cell("Band", b[0], cols[band]) + cell("Bacteria", b[1], "#94a3b8"));
+      verdict(band === 2 ? "Green: little O2 evolved." : b[0] + ": O2 evolution peak.");
+    } else {
+      var d = DONORS[donor];
+      m += '<text x="350" y="120" fill="#38bdf8" font-size="15" font-weight="700" text-anchor="middle">' + d[0] + "</text>";
+      m += '<text x="350" y="165" fill="#64748b" font-size="18" text-anchor="middle">\u2192</text>';
+      m += '<text x="350" y="205" fill="' + (donor === 0 ? "#22c55e" : "#f59e0b") + '" font-size="14" font-weight="700" text-anchor="middle">' + d[1] + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Byproduct tracks the donor \u2192 O2 comes from H2O (isotopes proved)</text>';
+      readout(cell("Donor", d[0], "#38bdf8") + cell("Product", d[1], donor === 0 ? "#22c55e" : "#f59e0b"));
+      verdict("van Niel: donor decides the oxidation product.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 3. Chloroplast Labour & Pigment Spectra Lab (pigmentlab) - L3, 11.3-11.4
+// -------------------------------------------------------------------------
+window.SIMS.pigmentlab = (function(){
+  var view = "labour"; // "labour", "spectra", "accessory"
+  var site = 0, fig = 2, acc = 0;
+  var SITES = [["Membranes", "trap light + ATP/NADPH"], ["Stroma", "enzymatic sugar \u2192 starch"]];
+  var FIGS = [["Fig. 11.3a", "chl a absorbs blue + red"], ["Fig. 11.3b", "photosynthesis peaks blue + red"], ["Fig. 11.3c", "overlap NOT one-to-one"]];
+  var ACCS = [["Chlorophyll b", "yellow green"], ["Xanthophylls", "yellow"], ["Carotenoids", "yellow-orange"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Membranes / chl a</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Stroma / sugar</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Accessory pigments</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-labour">Labour Split</button>' +
+      '<button class="preset-btn" id="p-spectra">Spectra 11.3</button>' +
+      '<button class="preset-btn" id="p-accessory">Accessories</button>';
+    document.getElementById("p-labour").onclick = function(){ setActivePreset(this); setV("labour"); };
+    document.getElementById("p-spectra").onclick = function(){ setActivePreset(this); setV("spectra"); };
+    document.getElementById("p-accessory").onclick = function(){ setActivePreset(this); setV("accessory"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "labour"){
+      c.innerHTML =
+        '<div class="control-group"><label>Site:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-s0">Membranes</button>' +
+        '<button class="preset-btn" id="c-s1">Stroma</button></div></div>' +
+        '<div class="control-group"><label>Note:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Dark reactions \u2260 darkness.</div></div>';
+      document.getElementById("c-s0").onclick = function(){ site = 0; draw(0); };
+      document.getElementById("c-s1").onclick = function(){ site = 1; draw(0); };
+    } else if(view === "spectra"){
+      c.innerHTML =
+        '<div class="control-group"><label>Graph:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        FIGS.map(function(f, i){ return '<button class="preset-btn" data-fg="' + i + '">' + f[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Chief:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Chlorophyll a leads.</div></div>';
+      c.querySelectorAll("[data-fg]").forEach(function(b){ b.onclick = function(){ fig = Number(b.dataset.fg); draw(0); }; });
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Pigment:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        ACCS.map(function(a, i){ return '<button class="preset-btn" data-ac="' + i + '">' + a[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Jobs:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Transfer energy to chl a; shield it.</div></div>';
+      c.querySelectorAll("[data-ac]").forEach(function(b){ b.onclick = function(){ acc = Number(b.dataset.ac); draw(0); }; });
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Site &amp; Pigments (\u00A711.3\u2013\u00A711.4)</text>';
+    if(view === "labour"){
+      var s = SITES[site];
+      m += '<rect x="120" y="110" width="200" height="100" rx="8" fill="#0f172a" stroke="' + (site === 0 ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="220" y="150" fill="' + (site === 0 ? "#38bdf8" : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">Membranes</text>';
+      m += '<text x="220" y="172" fill="#64748b" font-size="9" text-anchor="middle">trap light + ATP/NADPH</text>';
+      m += '<rect x="380" y="110" width="200" height="100" rx="8" fill="#0f172a" stroke="' + (site === 1 ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
+      m += '<text x="480" y="150" fill="' + (site === 1 ? "#22c55e" : "#475569") + '" font-size="12" font-weight="700" text-anchor="middle">Stroma</text>';
+      m += '<text x="480" y="172" fill="#64748b" font-size="9" text-anchor="middle">sugar \u2192 starch</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Grana, stroma lamellae, matrix stroma (Fig. 11.2)</text>';
+      readout(cell("Site", s[0], site === 0 ? "#38bdf8" : "#22c55e") + cell("Job", s[1], "#94a3b8"));
+      verdict(site === 0 ? "Light reactions: photochemical." : "Carbon reactions: by convention \u2018dark\u2019.");
+    } else if(view === "spectra"){
+      var f = FIGS[fig];
+      m += '<text x="350" y="120" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + f[0] + "</text>";
+      m += '<text x="350" y="165" fill="' + (fig === 2 ? "#f59e0b" : "#38bdf8") + '" font-size="13" font-weight="700" text-anchor="middle">' + f[1] + "</text>";
+      if(fig === 2) m += '<text x="350" y="205" fill="#94a3b8" font-size="11" text-anchor="middle">accessory pigments fill the gaps</text>';
+      else m += '<text x="350" y="205" fill="#94a3b8" font-size="11" text-anchor="middle">chl a chief pigment</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Blue + red lead; some photosynthesis at other wavelengths</text>';
+      readout(cell("Graph", f[0], "#38bdf8") + cell("Shows", f[1], fig === 2 ? "#f59e0b" : "#22c55e"));
+      verdict(fig === 2 ? "Incomplete overlap = teamwork." : "Peaks coincide at blue and red.");
+    } else {
+      var a = ACCS[acc];
+      m += '<rect x="90" y="130" width="200" height="80" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>';
+      m += '<text x="190" y="163" fill="#f59e0b" font-size="11" font-weight="700" text-anchor="middle">' + a[0] + "</text>";
+      m += '<text x="190" y="183" fill="#64748b" font-size="9" text-anchor="middle">' + a[1] + "</text>";
+      m += '<text x="330" y="172" fill="#64748b" font-size="18" text-anchor="middle">\u2192</text>';
+      m += '<rect x="370" y="130" width="200" height="80" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="470" y="163" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">Chlorophyll a</text>';
+      m += '<text x="470" y="183" fill="#64748b" font-size="9" text-anchor="middle">energy + protection</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Wider range (print: photosyntesis) + anti photo-oxidation (PDF p. 8)</text>';
+      readout(cell("Accessory", a[0], "#f59e0b") + cell("Colour", a[1], "#94a3b8"));
+      verdict("Harvest elsewhere, deliver to chl a.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 4. Z Scheme, Water Splitting & ATP Lab (lightlab) - L4, 11.5-11.6
+// -------------------------------------------------------------------------
+window.SIMS.lightlab = (function(){
+  var view = "z"; // "z", "split", "cyclic"
+  var hop = 0, split = false, cyc = false;
+  var HOPS = [["PS II + 680 nm", "excite"], ["Acceptor + ETS", "downhill"], ["PS I + 700 nm", "re-excite"], ["NADP+", "NADPH + H+"]];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Photosystems</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Electron carriers</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>NADPH / ATP out</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-z">Z Ride</button>' +
+      '<button class="preset-btn" id="p-split">Split Water</button>' +
+      '<button class="preset-btn" id="p-cyclic">Cyclic vs Line</button>';
+    document.getElementById("p-z").onclick = function(){ setActivePreset(this); setV("z"); };
+    document.getElementById("p-split").onclick = function(){ setActivePreset(this); setV("split"); };
+    document.getElementById("p-cyclic").onclick = function(){ setActivePreset(this); setV("cyclic"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "z"){
+      c.innerHTML =
+        '<div class="control-group"><label>Hop:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        HOPS.map(function(h, i){ return '<button class="preset-btn" data-hp="' + i + '">' + h[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Shape:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Characterstic Z on redox scale (print).</div></div>';
+      c.querySelectorAll("[data-hp]").forEach(function(b){ b.onclick = function(){ hop = Number(b.dataset.hp); draw(0); }; });
+    } else if(view === "split"){
+      c.innerHTML =
+        '<div class="control-group"><label>Water:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-w0">Whole (lumen side)</button>' +
+        '<button class="preset-btn" id="c-w1">Split it</button></div></div>' +
+        '<div class="control-group"><label>Equation:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">2H2O \u2192 4H+ + O2 + 4e\u2212.</div></div>';
+      document.getElementById("c-w0").onclick = function(){ split = false; draw(0); };
+      document.getElementById("c-w1").onclick = function(){ split = true; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Flow:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-c0">Non-cyclic (II+I)</button>' +
+        '<button class="preset-btn" id="c-c1">Cyclic (I only)</button></div></div>' +
+        '<div class="control-group"><label>Site:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Stroma lamellae lack PS II.</div></div>';
+      document.getElementById("c-c0").onclick = function(){ cyc = false; draw(0); };
+      document.getElementById("c-c1").onclick = function(){ cyc = true; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Light Reaction (\u00A711.5\u2013\u00A711.6)</text>';
+    if(view === "z"){
+      for(var i = 0; i < 4; i++){
+        var x = 45 + i * 160;
+        var on = i <= hop;
+        m += '<rect x="' + x + '" y="120" width="140" height="95" rx="8" fill="#0f172a" stroke="' + (on ? (i === 3 ? "#22c55e" : "#38bdf8") : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 70) + '" y="155" fill="' + (on ? "#f8fafc" : "#475569") + '" font-size="10" font-weight="700" text-anchor="middle">' + HOPS[i][0] + "</text>";
+        m += '<text x="' + (x + 70) + '" y="178" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + HOPS[i][1] + "</text>";
+        if(i < 3) m += '<text x="' + (x + 150) + '" y="170" fill="#64748b" font-size="16" text-anchor="middle">' + (i % 2 === 0 ? "\u2197" : "\u2198") + "</text>";
+      }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Electrons not used up en route \u00B7 P680 then P700 (Fig. 11.5)</text>';
+      readout(cell("Hop", (hop + 1) + "/4", "#38bdf8") + cell("At", HOPS[hop][0], hop === 3 ? "#22c55e" : "#38bdf8"));
+      verdict(hop === 3 ? "NADP+ reduced to NADPH + H+." : "Ride the Z downhill (twice).");
+    } else if(view === "split"){
+      if(!split){
+        m += '<text x="350" y="150" fill="#38bdf8" font-size="16" font-weight="700" text-anchor="middle">2H2O (inner side)</text>';
+        m += '<text x="350" y="190" fill="#94a3b8" font-size="11" text-anchor="middle">water splitting complex, PS II</text>';
       } else {
-        // Extinguished candle with smoke
-        m += '<line x1="' + (cx - 59) + '" y1="' + (cy + 30) + '" x2="' + (cx - 59) + '" y2="' + (cy + 22) + '" stroke="#000" stroke-width="2"/>';
-        m += '<path d="M ' + (cx - 59) + ' ' + (cy + 20) + ' Q ' + (cx - 50) + ' ' + (cy + 5) + ' ' + (cx - 65) + ' ' + (cy - 10) + '" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,2"/>';
-        m += '<text x="' + (cx - 59) + '" y="' + (cy + 5) + '" fill="#ef4444" font-size="10" text-anchor="middle">Extinguished!</text>';
+        m += '<text x="200" y="150" fill="#22c55e" font-size="13" font-weight="700" text-anchor="middle">4H+ (lumen)</text>';
+        m += '<text x="350" y="150" fill="#38bdf8" font-size="13" font-weight="700" text-anchor="middle">O2 (net product)</text>';
+        m += '<text x="500" y="150" fill="#f59e0b" font-size="13" font-weight="700" text-anchor="middle">4e\u2212 (to PS II)</text>';
+        m += '<text x="350" y="190" fill="#94a3b8" font-size="11" text-anchor="middle">protons stay lumen-side \u2192 gradient begins</text>';
       }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">PS I replacements come from PS II (PDF p. 9)</text>';
+      readout(cell("Water", split ? "split" : "whole", split ? "#22c55e" : "#38bdf8"));
+      verdict(split ? "O2 out; electrons in; protons banked." : "Split water to feed PS II.");
+    } else {
+      m += '<text x="350" y="110" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + (cyc ? "Cyclic: PS I loops back" : "Non-cyclic: II \u2192 I \u2192 NADP+") + "</text>";
+      m += '<text x="350" y="160" fill="' + (cyc ? "#f59e0b" : "#22c55e") + '" font-size="13" font-weight="700" text-anchor="middle">' + (cyc ? "ATP only, no NADPH" : "ATP + NADPH + H+") + "</text>";
+      m += '<text x="350" y="200" fill="#94a3b8" font-size="11" text-anchor="middle">' + (cyc ? "Stroma lamellae; also >680 nm light alone" : "Z scheme in series (Fig. 11.5)") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Photophosphorylation: ADP + iP \u2192 ATP in light</text>';
+      readout(cell("Flow", cyc ? "cyclic" : "non-cyclic", cyc ? "#f59e0b" : "#22c55e") + cell("Makes", cyc ? "ATP only" : "ATP+NADPH", "#94a3b8"));
+      verdict(cyc ? "Loop pays the ATP gap." : "Line mints both currencies.");
+    }
+    svg.innerHTML = m;
+  }
 
-      // Mouse
-      var mouseX = cx + 50, mouseY = cy + 65;
-      if (hasPlant) {
-        // Living active mouse
-        m += '<ellipse cx="' + mouseX + '" cy="' + mouseY + '" rx="18" ry="12" fill="#94a3b8"/>';
-        m += '<circle cx="' + (mouseX + 16) + '" cy="' + (mouseY - 3) + '" r="8" fill="#94a3b8"/>';
-        m += '<circle cx="' + (mouseX + 19) + '" cy="' + (mouseY - 5) + '" r="1.5" fill="#000"/>';
-        m += '<path d="M ' + (mouseX - 18) + ' ' + mouseY + ' Q ' + (mouseX - 28) + ' ' + (mouseY - 10) + ' ' + (mouseX - 35) + ' ' + (mouseY - 4) + '" fill="none" stroke="#94a3b8" stroke-width="2"/>';
-        m += '<text x="' + mouseX + '" y="' + (mouseY + 20) + '" fill="#10b981" font-size="10" text-anchor="middle">Active Mouse (Alive)</text>';
-      } else {
-        // Dead mouse on back
-        m += '<ellipse cx="' + mouseX + '" cy="' + (mouseY + 5) + '" rx="18" ry="10" fill="#64748b"/>';
-        m += '<circle cx="' + (mouseX + 16) + '" cy="' + (mouseY + 5) + '" r="7" fill="#64748b"/>';
-        m += '<text x="' + (mouseX + 16) + '" y="' + (mouseY + 4) + '" fill="#f87171" font-size="10">X</text>';
-        m += '<text x="' + mouseX + '" y="' + (mouseY + 20) + '" fill="#ef4444" font-size="10" text-anchor="middle">Suffocated & Dead</text>';
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 5. Calvin Stages & Energy Ledger Lab (calvinlab) - L5, 11.7
+// -------------------------------------------------------------------------
+window.SIMS.calvinlab = (function(){
+  var view = "stages"; // "stages", "bill", "acceptor"
+  var stg = 0, per = 0, guess = 0;
+  var STGS = [
+    ["Carboxylation", "RuBP + CO2 \u2192 2 PGA", "most crucial"],
+    ["Reduction", "2 ATP + 2 NADPH", "toward glucose"],
+    ["Regeneration", "1 ATP \u2192 RuBP", "uninterrupted"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Calvin stages</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>ATP spent</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Sugar out</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-stages">Three Stages</button>' +
+      '<button class="preset-btn" id="p-bill">Glucose Bill</button>' +
+      '<button class="preset-btn" id="p-acceptor">Acceptor Hunt</button>';
+    document.getElementById("p-stages").onclick = function(){ setActivePreset(this); setV("stages"); };
+    document.getElementById("p-bill").onclick = function(){ setActivePreset(this); setV("bill"); };
+    document.getElementById("p-acceptor").onclick = function(){ setActivePreset(this); setV("acceptor"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "stages"){
+      c.innerHTML =
+        '<div class="control-group"><label>Stage:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        STGS.map(function(s, i){ return '<button class="preset-btn" data-sg="' + i + '">' + s[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Cycle:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">RuBP regenerated; all plants.</div></div>';
+      c.querySelectorAll("[data-sg]").forEach(function(b){ b.onclick = function(){ stg = Number(b.dataset.sg); draw(0); }; });
+    } else if(view === "bill"){
+      c.innerHTML =
+        '<div class="control-group"><label>Bill for:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-b0">One CO2</button>' +
+        '<button class="preset-btn" id="c-b1">One glucose</button></div></div>' +
+        '<div class="control-group"><label>Gap:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">3 ATP vs 2 NADPH \u2192 cyclic top-up.</div></div>';
+      document.getElementById("c-b0").onclick = function(){ per = 0; draw(0); };
+      document.getElementById("c-b1").onclick = function(){ per = 1; draw(0); };
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>Hypothesis:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-g0">2-carbon (years lost)</button>' +
+        '<button class="preset-btn" id="c-g1">5-carbon RuBP (answer)</button></div></div>' +
+        '<div class="control-group"><label>Type:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">RuBP: 5-carbon ketose sugar.</div></div>';
+      document.getElementById("c-g0").onclick = function(){ guess = 0; draw(0); };
+      document.getElementById("c-g1").onclick = function(){ guess = 1; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Calvin Cycle (\u00A711.7)</text>';
+    if(view === "stages"){
+      var s = STGS[stg];
+      for(var i = 0; i < 3; i++){
+        var x = 70 + i * 190;
+        var on = i === stg;
+        m += '<rect x="' + x + '" y="110" width="170" height="100" rx="8" fill="#0f172a" stroke="' + (on ? "#38bdf8" : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (x + 85) + '" y="145" fill="' + (on ? "#38bdf8" : "#475569") + '" font-size="11" font-weight="700" text-anchor="middle">' + STGS[i][0] + "</text>";
+        m += '<text x="' + (x + 85) + '" y="168" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + STGS[i][1] + "</text>";
+        m += '<text x="' + (x + 85) + '" y="186" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="9" text-anchor="middle">' + STGS[i][2] + "</text>";
+        if(i < 2) m += '<text x="' + (x + 180) + '" y="162" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
       }
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Fig. 11.8 \u00B7 carboxylation most crucial (PDF pp. 13–14)</text>';
+      readout(cell("Stage", s[0], "#38bdf8") + cell("Costs", s[1], "#f59e0b"));
+      verdict(s[0] + ": " + s[2] + ".");
+    } else if(view === "bill"){
+      var atp = per === 0 ? "3 ATP" : "18 ATP", nad = per === 0 ? "2 NADPH" : "12 NADPH";
+      m += '<text x="350" y="100" fill="#f8fafc" font-size="14" font-weight="700" text-anchor="middle">' + (per === 0 ? "Per CO2 fixed" : "Per glucose (6 turns)") + "</text>";
+      m += '<rect x="170" y="130" width="150" height="80" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5"/>';
+      m += '<text x="245" y="172" fill="#f59e0b" font-size="16" font-weight="700" text-anchor="middle">' + atp + "</text>";
+      m += '<rect x="380" y="130" width="150" height="80" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2.5"/>';
+      m += '<text x="455" y="172" fill="#22c55e" font-size="16" font-weight="700" text-anchor="middle">' + nad + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">In/Out table, PDF p. 15 \u00B7 out: glucose + ADP + NADP</text>';
+      readout(cell("ATP", atp, "#f59e0b") + cell("NADPH", nad, "#22c55e"));
+      verdict(per === 0 ? "The per-CO2 price." : "Six turns, one glucose.");
+    } else {
+      m += '<text x="350" y="120" fill="' + (guess === 0 ? "#ef4444" : "#22c55e") + '" font-size="15" font-weight="700" text-anchor="middle">' + (guess === 0 ? "2-carbon compound?" : "RuBP: 5-carbon ketose") + "</text>";
+      m += '<text x="350" y="165" fill="#94a3b8" font-size="12" text-anchor="middle">' + (guess === 0 ? "C3 \u2212 C1 looked like C2 \u2014 years hunting" : "Unexpected answer \u2014 C5 + C1 \u2192 split to 2\u00D7C3") + "</text>";
+      m += '<text x="350" y="205" fill="#94a3b8" font-size="11" text-anchor="middle">' + (guess === 0 ? "Never found: wrong arithmetic" : "Primary CO2 acceptor (PDF p. 13)") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Scientists took long + many experiments (\u00A711.7.1)</text>';
+      readout(cell("Guess", guess === 0 ? "C2 (wrong)" : "RuBP C5 (right)", guess === 0 ? "#ef4444" : "#22c55e"));
+      verdict(guess === 0 ? "Neat subtraction misled decades." : "The surprising 5-carbon acceptor.");
+    }
+    svg.innerHTML = m;
+  }
 
-      // Mint plant
-      if (hasPlant) {
-        m += '<g transform="translate(' + (cx - 5) + ',' + (cy + 15) + ')">';
-        m += '<rect x="-12" y="45" width="24" height="25" fill="#d97706" rx="2"/>';
-        m += '<line x1="0" y1="45" x2="0" y2="0" stroke="#10b981" stroke-width="3"/>';
-        m += '<ellipse cx="-12" cy="15" rx="14" ry="7" fill="#22c55e" transform="rotate(-30 -12 15)"/>';
-        m += '<ellipse cx="12" cy="10" rx="14" ry="7" fill="#22c55e" transform="rotate(30 12 10)"/>';
-        m += '<ellipse cx="-10" cy="-5" rx="12" ry="6" fill="#22c55e" transform="rotate(-20 -10 -5)"/>';
-        m += '<ellipse cx="10" cy="-10" rx="12" ry="6" fill="#22c55e" transform="rotate(20 10 -10)"/>';
-        m += '<circle cx="0" cy="-18" r="7" fill="#4ade80"/>';
-        m += '<text x="0" y="-25" fill="#86efac" font-size="11" font-weight="bold" text-anchor="middle">Mint Sprig (Mentha)</text>';
-        m += '<text x="0" y="80" fill="#38bdf8" font-size="10" text-anchor="middle">+ Oxygen (O2)</text>';
-        m += '</g>';
+  return {mount: mount, draw: draw};
+})();
+
+// -------------------------------------------------------------------------
+// 6. Kranz Anatomy & CO2 Pump Lab (c4lab) - L6, 11.8-11.9
+// -------------------------------------------------------------------------
+window.SIMS.c4lab = (function(){
+  var view = "kranz"; // "kranz", "hatch", "mode"
+  var pick = 1, step = 0, ratio = 0;
+  var CELLS = [["Mesophyll", "PEPcase, no RuBisCO"], ["Bundle sheath", "RuBisCO-rich, no PEPcase"]];
+  var STEPS = [
+    ["Mesophyll fix", "PEP + CO2 \u2192 OAA \u2192 C4 acids"],
+    ["Shuttle", "C4 acids \u2192 bundle sheath"],
+    ["Release + Calvin", "CO2 out \u2192 Calvin; 3C back \u2192 PEP"]
+  ];
+
+  function setV(v){ view = v; mountControls(); draw(0); }
+
+  function mount(){
+    App.state.maxT = 5;
+    document.getElementById("lab-legend").innerHTML =
+      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Mesophyll cells</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Bundle sheath (Kranz)</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>CO2 pool</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-kranz">Wreath Tour</button>' +
+      '<button class="preset-btn" id="p-hatch">Hatch-Slack</button>' +
+      '<button class="preset-btn" id="p-mode">RuBisCO Mode</button>';
+    document.getElementById("p-kranz").onclick = function(){ setActivePreset(this); setV("kranz"); };
+    document.getElementById("p-hatch").onclick = function(){ setActivePreset(this); setV("hatch"); };
+    document.getElementById("p-mode").onclick = function(){ setActivePreset(this); setV("mode"); };
+    mountControls();
+    draw(0);
+  }
+
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "kranz"){
+      c.innerHTML =
+        '<div class="control-group"><label>Cell:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-x0">Mesophyll</button>' +
+        '<button class="preset-btn" id="c-x1">Bundle sheath</button></div></div>' +
+        '<div class="control-group"><label>Section:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Cut maize/sorghum; look for the wreath.</div></div>';
+      document.getElementById("c-x0").onclick = function(){ pick = 0; draw(0); };
+      document.getElementById("c-x1").onclick = function(){ pick = 1; draw(0); };
+    } else if(view === "hatch"){
+      c.innerHTML =
+        '<div class="control-group"><label>Step:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        STEPS.map(function(s, i){ return '<button class="preset-btn" data-hs="' + i + '">' + s[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Loop:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Cyclic: 3C returns as PEP.</div></div>';
+      c.querySelectorAll("[data-hs]").forEach(function(b){ b.onclick = function(){ step = Number(b.dataset.hs); draw(0); }; });
+    } else {
+      c.innerHTML =
+        '<div class="control-group"><label>CO2:O2 at enzyme:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-m0">Nearly equal</button>' +
+        '<button class="preset-btn" id="c-m1">CO2 loaded (C4)</button></div></div>' +
+        '<div class="control-group"><label>Binding:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Competitive; concentration decides.</div></div>';
+      document.getElementById("c-m0").onclick = function(){ ratio = 0; draw(0); };
+      document.getElementById("c-m1").onclick = function(){ ratio = 1; draw(0); };
+    }
+  }
+
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">C4 &amp; Photorespiration (\u00A711.8\u2013\u00A711.9)</text>';
+    if(view === "kranz"){
+      var cl = CELLS[pick];
+      m += '<circle cx="350" cy="165" r="26" fill="#0f172a" stroke="#94a3b8" stroke-width="2"/>';
+      m += '<text x="350" y="169" fill="#94a3b8" font-size="9" text-anchor="middle">vein</text>';
+      for(var i = 0; i < 8; i++){
+        var ang = i * Math.PI / 4;
+        var wx = 350 + 62 * Math.cos(ang), wy = 165 + 62 * Math.sin(ang);
+        m += '<circle cx="' + wx + '" cy="' + wy + '" r="24" fill="#0f172a" stroke="' + (pick === 1 ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
       }
-
-    } else if (exp === "ingenhousz") {
-      // Jan Ingenhousz aquatic Hydrilla experiment
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#10b981" font-size="14" font-weight="bold" text-anchor="middle">JAN INGENHOUSZ (1779): AQUATIC HYDRILLA O2 BUBBLES</text>';
-
-      // Beaker with water
-      m += '<rect x="' + (cx - 100) + '" y="' + (cy - 60) + '" width="200" height="150" rx="6" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="2.5"/>';
-      m += '<text x="' + (cx - 90) + '" y="' + (cy - 45) + '" fill="#7dd3fc" font-size="10">Water Tank</text>';
-
-      // Inverted funnel & test tube over Hydrilla
-      m += '<polygon points="' + (cx - 60) + ',' + (cy + 75) + ' ' + (cx + 60) + ',' + (cy + 75) + ' ' + cx + ',' + (cy + 10) + '" fill="none" stroke="#94a3b8" stroke-width="2"/>';
-      m += '<rect x="' + (cx - 10) + '" y="' + (cy - 70) + '" width="20" height="80" fill="rgba(255,255,255,0.2)" stroke="#94a3b8" stroke-width="2"/>';
-
-      // Oxygen gas accumulating at top of tube
-      m += '<rect x="' + (cx - 9) + '" y="' + (cy - 69) + '" width="18" height="25" fill="#38bdf8" opacity="0.4"/>';
-      m += '<text x="' + cx + '" y="' + (cy - 50) + '" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">O2 Gas</text>';
-
-      // Bubbles rising from green twigs
-      var bubbleYs = [cy + 2, cy - 12, cy - 25, cy - 38];
-      for (var b = 0; b < bubbleYs.length; b++) {
-        m += '<circle cx="' + (cx - 2 + (b % 2) * 4) + '" cy="' + bubbleYs[b] + '" r="' + (2.5 + b * 0.5) + '" fill="#bae6fd" stroke="#38bdf8" stroke-width="1"/>';
-      }
-
-      // Green Hydrilla plant inside funnel
-      m += '<path d="M ' + cx + ' ' + (cy + 75) + ' L ' + cx + ' ' + (cy + 20) + '" stroke="#10b981" stroke-width="4"/>';
-      m += '<line x1="' + (cx - 30) + '" y1="' + (cy + 55) + '" x2="' + cx + '" y2="' + (cy + 45) + '" stroke="#22c55e" stroke-width="3"/>';
-      m += '<line x1="' + (cx + 30) + '" y1="' + (cy + 55) + '" x2="' + cx + '" y2="' + (cy + 45) + '" stroke="#22c55e" stroke-width="3"/>';
-      m += '<line x1="' + (cx - 25) + '" y1="' + (cy + 35) + '" x2="' + cx + '" y2="' + (cy + 30) + '" stroke="#22c55e" stroke-width="3"/>';
-      m += '<line x1="' + (cx + 25) + '" y1="' + (cy + 35) + '" x2="' + cx + '" y2="' + (cy + 30) + '" stroke="#22c55e" stroke-width="3"/>';
-      m += '<text x="' + cx + '" y="' + (cy + 70) + '" fill="#86efac" font-size="11" font-weight="bold" text-anchor="middle">Hydrilla sprigs</text>';
-
-      // Sunlight rays
-      m += '<circle cx="' + (cx - 150) + '" cy="' + (cy - 70) + '" r="22" fill="#fbbf24"/>';
-      m += '<line x1="' + (cx - 130) + '" y1="' + (cy - 50) + '" x2="' + (cx - 80) + '" y2="' + (cy - 20) + '" stroke="#fde047" stroke-width="2.5" stroke-dasharray="4,2"/>';
-      m += '<text x="' + (cx - 150) + '" y="' + (cy - 35) + '" fill="#fde047" font-size="11" font-weight="bold" text-anchor="middle">Sunlight</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 105) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">In dark: NO bubbles. In sunlight: rapid O2 bubble release exclusively from green parts!</text>';
-
-    } else if (exp === "engelmann") {
-      // T.W. Engelmann (1888) Action Spectrum Experiment
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">T.W. ENGELMANN (1888): FIRST ACTION SPECTRUM WITH CLADOPHORA</text>';
-
-      // Prism splitting white light
-      m += '<polygon points="' + (cx - 160) + ',' + (cy - 20) + ' ' + (cx - 120) + ',' + (cy + 40) + ' ' + (cx - 200) + ',' + (cy + 40) + '" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="2"/>';
-      m += '<text x="' + (cx - 160) + '" y="' + (cy + 25) + '" fill="#fff" font-size="10" text-anchor="middle">Prism</text>';
-
-      // White beam entering
-      m += '<line x1="' + (cx - 240) + '" y1="' + cy + '" x2="' + (cx - 180) + '" y2="' + (cy + 10) + '" stroke="#fff" stroke-width="3"/>';
-      m += '<text x="' + (cx - 225) + '" y="' + (cy - 8) + '" fill="#fff" font-size="10">White Light</text>';
-
-      // Spectrum rainbow spread across filamentous Cladophora
-      var spectrumCols = ["#3b82f6", "#06b6d4", "#10b981", "#eab308", "#f97316", "#ef4444"];
-      var specW = 45;
-      var specStartX = cx - 90;
-      for (var s = 0; s < spectrumCols.length; s++) {
-        m += '<rect x="' + (specStartX + s * specW) + '" y="' + (cy - 40) + '" width="' + specW + '" height="80" fill="' + spectrumCols[s] + '" opacity="0.25"/>';
-      }
-
-      // Cladophora filament horizontal across spectrum
-      m += '<line x1="' + (specStartX - 10) + '" y1="' + cy + '" x2="' + (specStartX + 280) + '" y2="' + cy + '" stroke="#15803d" stroke-width="9" stroke-linecap="round"/>';
-      m += '<text x="' + (specStartX + 130) + '" y="' + (cy - 48) + '" fill="#86efac" font-size="12" font-weight="bold" text-anchor="middle">Green Alga: Cladophora</text>';
-
-      // Wavelength labels
-      m += '<text x="' + specStartX + '" y="' + (cy + 55) + '" fill="#38bdf8" font-size="10">400 nm (Blue)</text>';
-      m += '<text x="' + (specStartX + 100) + '" y="' + (cy + 55) + '" fill="#10b981" font-size="10">550 nm (Green)</text>';
-      m += '<text x="' + (specStartX + 220) + '" y="' + (cy + 55) + '" fill="#ef4444" font-size="10">680 nm (Red)</text>';
-
-      // Aerobic bacteria dots (Clustered heavily in blue and red zones, scarce in green)
-      function drawBacteriaCluster(bx, by, count, col) {
-        for (var k = 0; k < count; k++) {
-          var rx = bx + (Math.sin(k * 7) * 22);
-          var ry = by + (Math.cos(k * 13) * 12);
-          m += '<circle cx="' + rx + '" cy="' + ry + '" r="2" fill="' + col + '"/>';
+      if(pick === 0){
+        for(var j = 0; j < 6; j++){
+          var mx = 150 + j * 80;
+          m += '<rect x="' + mx + '" y="70" width="60" height="30" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
         }
+        m += '<text x="350" y="90" fill="#38bdf8" font-size="10" text-anchor="middle">mesophyll ring</text>';
       }
-
-      // Heavy cluster in Blue (400-450 nm)
-      drawBacteriaCluster(specStartX + 22, cy, 35, "#38bdf8");
-      // Sparse in Green (500-550 nm)
-      drawBacteriaCluster(specStartX + 115, cy, 5, "#94a3b8");
-      // Heavy cluster in Red (650-680 nm)
-      drawBacteriaCluster(specStartX + 245, cy, 40, "#f87171");
-
-      m += '<text x="' + (specStartX + 22) + '" y="' + (cy - 16) + '" fill="#38bdf8" font-size="9.5" font-weight="bold">Dense Bacteria</text>';
-      m += '<text x="' + (specStartX + 115) + '" y="' + (cy - 16) + '" fill="#94a3b8" font-size="9.5">Few</text>';
-      m += '<text x="' + (specStartX + 245) + '" y="' + (cy - 16) + '" fill="#f87171" font-size="9.5" font-weight="bold">Dense Bacteria</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#fbbf24" font-size="11" text-anchor="middle">Aerobic bacteria detect highest O2 evolution in Blue & Red absorption bands!</text>';
-
-    } else if (exp === "vanniel") {
-      // Cornelius van Niel sulfur bacteria discovery
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle">CORNELIUS VAN NIEL: OXYGEN ORIGINATES FROM WATER (NOT CO2)</text>';
-
-      // Split box: Green Plant vs Purple Sulfur Bacteria
-      m += '<rect x="' + (cx - 150) + '" y="' + (cy - 60) + '" width="140" height="135" rx="8" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="2"/>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy - 35) + '" fill="#10b981" font-size="12" font-weight="bold" text-anchor="middle">GREEN PLANTS</text>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy - 10) + '" fill="#cbd5e1" font-size="10" text-anchor="middle">Hydrogen Donor: H2O</text>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy + 15) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">2H2O -> 4H+ + O2</text>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy + 40) + '" fill="#86efac" font-size="10" text-anchor="middle">Byproduct: OXYGEN (O2)</text>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy + 58) + '" fill="#94a3b8" font-size="9" text-anchor="middle">(Confirmed via 18O isotope)</text>';
-
-      m += '<rect x="' + (cx + 10) + '" y="' + (cy - 60) + '" width="140" height="135" rx="8" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="2"/>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy - 35) + '" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">SULFUR BACTERIA</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy - 10) + '" fill="#cbd5e1" font-size="10" text-anchor="middle">Hydrogen Donor: H2S</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy + 15) + '" fill="#f59e0b" font-size="13" font-weight="bold" text-anchor="middle">2H2S -> 4H+ + 2S</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy + 40) + '" fill="#fcd34d" font-size="10" text-anchor="middle">Byproduct: SULFUR (S)</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy + 58) + '" fill="#ef4444" font-size="9" text-anchor="middle">ZERO Oxygen Released!</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 100) + '" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">General Rule: 2H2A + CO2 -> 2A + CH2O + H2O</text>';
-    }
-
-    // Right details panel
-    var rx = W - 180, ry = 50;
-    m += '<rect x="' + rx + '" y="' + ry + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (rx + 85) + '" y="' + (ry + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">SCIENTIFIC KEY</text>';
-
-    if (exp === "priestley_dead" || exp === "priestley_mint") {
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#fcd34d" font-size="11" font-weight="bold">Joseph Priestley</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• Year: 1770 - 1774</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 90) + '" fill="#cbd5e1" font-size="10">• Discovered Oxygen</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 105) + '" fill="#cbd5e1" font-size="10">  in 1774</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 130) + '" fill="#86efac" font-size="10" font-weight="bold">• Essential Rule:</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 150) + '" fill="#cbd5e1" font-size="9.5">  Plants restore</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 165) + '" fill="#cbd5e1" font-size="9.5">  whatever breathing</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 180) + '" fill="#cbd5e1" font-size="9.5">  animals & candles</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 195) + '" fill="#cbd5e1" font-size="9.5">  remove from air.</text>';
-    } else if (exp === "ingenhousz") {
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#10b981" font-size="11" font-weight="bold">Jan Ingenhousz</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• Year: 1779</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 90) + '" fill="#cbd5e1" font-size="10">• Aquatic plant: Hydrilla</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 115) + '" fill="#fcd34d" font-size="10" font-weight="bold">• Key Discoveries:</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 135) + '" fill="#cbd5e1" font-size="9.5">  - Sunlight is essential</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 155) + '" fill="#cbd5e1" font-size="9.5">  - Oxygen bubbles</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 170) + '" fill="#cbd5e1" font-size="9.5">    form ONLY on the</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 185) + '" fill="#86efac" font-size="9.5">    GREEN parts of plants.</text>';
-    } else if (exp === "engelmann") {
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#38bdf8" font-size="11" font-weight="bold">T.W. Engelmann</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• Year: 1888</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 90) + '" fill="#cbd5e1" font-size="10">• Prism split spectrum</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 110) + '" fill="#cbd5e1" font-size="10">• Cladophora green alga</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 130) + '" fill="#cbd5e1" font-size="10">• Motile aerobic bacteria</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 155) + '" fill="#4ade80" font-size="10" font-weight="bold">• First Action Spectrum:</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 175) + '" fill="#cbd5e1" font-size="9.5">  Peaks match Chlorophyll</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 190) + '" fill="#cbd5e1" font-size="9.5">  a absorption in Blue</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 205) + '" fill="#cbd5e1" font-size="9.5">  and Red regions.</text>';
-    } else if (exp === "vanniel") {
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#fbbf24" font-size="11" font-weight="bold">Cornelius van Niel</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• Purple & green sulfur</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 85) + '" fill="#cbd5e1" font-size="10">  bacteria research</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 110) + '" fill="#ef4444" font-size="10" font-weight="bold">• Milestone Proof:</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 130) + '" fill="#cbd5e1" font-size="9.5">  O2 comes from H2O,</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 145) + '" fill="#cbd5e1" font-size="9.5">  NOT from CO2!</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 170) + '" fill="#cbd5e1" font-size="9.5">• In sulfur bacteria,</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 185) + '" fill="#cbd5e1" font-size="9.5">  H2S yields sulfur (S),</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 200) + '" fill="#cbd5e1" font-size="9.5">  so H-donor determines</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 215) + '" fill="#86efac" font-size="9.5">  the byproduct.</text>';
-    }
-
-    svg.innerHTML = m;
-
-    var expTitle = (exp === "priestley_dead" ? "Priestley (Closed Jar)" :
-                   (exp === "priestley_mint" ? "Priestley (Mint Plant)" :
-                   (exp === "ingenhousz" ? "Ingenhousz (Hydrilla)" :
-                   (exp === "engelmann" ? "Engelmann (Action Spectrum)" : "van Niel (H2O Origin of O2)"))));
-
-    var gasEvolved = (exp === "priestley_mint" || exp === "ingenhousz" || exp === "engelmann" ? "Oxygen (O2)" :
-                     (exp === "vanniel" ? "Sulfur (S) in bacteria; O2 in plants" : "None (Hypoxia / CO2)"));
-
-    readout(
-      cell("Active Milestone", expTitle, "#38bdf8") +
-      cell("Gas Byproduct", gasEvolved, "#10b981") +
-      cell("Organism Used", exp === "engelmann" ? "Cladophora + Aerobic Bacteria" : (exp === "ingenhousz" ? "Hydrilla" : (exp === "vanniel" ? "Sulfur Bacteria" : "Mint & Mouse")), "#fcd34d") +
-      cell("Scientific Contribution", exp === "vanniel" ? "O2 from H2O" : (exp === "engelmann" ? "Blue/Red Action Spectrum" : "Photosynthetic O2 Essentiality"), "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#38bdf8;font-weight:700;">NCERT 11.2 Historical Discovery Rule:</span> ' +
-      (exp === "vanniel" ?
-       "Cornelius van Niel correctly deduced that photosynthesis is a light-dependent reaction where hydrogen from an oxidisable compound reduces CO2. Using purple and green sulfur bacteria where H2S is oxidized to sulfur, he proved that the O2 evolved by green plants comes from H2O, not CO2 (later confirmed with 18O isotope)." :
-       (exp === "engelmann" ?
-        "T.W. Engelmann split light with a prism and illuminated Cladophora alga; aerobic bacteria accumulated predominantly in blue and red light, describing the first action spectrum of photosynthesis, which closely matches chlorophyll a & b absorption." :
-        (exp === "ingenhousz" ?
-         "Jan Ingenhousz proved that sunlight is essential for plants to purify air; in water, submerged Hydrilla plants release oxygen bubbles from their green parts only when illuminated." :
-         "Joseph Priestley demonstrated that a burning candle or mouse fouls the air in a closed bell jar, but a mint plant restores the air, allowing both mouse and candle to survive.")))
-    );
-  }
-
-  return { mount: mount, setExp: setExp, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 2. SIMULATION 2: Pigments, Chromatography & Spectra (pigmentspectrasim)
-// -------------------------------------------------------------------------
-window.SIMS.pigmentspectrasim = (function(){
-  var viewMode = "chromatogram"; // "chromatogram", "absorption", "overlay", "etiolation"
-
-  function mount(){
-    App.state.maxT = 4;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Chlorophyll a (Bright/Blue-Green)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#84cc16;"></span><span>Chlorophyll b (Yellow-Green)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#eab308;"></span><span>Xanthophylls (Yellow)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f97316;"></span><span>Carotenoids (Yellow-Orange)</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.pigmentspectrasim.setView(\'chromatogram\')">1. Paper Chromatogram Strip</button>' +
-      '<button class="preset-btn" onclick="SIMS.pigmentspectrasim.setView(\'absorption\')">2. Absorption Spectra (Chl a, b, Car)</button>' +
-      '<button class="preset-btn" onclick="SIMS.pigmentspectrasim.setView(\'overlay\')">3. Action Spectrum vs Chl a Overlay</button>' +
-      '<button class="preset-btn" onclick="SIMS.pigmentspectrasim.setView(\'etiolation\')">4. Dark Etiolation (Carotenoid Unmasking)</button>';
-  }
-
-  function setView(v){
-    viewMode = v;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">PHOTOSYNTHETIC PIGMENTS: CHROMATOGRAPHY, SPECTRA & PHOTOPROTECTION</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    if (viewMode === "chromatogram") {
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">PAPER CHROMATOGRAPHY OF LEAF EXTRACT (SPINACH)</text>';
-
-      // Chromatography jar
-      m += '<rect x="' + (cx - 100) + '" y="' + (cy - 70) + '" width="200" height="180" rx="8" fill="rgba(30,41,59,0.5)" stroke="#64748b" stroke-width="2.5"/>';
-      m += '<rect x="' + (cx - 90) + '" y="' + (cy + 90) + '" width="180" height="15" fill="rgba(56,189,248,0.2)"/>';
-      m += '<text x="' + (cx - 85) + '" y="' + (cy + 102) + '" fill="#7dd3fc" font-size="9">Solvent front (Petroleum ether + Acetone)</text>';
-
-      // Chromatography paper strip
-      m += '<rect x="' + (cx - 25) + '" y="' + (cy - 60) + '" width="50" height="160" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>';
-      // Loading line
-      m += '<line x1="' + (cx - 25) + '" y1="' + (cy + 75) + '" x2="' + (cx + 25) + '" y2="' + (cy + 75) + '" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>';
-      m += '<text x="' + (cx - 30) + '" y="' + (cy + 78) + '" fill="#94a3b8" font-size="8.5" text-anchor="end">Origin</text>';
-
-      // 4 Pigment Bands on strip
-      // 1. Carotenes (Top, highest Rf, yellow-orange)
-      m += '<rect x="' + (cx - 23) + '" y="' + (cy - 45) + '" width="46" height="8" rx="2" fill="#f97316"/>';
-      m += '<line x1="' + (cx + 25) + '" y1="' + (cy - 41) + '" x2="' + (cx + 70) + '" y2="' + (cy - 41) + '" stroke="#f97316" stroke-width="1.5"/>';
-      m += '<text x="' + (cx + 75) + '" y="' + (cy - 37) + '" fill="#f97316" font-size="11" font-weight="bold">Carotenoids (Yellow-Orange)</text>';
-
-      // 2. Xanthophyll (Yellow)
-      m += '<rect x="' + (cx - 23) + '" y="' + (cy - 15) + '" width="46" height="8" rx="2" fill="#eab308"/>';
-      m += '<line x1="' + (cx + 25) + '" y1="' + (cy - 11) + '" x2="' + (cx + 70) + '" y2="' + (cy - 11) + '" stroke="#eab308" stroke-width="1.5"/>';
-      m += '<text x="' + (cx + 75) + '" y="' + (cy - 7) + '" fill="#eab308" font-size="11" font-weight="bold">Xanthophylls (Yellow)</text>';
-
-      // 3. Chlorophyll a (Bright or blue-green)
-      m += '<rect x="' + (cx - 23) + '" y="' + (cy + 15) + '" width="46" height="10" rx="2" fill="#10b981"/>';
-      m += '<line x1="' + (cx + 25) + '" y1="' + (cy + 20) + '" x2="' + (cx + 70) + '" y2="' + (cy + 20) + '" stroke="#10b981" stroke-width="1.5"/>';
-      m += '<text x="' + (cx + 75) + '" y="' + (cy + 24) + '" fill="#10b981" font-size="11" font-weight="bold">Chlorophyll a (Bright / Blue-Green) [CHIEF]</text>';
-
-      // 4. Chlorophyll b (Yellow-green)
-      m += '<rect x="' + (cx - 23) + '" y="' + (cy + 45) + '" width="46" height="10" rx="2" fill="#84cc16"/>';
-      m += '<line x1="' + (cx + 25) + '" y1="' + (cy + 50) + '" x2="' + (cx + 70) + '" y2="' + (cy + 50) + '" stroke="#84cc16" stroke-width="1.5"/>';
-      m += '<text x="' + (cx + 75) + '" y="' + (cy + 54) + '" fill="#84cc16" font-size="11" font-weight="bold">Chlorophyll b (Yellow-Green)</text>';
-
-    } else if (viewMode === "absorption" || viewMode === "overlay") {
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="' + (viewMode === "overlay" ? "#fbbf24" : "#38bdf8") + '" font-size="14" font-weight="bold" text-anchor="middle">' +
-           (viewMode === "overlay" ? "ACTION SPECTRUM OF PHOTOSYNTHESIS OVERLAYING CHL a ABSORPTION" : "ABSORPTION SPECTRA: CHL a, CHL b & CAROTENOIDS") + '</text>';
-
-      // Coordinate axes
-      var ox = cx - 140, oy = cy + 60;
-      m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + (ox + 290) + '" y2="' + oy + '" stroke="#94a3b8" stroke-width="2"/>';
-      m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="' + (oy - 150) + '" stroke="#94a3b8" stroke-width="2"/>';
-      m += '<text x="' + (ox + 140) + '" y="' + (oy + 32) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Wavelength of light in nanometres (nm)</text>';
-      m += '<text x="' + (ox - 10) + '" y="' + (oy - 75) + '" fill="#cbd5e1" font-size="10" text-anchor="middle" transform="rotate(-90 ' + (ox - 10) + ' ' + (oy - 75) + ')">Relative Absorption / Rate</text>';
-
-      // Wavelength ticks: 400 (blue), 500 (green), 600 (orange), 700 (red)
-      var ticks = [
-        { nm: 400, x: ox }, { nm: 450, x: ox + 48 }, { nm: 500, x: ox + 96 },
-        { nm: 550, x: ox + 144 }, { nm: 600, x: ox + 192 }, { nm: 650, x: ox + 240 }, { nm: 700, x: ox + 288 }
-      ];
-      for (var t = 0; t < ticks.length; t++) {
-        m += '<line x1="' + ticks[t].x + '" y1="' + oy + '" x2="' + ticks[t].x + '" y2="' + (oy + 5) + '" stroke="#94a3b8" stroke-width="1.5"/>';
-        m += '<text x="' + ticks[t].x + '" y="' + (oy + 18) + '" fill="#94a3b8" font-size="9" text-anchor="middle">' + ticks[t].nm + '</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">' + cl[0] + ": " + cl[1] + " \u00B7 \u2018Kranz\u2019 = \u2018wreath\u2019 (PDF p. 15)</text>";
+      readout(cell("Cell", cl[0], pick === 1 ? "#22c55e" : "#38bdf8") + cell("Enzymes", cl[1], "#94a3b8"));
+      verdict(pick === 1 ? "Sheath: layered, chloroplast-rich, sealed." : "Mesophyll: first fixation, no RuBisCO.");
+    } else if(view === "hatch"){
+      var sp = STEPS[step];
+      for(var k = 0; k < 3; k++){
+        var kx = 70 + k * 190;
+        var on = k === step;
+        m += '<rect x="' + kx + '" y="110" width="170" height="100" rx="8" fill="#0f172a" stroke="' + (on ? "#22c55e" : "#334155") + '" stroke-width="2"/>';
+        m += '<text x="' + (kx + 85) + '" y="145" fill="' + (on ? "#22c55e" : "#475569") + '" font-size="10" font-weight="700" text-anchor="middle">' + STEPS[k][0] + "</text>";
+        m += '<text x="' + (kx + 85) + '" y="170" fill="' + (on ? "#94a3b8" : "#475569") + '" font-size="8" text-anchor="middle">' + STEPS[k][1] + "</text>";
+        if(k < 2) m += '<text x="' + (kx + 180) + '" y="162" fill="#64748b" font-size="16" text-anchor="middle">\u2192</text>';
       }
-
-      // Chlorophyll a curve (Peak at 430 nm blue, dip in green 550 nm, second peak at 660 nm red)
-      var chlAD = 'M ' + ox + ' ' + (oy - 20) +
-                  ' Q ' + (ox + 30) + ' ' + (oy - 145) + ' ' + (ox + 48) + ' ' + (oy - 80) +
-                  ' Q ' + (ox + 120) + ' ' + (oy - 10) + ' ' + (ox + 180) + ' ' + (oy - 15) +
-                  ' Q ' + (ox + 250) + ' ' + (oy - 110) + ' ' + (ox + 288) + ' ' + (oy - 10);
-      m += '<path d="' + chlAD + '" fill="none" stroke="#10b981" stroke-width="3"/>';
-      m += '<text x="' + (ox + 45) + '" y="' + (oy - 130) + '" fill="#10b981" font-size="10" font-weight="bold">Chl a (Blue Peak)</text>';
-      m += '<text x="' + (ox + 250) + '" y="' + (oy - 115) + '" fill="#10b981" font-size="10" font-weight="bold">Chl a (Red Peak)</text>';
-
-      if (viewMode === "absorption") {
-        // Chlorophyll b curve (Peak at 455 nm, secondary peak at 640 nm)
-        var chlBD = 'M ' + ox + ' ' + (oy - 10) +
-                    ' Q ' + (ox + 55) + ' ' + (oy - 135) + ' ' + (ox + 80) + ' ' + (oy - 40) +
-                    ' Q ' + (ox + 140) + ' ' + (oy - 10) + ' ' + (ox + 210) + ' ' + (oy - 30) +
-                    ' Q ' + (ox + 235) + ' ' + (oy - 95) + ' ' + (ox + 288) + ' ' + (oy - 5);
-        m += '<path d="' + chlBD + '" fill="none" stroke="#84cc16" stroke-width="2.5" stroke-dasharray="4,2"/>';
-        m += '<text x="' + (ox + 85) + '" y="' + (oy - 95) + '" fill="#84cc16" font-size="10">Chl b</text>';
-
-        // Carotenoids curve (Absorbs blue-green 440-490 nm, zero in red)
-        var carD = 'M ' + ox + ' ' + (oy - 5) +
-                   ' Q ' + (ox + 40) + ' ' + (oy - 85) + ' ' + (ox + 70) + ' ' + (oy - 90) +
-                   ' Q ' + (ox + 95) + ' ' + (oy - 75) + ' ' + (ox + 120) + ' ' + oy +
-                   ' L ' + (ox + 288) + ' ' + oy;
-        m += '<path d="' + carD + '" fill="none" stroke="#f97316" stroke-width="2"/>';
-        m += '<text x="' + (ox + 95) + '" y="' + (oy - 80) + '" fill="#f97316" font-size="10">Carotenoids</text>';
-      } else if (viewMode === "overlay") {
-        // Photosynthetic action spectrum (rate of O2 release)
-        var actD = 'M ' + ox + ' ' + (oy - 15) +
-                   ' Q ' + (ox + 40) + ' ' + (oy - 155) + ' ' + (ox + 70) + ' ' + (oy - 60) +
-                   ' Q ' + (ox + 140) + ' ' + (oy - 25) + ' ' + (ox + 200) + ' ' + (oy - 35) +
-                   ' Q ' + (ox + 250) + ' ' + (oy - 130) + ' ' + (ox + 288) + ' ' + (oy - 15);
-        m += '<path d="' + actD + '" fill="none" stroke="#fbbf24" stroke-width="3.5" stroke-dasharray="6,3"/>';
-        m += '<text x="' + (ox + 140) + '" y="' + (oy - 45) + '" fill="#fbbf24" font-size="11" font-weight="bold">Action Spectrum of Photosynthesis</text>';
-        m += '<text x="' + cx + '" y="' + (cy + 100) + '" fill="#cbd5e1" font-size="11" text-anchor="middle">Action spectrum tracks Chl a absorption, but is broader due to accessory light harvesting!</text>';
-      }
-
-    } else if (viewMode === "etiolation") {
-      // Dark kept yellow leaf vs sunny green leaf (Exercise 11.6)
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle">EXERCISE 11.6: DARK-INDUCED CHLOROSIS & CAROTENOID STABILITY</text>';
-
-      // Normal leaf in light
-      m += '<ellipse cx="' + (cx - 80) + '" cy="' + cy + '" rx="55" ry="85" fill="#15803d" stroke="#16a34a" stroke-width="2.5"/>';
-      m += '<line x1="' + (cx - 80) + '" y1="' + (cy + 85) + '" x2="' + (cx - 80) + '" y2="' + (cy - 75) + '" stroke="#4ade80" stroke-width="2.5"/>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy + 105) + '" fill="#86efac" font-size="12" font-weight="bold" text-anchor="middle">Light Grown: Green</text>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy - 10) + '" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">Active Chl a & b</text>';
-      m += '<text x="' + (cx - 80) + '" y="' + (cy + 8) + '" fill="#dcfce7" font-size="9.5" text-anchor="middle">biosynthesis</text>';
-
-      // Etiolated leaf kept in dark
-      m += '<ellipse cx="' + (cx + 80) + '" cy="' + cy + '" rx="55" ry="85" fill="#facc15" stroke="#eab308" stroke-width="2.5"/>';
-      m += '<line x1="' + (cx + 80) + '" y1="' + (cy + 85) + '" x2="' + (cx + 80) + '" y2="' + (cy - 75) + '" stroke="#ca8a04" stroke-width="2.5"/>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy + 105) + '" fill="#fef08a" font-size="12" font-weight="bold" text-anchor="middle">Dark Kept: Yellow (Etiolated)</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy - 15) + '" fill="#000" font-size="11" font-weight="bold" text-anchor="middle">Chlorophyll degraded</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy + 5) + '" fill="#000" font-size="10" font-weight="bold" text-anchor="middle">STABLE CAROTENOIDS</text>';
-      m += '<text x="' + (cx + 80) + '" y="' + (cy + 20) + '" fill="#78350f" font-size="9.5" text-anchor="middle">remain unmasked!</text>';
-    }
-
-    // Right details panel
-    var px = W - 180, py = 50;
-    m += '<rect x="' + px + '" y="' + py + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (px + 85) + '" y="' + (py + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">PIGMENT METRICS</text>';
-
-    m += '<text x="' + (px + 10) + '" y="' + (py + 50) + '" fill="#10b981" font-size="11" font-weight="bold">Chlorophyll a:</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 70) + '" fill="#86efac" font-size="10">• Bright / Blue-Green</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 88) + '" fill="#cbd5e1" font-size="10">• Reaction center core</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 106) + '" fill="#cbd5e1" font-size="10">• Peaks: 430 & 660 nm</text>';
-
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 135) + '" fill="#84cc16" font-size="11" font-weight="bold">Accessory Pigments:</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 155) + '" fill="#cbd5e1" font-size="9.5">• Chl b: Yellow-Green</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 172) + '" fill="#cbd5e1" font-size="9.5">• Xanthophylls: Yellow</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 190) + '" fill="#cbd5e1" font-size="9.5">• Carotenoids: Orange</text>';
-
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 220) + '" fill="#fcd34d" font-size="11" font-weight="bold">Dual Biological Role:</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 240) + '" fill="#cbd5e1" font-size="9.5">1. Broaden light harvest</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 258) + '" fill="#cbd5e1" font-size="9.5">2. Prevent photo-</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (ry + 272) + '" fill="#ef4444" font-size="9.5">   oxidation (solarization)</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("View Mode", viewMode.toUpperCase(), "#38bdf8") +
-      cell("Reaction Center", "Chlorophyll a exclusively", "#10b981") +
-      cell("Dominant Absorption", "Blue (430 nm) & Red (660 nm)", "#fcd34d") +
-      cell("Pigment Stability", "Carotenoids > Chlorophyll", "#ec4899")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT 11.4 Pigment & Spectrum Rule:</span> ' +
-      (viewMode === "etiolation" ?
-       "Chlorophyll synthesis requires light; when leaves are deprived of light, chlorophyll degrades rapidly, unmasking the more stable yellow-orange carotenoids and xanthophylls (etiolation)." :
-       (viewMode === "overlay" ?
-        "The action spectrum of photosynthesis shows two major peaks in the blue and red wavelengths, matching the absorption peaks of chlorophyll a, but with wider shoulders because accessory pigments absorb other wavelengths and funnel energy to Chl a." :
-        "Paper chromatography resolves leaf pigments into four distinct fractions: chlorophyll a (bright/blue-green), chlorophyll b (yellow-green), xanthophylls (yellow), and carotenoids (yellow-orange)."))
-    );
-  }
-
-  return { mount: mount, setView: setView, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 3. SIMULATION 3: Z-Scheme & Photolysis (zschemetransportsim)
-// -------------------------------------------------------------------------
-window.SIMS.zschemetransportsim = (function(){
-  var mode = "noncyclic"; // "noncyclic", "photolysis", "cyclic", "farred"
-
-  function mount(){
-    App.state.maxT = 4;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>PS II (P680)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>PS I (P700)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Photolysis of Water (OEC)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>ATP & NADPH Yield</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.zschemetransportsim.setMode(\'noncyclic\')">1. Non-Cyclic Z-Scheme (PS II + PS I)</button>' +
-      '<button class="preset-btn" onclick="SIMS.zschemetransportsim.setMode(\'photolysis\')">2. Water Splitting (OEC & Mn2+)</button>' +
-      '<button class="preset-btn" onclick="SIMS.zschemetransportsim.setMode(\'cyclic\')">3. Cyclic Photophosphorylation (PS I Only)</button>' +
-      '<button class="preset-btn" onclick="SIMS.zschemetransportsim.setMode(\'farred\')">4. Monochromatic 710 nm Far-Red Light</button>';
-  }
-
-  function setMode(m){
-    mode = m;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">Z-SCHEME: NON-CYCLIC vs CYCLIC PHOTOPHOSPHORYLATION</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    // Redox potential scale on left (-0.8 V at top, +0.8 V at bottom)
-    m += '<line x1="45" y1="60" x2="45" y2="330" stroke="#475569" stroke-width="2"/>';
-    m += '<text x="40" y="70" fill="#f87171" font-size="10" text-anchor="end">-0.8 V (Reducing)</text>';
-    m += '<text x="40" y="200" fill="#cbd5e1" font-size="10" text-anchor="end">0.0 V</text>';
-    m += '<text x="40" y="325" fill="#86efac" font-size="10" text-anchor="end">+0.8 V (Oxidising)</text>';
-    m += '<text x="25" y="195" fill="#94a3b8" font-size="9" text-anchor="middle" transform="rotate(-90 25 195)">Redox Potential (Volts)</text>';
-
-    if (mode === "noncyclic" || mode === "photolysis") {
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">' +
-           (mode === "photolysis" ? "OXYGEN EVOLVING COMPLEX (OEC): WATER PHOTOLYSIS AT PS II" : "NON-CYCLIC ELECTRON TRANSPORT: THE COMPLETE Z-SCHEME") + '</text>';
-
-      // PS II (P680) ground state
-      var ps2X = cx - 110, ps2Y = cy + 50;
-      m += '<rect x="' + (ps2X - 25) + '" y="' + (ps2Y - 20) + '" width="50" height="40" rx="8" fill="#ec4899" stroke="#fff" stroke-width="2"/>';
-      m += '<text x="' + ps2X + '" y="' + (ps2Y + 5) + '" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">PS II</text>';
-      m += '<text x="' + ps2X + '" y="' + (ps2Y + 30) + '" fill="#fbcfe8" font-size="9" text-anchor="middle">P680</text>';
-
-      // Light hitting PS II
-      m += '<line x1="' + (ps2X - 45) + '" y1="' + (ps2Y - 50) + '" x2="' + (ps2X - 15) + '" y2="' + (ps2Y - 15) + '" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="3,2"/>';
-      m += '<text x="' + (ps2X - 45) + '" y="' + (ps2Y - 55) + '" fill="#fbbf24" font-size="10">Light (680nm)</text>';
-
-      // Water splitting at PS II base
-      m += '<rect x="' + (ps2X - 45) + '" y="' + (ps2Y + 45) + '" width="90" height="35" rx="6" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1.5"/>';
-      m += '<text x="' + ps2X + '" y="' + (ps2Y + 60) + '" fill="#86efac" font-size="10" font-weight="bold" text-anchor="middle">2H2O -> 4H+ + O2 + 4e-</text>';
-      m += '<text x="' + ps2X + '" y="' + (ps2Y + 74) + '" fill="#cbd5e1" font-size="8.5" text-anchor="middle">OEC (Mn2+, Cl-, Ca2+)</text>';
-      m += '<line x1="' + ps2X + '" y1="' + (ps2Y + 45) + '" x2="' + ps2X + '" y2="' + (ps2Y + 20) + '" stroke="#10b981" stroke-width="2"/>';
-
-      // Uphill excitation to PS II Acceptor (Pheophytin)
-      var acc2X = ps2X, acc2Y = cy - 70;
-      m += '<line x1="' + ps2X + '" y1="' + (ps2Y - 20) + '" x2="' + acc2X + '" y2="' + acc2Y + '" stroke="#ec4899" stroke-width="3" stroke-dasharray="4,2"/>';
-      m += '<circle cx="' + acc2X + '" cy="' + acc2Y + '" r="16" fill="#be185d" stroke="#fff" stroke-width="1.5"/>';
-      m += '<text x="' + acc2X + '" y="' + (acc2Y + 4) + '" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">Acc</text>';
-      m += '<text x="' + acc2X + '" y="' + (acc2Y - 20) + '" fill="#f472b6" font-size="9.5" text-anchor="middle">e- excited</text>';
-
-      // Downhill Electron Transport Chain: PQ -> Cyt b6f -> PC
-      var etcX = cx - 10, etcY = cy - 10;
-      m += '<line x1="' + acc2X + '" y1="' + acc2Y + '" x2="' + etcX + '" y2="' + etcY + '" stroke="#38bdf8" stroke-width="2.5"/>';
-      m += '<rect x="' + (etcX - 25) + '" y="' + (etcY - 15) + '" width="50" height="30" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>';
-      m += '<text x="' + etcX + '" y="' + (etcY + 4) + '" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">Cyt b6f</text>';
-      m += '<text x="' + etcX + '" y="' + (etcY + 30) + '" fill="#fbbf24" font-size="9.5" font-weight="bold" text-anchor="middle">ADP + Pi -> ATP</text>';
-
-      // PS I (P700)
-      var ps1X = cx + 80, ps1Y = cy + 50;
-      m += '<line x1="' + etcX + '" y1="' + etcY + '" x2="' + ps1X + '" y2="' + (ps1Y - 20) + '" stroke="#38bdf8" stroke-width="2.5"/>';
-      m += '<rect x="' + (ps1X - 25) + '" y="' + (ps1Y - 20) + '" width="50" height="40" rx="8" fill="#0284c7" stroke="#fff" stroke-width="2"/>';
-      m += '<text x="' + ps1X + '" y="' + (ps1Y + 5) + '" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">PS I</text>';
-      m += '<text x="' + ps1X + '" y="' + (ps1Y + 30) + '" fill="#bae6fd" font-size="9" text-anchor="middle">P700</text>';
-
-      // Light hitting PS I
-      m += '<line x1="' + (ps1X - 45) + '" y1="' + (ps1Y - 50) + '" x2="' + (ps1X - 15) + '" y2="' + (ps1Y - 15) + '" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="3,2"/>';
-      m += '<text x="' + (ps1X - 45) + '" y="' + (ps1Y - 55) + '" fill="#fbbf24" font-size="10">Light (700nm)</text>';
-
-      // Uphill excitation to PS I Acceptor (Ferredoxin)
-      var acc1X = ps1X, acc1Y = cy - 70;
-      m += '<line x1="' + ps1X + '" y1="' + (ps1Y - 20) + '" x2="' + acc1X + '" y2="' + acc1Y + '" stroke="#0284c7" stroke-width="3" stroke-dasharray="4,2"/>';
-      m += '<circle cx="' + acc1X + '" cy="' + acc1Y + '" r="16" fill="#0369a1" stroke="#fff" stroke-width="1.5"/>';
-      m += '<text x="' + acc1X + '" y="' + (acc1Y + 4) + '" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">Fd</text>';
-
-      // Downhill to NADP+ reductase (FNR)
-      var fnrX = ps1X + 60, fnrY = cy - 20;
-      m += '<line x1="' + acc1X + '" y1="' + acc1Y + '" x2="' + fnrX + '" y2="' + fnrY + '" stroke="#10b981" stroke-width="2.5"/>';
-      m += '<rect x="' + (fnrX - 10) + '" y="' + (fnrY - 15) + '" width="65" height="30" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>';
-      m += '<text x="' + (fnrX + 22) + '" y="' + (fnrY + 4) + '" fill="#86efac" font-size="9.5" font-weight="bold" text-anchor="middle">NADPH</text>';
-
-    } else if (mode === "cyclic" || mode === "farred") {
-      m += '<text x="' + cx + '" y="' + (cy - 110) + '" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle">' +
-           (mode === "farred" ? "MONOCHROMATIC 710 nm FAR-RED: CYCLIC PHOTOPHOSPHORYLATION ONLY" : "CYCLIC PHOTOPHOSPHORYLATION (STROMA LAMELLAE)") + '</text>';
-
-      // PS I (P700) alone
-      var ps1cX = cx, ps1cY = cy + 40;
-      m += '<rect x="' + (ps1cX - 30) + '" y="' + (ps1cY - 20) + '" width="60" height="40" rx="8" fill="#0284c7" stroke="#fff" stroke-width="2"/>';
-      m += '<text x="' + ps1cX + '" y="' + (ps1cY + 5) + '" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">PS I (P700)</text>';
-
-      // Light hitting PS I (>680 nm)
-      m += '<line x1="' + (ps1cX - 50) + '" y1="' + (ps1cY - 50) + '" x2="' + (ps1cX - 20) + '" y2="' + (ps1cY - 15) + '" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="3,2"/>';
-      m += '<text x="' + (ps1cX - 50) + '" y="' + (ps1cY - 55) + '" fill="#fbbf24" font-size="10">Light (&gt;680nm)</text>';
-
-      // Ejection uphill to Primary Acceptor
-      var topY = cy - 70;
-      m += '<line x1="' + ps1cX + '" y1="' + (ps1cY - 20) + '" x2="' + ps1cX + '" y2="' + topY + '" stroke="#38bdf8" stroke-width="3" stroke-dasharray="4,2"/>';
-      m += '<circle cx="' + ps1cX + '" cy="' + topY + '" r="16" fill="#0369a1" stroke="#fff" stroke-width="1.5"/>';
-      m += '<text x="' + ps1cX + '" y="' + (topY + 4) + '" fill="#fff" font-size="9.5" font-weight="bold" text-anchor="middle">Acc</text>';
-
-      // Circular loop back via Cyt b6f
-      m += '<path d="M ' + (ps1cX + 16) + ' ' + topY + ' Q ' + (ps1cX + 90) + ' ' + (cy - 10) + ' ' + (ps1cX + 40) + ' ' + (cy + 20) +
-           ' L ' + (ps1cX + 30) + ' ' + (ps1cY - 5) + '" fill="none" stroke="#fbbf24" stroke-width="3"/>';
-
-      // Intermediate carrier Cytochrome b6f on loop
-      m += '<rect x="' + (ps1cX + 55) + '" y="' + (cy - 25) + '" width="55" height="30" rx="6" fill="#1e293b" stroke="#fbbf24" stroke-width="1.5"/>';
-      m += '<text x="' + (ps1cX + 82) + '" y="' + (cy - 6) + '" fill="#fbbf24" font-size="9.5" font-weight="bold" text-anchor="middle">Cyt b6f</text>';
-      m += '<text x="' + (ps1cX + 82) + '" y="' + (cy + 25) + '" fill="#10b981" font-size="10" font-weight="bold" text-anchor="middle">+ ATP</text>';
-
-      m += '<text x="' + cx + '" y="' + (cy + 95) + '" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">NO PS II • NO Photolysis • NO Oxygen Evolution • NO NADPH</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 115) + '" fill="#cbd5e1" font-size="10.5" text-anchor="middle">Synthesizes auxiliary ATP exclusively to satisfy high Calvin cycle consumption.</text>';
-    }
-
-    // Right comparison panel
-    var rx = W - 180, ry = 50;
-    m += '<rect x="' + rx + '" y="' + ry + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (rx + 85) + '" y="' + (ry + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">Z-SCHEME RULES</text>';
-
-    if (mode === "noncyclic" || mode === "photolysis") {
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#10b981" font-size="11" font-weight="bold">Non-Cyclic (Z-Scheme):</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• Both PS II & PS I</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 90) + '" fill="#cbd5e1" font-size="10">• Water photolysis active</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 110) + '" fill="#86efac" font-size="10" font-weight="bold">• O2 evolved to air</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 130) + '" fill="#cbd5e1" font-size="10">• Generates:</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 148) + '" fill="#fcd34d" font-size="10">  - ATP</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 165) + '" fill="#fcd34d" font-size="10">  - NADPH + H+</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 190) + '" fill="#cbd5e1" font-size="10">• Location: Grana</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 205) + '" fill="#cbd5e1" font-size="10">  thylakoid membranes</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Hatch and Slack Pathway, cyclic (Fig. 11.9)</text>';
+      readout(cell("Step", sp[0], "#22c55e") + cell("Moves", sp[1], "#94a3b8"));
+      verdict("Pump CO2 to the sheltered Calvin.");
     } else {
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#fbbf24" font-size="11" font-weight="bold">Cyclic Flow:</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• PS I (P700) ONLY</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 90) + '" fill="#ef4444" font-size="10" font-weight="bold">• NO Photolysis of H2O</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 110) + '" fill="#ef4444" font-size="10" font-weight="bold">• ZERO O2 evolved</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 130) + '" fill="#ef4444" font-size="10" font-weight="bold">• NO NADPH formed</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 155) + '" fill="#86efac" font-size="10" font-weight="bold">• Yield: ATP ONLY</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 180) + '" fill="#cbd5e1" font-size="10">• Location: Stroma</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 195) + '" fill="#cbd5e1" font-size="10">  lamellae (lacks PS II</text>';
-      m += '<text x="' + (rx + 10) + '" y="' + (ry + 210) + '" fill="#cbd5e1" font-size="10">  and NADP reductase)</text>';
+      m += '<text x="350" y="120" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">RuBisCO active site: CO2 vs O2</text>';
+      m += '<text x="350" y="165" fill="' + (ratio === 0 ? "#f59e0b" : "#22c55e") + '" font-size="14" font-weight="700" text-anchor="middle">' + (ratio === 0 ? "Some O2 binds \u2192 photorespiration" : "CO2 floods site \u2192 carboxylase wins") + "</text>";
+      m += '<text x="350" y="205" fill="#94a3b8" font-size="11" text-anchor="middle">' + (ratio === 0 ? "RuBP + O2 \u2192 PGA + phosphoglycolate (waste)" : "Minimal oxygenase \u2192 yields up, heat tolerated") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Most abundant enzyme in the world (\u00A711.9)</text>';
+      readout(cell("Ratio", ratio === 0 ? "near equal" : "CO2 loaded", ratio === 0 ? "#f59e0b" : "#22c55e") + cell("Mode", ratio === 0 ? "mixed" : "carboxylase", "#94a3b8"));
+      verdict(ratio === 0 ? "C3: wasteful oxygenase leaks in." : "C4: pump rigs the competition.");
     }
-
     svg.innerHTML = m;
-
-    var isCyclic = (mode === "cyclic" || mode === "farred");
-    readout(
-      cell("Electron Flow Mode", isCyclic ? "CYCLIC FLOW" : "NON-CYCLIC (Z-SCHEME)", isCyclic ? "#fbbf24" : "#38bdf8") +
-      cell("Water Photolysis", isCyclic ? "ABSENT" : "ACTIVE (2H2O -> 4H+ + O2)", isCyclic ? "#ef4444" : "#10b981") +
-      cell("Oxygen Evolution", isCyclic ? "NO (Zero O2)" : "YES (Molecular O2 released)", isCyclic ? "#ef4444" : "#10b981") +
-      cell("Chemical Products", isCyclic ? "ATP ONLY" : "ATP + NADPH + O2", "#fcd34d")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT 11.6 Photophosphorylation Rule:</span> ' +
-      (isCyclic ?
-       "In cyclic photophosphorylation, excited electrons from PS I cycle back via Cyt b6f without splitting water or evolving oxygen; this occurs in stroma lamellae (which lack PS II and NADP reductase) or under wavelengths >680 nm to supply extra ATP." :
-       "In the non-cyclic Z-scheme, both PS II and PS I work in series: water photolysis at PS II provides electrons and evolves oxygen, while electron downhill transfer generates ATP and terminal reduction forms NADPH.")
-    );
   }
 
-  return { mount: mount, setMode: setMode, draw: draw };
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 4. SIMULATION 4: Mitchell Chemiosmosis & ATP Synthase (chemiosmosissim)
+// 7. Limiting Factors & Rate Curves Lab (factorlab) - L7, 11.10 + Summary
 // -------------------------------------------------------------------------
-window.SIMS.chemiosmosissim = (function(){
-  var uncoupler = false;
-  var lightOn = true;
+window.SIMS.factorlab = (function(){
+  var view = "curve"; // "curve", "co2", "blackman"
+  var pt = 0, high = false, warm = false;
+  var PTS = [
+    ["A", "linear: light limits"],
+    ["B", "linear: light limits"],
+    ["C", "saturation point"],
+    ["D", "plateau: others limit"],
+    ["E", "chlorophyll breakdown"]
+  ];
 
-  function mount(){
-    App.state.maxT = 4;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Acidic Lumen (High H+, pH ~4.5)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Alkaline Stroma (Low H+, pH ~8.0)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>CF0 Transmembrane Channel</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>CF1 Catalytic ATP Synthase Head</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.chemiosmosissim.setCond(true, false)">1. Normal Proton Gradient & ATP Synthesis</button>' +
-      '<button class="preset-btn" onclick="SIMS.chemiosmosissim.setCond(true, true)">2. Add Uncoupler / DNP (Gradient Dissipated)</button>' +
-      '<button class="preset-btn" onclick="SIMS.chemiosmosissim.setCond(false, false)">3. Darkness (No Gradient)</button>';
-  }
-
-  function setCond(l, u){
-    lightOn = l;
-    uncoupler = u;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">CHEMIOSMOTIC HYPOTHESIS: THYLAKOID PROTON GRADIENT & CF0-CF1 MOTOR</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    // Stroma (top) vs Lumen (bottom)
-    m += '<rect x="40" y="50" width="' + (W - 240) + '" height="110" fill="rgba(56,189,248,0.08)"/>';
-    m += '<text x="60" y="75" fill="#38bdf8" font-size="12" font-weight="bold">STROMA (Alkaline, pH ~8.0, Low [H+])</text>';
-
-    // Thylakoid lipid bilayer membrane
-    m += '<rect x="40" y="160" width="' + (W - 240) + '" height="35" fill="#334155" stroke="#64748b" stroke-width="2"/>';
-    m += '<text x="60" y="182" fill="#cbd5e1" font-size="10">Thylakoid Membrane Bilayer</text>';
-
-    // Thylakoid Lumen (bottom)
-    m += '<rect x="40" y="195" width="' + (W - 240) + '" height="135" fill="' + (uncoupler ? 'rgba(56,189,248,0.08)' : (lightOn ? 'rgba(239,68,68,0.18)' : 'rgba(56,189,248,0.08)')) + '"/>';
-    m += '<text x="60" y="220" fill="' + (uncoupler || !lightOn ? '#94a3b8' : '#ef4444') + '" font-size="12" font-weight="bold">' +
-         (uncoupler ? "THYLAKOID LUMEN (Gradient Leaked via Uncoupler!)" : (lightOn ? "THYLAKOID LUMEN (Acidic, pH ~4.5, High [H+])" : "THYLAKOID LUMEN (Darkness: Neutralized)")) + '</text>';
-
-    // 1. Water splitting releasing H+ into lumen
-    var oecX = cx - 120;
-    m += '<rect x="' + (oecX - 25) + '" y="160" width="50" height="35" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>';
-    m += '<text x="' + oecX + '" y="182" fill="#86efac" font-size="10" font-weight="bold" text-anchor="middle">PS II</text>';
-    if (lightOn && !uncoupler) {
-      m += '<text x="' + oecX + '" y="240" fill="#f87171" font-size="11" font-weight="bold" text-anchor="middle">4H+ from H2O</text>';
-      m += '<line x1="' + oecX + '" y1="195" x2="' + oecX + '" y2="225" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrow)"/>';
-    }
-
-    // 2. Plastoquinone shuttle pumping H+ from stroma to lumen
-    var pqX = cx - 30;
-    m += '<circle cx="' + pqX + '" cy="177" r="16" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>';
-    m += '<text x="' + pqX + '" y="181" fill="#38bdf8" font-size="9.5" font-weight="bold" text-anchor="middle">PQ</text>';
-    if (lightOn && !uncoupler) {
-      m += '<path d="M ' + pqX + ' 130 L ' + pqX + ' 225" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="3,2"/>';
-      m += '<text x="' + pqX + '" y="120" fill="#38bdf8" font-size="10" text-anchor="middle">H+ uptake</text>';
-      m += '<text x="' + pqX + '" y="240" fill="#38bdf8" font-size="10" text-anchor="middle">H+ pumped</text>';
-    }
-
-    // 3. ATP Synthase Complex (CF0 in membrane, CF1 in stroma)
-    var atpX = cx + 80;
-    // CF0 Channel in membrane
-    m += '<rect x="' + (atpX - 16) + '" y="160" width="32" height="35" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>';
-    m += '<text x="' + atpX + '" y="182" fill="#78350f" font-size="10" font-weight="bold" text-anchor="middle">CF0</text>';
-
-    // CF1 Headpiece in stroma
-    m += '<circle cx="' + atpX + '" cy="120" r="26" fill="#10b981" stroke="#fff" stroke-width="2"/>';
-    m += '<text x="' + atpX + '" y="125" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">CF1</text>';
-
-    // Protons flowing from lumen -> CF0 -> CF1 -> Stroma
-    if (lightOn && !uncoupler) {
-      m += '<line x1="' + atpX + '" y1="230" x2="' + atpX + '" y2="195" stroke="#fbbf24" stroke-width="3"/>';
-      m += '<line x1="' + atpX + '" y1="160" x2="' + atpX + '" y2="146" stroke="#fbbf24" stroke-width="3"/>';
-      m += '<text x="' + (atpX + 45) + '" y="115" fill="#fcd34d" font-size="11" font-weight="bold">ADP + Pi</text>';
-      m += '<text x="' + (atpX + 45) + '" y="132" fill="#10b981" font-size="12" font-weight="bold">-> ATP</text>';
-      m += '<text x="' + atpX + '" y="250" fill="#fbbf24" font-size="10" text-anchor="middle">H+ efflux (down gradient)</text>';
-    } else if (uncoupler) {
-      m += '<text x="' + (atpX + 50) + '" y="125" fill="#ef4444" font-size="11" font-weight="bold">NO ATP Synthesis!</text>';
-      m += '<text x="' + cx + '" y="280" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">Uncoupler leaks protons: Gradient collapsed, ATP synthase halts!</text>';
-    }
-
-    // Right details panel
-    var rx = W - 180, ry = 50;
-    m += '<rect x="' + rx + '" y="' + ry + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (rx + 85) + '" y="' + (ry + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">CHEMIOSMOSIS</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#fcd34d" font-size="11" font-weight="bold">3 Gradient Causes:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="9.5">1. Water photolysis</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 85) + '" fill="#cbd5e1" font-size="9.5">   releases H+ in lumen</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 105) + '" fill="#cbd5e1" font-size="9.5">2. Plastoquinone (PQ)</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 120) + '" fill="#cbd5e1" font-size="9.5">   pumps H+ stroma->lumen</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 140) + '" fill="#cbd5e1" font-size="9.5">3. NADP+ reductase</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 155) + '" fill="#cbd5e1" font-size="9.5">   consumes stromal H+</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 185) + '" fill="#10b981" font-size="11" font-weight="bold">ATP Synthase:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 205) + '" fill="#cbd5e1" font-size="9.5">• CF0: transmembrane</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 220) + '" fill="#cbd5e1" font-size="9.5">  proton channel</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 240) + '" fill="#cbd5e1" font-size="9.5">• CF1: catalytic head</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 255) + '" fill="#86efac" font-size="9.5">  faces stroma</text>';
-
-    svg.innerHTML = m;
-
-    var atpRate = (lightOn && !uncoupler) ? "MAXIMAL (Active Phosphorylation)" : "ZERO (Halted)";
-    var lumenStatus = uncoupler ? "Dissipated (Leaky)" : (lightOn ? "Acidic (pH ~4.5)" : "Equilibrated");
-
-    readout(
-      cell("Proton Gradient", uncoupler ? "COLLAPSED" : (lightOn ? "ESTABLISHED (High PMF)" : "INACTIVE"), uncoupler ? "#ef4444" : "#10b981") +
-      cell("Lumen pH Status", lumenStatus, lightOn && !uncoupler ? "#ef4444" : "#38bdf8") +
-      cell("ATP Synthase Activity", atpRate, lightOn && !uncoupler ? "#10b981" : "#ef4444") +
-      cell("Uncoupler State", uncoupler ? "PRESENT (DNP / Ionophore)" : "NONE (Intact Bilayer)", uncoupler ? "#ef4444" : "#10b981")
-    );
-
-    verdict(
-      '<span style="color:#fcd34d;font-weight:700;">NCERT 11.6.3 Chemiosmosis Rule:</span> ' +
-      (uncoupler ?
-       "Uncouplers destroy the proton gradient across the thylakoid membrane, abolishing the proton motive force through CF0 and halting ATP synthesis, even while electron transport continues." :
-       "Protons accumulate in the thylakoid lumen due to water splitting and plastoquinone pumping, while stromal protons are depleted by NADP+ reduction. As protons flow down this gradient through the CF0 channel into the stroma, CF1 catalytic headpiece synthesizes ATP.")
-    );
-  }
-
-  return { mount: mount, setCond: setCond, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 5. SIMULATION 5: Calvin Cycle & Stoichiometry (calvincyclesim)
-// -------------------------------------------------------------------------
-window.SIMS.calvincyclesim = (function(){
-  var stage = "all"; // "carboxylation", "reduction", "regeneration", "all", "dark"
-  var co2Fixed = 6; // 1 to 6
+  function setV(v){ view = v; mountControls(); draw(0); }
 
   function mount(){
     App.state.maxT = 5;
     document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Stage 1: Carboxylation (RuBisCO)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Stage 2: Reduction (ATP + NADPH)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Stage 3: Regeneration (ATP -> RuBP)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>1 Hexose Glucose Output</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.calvincyclesim.setStage(\'all\')">1. Full 6-Turn Cycle (1 Glucose)</button>' +
-      '<button class="preset-btn" onclick="SIMS.calvincyclesim.setStage(\'carboxylation\')">2. Stage 1: Carboxylation</button>' +
-      '<button class="preset-btn" onclick="SIMS.calvincyclesim.setStage(\'reduction\')">3. Stage 2: Reduction</button>' +
-      '<button class="preset-btn" onclick="SIMS.calvincyclesim.setStage(\'regeneration\')">4. Stage 3: Regeneration</button>' +
-      '<button class="preset-btn" onclick="SIMS.calvincyclesim.setStage(\'dark\')">5. Sudden Darkness (3-PGA Accumulates)</button>';
+      '<div class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span><span>Light limits</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Saturated / plateau</span></div>' +
+      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Breakdown</span></div>';
+    document.getElementById("preset-bar").innerHTML =
+      '<button class="preset-btn active" id="p-curve">Fig 11.10 Curve</button>' +
+      '<button class="preset-btn" id="p-co2">CO2 Saturation</button>' +
+      '<button class="preset-btn" id="p-blackman">Blackman Demo</button>';
+    document.getElementById("p-curve").onclick = function(){ setActivePreset(this); setV("curve"); };
+    document.getElementById("p-co2").onclick = function(){ setActivePreset(this); setV("co2"); };
+    document.getElementById("p-blackman").onclick = function(){ setActivePreset(this); setV("blackman"); };
+    mountControls();
+    draw(0);
   }
 
-  function setStage(s){
-    stage = s;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">MELVIN CALVIN C3 CYCLE: 3 STAGES & 18 ATP / 12 NADPH GLUCOSE ACCOUNTING</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 20;
-    var R = 95;
-
-    // Calvin cycle circular path
-    m += '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="#334155" stroke-width="4"/>';
-
-    // 1. Top Node: RuBP (Ribulose-1,5-bisphosphate, 5C)
-    var rubpX = cx, rubpY = cy - R;
-    m += '<rect x="' + (rubpX - 45) + '" y="' + (rubpY - 20) + '" width="90" height="35" rx="6" fill="#4f46e5" stroke="#818cf8" stroke-width="2"/>';
-    m += '<text x="' + rubpX + '" y="' + (rubpY) + '" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">RuBP (5C)</text>';
-    m += '<text x="' + rubpX + '" y="' + (rubpY + 12) + '" fill="#c7d2fe" font-size="9" text-anchor="middle">Primary Acceptor</text>';
-
-    // CO2 entry at top-right
-    m += '<line x1="' + (rubpX + 50) + '" y1="' + (rubpY - 30) + '" x2="' + (rubpX + 30) + '" y2="' + (rubpY - 5) + '" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrow)"/>';
-    m += '<text x="' + (rubpX + 75) + '" y="' + (rubpY - 30) + '" fill="#10b981" font-size="12" font-weight="bold">+ 6 CO2</text>';
-    m += '<rect x="' + (rubpX + 45) + '" y="' + (rubpY - 10) + '" width="70" height="24" rx="4" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>';
-    m += '<text x="' + (rubpX + 80) + '" y="' + (rubpY + 6) + '" fill="#86efac" font-size="10" font-weight="bold" text-anchor="middle">RuBisCO</text>';
-
-    // 2. Right Node: 3-PGA (3-Phosphoglyceric acid, 3C)
-    var pgaX = cx + R * Math.cos(30 * Math.PI / 180);
-    var pgaY = cy + R * Math.sin(30 * Math.PI / 180);
-    m += '<rect x="' + (pgaX - 45) + '" y="' + (pgaY - 18) + '" width="90" height="35" rx="6" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>';
-    m += '<text x="' + pgaX + '" y="' + (pgaY) + '" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">12 x 3-PGA (3C)</text>';
-    m += '<text x="' + pgaX + '" y="' + (pgaY + 12) + '" fill="#bae6fd" font-size="9" text-anchor="middle">First Stable Product</text>';
-
-    // Reduction transition: Consumes 12 ATP + 12 NADPH
-    m += '<text x="' + (cx + 105) + '" y="' + (cy + 65) + '" fill="#38bdf8" font-size="10" font-weight="bold">12 ATP -> 12 ADP</text>';
-    m += '<text x="' + (cx + 105) + '" y="' + (cy + 80) + '" fill="#38bdf8" font-size="10" font-weight="bold">12 NADPH -> 12 NADP+</text>';
-
-    // 3. Bottom Node: Triose Phosphate (G3P / DHAP, 3C)
-    var triX = cx, triY = cy + R;
-    m += '<rect x="' + (triX - 55) + '" y="' + (triY - 15) + '" width="110" height="35" rx="6" fill="#0f766e" stroke="#2dd4bf" stroke-width="2"/>';
-    m += '<text x="' + triX + '" y="' + (triY + 2) + '" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">12 x Triose-P (3C)</text>';
-    m += '<text x="' + triX + '" y="' + (triY + 15) + '" fill="#99f6e4" font-size="8.5" text-anchor="middle">(G3P / DHAP)</text>';
-
-    // Glucose branch out of bottom
-    m += '<line x1="' + triX + '" y1="' + (triY + 20) + '" x2="' + triX + '" y2="' + (triY + 50) + '" stroke="#ec4899" stroke-width="3"/>';
-    m += '<rect x="' + (triX - 55) + '" y="' + (triY + 50) + '" width="110" height="30" rx="6" fill="#be185d" stroke="#f472b6" stroke-width="2"/>';
-    m += '<text x="' + triX + '" y="' + (triY + 69) + '" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">1 GLUCOSE (6C)</text>';
-    m += '<text x="' + (triX + 65) + '" y="' + (triY + 67) + '" fill="#fbcfe8" font-size="9">(Net Product)</text>';
-
-    // 4. Regeneration transition back to RuBP: Consumes 6 ATP
-    m += '<text x="' + (cx - 130) + '" y="' + cy + '" fill="#fbbf24" font-size="10" font-weight="bold">Regeneration:</text>';
-    m += '<text x="' + (cx - 130) + '" y="' + (cy + 16) + '" fill="#fbbf24" font-size="10">6 ATP -> 6 ADP</text>';
-    m += '<text x="' + (cx - 130) + '" y="' + (cy + 32) + '" fill="#cbd5e1" font-size="9">(1 ATP per CO2 fixed)</text>';
-
-    // Center Stage Label
-    m += '<circle cx="' + cx + '" cy="' + cy + '" r="40" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>';
-    if (stage === "dark") {
-      m += '<text x="' + cx + '" y="' + (cy - 10) + '" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">DARK SHIFT</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 6) + '" fill="#fca5a5" font-size="9" text-anchor="middle">3-PGA Rises</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 20) + '" fill="#fca5a5" font-size="9" text-anchor="middle">RuBP Falls</text>';
+  function mountControls(){
+    var c = document.getElementById("lab-controls");
+    if(view === "curve"){
+      c.innerHTML =
+        '<div class="control-group"><label>Point:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        PTS.map(function(p, i){ return '<button class="preset-btn" data-pt="' + i + '">' + p[0] + "</button>"; }).join("") + "</div></div>" +
+        '<div class="control-group"><label>Saturation:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">10 per cent of full sunlight.</div></div>';
+      c.querySelectorAll("[data-pt]").forEach(function(b){ b.onclick = function(){ pt = Number(b.dataset.pt); draw(0); }; });
+    } else if(view === "co2"){
+      c.innerHTML =
+        '<div class="control-group"><label>Light:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-l0">Low light</button>' +
+        '<button class="preset-btn" id="c-l1">High light</button></div></div>' +
+        '<div class="control-group"><label>Air:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">0.03\u20130.04%; C4 ~360, C3 >450.</div></div>';
+      document.getElementById("c-l0").onclick = function(){ high = false; draw(0); };
+      document.getElementById("c-l1").onclick = function(){ high = true; draw(0); };
     } else {
-      m += '<text x="' + cx + '" y="' + (cy - 8) + '" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">CALVIN</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 8) + '" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="middle">CYCLE</text>';
-      m += '<text x="' + cx + '" y="' + (cy + 22) + '" fill="#94a3b8" font-size="9" text-anchor="middle">6 Turns</text>';
+      c.innerHTML =
+        '<div class="control-group"><label>Temperature:</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">' +
+        '<button class="preset-btn" id="c-t0">Very low</button>' +
+        '<button class="preset-btn" id="c-t1">Optimal</button></div></div>' +
+        '<div class="control-group"><label>Others:</label><div style="color:#94a3b8;font-size:12px;margin-top:4px;">Green leaf + light + CO2 optimal.</div></div>';
+      document.getElementById("c-t0").onclick = function(){ warm = false; draw(0); };
+      document.getElementById("c-t1").onclick = function(){ warm = true; draw(0); };
     }
-
-    // Right details panel
-    var px = W - 180, py = 50;
-    m += '<rect x="' + px + '" y="' + py + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (px + 85) + '" y="' + (py + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">1 GLUCOSE BUDGET</text>';
-
-    m += '<text x="' + (px + 10) + '" y="' + (py + 50) + '" fill="#10b981" font-size="11" font-weight="bold">INFLOW (Inputs):</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 70) + '" fill="#cbd5e1" font-size="10">• 6 CO2 molecules</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 90) + '" fill="#fcd34d" font-size="10" font-weight="bold">• 18 ATP</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 105) + '" fill="#cbd5e1" font-size="9">  (12 reduction +</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 118) + '" fill="#cbd5e1" font-size="9">   6 regeneration)</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 138) + '" fill="#38bdf8" font-size="10" font-weight="bold">• 12 NADPH</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 152) + '" fill="#cbd5e1" font-size="9">  (reduction phase)</text>';
-
-    m += '<text x="' + (px + 10) + '" y="' + (py + 180) + '" fill="#ec4899" font-size="11" font-weight="bold">OUTFLOW (Outputs):</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 200) + '" fill="#86efac" font-size="10" font-weight="bold">• 1 Glucose (C6H12O6)</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 220) + '" fill="#cbd5e1" font-size="10">• 18 ADP + 18 Pi</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 240) + '" fill="#cbd5e1" font-size="10">• 12 NADP+</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 265) + '" fill="#fcd34d" font-size="10">• Per 1 CO2: 3 ATP,</text>';
-    m += '<text x="' + (px + 10) + '" y="' + (py + 280) + '" fill="#fcd34d" font-size="10">  2 NADPH</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Cycle Progress", stage === "dark" ? "DARK TRANSITION" : "6 CO2 FIXED (Full Hexose)", "#38bdf8") +
-      cell("Total ATP Consumed", "18 ATP (12 Red + 6 Regen)", "#fbbf24") +
-      cell("Total NADPH Consumed", "12 NADPH (Reduction)", "#38bdf8") +
-      cell("Net Synthesis", "1 Glucose Molecule (C6H12O6)", "#10b981")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT 11.7 Calvin Cycle Rule:</span> ' +
-      (stage === "dark" ?
-       "When light is extinguished, ATP and NADPH supply ceases immediately; 3-PGA can no longer be reduced and accumulates, while existing RuBP is rapidly consumed by reaction with CO2 until exhausted." :
-       "Synthesis of one molecule of glucose requires exactly 6 turns of the Calvin cycle, demanding 6 CO2, 18 ATP (2 for reduction + 1 for regeneration per CO2), and 12 NADPH.")
-    );
   }
 
-  return { mount: mount, setStage: setStage, draw: draw };
+  function draw(t){
+    var svg = svgEl(); if(!svg) return;
+    var m = '<rect width="700" height="320" fill="#09131d"/>';
+    m += '<rect x="20" y="20" width="660" height="280" rx="8" fill="#0b1726" stroke="#1e293b" stroke-width="1.5"/>';
+    m += '<text x="40" y="48" fill="#f8fafc" font-size="14" font-weight="700">Factors (\u00A711.10 + Summary)</text>';
+    if(view === "curve"){
+      var p = PTS[pt];
+      m += '<line x1="120" y1="250" x2="600" y2="250" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<line x1="120" y1="250" x2="120" y2="70" stroke="#64748b" stroke-width="1.5"/>';
+      m += '<text x="600" y="268" fill="#94a3b8" font-size="10" text-anchor="middle">light intensity</text>';
+      m += '<text x="60" y="160" fill="#94a3b8" font-size="10" text-anchor="middle">rate</text>';
+      m += '<path d="M130,245 L250,170 L350,120 L480,115 L570,160" fill="none" stroke="#38bdf8" stroke-width="3"/>';
+      var cols = ["#22c55e", "#22c55e", "#f59e0b", "#f59e0b", "#ef4444"];
+      var px = [180, 290, 350, 480, 570], py = [210, 145, 120, 115, 160];
+      var pl = ["A", "B", "C", "D", "E"];
+      for(var i = 0; i < 5; i++){
+        var on = i === pt;
+        m += '<circle cx="' + px[i] + '" cy="' + py[i] + '" r="' + (on ? 9 : 5) + '" fill="' + cols[i] + '" stroke="#0f172a" stroke-width="2"/>';
+        m += '<text x="' + px[i] + '" y="' + (py[i] - 14) + '" fill="' + cols[i] + '" font-size="' + (on ? 13 : 10) + '" font-weight="700" text-anchor="middle">' + pl[i] + "</text>";
+      }
+      m += '<text x="350" y="290" fill="#94a3b8" font-size="11" text-anchor="middle">Figure 11.10 \u00B7 now at ' + p[0] + ": " + p[1] + "</text>";
+      readout(cell("Point", p[0], cols[pt]) + cell("Means", p[1], "#94a3b8"));
+      verdict(pt <= 1 ? "Light is the limiting factor." : pt <= 3 ? "Light saturated; others limit." : "Excess light destroys chlorophyll.");
+    } else if(view === "co2"){
+      m += '<text x="350" y="100" fill="#f8fafc" font-size="13" font-weight="700" text-anchor="middle">' + (high ? "High light: both respond to CO2" : "Low light: neither responds to CO2") + "</text>";
+      m += '<rect x="140" y="130" width="180" height="80" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>';
+      m += '<text x="230" y="163" fill="#38bdf8" font-size="12" font-weight="700" text-anchor="middle">C4 saturates</text>';
+      m += '<text x="230" y="185" fill="#94a3b8" font-size="11" text-anchor="middle">~360 \u00B5lL-1</text>';
+      m += '<rect x="380" y="130" width="180" height="80" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2"/>';
+      m += '<text x="470" y="163" fill="#22c55e" font-size="12" font-weight="700" text-anchor="middle">C3 saturates</text>';
+      m += '<text x="470" y="185" fill="#94a3b8" font-size="11" text-anchor="middle">beyond 450 \u00B5lL-1</text>';
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">' + (high ? "Current air limits C3 \u00B7 greenhouses enrich (tomatoes, bell pepper)" : "Light holds the brake for both groups") + "</text>";
+      readout(cell("Light", high ? "high" : "low", high ? "#22c55e" : "#94a3b8") + cell("C4/C3", "360 / >450", "#38bdf8"));
+      verdict(high ? "C4 done at 360; C3 hungry past 450." : "CO2 cannot help in dim light.");
+    } else {
+      m += '<circle cx="350" cy="160" r="55" fill="#0f172a" stroke="' + (warm ? "#22c55e" : "#64748b") + '" stroke-width="2.5"/>';
+      m += '<text x="350" y="155" fill="' + (warm ? "#22c55e" : "#64748b") + '" font-size="12" font-weight="700" text-anchor="middle">' + (warm ? "fixing CO2" : "stalled") + "</text>";
+      m += '<text x="350" y="175" fill="#64748b" font-size="10" text-anchor="middle">' + (warm ? "optimal T" : "very low T") + "</text>";
+      m += '<text x="350" y="262" fill="#94a3b8" font-size="11" text-anchor="middle">Blackman 1905: nearest-minimum factor sets the rate</text>';
+      readout(cell("Temperature", warm ? "optimal" : "very low", warm ? "#22c55e" : "#94a3b8") + cell("Rate", warm ? "runs" : "zero", warm ? "#22c55e" : "#ef4444"));
+      verdict(warm ? "Warmed leaf photosynthesises." : "Cold leaf stalls despite light + CO2.");
+    }
+    svg.innerHTML = m;
+  }
+
+  return {mount: mount, draw: draw};
 })();
 
 // -------------------------------------------------------------------------
-// 6. SIMULATION 6: C4 Kranz Anatomy & PEPcase (c4kranzpathwaysim)
+// Browser-QA compatibility shims (same pattern as kebo101-110 -
+// per-chapter only, no shared-script changes).
 // -------------------------------------------------------------------------
-window.SIMS.c4kranzpathwaysim = (function(){
-  var step = "all"; // "mesophyll", "transport", "bundlesheath", "all"
 
-  function mount(){
-    App.state.maxT = 4;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Mesophyll Cell (PEPcase Carboxylation)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span><span>Bundle Sheath Cell (RuBisCO Decarboxylation)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Thick Gas-Impermeable Kranz Wall</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span><span>Zero Photorespiration</span></div>';
+// Stable browser-fixture identifiers for every visible lab scenario.
+Object.keys(window.SIMS).forEach(function(key){
+  var sim = window.SIMS[key];
+  if(!sim || typeof sim.mount !== "function") return;
+  var originalMount = sim.mount;
+  sim.mount = function(lesson){
+    originalMount.call(sim, lesson);
+    document.querySelectorAll("#preset-bar .preset-btn").forEach(function(btn, index){
+      if(!btn.dataset.preset) btn.dataset.preset = btn.id || (key + "-" + index);
+    });
+  };
+});
 
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.c4kranzpathwaysim.setStep(\'all\')">1. Complete C4 Hatch-Slack Shuttle</button>' +
-      '<button class="preset-btn" onclick="SIMS.c4kranzpathwaysim.setStep(\'mesophyll\')">2. Mesophyll: PEP + CO2 -> OAA</button>' +
-      '<button class="preset-btn" onclick="SIMS.c4kranzpathwaysim.setStep(\'transport\')">3. Malate Transport via Plasmodesmata</button>' +
-      '<button class="preset-btn" onclick="SIMS.c4kranzpathwaysim.setStep(\'bundlesheath\')">4. Bundle Sheath: CO2 Pump & RuBisCO</button>';
+// Semantic prediction aliases expected by the shared browser QA.
+document.addEventListener("click", function(event){
+  if(!event.target.closest("#btn-check-prediction")) return;
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var chosen = document.querySelector('input[name="predict_ans"]:checked');
+  if(!lesson || !chosen) return;
+  document.querySelectorAll("#predict-options .predict-option").forEach(function(option, index){
+    option.classList.toggle("is-answer", index === lesson.prediction.answer);
+    option.classList.toggle("is-wrong", index === Number(chosen.value) && index !== lesson.prediction.answer);
+  });
+});
+
+// Keep this chapter's presentation aligned with its data.
+function normalizeChapterPresentation(){
+  var lesson = window.CHAPTER.lessons[App.state.conceptIndex];
+  var watch = document.getElementById("what-to-watch");
+  if(lesson && watch && lesson.watch){
+    var text = "What to watch: " + lesson.watch;
+    if(watch.textContent !== text) watch.textContent = text;
   }
-
-  function setStep(s){
-    step = s;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">C4 HATCH-SLACK PATHWAY: MESOPHYLL vs BUNDLE SHEATH SPATIAL SEPARATION</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    // Two compartments side by side
-    var mBoxX = cx - 140, mBoxW = 135;
-    var bsBoxX = cx + 15, bsBoxW = 135;
-    var boxY = cy - 75, boxH = 180;
-
-    // Mesophyll Cell
-    m += '<rect x="' + mBoxX + '" y="' + boxY + '" width="' + mBoxW + '" height="' + boxH + '" rx="10" fill="rgba(56,189,248,0.1)" stroke="#38bdf8" stroke-width="2"/>';
-    m += '<text x="' + (mBoxX + mBoxW/2) + '" y="' + (boxY + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">MESOPHYLL CELL</text>';
-
-    // Thick suberized wall between cells (Kranz anatomy feature)
-    m += '<rect x="' + (cx - 5) + '" y="' + boxY + '" width="20" height="' + boxH + '" fill="#334155" stroke="#10b981" stroke-width="2.5"/>';
-    m += '<text x="' + (cx + 5) + '" y="' + (boxY + 95) + '" fill="#86efac" font-size="9" text-anchor="middle" transform="rotate(-90 ' + (cx + 5) + ' ' + (boxY + 95) + ')">Thick Kranz Wall</text>';
-
-    // Plasmodesmata channels connecting cells
-    m += '<rect x="' + (cx - 5) + '" y="' + (cy - 30) + '" width="20" height="12" fill="#0f172a"/>';
-    m += '<rect x="' + (cx - 5) + '" y="' + (cy + 30) + '" width="20" height="12" fill="#0f172a"/>';
-    m += '<text x="' + (cx + 5) + '" y="' + (cy - 20) + '" fill="#fbbf24" font-size="8" text-anchor="middle">Plasmodesmata</text>';
-
-    // Bundle Sheath Cell
-    m += '<rect x="' + bsBoxX + '" y="' + boxY + '" width="' + bsBoxW + '" height="' + boxH + '" rx="10" fill="rgba(245,158,11,0.1)" stroke="#f59e0b" stroke-width="2"/>';
-    m += '<text x="' + (bsBoxX + bsBoxW/2) + '" y="' + (boxY + 22) + '" fill="#f59e0b" font-size="12" font-weight="bold" text-anchor="middle">BUNDLE SHEATH CELL</text>';
-
-    // Mesophyll reactions
-    // Atmospheric CO2 / HCO3- entry
-    m += '<text x="' + (mBoxX + 10) + '" y="' + (boxY + 50) + '" fill="#cbd5e1" font-size="10">Atmospheric CO2 -> HCO3-</text>';
-    m += '<rect x="' + (mBoxX + 10) + '" y="' + (boxY + 65) + '" width="115" height="32" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (mBoxX + 67) + '" y="' + (boxY + 80) + '" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">PEP (3C) -> OAA (4C)</text>';
-    m += '<text x="' + (mBoxX + 67) + '" y="' + (boxY + 92) + '" fill="#86efac" font-size="9" text-anchor="middle">Enzyme: PEPcase</text>';
-
-    // Conversion to Malic acid
-    m += '<text x="' + (mBoxX + 67) + '" y="' + (boxY + 125) + '" fill="#fbbf24" font-size="10.5" font-weight="bold" text-anchor="middle">Malic Acid (4C)</text>';
-    m += '<line x1="' + (mBoxX + 67) + '" y1="' + (boxY + 97) + '" x2="' + (mBoxX + 67) + '" y2="' + (boxY + 115) + '" stroke="#fbbf24" stroke-width="2"/>';
-
-    // Malate transport through top plasmodesma to Bundle Sheath
-    m += '<path d="M ' + (mBoxX + 110) + ' ' + (cy - 24) + ' L ' + (bsBoxX + 15) + ' ' + (cy - 24) + '" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrow)"/>';
-
-    // Bundle Sheath reactions
-    // Decarboxylation of Malate -> Pyruvate (3C) + CO2
-    m += '<rect x="' + (bsBoxX + 15) + '" y="' + (boxY + 50) + '" width="105" height="42" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>';
-    m += '<text x="' + (bsBoxX + 67) + '" y="' + (boxY + 68) + '" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">Malate Decarboxylation</text>';
-    m += '<text x="' + (bsBoxX + 67) + '" y="' + (boxY + 84) + '" fill="#86efac" font-size="9" text-anchor="middle">Releases HIGH [CO2]</text>';
-
-    // Calvin Cycle inside Bundle Sheath
-    m += '<circle cx="' + (bsBoxX + 67) + '" cy="' + (boxY + 125) + '" r="22" fill="#065f46" stroke="#10b981" stroke-width="2"/>';
-    m += '<text x="' + (bsBoxX + 67) + '" y="' + (boxY + 123) + '" fill="#fff" font-size="9.5" font-weight="bold" text-anchor="middle">RuBisCO</text>';
-    m += '<text x="' + (bsBoxX + 67) + '" y="' + (boxY + 135) + '" fill="#86efac" font-size="8" text-anchor="middle">Calvin Cycle</text>';
-
-    // Pyruvate return to Mesophyll through bottom plasmodesma
-    m += '<path d="M ' + (bsBoxX + 20) + ' ' + (cy + 36) + ' L ' + (mBoxX + 90) + ' ' + (cy + 36) + '" stroke="#a855f7" stroke-width="2" stroke-dasharray="3,2"/>';
-    m += '<text x="' + (cx + 5) + '" y="' + (cy + 52) + '" fill="#c084fc" font-size="8.5" text-anchor="middle">Pyruvate (3C) Return</text>';
-    m += '<text x="' + (mBoxX + 67) + '" y="' + (boxY + 160) + '" fill="#a855f7" font-size="9" text-anchor="middle">Regenerates PEP (-2 ATP)</text>';
-
-    // Right details panel
-    var rx = W - 180, ry = 50;
-    m += '<rect x="' + rx + '" y="' + ry + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (rx + 85) + '" y="' + (ry + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">C4 KRANZ RULES</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 50) + '" fill="#38bdf8" font-size="11" font-weight="bold">Mesophyll Cell:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 70) + '" fill="#cbd5e1" font-size="10">• Primary Acceptor: PEP</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 88) + '" fill="#cbd5e1" font-size="10">• Enzyme: PEPcase</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 106) + '" fill="#ef4444" font-size="9.5" font-weight="bold">• NO RuBisCO in mesophyll!</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 135) + '" fill="#f59e0b" font-size="11" font-weight="bold">Bundle Sheath Cell:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 155) + '" fill="#cbd5e1" font-size="10">• Has RuBisCO & C3</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 172) + '" fill="#cbd5e1" font-size="10">• High [CO2] saturates</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 188) + '" fill="#cbd5e1" font-size="10">  active site</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 208) + '" fill="#10b981" font-size="10" font-weight="bold">• Photorespiration ZERO!</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 235) + '" fill="#fcd34d" font-size="11" font-weight="bold">ATP Cost:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 255) + '" fill="#cbd5e1" font-size="10">• 30 ATP per Glucose</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 270) + '" fill="#cbd5e1" font-size="9.5">  (vs 18 ATP in C3)</text>';
-
-    svg.innerHTML = m;
-
-    readout(
-      cell("Primary Carboxylase", "PEPcase (Mesophyll)", "#38bdf8") +
-      cell("Calvin Site", "Bundle Sheath (RuBisCO)", "#f59e0b") +
-      cell("Photorespiration", "COMPLETELY ABSENT", "#10b981") +
-      cell("ATP Cost / Glucose", "30 ATP (Extra 12 for PEP regen)", "#fcd34d")
-    );
-
-    verdict(
-      '<span style="color:#f59e0b;font-weight:700;">NCERT 11.8 C4 Kranz Rule:</span> ' +
-      "In C4 plants, initial carbon fixation takes place in mesophyll cells catalyzed by oxygen-insensitive PEPcase to form C4 oxaloacetate; malate is transported to bundle sheath cells where decarboxylation builds up high internal CO2 concentration, completely outcompeting oxygen at RuBisCO and abolishing photorespiration."
-    );
-  }
-
-  return { mount: mount, setStep: setStep, draw: draw };
-})();
-
-// -------------------------------------------------------------------------
-// 7. SIMULATION 7: Blackman's Limiting Factors (blackmanlimitinglab)
-// -------------------------------------------------------------------------
-window.SIMS.blackmanlimitinglab = (function(){
-  var lightInt = 40; // 0 to 100%
-  var co2Level = 380; // 100 to 800 ppm
-  var plantType = "C3"; // "C3", "C4"
-
-  function mount(){
-    App.state.maxT = 5;
-    document.getElementById("lab-legend").innerHTML =
-      '<div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span><span>Region A: Light Limiting (Linear)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#fbbf24;"></span><span>Point C: Light Saturation (~10% Sunlight)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#38bdf8;"></span><span>Region D: Maximal Plateau (CO2 Limiting)</span></div>' +
-      '<div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span><span>Photo-oxidation Breakdown</span></div>';
-
-    document.getElementById("lab-presets").innerHTML =
-      '<button class="preset-btn" onclick="SIMS.blackmanlimitinglab.setPreset(15, 380, \'C3\')">1. Region A (Light Limiting)</button>' +
-      '<button class="preset-btn" onclick="SIMS.blackmanlimitinglab.setPreset(10, 380, \'C3\')">2. Point C (10% Sun Saturation)</button>' +
-      '<button class="preset-btn" onclick="SIMS.blackmanlimitinglab.setPreset(70, 380, \'C3\')">3. Region D (Ambient CO2 Plateau)</button>' +
-      '<button class="preset-btn" onclick="SIMS.blackmanlimitinglab.setPreset(70, 600, \'C3\')">4. Greenhouse Enrichment (Tomato/Pepper)</button>' +
-      '<button class="preset-btn" onclick="SIMS.blackmanlimitinglab.setPreset(70, 380, \'C4\')">5. C4 Plant (Saturates at 360 ppm)</button>';
-  }
-
-  function setPreset(l, c, p){
-    lightInt = l;
-    co2Level = c;
-    plantType = p;
-    draw();
-  }
-
-  function draw(){
-    var svg = document.getElementById("lab-canvas");
-    if (!svg) return;
-    var W = svg.clientWidth || 720;
-    var H = svg.clientHeight || 400;
-
-    var m = '<rect width="' + W + '" height="' + H + '" fill="#070c14"/>';
-    m += '<text x="' + (W/2) + '" y="30" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">NCERT FIGURE 11.10: BLACKMAN\'S LAW & MULTI-FACTOR LIMITING CURVES</text>';
-
-    var cx = W / 2 - 80;
-    var cy = H / 2 + 15;
-
-    // Graph axes
-    var ox = cx - 140, oy = cy + 70;
-    m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + (ox + 300) + '" y2="' + oy + '" stroke="#94a3b8" stroke-width="2"/>';
-    m += '<line x1="' + ox + '" y1="' + oy + '" x2="' + ox + '" y2="' + (oy - 170) + '" stroke="#94a3b8" stroke-width="2"/>';
-
-    m += '<text x="' + (ox + 150) + '" y="' + (oy + 30) + '" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">Light Intensity</text>';
-    m += '<text x="' + (ox - 12) + '" y="' + (oy - 85) + '" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle" transform="rotate(-90 ' + (ox - 12) + ' ' + (oy - 85) + ')">Rate of Photosynthesis</text>';
-
-    // Saturation plateau ceiling based on CO2 & plant type
-    // C4 saturates at 360 ppm, C3 needs 450+ ppm
-    var satLevel = (plantType === "C4") ? Math.min(150, co2Level * 0.38) : Math.min(150, co2Level * 0.28);
-    var plateauY = oy - satLevel;
-
-    // Draw Blackman curve (Region A linear, curve at B, flat plateau at C and D)
-    var curveD = 'M ' + ox + ' ' + oy +
-                 ' L ' + (ox + 50) + ' ' + (plateauY + 15) +
-                 ' Q ' + (ox + 75) + ' ' + plateauY + ' ' + (ox + 100) + ' ' + plateauY +
-                 ' L ' + (ox + 290) + ' ' + plateauY;
-    m += '<path d="' + curveD + '" fill="none" stroke="#38bdf8" stroke-width="3.5"/>';
-
-    // Annotation markers A, B, C, D (Matching NCERT Figure 11.10)
-    m += '<text x="' + (ox + 25) + '" y="' + (oy - 40) + '" fill="#10b981" font-size="14" font-weight="bold">A</text>';
-    m += '<text x="' + (ox + 70) + '" y="' + (plateauY - 5) + '" fill="#fcd34d" font-size="14" font-weight="bold">B</text>';
-    m += '<text x="' + (ox + 100) + '" y="' + (plateauY - 12) + '" fill="#fbbf24" font-size="14" font-weight="bold">C</text>';
-    m += '<text x="' + (ox + 220) + '" y="' + (plateauY - 12) + '" fill="#38bdf8" font-size="14" font-weight="bold">D</text>';
-
-    // Operating point based on lightInt
-    var curX = ox + (lightInt * 2.8);
-    var curY = (lightInt < 25) ? (oy - (lightInt / 25) * (satLevel - 15)) : plateauY;
-
-    m += '<circle cx="' + curX + '" cy="' + curY + '" r="7" fill="#fbbf24" stroke="#fff" stroke-width="2"/>';
-    m += '<line x1="' + curX + '" y1="' + oy + '" x2="' + curX + '" y2="' + curY + '" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3,2"/>';
-    m += '<text x="' + curX + '" y="' + (oy + 15) + '" fill="#fbbf24" font-size="9.5" text-anchor="middle">' + lightInt + '% Light</text>';
-
-    // 10% sunlight mark
-    m += '<line x1="' + (ox + 28) + '" y1="' + (oy - 5) + '" x2="' + (ox + 28) + '" y2="' + (oy + 5) + '" stroke="#f87171" stroke-width="2"/>';
-    m += '<text x="' + (ox + 28) + '" y="' + (oy + 16) + '" fill="#f87171" font-size="8.5" text-anchor="middle">10% Sun</text>';
-
-    // Right details panel
-    var rx = W - 180, ry = 50;
-    m += '<rect x="' + rx + '" y="' + ry + '" width="170" height="300" rx="8" fill="rgba(30,41,59,0.9)" stroke="#38bdf8" stroke-width="1.5"/>';
-    m += '<text x="' + (rx + 85) + '" y="' + (ry + 22) + '" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">NCERT EX 11.8 KEY</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 48) + '" fill="#10b981" font-size="10.5" font-weight="bold">Region A:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 65) + '" fill="#cbd5e1" font-size="9.5">• Linear phase: Rate</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 78) + '" fill="#cbd5e1" font-size="9.5">  directly proportional</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 91) + '" fill="#86efac" font-size="9.5">  to light intensity.</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 105) + '" fill="#86efac" font-size="9.5">• LIGHT is limiting!</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 128) + '" fill="#fbbf24" font-size="10.5" font-weight="bold">Point C & D:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 145) + '" fill="#cbd5e1" font-size="9.5">• C: Light saturation</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 158) + '" fill="#cbd5e1" font-size="9.5">  point (~10% sunlight)</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 175) + '" fill="#cbd5e1" font-size="9.5">• D: Maximal plateau;</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 188) + '" fill="#f87171" font-size="9.5">  CO2 or temperature</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 201) + '" fill="#f87171" font-size="9.5">  now limiting factor.</text>';
-
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 225) + '" fill="#38bdf8" font-size="10.5" font-weight="bold">CO2 Saturation:</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 242) + '" fill="#cbd5e1" font-size="9.5">• C4 saturates at 360 ppm</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 256) + '" fill="#cbd5e1" font-size="9.5">• C3 saturates >450 ppm</text>';
-    m += '<text x="' + (rx + 10) + '" y="' + (ry + 270) + '" fill="#86efac" font-size="9.5">• Greenhouse enrichment</text>';
-
-    svg.innerHTML = m;
-
-    var curLimiting = (lightInt < 25) ? "Light Intensity (Region A)" : "Atmospheric CO2 Concentration (Region D)";
-
-    readout(
-      cell("Plant Category", plantType + " Plant", plantType === "C4" ? "#f59e0b" : "#38bdf8") +
-      cell("Limiting Factor", curLimiting, lightInt < 25 ? "#10b981" : "#fcd34d") +
-      cell("CO2 Concentration", co2Level + " ppm", "#38bdf8") +
-      cell("Photosynthetic Rate", Math.round(satLevel) + " units (Max)", "#86efac")
-    );
-
-    verdict(
-      '<span style="color:#10b981;font-weight:700;">NCERT 11.10 Blackman\'s Limiting Factor Rule:</span> ' +
-      (lightInt < 25 ?
-       "In Region A, light is the limiting factor because the rate increases linearly with increasing irradiance; light saturation is reached at only about 10% of full sunlight." :
-       "In Region D, light is saturating and no longer limiting; the maximum rate is constrained by sub-optimal atmospheric CO2 (0.038%), which is why C3 greenhouse crops like tomatoes and peppers thrive under CO2 enrichment.")
-    );
-  }
-
-  return { mount: mount, setPreset: setPreset, draw: draw };
-})();
+  document.querySelectorAll(".connect-grid").forEach(function(grid){
+    var cards = Array.from(grid.querySelectorAll(":scope > .connect-card"));
+    var explicitWow = cards.find(function(card){ var h = card.querySelector("h3"); return h && /^Wow/i.test(h.textContent.trim()); });
+    if(!explicitWow) return;
+    cards.forEach(function(card){
+      if(card === explicitWow) return;
+      card.classList.remove("wow"); card.removeAttribute("data-wow"); card.removeAttribute("data-source");
+      var badge = card.querySelector(":scope > .wow-badge"); if(badge) badge.remove();
+    });
+  });
+}
+var conceptView = document.getElementById("concept-view");
+var revisionView = document.getElementById("revision-view");
+if(conceptView) new MutationObserver(normalizeChapterPresentation).observe(conceptView, {childList:true, subtree:true});
+if(revisionView) new MutationObserver(normalizeChapterPresentation).observe(revisionView, {childList:true, subtree:true});
+normalizeChapterPresentation();

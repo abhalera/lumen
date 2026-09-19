@@ -1,46 +1,39 @@
-# Curriculum & Verification Coverage: kebo112 (Respiration in Plants)
+# kebo112 Coverage — Respiration in Plants (Ch. 12, print pp. 153–165)
 
-## 1. General Overview
-- **Chapter Code:** kebo112
-- **Title:** Respiration in Plants
-- **NCERT Class:** 11 (Reprint 2026-27, pp. 153–166)
-- **Unit:** 4 (Plant Physiology)
-- **Pedagogical Structure:** Lumen 5-Block Learning Framework (Learn -> Predict First -> Play -> Connect -> Practice -> Revise)
+## Lessons (7)
+| # | Lesson | Sections | Sims |
+|---|---|---|---|
+| 1 | Do Plants Breathe? | 12.1 | breathlab |
+| 2 | Glycolysis: the EMP Pathway | 12.2 | glycolab |
+| 3 | Fermentation: Yeast, Bacteria, Muscle | 12.3 | fermentlab |
+| 4 | Aerobic Respiration and the TCA Cycle | 12.4–12.4.1 | tcalab |
+| 5 | ETS and Oxidative Phosphorylation | 12.4.2 | etslab |
+| 6 | The Respiratory Balance Sheet | 12.5 | balancelab |
+| 7 | Amphibolic Pathway, RQ and Summary | 12.6–12.7, Summary | amprqlab |
 
-## 2. Core Concepts (7 Concepts Total)
-1. **Cellular Respiration Fundamentals & Gas Exchange:** C-C bond oxidation, ATP currency, lenticels, reasons plants lack respiratory organs.
-2. **Glycolysis (The EMP Pathway):** Embden-Meyerhof-Parnas 10-step cytosolic pathway, preparatory investment (-2 ATP), payoff phase (+4 ATP, +2 NADH), net +2 ATP.
-3. **Fermentation & Anaerobic Fates:** Alcoholic fermentation in yeast (pyruvate decarboxylase, alcohol dehydrogenase, 13% toxicity) vs lactic acid fermentation (muscle/lactate dehydrogenase); <7% energy yield.
-4. **Aerobic Respiration: Link Reaction & Krebs Cycle:** Pyruvate dehydrogenase gateway, Acetyl-CoA (2C) + OAA (4C) -> Citrate (6C), decarboxylations, substrate-level GTP/ATP, 3 NADH, 1 FADH2 per turn.
-5. **Electron Transport System (ETS) & Oxidative Phosphorylation:** Inner membrane cristae complexes I, II, III, IV, V; Ubiquinone, Cytochrome c; oxygen terminal sink; chemiosmotic F0-F1 ATP synthase.
-6. **Respiratory Balance Sheet & ATP Accounting:** Theoretical complete ledger (36–38 ATP per glucose), shuttle systems, 4 critical theoretical assumptions.
-7. **Amphibolic Nature & Respiratory Quotient (RQ):** Catabolic breakdown vs anabolic intermediate withdrawal; RQ definition and substrate values (carbohydrates = 1.0, fats = 0.7, proteins = 0.9).
+## Exercises (12, all solved)
+| **12.1** | Three differentiations (a–c) | 100% Fully solved all three subparts |
+| **12.2** | Respiratory substrates | 100% Fully solved (glucose most common) |
+| **12.3** | Glycolysis schematic | 100% Fully solved with inline SVG scheme |
+| **12.4** | Aerobic respiration steps + sites | 100% Fully solved across three sites |
+| **12.5** | Krebs cycle schematic | 100% Fully solved with inline SVG wheel |
+| **12.6** | Explain ETS | 100% Fully solved (chain + payout) |
+| **12.7** | Three distinctions (a–c) | 100% Fully solved all three subparts |
+| **12.8** | ATP calculation assumptions | 100% Fully solved four assumptions |
+| **12.9** | Amphibolic pathway discussion | 100% Fully solved both directions |
+| **12.10** | RQ and fats value | 100% Fully solved (0.7 tripalmitin) |
+| **12.11** | Oxidative phosphorylation | 100% Fully solved (name + mechanics) |
+| **12.12** | Step-wise release significance | 100% Fully solved three reasons |
 
-## 3. Interactive Simulations (7 Custom Native Simulations)
-1. `plantgaseoussim`: Plant Gas Exchange & Lenticel/Stomata Diffusion vs Animal Respiration Lab.
-2. `glycolysispathwaysim`: 10-Step EMP Glycolysis Kinase & Dehydrogenase Energy Flow Simulator.
-3. `fermentationsim`: Yeast Alcohol Fermentation vs Muscle Lactic Acid Lab.
-4. `krebscyclesim`: Hans Krebs Matrix TCA Rotary Engine & Decarboxylation Tracker.
-5. `mitochondrialetssim`: 5-Complex Inner Mitochondrial Membrane ETS & Cristae Proton Motor.
-6. `atpbalancesheetsim`: Net 36-38 ATP Stoichiometry & Shuttle Accounting Engine.
-7. `amphibolicrqsim`: Amphibolic Carbon Shunt & Dynamic Respirometer RQ Calculator.
+## Print-fidelity notes
+- Print spellings kept verbatim: Krebs’, FAD+, Acetyl CoA, pyruvic/pyruvate dehydrogenase, fructose 1, 6-bisphosphate, Dihydroxy acetone phosphate, copper centres, H20, Diagramatic, 38 ATP (no 36 variant).
+- No beyond-chapter insertions: no NADH shuttles, no P/O 2.5/1.5, no poisons/uncouplers, no glyoxylate/gluconeogenesis/PPP, no Q-cycle/supercomplexes.
 
-## 4. End-of-Chapter Exercises (100% Solved: 12 of 12 Exercises)
-- Exercise 12.1: Differentiate between (a) Respiration vs Combustion, (b) Glycolysis vs Krebs cycle, (c) Aerobic vs Fermentation.
-- Exercise 12.2: Respiratory substrates definition and most common substrate (glucose).
-- Exercise 12.3: Schematic representation of glycolysis (10 steps).
-- Exercise 12.4: Main steps in aerobic respiration and cellular sites.
-- Exercise 12.5: Schematic representation of Krebs cycle.
-- Exercise 12.6: Comprehensive explanation of ETS (Complexes I through V).
-- Exercise 12.7: Distinguish between (a) Aerobic vs Anaerobic, (b) Glycolysis vs Fermentation, (c) Glycolysis vs Citric acid cycle.
-- Exercise 12.8: Assumptions made during theoretical calculation of net ATP gain.
-- Exercise 12.9: Discussion on the amphibolic nature of the respiratory pathway.
-- Exercise 12.10: Definition of Respiratory Quotient (RQ) and value for fats (tripalmitin = 0.7).
-- Exercise 12.11: Detailed explanation of oxidative phosphorylation.
-- Exercise 12.12: Significance of step-wise release of energy in respiration.
-
-## 5. Verification Metrics
-- Total Concepts: 7
-- Total Practice Quizzes: 21 (3 per concept across tiers 1, 2, 3)
-- Total Exercises Solved: 12 (100% NCERT coverage)
-- Code Quality: Zero CDN dependencies, offline responsive SVG, standalone HTML < 2 MB.
+## Verification Criteria
+- [x] Strict offline bundle (< 2.0 MB target).
+- [x] Zero external CDN fonts, stylesheets, or scripts.
+- [x] Zero eager iframes in static markup.
+- [x] 7 custom native interactive simulations.
+- [x] 21 multi-tier practice quizzes with instant feedback.
+- [x] 100% solved rationalized NCERT exercises (all 12 exercises).
+- [x] Validated by Node test harness (`tests/verify.cjs`).
